@@ -1,0 +1,14 @@
+2026/04/05-21:42:35.336 f3f8c7 Reusing MANIFEST /Users/alielaraki/claude-workspace/projects/grammar-survey-whatsapp/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/05-21:42:35.337 f3f8c7 Recovering log #29
+2026/04/05-21:42:35.353 f3f8c7 Reusing old log /Users/alielaraki/claude-workspace/projects/grammar-survey-whatsapp/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000029.log 
+2026/04/05-21:43:54.252 f3f8c9 Level-0 table #35: started
+2026/04/05-21:43:54.281 f3f8c9 Level-0 table #35: 1240287 bytes OK
+2026/04/05-21:43:54.285 f3f8c9 Delete type=0 #29
+2026/04/05-21:43:54.704 f3f8d3 Compacting 1@1 + 2@2 files
+2026/04/05-21:43:54.744 f3f8d3 Generated table #36@1: 44903 keys, 2219149 bytes
+2026/04/05-21:43:54.776 f3f8d3 Generated table #37@1: 56900 keys, 1702463 bytes
+2026/04/05-21:43:54.776 f3f8d3 Compacted 1@1 + 2@2 files => 3921612 bytes
+2026/04/05-21:43:54.783 f3f8d3 compacted to: files[ 0 0 2 0 0 0 0 ]
+2026/04/05-21:43:54.783 f3f8d3 Delete type=2 #35
+2026/04/05-21:43:54.783 f3f8d3 Delete type=2 #32
+2026/04/05-21:43:54.783 f3f8d3 Delete type=2 #31

@@ -1,0 +1,77 @@
+// Prisma schema for QA/AC Platform
+// Using SQLite — zero setup, file stored at prisma/dev.db
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─────────────────────────────────────────
+// PITCHES
+// Lifecycle: UPLOADED → ANALYZING → CLARIFYING → COMPLETE → AC_GENERATED
+// ─────────────────────────────────────────
+model Pitch {
+  id        String   @id @default(cuid())
+  title     String
+  pdfPath   String   // Local path relative to /public/uploads/
+  rawText   String
+  status    String   @default("UPLOADED") // SQLite stores enums as String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages   Message[]
+  acDocument AcDocument?
+
+  @@map("pitches")
+}
+
+// ─────────────────────────────────────────
+// MESSAGES
+// Clarification chat per pitch.
+// role: "assistant" = Claude, "user" = PM
+// ─────────────────────────────────────────
+model Message {
+  id        String   @id @default(cuid())
+  pitchId   String
+  role      String   // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  pitch Pitch @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// ─────────────────────────────────────────
+// AC DOCUMENTS
+// Generated ACs stored as markdown.
+// ─────────────────────────────────────────
+model AcDocument {
+  id              String    @id @default(cuid())
+  pitchId         String    @unique
+  contentMarkdown String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  linearPushedAt  DateTime?
+  linearProjectId String?
+
+  pitch Pitch @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+
+  @@map("ac_documents")
+}
+
+// ─────────────────────────────────────────
+// LINEAR CONFIG
+// Single row — workspace-level Linear settings.
+// ─────────────────────────────────────────
+model LinearConfig {
+  id             String  @id @default(cuid())
+  apiKey         String
+  defaultTeamId  String?
+  defaultCycleId String?
+
+  @@map("linear_config")
+}
