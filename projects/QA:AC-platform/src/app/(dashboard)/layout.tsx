@@ -4,7 +4,7 @@ import Link from "next/link"
 import { FileText, BarChart2, Settings, Zap } from "lucide-react"
 
 const navItems = [
-  { href: "/", label: "Pitches", icon: FileText },
+  { href: "/", label: "AC Generator", icon: FileText },
   { href: "/performance", label: "QA Performance", icon: BarChart2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ]

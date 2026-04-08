@@ -93,17 +93,22 @@ export async function classifyBatch(
   const toClassify: typeof issues = []
 
   for (const issue of issues) {
-    // 1. Project membership check using cycle-detection (most accurate)
+    // 1. "Quality Assurance" project = explicitly a live bug bucket
+    if (issue.projectName && /^quality\s*assurance$/i.test(issue.projectName)) {
+      result[issue.issueId] = "live_bug"
+      continue
+    }
+    // 2. Project membership check using cycle-detection
     if (isProjectInCycle(issue.projectId, issue.projectName, cycle)) {
       result[issue.issueId] = "cycle_work"
       continue
     }
-    // 2. Cache hit
+    // 3. Cache hit
     if (cache[issue.issueId]) {
       result[issue.issueId] = cache[issue.issueId]
       continue
     }
-    // 3. Needs Claude
+    // 4. Needs Claude
     toClassify.push(issue)
   }
 

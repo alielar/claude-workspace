@@ -10,8 +10,29 @@ datasource db {
 }
 
 // ─────────────────────────────────────────
+// CYCLE BATCHES
+// A cycle PDF upload containing multiple individual pitches.
+// Lifecycle: PROCESSING → COMPLETE | FAILED
+// ─────────────────────────────────────────
+model CycleBatch {
+  id           String   @id @default(cuid())
+  name         String   // e.g. "March Cycle"
+  status       String   @default("PROCESSING")
+  pdfPath      String
+  totalPitches Int      @default(0)
+  doneCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pitches Pitch[]
+
+  @@map("cycle_batches")
+}
+
+// ─────────────────────────────────────────
 // PITCHES
 // Lifecycle: UPLOADED → ANALYZING → CLARIFYING → COMPLETE → AC_GENERATED
+// batchId is set when the pitch came from a cycle PDF upload.
 // ─────────────────────────────────────────
 model Pitch {
   id        String   @id @default(cuid())
@@ -19,9 +40,11 @@ model Pitch {
   pdfPath   String   // Local path relative to /public/uploads/
   rawText   String
   status    String   @default("UPLOADED") // SQLite stores enums as String
+  batchId   String?  // null = single pitch upload
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  batch      CycleBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
   messages   Message[]
   acDocument AcDocument?
 

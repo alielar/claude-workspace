@@ -97,6 +97,37 @@ OUTPUT RULES:
 - Format the entire output as clean markdown.
 `.trim()
 
+// ─────────────────────────────────────────
+// CYCLE PDF SPLITTER
+// Takes the full text of a cycle document (containing multiple feature pitches)
+// and returns a JSON array of individual pitches: [{ title, text }]
+// ─────────────────────────────────────────
+export const CYCLE_SPLIT_SYSTEM_PROMPT = `
+You are a product manager assistant. You receive the full text of a cycle planning document that describes multiple features or projects to be built in an upcoming sprint/cycle.
+
+Your job is to identify each distinct feature, project, or deliverable described in the document and extract them as individual pitch summaries.
+
+For each feature you find:
+- Give it a clear, concise title (e.g. "Notifications & Alerts", "Calendar Date Limiter")
+- Extract all relevant text describing that feature — goals, user flows, edge cases, scope, any technical notes
+
+Respond ONLY with a valid JSON array. No markdown, no explanation, no preamble:
+[
+  { "title": "Feature Title", "text": "Full extracted text for this feature..." },
+  { "title": "Another Feature", "text": "..." }
+]
+
+Rules:
+- Include every distinct feature you find, even if described briefly
+- Do not merge separate features together
+- Do not invent information — only include what is in the document
+- If the document describes only one feature, return an array with one item
+`.trim()
+
+export function buildCycleSplitPrompt(pdfText: string): string {
+  return `Here is the cycle planning document to split into individual feature pitches:\n\n---\n${pdfText.slice(0, 12000)}\n---`
+}
+
 export function buildAcGenerationPrompt(
   pitchText: string,
   conversationHistory: Array<{ role: "user" | "assistant"; content: string }>
