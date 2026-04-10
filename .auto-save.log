@@ -5817,3 +5817,11 @@
  create mode 100644 templates/new-project/CLAUDE.md
 To github.com:alielar/claude-workspace.git
    25ec1fa..856752e  main -> main
+[main 39483b3] auto-save: 2026-04-08 23:47
+ 15 files changed, 7054 insertions(+), 326 deletions(-)
+ create mode 100644 projects/QA:AC-platform/src/app/(dashboard)/cycles/[id]/page.tsx
+ create mode 100644 projects/QA:AC-platform/src/app/api/cycle-batches/[id]/generate-all/route.ts
+ create mode 100644 projects/QA:AC-platform/src/app/api/cycle-batches/route.ts
+ create mode 100644 projects/QA:AC-platform/src/components/cycles/CycleBatchDetail.tsx
+To github.com:alielar/claude-workspace.git
+   856752e..39483b3  main -> main
