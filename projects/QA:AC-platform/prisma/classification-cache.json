@@ -252,5 +252,10 @@
   "12fc7998-d30c-4092-a8b9-3339af46e216": "cycle_work",
   "e31f1df5-51ee-4b61-96fd-1bc03f3d0f9b": "cycle_work",
   "df1aa73e-0c01-4840-9ea4-c44999b18167": "cycle_work",
-  "2e631291-1831-43f7-a605-34cd81979ede": "cycle_work"
+  "2e631291-1831-43f7-a605-34cd81979ede": "cycle_work",
+  "861feaad-4935-439d-a52d-a1d30b938d36": "live_bug",
+  "f33b7952-ecc9-4721-8d65-4108b126cb3d": "live_bug",
+  "cae33ff5-bc81-43fb-b44a-9637046a217c": "live_bug",
+  "b54900ae-52fe-46a2-83d1-cffbd2291f55": "live_bug",
+  "d3225a09-1656-4294-90ad-25c8920ef82d": "live_bug"
 }
