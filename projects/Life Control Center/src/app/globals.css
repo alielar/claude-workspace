@@ -1,0 +1,295 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ──────────────────────────────────────────────────────────
+   Dark, futuristic "control center" theme.
+   Inspired by Linear + Vercel + Raycast — precision engineering aesthetics.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Sidebar layout — updated by AppShell JS */
+  --sidebar-w: 260px;
+
+  /* Backgrounds */
+  --bg-base:       #07070c;
+  --bg-surface:    #0d0d14;
+  --bg-elevated:   #14141e;
+  --bg-card:       #10101a;
+  --bg-hover:      #1a1a26;
+
+  /* Borders — higher contrast than before */
+  --border:        rgba(255,255,255,0.09);
+  --glass-border:  rgba(255,255,255,0.11);
+  --border-accent: rgba(99,102,241,0.45);
+
+  /* Accent — electric indigo */
+  --accent:        #6366f1;
+  --accent-bright: #818cf8;
+  --accent-dim:    rgba(99,102,241,0.14);
+  --accent-glow:   rgba(99,102,241,0.28);
+
+  /* Secondary accent — cyan */
+  --cyan:          #22d3ee;
+  --cyan-dim:      rgba(34,211,238,0.14);
+
+  /* Status */
+  --green:         #4ade80;
+  --amber:         #fbbf24;
+  --red:           #f87171;
+
+  /* Text */
+  --text-primary:  #f1f5f9;
+  --text-secondary:#8b95a6;
+  --text-muted:    #3f4a5a;
+
+  /* Module accent colors */
+  --workout-color: #f59e0b;
+  --news-color:    #22d3ee;
+  --library-color: #a78bfa;
+  --calendar-color:#34d399;
+  --goals-color:   #fb923c;
+  --wordbank-color:#f472b6;
+
+  /* Tailwind compat */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* ─── Base reset ─────────────────────────────────────────────────────────────*/
+* { box-sizing: border-box; padding: 0; margin: 0; }
+
+html, body {
+  height: 100%;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ambient background — subtle indigo/violet orbs */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 90% 80%,  rgba(34,211,238,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Dot-grid texture on top */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(99,102,241,0.05) 1px, transparent 0);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────*/
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.45); }
+
+/* ─── App layout — sidebar offset via CSS variable ───────────────────────── */
+.app-main {
+  min-height: 100dvh;
+  transition: padding-left 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+@media (min-width: 768px) {
+  .app-main { padding-left: var(--sidebar-w, 260px); }
+}
+
+/* ─── Glass cards ────────────────────────────────────────────────────────────*/
+
+/* Standard glass card */
+.glass {
+  background: rgba(255,255,255,0.055);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+}
+
+/* Accented glass — for highlighted/active cards */
+.glass-accent {
+  background: rgba(99,102,241,0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
+}
+
+/* Surface card — slightly more opaque, for sidebar/panels */
+.surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+/* ─── Glow effects ───────────────────────────────────────────────────────────*/
+.glow-accent { box-shadow: 0 0 0 1px rgba(99,102,241,0.2), 0 4px 24px var(--accent-glow), 0 1px 2px rgba(0,0,0,0.5); }
+.glow-cyan   { box-shadow: 0 0 0 1px rgba(34,211,238,0.18), 0 4px 24px rgba(34,211,238,0.2); }
+.glow-amber  { box-shadow: 0 0 0 1px rgba(245,158,11,0.18), 0 4px 24px rgba(245,158,11,0.18); }
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* ─── Gradient text ──────────────────────────────────────────────────────────*/
+.text-gradient {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-warm {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Status badge ───────────────────────────────────────────────────────────*/
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ─── Pill button ────────────────────────────────────────────────────────────*/
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:hover  { opacity: 0.88; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.09); }
+
+/* ─── Section label ──────────────────────────────────────────────────────────*/
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── Input ──────────────────────────────────────────────────────────────────*/
+.input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+}
+.input::placeholder { color: var(--text-muted); }
+.input:focus {
+  border-color: rgba(99,102,241,0.5);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ─── Progress bar ───────────────────────────────────────────────────────────*/
+.progress-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── Sidebar nav active indicator ──────────────────────────────────────────*/
+.nav-active {
+  background: rgba(255,255,255,0.06);
+  border-left: 2px solid currentColor;
+  border-radius: 0 12px 12px 0;
+  margin-left: -1px;
+  padding-left: calc(0.75rem + 1px) !important;
+}
+
+/* ─── Rest-timer SVG ring ────────────────────────────────────────────────────*/
+.timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
+
+/* ─── Gym-mode large tap targets ─────────────────────────────────────────────*/
+.set-row {
+  min-height: 56px;
+  touch-action: manipulation;
+}
+
+/* ─── Skeleton loading ───────────────────────────────────────────────────────*/
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Page transitions ───────────────────────────────────────────────────────*/
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: fade-up 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────────────*/
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
