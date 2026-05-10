@@ -5933,3 +5933,87 @@ To github.com:alielar/claude-workspace.git
  1 file changed, 4 insertions(+)
 To github.com:alielar/claude-workspace.git
    3d92ffd..6694534  main -> main
+[main 31c0abd] auto-save: 2026-05-09 23:47
+ 82 files changed, 18727 insertions(+)
+ create mode 100644 projects/Life Control Center/.gitignore
+ create mode 100644 projects/Life Control Center/AGENTS.md
+ create mode 100644 projects/Life Control Center/CLAUDE.md
+ create mode 100644 projects/Life Control Center/PLAN.md
+ create mode 100644 projects/Life Control Center/README.md
+ create mode 100644 projects/Life Control Center/drizzle.config.ts
+ create mode 100644 projects/Life Control Center/eslint.config.mjs
+ create mode 100644 projects/Life Control Center/next.config.ts
+ create mode 100644 projects/Life Control Center/package-lock.json
+ create mode 100644 projects/Life Control Center/package.json
+ create mode 100644 projects/Life Control Center/placeholder.db
+ create mode 100644 projects/Life Control Center/postcss.config.mjs
+ create mode 100644 projects/Life Control Center/public/file.svg
+ create mode 100644 projects/Life Control Center/public/globe.svg
+ create mode 100644 projects/Life Control Center/public/manifest.json
+ create mode 100644 projects/Life Control Center/public/next.svg
+ create mode 100644 projects/Life Control Center/public/vercel.svg
+ create mode 100644 projects/Life Control Center/public/window.svg
+ create mode 100644 projects/Life Control Center/src/app/(app)/calendar/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/dashboard/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/goals/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/layout.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/library/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/library/read/[id]/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/loading.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/news/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/settings/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/wordbank/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/workouts/history/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/workouts/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/workouts/session/[id]/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/calendar/events/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/goals/[id]/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/goals/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/annotations/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/book/[bookId]/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/pdf/[bookId]/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/progress/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/seed/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/upload/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/library/word-lookup/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/news/cron/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/news/generate/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/settings/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/tasks/[id]/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/tasks/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/wordbank/review/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/wordbank/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/exercise-history/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/history/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/log/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/prs/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/run-logs/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/seed/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/sessions/[id]/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/workouts/suggestions/route.ts
+ create mode 100644 projects/Life Control Center/src/app/error.tsx
+ create mode 100644 projects/Life Control Center/src/app/favicon.ico
+ create mode 100644 projects/Life Control Center/src/app/globals.css
+ create mode 100644 projects/Life Control Center/src/app/layout.tsx
+ create mode 100644 projects/Life Control Center/src/app/login/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/not-found.tsx
+ create mode 100644 projects/Life Control Center/src/app/page.tsx
+ create mode 100644 projects/Life Control Center/src/components/layout/AppShell.tsx
+ create mode 100644 projects/Life Control Center/src/components/library/UploadButton.tsx
+ create mode 100644 projects/Life Control Center/src/components/workouts/ActiveWorkoutLogger.tsx
+ create mode 100644 projects/Life Control Center/src/components/workouts/SeedWorkoutsButton.tsx
+ create mode 100644 projects/Life Control Center/src/db/index.ts
+ create mode 100644 projects/Life Control Center/src/db/schema.ts
+ create mode 100644 projects/Life Control Center/src/lib/auth.ts
+ create mode 100644 projects/Life Control Center/src/lib/books-seed.ts
+ create mode 100644 projects/Life Control Center/src/lib/news-brief.ts
+ create mode 100644 projects/Life Control Center/src/lib/progressive-overload.ts
+ create mode 100644 projects/Life Control Center/src/lib/sm2.ts
+ create mode 100644 projects/Life Control Center/src/lib/utils.ts
+ create mode 100644 projects/Life Control Center/src/lib/workout-seed.ts
+ create mode 100644 projects/Life Control Center/src/proxy.ts
+ create mode 100644 projects/Life Control Center/tsconfig.json
+ create mode 100644 projects/Life Control Center/vercel.json
+To github.com:alielar/claude-workspace.git
+   6694534..31c0abd  main -> main
