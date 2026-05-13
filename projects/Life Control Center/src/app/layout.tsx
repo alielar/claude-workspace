@@ -4,13 +4,14 @@ import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Life Control Center",
-  description: "Ali's personal command center — workouts, news, books, calendar, goals.",
+  title: "Control Center",
+  description: "Ali's personal life OS — workouts, news, books, checklist, words.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07070c",
+  themeColor: "#0A0A0F",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

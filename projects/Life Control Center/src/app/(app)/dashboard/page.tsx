@@ -1,122 +1,190 @@
 /**
- * /dashboard — Personal command center.
+ * /dashboard — Command center.
  *
- * Grid layout:
- *  Row 1 — header (greeting + date + quick pills)
- *  Row 2 — hero workout card (60%) + 2 mini stat cards (40%, stacked)
- *  Row 3 — 3-column: top PRs · today's brief · last run
- *  Row 4 — 2-column: week schedule strip · reading + word bank
+ * Layout (desktop 12-col grid):
+ *   Row 1 — header (greeting + date + quick links)
+ *   Row 2 — Streaks & Stats (8 col) │ Next Workout (4 col)
+ *   Row 3 — Checklist (4) + Word Bank (4) + Reading (4)
+ *   Row 4 — News Brief (8) │ Mood (4)
+ *   Row 5 — Last 7 Days heatmap (12)
+ *
+ * Mobile: single column stack.
  */
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
-  workoutSessions,
-  workoutPrograms,
-  workoutLogs,
-  exercises as exercisesTable,
-  personalRecords,
-  newsBriefs,
-  books,
-  readingProgress,
-  wordBankEntries,
-  runLogs,
+  workoutSessions, workoutPrograms, workoutLogs,
+  exercises as exercisesTable, personalRecords,
+  newsBriefs, books, readingProgress, wordBankEntries,
+  checklistItems, checklistCompletions,
 } from "@/db/schema";
 import { eq, desc, and, lte, gte } from "drizzle-orm";
 import Link from "next/link";
 import {
-  Play,
-  Newspaper,
-  BookOpen,
-  BookMarked,
-  ArrowRight,
-  Trophy,
-  Zap,
-  Activity,
-  TrendingUp,
-  Clock,
-  Flame,
+  Play, ArrowRight, Flame, Activity, BookOpen, BookMarked,
+  Newspaper, SmilePlus, CheckSquare, Clock, Dumbbell, Check,
 } from "lucide-react";
 import { format, subDays, startOfWeek } from "date-fns";
 
-// ─── Design tokens ──────────────────────────────────────────────────────────
-const GAP = "16px";
-const CARD_P = "20px 24px";
-const RADIUS = "12px";
+// ─── Design constants ────────────────────────────────────────────────────────
+const GAP = "12px";
 
-// ─── Session colors (as requested: Push=coral, Pull=teal, Legs=amber) ───────
-const SESSION_COLORS: Record<string, { primary: string; dim: string; text: string }> = {
-  Push:           { primary: "#fb7185", dim: "rgba(251,113,133,0.12)", text: "#fb7185" },
-  Pull:           { primary: "#2dd4bf", dim: "rgba(45,212,191,0.12)",  text: "#2dd4bf" },
-  Legs:           { primary: "#f59e0b", dim: "rgba(245,158,11,0.12)",  text: "#f59e0b" },
-  Core:           { primary: "#e879f9", dim: "rgba(232,121,249,0.12)", text: "#e879f9" },
-  "Push-Up Skill":{ primary: "#818cf8", dim: "rgba(129,140,248,0.12)", text: "#818cf8" },
+// ─── Session config ──────────────────────────────────────────────────────────
+const SESSION_COLORS: Record<string, { primary: string; bg: string }> = {
+  Push:            { primary: "#F97316", bg: "rgba(249,115,22,0.12)"  },
+  Pull:            { primary: "#22D3EE", bg: "rgba(34,211,238,0.10)"  },
+  Legs:            { primary: "#F59E0B", bg: "rgba(245,158,11,0.10)"  },
+  Core:            { primary: "#F472B6", bg: "rgba(244,114,182,0.10)" },
+  "Push-Up Skill": { primary: "#818CF8", bg: "rgba(129,140,248,0.10)" },
 };
 
+const ROTATION = ["Push", "Pull", "Legs", "Core", "Push", "Pull", "Push-Up Skill"];
 const SESSION_DURATION: Record<string, string> = {
   Push: "~50 min", Pull: "~50 min", Legs: "~55 min",
   Core: "~20 min", "Push-Up Skill": "~15 min",
 };
 
-const ROTATION = ["Push", "Pull", "Legs", "Core", "Push", "Pull", "Push-Up Skill"];
+type NewsStory = { headline: string; summary: string; category: string };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Football: "#4ade80", Morocco: "#4ade80",
-  Geopolitics: "#60a5fa", Tech: "#a78bfa",
-  AI: "#a78bfa", Business: "#fbbf24",
+  football: "#F97316", geopolitics: "#EF4444", business: "#10B981",
+  tech: "#22D3EE", ai: "#818CF8", politics: "#EF4444",
+  "morocco/mena": "#F97316", "business/markets": "#10B981", other: "#A1A1AA",
 };
 
-type NewsStory = { headline: string; summary: string; whyItMatters: string; category: string };
-
 function greeting(h: number) {
-  if (h < 5) return "Still up";
+  if (h < 5)  return "Still up";
   if (h < 12) return "Good morning";
   if (h < 18) return "Good afternoon";
   return "Good evening";
 }
 
-function fmtPace(secsPerKm: number | null) {
-  if (!secsPerKm) return "—";
-  const m = Math.floor(secsPerKm / 60);
-  const s = secsPerKm % 60;
-  return `${m}:${String(s).padStart(2, "0")}/km`;
+// ─── Mini bar chart (no deps) ────────────────────────────────────────────────
+function WorkoutBars({ days }: { days: boolean[] }) {
+  return (
+    <div className="flex items-end gap-[3px]" style={{ height: 28 }}>
+      {days.map((active, i) => (
+        <div
+          key={i}
+          style={{
+            width: 6,
+            height: active ? 22 : 5,
+            borderRadius: 3,
+            background: active ? "var(--accent-primary)" : "var(--bg-elevated-3)",
+            opacity: active ? (0.6 + 0.4 * (i / days.length)) : 1,
+            transition: "height 0.3s ease",
+            flexShrink: 0,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
-function fmtDuration(secs: number) {
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
+// ─── Stat tile inside Streaks card ──────────────────────────────────────────
+function StatTile({
+  label, value, unit, glow, icon: Icon,
+}: {
+  label: string; value: number | string; unit?: string;
+  glow?: boolean; icon: React.ElementType;
+}) {
+  return (
+    <div
+      className="flex flex-col gap-1.5 p-3 rounded-xl"
+      style={{
+        background: glow ? "var(--accent-primary-glow)" : "var(--bg-elevated-2)",
+        border: `1px solid ${glow ? "rgba(124,92,255,0.2)" : "var(--border-subtle)"}`,
+        flex: "1 1 0",
+        minWidth: 0,
+      }}
+    >
+      <Icon size={13} style={{ color: glow ? "var(--accent-bright)" : "var(--text-tertiary)" }} />
+      <div className="flex items-baseline gap-1 tabular-nums">
+        <span style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>
+          {value}
+        </span>
+        {unit && (
+          <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 500 }}>{unit}</span>
+        )}
+      </div>
+      <span style={{ fontSize: 10, color: "var(--text-tertiary)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+        {label}
+      </span>
+    </div>
+  );
 }
 
 export default async function DashboardPage() {
   const session = await auth();
-  const userId = session!.user!.id!;
+  const userId  = session!.user!.id!;
   const userName = session!.user!.name?.split(" ")[0] ?? "Ali";
 
-  const now = new Date();
-  const today = format(now, "yyyy-MM-dd");
-  const hour = now.getHours();
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+  const now       = new Date();
+  const today     = format(now, "yyyy-MM-dd");
+  const hour      = now.getHours();
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
-  // ── Sessions list ─────────────────────────────────────────────────────────
-  const allSessions = await db
-    .select()
-    .from(workoutSessions)
-    .innerJoin(workoutPrograms, eq(workoutSessions.programId, workoutPrograms.id))
-    .where(eq(workoutPrograms.userId, userId))
-    .orderBy(workoutSessions.sortOrder);
+  // ── Parallel data fetches ─────────────────────────────────────────────────
+  const [
+    allSessions, recentLogs, prs, [brief],
+    [currentBook], dueWords, totalWords,
+    checkItems, todayCompletions,
+  ] = await Promise.all([
+    db.select().from(workoutSessions)
+      .innerJoin(workoutPrograms, eq(workoutSessions.programId, workoutPrograms.id))
+      .where(eq(workoutPrograms.userId, userId))
+      .orderBy(workoutSessions.sortOrder),
 
-  // ── Last 30 workout logs ──────────────────────────────────────────────────
-  const recentLogs = await db
-    .select()
-    .from(workoutLogs)
-    .where(eq(workoutLogs.userId, userId))
-    .orderBy(desc(workoutLogs.startedAt))
-    .limit(30);
+    db.select().from(workoutLogs)
+      .where(eq(workoutLogs.userId, userId))
+      .orderBy(desc(workoutLogs.startedAt))
+      .limit(60),
 
-  const lastLog = recentLogs[0] ?? null;
+    db.select({
+      exerciseName: exercisesTable.name,
+      bestWeightKg: personalRecords.bestWeightKg,
+      estimated1rm: personalRecords.estimated1rm,
+      achievedAt:   personalRecords.achievedAt,
+    })
+      .from(personalRecords)
+      .innerJoin(exercisesTable, eq(personalRecords.exerciseId, exercisesTable.id))
+      .where(eq(personalRecords.userId, userId))
+      .orderBy(desc(personalRecords.estimated1rm))
+      .limit(3),
+
+    db.select().from(newsBriefs)
+      .where(and(eq(newsBriefs.userId, userId), eq(newsBriefs.date, today)))
+      .limit(1),
+
+    db.select().from(books)
+      .where(and(eq(books.userId, userId), eq(books.status, "reading")))
+      .limit(1),
+
+    db.select({ id: wordBankEntries.id }).from(wordBankEntries)
+      .where(and(eq(wordBankEntries.userId, userId), lte(wordBankEntries.nextReviewDate, today))),
+
+    db.select({ id: wordBankEntries.id }).from(wordBankEntries)
+      .where(eq(wordBankEntries.userId, userId)),
+
+    // Checklist items — gracefully handle if table doesn't exist yet
+    db.select().from(checklistItems)
+      .where(and(eq(checklistItems.userId, userId), eq(checklistItems.active, true)))
+      .orderBy(checklistItems.sortOrder)
+      .catch(() => []),
+
+    db.select({ itemId: checklistCompletions.itemId }).from(checklistCompletions)
+      .where(and(eq(checklistCompletions.userId, userId), eq(checklistCompletions.date, today)))
+      .catch(() => []),
+  ]);
+
+  // Derived checklist stats for widget
+  const completedItemIds = new Set(todayCompletions.map((c) => c.itemId));
+  const checkDone  = checkItems.filter((i) => completedItemIds.has(i.id)).length;
+  const checkTotal = checkItems.length;
 
   // ── Next session in rotation ──────────────────────────────────────────────
+  const lastLog = recentLogs[0] ?? null;
   const lastSessionName = lastLog
     ? allSessions.find((s) => s.workout_sessions.id === lastLog.sessionId)?.workout_sessions.name
     : null;
@@ -125,160 +193,104 @@ export default async function DashboardPage() {
   const nextSession = allSessions.find((s) => s.workout_sessions.name === nextSessionName);
   const nextColor = SESSION_COLORS[nextSessionName] ?? SESSION_COLORS.Push;
 
-  // ── Exercise list for hero card ───────────────────────────────────────────
+  // ── Hero card exercises ───────────────────────────────────────────────────
   const heroExercises = nextSession
-    ? await db
-        .select({ name: exercisesTable.name, muscleGroup: exercisesTable.muscleGroup })
+    ? await db.select({ name: exercisesTable.name, muscleGroup: exercisesTable.muscleGroup })
         .from(exercisesTable)
         .where(eq(exercisesTable.sessionId, nextSession.workout_sessions.id))
         .orderBy(exercisesTable.sortOrder)
         .limit(5)
     : [];
 
-  // ── Streak (consecutive days with a log) ─────────────────────────────────
+  // ── Streak calc ───────────────────────────────────────────────────────────
   let streak = 0;
   if (recentLogs.length > 0) {
-    const logDays = [...new Set(recentLogs.map((l) =>
-      format(new Date(l.startedAt!), "yyyy-MM-dd")
-    ))];
+    const logDays = [...new Set(recentLogs.map((l) => format(new Date(l.startedAt!), "yyyy-MM-dd")))];
     let check = format(now, "yyyy-MM-dd");
-    // if no log today, start from yesterday
     if (!logDays.includes(check)) check = format(subDays(now, 1), "yyyy-MM-dd");
     for (const day of logDays) {
       if (day === check) {
         streak++;
-        const prev = format(subDays(new Date(check), 1), "yyyy-MM-dd");
-        check = prev;
+        check = format(subDays(new Date(check), 1), "yyyy-MM-dd");
       } else if (day < check) break;
     }
   }
 
-  // ── This week's log count ─────────────────────────────────────────────────
-  const weekLogs = recentLogs.filter(
-    (l) => new Date(l.startedAt!) >= weekStart
-  );
-  const weekCount = weekLogs.length;
+  const weekCount = recentLogs.filter((l) => new Date(l.startedAt!) >= weekStart).length;
 
-  // ── Week schedule strip (last 7 days + today) ────────────────────────────
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = subDays(now, 6 - i);
-    const key = format(d, "yyyy-MM-dd");
-    const log = recentLogs.find((l) => format(new Date(l.startedAt!), "yyyy-MM-dd") === key);
-    const sessionName = log
-      ? allSessions.find((s) => s.workout_sessions.id === log.sessionId)?.workout_sessions.name
-      : null;
-    return { date: d, key, label: format(d, "EEE"), dayNum: format(d, "d"), sessionName, isToday: key === today };
-  });
+  // ── Books read this year ──────────────────────────────────────────────────
+  const thisYear = now.getFullYear();
+  const finishedBooks = await db.select({ id: books.id }).from(books)
+    .where(and(eq(books.userId, userId), eq(books.status, "finished")));
+  const booksThisYear = finishedBooks.length; // rough; refine when year field added
 
-  // ── Top 3 PRs ─────────────────────────────────────────────────────────────
-  const prs = await db
-    .select({
-      exerciseName: exercisesTable.name,
-      bestWeightKg: personalRecords.bestWeightKg,
-      estimated1rm: personalRecords.estimated1rm,
-      achievedAt: personalRecords.achievedAt,
-    })
-    .from(personalRecords)
-    .innerJoin(exercisesTable, eq(personalRecords.exerciseId, exercisesTable.id))
-    .where(eq(personalRecords.userId, userId))
-    .orderBy(desc(personalRecords.estimated1rm))
-    .limit(3);
-
-  // ── Today's news brief ────────────────────────────────────────────────────
-  const [brief] = await db
-    .select()
-    .from(newsBriefs)
-    .where(and(eq(newsBriefs.userId, userId), eq(newsBriefs.date, today)))
-    .limit(1);
-
-  let stories: NewsStory[] = [];
-  if (brief) {
-    try { stories = (JSON.parse(brief.content).stories ?? []).slice(0, 3); } catch { /* ignore */ }
-  }
-
-  // ── Last run ──────────────────────────────────────────────────────────────
-  const [lastRun] = await db
-    .select()
-    .from(runLogs)
-    .where(eq(runLogs.userId, userId))
-    .orderBy(desc(runLogs.createdAt))
-    .limit(1);
-
-  const totalRuns = await db
-    .select({ id: runLogs.id })
-    .from(runLogs)
-    .where(eq(runLogs.userId, userId));
-
-  // ── Reading ───────────────────────────────────────────────────────────────
-  const [currentBook] = await db
-    .select()
-    .from(books)
-    .where(and(eq(books.userId, userId), eq(books.status, "reading")))
-    .limit(1);
-
-  let readPct = 0;
-  let currentPage = 0;
+  // ── Reading progress ──────────────────────────────────────────────────────
+  let readPct = 0, currentPage = 0;
   if (currentBook) {
-    const [prog] = await db
-      .select()
-      .from(readingProgress)
-      .where(eq(readingProgress.bookId, currentBook.id))
-      .limit(1);
+    const [prog] = await db.select().from(readingProgress)
+      .where(eq(readingProgress.bookId, currentBook.id)).limit(1);
     currentPage = prog?.currentPage ?? 0;
     readPct = currentBook.totalPages
-      ? Math.round((currentPage / currentBook.totalPages) * 100)
-      : 0;
+      ? Math.round((currentPage / currentBook.totalPages) * 100) : 0;
   }
 
-  // ── Word bank due ─────────────────────────────────────────────────────────
-  const dueWords = await db
-    .select({ id: wordBankEntries.id })
-    .from(wordBankEntries)
-    .where(and(eq(wordBankEntries.userId, userId), lte(wordBankEntries.nextReviewDate, today)));
-
-  const totalWords = await db
-    .select({ id: wordBankEntries.id })
-    .from(wordBankEntries)
-    .where(eq(wordBankEntries.userId, userId));
-
-  const seeded = allSessions.length > 0;
-
-  // ─── Card style helper ───────────────────────────────────────────────────
-  const card = (extra = "") => ({
-    background: "rgba(255,255,255,0.048)",
-    border: "1px solid rgba(255,255,255,0.10)",
-    borderRadius: RADIUS,
-    padding: CARD_P,
+  // ── Last 30 days workout activity (for bar chart) ─────────────────────────
+  const last30 = Array.from({ length: 30 }, (_, i) => {
+    const d = format(subDays(now, 29 - i), "yyyy-MM-dd");
+    return recentLogs.some((l) => format(new Date(l.startedAt!), "yyyy-MM-dd") === d);
   });
+
+  // ── 7-day heatmap ─────────────────────────────────────────────────────────
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d   = subDays(now, 6 - i);
+    const key = format(d, "yyyy-MM-dd");
+    const log = recentLogs.find((l) => format(new Date(l.startedAt!), "yyyy-MM-dd") === key);
+    const name = log
+      ? allSessions.find((s) => s.workout_sessions.id === log.sessionId)?.workout_sessions.name ?? null
+      : null;
+    return { label: format(d, "EEE"), dayNum: format(d, "d"), name, isToday: key === today };
+  });
+
+  // ── News stories ──────────────────────────────────────────────────────────
+  let stories: NewsStory[] = [];
+  if (brief) {
+    try { stories = (JSON.parse(brief.content).stories ?? []).slice(0, 3); } catch { /* */ }
+  }
 
   return (
     <div
-      className="page-enter h-full"
-      style={{ padding: "24px", display: "flex", flexDirection: "column", gap: GAP, minHeight: "100dvh" }}
+      className="page-enter"
+      style={{ padding: "20px 20px 28px", minHeight: "100dvh" }}
     >
-      {/* ════════════════════════════════════════════════════════════════════
-          ROW 1 — Header
-      ════════════════════════════════════════════════════════════════════ */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      {/* ──────────────────────────────────────────────────────────────────
+          ROW 1: Header
+      ────────────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
             {greeting(hour)},{" "}
             <span className="text-gradient">{userName}</span>
           </h1>
-          <p className="text-xs mt-1 font-medium" style={{ color: "var(--text-muted)" }}>
-            {format(now, "EEEE, MMMM d, yyyy")}
+          <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2, fontWeight: 500 }}>
+            {format(now, "EEEE, MMMM d")}
           </p>
         </div>
-        {/* Quick pills */}
-        <div className="flex flex-wrap gap-2">
+        {/* Quick links */}
+        <div className="flex items-center gap-2 flex-wrap">
           {[
-            { label: "News Brief", href: "/news", color: "var(--news-color)", bg: "rgba(34,211,238,0.09)" },
-            { label: dueWords.length > 0 ? `${dueWords.length} Due` : "Word Bank", href: "/wordbank", color: "var(--wordbank-color)", bg: "rgba(244,114,182,0.09)" },
-            { label: "Goals", href: "/goals", color: "var(--goals-color)", bg: "rgba(251,146,60,0.09)" },
+            { label: "News",     href: "/news",      c: "var(--module-news)" },
+            { label: `${dueWords.length} due`,  href: "/wordbank",  c: "var(--module-wordbank)" },
+            { label: "Journal",  href: "/journal",   c: "var(--module-journal)" },
           ].map((p) => (
-            <Link key={p.href} href={p.href}
-              className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all hover:opacity-80"
-              style={{ background: p.bg, color: p.color, border: `1px solid ${p.color}22` }}
+            <Link
+              key={p.href}
+              href={p.href}
+              className="text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
+              style={{
+                background: `color-mix(in srgb, ${p.c} 12%, transparent)`,
+                color: p.c,
+                border: `1px solid color-mix(in srgb, ${p.c} 20%, transparent)`,
+              }}
             >
               {p.label}
             </Link>
@@ -286,404 +298,407 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          ROW 2 — Hero (60%) + Stat mini-cards (40%)
-      ════════════════════════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: GAP }}>
+      {/* ──────────────────────────────────────────────────────────────────
+          Main grid
+      ────────────────────────────────────────────────────────────────── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: GAP }}>
 
-        {/* ── HERO: Next Workout ── */}
-        {seeded && nextSession ? (
-          <Link href={`/workouts/session/${nextSession.workout_sessions.id}`} className="block">
-            <div
-              className="card-hover h-full flex flex-col"
-              style={{
-                ...card(),
-                borderColor: `${nextColor.primary}30`,
-                background: `linear-gradient(135deg, rgba(0,0,0,0.3) 0%, ${nextColor.dim} 100%)`,
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              {/* Ambient glow top-right */}
-              <div style={{
-                position: "absolute", top: -40, right: -40,
-                width: 180, height: 180, borderRadius: "50%",
-                background: `radial-gradient(circle, ${nextColor.primary}22 0%, transparent 70%)`,
-                pointerEvents: "none",
-              }} />
-
-              {/* Label */}
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-3"
-                style={{ color: nextColor.primary }}>
-                Next Session
-              </p>
-
-              {/* Session name */}
-              <p style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
-                {nextSessionName}
-              </p>
-
-              {/* Duration */}
-              <div className="flex items-center gap-1.5 mt-2 mb-5">
-                <Clock size={12} style={{ color: "var(--text-muted)" }} />
-                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  {SESSION_DURATION[nextSessionName] ?? "~45 min"}
-                </span>
-                {lastLog && (
-                  <>
-                    <span style={{ color: "var(--text-muted)", fontSize: 10 }}>·</span>
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      Last: {format(new Date(lastLog.startedAt!), "EEE MMM d")}
-                    </span>
-                  </>
-                )}
-              </div>
-
-              {/* Exercise list preview */}
-              {heroExercises.length > 0 && (
-                <div className="flex-1 space-y-1.5 mb-5">
-                  {heroExercises.map((ex, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div
-                        className="w-1.5 h-1.5 rounded-full shrink-0"
-                        style={{ background: nextColor.primary, opacity: 1 - i * 0.15 }}
-                      />
-                      <span className="text-sm font-medium truncate" style={{ color: "var(--text-secondary)" }}>
-                        {ex.name}
-                      </span>
-                      {ex.muscleGroup && (
-                        <span className="text-[10px] shrink-0" style={{ color: "var(--text-muted)" }}>
-                          {ex.muscleGroup}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {heroExercises.length === 5 && (
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>+ more…</p>
-                  )}
+        {/* Row 2: Streaks (8) + Next Workout (4) */}
+        <div
+          className="dashboard-row2"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)",
+            gap: GAP,
+          }}
+        >
+          {/* ── STREAKS & STATS ── */}
+          <div
+            className="card p-4 flex flex-col gap-3"
+            style={{ minHeight: 160 }}
+          >
+            <div className="flex items-center justify-between">
+              <p className="section-label">Streak & stats</p>
+              {streak > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Flame size={13} style={{ color: "#F97316" }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#F97316" }}>
+                    {streak} day{streak !== 1 ? "s" : ""}
+                  </span>
                 </div>
               )}
+            </div>
 
-              {/* CTA */}
+            {/* Stat tiles row */}
+            <div className="flex gap-2" style={{ flexWrap: "wrap" }}>
+              <StatTile
+                label="Streak"
+                value={streak}
+                unit="days"
+                glow={streak >= 3}
+                icon={Flame}
+              />
+              <StatTile
+                label="This week"
+                value={weekCount}
+                unit="sessions"
+                icon={Activity}
+              />
+              <StatTile
+                label="Books '26"
+                value={booksThisYear}
+                unit="/ 12"
+                icon={BookOpen}
+              />
+              <StatTile
+                label="Words"
+                value={totalWords.length}
+                icon={BookMarked}
+              />
+            </div>
+
+            {/* Workout frequency bar chart */}
+            <div>
+              <p style={{ fontSize: 10, color: "var(--text-tertiary)", fontWeight: 600, marginBottom: 6, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                30-day activity
+              </p>
+              <WorkoutBars days={last30} />
+            </div>
+          </div>
+
+          {/* ── NEXT WORKOUT ── */}
+          {allSessions.length > 0 && nextSession ? (
+            <Link href={`/workouts/session/${nextSession.workout_sessions.id}`} className="block">
               <div
-                className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-sm mt-auto self-start"
-                style={{ background: nextColor.primary, color: "#000" }}
+                className="card card-hover flex flex-col h-full"
+                style={{
+                  padding: "16px",
+                  borderColor: `${nextColor.primary}28`,
+                  background: `linear-gradient(160deg, var(--bg-elevated) 0%, ${nextColor.bg} 100%)`,
+                  minHeight: 160,
+                }}
               >
-                <Play size={14} fill="#000" />
-                Start Session
-                <ArrowRight size={14} />
-              </div>
-            </div>
-          </Link>
-        ) : (
-          <Link href="/workouts" className="block">
-            <div className="card-hover h-full flex flex-col items-center justify-center text-center" style={card()}>
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-4"
-                style={{ background: "rgba(251,113,133,0.12)" }}>
-                🏋️
-              </div>
-              <p className="font-bold text-lg" style={{ color: "var(--text-primary)" }}>Set up workouts</p>
-              <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>Load your PPL program to begin</p>
-              <div className="mt-4 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ background: "rgba(251,113,133,0.15)", color: "#fb7185" }}>
-                Load Program →
-              </div>
-            </div>
-          </Link>
-        )}
+                <p className="section-label mb-2" style={{ color: nextColor.primary }}>
+                  Next session
+                </p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+                  {nextSessionName}
+                </p>
+                <div className="flex items-center gap-1.5 mt-1 mb-3">
+                  <Clock size={11} style={{ color: "var(--text-tertiary)" }} />
+                  <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
+                    {SESSION_DURATION[nextSessionName] ?? "~45 min"}
+                  </span>
+                </div>
 
-        {/* ── Stat mini-cards (stacked) ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-          {/* Streak */}
-          <div style={{ ...card(), flex: 1 }}>
-            <div className="flex items-start justify-between mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                Streak
-              </p>
-              <Flame size={14} style={{ color: "#fb7185" }} />
-            </div>
-            <p style={{ fontSize: 36, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
-              {streak}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-              consecutive {streak === 1 ? "day" : "days"}
-            </p>
-          </div>
-          {/* Weekly sessions */}
-          <div style={{ ...card(), flex: 1 }}>
-            <div className="flex items-start justify-between mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                This Week
-              </p>
-              <Activity size={14} style={{ color: "var(--calendar-color)" }} />
-            </div>
-            <p style={{ fontSize: 36, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
-              {weekCount}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-              {weekCount === 1 ? "session" : "sessions"} · {recentLogs.length} total
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          ROW 3 — PRs · Brief · Run (3 columns)
-      ════════════════════════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: GAP }}>
-
-        {/* ── Top PRs ── */}
-        <div style={card()}>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-              Personal Records
-            </p>
-            <Trophy size={13} style={{ color: "#fbbf24" }} />
-          </div>
-          {prs.length > 0 ? (
-            <div className="space-y-3">
-              {prs.map((pr, i) => (
-                <div key={i} className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
-                      {pr.exerciseName}
-                    </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                      {pr.achievedAt ? format(new Date(pr.achievedAt), "MMM d") : "—"}
-                    </p>
+                {heroExercises.length > 0 && (
+                  <div className="flex-1 space-y-1.5 mb-3">
+                    {heroExercises.slice(0, 4).map((ex, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div
+                          style={{
+                            width: 4, height: 4, borderRadius: "50%", flexShrink: 0,
+                            background: nextColor.primary, opacity: 1 - i * 0.18,
+                          }}
+                        />
+                        <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
+                          {ex.name}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold tabular-nums" style={{ color: "#fbbf24" }}>
-                      {pr.bestWeightKg ? `${pr.bestWeightKg}kg` : "—"}
-                    </p>
-                    {pr.estimated1rm && (
-                      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                        e1RM {Math.round(pr.estimated1rm)}kg
+                )}
+
+                <div
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold mt-auto self-start"
+                  style={{ background: nextColor.primary, color: "#000" }}
+                >
+                  <Play size={11} fill="#000" />
+                  Start
+                  <ArrowRight size={11} />
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <Link href="/workouts" className="block">
+              <div
+                className="card card-hover flex flex-col items-center justify-center text-center h-full"
+                style={{ padding: 16, minHeight: 160 }}
+              >
+                <Dumbbell size={28} style={{ color: "var(--text-tertiary)", marginBottom: 10 }} />
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Set up workouts</p>
+                <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 4 }}>Load your PPL program</p>
+              </div>
+            </Link>
+          )}
+        </div>
+
+        {/* Row 3: Checklist (4) + Word Bank (4) + Reading (4) */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0,1fr))",
+            gap: GAP,
+          }}
+        >
+          {/* ── CHECKLIST ── */}
+          <Link href="/checklist" className="block">
+            <div className="card card-hover p-4" style={{ minHeight: 110 }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label">Checklist</p>
+                <CheckSquare size={13} style={{ color: "var(--module-checklist)" }} />
+              </div>
+              {checkTotal > 0 ? (
+                <>
+                  <div className="flex items-baseline gap-1.5 tabular-nums mb-1">
+                    <span style={{ fontSize: 26, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>
+                      {checkDone}
+                    </span>
+                    <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>/ {checkTotal}</span>
+                  </div>
+                  <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginBottom: 10 }}>
+                    {checkDone === checkTotal ? "All done 🎉" : `${checkTotal - checkDone} remaining`}
+                  </p>
+                  {/* Mini item list */}
+                  <div className="space-y-1">
+                    {checkItems.slice(0, 3).map((item) => {
+                      const done = completedItemIds.has(item.id);
+                      return (
+                        <div key={item.id} className="flex items-center gap-2">
+                          <div style={{
+                            width: 12, height: 12, borderRadius: 3, flexShrink: 0,
+                            background: done ? "var(--success)" : "transparent",
+                            border: `1.5px solid ${done ? "var(--success)" : "var(--border-default)"}`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}>
+                            {done && <Check size={7} color="#fff" strokeWidth={3} />}
+                          </div>
+                          <span style={{
+                            fontSize: 11, color: done ? "var(--text-tertiary)" : "var(--text-secondary)",
+                            textDecoration: done ? "line-through" : "none",
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                          }}>
+                            {item.emoji ? `${item.emoji} ` : ""}{item.title}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {checkItems.length > 3 && (
+                      <p style={{ fontSize: 10, color: "var(--text-tertiary)", paddingLeft: 2 }}>
+                        +{checkItems.length - 3} more
                       </p>
                     )}
                   </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-2">
+                  <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Set up checklist →</p>
                 </div>
-              ))}
+              )}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-20 gap-2">
-              <TrendingUp size={20} style={{ color: "var(--text-muted)" }} />
-              <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-                PRs will appear after your first session
+          </Link>
+
+          {/* ── WORD BANK ── */}
+          <Link href="/wordbank" className="block">
+            <div className="card card-hover p-4" style={{ minHeight: 110 }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label">Word Bank</p>
+                <BookMarked size={13} style={{ color: "var(--module-wordbank)" }} />
+              </div>
+              <p style={{ fontSize: 26, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>
+                {dueWords.length}
               </p>
+              <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 4 }}>
+                due · {totalWords.length} total
+              </p>
+              {dueWords.length > 0 && (
+                <div
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 mt-3"
+                  style={{ background: "rgba(244,114,182,0.12)", color: "var(--module-wordbank)" }}
+                >
+                  Review now <ArrowRight size={9} />
+                </div>
+              )}
             </div>
-          )}
-          <Link href="/workouts/history" className="flex items-center gap-1 text-[10px] font-semibold mt-4 hover:opacity-70"
-            style={{ color: "var(--accent-bright)" }}>
-            All PRs <ArrowRight size={10} />
+          </Link>
+
+          {/* ── READING ── */}
+          <Link href={currentBook ? `/library/read/${currentBook.id}` : "/library"} className="block">
+            <div className="card card-hover p-4" style={{ minHeight: 110 }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label">Reading</p>
+                <BookOpen size={13} style={{ color: "var(--module-library)" }} />
+              </div>
+              {currentBook ? (
+                <>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.3 }} className="truncate">
+                    {currentBook.title}
+                  </p>
+                  <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }} className="truncate">
+                    {currentBook.author}
+                  </p>
+                  <div className="progress-track mt-3">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${readPct}%`, background: "var(--module-library)" }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1.5">
+                    <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>p.{currentPage}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "var(--module-library)" }}>{readPct}%</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-2">
+                  <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Load reading list →</p>
+                </div>
+              )}
+            </div>
           </Link>
         </div>
 
-        {/* ── Today's Brief ── */}
-        <div style={card()}>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-              Today&rsquo;s Brief
-            </p>
-            <Newspaper size={13} style={{ color: "var(--news-color)" }} />
-          </div>
-          {stories.length > 0 ? (
-            <div className="space-y-3">
-              {stories.map((s, i) => {
-                const color = CATEGORY_COLORS[s.category] ?? "var(--text-muted)";
-                return (
-                  <div key={i} className="flex gap-2">
-                    <div className="w-0.5 shrink-0 rounded-full self-stretch" style={{ background: color, opacity: 0.7, minHeight: 16 }} />
-                    <div>
-                      <p className="text-xs font-medium leading-snug" style={{ color: "var(--text-primary)" }}>
-                        {s.headline}
-                      </p>
-                      <p className="text-[10px] mt-0.5 uppercase tracking-wide font-semibold" style={{ color }}>
-                        {s.category}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-20 gap-2">
-              <Zap size={20} style={{ color: "var(--text-muted)" }} />
-              <Link href="/news" className="text-xs font-semibold hover:opacity-80"
-                style={{ color: "var(--news-color)" }}>
-                Generate brief →
+        {/* Row 4: News (8) + Mood (4) */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)",
+            gap: GAP,
+          }}
+        >
+          {/* ── NEWS BRIEF ── */}
+          <div className="card p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="section-label">Today's Brief</p>
+              <Link href="/news">
+                <Newspaper size={13} style={{ color: "var(--module-news)" }} />
               </Link>
             </div>
-          )}
-          <Link href="/news" className="flex items-center gap-1 text-[10px] font-semibold mt-4 hover:opacity-70"
-            style={{ color: "var(--news-color)" }}>
-            Full brief <ArrowRight size={10} />
-          </Link>
-        </div>
-
-        {/* ── Last Run ── */}
-        <div style={card()}>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-              Running
-            </p>
-            <Activity size={13} style={{ color: "var(--calendar-color)" }} />
+            {stories.length > 0 ? (
+              <div className="space-y-3">
+                {stories.map((s, i) => {
+                  const cat = s.category?.toLowerCase() ?? "other";
+                  const c = CATEGORY_COLORS[cat] ?? "var(--text-tertiary)";
+                  return (
+                    <div key={i} className="flex gap-2.5">
+                      <div
+                        style={{
+                          width: 2, flexShrink: 0, borderRadius: 2,
+                          background: c, opacity: 0.7, alignSelf: "stretch",
+                          minHeight: 14,
+                        }}
+                      />
+                      <div className="min-w-0">
+                        <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", lineHeight: 1.4 }}>
+                          {s.headline}
+                        </p>
+                        <p style={{ fontSize: 10, color: c, marginTop: 2, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                          {s.category}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+                <Link
+                  href="/news"
+                  className="flex items-center gap-1 text-[11px] font-semibold hover:opacity-80"
+                  style={{ color: "var(--module-news)", marginTop: 4 }}
+                >
+                  Full brief <ArrowRight size={10} />
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-4 gap-2">
+                <Newspaper size={24} style={{ color: "var(--text-tertiary)" }} />
+                <Link
+                  href="/news"
+                  className="text-xs font-semibold hover:opacity-80"
+                  style={{ color: "var(--module-news)" }}
+                >
+                  Generate today's brief →
+                </Link>
+              </div>
+            )}
           </div>
-          {lastRun ? (
-            <div className="space-y-3">
-              <div>
-                <p style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
-                  {lastRun.distanceKm.toFixed(1)}<span className="text-sm font-medium ml-1" style={{ color: "var(--text-muted)" }}>km</span>
-                </p>
-                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                  {format(new Date(lastRun.date), "EEE MMM d")}
-                </p>
+
+          {/* ── MOOD ── */}
+          <Link href="/mood" className="block">
+            <div className="card card-hover p-4 flex flex-col h-full" style={{ minHeight: 120 }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label">Mood</p>
+                <SmilePlus size={13} style={{ color: "var(--module-mood)" }} />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 10px" }}>
-                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Pace</p>
-                  <p className="text-sm font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                    {fmtPace(lastRun.paceSecondsPerKm)}
-                  </p>
-                </div>
-                <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 10px" }}>
-                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Time</p>
-                  <p className="text-sm font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                    {fmtDuration(lastRun.durationSeconds)}
-                  </p>
-                </div>
+              <div className="flex-1 flex flex-col items-center justify-center gap-2">
+                <p style={{ fontSize: 28 }}>🙂</p>
+                <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Log today's mood →</p>
               </div>
-              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                {totalRuns.length} run{totalRuns.length !== 1 ? "s" : ""} logged
-              </p>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-24 gap-2">
-              <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-                No runs logged yet
-              </p>
-              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>0 km · 0 runs</p>
-            </div>
-          )}
-          <Link href="/workouts/history" className="flex items-center gap-1 text-[10px] font-semibold mt-4 hover:opacity-70"
-            style={{ color: "var(--calendar-color)" }}>
-            Log a run <ArrowRight size={10} />
           </Link>
         </div>
-      </div>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          ROW 4 — Week schedule + Reading/WordBank
-      ════════════════════════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: GAP }}>
-
-        {/* ── Week schedule strip ── */}
-        <div style={card()}>
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>
-            Last 7 Days
-          </p>
+        {/* Row 5: 7-Day Heatmap */}
+        <div className="card p-4">
+          <p className="section-label mb-3">Last 7 days</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}>
-            {weekDays.map(({ label, dayNum, sessionName, isToday }) => {
-              const sc = sessionName ? SESSION_COLORS[sessionName] : null;
+            {weekDays.map(({ label, dayNum, name, isToday }) => {
+              const sc = name ? SESSION_COLORS[name] : null;
               return (
                 <div key={dayNum} className="flex flex-col items-center gap-1.5">
-                  <p className="text-[10px] font-medium" style={{ color: isToday ? "var(--text-primary)" : "var(--text-muted)" }}>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                     {label}
-                  </p>
+                  </span>
                   <div
                     style={{
-                      width: "100%",
-                      aspectRatio: "1",
+                      width: "100%", aspectRatio: "1 / 1",
                       borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: sc ? sc.dim : "rgba(255,255,255,0.04)",
-                      border: isToday ? "1px solid rgba(255,255,255,0.15)" : "1px solid transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: sc ? sc.bg : "var(--bg-elevated-2)",
+                      border: isToday
+                        ? "1px solid var(--border-default)"
+                        : "1px solid var(--border-subtle)",
                     }}
                   >
-                    {sc ? (
-                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: sc.primary }} />
-                    ) : (
-                      <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.15)" }} />
-                    )}
+                    {sc
+                      ? <div style={{ width: 7, height: 7, borderRadius: "50%", background: sc.primary }} />
+                      : <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 500 }}>{dayNum}</span>
+                    }
                   </div>
-                  <p className="text-[10px] font-medium" style={{ color: sc ? sc.primary : "var(--text-muted)" }}>
-                    {sessionName ? sessionName.slice(0, 3) : dayNum}
-                  </p>
+                  <span style={{ fontSize: 9, fontWeight: 500, color: sc ? sc.primary : "var(--text-tertiary)" }}>
+                    {name ? name.slice(0, 3) : ""}
+                  </span>
                 </div>
               );
             })}
           </div>
+
           {/* Legend */}
-          <div className="flex flex-wrap gap-3 mt-4">
+          <div className="flex flex-wrap gap-3 mt-3">
             {Object.entries(SESSION_COLORS).map(([name, c]) => (
               <div key={name} className="flex items-center gap-1.5">
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: c.primary }} />
-                <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>{name}</span>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: c.primary }} />
+                <span style={{ fontSize: 9, color: "var(--text-tertiary)", fontWeight: 500 }}>{name}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Reading + Word Bank stacked ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-          {/* Reading */}
-          <div style={{ ...card(), flex: 1 }}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                Reading
-              </p>
-              <BookOpen size={13} style={{ color: "var(--library-color)" }} />
-            </div>
-            {currentBook ? (
-              <Link href={`/library/read/${currentBook.id}`} className="block">
-                <p className="text-sm font-bold leading-snug truncate" style={{ color: "var(--text-primary)" }}>
-                  {currentBook.title}
-                </p>
-                <p className="text-[11px] mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>
-                  {currentBook.author}
-                </p>
-                <div className="progress-track mt-3">
-                  <div className="progress-fill" style={{ width: `${readPct}%`, background: "var(--library-color)" }} />
-                </div>
-                <div className="flex justify-between mt-1.5">
-                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>p.{currentPage}</span>
-                  <span className="text-[10px] font-semibold" style={{ color: "var(--library-color)" }}>{readPct}%</span>
-                </div>
-              </Link>
-            ) : (
-              <Link href="/library" className="text-xs font-semibold hover:opacity-80"
-                style={{ color: "var(--library-color)" }}>
-                Load 2026 reading list →
-              </Link>
-            )}
-          </div>
-
-          {/* Word Bank */}
-          <div style={{ ...card(), flex: 1 }}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                Word Bank
-              </p>
-              <BookMarked size={13} style={{ color: "var(--wordbank-color)" }} />
-            </div>
-            <p style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
-              {dueWords.length}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-              due · {totalWords.length} total words
-            </p>
-            {dueWords.length > 0 && (
-              <Link href="/wordbank"
-                className="inline-flex items-center gap-1 text-[10px] font-bold mt-3 px-3 py-1.5 rounded-lg hover:opacity-80"
-                style={{ background: "rgba(244,114,182,0.12)", color: "var(--wordbank-color)" }}>
-                Review now <ArrowRight size={10} />
-              </Link>
-            )}
-          </div>
-        </div>
       </div>
+
+      {/* Mobile responsive overrides */}
+      <style>{`
+        @media (max-width: 767px) {
+          .dashboard-row2 {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 639px) {
+          div[style*="repeat(3, minmax"] {
+            grid-template-columns: 1fr !important;
+          }
+          div[style*="minmax(0,2fr) minmax(0,1fr)"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -327,12 +327,19 @@ export const wordBankEntries = sqliteTable("word_bank_entries", {
   definition: text("definition").notNull(),
   etymology: text("etymology"),
   exampleSentence: text("example_sentence"),
+  // Part of speech: "noun" | "verb" | "adjective" | "adverb" | "phrase" | etc.
+  partOfSpeech: text("part_of_speech"),
+  // Language: "en" | "fr" | "darija"
+  language: text("language").notNull().default("en"),
   // Source book ID (optional)
   bookId: integer("book_id").references(() => books.id, { onDelete: "set null" }),
-  // SM-2 spaced repetition fields
+  // SM-2 fields kept for backwards compat — NOT used by new SRS logic
   easeFactor: real("ease_factor").notNull().default(2.5),
-  interval: integer("interval").notNull().default(1), // days until next review
+  // Repurposed as step index (0–6) into the fixed-interval progression
+  interval: integer("interval").notNull().default(0),
   repetitions: integer("repetitions").notNull().default(0),
+  // Consecutive "Good" or "Easy" reviews without an "Again"
+  streak: integer("streak").notNull().default(0),
   // ISO date string "YYYY-MM-DD"
   nextReviewDate: text("next_review_date").notNull(),
   // "new" | "learning" | "mastered"
@@ -384,4 +391,39 @@ export const goals = sqliteTable("goals", {
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
   completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+});
+
+// ─── Checklist ─────────────────────────────────────────────────────────────────
+// Items are "same every day" recurring tasks. The workout item is virtual
+// (computed from the workout module) and shown automatically.
+
+/** Recurring daily checklist items configured by the user */
+export const checklistItems = sqliteTable("checklist_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  emoji: text("emoji"),               // optional leading emoji
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** One completion record per item per user per day (ISO "YYYY-MM-DD") */
+export const checklistCompletions = sqliteTable("checklist_completions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  itemId: integer("item_id")
+    .notNull()
+    .references(() => checklistItems.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // Europe/Madrid "today" in YYYY-MM-DD format
+  date: text("date").notNull(),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
 });

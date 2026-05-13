@@ -1,25 +1,25 @@
 /**
- * News Brief Generator
+ * News Brief Generator — real web search via Claude's web_search tool.
  *
- * Uses Claude API to generate a personalized daily news brief covering:
- * - Football: KACM (Marrakesh), Morocco national team, World Cup 2026
- * - Geopolitics, business, tech, AI
+ * Uses claude-sonnet-4-6 with the web_search_20250305 built-in tool.
+ * Claude searches the web autonomously and returns structured JSON with
+ * 5 stories per category across 5 topic pillars.
  *
- * Each story includes:
- * - Headline
- * - 2–3 sentence summary
- * - "Why it matters" explanation
- * - Unbiased framing (facts only, no editorial opinion)
- * - Category tag
+ * Categories:  football · geopolitics · business · tech · ai
+ *
+ * Each story:  headline · summary (2–3 sentences) · whyItMatters · source URL
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+
+export type NewsCategory = "football" | "geopolitics" | "business" | "tech" | "ai";
 
 export type NewsStory = {
   headline: string;
   summary: string;
   whyItMatters: string;
-  category: "football" | "geopolitics" | "business" | "tech" | "ai" | "other";
+  category: NewsCategory | "other";
+  /** Optional source URL from web search */
   source?: string;
 };
 
@@ -31,147 +31,140 @@ export type NewsBrief = {
 
 const client = new Anthropic();
 
-const TOPICS_PROMPT = `
-You are a news curator for a personal dashboard. Generate a structured daily news brief covering the following topics:
+const SYSTEM_PROMPT = `You are a news curator for a personal dashboard.
+Search the web to find today's most significant real news stories.
+Be unbiased — facts only, no editorial opinion. No clickbait.`;
 
-**Sports / Football:**
-- KACM (Kawkab Athletic Club Marrakech) — Moroccan football club in Marrakesh
-- Morocco national football team (الأسود — the Atlas Lions)
-- FIFA World Cup 2026 (hosted in USA, Canada, Mexico — preparations, qualifications, news)
+function buildUserPrompt(date: string): string {
+  return `Today is ${date}. Search the web and generate a structured daily news brief.
 
-**General Interest:**
-- Geopolitics: major international events, conflicts, diplomacy
-- Business: significant market moves, company news, economic indicators
-- Tech: major product launches, industry shifts, regulatory news
-- AI: research breakthroughs, product releases, policy discussions
+Find 5 real, current stories for EACH of these 5 categories:
 
-**Instructions:**
-1. Generate 6–8 stories total, covering a mix of the topics above.
-2. For EACH story, provide:
-   - "headline": concise news headline
-   - "summary": 2–3 sentences, factual only, no opinion
-   - "whyItMatters": 1–2 sentences explaining the significance to the reader
-   - "category": one of ["football", "geopolitics", "business", "tech", "ai", "other"]
-3. Be UNBIASED — present facts and let the reader form their own opinion.
-4. Focus on genuinely important or interesting stories, not clickbait.
-5. If a topic has no significant news today, skip it.
-6. Today's date: {{DATE}}
+1. **football** — KACM (Kawkab Athletic Club Marrakech), Morocco national team (Atlas Lions), World Cup 2026
+2. **geopolitics** — major international events, conflicts, diplomacy, elections
+3. **business** — markets, major company news, economic indicators
+4. **tech** — product launches, industry shifts, regulation
+5. **ai** — research breakthroughs, product releases, policy
 
-Return a JSON object with this structure:
+For each story return:
+- "headline": concise news headline (≤ 12 words)
+- "summary": 2–3 sentences, facts only, no opinion
+- "whyItMatters": 1–2 sentences of significance
+- "category": one of [football, geopolitics, business, tech, ai]
+- "source": source URL if available
+
+Return ONLY a JSON object in this exact shape — no markdown fences, no extra text:
 {
   "stories": [
-    {
-      "headline": "...",
-      "summary": "...",
-      "whyItMatters": "...",
-      "category": "..."
-    }
+    { "headline": "...", "summary": "...", "whyItMatters": "...", "category": "...", "source": "..." },
+    ...
   ]
 }
-`;
 
-/** Generate a daily news brief using Claude */
+Include all 5 categories with up to 5 stories each (25 stories max).`;
+}
+
+/** Generate a daily news brief using Claude with live web search */
 export async function generateNewsBrief(date: string): Promise<NewsBrief> {
-  const prompt = TOPICS_PROMPT.replace("{{DATE}}", date);
-
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 2048,
+    max_tokens: 8192,
+    system: SYSTEM_PROMPT,
+    // Built-in web search tool (Anthropic beta, available on claude-sonnet-4-6+)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tools: [{ type: "web_search_20250305", name: "web_search" } as any],
     messages: [
       {
         role: "user",
-        content: prompt,
+        content: buildUserPrompt(date),
       },
     ],
   });
 
-  // Extract the JSON from Claude's response
-  const text = message.content[0].type === "text" ? message.content[0].text : "";
+  // Extract text from the final assistant message (after tool use rounds)
+  const textBlocks = message.content.filter(
+    (b): b is Anthropic.TextBlock => b.type === "text"
+  );
+  const raw = textBlocks.map((b) => b.text).join("\n");
 
-  // Find JSON block in the response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  // Find the JSON object in the response
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new Error("Claude did not return valid JSON for news brief");
+    console.error("Claude news response (no JSON found):", raw.slice(0, 500));
+    // Fallback: return empty brief rather than crash
+    return { date, stories: [], generatedAt: new Date().toISOString() };
   }
 
-  const parsed = JSON.parse(jsonMatch[0]) as { stories: NewsStory[] };
+  let parsed: { stories: NewsStory[] };
+  try {
+    parsed = JSON.parse(jsonMatch[0]);
+  } catch {
+    return { date, stories: [], generatedAt: new Date().toISOString() };
+  }
 
   return {
     date,
-    stories: parsed.stories,
+    stories: parsed.stories ?? [],
     generatedAt: new Date().toISOString(),
   };
 }
 
-/** Format a news brief as HTML for email */
+/** Format a news brief as HTML email */
 export function formatBriefAsEmail(brief: NewsBrief): string {
-  const CATEGORY_COLORS: Record<string, string> = {
-    football:   "#f59e0b",
-    geopolitics:"#f87171",
-    business:   "#34d399",
-    tech:       "#60a5fa",
-    ai:         "#a78bfa",
-    other:      "#94a3b8",
+  const CAT_COLORS: Record<string, string> = {
+    football:    "#F97316",
+    geopolitics: "#F87171",
+    business:    "#34D399",
+    tech:        "#22D3EE",
+    ai:          "#A78BFA",
+    other:       "#94A3B8",
   };
-
-  const CATEGORY_LABELS: Record<string, string> = {
-    football:   "⚽ Football",
-    geopolitics:"🌍 Geopolitics",
-    business:   "📈 Business",
-    tech:       "💻 Tech",
-    ai:         "🤖 AI",
-    other:      "📰 News",
+  const CAT_LABELS: Record<string, string> = {
+    football:    "⚽ Football",
+    geopolitics: "🌍 Geopolitics",
+    business:    "📈 Business",
+    tech:        "💻 Tech",
+    ai:          "🤖 AI",
+    other:       "📰 News",
   };
 
   const storiesHtml = brief.stories
-    .map(
-      (s) => `
-    <div style="margin-bottom:24px;padding:16px;background:#1a1a24;border-radius:12px;border-left:3px solid ${CATEGORY_COLORS[s.category] ?? "#6366f1"}">
-      <div style="color:${CATEGORY_COLORS[s.category] ?? "#6366f1"};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">
-        ${CATEGORY_LABELS[s.category] ?? "📰 News"}
+    .map((s) => {
+      const color = CAT_COLORS[s.category] ?? CAT_COLORS.other;
+      const label = CAT_LABELS[s.category] ?? CAT_LABELS.other;
+      return `
+    <div style="margin-bottom:20px;padding:16px;background:#1a1a24;border-radius:12px;border-left:3px solid ${color}">
+      <div style="color:${color};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">
+        ${label}
       </div>
-      <h2 style="color:#f1f5f9;font-size:16px;font-weight:600;margin:0 0 8px 0;line-height:1.4">
-        ${s.headline}
-      </h2>
-      <p style="color:#94a3b8;font-size:14px;margin:0 0 10px 0;line-height:1.6">
-        ${s.summary}
-      </p>
+      <h2 style="color:#f1f5f9;font-size:15px;font-weight:600;margin:0 0 8px 0;line-height:1.4">${s.headline}</h2>
+      <p style="color:#94a3b8;font-size:13px;margin:0 0 10px 0;line-height:1.6">${s.summary}</p>
       <div style="background:#111118;border-radius:8px;padding:10px 12px">
-        <span style="color:#6366f1;font-size:12px;font-weight:600">Why it matters: </span>
+        <span style="color:#7C5CFF;font-size:12px;font-weight:600">Why it matters: </span>
         <span style="color:#94a3b8;font-size:13px">${s.whyItMatters}</span>
       </div>
-    </div>
-  `
-    )
+      ${s.source ? `<div style="margin-top:8px"><a href="${s.source}" style="color:#475569;font-size:11px">${s.source}</a></div>` : ""}
+    </div>`;
+    })
     .join("");
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0;padding:0">
-  <div style="max-width:600px;margin:0 auto;padding:24px 16px">
-
-    <!-- Header -->
+  <div style="max-width:640px;margin:0 auto;padding:24px 16px">
     <div style="margin-bottom:24px">
-      <div style="display:inline-block;background:#6366f1;color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:8px">
-        DAILY BRIEF
-      </div>
+      <div style="display:inline-block;background:#7C5CFF;color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:8px">DAILY BRIEF</div>
       <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0">
-        ${new Date(brief.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        ${new Date(brief.date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
       </h1>
-      <p style="color:#475569;font-size:13px;margin:4px 0 0 0">${brief.stories.length} stories · Unbiased · No opinion</p>
+      <p style="color:#475569;font-size:13px;margin:4px 0 0 0">${brief.stories.length} stories · Live web search · No opinion</p>
     </div>
-
-    <!-- Stories -->
     ${storiesHtml}
-
-    <!-- Footer -->
     <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
       <p style="color:#334155;font-size:12px">Life Control Center · Daily Brief</p>
     </div>
   </div>
 </body>
-</html>
-  `.trim();
+</html>`;
 }

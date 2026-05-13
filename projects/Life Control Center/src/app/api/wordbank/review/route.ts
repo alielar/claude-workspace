@@ -1,14 +1,12 @@
 /**
  * POST /api/wordbank/review
- * Apply an SM-2 review grade to a word bank entry.
  *
- * Body: { wordId: number, quality: 0 | 1 | 2 | 3 }
+ * Apply a 3-button SRS grade to a word bank entry.
  *
- * Updates: interval, easeFactor, repetitions, nextReviewDate, masteryStatus
- * masteryStatus:
- *   "new"      → repetitions === 0
- *   "learning" → repetitions 1–4
- *   "mastered" → repetitions >= 5
+ * Body: { wordId: number, button: "again" | "good" | "easy" }
+ *
+ * Updates: interval (step index), streak, nextReviewDate, masteryStatus
+ * SM-2 fields (easeFactor, repetitions) are left unchanged.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -16,7 +14,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { wordBankEntries } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { sm2 } from "@/lib/sm2";
+import { srsReview, type SrsButton } from "@/lib/srs";
+
+const VALID_BUTTONS = new Set<string>(["again", "good", "easy"]);
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -24,13 +24,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { wordId, quality } = await req.json();
+  const { wordId, button } = await req.json();
 
-  if (typeof wordId !== "number" || ![0, 1, 2, 3].includes(quality)) {
+  if (typeof wordId !== "number" || !VALID_BUTTONS.has(button)) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  // Fetch current SM-2 state for this word
+  // Fetch current SRS state
   const [entry] = await db
     .select()
     .from(wordBankEntries)
@@ -46,32 +46,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Word not found" }, { status: 404 });
   }
 
-  // Compute new SM-2 values
-  const result = sm2(
-    quality as 0 | 1 | 2 | 3,
-    entry.repetitions,
-    entry.easeFactor,
-    entry.interval
+  // Compute new SRS state — `interval` column stores step index (0–6)
+  const result = srsReview(
+    button as SrsButton,
+    entry.interval,           // step index
+    entry.streak ?? 0
   );
-
-  // Derive mastery status from new repetition count
-  const masteryStatus =
-    result.repetitions === 0
-      ? "new"
-      : result.repetitions >= 5
-      ? "mastered"
-      : "learning";
 
   await db
     .update(wordBankEntries)
     .set({
-      interval: result.interval,
-      easeFactor: result.easeFactor,
-      repetitions: result.repetitions,
+      interval: result.step,
+      streak: result.streak,
       nextReviewDate: result.nextReviewDate,
-      masteryStatus,
+      masteryStatus: result.masteryStatus,
     })
     .where(eq(wordBankEntries.id, wordId));
 
-  return NextResponse.json({ success: true, ...result, masteryStatus });
+  return NextResponse.json({ success: true, ...result });
 }
