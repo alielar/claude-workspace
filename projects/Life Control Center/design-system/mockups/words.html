@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Word Bank â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  /* layout */
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:14px}
+
+  /* progress strip */
+  .prog{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--line);
+    border-radius:12px;background:rgba(255,255,255,0.015);margin-bottom:14px}
+  .prog .lbl{font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .prog .bar{flex:1;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden}
+  .prog .bar .fg{height:100%;background:var(--grad);box-shadow:0 0 8px rgba(179,136,255,0.40);width:67%}
+  .prog .ct{font-family:var(--f-mono);font-size:12px;color:var(--ink);letter-spacing:0.04em}
+  .prog .est{font-size:11px;color:var(--ink-3);letter-spacing:0.02em}
+
+  /* FLASHCARD */
+  .flash-wrap{display:flex;flex-direction:column;align-items:center;padding:14px;
+    border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,0.012);position:relative;overflow:hidden;min-height:540px}
+  .flash-wrap:before{content:"";position:absolute;inset:-40%;background:
+    radial-gradient(40% 50% at 30% 40%, rgba(179,136,255,0.10), transparent 60%),
+    radial-gradient(40% 50% at 70% 60%, rgba(126,231,255,0.08), transparent 60%);
+    pointer-events:none}
+  .flashcard{position:relative;width:100%;max-width:580px;padding:42px 48px;
+    background:linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85));
+    border:1px solid var(--line-hi);border-radius:18px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.50), 0 0 60px rgba(179,136,255,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+    backdrop-filter:blur(20px);transition:transform var(--t-3) var(--easeOut)}
+  .flashcard .lang{position:absolute;top:20px;right:24px;font-size:10px;letter-spacing:0.18em;
+    text-transform:uppercase;color:var(--cyan);font-weight:600;display:flex;align-items:center;gap:7px}
+  .flashcard .lang:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+  .flashcard .pos-tag{position:absolute;top:20px;left:24px;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:500;font-style:italic}
+  .flashcard .num-step{position:absolute;bottom:16px;right:24px;font-size:10.5px;letter-spacing:0.06em;color:var(--ink-4);font-family:var(--f-mono)}
+  .flashcard .word{font-size:64px;font-weight:300;letter-spacing:-0.03em;line-height:1;text-align:center;
+    background:var(--grad);-webkit-background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 24px rgba(179,136,255,0.20));margin-top:24px}
+  .flashcard .pron{text-align:center;font-family:var(--f-mono);font-size:13px;color:var(--ink-3);margin-top:8px;letter-spacing:0.04em}
+  .flashcard .pron .audio{display:inline-flex;width:24px;height:24px;border-radius:99px;align-items:center;justify-content:center;border:1px solid var(--line-hi);margin-right:6px;vertical-align:middle;cursor:pointer;color:var(--ink-2);transition:all var(--t-1)}
+  .flashcard .pron .audio:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 8px rgba(126,231,255,0.30)}
+  .flashcard .pron .audio svg{width:11px;height:11px}
+  .flashcard .def{margin-top:24px;padding-top:24px;border-top:1px solid var(--line);text-align:center}
+  .flashcard .def-text{font-size:16px;line-height:1.55;color:var(--ink);letter-spacing:-0.005em;max-width:46ch;margin:0 auto}
+  .flashcard .ex{font-style:italic;color:var(--ink-2);margin-top:18px;font-size:14px;line-height:1.55;max-width:46ch;margin-left:auto;margin-right:auto}
+  .flashcard .ex .hi{background:linear-gradient(180deg, transparent 60%, rgba(179,136,255,0.25) 60%);font-style:normal;font-weight:500;color:var(--ink)}
+
+  /* reveal hint */
+  .reveal-hint{margin-top:18px;font-size:11.5px;color:var(--ink-3);letter-spacing:0.04em;display:flex;gap:14px;align-items:center}
+  .reveal-hint .kbd{font-family:var(--f-mono);padding:3px 8px;border:1px solid var(--line);border-radius:5px;font-size:10px}
+
+  /* answer buttons */
+  .ans-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:580px;margin-top:20px}
+  .ans-btn{padding:14px 16px;border-radius:12px;border:1px solid;background:rgba(255,255,255,0.02);
+    text-align:left;cursor:pointer;transition:all var(--t-1);position:relative}
+  .ans-btn .key{font-family:var(--f-mono);font-size:10px;color:var(--ink-4);letter-spacing:0.04em;position:absolute;top:8px;right:10px}
+  .ans-btn .lbl{font-size:14px;font-weight:500;letter-spacing:-0.005em}
+  .ans-btn .iv{font-size:11px;color:var(--ink-3);margin-top:3px;font-family:var(--f-mono);letter-spacing:0.04em}
+  .ans-btn.again{border-color:rgba(255,138,138,0.25);color:var(--neg)}
+  .ans-btn.again:hover{border-color:rgba(255,138,138,0.50);background:rgba(255,138,138,0.06);box-shadow:0 0 12px rgba(255,138,138,0.20)}
+  .ans-btn.good{border-color:rgba(126,231,255,0.25);color:var(--cyan)}
+  .ans-btn.good:hover{border-color:rgba(126,231,255,0.50);background:rgba(126,231,255,0.06);box-shadow:0 0 12px rgba(126,231,255,0.25)}
+  .ans-btn.easy{border-color:rgba(111,212,154,0.25);color:var(--pos)}
+  .ans-btn.easy:hover{border-color:rgba(111,212,154,0.50);background:rgba(111,212,154,0.06);box-shadow:0 0 12px rgba(111,212,154,0.20)}
+
+  /* fill-in-blank state preview */
+  .fib-preview{margin-top:14px;padding:14px 16px;border:1px dashed var(--line-hi);border-radius:10px;background:rgba(255,255,255,0.015);
+    font-size:12px;color:var(--ink-3);max-width:580px;width:100%}
+  .fib-preview .input{margin-top:6px;padding:8px 12px;border:1px solid var(--line-hi);border-radius:8px;background:rgba(255,255,255,0.025);
+    font-family:var(--f-mono);font-size:13px;color:var(--ink);min-height:32px;letter-spacing:0.02em}
+  .fib-preview .input:before{content:"obfusca|";color:var(--ink)}
+  .fib-preview .input:after{content:"";display:inline-block;width:1px;height:14px;background:var(--cyan);margin-left:1px;vertical-align:middle;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* sidebar â stats + recent */
+  .side .stat{padding:14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.015);margin-bottom:8px}
+  .side .stat .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .side .stat .v{font-size:22px;font-weight:400;letter-spacing:-0.02em;margin-top:4px;font-family:var(--f-mono)}
+  .side .stat .v .of{color:var(--ink-3);font-size:13px}
+  .side .stat .v.grad{background:var(--grad);-webkit-background-clip:text;color:transparent;font-weight:300;font-size:30px}
+  .side .stat .d{font-size:10.5px;color:var(--ink-3);margin-top:3px;letter-spacing:0.04em;font-family:var(--f-mono)}
+  .side .stat .d.pos{color:var(--pos)}
+  .lang-mix{display:flex;gap:4px;margin-top:8px;height:6px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,0.04)}
+  .lang-mix span{display:block;height:100%}
+  .lang-mix .en{background:#7EE7FF;flex:62}
+  .lang-mix .fr{background:#B388FF;flex:24}
+  .lang-mix .da{background:#FFC15C;flex:14}
+  .lang-leg{display:flex;gap:14px;margin-top:10px;font-size:10.5px;color:var(--ink-3);letter-spacing:0.02em;font-family:var(--f-mono)}
+  .lang-leg i{display:inline-block;width:7px;height:7px;border-radius:99px;margin-right:5px;vertical-align:middle}
+
+  /* recent queue list */
+  .queue-list{display:flex;flex-direction:column;gap:4px}
+  .qrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .qrow:last-child{border-bottom:0}
+  .qrow .w{color:var(--ink)}
+  .qrow .flag{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-4);font-family:var(--f-mono);margin-left:6px}
+  .qrow .ago{font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.04em}
+  .qrow.cur{background:linear-gradient(90deg, rgba(179,136,255,0.10), transparent);margin:0 -8px;padding:8px;border-radius:6px;border-bottom-color:transparent}
+  .qrow.cur .w{color:var(--violet);font-weight:500}
+  .qrow.cur .ago{color:var(--cyan)}
+
+  /* All words tab â table */
+  .all-words{display:none}
+  .all-words.cur{display:block}
+  .flash-wrap.hide{display:none}
+  .filter-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border:1px solid var(--line);border-radius:99px;font-size:11px;color:var(--ink-3);letter-spacing:0.02em;cursor:pointer;transition:all var(--t-1)}
+  .chip:hover{color:var(--ink);border-color:var(--line-hi)}
+  .chip.cur{background:rgba(179,136,255,0.10);color:var(--ink);border-color:rgba(179,136,255,0.30)}
+  .chip .ct{margin-left:5px;color:var(--ink-4);font-family:var(--f-mono);font-size:10px}
+
+  table.words-tbl{width:100%;border-collapse:collapse}
+  table.words-tbl th{font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  table.words-tbl td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.words-tbl tr:hover td{background:rgba(255,255,255,0.015)}
+  table.words-tbl .w{color:var(--ink);font-weight:500}
+  table.words-tbl .flag{font-family:var(--f-mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase}
+  table.words-tbl .flag.en{color:var(--cyan)}
+  table.words-tbl .flag.fr{color:var(--violet)}
+  table.words-tbl .flag.da{color:var(--warn)}
+  table.words-tbl .def{color:var(--ink-2);font-size:12.5px;max-width:42ch;text-wrap:pretty}
+  table.words-tbl .nxt{font-family:var(--f-mono);color:var(--ink-3);font-size:11.5px;letter-spacing:0.02em}
+  table.words-tbl .stk{font-family:var(--f-mono);color:var(--ink-3);font-size:11.5px}
+  table.words-tbl .stk.warm{color:var(--warn)}
+  table.words-tbl .stk.hot{color:var(--violet)}
+
+  /* modal */
+  .modal-bg{position:absolute;inset:0;background:rgba(6,6,11,0.65);backdrop-filter:blur(8px);
+    display:none;align-items:center;justify-content:center;z-index:20;border-radius:22px;padding:40px}
+  .modal-bg.open{display:flex}
+  .modal{width:520px;background:var(--bg);border:1px solid var(--line-hi);border-radius:16px;padding:28px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.5), 0 0 60px rgba(179,136,255,0.15)}
+  .modal h3{margin:0 0 6px;font-size:18px;font-weight:500;letter-spacing:-0.01em}
+  .modal .sub{font-size:12px;color:var(--ink-3);margin-bottom:18px}
+  .modal .field{margin-bottom:14px}
+  .modal label{display:block;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:6px}
+  .gen-preview{margin-top:14px;padding:14px;border:1px dashed var(--line-hi);border-radius:10px;background:rgba(179,136,255,0.04)}
+  .gen-preview .l{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--violet);font-weight:600;display:flex;align-items:center;gap:6px}
+  .gen-preview .l:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--violet);box-shadow:0 0 6px var(--violet)}
+  .gen-preview .row{margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+  .gen-preview .row b{color:var(--ink);font-weight:500}
+
+  /* mobile flashcard compressed */
+  .mob-flash{padding:24px 20px;border:1px solid var(--line-hi);border-radius:14px;
+    background:linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85));margin-bottom:10px}
+  .mob-flash .word{font-size:36px;font-weight:300;letter-spacing:-0.03em;line-height:1;text-align:center;background:var(--grad);-webkit-background-clip:text;color:transparent;margin:8px 0}
+  .mob-flash .def-text{font-size:13.5px;color:var(--ink);line-height:1.55;text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+  .mob-flash .ex{font-size:12.5px;color:var(--ink-2);font-style:italic;line-height:1.55;text-align:center;margin-top:10px}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Word Bank Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Word Bank Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Words Â· Desktop" style="position:relative">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="words" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Word <span class="grad-text">Bank</span>.</h1>
+        <div class="sub">SRS spaced repetition Â· English Â· French Â· Darija Â· last added 2d ago</div>
+      </div>
+      <div class="actions">
+        <div class="cc-tabs">
+          <a class="cc-tab cur" data-tab="review">Review<span class="count">18</span></a>
+          <a class="cc-tab" data-tab="all">All Words<span class="count">247</span></a>
+        </div>
+        <button class="cc-btn cc-btn-primary" id="add-btn" style="padding:10px 16px;font-size:13px"><span data-icon="plus"></span>Add word</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: flashcard / table -->
+      <div>
+
+        <!-- REVIEW TAB CONTENT -->
+        <div class="review-view">
+          <div class="prog">
+            <span class="lbl">Today's session</span>
+            <div class="bar"><div class="fg"></div></div>
+            <span class="ct">12 / 18</span>
+            <span class="est">Â· ~3 min left</span>
+          </div>
+
+          <div class="flash-wrap">
+            <div class="flashcard">
+              <div class="pos-tag">verb Â· transitive</div>
+              <div class="lang">English</div>
+
+              <div class="word">obfuscate</div>
+              <div class="pron"><span class="audio"><span data-icon="volume"></span></span>/ËÉb.fÉs.keÉªt/</div>
+
+              <div class="def">
+                <div class="def-text">To render obscure, unclear, or unintelligible â often deliberately, in order to confuse or evade.</div>
+                <div class="ex">"The CEO's answer was designed to <span class="hi">obfuscate</span> the question rather than address it."</div>
+              </div>
+
+              <div class="num-step">CARD 13 / 18 Â· SEEN 4Ã</div>
+            </div>
+
+            <div class="ans-row">
+              <button class="ans-btn again">
+                <span class="key">1</span>
+                <div class="lbl">Again</div>
+                <div class="iv">&lt; 10 min</div>
+              </button>
+              <button class="ans-btn good">
+                <span class="key">2</span>
+                <div class="lbl">Good</div>
+                <div class="iv">3 days</div>
+              </button>
+              <button class="ans-btn easy">
+                <span class="key">3</span>
+                <div class="lbl">Easy</div>
+                <div class="iv">7 days</div>
+              </button>
+            </div>
+
+            <div class="reveal-hint">
+              <span class="kbd">SPACE</span> to flip
+              <span class="kbd">1 / 2 / 3</span> grade
+              <span style="color:var(--ink-4)">Â·</span>
+              <span style="color:var(--cyan)">â</span> 50% of reviews are fill-in-blank
+            </div>
+
+            <div class="fib-preview">
+              <div style="font-size:9.5px;letter-spacing:0.20em;text-transform:uppercase;color:var(--cyan);font-weight:600;margin-bottom:6px">FILL-IN-BLANK Â· preview of next card</div>
+              <div style="color:var(--ink-2);font-size:13px;font-style:italic;line-height:1.5">"The CEO's answer was designed to ______ the question rather than address it."</div>
+              <div class="input"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ALL WORDS TAB CONTENT -->
+        <div class="all-words">
+          <div class="cc-search" style="margin-bottom:14px"><span data-icon="search"></span><input placeholder="Search 247 words by spelling, language, or definitionâ¦"/><span class="kbd">/</span></div>
+          <div class="filter-row">
+            <div class="chip cur">All<span class="ct">247</span></div>
+            <div class="chip">English<span class="ct">152</span></div>
+            <div class="chip">French<span class="ct">61</span></div>
+            <div class="chip">Darija<span class="ct">34</span></div>
+            <div style="margin-left:auto;font-size:11px;color:var(--ink-3)">Sorted by Â· <b style="color:var(--ink)">Next review â</b></div>
+          </div>
+
+          <table class="words-tbl">
+            <tr><th>Word</th><th style="width:60px">Lang</th><th>Definition</th><th style="width:130px">Next review</th><th style="width:60px;text-align:right">Streak</th></tr>
+            <tr><td class="w">obfuscate</td><td><span class="flag en">EN</span></td><td class="def">To render obscure, unclear, or unintelligible â often deliberately.</td><td class="nxt">Now Â· 18 due</td><td class="stk hot" style="text-align:right">â¡14</td></tr>
+            <tr><td class="w">ephemeral</td><td><span class="flag en">EN</span></td><td class="def">Lasting for a very short time; transient.</td><td class="nxt">in 2h</td><td class="stk warm" style="text-align:right">â¡9</td></tr>
+            <tr><td class="w">flÃ¢ner</td><td><span class="flag fr">FR</span></td><td class="def">To stroll leisurely, with no particular destination in mind.</td><td class="nxt">tomorrow</td><td class="stk" style="text-align:right">â¡4</td></tr>
+            <tr><td class="w">dÃ©paysement</td><td><span class="flag fr">FR</span></td><td class="def">The feeling of being out of one's element; pleasant disorientation of travel.</td><td class="nxt">in 3d</td><td class="stk" style="text-align:right">â¡6</td></tr>
+            <tr><td class="w">zwina</td><td><span class="flag da">DA</span></td><td class="def">Beautiful, nice, lovely â "la voiture zwina bezzaf" (the car is very nice).</td><td class="nxt">in 4d</td><td class="stk" style="text-align:right">â¡3</td></tr>
+            <tr><td class="w">bessaha</td><td><span class="flag da">DA</span></td><td class="def">Expression: to your health / enjoy / well-deserved.</td><td class="nxt">in 5d</td><td class="stk warm" style="text-align:right">â¡8</td></tr>
+            <tr><td class="w">soporific</td><td><span class="flag en">EN</span></td><td class="def">Tending to induce drowsiness or sleep.</td><td class="nxt">in 6d</td><td class="stk warm" style="text-align:right">â¡11</td></tr>
+            <tr><td class="w">phlegmatic</td><td><span class="flag en">EN</span></td><td class="def">Having an unemotional and stolidly calm disposition.</td><td class="nxt">in 6d</td><td class="stk" style="text-align:right">â¡5</td></tr>
+            <tr><td class="w">dÃ©ambuler</td><td><span class="flag fr">FR</span></td><td class="def">To wander or roam, without specific purpose.</td><td class="nxt">in 8d</td><td class="stk warm" style="text-align:right">â¡10</td></tr>
+            <tr><td class="w">ineluctable</td><td><span class="flag en">EN</span></td><td class="def">Unable to be resisted or avoided; inescapable.</td><td class="nxt">in 9d</td><td class="stk warm" style="text-align:right">â¡12</td></tr>
+            <tr><td class="w">mektoub</td><td><span class="flag da">DA</span></td><td class="def">Fate, destiny, "what is written" â common acceptance phrase.</td><td class="nxt">in 11d</td><td class="stk hot" style="text-align:right">â¡21</td></tr>
+            <tr><td class="w">obviate</td><td><span class="flag en">EN</span></td><td class="def">To remove or prevent (a need, difficulty) by an anticipated action.</td><td class="nxt">in 12d</td><td class="stk hot" style="text-align:right">â¡16</td></tr>
+            <tr><td class="w">l'esprit d'escalier</td><td><span class="flag fr">FR</span></td><td class="def">The witty retort thought of too late, "staircase wit."</td><td class="nxt">in 14d</td><td class="stk" style="text-align:right">â¡7</td></tr>
+            <tr><td class="w">lugubrious</td><td><span class="flag en">EN</span></td><td class="def">Looking or sounding sad and dismal, often in an exaggerated way.</td><td class="nxt">in 16d</td><td class="stk warm" style="text-align:right">â¡13</td></tr>
+            <tr><td class="w">safi</td><td><span class="flag da">DA</span></td><td class="def">Enough, that's it, done â universal soft stopper.</td><td class="nxt">in 21d</td><td class="stk hot" style="text-align:right">â¡25</td></tr>
+            <tr><td class="w">perspicacious</td><td><span class="flag en">EN</span></td><td class="def">Having keen mental perception and understanding; discerning.</td><td class="nxt">in 28d</td><td class="stk hot" style="text-align:right">â¡19</td></tr>
+            <tr><td class="w">tutoyer</td><td><span class="flag fr">FR</span></td><td class="def">To address someone using "tu" instead of "vous"; show familiarity.</td><td class="nxt">in 32d</td><td class="stk warm" style="text-align:right">â¡14</td></tr>
+            <tr><td class="w">sanguine</td><td><span class="flag en">EN</span></td><td class="def">Optimistic or positive, especially in an apparently bad situation.</td><td class="nxt">in 45d</td><td class="stk hot" style="text-align:right">â¡22</td></tr>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: stats + queue -->
+      <div class="side">
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Stats</div><div class="tail">SRS health</div></div>
+          <div class="stat"><div class="l">Due today</div><div class="v grad">18 <span class="of">words</span></div><div class="d pos">12 done Â· 6 remain</div></div>
+          <div class="stat"><div class="l">Retention 30d</div><div class="v">88<span class="of">%</span></div><div class="d pos">â² +3% vs prev</div></div>
+          <div class="stat"><div class="l">Total in bank</div><div class="v">247</div><div class="d">+12 this week</div></div>
+          <div style="margin-top:10px">
+            <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:2px">Language mix</div>
+            <div class="lang-mix"><span class="en"></span><span class="fr"></span><span class="da"></span></div>
+            <div class="lang-leg">
+              <span><i style="background:#7EE7FF"></i>EN 152</span>
+              <span><i style="background:#B388FF"></i>FR 61</span>
+              <span><i style="background:#FFC15C"></i>DA 34</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head"><div class="title">Session queue</div><div class="tail">next up</div></div>
+          <div class="queue-list">
+            <div class="qrow"><span><span class="w">ephemeral</span><span class="flag">EN</span></span><span class="ago">12 ago</span></div>
+            <div class="qrow"><span><span class="w">flÃ¢ner</span><span class="flag">FR</span></span><span class="ago">11 ago</span></div>
+            <div class="qrow cur"><span><span class="w">obfuscate</span><span class="flag">EN</span></span><span class="ago">â¸ NOW</span></div>
+            <div class="qrow"><span><span class="w">zwina</span><span class="flag">DA</span></span><span class="ago">next</span></div>
+            <div class="qrow"><span><span class="w">dÃ©paysement</span><span class="flag">FR</span></span><span class="ago">+1</span></div>
+            <div class="qrow"><span><span class="w">soporific</span><span class="flag">EN</span></span><span class="ago">+2</span></div>
+            <div class="qrow"><span><span class="w">phlegmatic</span><span class="flag">EN</span></span><span class="ago">+3</span></div>
+            <div class="qrow"><span><span class="w">bessaha</span><span class="flag">DA</span></span><span class="ago">+4</span></div>
+            <div class="qrow"><span style="color:var(--ink-4);font-size:11px">+10 more queued</span><span class="ago" style="color:var(--ink-4)">end</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add word modal -->
+    <div class="modal-bg" id="modal">
+      <div class="modal">
+        <div class="cc-spread" style="margin-bottom:6px"><h3>Add new word</h3><button class="cc-btn cc-btn-icon cc-btn-ghost" id="modal-close" style="width:30px;height:30px"><span data-icon="x"></span></button></div>
+        <div class="sub">Paste a word â language auto-detected. Claude generates definition + example.</div>
+        <div class="field">
+          <label>Word</label>
+          <input class="cc-input" value="dÃ©paysement" id="modal-input"/>
+        </div>
+        <div class="field">
+          <label>Language</label>
+          <div style="display:flex;gap:6px">
+            <div class="chip cur">Auto-detect Â· FR</div>
+            <div class="chip">EN</div>
+            <div class="chip">FR</div>
+            <div class="chip">DA</div>
+          </div>
+        </div>
+        <div class="gen-preview">
+          <div class="l">Generated Â· Claude Â· 0.8s</div>
+          <div class="row"><b>Part of speech:</b> noun, masculine</div>
+          <div class="row"><b>Definition:</b> The feeling of being out of one's element; a pleasant or unsettling disorientation, especially while travelling abroad.</div>
+          <div class="row" style="font-style:italic">"Le dÃ©paysement total qu'on ressent Ã  Tokyo est exactement ce que je cherchais."</div>
+        </div>
+        <div class="cc-spread" style="margin-top:18px;gap:8px;justify-content:flex-end">
+          <button class="cc-btn cc-btn-ghost">Regenerate</button>
+          <button class="cc-btn cc-btn-primary">Add to bank âº</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Words Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="plus" style="width:14px"></span></button>
+      </div>
+      <h2 class="cc-mob-title">Word <span class="grad-text">Bank</span>.</h2>
+      <div class="cc-mob-sub">12 / 18 done Â· ~3 min left</div>
+
+      <div class="cc-tabs" style="margin-bottom:12px;width:100%;display:flex">
+        <a class="cc-tab cur" style="flex:1;justify-content:center">Review<span class="count">18</span></a>
+        <a class="cc-tab" style="flex:1;justify-content:center">All<span class="count">247</span></a>
+      </div>
+
+      <div class="prog" style="margin-bottom:10px">
+        <div class="bar" style="flex:1"><div class="fg"></div></div>
+        <span class="ct">12/18</span>
+      </div>
+
+      <div class="mob-flash">
+        <div class="cc-spread"><span style="font-size:9.5px;letter-spacing:0.18em;color:var(--ink-3);font-style:italic">verb Â· transitive</span><span style="font-size:9.5px;letter-spacing:0.18em;color:var(--cyan);font-weight:600">EN</span></div>
+        <div class="word">obfuscate</div>
+        <div style="text-align:center;font-family:var(--f-mono);font-size:11px;color:var(--ink-3)"><span class="cc-btn cc-btn-icon cc-btn-ghost" style="width:22px;height:22px;display:inline-flex;padding:0;vertical-align:middle;margin-right:4px"><span data-icon="volume" style="width:10px;height:10px"></span></span>/ËÉb.fÉs.keÉªt/</div>
+        <div class="def-text">To render obscure, unclear, or unintelligible â often deliberately.</div>
+        <div class="ex">"The CEO's answer was designed to <span style="background:linear-gradient(180deg, transparent 60%, rgba(179,136,255,0.25) 60%);color:var(--ink);font-weight:500;font-style:normal">obfuscate</span> the question."</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <button class="ans-btn again" style="padding:11px 10px"><div class="lbl" style="font-size:12px">Again</div><div class="iv" style="font-size:10px">&lt; 10m</div></button>
+        <button class="ans-btn good" style="padding:11px 10px"><div class="lbl" style="font-size:12px">Good</div><div class="iv" style="font-size:10px">3 days</div></button>
+        <button class="ans-btn easy" style="padding:11px 10px"><div class="lbl" style="font-size:12px">Easy</div><div class="iv" style="font-size:10px">7 days</div></button>
+      </div>
+
+      <div style="margin-top:14px;font-size:10px;color:var(--ink-3);text-align:center;letter-spacing:0.10em;text-transform:uppercase;font-family:var(--f-mono)">Card 13 of 18 Â· seen 4Ã</div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="words"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+<script>
+  // tabs
+  document.querySelectorAll('.cc-tab[data-tab]').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      const k = t.getAttribute('data-tab');
+      document.querySelectorAll('.cc-tab[data-tab]').forEach(x=>x.classList.remove('cur'));
+      t.classList.add('cur');
+      const review = document.querySelector('.review-view');
+      const all = document.querySelector('.all-words');
+      if(k==='review'){ review.style.display='block'; all.classList.remove('cur'); }
+      else            { review.style.display='none';  all.classList.add('cur');  }
+    });
+  });
+
+  // modal
+  document.getElementById('add-btn').addEventListener('click', ()=> document.getElementById('modal').classList.add('open'));
+  document.getElementById('modal-close').addEventListener('click', ()=> document.getElementById('modal').classList.remove('open'));
+  document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); });
+</script>
+</body>
+</html>

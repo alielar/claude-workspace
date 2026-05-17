@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Library Â· PDF Reader â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  /* reader chrome */
+  .reader{position:relative;height:840px;background:linear-gradient(180deg,#08080F,#04040A);border-radius:0;overflow:hidden}
+  /* override frame-desktop padding for this */
+  .cc-frame-desktop.no-pad{padding:0}
+  .cc-frame-desktop.no-pad .cc-frame-label{top:-26px;left:0;padding:0 36px}
+
+  .reader-top{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;
+    border-bottom:1px solid var(--line);background:rgba(10,10,20,0.50);backdrop-filter:blur(12px);
+    position:relative;z-index:5}
+  .reader-top .left{display:flex;align-items:center;gap:14px}
+  .reader-top .title{font-size:14px;font-weight:500;letter-spacing:-0.005em}
+  .reader-top .title .au{color:var(--ink-3);font-weight:400;margin-left:6px}
+  .reader-top .pg{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);padding:5px 10px;border:1px solid var(--line);border-radius:99px;letter-spacing:0.06em}
+  .reader-top .pg b{color:var(--ink)}
+  .reader-top .right{display:flex;align-items:center;gap:8px}
+
+  .reader-body{display:grid;grid-template-columns:1fr 320px;height:calc(100% - 116px);background:linear-gradient(180deg, #0A0A14, #060609)}
+
+  .page-area{position:relative;overflow:hidden;display:flex;align-items:flex-start;justify-content:center;padding:36px;
+    background:
+      radial-gradient(40% 30% at 30% 20%, rgba(179,136,255,0.06), transparent 60%),
+      radial-gradient(30% 30% at 70% 80%, rgba(126,231,255,0.04), transparent 60%)}
+
+  /* the page */
+  .pdf-page{width:560px;background:#F4EFE2;color:#1A1612;border-radius:2px;padding:64px 70px 80px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.50), 0 0 0 1px rgba(255,255,255,0.04);
+    font-family:'EB Garamond', serif;line-height:1.55;font-size:14px;position:relative;letter-spacing:0.005em}
+  .pdf-page .running-head{font-size:9.5px;text-transform:uppercase;letter-spacing:0.20em;color:#7A6E58;
+    border-bottom:1px solid rgba(26,22,18,0.10);padding-bottom:14px;margin-bottom:32px;display:flex;justify-content:space-between}
+  .pdf-page .book-no{font-family:'EB Garamond', serif;font-size:11px;text-align:center;letter-spacing:0.20em;text-transform:uppercase;color:#7A6E58;font-weight:500;margin-bottom:36px}
+  .pdf-page .h-chap{font-family:'EB Garamond', serif;font-size:28px;font-weight:500;text-align:center;letter-spacing:-0.01em;margin-bottom:8px;color:#1A1612}
+  .pdf-page .h-sub{font-size:11px;text-align:center;letter-spacing:0.20em;text-transform:uppercase;color:#7A6E58;margin-bottom:36px}
+  .pdf-page p{margin:0 0 16px;text-indent:1.8em}
+  .pdf-page p:first-of-type{text-indent:0}
+  .pdf-page p:first-of-type:first-letter{font-size:42px;line-height:0.9;font-weight:600;float:left;margin:5px 8px 0 0;color:#3A2E22;font-family:'EB Garamond', serif}
+  .pdf-page .num-aphor{font-weight:600;color:#3A2E22;font-variant:small-caps;letter-spacing:0.04em}
+  .pdf-page .footer{position:absolute;bottom:32px;left:0;right:0;text-align:center;font-size:10.5px;letter-spacing:0.10em;color:#7A6E58;font-family:'EB Garamond', serif}
+
+  /* selection highlight on page */
+  .pdf-page .selected-span{background:rgba(179,136,255,0.35);padding:1px 2px;color:#1A1612;border-radius:2px;
+    box-shadow:0 0 0 1px rgba(179,136,255,0.50)}
+
+  /* floating action */
+  .float-action{position:absolute;display:flex;flex-direction:column;background:var(--bg);
+    border:1px solid var(--line-hi);border-radius:10px;padding:6px;backdrop-filter:blur(20px);
+    box-shadow:0 16px 40px rgba(0,0,0,0.50), 0 0 30px rgba(179,136,255,0.15);z-index:10;min-width:200px}
+  .float-action:before{content:"";position:absolute;left:24px;top:-6px;width:10px;height:10px;background:var(--bg);border:1px solid var(--line-hi);border-right:0;border-bottom:0;transform:rotate(45deg)}
+  .float-action button{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;color:var(--ink-2);
+    border-radius:6px;text-align:left;transition:all var(--t-1)}
+  .float-action button:hover{background:rgba(179,136,255,0.08);color:var(--ink)}
+  .float-action button svg{width:13px;height:13px}
+  .float-action .sel-preview{padding:8px 12px;font-size:11px;color:var(--ink-3);font-family:'EB Garamond', serif;font-style:italic;border-bottom:1px solid var(--line);margin-bottom:4px}
+
+  /* notes side panel */
+  .notes-panel{border-left:1px solid var(--line);background:rgba(10,10,20,0.55);backdrop-filter:blur(20px);
+    padding:22px 22px;display:flex;flex-direction:column;overflow:hidden}
+  .notes-panel .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .notes-panel .head h3{font-size:12px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin:0;display:flex;align-items:center;gap:8px}
+  .notes-panel .head h3:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--violet);box-shadow:0 0 6px var(--violet)}
+  .notes-panel .head .ct{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-4);letter-spacing:0.06em}
+  .notes-panel .filter{display:flex;gap:4px;margin-bottom:14px}
+  .notes-panel .filter .chip{padding:4px 10px;font-size:10.5px;border:1px solid var(--line);border-radius:99px;color:var(--ink-3);letter-spacing:0.04em;cursor:pointer}
+  .notes-panel .filter .chip.cur{background:rgba(179,136,255,0.10);color:var(--violet);border-color:rgba(179,136,255,0.30)}
+  .notes-panel .list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+  .note{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.012);cursor:pointer;transition:all var(--t-1)}
+  .note:hover{border-color:var(--line-hi);background:rgba(255,255,255,0.025)}
+  .note .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .note .pg{font-family:var(--f-mono);font-size:10px;color:var(--cyan);letter-spacing:0.04em}
+  .note .ts{font-size:9.5px;color:var(--ink-4);letter-spacing:0.04em;font-family:var(--f-mono);text-transform:uppercase}
+  .note .quote{font-family:'EB Garamond', serif;font-size:12.5px;font-style:italic;color:var(--ink-2);padding-left:10px;border-left:1.5px solid rgba(179,136,255,0.40);line-height:1.5}
+  .note .body{font-size:11.5px;color:var(--ink);margin-top:6px;line-height:1.5}
+  .note.word{border-color:rgba(126,231,255,0.20);background:rgba(126,231,255,0.04)}
+  .note.word .pg{color:var(--cyan)}
+  .note.word .w{font-size:14px;color:var(--cyan);font-weight:500;letter-spacing:-0.005em}
+
+  /* reader bottom */
+  .reader-bot{position:absolute;left:0;right:0;bottom:0;padding:14px 22px;
+    border-top:1px solid var(--line);background:rgba(10,10,20,0.60);backdrop-filter:blur(20px);
+    display:flex;align-items:center;justify-content:space-between;z-index:5}
+  .reader-bot .nav{display:flex;align-items:center;gap:10px}
+  .reader-bot .nav input{width:56px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg-input);font-family:var(--f-mono);font-size:12px;color:var(--ink);text-align:center}
+  .reader-bot .nav .of{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);letter-spacing:0.04em}
+  .reader-bot .zoom{display:flex;align-items:center;gap:8px}
+  .reader-bot .zoom .v{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);width:42px;text-align:center;letter-spacing:0.04em}
+  .reader-bot .center{display:flex;align-items:center;gap:8px}
+  .reader-bot .focus-pill{font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em;display:flex;align-items:center;gap:6px}
+
+  .progress-strip{position:absolute;left:0;right:0;top:53px;height:2px;background:transparent;z-index:4}
+  .progress-strip .fg{height:100%;background:var(--grad);width:47%;box-shadow:0 0 8px rgba(179,136,255,0.4)}
+
+  /* MOBILE reader */
+  .mob-reader-top{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .mob-reader-top .ttl{font-size:13px;font-weight:500;letter-spacing:-0.005em}
+  .mob-pdf{padding:18px 14px 12px;background:#F4EFE2;color:#1A1612;font-family:'EB Garamond', serif;font-size:11px;line-height:1.6;letter-spacing:0.005em;
+    height:auto;border-bottom:1px solid var(--line);margin:0 -18px}
+  .mob-pdf .running-head{font-size:7.5px;text-transform:uppercase;letter-spacing:0.20em;color:#7A6E58;border-bottom:1px solid rgba(26,22,18,0.10);padding-bottom:6px;margin-bottom:12px;display:flex;justify-content:space-between}
+  .mob-pdf .h-chap{font-size:16px;font-weight:500;text-align:center;margin-bottom:4px}
+  .mob-pdf .h-sub{font-size:8.5px;text-align:center;letter-spacing:0.20em;text-transform:uppercase;color:#7A6E58;margin-bottom:14px}
+  .mob-pdf p{margin:0 0 8px;text-indent:1.4em}
+  .mob-pdf p:first-of-type{text-indent:0}
+  .mob-pdf .num-aphor{font-weight:600;color:#3A2E22;font-variant:small-caps;letter-spacing:0.04em}
+  .mob-pdf .selected-span{background:rgba(179,136,255,0.35);padding:0 2px;border-radius:1px}
+  .mob-reader-bot{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);background:var(--bg-card);margin:0 -18px}
+</style>
+</head>
+<body class="cc-page" data-screen-label="PDF Reader Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>PDF Reader Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop no-pad" data-screen-label="Reader Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+
+    <div class="reader" style="height:920px">
+      <!-- TOP BAR -->
+      <div class="reader-top">
+        <div class="left">
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="chevL"></span></button>
+          <div class="title">Meditations<span class="au"> Â· Marcus Aurelius</span></div>
+          <span class="pg num">p. <b>142</b> / 304 Â· Book IV</span>
+        </div>
+        <div class="right">
+          <div class="cc-search" style="width:240px;padding:7px 12px"><span data-icon="search"></span><input placeholder="Search in documentâ¦"/><span class="kbd">âF</span></div>
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="notes"></span></button>
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="focus"></span></button>
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="x"></span></button>
+        </div>
+      </div>
+      <div class="progress-strip"><div class="fg"></div></div>
+
+      <!-- BODY -->
+      <div class="reader-body">
+        <div class="page-area">
+          <div class="pdf-page">
+            <div class="running-head"><span>Book IV</span><span>Meditations Â· 142</span></div>
+            <div class="book-no">â Â§ â</div>
+            <div class="h-chap">On Right Reason</div>
+            <div class="h-sub">From within Â· the discipline of perception</div>
+
+            <p>How much trouble he avoids who does not look to see what his neighbour says or does or thinks, but only to what he himself is doing â that it may be just and pure. A good man does not peer about for the bad in others, but runs straight along the line, without veering to one side.</p>
+
+            <p><span class="num-aphor">XII.</span> Two kinds of readiness should be ever at hand. The one, to do only what reason â the principle of <span class="selected-span" id="sel-span">sapient</span> rule â suggests for the welfare of mankind. The other, to change your view, if someone is at hand to set you right and move you from an opinion. But the change should always come from a persuasion of justice, or the common good â not because the new view is more pleasant or more popular.</p>
+
+            <p><span class="num-aphor">XIII.</span> Have you reason? â I have. â Why then do you not use it? For when this performs its own task, what else can you want?</p>
+
+            <p><span class="num-aphor">XIV.</span> You have existed as a part. You shall vanish into that which produced you; or rather, you shall be received back into its seminal principle by transmutation. Many grains of frankincense fall upon the same altar; one falls before, another after â but it makes no difference.</p>
+
+            <p><span class="num-aphor">XV.</span> Within ten days you will seem a god to those to whom you are now a beast and an ape â if you will return to your principles and the worship of reason.</p>
+
+            <div class="footer">â 142 â</div>
+          </div>
+
+          <!-- floating action menu on selected text -->
+          <div class="float-action" style="top:330px;left:calc(50% + 90px)">
+            <div class="sel-preview">"sapient" â possessing wisdom, capacity for sound judgment</div>
+            <button><span data-icon="plus"></span>Add to Word Bank</button>
+            <button><span data-icon="notes"></span>Add note here</button>
+            <button><span data-icon="search"></span>Look up in OED</button>
+            <button style="color:var(--ink-3)"><span data-icon="edit"></span>Highlight only</button>
+          </div>
+        </div>
+
+        <!-- NOTES PANEL -->
+        <div class="notes-panel">
+          <div class="head">
+            <h3>Notes &amp; words</h3>
+            <span class="ct">12 / 9</span>
+          </div>
+          <div class="filter">
+            <span class="chip cur">All</span>
+            <span class="chip">Notes 9</span>
+            <span class="chip">Highlights 12</span>
+            <span class="chip">Words 11</span>
+          </div>
+          <div class="list">
+            <div class="note word">
+              <div class="top"><span class="pg">p. 142 Â· just now</span><span class="ts">NEW</span></div>
+              <div class="w">sapient</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">possessing wisdom; discerning</div>
+            </div>
+            <div class="note">
+              <div class="top"><span class="pg">p. 142 Â· MON</span><span class="ts">14M AGO</span></div>
+              <div class="quote">"You have power over your mind â not outside events."</div>
+              <div class="body">CBT 1800 years early. Re-read when work pressure spikes.</div>
+            </div>
+            <div class="note">
+              <div class="top"><span class="pg">p. 128 Â· SAT</span><span class="ts">2D</span></div>
+              <div class="quote">"At dawn, when you have trouble getting out of bed, tell yourself: 'I have to go to work â as a human being.'"</div>
+            </div>
+            <div class="note word">
+              <div class="top"><span class="pg">p. 124 Â· SAT</span><span class="ts">2D</span></div>
+              <div class="w">perspicacious</div>
+            </div>
+            <div class="note">
+              <div class="top"><span class="pg">p. 96 Â· THU</span><span class="ts">6D</span></div>
+              <div class="quote">"Confine yourself to the present."</div>
+              <div class="body">Smallest mantra. Stick this on the monitor.</div>
+            </div>
+            <div class="note word">
+              <div class="top"><span class="pg">p. 78 Â· SAT</span><span class="ts">11D</span></div>
+              <div class="w">phlegmatic</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM BAR -->
+      <div class="reader-bot">
+        <div class="nav">
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="chevL"></span></button>
+          <input class="num" value="142"/>
+          <span class="of">/ 304</span>
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="chevR"></span></button>
+        </div>
+        <div class="center">
+          <span class="focus-pill"><span class="cc-kbd">F</span>focus mode</span>
+          <span style="color:var(--ink-4);font-size:11px">Â·</span>
+          <span style="font-size:11px;color:var(--ink-3)"><span style="color:var(--cyan)">â</span> Session 14m Â· auto-saved</span>
+        </div>
+        <div class="zoom">
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="zoomOut"></span></button>
+          <span class="v">100%</span>
+          <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="zoomIn"></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Reader Â· Mobile" style="overflow:hidden">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner" style="padding:0">
+      <div class="mob-reader-top">
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:4px"><span data-icon="x" style="width:14px"></span></button>
+        <div class="ttl">Meditations</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:4px"><span data-icon="notes" style="width:14px"></span></button>
+      </div>
+
+      <div style="height:2px;background:var(--line);position:relative"><div style="height:100%;background:var(--grad);width:47%;box-shadow:0 0 6px rgba(179,136,255,0.4)"></div></div>
+
+      <div style="padding:0 18px">
+        <div class="mob-pdf">
+          <div class="running-head"><span>Book IV</span><span>142</span></div>
+          <div class="h-chap">On Right Reason</div>
+          <div class="h-sub">â Â§ â</div>
+          <p>How much trouble he avoids who does not look to see what his neighbour says or does or thinks, but only to what he himself is doing â that it may be just and pure.</p>
+          <p><span class="num-aphor">XII.</span> Two kinds of readiness should be ever at hand. The one, to do only what reason â the principle of <span class="selected-span">sapient</span> rule â suggests.</p>
+          <p><span class="num-aphor">XIII.</span> Have you reason? â I have. â Why then do you not use it?</p>
+        </div>
+
+        <!-- mini action -->
+        <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(126,231,255,0.30);border-radius:10px;background:rgba(126,231,255,0.05)">
+          <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--cyan);font-weight:600;margin-bottom:6px">SELECTED Â· p. 142</div>
+          <div style="font-family:'EB Garamond', serif;font-style:italic;font-size:13px;color:var(--ink-2)">"sapient"</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button class="cc-btn cc-btn-cyan" style="padding:6px 10px;font-size:11px;flex:1;justify-content:center"><span data-icon="plus" style="width:11px"></span>Add to Bank</button>
+            <button class="cc-btn" style="padding:6px 10px;font-size:11px;flex:1;justify-content:center"><span data-icon="notes" style="width:11px"></span>Note</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mob-reader-bot">
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:4px"><span data-icon="chevL" style="width:14px"></span></button>
+        <div style="font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);letter-spacing:0.04em">p. <b style="color:var(--ink)">142</b> / 304</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:4px"><span data-icon="chevR" style="width:14px"></span></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+</body>
+</html>

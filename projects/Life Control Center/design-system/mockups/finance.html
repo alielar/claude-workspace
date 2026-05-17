@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Finance â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:14px}
+
+  /* hero */
+  .nw-hero{padding:36px 40px 32px;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(111,212,154,0.10), transparent 60%),
+      var(--bg-card)}
+  .nw-hero .lbl{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:8px}
+  .nw-hero .lbl:before{content:"";width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+  .nw-hero .row1{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+  .nw-hero .big{font-size:96px;font-weight:200;letter-spacing:-0.05em;line-height:0.9;margin-top:6px;
+    background:var(--grad);-webkit-background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 28px rgba(179,136,255,0.22));font-family:var(--f-mono)}
+  .nw-hero .big .cur{font-size:36px;-webkit-text-fill-color:var(--ink-3);color:var(--ink-3);margin-right:8px;font-weight:300}
+  .nw-hero .mom{font-size:18px;font-weight:500;color:var(--pos);letter-spacing:-0.01em;font-family:var(--f-mono);
+    display:flex;align-items:center;gap:8px}
+  .nw-hero .mom .arr{display:inline-flex;width:24px;height:24px;border-radius:99px;background:rgba(111,212,154,0.15);align-items:center;justify-content:center}
+  .nw-hero .mom .arr svg{width:11px;height:11px}
+  .nw-hero .mom .pct{font-size:14px;color:var(--ink-3);margin-left:6px;font-weight:400}
+  .nw-hero .meta{font-size:11.5px;color:var(--ink-3);margin-top:8px;letter-spacing:0.02em;font-family:var(--f-mono)}
+
+  /* update banner */
+  .update-banner{margin-top:18px;padding:12px 16px;border:1px solid rgba(255,193,92,0.25);border-radius:10px;
+    background:rgba(255,193,92,0.06);display:flex;justify-content:space-between;align-items:center}
+  .update-banner .l{display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .update-banner .l:before{content:"";width:8px;height:8px;border-radius:99px;background:var(--warn);box-shadow:0 0 8px var(--warn);flex-shrink:0}
+  .update-banner .l b{color:var(--ink);font-weight:600}
+
+  /* chart */
+  .chart-card{padding:28px}
+  .chart-svg{width:100%;height:260px;display:block}
+  .chart-svg .area{fill:url(#ccGradFill)}
+  .chart-svg .line{fill:none;stroke:url(#ccGradStroke);stroke-width:2;filter:drop-shadow(0 0 4px rgba(179,136,255,0.3))}
+  .chart-svg .grid line{stroke:var(--line);stroke-width:1}
+  .chart-svg .gridmaj line{stroke:rgba(255,255,255,0.10);stroke-width:1}
+  .chart-svg .dot{r:4;fill:var(--cyan);filter:drop-shadow(0 0 5px var(--cyan))}
+  .chart-svg .marker-line{stroke:rgba(126,231,255,0.30);stroke-width:1;stroke-dasharray:2 3}
+  .chart-svg .tooltip-box{fill:rgba(10,10,20,0.95);stroke:rgba(126,231,255,0.40);stroke-width:1;rx:6}
+
+  .chart-axis-y{font-size:9.5px;fill:var(--ink-4);font-family:var(--f-mono);letter-spacing:0.06em}
+  .chart-axis-x{font-size:9.5px;fill:var(--ink-4);font-family:var(--f-mono);letter-spacing:0.06em}
+  .tt-label{font-size:9.5px;letter-spacing:0.20em;text-transform:uppercase;fill:var(--ink-3);font-family:var(--f-mono)}
+  .tt-value{font-size:14px;fill:var(--ink);font-family:var(--f-mono);letter-spacing:-0.01em;font-weight:600}
+
+  /* range tabs */
+  .range-tabs{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:2px;background:rgba(255,255,255,0.015)}
+  .range-tabs .t{padding:5px 11px;font-size:11px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.06em;cursor:pointer;border-radius:6px;transition:all var(--t-1)}
+  .range-tabs .t.cur{background:rgba(179,136,255,0.15);color:var(--violet)}
+
+  /* breakdown tables */
+  .breakdown{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .breakdown .card-l{padding:0;display:flex;flex-direction:column}
+  .bd-head{padding:18px 22px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end}
+  .bd-head .title{font-size:11px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .bd-head .title:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--pos);box-shadow:0 0 6px var(--pos)}
+  .bd-head.liab .title:before{background:var(--neg);box-shadow:0 0 6px var(--neg)}
+  .bd-head .total{font-family:var(--f-mono);font-size:18px;font-weight:500;letter-spacing:-0.01em}
+  .bd-head .total .cur{color:var(--ink-3);font-size:13px;margin-right:3px}
+
+  table.fin{width:100%;border-collapse:collapse}
+  table.fin th{font-size:9.5px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:10px 18px 8px;border-bottom:1px solid var(--line)}
+  table.fin td{padding:11px 18px;font-size:13px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.fin tr:last-child td{border-bottom:0}
+  table.fin tr:hover td{background:rgba(255,255,255,0.012)}
+  table.fin .cat{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);font-family:var(--f-mono);font-weight:500}
+  table.fin .nm{color:var(--ink);font-weight:500}
+  table.fin .nm .sub{color:var(--ink-3);font-weight:400;font-size:11px;margin-left:6px}
+  table.fin .val{text-align:right;font-family:var(--f-mono);color:var(--ink);font-size:13.5px;letter-spacing:-0.005em;font-weight:500}
+  table.fin .val .cur{color:var(--ink-3);font-size:11px;margin-right:2px}
+  table.fin .upd{text-align:right;font-family:var(--f-mono);color:var(--ink-4);font-size:10.5px;letter-spacing:0.04em;text-transform:uppercase}
+  table.fin .mom-pos{color:var(--pos);font-family:var(--f-mono);font-size:10.5px;letter-spacing:0.04em}
+  table.fin .mom-neg{color:var(--neg);font-family:var(--f-mono);font-size:10.5px;letter-spacing:0.04em}
+
+  .add-row{padding:8px 18px;background:rgba(255,255,255,0.012);border-top:1px solid var(--line);text-align:center}
+  .add-row a{font-size:11.5px;color:var(--ink-3);letter-spacing:0.02em;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;transition:all var(--t-1)}
+  .add-row a:hover{color:var(--ink);background:rgba(255,255,255,0.025)}
+
+  /* alloc pie / bar */
+  .alloc-stack{display:flex;height:8px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,0.04);margin-top:8px}
+  .alloc-stack span{height:100%}
+  .alloc-leg{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-top:14px;font-size:11.5px;font-family:var(--f-mono)}
+  .alloc-leg .row{display:flex;justify-content:space-between;align-items:center}
+  .alloc-leg .row .n{color:var(--ink-2)}
+  .alloc-leg .row .n i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .alloc-leg .row .p{color:var(--ink-3);letter-spacing:0.04em}
+
+  /* mobile */
+  .mob-nw{padding:24px 20px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;
+    background:radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.14), transparent 60%), var(--bg-card)}
+  .mob-nw .big{font-size:46px;font-weight:200;letter-spacing:-0.05em;line-height:1;background:var(--grad);-webkit-background-clip:text;color:transparent;font-family:var(--f-mono)}
+  .mob-nw .big .cur{font-size:18px;color:var(--ink-3);-webkit-text-fill-color:var(--ink-3);margin-right:4px;font-weight:300}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Finance Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Finance Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Finance Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="finance" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Net <span class="grad-text">Worth</span>.</h1>
+        <div class="sub">Monthly snapshots Â· Apr 2024 â May 2026 Â· 25 data points</div>
+      </div>
+      <div class="actions">
+        <button class="cc-btn"><span data-icon="upload"></span>Import</button>
+        <button class="cc-btn cc-btn-ghost"><span data-icon="history"></span>Audit log</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT -->
+      <div>
+        <!-- HERO -->
+        <div class="cc-card nw-hero" style="margin-bottom:14px">
+          <div class="lbl">Net worth Â· May 1, 2026</div>
+          <div class="row1">
+            <div>
+              <div class="big num"><span class="cur">â¬</span>127,430</div>
+              <div class="mom">
+                <span class="arr"><span data-icon="arrowUp"></span></span>
+                +â¬3,200 this month
+                <span class="pct">Â· +2.6% MoM</span>
+              </div>
+              <div class="meta">â¬42,430 YTD Â· +49.9% vs Apr 2024</div>
+            </div>
+            <div style="text-align:right">
+              <div style="display:grid;grid-template-columns:repeat(3,auto);gap:24px">
+                <div>
+                  <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Assets</div>
+                  <div class="num" style="font-size:20px;font-weight:500;margin-top:4px">â¬127,430</div>
+                  <div style="font-size:10.5px;color:var(--pos);margin-top:2px;font-family:var(--f-mono)">â² +â¬3,400</div>
+                </div>
+                <div>
+                  <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Liabilities</div>
+                  <div class="num" style="font-size:20px;font-weight:500;margin-top:4px">â¬1,200</div>
+                  <div style="font-size:10.5px;color:var(--pos);margin-top:2px;font-family:var(--f-mono)">â¼ ââ¬200</div>
+                </div>
+                <div>
+                  <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Savings rate</div>
+                  <div class="num" style="font-size:20px;font-weight:500;margin-top:4px">38%</div>
+                  <div style="font-size:10.5px;color:var(--pos);margin-top:2px;font-family:var(--f-mono)">â² +3pp</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="update-banner">
+            <div class="l"><span><b>Time to log May 2026.</b> The 1st was 12 days ago â last snapshot is for April.</span></div>
+            <button class="cc-btn cc-btn-primary" style="padding:7px 14px;font-size:12px"><span data-icon="arrowR"></span>Update now</button>
+          </div>
+        </div>
+
+        <!-- CHART -->
+        <div class="cc-card chart-card">
+          <div class="cc-card-head">
+            <div class="title">Net worth Â· 24 months</div>
+            <div class="range-tabs">
+              <div class="t">3M</div>
+              <div class="t">6M</div>
+              <div class="t">1Y</div>
+              <div class="t cur">2Y</div>
+              <div class="t">ALL</div>
+            </div>
+          </div>
+          <svg class="chart-svg" viewBox="0 0 800 260" preserveAspectRatio="none">
+            <g class="grid">
+              <line x1="60" x2="800" y1="40" y2="40"/>
+              <line x1="60" x2="800" y1="100" y2="100"/>
+              <line x1="60" x2="800" y1="160" y2="160"/>
+              <line x1="60" x2="800" y1="220" y2="220"/>
+            </g>
+            <!-- y axis labels -->
+            <text class="chart-axis-y" x="60" y="44" text-anchor="end" dx="-6">â¬130K</text>
+            <text class="chart-axis-y" x="60" y="104" text-anchor="end" dx="-6">â¬115K</text>
+            <text class="chart-axis-y" x="60" y="164" text-anchor="end" dx="-6">â¬100K</text>
+            <text class="chart-axis-y" x="60" y="224" text-anchor="end" dx="-6">â¬ 85K</text>
+
+            <!-- area + line: 25 monthly points going from 85k â 127k -->
+            <path class="area" d="
+              M 60,228 L 91,222 L 122,218 L 153,212 L 184,205 L 215,202 L 246,193 L 277,196
+              L 308,185 L 339,170 L 370,162 L 401,158 L 432,148 L 463,138 L 494,132 L 525,118
+              L 556,112 L 587,104 L 618,90 L 649,80 L 680,72 L 711,65 L 742,52 L 773,42 L 800,45
+              L 800,260 L 60,260 Z"/>
+            <path class="line" d="
+              M 60,228 L 91,222 L 122,218 L 153,212 L 184,205 L 215,202 L 246,193 L 277,196
+              L 308,185 L 339,170 L 370,162 L 401,158 L 432,148 L 463,138 L 494,132 L 525,118
+              L 556,112 L 587,104 L 618,90 L 649,80 L 680,72 L 711,65 L 742,52 L 773,42 L 800,45"/>
+
+            <!-- marker on May 1, 2026 = 773 -->
+            <line class="marker-line" x1="773" y1="42" x2="773" y2="240"/>
+            <circle class="dot" cx="773" cy="42"/>
+
+            <!-- tooltip -->
+            <g transform="translate(630,60)">
+              <rect class="tooltip-box" x="0" y="0" width="135" height="60"/>
+              <text class="tt-label" x="12" y="20">MAY 2026</text>
+              <text class="tt-value" x="12" y="40">â¬127,430</text>
+              <text class="tt-label" x="12" y="54" style="fill:var(--pos)">â² +â¬3,200</text>
+            </g>
+
+            <!-- x axis -->
+            <text class="chart-axis-x" x="60" y="254">APR 24</text>
+            <text class="chart-axis-x" x="220" y="254">OCT 24</text>
+            <text class="chart-axis-x" x="400" y="254">APR 25</text>
+            <text class="chart-axis-x" x="580" y="254">OCT 25</text>
+            <text class="chart-axis-x" x="770" y="254" text-anchor="end">MAY 26</text>
+          </svg>
+        </div>
+
+        <!-- breakdown -->
+        <div class="breakdown" style="margin-top:14px">
+          <!-- ASSETS -->
+          <div class="cc-card card-l" style="padding:0">
+            <div class="bd-head">
+              <div class="title">Assets</div>
+              <div class="total"><span class="cur">â¬</span>127,430</div>
+            </div>
+            <table class="fin">
+              <tr>
+                <th>Holding</th><th class="cat" style="text-align:left">Cat.</th><th style="text-align:right">Value</th><th style="text-align:right">MoM</th><th style="text-align:right">Upd.</th>
+              </tr>
+              <tr>
+                <td class="nm">N26 / Revolut <span class="sub">checking</span></td>
+                <td class="cat">Cash</td>
+                <td class="val"><span class="cur">â¬</span>18,500</td>
+                <td class="mom-neg" style="text-align:right">ââ¬600</td>
+                <td class="upd">May 1</td>
+              </tr>
+              <tr>
+                <td class="nm">Vanguard IB <span class="sub">VWCE</span></td>
+                <td class="cat">Equity</td>
+                <td class="val"><span class="cur">â¬</span>62,400</td>
+                <td class="mom-pos" style="text-align:right">+â¬2,100</td>
+                <td class="upd">May 1</td>
+              </tr>
+              <tr>
+                <td class="nm">Treasury bonds <span class="sub">EU 10y</span></td>
+                <td class="cat">Bonds</td>
+                <td class="val"><span class="cur">â¬</span>19,600</td>
+                <td class="mom-pos" style="text-align:right">+â¬180</td>
+                <td class="upd">May 1</td>
+              </tr>
+              <tr>
+                <td class="nm">BTC <span class="sub">cold wallet</span></td>
+                <td class="cat">Crypto</td>
+                <td class="val"><span class="cur">â¬</span>9,400</td>
+                <td class="mom-pos" style="text-align:right">+â¬820</td>
+                <td class="upd">May 1</td>
+              </tr>
+              <tr>
+                <td class="nm">ETH</td>
+                <td class="cat">Crypto</td>
+                <td class="val"><span class="cur">â¬</span>3,000</td>
+                <td class="mom-pos" style="text-align:right">+â¬340</td>
+                <td class="upd">May 1</td>
+              </tr>
+              <tr>
+                <td class="nm">Casablanca apt <span class="sub">deposit equity</span></td>
+                <td class="cat">RE</td>
+                <td class="val"><span class="cur">â¬</span>10,530</td>
+                <td class="mom-pos" style="text-align:right">+â¬160</td>
+                <td class="upd">May 1</td>
+              </tr>
+              <tr>
+                <td class="nm">Pension <span class="sub">company plan</span></td>
+                <td class="cat">Other</td>
+                <td class="val"><span class="cur">â¬</span>4,000</td>
+                <td class="mom-pos" style="text-align:right">+â¬400</td>
+                <td class="upd">May 1</td>
+              </tr>
+            </table>
+            <div class="add-row"><a><span data-icon="plus"></span>Add asset</a></div>
+          </div>
+
+          <!-- LIABILITIES + ALLOC -->
+          <div>
+            <div class="cc-card card-l" style="padding:0;margin-bottom:14px">
+              <div class="bd-head liab">
+                <div class="title">Liabilities</div>
+                <div class="total"><span class="cur">â¬</span>1,200</div>
+              </div>
+              <table class="fin">
+                <tr><th>Holding</th><th class="cat" style="text-align:left">Cat.</th><th style="text-align:right">Value</th><th style="text-align:right">MoM</th></tr>
+                <tr>
+                  <td class="nm">Amex Gold <span class="sub">due 20 May</span></td>
+                  <td class="cat">CC</td>
+                  <td class="val"><span class="cur">â¬</span>1,200</td>
+                  <td class="mom-pos" style="text-align:right">ââ¬200</td>
+                </tr>
+                <tr>
+                  <td colspan="4" style="text-align:center;color:var(--ink-3);font-size:12px;padding:18px">No outstanding loans Â· no mortgage</td>
+                </tr>
+              </table>
+              <div class="add-row"><a><span data-icon="plus"></span>Add liability</a></div>
+            </div>
+
+            <div class="cc-card">
+              <div class="cc-card-head">
+                <div class="title">Allocation</div>
+                <div class="tail">May 1, 2026</div>
+              </div>
+              <div class="alloc-stack">
+                <span style="background:#7EE7FF;flex:14.5"></span>
+                <span style="background:#B388FF;flex:64.4"></span>
+                <span style="background:#9AA8D6;flex:8.3"></span>
+                <span style="background:#FFC15C;flex:9.7"></span>
+                <span style="background:#6FD49A;flex:3.1"></span>
+              </div>
+              <div class="alloc-leg">
+                <div class="row"><span class="n"><i style="background:#7EE7FF"></i>Cash</span><span class="p">14.5% Â· â¬18.5k</span></div>
+                <div class="row"><span class="n"><i style="background:#B388FF"></i>Equity</span><span class="p">64.4% Â· â¬62.4k</span></div>
+                <div class="row"><span class="n"><i style="background:#9AA8D6"></i>Bonds</span><span class="p">15.4% Â· â¬19.6k</span></div>
+                <div class="row"><span class="n"><i style="background:#FFC15C"></i>Crypto</span><span class="p">9.7% Â· â¬12.4k</span></div>
+                <div class="row"><span class="n"><i style="background:#6FD49A"></i>Real est.</span><span class="p">8.3% Â· â¬10.5k</span></div>
+                <div class="row"><span class="n"><i style="background:rgba(255,255,255,0.1)"></i>Other</span><span class="p">3.1% Â· â¬4.0k</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">12-month delta</div><div class="tail">YoY view</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--ink-3)">May '25</span><span class="num">â¬97,830</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--ink-3)">May '26</span><span class="num">â¬127,430</span></div>
+            <div style="height:1px;background:var(--line);margin:6px 0"></div>
+            <div style="display:flex;justify-content:space-between"><span class="grad-text" style="font-weight:500">YoY change</span><span class="num" style="color:var(--pos);font-weight:600">+â¬29,600 Â· +30.3%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)"><span>Monthly avg</span><span class="num">+â¬2,467</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)"><span>Best month</span><span class="num" style="color:var(--pos)">+â¬4,800 Â· Jan</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)"><span>Worst month</span><span class="num" style="color:var(--neg)">ââ¬820 Â· Aug</span></div>
+          </div>
+        </div>
+
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Goals</div><div class="tail">2026</div></div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <div class="cc-spread" style="margin-bottom:6px;font-size:12.5px"><span>â¬150K by EOY</span><span class="num" style="color:var(--pos)">85%</span></div>
+              <div class="cc-bar"><div class="fg" style="width:85%"></div></div>
+              <div style="font-size:10.5px;color:var(--ink-3);margin-top:4px;font-family:var(--f-mono);letter-spacing:0.02em">on pace Â· 7 months remaining</div>
+            </div>
+            <div>
+              <div class="cc-spread" style="margin-bottom:6px;font-size:12.5px"><span>40% savings rate</span><span class="num" style="color:var(--cyan)">95%</span></div>
+              <div class="cc-bar"><div class="fg" style="width:95%"></div></div>
+              <div style="font-size:10.5px;color:var(--ink-3);margin-top:4px;font-family:var(--f-mono);letter-spacing:0.02em">38% YTD Â· +3pp vs '25</div>
+            </div>
+            <div>
+              <div class="cc-spread" style="margin-bottom:6px;font-size:12.5px"><span>Emergency fund Â· 6mo</span><span class="num" style="color:var(--pos)">100%</span></div>
+              <div class="cc-bar"><div class="fg" style="width:100%"></div></div>
+              <div style="font-size:10.5px;color:var(--ink-3);margin-top:4px;font-family:var(--f-mono);letter-spacing:0.02em">covered Â· 7.2 months</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head"><div class="title">Audit log</div><div class="tail">latest</div></div>
+          <div style="font-size:12px;display:flex;flex-direction:column;gap:8px;font-family:var(--f-mono);color:var(--ink-2)">
+            <div class="cc-spread"><span>+â¬820 BTC</span><span class="num" style="color:var(--ink-4);font-size:10px">MAY 1</span></div>
+            <div class="cc-spread"><span>+â¬2,100 VWCE</span><span class="num" style="color:var(--ink-4);font-size:10px">MAY 1</span></div>
+            <div class="cc-spread"><span>ââ¬600 N26</span><span class="num" style="color:var(--ink-4);font-size:10px">MAY 1</span></div>
+            <div class="cc-spread"><span>ââ¬200 Amex</span><span class="num" style="color:var(--ink-4);font-size:10px">MAY 1</span></div>
+            <div class="cc-spread"><span>Added pension â¬4K</span><span class="num" style="color:var(--ink-4);font-size:10px">MAY 1</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Finance Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+      </div>
+      <h2 class="cc-mob-title">Net <span class="grad-text">Worth</span>.</h2>
+      <div class="cc-mob-sub">May 1, 2026 snapshot</div>
+
+      <div class="mob-nw">
+        <div style="font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px"><span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span>Net worth</div>
+        <div class="big num"><span class="cur">â¬</span>127,430</div>
+        <div style="font-size:13px;color:var(--pos);margin-top:6px;font-family:var(--f-mono);display:flex;align-items:center;gap:8px">
+          <span style="display:inline-flex;width:18px;height:18px;border-radius:99px;background:rgba(111,212,154,0.15);align-items:center;justify-content:center"><span data-icon="arrowUp" style="width:10px;height:10px"></span></span>
+          +â¬3,200 Â· +2.6% MoM
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+          <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,0.012)">
+            <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Assets</div>
+            <div class="num" style="font-size:16px;margin-top:3px">â¬127.4k</div>
+          </div>
+          <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,0.012)">
+            <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Liabilities</div>
+            <div class="num" style="font-size:16px;margin-top:3px">â¬1,200</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card update-banner" style="background:rgba(255,193,92,0.06);border-color:rgba(255,193,92,0.25);margin-bottom:10px;display:block">
+        <div style="font-size:12px"><b>Update May 2026.</b><br><span style="color:var(--ink-3)">12 days overdue.</span></div>
+        <button class="cc-btn cc-btn-primary" style="margin-top:8px;width:100%;justify-content:center;font-size:12px;padding:8px">Update now âº</button>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>24 months</span><span style="color:var(--ink-4)">â¬85k â â¬127k</span></div>
+        <svg viewBox="0 0 350 100" preserveAspectRatio="none" style="width:100%;height:80px">
+          <path d="M 0,85 L 14,82 L 28,80 L 42,76 L 56,75 L 70,71 L 84,72 L 98,67 L 112,60 L 126,58 L 140,55 L 154,50 L 168,46 L 182,42 L 196,36 L 210,33 L 224,29 L 238,25 L 252,20 L 266,18 L 280,14 L 294,12 L 308,8 L 322,5 L 350,6 L 350,100 L 0,100 Z" fill="url(#ccGradFill)"/>
+          <path d="M 0,85 L 14,82 L 28,80 L 42,76 L 56,75 L 70,71 L 84,72 L 98,67 L 112,60 L 126,58 L 140,55 L 154,50 L 168,46 L 182,42 L 196,36 L 210,33 L 224,29 L 238,25 L 252,20 L 266,18 L 280,14 L 294,12 L 308,8 L 322,5 L 350,6" fill="none" stroke="url(#ccGradStroke)" stroke-width="1.5"/>
+          <circle r="3" cx="350" cy="6" fill="#7EE7FF" filter="drop-shadow(0 0 4px #7EE7FF)"/>
+        </svg>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Allocation</span></div>
+        <div class="alloc-stack">
+          <span style="background:#7EE7FF;flex:14.5"></span>
+          <span style="background:#B388FF;flex:64.4"></span>
+          <span style="background:#9AA8D6;flex:8.3"></span>
+          <span style="background:#FFC15C;flex:9.7"></span>
+          <span style="background:#6FD49A;flex:3.1"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:10px;font-size:11px;font-family:var(--f-mono);color:var(--ink-2)">
+          <div class="cc-spread"><span><i style="display:inline-block;width:6px;height:6px;border-radius:2px;background:#B388FF;margin-right:5px"></i>Equity</span><span style="color:var(--ink-3)">64%</span></div>
+          <div class="cc-spread"><span><i style="display:inline-block;width:6px;height:6px;border-radius:2px;background:#9AA8D6;margin-right:5px"></i>Bonds</span><span style="color:var(--ink-3)">15%</span></div>
+          <div class="cc-spread"><span><i style="display:inline-block;width:6px;height:6px;border-radius:2px;background:#7EE7FF;margin-right:5px"></i>Cash</span><span style="color:var(--ink-3)">15%</span></div>
+          <div class="cc-spread"><span><i style="display:inline-block;width:6px;height:6px;border-radius:2px;background:#FFC15C;margin-right:5px"></i>Crypto</span><span style="color:var(--ink-3)">10%</span></div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Holdings</span><span style="color:var(--ink-4)">top 5</span></div>
+        <div style="display:flex;flex-direction:column;gap:0;font-size:12.5px">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><div><div>VWCE</div><div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono)">EQUITY</div></div><div style="text-align:right"><div class="num">â¬62,400</div><div class="num" style="color:var(--pos);font-size:10px">+â¬2.1k</div></div></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><div><div>Treasury 10y</div><div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono)">BONDS</div></div><div style="text-align:right"><div class="num">â¬19,600</div><div class="num" style="color:var(--pos);font-size:10px">+â¬180</div></div></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><div><div>N26 / Revolut</div><div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono)">CASH</div></div><div style="text-align:right"><div class="num">â¬18,500</div><div class="num" style="color:var(--neg);font-size:10px">ââ¬600</div></div></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><div><div>Casablanca apt</div><div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono)">REAL EST.</div></div><div style="text-align:right"><div class="num">â¬10,530</div><div class="num" style="color:var(--pos);font-size:10px">+â¬160</div></div></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0"><div><div>BTC</div><div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono)">CRYPTO</div></div><div style="text-align:right"><div class="num">â¬9,400</div><div class="num" style="color:var(--pos);font-size:10px">+â¬820</div></div></div>
+        </div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="finance"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+</body>
+</html>

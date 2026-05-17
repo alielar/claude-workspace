@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>News Brief â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .news-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  .col{background:var(--bg-card);border:1px solid var(--line);border-radius:16px;
+    backdrop-filter:blur(20px);overflow:hidden;display:flex;flex-direction:column}
+  .col .head{padding:16px 18px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .col .head .lbl{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;display:flex;align-items:center}
+  .col .head .ct{font-size:10.5px;color:var(--ink-4);letter-spacing:0.06em;font-family:var(--f-mono)}
+  .col.politics .head .lbl{color:var(--c-politics)}
+  .col.tech     .head .lbl{color:var(--c-tech)}
+  .col.ai       .head .lbl{color:var(--c-ai)}
+  .col.mena     .head .lbl{color:var(--c-mena)}
+  .col.biz      .head .lbl{color:var(--c-biz)}
+  .col .body{padding:6px 0}
+
+  .h-item{padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background var(--t-1)}
+  .h-item:last-child{border-bottom:0}
+  .h-item:hover{background:rgba(255,255,255,0.025)}
+  .h-item:hover .head-line{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--ink-4)}
+  .h-item .num{font-size:9.5px;color:var(--ink-4);letter-spacing:0.10em;font-family:var(--f-mono)}
+  .h-item .head-line{font-size:13px;line-height:1.42;margin-top:4px;letter-spacing:-0.005em;color:var(--ink);text-wrap:pretty}
+  .h-item .meta{font-size:10px;color:var(--ink-4);margin-top:8px;letter-spacing:0.04em;display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);text-transform:uppercase}
+
+  .h-item.open{background:rgba(179,136,255,0.04)}
+  .h-item.open .head-line{color:var(--ink)}
+  .h-item .expand{max-height:0;overflow:hidden;transition:max-height var(--t-3) var(--easeOut);
+    margin-top:0}
+  .h-item.open .expand{max-height:240px;margin-top:10px}
+  .h-item .expand .why{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:6px}
+  .h-item .expand ul{margin:0;padding:0;list-style:none}
+  .h-item .expand li{font-size:12px;line-height:1.5;color:var(--ink-2);padding:4px 0 4px 14px;position:relative}
+  .h-item .expand li:before{content:"";position:absolute;left:0;top:11px;width:6px;height:1px;background:var(--violet)}
+  .h-item .expand .src-link{font-size:11px;color:var(--cyan);margin-top:10px;display:inline-flex;align-items:center;gap:6px;letter-spacing:0.02em}
+  .h-item .expand .src-link svg{width:11px;height:11px}
+
+  /* âââ MOBILE âââ */
+  .mob-tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:none;margin:0 -4px}
+  .mob-tabs::-webkit-scrollbar{display:none}
+  .mob-tab{flex-shrink:0;padding:8px 14px;border:1px solid var(--line);border-radius:99px;
+    background:rgba(255,255,255,0.02);font-size:11px;letter-spacing:0.10em;text-transform:uppercase;
+    color:var(--ink-3);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all var(--t-1)}
+  .mob-tab:hover{color:var(--ink)}
+  .mob-tab.cur{background:rgba(179,136,255,0.10);color:var(--ink);border-color:rgba(179,136,255,0.30)}
+  .mob-tab .ct{font-family:var(--f-mono);font-size:9.5px;padding:1px 5px;border-radius:99px;background:rgba(255,255,255,0.06)}
+  .mob-tab.cur .ct{background:rgba(179,136,255,0.20);color:var(--violet)}
+  .mob-tab .dot{width:6px;height:6px;border-radius:99px}
+  .mob-tab.politics .dot{background:var(--c-politics)}
+  .mob-tab.tech .dot{background:var(--c-tech)}
+  .mob-tab.ai .dot{background:var(--c-ai)}
+  .mob-tab.mena .dot{background:var(--c-mena)}
+  .mob-tab.biz .dot{background:var(--c-biz)}
+
+  .mob-h{padding:14px 0;border-bottom:1px solid var(--line)}
+  .mob-h:last-child{border-bottom:0}
+  .mob-h .head-line{font-size:14px;line-height:1.4;color:var(--ink);text-wrap:pretty}
+  .mob-h .meta{font-size:10px;color:var(--ink-4);margin-top:8px;letter-spacing:0.04em;display:flex;justify-content:space-between;font-family:var(--f-mono);text-transform:uppercase}
+
+  /* refresh anim */
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .spinning svg{animation:spin 1s linear infinite}
+</style>
+</head>
+<body class="cc-page" data-screen-label="News Brief Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>News Brief Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="News Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="news" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Daily <span class="grad-text">Brief</span>.</h1>
+        <div class="sub">Wednesday, May 13, 2026 Â· generated 07:03 Â· 5 categories Â· 25 headlines Â· ~6 min read</div>
+      </div>
+      <div class="actions">
+        <button class="cc-btn" id="refresh-btn"><span data-icon="refresh"></span>Refresh</button>
+        <button class="cc-btn cc-btn-ghost"><span data-icon="edit"></span>Sources</button>
+      </div>
+    </div>
+
+    <div class="news-grid">
+
+      <!-- POLITICS -->
+      <div class="col politics">
+        <div class="head">
+          <div class="lbl"><span class="cc-catdot politics"></span>Politics</div>
+          <div class="ct">05 / 05</div>
+        </div>
+        <div class="body">
+          <div class="h-item open">
+            <div class="num">01</div>
+            <div class="head-line">Spain announces new EU defense pact provisions, expanding joint procurement</div>
+            <div class="expand">
+              <div class="why">Why it matters</div>
+              <ul>
+                <li>Madrid proposes pooling 8% of national defense budgets into a shared EU fund by 2028.</li>
+                <li>Germany and Italy publicly back the framework; France remains cautious on industrial-base impact.</li>
+                <li>Could reshape EU arms procurement away from US suppliers.</li>
+              </ul>
+              <a class="src-link" href="#">Read source<span data-icon="arrowR"></span></a>
+            </div>
+            <div class="meta"><span>Reuters</span><span>2h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">02</div>
+            <div class="head-line">France's coalition government faces second confidence vote this month</div>
+            <div class="meta"><span>Le Monde</span><span>3h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">03</div>
+            <div class="head-line">MexicoâUS border infrastructure agreement nears completion after 14 months</div>
+            <div class="meta"><span>AP</span><span>4h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">04</div>
+            <div class="head-line">Germany's chancellor outlines 2027 industrial strategy focused on grid &amp; rail</div>
+            <div class="meta"><span>FAZ</span><span>5h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">05</div>
+            <div class="head-line">UK opposition leads polls by 12 points ahead of local elections</div>
+            <div class="meta"><span>BBC</span><span>6h ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TECH -->
+      <div class="col tech">
+        <div class="head">
+          <div class="lbl"><span class="cc-catdot tech"></span>Tech</div>
+          <div class="ct">05 / 05</div>
+        </div>
+        <div class="body">
+          <div class="h-item">
+            <div class="num">01</div>
+            <div class="head-line">Apple unveils on-device foundation model for developers at WWDC preview</div>
+            <div class="meta"><span>The Verge</span><span>2h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">02</div>
+            <div class="head-line">Microsoft acquires enterprise security firm for $4.8B in all-cash deal</div>
+            <div class="meta"><span>Bloomberg</span><span>3h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">03</div>
+            <div class="head-line">Nvidia reports record data-center revenue, $44B for the quarter</div>
+            <div class="meta"><span>WSJ</span><span>4h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">04</div>
+            <div class="head-line">OpenAI delays GPT-5.5 release amid extended alignment testing</div>
+            <div class="meta"><span>The Information</span><span>5h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">05</div>
+            <div class="head-line">Meta opens Threads API to third-party clients, ending closed-platform period</div>
+            <div class="meta"><span>TechCrunch</span><span>6h ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI -->
+      <div class="col ai">
+        <div class="head">
+          <div class="lbl"><span class="cc-catdot ai"></span>AI</div>
+          <div class="ct">05 / 05</div>
+        </div>
+        <div class="body">
+          <div class="h-item">
+            <div class="num">01</div>
+            <div class="head-line">Anthropic announces Claude Opus 5 in research preview, broader release in July</div>
+            <div class="meta"><span>Anthropic</span><span>1h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">02</div>
+            <div class="head-line">EU AI Act second-phase enforcement begins June 1 â risk audits required</div>
+            <div class="meta"><span>FT</span><span>3h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">03</div>
+            <div class="head-line">DeepMind paper claims breakthrough in materials science modeling at scale</div>
+            <div class="meta"><span>Nature</span><span>4h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">04</div>
+            <div class="head-line">Mistral raises â¬600M Series C at â¬8B valuation, led by sovereign funds</div>
+            <div class="meta"><span>Les Echos</span><span>5h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">05</div>
+            <div class="head-line">California passes amended SB-1047 with revised compute thresholds for liability</div>
+            <div class="meta"><span>LA Times</span><span>6h ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENA -->
+      <div class="col mena">
+        <div class="head">
+          <div class="lbl"><span class="cc-catdot mena"></span>MENA</div>
+          <div class="ct">05 / 05</div>
+        </div>
+        <div class="body">
+          <div class="h-item">
+            <div class="num">01</div>
+            <div class="head-line">Morocco signs renewable energy partnership with Portugal â subsea cable advances</div>
+            <div class="meta"><span>Reuters</span><span>2h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">02</div>
+            <div class="head-line">Saudi NEOM announces phase-2 funding round, targets $50B</div>
+            <div class="meta"><span>Bloomberg</span><span>3h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">03</div>
+            <div class="head-line">EgyptâUAE infrastructure deal completes after 18 months of negotiation</div>
+            <div class="meta"><span>Al-Ahram</span><span>4h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">04</div>
+            <div class="head-line">Tunisia's central bank cuts rates 50bps, signaling inflation peak</div>
+            <div class="meta"><span>FT</span><span>5h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">05</div>
+            <div class="head-line">Algeria gas export volumes hit five-year high on EU demand</div>
+            <div class="meta"><span>Reuters</span><span>6h ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUSINESS -->
+      <div class="col biz">
+        <div class="head">
+          <div class="lbl"><span class="cc-catdot biz"></span>Business</div>
+          <div class="ct">05 / 05</div>
+        </div>
+        <div class="body">
+          <div class="h-item">
+            <div class="num">01</div>
+            <div class="head-line">S&amp;P 500 closes at record high, +0.8% â broad rally led by industrials</div>
+            <div class="meta"><span>WSJ</span><span>1h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">02</div>
+            <div class="head-line">ECB holds rates steady, signals likely September cut in policy statement</div>
+            <div class="meta"><span>FT</span><span>3h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">03</div>
+            <div class="head-line">Bitcoin holds above $95K amid sustained ETF inflows for second week</div>
+            <div class="meta"><span>CoinDesk</span><span>4h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">04</div>
+            <div class="head-line">Shopify reports 32% YoY revenue growth, beats analyst expectations</div>
+            <div class="meta"><span>Bloomberg</span><span>5h ago</span></div>
+          </div>
+          <div class="h-item">
+            <div class="num">05</div>
+            <div class="head-line">Tesla margins compress to 14.2% in Q1, lowest since 2020</div>
+            <div class="meta"><span>Reuters</span><span>6h ago</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- footer -->
+    <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;color:var(--ink-3);font-size:11px;letter-spacing:0.04em">
+      <span>Sources: Reuters Â· WSJ Â· FT Â· Bloomberg Â· The Verge Â· The Information Â· BBC Â· Le Monde Â· FAZ Â· AP Â· Nature Â· Les Echos Â· Al-Ahram Â· LA Times Â· CoinDesk Â· Anthropic blog Â· TechCrunch</span>
+      <span style="color:var(--ink-4);font-family:var(--f-mono);letter-spacing:0.06em">v2026.05.13.07:03</span>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="News Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="refresh" style="width:14px"></span></button>
+      </div>
+      <h2 class="cc-mob-title">Daily <span class="grad-text">Brief</span>.</h2>
+      <div class="cc-mob-sub">Wed Â· May 13 Â· gen 07:03 Â· 25 headlines</div>
+
+      <!-- Tabs (sticky) -->
+      <div class="mob-tabs">
+        <div class="mob-tab politics cur"><span class="dot"></span>Politics<span class="ct">5</span></div>
+        <div class="mob-tab tech"><span class="dot"></span>Tech<span class="ct">5</span></div>
+        <div class="mob-tab ai"><span class="dot"></span>AI<span class="ct">5</span></div>
+        <div class="mob-tab mena"><span class="dot"></span>MENA<span class="ct">5</span></div>
+        <div class="mob-tab biz"><span class="dot"></span>Biz<span class="ct">5</span></div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span><span class="cc-catdot politics" style="width:7px;height:7px"></span>Politics</span><span style="color:var(--ink-4)">5/5</span></div>
+        <div class="mob-h">
+          <div class="head-line">Spain announces new EU defense pact provisions, expanding joint procurement</div>
+          <div class="meta"><span>Reuters</span><span>2H</span></div>
+        </div>
+        <div class="mob-h">
+          <div class="head-line">France's coalition government faces second confidence vote this month</div>
+          <div class="meta"><span>Le Monde</span><span>3H</span></div>
+        </div>
+        <div class="mob-h">
+          <div class="head-line">MexicoâUS border infrastructure agreement nears completion</div>
+          <div class="meta"><span>AP</span><span>4H</span></div>
+        </div>
+        <div class="mob-h">
+          <div class="head-line">Germany's chancellor outlines 2027 industrial strategy</div>
+          <div class="meta"><span>FAZ</span><span>5H</span></div>
+        </div>
+        <div class="mob-h">
+          <div class="head-line">UK opposition leads polls by 12 points ahead of local elections</div>
+          <div class="meta"><span>BBC</span><span>6H</span></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:10.5px;color:var(--ink-4);padding:8px 0 14px;letter-spacing:0.10em;text-transform:uppercase;font-family:var(--f-mono)">
+        â swipe for Tech â
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="news"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+<script>
+  // expand/collapse headlines on click
+  document.querySelectorAll('.h-item').forEach(it=>{
+    it.addEventListener('click', e=>{
+      if(e.target.closest('.src-link')) return;
+      const wasOpen = it.classList.contains('open');
+      // collapse others in same col
+      it.closest('.col').querySelectorAll('.h-item.open').forEach(o=>o.classList.remove('open'));
+      if(!wasOpen) it.classList.add('open');
+    });
+  });
+  // tab switching (visual only)
+  document.querySelectorAll('.mob-tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.mob-tab').forEach(x=>x.classList.remove('cur'));
+      t.classList.add('cur');
+    });
+  });
+  // refresh button
+  const rb = document.getElementById('refresh-btn');
+  if(rb) rb.addEventListener('click', ()=>{
+    rb.classList.add('spinning');
+    setTimeout(()=>rb.classList.remove('spinning'), 1000);
+  });
+</script>
+</body>
+</html>

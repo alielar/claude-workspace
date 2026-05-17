@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Workouts â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  /* page-local refinements */
+  .upnext{padding:0;overflow:hidden;position:relative;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.16), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+      var(--bg-card)}
+  .upnext .inner{padding:30px 32px}
+  .upnext .lab{font-size:10.5px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);
+    display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .upnext .lab:before{content:"";width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .upnext .name{font-size:64px;font-weight:200;letter-spacing:-0.04em;line-height:0.9;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 24px rgba(179,136,255,0.20))}
+  .upnext .meta{display:flex;gap:18px;margin-top:14px;color:var(--ink-2);font-size:12.5px;align-items:center}
+  .upnext .meta .dot{width:3px;height:3px;border-radius:99px;background:var(--ink-4)}
+  .upnext .ex-list{margin-top:24px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .upnext .ex{display:grid;grid-template-columns: 24px 1fr auto;gap:12px;align-items:center;
+    padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.018);font-size:13px}
+  .upnext .ex .n{font-family:var(--f-mono);color:var(--ink-4);font-size:10.5px;letter-spacing:0.06em}
+  .upnext .ex .sx{font-family:var(--f-mono);color:var(--ink-3);font-size:11.5px;letter-spacing:0.02em}
+  .upnext .ex.more{justify-content:center;color:var(--ink-3);grid-template-columns:auto;font-size:11.5px;letter-spacing:0.04em;cursor:pointer;border-style:dashed}
+  .upnext .footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;
+    padding-top:20px;border-top:1px solid var(--line)}
+  .upnext .footer .stats{display:flex;gap:24px;font-size:11px;color:var(--ink-3);letter-spacing:0.02em}
+  .upnext .footer .stats b{color:var(--ink);font-weight:500;font-family:var(--f-mono);margin-right:4px}
+
+  /* weekly rotation strip */
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:14px}
+  .day{padding:14px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.018);
+    text-align:left;position:relative;transition:all var(--t-1);overflow:hidden;cursor:pointer}
+  .day:hover{border-color:var(--line-hi);background:rgba(255,255,255,0.03)}
+  .day .dow{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .day .dnum{font-size:18px;font-weight:500;letter-spacing:-0.02em;margin-top:2px}
+  .day .ico{margin-top:14px;height:18px;color:var(--ink-3)}
+  .day .ico svg{width:18px;height:18px}
+  .day .ses{font-size:11px;font-weight:500;letter-spacing:0.02em;margin-top:6px;color:var(--ink-2)}
+  .day .dur{font-size:10px;color:var(--ink-4);font-family:var(--f-mono);margin-top:2px;letter-spacing:0.04em}
+  .day.cur{
+    background:radial-gradient(70% 80% at 0% 0%, rgba(179,136,255,0.18), transparent 60%), rgba(255,255,255,0.025);
+    border-color:rgba(179,136,255,0.40);
+    box-shadow:0 0 24px rgba(179,136,255,0.18), inset 0 0 12px rgba(179,136,255,0.06)
+  }
+  .day.cur .dnum, .day.cur .ses{color:var(--ink)}
+  .day.cur .ico{color:var(--violet);filter:drop-shadow(0 0 6px rgba(179,136,255,0.5))}
+  .day.cur .badge{position:absolute;top:8px;right:8px;font-size:8.5px;font-family:var(--f-mono);
+    color:var(--cyan);letter-spacing:0.12em}
+  .day.rest .ico{color:var(--ink-4)}
+  .day.rest .ses{color:var(--ink-3)}
+
+  /* all sessions list */
+  .sessions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .session{padding:16px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.018);
+    transition:all var(--t-1);cursor:pointer;position:relative}
+  .session:hover{border-color:var(--line-hi);background:rgba(255,255,255,0.03)}
+  .session:hover .preview{opacity:1}
+  .session .row1{display:flex;justify-content:space-between;align-items:baseline}
+  .session .nm{font-size:16px;font-weight:500;letter-spacing:-0.005em}
+  .session .ct{font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em;font-family:var(--f-mono)}
+  .session .meta{font-size:11.5px;color:var(--ink-3);margin-top:4px;letter-spacing:0.01em}
+  .session .preview{margin-top:12px;opacity:0;transition:opacity var(--t-2);font-size:10.5px;color:var(--ink-3);
+    padding-top:10px;border-top:1px solid var(--line);letter-spacing:0.04em;text-transform:uppercase}
+  .session.run{background:radial-gradient(60% 80% at 100% 0%, rgba(126,231,255,0.10), transparent 60%), rgba(255,255,255,0.018);
+    border-color:rgba(126,231,255,0.20)}
+
+  /* PR ticker */
+  .pr-strip{display:flex;gap:10px;overflow:auto;padding-bottom:6px;scrollbar-width:thin}
+  .pr-strip::-webkit-scrollbar{height:4px}
+  .pr-strip::-webkit-scrollbar-thumb{background:var(--line-hi);border-radius:99px}
+  .pr-card{flex-shrink:0;padding:14px 18px;border:1px solid var(--line);border-radius:12px;
+    background:rgba(255,255,255,0.018);min-width:240px;position:relative}
+  .pr-card .pr-l{font-size:9.5px;letter-spacing:0.20em;text-transform:uppercase;color:var(--warn);font-weight:600}
+  .pr-card .pr-l:before{content:"â ";color:var(--warn)}
+  .pr-card .pr-nm{font-size:13px;color:var(--ink-2);margin-top:6px}
+  .pr-card .pr-v{font-size:24px;font-weight:300;letter-spacing:-0.02em;margin-top:2px;font-family:var(--f-mono);
+    color:var(--ink)}
+  .pr-card .pr-v .x{color:var(--ink-3);font-size:14px}
+  .pr-card .pr-ago{font-size:10.5px;color:var(--ink-4);letter-spacing:0.04em;margin-top:4px;font-family:var(--f-mono)}
+
+  /* running progress */
+  .run-progress{padding:18px;border:1px solid rgba(126,231,255,0.20);border-radius:12px;
+    background:radial-gradient(60% 80% at 100% 0%, rgba(126,231,255,0.10), transparent 60%), rgba(255,255,255,0.018)}
+  .run-progress .lbl{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--cyan);font-weight:600}
+  .run-progress .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+  .run-progress .v{font-size:30px;font-weight:200;letter-spacing:-0.03em;font-family:var(--f-mono)}
+  .run-progress .v .g{color:var(--ink-3);font-size:16px}
+  .run-progress .tag{font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em}
+  .run-progress .bar{margin-top:12px}
+
+  /* layout */
+  .col-main{display:grid;grid-template-columns:8fr 4fr;gap:14px}
+
+  /* mobile */
+  .mob-upnext{padding:18px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;
+    background:radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.18), transparent 60%), var(--bg-card);
+    backdrop-filter:blur(16px)}
+  .mob-upnext .name{font-size:44px;font-weight:200;letter-spacing:-0.04em;line-height:0.9;
+    background:var(--grad);-webkit-background-clip:text;color:transparent}
+  .mob-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:10px}
+  .mob-day{aspect-ratio:1/1.3;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,0.015);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:6px 4px;font-size:9px;
+    color:var(--ink-3);letter-spacing:0.04em;text-transform:uppercase}
+  .mob-day .dn{color:var(--ink);font-size:13px;font-weight:500;margin-top:2px;letter-spacing:-0.01em;text-transform:none}
+  .mob-day .ses{margin-top:4px;font-size:8.5px}
+  .mob-day.cur{background:radial-gradient(70% 80% at 0% 0%, rgba(179,136,255,0.20), transparent 60%);border-color:rgba(179,136,255,0.40)}
+  .mob-day.cur .ses{color:var(--violet)}
+
+</style>
+</head>
+<body class="cc-page" data-screen-label="Workouts Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Workouts Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- ââââââââ DESKTOP ââââââââ -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Workouts Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+
+    <div class="cc-top" data-cc-nav="workouts" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Workouts<span class="grad-text">.</span></h1>
+        <div class="sub">Push Â· Pull Â· Legs split Â· Wk 19 of 2026 Â· 73 sessions YTD</div>
+      </div>
+      <div class="actions">
+        <button class="cc-btn"><span data-icon="history"></span>History</button>
+        <button class="cc-btn"><span data-icon="edit"></span>Templates</button>
+        <button class="cc-btn cc-btn-icon"><span data-icon="plus"></span></button>
+      </div>
+    </div>
+
+    <!-- PR ticker -->
+    <div style="margin-bottom:18px">
+      <div class="cc-sechead">Recent PRs<span class="tail">â 3 personal records this week</span></div>
+      <div class="pr-strip">
+        <div class="pr-card">
+          <div class="pr-l">Bench Press</div>
+          <div class="pr-nm">Flat barbell Â· 1RM est.</div>
+          <div class="pr-v num">80<span class="x"> kg Ã 5</span></div>
+          <div class="pr-ago">3 days ago Â· +2.5kg</div>
+        </div>
+        <div class="pr-card">
+          <div class="pr-l">Pull-Up</div>
+          <div class="pr-nm">Bodyweight strict</div>
+          <div class="pr-v num">8<span class="x"> reps</span></div>
+          <div class="pr-ago">5 days ago Â· +1 rep</div>
+        </div>
+        <div class="pr-card">
+          <div class="pr-l">Back Squat</div>
+          <div class="pr-nm">High bar Â· belt</div>
+          <div class="pr-v num">100<span class="x"> kg Ã 5</span></div>
+          <div class="pr-ago">8 days ago Â· +5kg</div>
+        </div>
+        <div class="pr-card">
+          <div class="pr-l">5K Run</div>
+          <div class="pr-nm">Non-stop Â· target</div>
+          <div class="pr-v num">3.8<span class="x"> km</span></div>
+          <div class="pr-ago">2 days ago Â· +400m</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-main">
+      <!-- LEFT: Up Next + sessions -->
+      <div>
+        <!-- UP NEXT -->
+        <div class="cc-card upnext" style="margin-bottom:14px">
+          <div class="inner">
+            <div class="cc-spread" style="align-items:flex-start">
+              <div>
+                <div class="lab">Up Next Â· today Â· 15:30</div>
+                <div class="name">PUSH</div>
+                <div class="meta">
+                  <span>50 min Â· 6 exercises</span><span class="dot"></span>
+                  <span>Chest Â· Shoulders Â· Triceps</span><span class="dot"></span>
+                  <span class="cc-tag cyan">Volume +4%</span><span class="dot"></span>
+                  <span>last: 6d ago</span>
+                </div>
+              </div>
+              <button class="cc-btn cc-btn-primary pulse" style="font-size:14px;padding:14px 22px">
+                <span data-icon="play"></span>Start session
+              </button>
+            </div>
+
+            <div class="ex-list">
+              <div class="ex"><span class="n">01</span><span class="nm">Low Incline Dumbbell Press</span><span class="sx">4 Ã 8</span></div>
+              <div class="ex"><span class="n">02</span><span class="nm">Seated DB Overhead Press</span><span class="sx">4 Ã 10</span></div>
+              <div class="ex"><span class="n">03</span><span class="nm">Cable Triceps Pushdown</span><span class="sx">3 Ã 12</span></div>
+              <div class="ex"><span class="n">04</span><span class="nm">Dumbbell Fly</span><span class="sx">3 Ã 12</span></div>
+              <div class="ex"><span class="n">05</span><span class="nm">Seated Lateral Raise</span><span class="sx">3 Ã 15</span></div>
+              <div class="ex"><span class="n">06</span><span class="nm">Cable Tri. Overhead Ext.</span><span class="sx">3 Ã 12</span></div>
+            </div>
+
+            <div class="footer">
+              <div class="stats">
+                <span><b>412kg</b>total Â· last push</span>
+                <span><b>+8%</b>vs 30d avg</span>
+                <span><b>RPE 7.4</b>target</span>
+              </div>
+              <span style="font-size:11px;color:var(--ink-4);letter-spacing:0.04em">Edit template â</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SESSIONS -->
+        <div class="cc-card">
+          <div class="cc-card-head">
+            <div class="title">All Sessions</div>
+            <div class="tail">6 templates Â· tap to preview</div>
+          </div>
+          <div class="sessions">
+            <div class="session">
+              <div class="row1"><div class="nm">Push</div><div class="ct">06 Â· 50m</div></div>
+              <div class="meta">Chest Â· Shoulders Â· Triceps</div>
+              <div class="preview">Bench Â· OHP Â· Fly Â· Lateral Â· Pushdown Â· Overhead Ext.</div>
+            </div>
+            <div class="session">
+              <div class="row1"><div class="nm">Pull</div><div class="ct">06 Â· 55m</div></div>
+              <div class="meta">Back Â· Biceps Â· Rear delts</div>
+              <div class="preview">Pull-Up Â· Row Â· Lat Pulldown Â· Curl Â· Face Pull Â· Hammer</div>
+            </div>
+            <div class="session">
+              <div class="row1"><div class="nm">Legs</div><div class="ct">06 Â· 65m</div></div>
+              <div class="meta">Quads Â· Hams Â· Glutes Â· Calves</div>
+              <div class="preview">Squat Â· RDL Â· Leg Press Â· Curl Â· Extension Â· Calf Raise</div>
+            </div>
+            <div class="session">
+              <div class="row1"><div class="nm">Core</div><div class="ct">04 Â· 25m</div></div>
+              <div class="meta">Abs Â· Obliques Â· Lower back</div>
+              <div class="preview">Hanging Leg Â· Cable Wood Chop Â· Plank Â· Back Ext.</div>
+            </div>
+            <div class="session">
+              <div class="row1"><div class="nm">Push-Up Skill</div><div class="ct">05 Â· 35m</div></div>
+              <div class="meta">Calisthenics Â· explosive Â· skill</div>
+              <div class="preview">Pseudo PL Â· Archer Â· Diamond Â· Plyometric Â· Hand-release</div>
+            </div>
+            <div class="session run">
+              <div class="row1"><div class="nm">Running</div><div class="ct">â Â· 30m</div></div>
+              <div class="meta">Zone 2 + intervals Â· 3Ã/wk</div>
+              <div class="preview">Goal: 5K non-stop Â· current 3.8K Â· +400m last wk</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: weekly rotation + running progress -->
+      <div>
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head">
+            <div class="title">Week 19 Â· May 11â17</div>
+            <div class="tail">5 of 7 days planned</div>
+          </div>
+          <div class="week">
+            <div class="day"><div class="dow">Mon</div><div class="dnum">11</div><div class="ico"><span data-icon="workouts"></span></div><div class="ses">Push</div><div class="dur">50m Â· done</div></div>
+            <div class="day"><div class="dow">Tue</div><div class="dnum">12</div><div class="ico"><span data-icon="workouts"></span></div><div class="ses">Pull</div><div class="dur">55m Â· done</div></div>
+            <div class="day cur">
+              <span class="badge">TODAY</span>
+              <div class="dow">Wed</div><div class="dnum">13</div>
+              <div class="ico"><span data-icon="workouts"></span></div>
+              <div class="ses">Push</div><div class="dur">50m Â· 15:30</div>
+            </div>
+            <div class="day"><div class="dow">Thu</div><div class="dnum">14</div><div class="ico"><span data-icon="focus"></span></div><div class="ses">Push-Up</div><div class="dur">35m</div></div>
+            <div class="day"><div class="dow">Fri</div><div class="dnum">15</div><div class="ico"><span data-icon="workouts"></span></div><div class="ses">Legs</div><div class="dur">65m</div></div>
+            <div class="day"><div class="dow">Sat</div><div class="dnum">16</div><div class="ico"><span data-icon="workouts"></span></div><div class="ses">Pull</div><div class="dur">55m</div></div>
+            <div class="day rest"><div class="dow">Sun</div><div class="dnum">17</div><div class="ico"><span data-icon="sleep"></span></div><div class="ses">Rest</div><div class="dur">â</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em;padding-top:10px;border-top:1px solid var(--line);margin-top:4px">
+            <span><span style="color:var(--pos)">â</span> Running interleaved Â· Tue Â· Thu Â· Sat</span>
+            <span style="color:var(--ink-4)">â Edit week</span>
+          </div>
+        </div>
+
+        <!-- Running progress -->
+        <div class="cc-card">
+          <div class="cc-card-head">
+            <div class="title" style="color:var(--cyan)">Running Â· 5K Goal</div>
+            <div class="tail">non-stop target</div>
+          </div>
+          <div class="run-progress">
+            <div class="cc-spread"><span class="lbl">Furthest non-stop</span><span class="tag">â² +400m last wk</span></div>
+            <div class="row">
+              <div class="v num">3.8<span class="g"> / 5.0 km</span></div>
+              <div class="tag">76% of goal</div>
+            </div>
+            <div class="cc-bar bar"><div class="fg" style="width:76%"></div></div>
+          </div>
+          <div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);padding-top:14px">
+            <div style="padding-right:12px;border-right:1px solid var(--line)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)">This wk</div>
+              <div class="num" style="font-size:18px;margin-top:4px">12.4 km</div>
+            </div>
+            <div style="padding:0 12px;border-right:1px solid var(--line)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)">Avg pace</div>
+              <div class="num" style="font-size:18px;margin-top:4px">5:48 <span style="font-size:11px;color:var(--ink-3)">/km</span></div>
+            </div>
+            <div style="padding-left:12px">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)">Sessions</div>
+              <div class="num" style="font-size:18px;margin-top:4px">3 <span style="font-size:11px;color:var(--ink-3)">/ wk</span></div>
+            </div>
+          </div>
+          <button class="cc-btn cc-btn-cyan" style="margin-top:14px;width:100%;justify-content:center">
+            <span data-icon="plus"></span>Log run
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ââââââââ MOBILE ââââââââ -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Workouts Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="history" style="width:14px"></span></button>
+          <div class="cc-avatar" style="width:26px;height:26px;font-size:11px">A</div>
+        </div>
+      </div>
+      <h2 class="cc-mob-title">Workouts<span class="grad-text">.</span></h2>
+      <div class="cc-mob-sub">Wk 19 Â· 73 sessions YTD</div>
+
+      <!-- Up Next -->
+      <div class="mob-upnext">
+        <div class="cc-spread" style="margin-bottom:4px">
+          <span style="font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px"><span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span>Up Next Â· 15:30</span>
+          <span style="font-size:10px;color:var(--ink-4);letter-spacing:0.06em;font-family:var(--f-mono)">6 EX Â· 50m</span>
+        </div>
+        <div class="name">PUSH</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:6px">Chest Â· Shoulders Â· Triceps</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+          <span class="cc-tag cyan">Vol +4%</span>
+          <span class="cc-tag neutral">Last 6d ago</span>
+        </div>
+        <button class="cc-btn cc-btn-primary pulse" style="margin-top:14px;width:100%;justify-content:center">
+          <span data-icon="play"></span>Start session
+        </button>
+      </div>
+
+      <!-- Week strip -->
+      <div class="cc-mob-card">
+        <div class="ch"><span>Wk 19 Â· May 11â17</span><span style="color:var(--ink-4)">5/7</span></div>
+        <div class="mob-week">
+          <div class="mob-day"><span>MON</span><span class="dn">11</span><span class="ses" style="color:var(--ink-3)">Push</span></div>
+          <div class="mob-day"><span>TUE</span><span class="dn">12</span><span class="ses" style="color:var(--ink-3)">Pull</span></div>
+          <div class="mob-day cur"><span>WED</span><span class="dn">13</span><span class="ses">Push</span></div>
+          <div class="mob-day"><span>THU</span><span class="dn">14</span><span class="ses">P-Up</span></div>
+          <div class="mob-day"><span>FRI</span><span class="dn">15</span><span class="ses">Legs</span></div>
+          <div class="mob-day"><span>SAT</span><span class="dn">16</span><span class="ses">Pull</span></div>
+          <div class="mob-day"><span>SUN</span><span class="dn">17</span><span class="ses" style="color:var(--ink-4)">Rest</span></div>
+        </div>
+      </div>
+
+      <!-- Sessions -->
+      <div class="cc-mob-card">
+        <div class="ch"><span>All Sessions</span><span style="color:var(--ink-4)">6</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="session" style="padding:12px"><div class="row1"><div class="nm" style="font-size:14px">Push</div><div class="ct">06 Â· 50m</div></div><div class="meta">Chest Â· Sho Â· Tri</div></div>
+          <div class="session" style="padding:12px"><div class="row1"><div class="nm" style="font-size:14px">Pull</div><div class="ct">06 Â· 55m</div></div><div class="meta">Back Â· Bi Â· Rear delt</div></div>
+          <div class="session" style="padding:12px"><div class="row1"><div class="nm" style="font-size:14px">Legs</div><div class="ct">06 Â· 65m</div></div><div class="meta">Quad Â· Ham Â· Glute</div></div>
+          <div class="session" style="padding:12px"><div class="row1"><div class="nm" style="font-size:14px">Core</div><div class="ct">04 Â· 25m</div></div><div class="meta">Abs Â· Oblique Â· Lower back</div></div>
+          <div class="session" style="padding:12px"><div class="row1"><div class="nm" style="font-size:14px">Push-Up Skill</div><div class="ct">05 Â· 35m</div></div><div class="meta">Calisthenics Â· explosive</div></div>
+          <div class="session run" style="padding:12px"><div class="row1"><div class="nm" style="font-size:14px">Running</div><div class="ct">â Â· 30m</div></div><div class="meta">3.8 / 5.0 km Â· 76%</div></div>
+        </div>
+      </div>
+
+      <!-- PRs -->
+      <div class="cc-mob-card">
+        <div class="ch"><span>Recent PRs</span><span style="color:var(--warn)">â 3</span></div>
+        <div class="pr-strip" style="margin:0 -16px;padding:0 16px 6px">
+          <div class="pr-card" style="min-width:200px;padding:12px 14px">
+            <div class="pr-l">Bench</div>
+            <div class="pr-v num" style="font-size:20px">80<span class="x"> Ã 5</span></div>
+            <div class="pr-ago">3d ago Â· +2.5kg</div>
+          </div>
+          <div class="pr-card" style="min-width:200px;padding:12px 14px">
+            <div class="pr-l">Pull-Up</div>
+            <div class="pr-v num" style="font-size:20px">8<span class="x"> reps</span></div>
+            <div class="pr-ago">5d ago Â· +1</div>
+          </div>
+          <div class="pr-card" style="min-width:200px;padding:12px 14px">
+            <div class="pr-l">Squat</div>
+            <div class="pr-v num" style="font-size:20px">100<span class="x"> Ã 5</span></div>
+            <div class="pr-ago">8d ago Â· +5kg</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="workouts"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+</body>
+</html>

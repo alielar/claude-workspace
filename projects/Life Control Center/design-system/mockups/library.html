@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Library â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:14px}
+
+  /* year hero */
+  .year-card{padding:24px 28px;
+    background:radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.12), transparent 60%), var(--bg-card)}
+  .year-card .row1{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+  .year-card .lbl{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .year-card .lbl:before{content:"";width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+  .year-card .big{font-size:56px;font-weight:200;letter-spacing:-0.04em;line-height:1;
+    background:var(--grad);-webkit-background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 18px rgba(179,136,255,0.20));margin-top:6px}
+  .year-card .big .of{font-size:24px;-webkit-text-fill-color:var(--ink-3);color:var(--ink-3)}
+  .year-card .meta{font-size:13px;color:var(--ink-2);text-align:right;letter-spacing:0.01em}
+  .year-card .meta b{color:var(--ink);font-weight:500}
+  .year-card .bar{height:8px;background:rgba(255,255,255,0.04);border-radius:99px;overflow:hidden;margin-top:18px;
+    display:flex;gap:1px}
+  .year-card .bar .seg{flex:1;height:100%;background:rgba(255,255,255,0.025);border-radius:1px;transition:all var(--t-1)}
+  .year-card .bar .seg.done{background:var(--grad);box-shadow:0 0 6px rgba(179,136,255,0.40)}
+  .year-card .bar .seg.reading{background:linear-gradient(90deg, rgba(179,136,255,0.50), rgba(126,231,255,0.20))}
+  .year-card .bar .seg.current{background:rgba(126,231,255,0.20);box-shadow:0 0 8px rgba(126,231,255,0.30);border:1px dashed rgba(126,231,255,0.50)}
+  .year-card .months{display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink-4);letter-spacing:0.10em;
+    margin-top:6px;font-family:var(--f-mono)}
+  .year-card .months span.cur{color:var(--cyan)}
+
+  /* book row */
+  .book-row{display:grid;grid-template-columns:64px 70px 1fr 130px 220px;gap:18px;align-items:center;
+    padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.012);
+    transition:all var(--t-1);cursor:pointer;position:relative;margin-bottom:8px}
+  .book-row:hover{border-color:var(--line-hi);background:rgba(255,255,255,0.025)}
+  .book-row .mo{text-align:center}
+  .book-row .mo .m{font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .book-row .mo .n{font-size:24px;font-weight:500;letter-spacing:-0.02em;color:var(--ink-2);font-family:var(--f-mono);margin-top:2px}
+  .book-row .cover{width:54px;height:78px;font-family:'EB Garamond', serif}
+  .book-row .cover.lg{}
+  .book-row .info .ti{font-size:15.5px;font-weight:500;letter-spacing:-0.005em;line-height:1.25}
+  .book-row .info .au{font-size:12px;color:var(--ink-3);margin-top:3px}
+  .book-row .info .tags{display:flex;gap:6px;margin-top:8px}
+  .book-row .stat{display:flex;flex-direction:column;gap:4px}
+  .book-row .stat .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .book-row .stat .v{font-size:14px;font-weight:500;letter-spacing:-0.005em}
+  .book-row .stat .v.fin{color:var(--pos)}
+  .book-row .stat .v.reading{color:var(--cyan)}
+  .book-row .stat .v.notstarted{color:var(--ink-3)}
+  .book-row .stat .pct{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);margin-top:2px;letter-spacing:0.04em}
+  .book-row .stat .pbar{height:2px;width:100%;background:var(--line);margin-top:4px;border-radius:99px;overflow:hidden}
+  .book-row .stat .pbar .fg{height:100%;background:var(--grad)}
+  .book-row .actions-r{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+
+  /* current month row */
+  .book-row.current{
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.10), transparent 60%),
+      radial-gradient(40% 80% at 100% 100%, rgba(126,231,255,0.08), transparent 60%),
+      rgba(255,255,255,0.025);
+    border-color:rgba(179,136,255,0.30);
+    box-shadow:0 0 24px rgba(179,136,255,0.10);
+  }
+  .book-row.current:before{content:"";position:absolute;top:0;left:0;bottom:0;width:2px;
+    background:var(--grad);border-radius:2px 0 0 2px;box-shadow:0 0 10px rgba(179,136,255,0.50)}
+  .book-row.current .mo .m{color:var(--cyan)}
+  .book-row.current .mo .n{color:var(--ink)}
+  .badge-this{position:absolute;top:-8px;right:18px;font-size:9px;letter-spacing:0.20em;text-transform:uppercase;
+    font-weight:600;padding:2px 8px;background:var(--grad);color:#0A0A14;border-radius:99px;
+    box-shadow:0 0 12px rgba(179,136,255,0.40)}
+
+  .book-row.finished .cover{position:relative}
+  .book-row.finished .cover:after{content:"â";position:absolute;top:4px;right:4px;width:14px;height:14px;
+    border-radius:99px;background:var(--pos);color:#0A0A14;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .book-row.notstarted .cover{opacity:0.5}
+  .book-row.notstarted .info .ti{color:var(--ink-2)}
+
+  /* sidebar â wishlist + sessions */
+  .add-card{padding:18px;border:1px dashed var(--line-hi);border-radius:12px;background:rgba(126,231,255,0.04);text-align:center}
+  .add-card .ico{display:inline-flex;width:42px;height:42px;border-radius:99px;background:rgba(126,231,255,0.10);align-items:center;justify-content:center;color:var(--cyan);margin-bottom:8px}
+  .add-card .ico svg{width:18px;height:18px}
+  .add-card .ttl{font-size:13.5px;font-weight:500}
+  .add-card .sub{font-size:11.5px;color:var(--ink-3);margin-top:4px;line-height:1.5}
+  .add-card .btn{margin-top:12px}
+
+  .session-row{padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .session-row:last-child{border-bottom:0}
+  .session-row .row1{display:flex;justify-content:space-between;align-items:center}
+  .session-row .bk{color:var(--ink)}
+  .session-row .dur{font-family:var(--f-mono);color:var(--ink-3);font-size:11px;letter-spacing:0.04em}
+  .session-row .meta{font-size:10.5px;color:var(--ink-4);margin-top:2px;letter-spacing:0.04em;font-family:var(--f-mono)}
+
+  /* cover content (use Garamond) */
+  .cover-text{position:absolute;inset:6px;display:flex;flex-direction:column;justify-content:flex-end;
+    font-size:7px;line-height:1.15;font-weight:500;font-family:'EB Garamond', serif;color:rgba(255,255,255,0.55);letter-spacing:0.04em;text-transform:uppercase;text-align:left}
+  .cover-text .t{color:rgba(255,255,255,0.80);font-size:8px;line-height:1.1;text-transform:none;letter-spacing:0;margin-bottom:2px}
+
+  .pill-tag{padding:3px 8px;font-size:9.5px;letter-spacing:0.10em;text-transform:uppercase;
+    border:1px solid var(--line);border-radius:99px;color:var(--ink-3);font-weight:500}
+
+  /* mobile */
+  .mob-year{padding:18px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;
+    background:radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.14), transparent 60%), var(--bg-card)}
+  .mob-year .big{font-size:44px;font-weight:200;letter-spacing:-0.04em;line-height:1;
+    background:var(--grad);-webkit-background-clip:text;color:transparent}
+  .mob-book{display:grid;grid-template-columns:44px 50px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .mob-book:last-child{border-bottom:0}
+  .mob-book .mo{text-align:center}
+  .mob-book .mo .m{font-size:9px;letter-spacing:0.16em;color:var(--ink-3);font-weight:600}
+  .mob-book .mo .n{font-size:14px;font-weight:500;font-family:var(--f-mono);color:var(--ink-2);margin-top:1px}
+  .mob-book .cv{width:36px;height:50px;font-family:'EB Garamond', serif}
+  .mob-book .info .ti{font-size:13px;font-weight:500;line-height:1.3}
+  .mob-book .info .au{font-size:11px;color:var(--ink-3);margin-top:2px}
+  .mob-book .info .st{font-size:10px;letter-spacing:0.06em;color:var(--ink-3);font-family:var(--f-mono);margin-top:3px}
+  .mob-book .info .st.reading{color:var(--cyan)}
+  .mob-book .info .st.finished{color:var(--pos)}
+  .mob-book.current{background:rgba(179,136,255,0.04);margin:0 -16px;padding:10px 16px;border-radius:8px;border:0;border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Library Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Library Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Library Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="library" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Library<span class="grad-text">.</span></h1>
+        <div class="sub">12 books Â· 2026 Â· curated reading journal Â· last read 2d ago</div>
+      </div>
+      <div class="actions">
+        <button class="cc-btn"><span data-icon="upload"></span>Upload PDF</button>
+        <button class="cc-btn cc-btn-ghost"><span data-icon="edit"></span>Reorder year</button>
+        <button class="cc-btn cc-btn-primary" style="padding:10px 16px;font-size:13px"><span data-icon="plus"></span>Add book</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: year + timeline -->
+      <div>
+        <div class="cc-card year-card" style="margin-bottom:14px">
+          <div class="row1">
+            <div>
+              <div class="lbl">2026 progress</div>
+              <div class="big num">3<span class="of"> /12 books finished</span></div>
+              <div style="font-size:12px;color:var(--ink-3);margin-top:4px">on pace Â· target 1 book / month</div>
+            </div>
+            <div class="meta">
+              <div><b>1 reading</b> Â· Meditations</div>
+              <div style="margin-top:4px"><b>8 ahead</b> Â· queued for the year</div>
+              <div style="margin-top:4px;color:var(--ink-4)">2024 total: 9 Â· 2025 total: 11</div>
+            </div>
+          </div>
+          <div class="bar">
+            <div class="seg done"></div><div class="seg done"></div><div class="seg done"></div>
+            <div class="seg reading"></div><div class="seg current"></div>
+            <div class="seg"></div><div class="seg"></div><div class="seg"></div>
+            <div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+          </div>
+          <div class="months">
+            <span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span class="cur">MAY</span>
+            <span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span><span>NOV</span><span>DEC</span>
+          </div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head">
+            <div class="title">2026 Reading list</div>
+            <div class="tail">click to open Â· drag to reorder months</div>
+          </div>
+
+          <!-- Jan -->
+          <div class="book-row finished">
+            <div class="mo"><div class="m">Jan</div><div class="n">01</div></div>
+            <div class="cc-cover v-sapiens cover"><div class="cover-text"><div class="t">Sapiens</div>Y. N. Harari</div></div>
+            <div class="info">
+              <div class="ti">Sapiens Â· A Brief History of Humankind</div>
+              <div class="au">Yuval Noah Harari Â· trans. Harari/Watzman</div>
+              <div class="tags"><span class="pill-tag">History</span><span class="pill-tag">Anthropology</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v fin">Finished</div><div class="pct">100% Â· Feb 4</div></div>
+            <div class="actions-r"><span style="font-size:11px;color:var(--ink-4)">12 notes Â· 8 words</span><button class="cc-btn cc-btn-ghost"><span data-icon="book"></span>Review</button></div>
+          </div>
+
+          <!-- Feb -->
+          <div class="book-row finished">
+            <div class="mo"><div class="m">Feb</div><div class="n">02</div></div>
+            <div class="cc-cover v-morocco cover"><div class="cover-text"><div class="t">Morocco</div>Rogerson</div></div>
+            <div class="info">
+              <div class="ti">The Story of Morocco</div>
+              <div class="au">Barnaby Rogerson</div>
+              <div class="tags"><span class="pill-tag">History</span><span class="pill-tag">MENA</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v fin">Finished</div><div class="pct">100% Â· Feb 28</div></div>
+            <div class="actions-r"><span style="font-size:11px;color:var(--ink-4)">8 notes Â· 14 words</span><button class="cc-btn cc-btn-ghost"><span data-icon="book"></span>Review</button></div>
+          </div>
+
+          <!-- Mar -->
+          <div class="book-row finished">
+            <div class="mo"><div class="m">Mar</div><div class="n">03</div></div>
+            <div class="cc-cover v-animal cover"><div class="cover-text"><div class="t">Animal Farm</div>G. Orwell</div></div>
+            <div class="info">
+              <div class="ti">Animal Farm</div>
+              <div class="au">George Orwell</div>
+              <div class="tags"><span class="pill-tag">Fiction</span><span class="pill-tag">Political</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v fin">Finished</div><div class="pct">100% Â· Mar 22</div></div>
+            <div class="actions-r"><span style="font-size:11px;color:var(--ink-4)">6 notes Â· 4 words</span><button class="cc-btn cc-btn-ghost"><span data-icon="book"></span>Review</button></div>
+          </div>
+
+          <!-- Apr -->
+          <div class="book-row" style="border-color:rgba(126,231,255,0.20);background:radial-gradient(40% 70% at 100% 0%, rgba(126,231,255,0.06), transparent 60%), rgba(255,255,255,0.018)">
+            <div class="mo"><div class="m">Apr</div><div class="n">04</div></div>
+            <div class="cc-cover v-manifesto cover"><div class="cover-text"><div class="t">Manifesto</div>Marx Â· Engels</div></div>
+            <div class="info">
+              <div class="ti">The Communist Manifesto</div>
+              <div class="au">Karl Marx &amp; Friedrich Engels</div>
+              <div class="tags"><span class="pill-tag">Politics</span><span class="pill-tag">Philosophy</span></div>
+            </div>
+            <div class="stat">
+              <div class="l">Status</div>
+              <div class="v reading">Reading Â· 67%</div>
+              <div class="pbar"><div class="fg" style="width:67%"></div></div>
+              <div class="pct">p. 48 / 72 Â· slipped from Apr</div>
+            </div>
+            <div class="actions-r"><span style="font-size:11px;color:var(--ink-4)">3 notes Â· 2 words</span><button class="cc-btn cc-btn-cyan"><span data-icon="play"></span>Resume</button></div>
+          </div>
+
+          <!-- May - CURRENT -->
+          <div class="book-row current">
+            <span class="badge-this">This month</span>
+            <div class="mo"><div class="m">May</div><div class="n">05</div></div>
+            <div class="cc-cover v-meditations cover" style="filter:drop-shadow(0 0 16px rgba(179,136,255,0.20))"><div class="cover-text"><div class="t">Meditations</div>M. Aurelius</div></div>
+            <div class="info">
+              <div class="ti">Meditations</div>
+              <div class="au">Marcus Aurelius Â· trans. Gregory Hays</div>
+              <div class="tags"><span class="pill-tag">Philosophy</span><span class="pill-tag">Stoicism</span><span class="cc-tag cyan">PDF Â· 304p</span></div>
+            </div>
+            <div class="stat">
+              <div class="l">Reading</div>
+              <div class="v reading">47% complete</div>
+              <div class="pbar"><div class="fg" style="width:47%"></div></div>
+              <div class="pct">p. 142 / 304 Â· last 2d ago</div>
+            </div>
+            <div class="actions-r"><span style="font-size:11px;color:var(--ink-4)">9 notes Â· 11 words</span><button class="cc-btn cc-btn-primary" style="padding:8px 14px;font-size:12px"><span data-icon="play"></span>Resume reading</button></div>
+          </div>
+
+          <!-- Jun -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Jun</div><div class="n">06</div></div>
+            <div class="cc-cover v-history cover"><div class="cover-text"><div class="t">Lessons of History</div>Durant</div></div>
+            <div class="info">
+              <div class="ti">The Lessons of History</div>
+              <div class="au">Will &amp; Ariel Durant</div>
+              <div class="tags"><span class="pill-tag">History</span><span class="pill-tag">Essays</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF not uploaded</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="upload"></span>Upload</button></div>
+          </div>
+
+          <!-- Jul -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Jul</div><div class="n">07</div></div>
+            <div class="cc-cover v-nations cover"><div class="cover-text"><div class="t">Why Nations Fail</div>A. &amp; R.</div></div>
+            <div class="info">
+              <div class="ti">Why Nations Fail</div>
+              <div class="au">Daron Acemoglu &amp; James Robinson</div>
+              <div class="tags"><span class="pill-tag">Economics</span><span class="pill-tag">Politics</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF uploaded Â· 542p</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="book"></span>Open</button></div>
+          </div>
+
+          <!-- Aug -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Aug</div><div class="n">08</div></div>
+            <div class="cc-cover v-1984 cover"><div class="cover-text"><div class="t">1984</div>G. Orwell</div></div>
+            <div class="info">
+              <div class="ti">1984</div>
+              <div class="au">George Orwell</div>
+              <div class="tags"><span class="pill-tag">Fiction</span><span class="pill-tag">Dystopia</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF not uploaded</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="upload"></span>Upload</button></div>
+          </div>
+
+          <!-- Sep -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Sep</div><div class="n">09</div></div>
+            <div class="cc-cover v-republic cover"><div class="cover-text"><div class="t">The Republic</div>Plato</div></div>
+            <div class="info">
+              <div class="ti">The Republic</div>
+              <div class="au">Plato Â· trans. Allan Bloom</div>
+              <div class="tags"><span class="pill-tag">Philosophy</span><span class="pill-tag">Classics</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF not uploaded</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="upload"></span>Upload</button></div>
+          </div>
+
+          <!-- Oct -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Oct</div><div class="n">10</div></div>
+            <div class="cc-cover v-arab cover"><div class="cover-text"><div class="t">Arab Peoples</div>Hourani</div></div>
+            <div class="info">
+              <div class="ti">A History of the Arab Peoples</div>
+              <div class="au">Albert Hourani</div>
+              <div class="tags"><span class="pill-tag">History</span><span class="pill-tag">MENA</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF not uploaded</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="upload"></span>Upload</button></div>
+          </div>
+
+          <!-- Nov -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Nov</div><div class="n">11</div></div>
+            <div class="cc-cover v-thinking cover"><div class="cover-text"><div class="t">Thinking Fast &amp; Slow</div>Kahneman</div></div>
+            <div class="info">
+              <div class="ti">Thinking, Fast and Slow</div>
+              <div class="au">Daniel Kahneman</div>
+              <div class="tags"><span class="pill-tag">Psychology</span><span class="pill-tag">Cognition</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF not uploaded</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="upload"></span>Upload</button></div>
+          </div>
+
+          <!-- Dec -->
+          <div class="book-row notstarted">
+            <div class="mo"><div class="m">Dec</div><div class="n">12</div></div>
+            <div class="cc-cover v-art cover"><div class="cover-text"><div class="t">Thinking Clearly</div>Dobelli</div></div>
+            <div class="info">
+              <div class="ti">The Art of Thinking Clearly</div>
+              <div class="au">Rolf Dobelli</div>
+              <div class="tags"><span class="pill-tag">Psychology</span><span class="pill-tag">Essays</span></div>
+            </div>
+            <div class="stat"><div class="l">Status</div><div class="v notstarted">Not started</div><div class="pct">PDF not uploaded</div></div>
+            <div class="actions-r"><button class="cc-btn cc-btn-ghost"><span data-icon="upload"></span>Upload</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: stats + recent + add -->
+      <div>
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Reading habit</div><div class="tail">May</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line);padding-top:14px">
+            <div style="padding-right:12px;border-right:1px solid var(--line)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)">This month</div>
+              <div class="num" style="font-size:22px;margin-top:4px">4h 12m</div>
+              <div style="font-size:10.5px;color:var(--pos);margin-top:2px;font-family:var(--f-mono)">â² +28m vs Apr</div>
+            </div>
+            <div style="padding-left:12px">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)">Days streak</div>
+              <div class="num" style="font-size:22px;margin-top:4px">8 <span style="color:var(--ink-3);font-size:12px">days</span></div>
+              <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px;font-family:var(--f-mono)">target Â· 30/30</div>
+            </div>
+          </div>
+          <div class="cc-divider"></div>
+          <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px">Recent sessions</div>
+          <div class="session-row"><div class="row1"><span class="bk">Meditations</span><span class="dur">14m</span></div><div class="meta">MON Â· Book IV</div></div>
+          <div class="session-row"><div class="row1"><span class="bk">Meditations</span><span class="dur">22m</span></div><div class="meta">SAT Â· Book III</div></div>
+          <div class="session-row"><div class="row1"><span class="bk">Manifesto</span><span class="dur">18m</span></div><div class="meta">FRI Â· ch. 2</div></div>
+          <div class="session-row"><div class="row1"><span class="bk">Meditations</span><span class="dur">26m</span></div><div class="meta">THU Â· Book II</div></div>
+        </div>
+
+        <div class="add-card" style="margin-bottom:14px">
+          <div class="ico"><span data-icon="upload"></span></div>
+          <div class="ttl">Drop a PDF here</div>
+          <div class="sub">Or paste a Goodreads / open library link.<br>Claude auto-fills the metadata.</div>
+          <button class="cc-btn cc-btn-cyan btn" style="margin:0 auto;margin-top:12px"><span data-icon="plus"></span>Add book</button>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head"><div class="title">Wishlist Â· 2027 picks</div><div class="tail">+8</div></div>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px">The Beginning of Infinity <span style="color:var(--ink-3);font-size:11px">Â· Deutsch</span></div>
+            <div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px">The Power Broker <span style="color:var(--ink-3);font-size:11px">Â· Caro</span></div>
+            <div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px">Skin in the Game <span style="color:var(--ink-3);font-size:11px">Â· Taleb</span></div>
+            <div style="padding:8px 0;font-size:12px;color:var(--ink-3)">+ 5 more</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Library Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="plus" style="width:14px"></span></button>
+      </div>
+      <h2 class="cc-mob-title">Library<span class="grad-text">.</span></h2>
+      <div class="cc-mob-sub">2026 Â· curated reading</div>
+
+      <div class="mob-year">
+        <div style="font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px">
+          <span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span>2026 progress
+        </div>
+        <div class="cc-spread" style="align-items:flex-end;margin-top:6px">
+          <div class="big num">3<span style="font-size:18px;color:var(--ink-3);-webkit-text-fill-color:var(--ink-3)"> / 12</span></div>
+          <div style="font-size:11px;color:var(--ink-3);text-align:right">1 reading<br><span style="color:var(--ink-4)">8 queued</span></div>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.04);border-radius:99px;margin-top:14px;display:flex;gap:1px;overflow:hidden">
+          <div style="flex:1;background:var(--grad);box-shadow:0 0 6px rgba(179,136,255,0.4)"></div>
+          <div style="flex:1;background:var(--grad);box-shadow:0 0 6px rgba(179,136,255,0.4)"></div>
+          <div style="flex:1;background:var(--grad);box-shadow:0 0 6px rgba(179,136,255,0.4)"></div>
+          <div style="flex:1;background:linear-gradient(90deg,rgba(179,136,255,0.50),rgba(126,231,255,0.20))"></div>
+          <div style="flex:1;background:rgba(126,231,255,0.20);border:1px dashed rgba(126,231,255,0.50)"></div>
+          <div style="flex:7;background:rgba(255,255,255,0.025)"></div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>2026 list</span><span style="color:var(--ink-4)">12</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">JAN</div><div class="n">01</div></div><div class="cc-cover v-sapiens cv"></div><div class="info"><div class="ti">Sapiens</div><div class="au">Harari</div><div class="st finished">FINISHED Â· 100%</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">FEB</div><div class="n">02</div></div><div class="cc-cover v-morocco cv"></div><div class="info"><div class="ti">Story of Morocco</div><div class="au">Rogerson</div><div class="st finished">FINISHED Â· 100%</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">MAR</div><div class="n">03</div></div><div class="cc-cover v-animal cv"></div><div class="info"><div class="ti">Animal Farm</div><div class="au">Orwell</div><div class="st finished">FINISHED Â· 100%</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">APR</div><div class="n">04</div></div><div class="cc-cover v-manifesto cv"></div><div class="info"><div class="ti">Manifesto</div><div class="au">Marx Â· Engels</div><div class="st reading">READING Â· 67%</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book current"><div class="mo"><div class="m" style="color:var(--cyan)">MAY</div><div class="n" style="color:var(--ink)">05</div></div><div class="cc-cover v-meditations cv"></div><div class="info"><div class="ti">Meditations</div><div class="au">Marcus Aurelius</div><div class="st reading">READING Â· 47%</div></div><span class="cc-tag solid" style="padding:2px 7px;font-size:9px">NOW</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">JUN</div><div class="n">06</div></div><div class="cc-cover v-history cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">Lessons of History</div><div class="au">Durant</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">JUL</div><div class="n">07</div></div><div class="cc-cover v-nations cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">Why Nations Fail</div><div class="au">Acemoglu</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">AUG</div><div class="n">08</div></div><div class="cc-cover v-1984 cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">1984</div><div class="au">Orwell</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">SEP</div><div class="n">09</div></div><div class="cc-cover v-republic cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">The Republic</div><div class="au">Plato</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">OCT</div><div class="n">10</div></div><div class="cc-cover v-arab cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">Arab Peoples</div><div class="au">Hourani</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">NOV</div><div class="n">11</div></div><div class="cc-cover v-thinking cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">Thinking, Fast &amp; Slow</div><div class="au">Kahneman</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+        <div class="mob-book"><div class="mo"><div class="m">DEC</div><div class="n">12</div></div><div class="cc-cover v-art cv" style="opacity:0.5"></div><div class="info"><div class="ti" style="color:var(--ink-2)">Thinking Clearly</div><div class="au">Dobelli</div><div class="st">QUEUED</div></div><span style="color:var(--ink-4);font-size:13px">âº</span></div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="library"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+</body>
+</html>

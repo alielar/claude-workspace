@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Dashboard â V2 Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:    #06060B;
+    --bg:         #0A0A14;
+    --bg-card:    rgba(22, 22, 38, 0.55);
+    --bg-card-2:  rgba(28, 28, 46, 0.62);
+    --line:       rgba(180, 180, 240, 0.08);
+    --line-hi:    rgba(180, 180, 240, 0.16);
+    --ink:        #ECECF4;
+    --ink-2:      #A8A8BE;
+    --ink-3:      #6E6E86;
+    --ink-4:      #44445A;
+
+    --violet:     #B388FF;   /* primary accent */
+    --cyan:       #7EE7FF;   /* secondary accent */
+    --grad: linear-gradient(100deg, #B388FF 0%, #7EE7FF 100%);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg-deep);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;font-feature-settings:"ss01","cv11","tnum";-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+
+  /* Ambient background */
+  body{
+    position:relative;
+    min-height:100vh;
+    min-width:1982px;
+    padding:48px 56px 96px;
+    background:
+      radial-gradient(70% 50% at 15% 0%, rgba(179,136,255,0.10), transparent 60%),
+      radial-gradient(60% 50% at 100% 80%, rgba(126,231,255,0.08), transparent 60%),
+      radial-gradient(80% 60% at 60% 30%, rgba(80, 50, 140, 0.05), transparent 60%),
+      var(--bg-deep);
+  }
+  /* film grain */
+  body:before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:0.04;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .num{font-variant-numeric: tabular-nums; font-feature-settings:"tnum","ss01"; letter-spacing:-0.01em}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  .page-head{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 36px;border-bottom:1px solid var(--line);padding-bottom:18px}
+  .page-head h1{font-size:13px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);margin:0}
+  .page-head .lbl{font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-4)}
+
+  .frames{display:grid;grid-template-columns: 1440px 390px;gap:40px;align-items:start;width:max-content}
+
+  /* frame */
+  .frame{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line-hi)}
+  .frame .frame-label{position:absolute;top:-26px;left:0;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-4)}
+  .frame-desktop{padding:34px 36px 40px;background:
+      radial-gradient(50% 40% at 8% 0%, rgba(179,136,255,0.10), transparent 60%),
+      radial-gradient(40% 40% at 100% 100%, rgba(126,231,255,0.07), transparent 60%),
+      var(--bg)}
+  .frame-mobile{width:390px;background:radial-gradient(60% 40% at 20% 0%, rgba(179,136,255,0.10), transparent 60%), var(--bg)}
+
+  /* glass card */
+  .card{
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 22px;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    position:relative;
+    transition: border-color .2s ease, transform .2s ease;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      0 1px 0 rgba(0,0,0,0.3);
+  }
+  .card:hover{border-color:var(--line-hi)}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 14px}
+  .card-head .title{font-size:10.5px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .card-head .title:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--violet);box-shadow:0 0 8px var(--violet)}
+  .card-head .tail{font-size:11px;letter-spacing:0.04em;color:var(--ink-3)}
+
+  /* top bar */
+  .top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:30px}
+  .top h2{font-size:30px;font-weight:300;letter-spacing:-0.025em;margin:0;line-height:1.05}
+  .top h2 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:400}
+  .top .meta{display:flex;align-items:center;gap:18px;font-size:12px;color:var(--ink-3)}
+  .top .meta .pulse{width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 0 5px rgba(126,231,255,0.10), 0 0 12px var(--cyan);display:inline-block;margin-right:8px;vertical-align:middle}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:5px 10px;border:1px solid var(--line-hi);border-radius:99px;font-size:11px;letter-spacing:0.04em;color:var(--ink-2);background:rgba(255,255,255,0.02)}
+
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:auto;gap:14px}
+
+  /* HERO */
+  .hero{grid-column:span 6;grid-row:span 2;padding:30px 32px;display:flex;flex-direction:column;gap:24px;overflow:hidden;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+      var(--bg-card);
+  }
+  .hero .lead{display:grid;grid-template-columns: 1.1fr 1fr;gap:36px;align-items:end}
+  .hero .streak-no{
+    font-size:140px;font-weight:200;letter-spacing:-0.06em;line-height:0.82;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter: drop-shadow(0 0 24px rgba(179,136,255,0.20));
+  }
+  .hero .streak-no sup{font-size:32px;color:var(--ink-3);font-weight:300;letter-spacing:0;margin-left:6px;vertical-align:top;top:24px;position:relative;
+    background:none;-webkit-text-fill-color:initial}
+  .hero .streak-label{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .hero .streak-label:before{content:"";width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .hero .streak-sub{font-size:13px;color:var(--ink-2);margin-top:10px;max-width:32ch;line-height:1.55}
+  .hero .streak-sub b{color:var(--ink);font-weight:500}
+
+  .hero .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+  .hero .stat{padding:16px 16px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.018);position:relative;overflow:hidden}
+  .hero .stat:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg, transparent, rgba(179,136,255,0.30), transparent)}
+  .hero .stat .k{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .hero .stat .v{font-size:30px;font-weight:300;letter-spacing:-0.02em;line-height:1}
+  .hero .stat .v .of{color:var(--ink-3);font-size:16px;margin-left:4px}
+  .hero .stat .spark{margin-top:10px;height:22px;width:100%;display:block}
+  .hero .stat .delta{font-size:10.5px;color:var(--cyan);letter-spacing:0.04em;margin-top:4px}
+
+  /* sparks */
+  .spark .line{fill:none;stroke:url(#gradStroke);stroke-width:1.5}
+  .spark .area{fill:url(#gradFill);stroke:none}
+  .spark .dot{fill:var(--cyan);filter:drop-shadow(0 0 4px var(--cyan))}
+
+  /* WORKOUT */
+  .workout{grid-column:span 6}
+  .workout .row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+  .workout .name{font-size:24px;font-weight:400;letter-spacing:-0.01em}
+  .workout .when{font-size:12px;color:var(--ink-3)}
+  .workout .meta-line{display:flex;gap:8px;color:var(--ink-2);font-size:11px;margin-bottom:16px;flex-wrap:wrap}
+  .workout .meta-line .pill{padding:3px 9px;font-size:10.5px}
+  .ex-list{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+  .ex{display:grid;grid-template-columns: 26px 1fr auto;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.015);font-size:13px}
+  .ex .n{color:var(--ink-4);font-size:10.5px;letter-spacing:0.04em;font-family:'JetBrains Mono'}
+  .ex .nm{color:var(--ink)}
+  .ex .sx{color:var(--ink-3);font-size:11.5px;letter-spacing:0.02em;font-family:'JetBrains Mono'}
+
+  .start-btn{
+    display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:10px;
+    background:var(--grad);color:#0A0A14;font-size:13px;font-weight:600;letter-spacing:-0.005em;
+    box-shadow: 0 0 24px rgba(179,136,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .start-btn:hover{box-shadow: 0 0 32px rgba(179,136,255,0.55), inset 0 1px 0 rgba(255,255,255,0.45);transform:translateY(-1px)}
+  .start-btn svg{width:13px;height:13px}
+
+  /* CHECKLIST */
+  .checklist{grid-column:span 4;grid-row:span 2}
+  .checklist .progress-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .checklist .pct{font-size:48px;font-weight:200;letter-spacing:-0.04em;line-height:1;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .checklist .pct .small{font-size:18px;-webkit-text-fill-color:var(--ink-3);color:var(--ink-3)}
+  .ringwrap{height:6px;background:rgba(255,255,255,0.04);border-radius:99px;margin-bottom:18px;overflow:hidden;position:relative}
+  .ringwrap .bar{height:100%;width:50%;background:var(--grad);border-radius:99px;box-shadow:0 0 12px rgba(179,136,255,0.40);transition:width .25s ease}
+
+  .check-row{display:grid;grid-template-columns: 22px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+  .check-row:last-child{border-bottom:0}
+  .check-row .box{width:18px;height:18px;border:1.4px solid var(--line-hi);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;transition:all .18s ease;background:rgba(255,255,255,0.02)}
+  .check-row .box svg{width:11px;height:11px;color:#0A0A14;opacity:0;transition:opacity .12s ease}
+  .check-row.done .box{background:var(--grad);border-color:transparent;box-shadow:0 0 10px rgba(179,136,255,0.50)}
+  .check-row.done .box svg{opacity:1}
+  .check-row .lbl{font-size:13.5px}
+  .check-row.done .lbl{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--ink-4);text-decoration-thickness:1px}
+  .check-row .streak{font-size:11px;color:var(--ink-3);display:flex;align-items:center;gap:5px;letter-spacing:0.02em}
+  .check-row .streak svg{width:11px;height:11px;color:#FFB266}
+
+  /* HEATMAP */
+  .heatmap{grid-column:span 3}
+  .heat-row{display:grid;grid-template-columns: repeat(7, 1fr);gap:6px;margin-top:4px}
+  .heat-cell{aspect-ratio:1/1;border-radius:8px;border:1px solid var(--line);display:flex;align-items:flex-end;padding:6px 6px;font-size:9px;color:var(--ink-3);letter-spacing:0.04em;text-transform:uppercase;position:relative;overflow:hidden;background:rgba(255,255,255,0.015)}
+  .heat-cell .tag{position:absolute;top:6px;left:7px;font-size:9.5px;letter-spacing:0.04em;font-weight:500;color:var(--ink-2)}
+  .heat-cell.push{background:linear-gradient(135deg, rgba(179,136,255,0.20), rgba(179,136,255,0.05));border-color:rgba(179,136,255,0.30);box-shadow:inset 0 0 14px rgba(179,136,255,0.12)}
+  .heat-cell.pull{background:linear-gradient(135deg, rgba(179,136,255,0.32), rgba(126,231,255,0.10));border-color:rgba(179,136,255,0.40);box-shadow:inset 0 0 16px rgba(179,136,255,0.18)}
+  .heat-cell.legs{background:linear-gradient(135deg, rgba(179,136,255,0.50), rgba(126,231,255,0.20));border-color:rgba(179,136,255,0.55);box-shadow:inset 0 0 22px rgba(179,136,255,0.28)}
+  .heat-cell.cardio{background:linear-gradient(135deg, rgba(126,231,255,0.20), rgba(126,231,255,0.04));border-color:rgba(126,231,255,0.30);box-shadow:inset 0 0 14px rgba(126,231,255,0.12)}
+  .heat-cell.today{border:1px dashed rgba(126,231,255,0.50)}
+  .heat-legend{display:flex;gap:14px;margin-top:14px;font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em}
+  .heat-legend i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+  /* MOOD */
+  .mood{grid-column:span 3}
+  .mood-row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:6px}
+  .mood-btn{flex:1;height:48px;border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--ink-2);cursor:pointer;transition:all .18s ease;background:rgba(255,255,255,0.015)}
+  .mood-btn:hover{border-color:var(--line-hi);color:var(--ink)}
+  .mood-btn.sel{
+    background:linear-gradient(135deg, rgba(179,136,255,0.22), rgba(126,231,255,0.12));
+    border-color:rgba(179,136,255,0.40);
+    color:#fff;
+    box-shadow:0 0 16px rgba(179,136,255,0.25), inset 0 0 12px rgba(179,136,255,0.10);
+  }
+  .mood-trail{display:flex;gap:5px;margin-top:14px}
+  .mood-trail .d{flex:1;height:7px;border-radius:3px;background:rgba(255,255,255,0.04)}
+  .mood-trail .d.m1{background:rgba(179,136,255,0.22)}
+  .mood-trail .d.m2{background:rgba(179,136,255,0.50)}
+  .mood-trail .d.m3{background:var(--grad);box-shadow:0 0 8px rgba(179,136,255,0.40)}
+
+  /* READING */
+  .reading{grid-column:span 3}
+  .reading .book{display:flex;gap:14px;align-items:flex-start;margin-top:2px}
+  .reading .cover{width:48px;height:68px;border-radius:4px;background:linear-gradient(160deg,#3A2E22 0%,#1A1714 100%);border:1px solid var(--line-hi);flex-shrink:0;position:relative;overflow:hidden}
+  .reading .cover:before{content:"";position:absolute;left:5px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.10)}
+  .reading .cover:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg, rgba(179,136,255,0.10), transparent 60%);pointer-events:none}
+  .reading .info .ti{font-size:14.5px;font-weight:500;line-height:1.25}
+  .reading .info .au{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+  .reading .ring-row{margin-top:18px;display:flex;align-items:center;gap:16px}
+  .ring-svg{width:74px;height:74px;flex-shrink:0}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:6}
+  .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:6;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(179,136,255,0.4))}
+  .reading .ring-text{display:flex;flex-direction:column}
+  .reading .ring-text .pct{font-size:24px;font-weight:300;letter-spacing:-0.02em;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .reading .ring-text .m{font-size:11px;color:var(--ink-3);letter-spacing:0.04em;text-transform:uppercase}
+  .reading .last{margin-top:12px;font-size:11.5px;color:var(--ink-3)}
+
+  /* WORD BANK */
+  .words{grid-column:span 3}
+  .words .big{font-size:50px;font-weight:200;letter-spacing:-0.05em;line-height:1;margin-top:2px;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter: drop-shadow(0 0 14px rgba(179,136,255,0.25))}
+  .words .big .of{font-size:18px;color:var(--ink-3);margin-left:6px;letter-spacing:0;-webkit-text-fill-color:var(--ink-3)}
+  .words .sub{font-size:11.5px;color:var(--ink-3);margin-top:6px;letter-spacing:0.02em}
+  .words .preview{margin-top:18px;display:flex;flex-wrap:wrap;gap:6px}
+  .words .chip{font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--ink-2);letter-spacing:0.01em;background:rgba(255,255,255,0.02)}
+  .words .review-btn{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:10px 14px;border:1px solid var(--line-hi);border-radius:10px;font-size:12px;color:var(--ink);transition:all .15s ease;background:rgba(255,255,255,0.02)}
+  .words .review-btn:hover{border-color:rgba(179,136,255,0.40);background:rgba(179,136,255,0.08);box-shadow:0 0 16px rgba(179,136,255,0.20)}
+  .words .review-btn svg{width:11px;height:11px}
+
+  /* NEWS */
+  .news{grid-column:span 12}
+  .news-grid{display:grid;grid-template-columns:repeat(5, 1fr);gap:10px;margin-top:4px}
+  .news-item{padding:16px 16px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.018);position:relative;overflow:hidden;transition:all .15s}
+  .news-item:hover{border-color:var(--line-hi);background:rgba(255,255,255,0.03)}
+  .news-item .num{font-size:10px;color:var(--ink-4);font-family:'JetBrains Mono';letter-spacing:0.04em;margin-bottom:6px;display:block}
+  .news-item .cat{display:inline-block;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:10px;padding:3px 9px;border-radius:99px;border:1px solid}
+  .news-item .cat.politics{color:#FFB266;border-color:rgba(255,178,102,0.30);background:rgba(255,178,102,0.06)}
+  .news-item .cat.tech{color:var(--violet);border-color:rgba(179,136,255,0.30);background:rgba(179,136,255,0.06)}
+  .news-item .cat.ai{color:var(--cyan);border-color:rgba(126,231,255,0.30);background:rgba(126,231,255,0.06)}
+  .news-item .cat.mena{color:#9CE0B4;border-color:rgba(156,224,180,0.30);background:rgba(156,224,180,0.06)}
+  .news-item .cat.biz{color:#E0A4D7;border-color:rgba(224,164,215,0.30);background:rgba(224,164,215,0.06)}
+  .news-item .h{font-size:13.5px;line-height:1.4;letter-spacing:-0.005em;color:var(--ink);font-weight:450;text-wrap:pretty}
+  .news-item .ts{font-size:10.5px;color:var(--ink-4);margin-top:10px;letter-spacing:0.04em;text-transform:uppercase}
+
+  /* âââââââââââââ MOBILE âââââââââââââ */
+  .frame-mobile .mob-inner{padding:24px 18px 32px}
+  .mob-greet{font-size:22px;letter-spacing:-0.02em;font-weight:400;margin:6px 0 4px}
+  .mob-greet .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .mob-date{font-size:11.5px;color:var(--ink-3);margin-bottom:20px;letter-spacing:0.02em}
+  .mob-card{padding:18px;border-radius:14px;border:1px solid var(--line);background:var(--bg-card);backdrop-filter:blur(16px);margin-bottom:10px}
+  .mob-card .ch{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+  .mob-card .ch:before{content:"";width:4px;height:4px;border-radius:99px;background:var(--violet);box-shadow:0 0 6px var(--violet);margin-right:6px;display:none}
+  .mob-hero{padding:20px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;
+    background:
+      radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.18), transparent 60%),
+      radial-gradient(60% 70% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+      var(--bg-card);
+    backdrop-filter:blur(16px)}
+  .mob-hero .big{font-size:68px;font-weight:200;letter-spacing:-0.06em;line-height:0.9;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px rgba(179,136,255,0.2))}
+  .mob-hero .big sup{font-size:15px;color:var(--ink-3);font-weight:300;margin-left:4px;top:-22px;position:relative;-webkit-text-fill-color:var(--ink-3)}
+  .mob-hero .lbl{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)}
+  .mob-hero .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}
+  .mob-hero .cell{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.015)}
+  .mob-hero .cell .k{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+  .mob-hero .cell .v{font-size:20px;font-weight:400;letter-spacing:-0.02em}
+  .mob-hero .cell .v .of{color:var(--ink-3);font-size:13px}
+  .mob-news-item{padding:12px 0;border-bottom:1px solid var(--line)}
+  .mob-news-item:last-child{border-bottom:0}
+  .mob-news-item .cat{display:inline-block;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid}
+  .mob-news-item .cat.politics{color:#FFB266;border-color:rgba(255,178,102,0.30)}
+  .mob-news-item .cat.tech{color:var(--violet);border-color:rgba(179,136,255,0.30)}
+  .mob-news-item .cat.ai{color:var(--cyan);border-color:rgba(126,231,255,0.30)}
+  .mob-news-item .cat.mena{color:#9CE0B4;border-color:rgba(156,224,180,0.30)}
+  .mob-news-item .cat.biz{color:#E0A4D7;border-color:rgba(224,164,215,0.30)}
+  .mob-news-item .h{font-size:12.5px;line-height:1.4;margin-top:7px}
+
+</style>
+</head>
+<body data-screen-label="V2 Ambient Futurism">
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gradStroke" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B388FF"/>
+      <stop offset="100%" stop-color="#7EE7FF"/>
+    </linearGradient>
+    <linearGradient id="gradFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(179,136,255,0.18)"/>
+      <stop offset="100%" stop-color="rgba(179,136,255,0)"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#B388FF"/>
+      <stop offset="100%" stop-color="#7EE7FF"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="page-head">
+  <h1>Dashboard Â· V2 â Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="frames">
+
+  <!-- DESKTOP -->
+  <div class="frame frame-desktop" data-screen-label="V2 Desktop">
+    <span class="frame-label">Desktop Â· 1440</span>
+
+    <div class="top">
+      <div>
+        <h2>Good afternoon, <span class="grad">Ali</span></h2>
+      </div>
+      <div class="meta">
+        <span class="pill"><span class="pulse"></span>Synced</span>
+        <span>Wednesday, May 13, 2026</span>
+        <span class="pill">âK</span>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- HERO -->
+      <div class="card hero">
+        <div class="lead">
+          <div>
+            <div class="streak-label">Overall streak Â· current</div>
+            <div class="streak-no num">12<sup>d</sup></div>
+            <div class="streak-sub">Longest of the year so far. <b>Beat 14d</b> to set a new personal record.</div>
+          </div>
+          <div>
+            <svg class="spark" viewBox="0 0 220 80" preserveAspectRatio="none" style="height:90px;width:100%">
+              <path class="area" d="M0,60 L10,55 L20,58 L30,50 L40,52 L50,46 L60,42 L70,44 L80,38 L90,40 L100,34 L110,30 L120,32 L130,26 L140,28 L150,22 L160,24 L170,18 L180,20 L190,14 L200,16 L210,10 L220,8 L220,80 L0,80 Z" />
+              <path class="line" d="M0,60 L10,55 L20,58 L30,50 L40,52 L50,46 L60,42 L70,44 L80,38 L90,40 L100,34 L110,30 L120,32 L130,26 L140,28 L150,22 L160,24 L170,18 L180,20 L190,14 L200,16 L210,10 L220,8" />
+              <circle class="dot" cx="220" cy="8" r="3" />
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-4);letter-spacing:0.08em;margin-top:6px"><span>30D AGO</span><span>TODAY</span></div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="k"><span>Workouts</span><span class="mono">/wk</span></div>
+            <div class="v num">4<span class="of">/5</span></div>
+            <svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none"><path class="line" d="M0,18 L14,12 L28,16 L42,8 L56,14 L70,6 L84,10 L100,4" /></svg>
+            <div class="delta">+1 vs last wk</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Books</span><span class="mono">/yr</span></div>
+            <div class="v num">3<span class="of">/12</span></div>
+            <svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none"><path class="line" d="M0,20 L20,20 L20,16 L42,16 L42,10 L72,10 L72,4 L100,4" /></svg>
+            <div class="delta">on pace</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Words</span><span class="mono">learned</span></div>
+            <div class="v num">47</div>
+            <svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none"><path class="line" d="M0,16 L12,18 L24,12 L36,14 L48,10 L60,12 L72,6 L84,8 L100,4" /></svg>
+            <div class="delta">+6 this wk</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Journaled</span><span class="mono">/mo</span></div>
+            <div class="v num">8</div>
+            <svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none"><path class="line" d="M0,14 L14,10 L28,16 L42,8 L56,12 L70,10 L84,6 L100,8" /></svg>
+            <div class="delta">May</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKOUT -->
+      <div class="card workout">
+        <div class="card-head">
+          <div class="title">Next Workout</div>
+          <div class="tail">queued Â· 15:30</div>
+        </div>
+        <div class="row">
+          <div class="name">Push</div>
+          <div class="when">50 min Â· 5 exercises</div>
+        </div>
+        <div class="meta-line">
+          <span class="pill">Chest</span><span class="pill">Shoulders</span><span class="pill">Triceps</span>
+          <span class="pill" style="color:var(--cyan);border-color:rgba(126,231,255,0.30)">Volume +4%</span>
+          <span class="pill" style="border-color:transparent">last Â· 6d ago</span>
+        </div>
+        <div class="ex-list">
+          <div class="ex"><span class="n">01</span><span class="nm">Low Incline Dumbbell Press</span><span class="sx">4 Ã 8</span></div>
+          <div class="ex"><span class="n">02</span><span class="nm">Seated Dumbbell Overhead Press</span><span class="sx">4 Ã 10</span></div>
+          <div class="ex"><span class="n">03</span><span class="nm">Cable Triceps Pushdown</span><span class="sx">3 Ã 12</span></div>
+          <div class="ex"><span class="n">04</span><span class="nm">Dumbbell Fly</span><span class="sx">3 Ã 12</span></div>
+          <div class="ex"><span class="n">05</span><span class="nm">Lateral Raise</span><span class="sx">3 Ã 15</span></div>
+        </div>
+        <a class="start-btn" href="#">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          Start session
+        </a>
+      </div>
+
+      <!-- CHECKLIST -->
+      <div class="card checklist">
+        <div class="card-head">
+          <div class="title">Today Â· Checklist</div>
+          <div class="tail" id="cl-tail">3 of 6</div>
+        </div>
+        <div class="progress-row">
+          <div class="pct num"><span id="cl-pct">50</span><span class="small">%</span></div>
+          <div style="font-size:11px;color:var(--ink-3);letter-spacing:0.06em">3 REMAIN</div>
+        </div>
+        <div class="ringwrap"><div class="bar" id="cl-bar"></div></div>
+
+        <div id="checklist-rows">
+          <div class="check-row done"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Drink 3L water</span><span class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s4 4 4 9a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 5 3 5c2 0 3-2 3-4 0-3-3-7-3-7z"/></svg>42d</span></div>
+          <div class="check-row done"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">10,000 steps</span><span class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s4 4 4 9a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 5 3 5c2 0 3-2 3-4 0-3-3-7-3-7z"/></svg>11d</span></div>
+          <div class="check-row done"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Read 30 min</span><span class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s4 4 4 9a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 5 3 5c2 0 3-2 3-4 0-3-3-7-3-7z"/></svg>8d</span></div>
+          <div class="check-row"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Meditate Â· 10 min</span><span class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s4 4 4 9a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 5 3 5c2 0 3-2 3-4 0-3-3-7-3-7z"/></svg>5d</span></div>
+          <div class="check-row"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Journal</span><span class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s4 4 4 9a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 5 3 5c2 0 3-2 3-4 0-3-3-7-3-7z"/></svg>8d</span></div>
+          <div class="check-row"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Workout Â· Push</span><span class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s4 4 4 9a4 4 0 1 1-8 0c0-2 1-3 1-3s-1 5 3 5c2 0 3-2 3-4 0-3-3-7-3-7z"/></svg>21d</span></div>
+        </div>
+      </div>
+
+      <!-- HEATMAP -->
+      <div class="card heatmap">
+        <div class="card-head">
+          <div class="title">Last 7 Days</div>
+          <div class="tail">4 sessions</div>
+        </div>
+        <div class="heat-row">
+          <div class="heat-cell pull"><span class="tag">PULL</span></div>
+          <div class="heat-cell"><span class="tag" style="color:var(--ink-4)">REST</span></div>
+          <div class="heat-cell legs"><span class="tag">LEGS</span></div>
+          <div class="heat-cell push"><span class="tag">PUSH</span></div>
+          <div class="heat-cell"><span class="tag" style="color:var(--ink-4)">REST</span></div>
+          <div class="heat-cell cardio"><span class="tag">RUN</span></div>
+          <div class="heat-cell today"><span class="tag" style="color:var(--cyan)">TDY</span></div>
+        </div>
+        <div class="heat-legend">
+          <span><i style="background:linear-gradient(135deg, rgba(179,136,255,0.50), rgba(126,231,255,0.20))"></i>Legs</span>
+          <span><i style="background:linear-gradient(135deg, rgba(179,136,255,0.32), rgba(126,231,255,0.10))"></i>Pull</span>
+          <span><i style="background:linear-gradient(135deg, rgba(126,231,255,0.20), transparent)"></i>Run</span>
+        </div>
+      </div>
+
+      <!-- MOOD -->
+      <div class="card mood">
+        <div class="card-head">
+          <div class="title">Mood Â· Today</div>
+          <div class="tail">+1 vs avg</div>
+        </div>
+        <div class="mood-row">
+          <button class="mood-btn" data-mood="awful">â</button>
+          <button class="mood-btn" data-mood="low">â</button>
+          <button class="mood-btn" data-mood="ok">â</button>
+          <button class="mood-btn sel" data-mood="good">â</button>
+          <button class="mood-btn" data-mood="great">â</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-4);letter-spacing:0.18em;text-transform:uppercase;margin-top:8px"><span>Heavy</span><span>Light</span></div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:14px">7-day trend</div>
+        <div class="mood-trail">
+          <div class="d m2"></div>
+          <div class="d m1"></div>
+          <div class="d m2"></div>
+          <div class="d m3"></div>
+          <div class="d m2"></div>
+          <div class="d m3"></div>
+          <div class="d m3"></div>
+        </div>
+      </div>
+
+      <!-- READING -->
+      <div class="card reading">
+        <div class="card-head">
+          <div class="title">Reading Â· Current</div>
+          <div class="tail">2d ago</div>
+        </div>
+        <div class="book">
+          <div class="cover"></div>
+          <div class="info">
+            <div class="ti">Meditations</div>
+            <div class="au">Marcus Aurelius Â· Hays trans.</div>
+          </div>
+        </div>
+        <div class="ring-row">
+          <svg class="ring-svg" viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="32"/>
+            <circle class="ring-fg" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="106.5" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div class="ring-text">
+            <div class="pct num">47%</div>
+            <div class="m">p. 142 / 304</div>
+            <div style="font-size:10.5px;color:var(--ink-3);margin-top:6px">Book IV</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORD BANK -->
+      <div class="card words">
+        <div class="card-head">
+          <div class="title">Word Bank Â· Due</div>
+          <div class="tail">SRS</div>
+        </div>
+        <div class="big num">8<span class="of">due</span></div>
+        <div class="sub">Next interval Â· 4 days Â· 12 leeches</div>
+        <div class="preview">
+          <span class="chip">ineluctable</span>
+          <span class="chip">soporific</span>
+          <span class="chip">phlegmatic</span>
+          <span class="chip">obviate</span>
+          <span class="chip" style="color:var(--cyan);border-color:rgba(126,231,255,0.30)">+4 more</span>
+        </div>
+        <a class="review-btn" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          Start review
+        </a>
+      </div>
+
+      <!-- NEWS -->
+      <div class="card news">
+        <div class="card-head">
+          <div class="title">News Brief Â· Top 5 Today</div>
+          <div class="tail">curated 06:00 Â· 5 sources</div>
+        </div>
+        <div class="news-grid">
+          <div class="news-item">
+            <span class="num">01</span>
+            <span class="cat politics">Politics</span>
+            <div class="h">EU Parliament approves sweeping AI liability framework after final trilogue</div>
+            <div class="ts">2h Â· Reuters</div>
+          </div>
+          <div class="news-item">
+            <span class="num">02</span>
+            <span class="cat tech">Tech</span>
+            <div class="h">Apple unveils on-device reasoning model for iPhone 18, ships in autumn</div>
+            <div class="ts">3h Â· The Verge</div>
+          </div>
+          <div class="news-item">
+            <span class="num">03</span>
+            <span class="cat ai">AI</span>
+            <div class="h">Anthropic releases new Claude model with native, sandboxed computer use</div>
+            <div class="ts">4h Â· Bloomberg</div>
+          </div>
+          <div class="news-item">
+            <span class="num">04</span>
+            <span class="cat mena">MENA</span>
+            <div class="h">Morocco and UAE sign $4B green-hydrogen partnership ahead of COP31 push</div>
+            <div class="ts">5h Â· FT</div>
+          </div>
+          <div class="news-item">
+            <span class="num">05</span>
+            <span class="cat biz">Business</span>
+            <div class="h">Berkshire trims Apple stake by 12% in latest Q1 filing, raises cash pile</div>
+            <div class="ts">6h Â· WSJ</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="frame frame-mobile" data-screen-label="V2 Mobile">
+    <span class="frame-label">Mobile Â· 390</span>
+    <div class="mob-inner">
+      <div class="mob-greet">Good afternoon, <span class="grad">Ali</span></div>
+      <div class="mob-date">Wed Â· May 13 Â· 14:42</div>
+
+      <div class="mob-hero">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lbl">Overall streak</span><span style="font-size:10px;color:var(--ink-4);letter-spacing:0.08em">30D â</span></div>
+        <div class="big num">12<sup>d</sup></div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">Beat 14d to set a new PR.</div>
+        <div class="grid4">
+          <div class="cell"><div class="k">Workouts/wk</div><div class="v num">4<span class="of">/5</span></div></div>
+          <div class="cell"><div class="k">Books/yr</div><div class="v num">3<span class="of">/12</span></div></div>
+          <div class="cell"><div class="k">Words</div><div class="v num">47</div></div>
+          <div class="cell"><div class="k">Journaled</div><div class="v num">8</div></div>
+        </div>
+      </div>
+
+      <div class="mob-card">
+        <div class="ch"><span>Next Workout</span><span style="color:var(--ink-4)">15:30</span></div>
+        <div style="font-size:22px;font-weight:500;letter-spacing:-0.01em">Push</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">50 min Â· 5 exercises</div>
+        <a class="start-btn" href="#" style="margin-top:14px"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>Start</a>
+      </div>
+
+      <div class="mob-card">
+        <div class="ch"><span>Today Â· Checklist</span><span style="color:var(--ink-4)">3 / 6</span></div>
+        <div class="check-row done"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Drink 3L water</span><span class="streak">42d</span></div>
+        <div class="check-row done"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">10,000 steps</span><span class="streak">11d</span></div>
+        <div class="check-row done"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Read 30 min</span><span class="streak">8d</span></div>
+        <div class="check-row"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Meditate</span><span class="streak">5d</span></div>
+        <div class="check-row"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Journal</span><span class="streak">8d</span></div>
+        <div class="check-row"><span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 8 7 12 13 4"/></svg></span><span class="lbl">Workout Â· Push</span><span class="streak">21d</span></div>
+      </div>
+
+      <div class="mob-card">
+        <div class="ch"><span>Mood</span><span style="color:var(--ink-4)">Today</span></div>
+        <div class="mood-row" style="margin-top:4px">
+          <button class="mood-btn">â</button>
+          <button class="mood-btn">â</button>
+          <button class="mood-btn">â</button>
+          <button class="mood-btn sel">â</button>
+          <button class="mood-btn">â</button>
+        </div>
+      </div>
+
+      <div class="mob-card">
+        <div class="ch"><span>Reading</span><span style="color:var(--ink-4)">47%</span></div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <svg class="ring-svg" viewBox="0 0 80 80" style="width:56px;height:56px">
+            <circle class="ring-bg" cx="40" cy="40" r="32"/>
+            <circle class="ring-fg" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="106.5" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div>
+            <div style="font-size:14px;font-weight:500">Meditations</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">Marcus Aurelius</div>
+            <div style="font-size:10.5px;color:var(--ink-4);margin-top:4px;letter-spacing:0.04em;text-transform:uppercase">p. 142 / 304</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mob-card">
+        <div class="ch"><span>Word Bank</span><span style="color:var(--ink-4)">8 due</span></div>
+        <div class="num" style="font-size:38px;font-weight:200;letter-spacing:-0.05em;line-height:1;background:var(--grad);-webkit-background-clip:text;color:transparent">8 <span style="font-size:13px;color:var(--ink-3);-webkit-text-fill-color:var(--ink-3)">words ready</span></div>
+        <a class="review-btn" href="#" style="margin-top:12px;display:inline-flex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>Start review</a>
+      </div>
+
+      <div class="mob-card">
+        <div class="ch"><span>News Â· Top 5</span><span style="color:var(--ink-4)">06:00</span></div>
+        <div class="mob-news-item"><span class="cat politics">Politics</span><div class="h">EU Parliament approves sweeping AI liability framework</div></div>
+        <div class="mob-news-item"><span class="cat tech">Tech</span><div class="h">Apple unveils on-device reasoning model for iPhone 18</div></div>
+        <div class="mob-news-item"><span class="cat ai">AI</span><div class="h">Anthropic releases new Claude model with computer use</div></div>
+        <div class="mob-news-item"><span class="cat mena">MENA</span><div class="h">MoroccoâUAE sign $4B green-hydrogen partnership</div></div>
+        <div class="mob-news-item"><span class="cat biz">Business</span><div class="h">Berkshire trims Apple stake 12% in Q1 filing</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('#checklist-rows .check-row').forEach(row=>{
+    row.addEventListener('click',()=>{
+      row.classList.toggle('done');
+      const total = document.querySelectorAll('#checklist-rows .check-row').length;
+      const done = document.querySelectorAll('#checklist-rows .check-row.done').length;
+      const pct = Math.round(done/total*100);
+      document.getElementById('cl-pct').textContent = pct;
+      document.getElementById('cl-bar').style.width = pct+'%';
+      document.getElementById('cl-tail').textContent = done+' of '+total;
+    });
+  });
+  document.querySelectorAll('.mood-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const parent = b.parentElement;
+      parent.querySelectorAll('.mood-btn').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+    });
+  });
+</script>
+</body>
+</html>

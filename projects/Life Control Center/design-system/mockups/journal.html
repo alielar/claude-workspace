@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Journal â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .layout{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+
+  /* prompt banner */
+  .prompt{padding:18px 22px;border:1px solid rgba(126,231,255,0.25);border-radius:12px;
+    background:radial-gradient(60% 80% at 0% 0%, rgba(126,231,255,0.10), transparent 60%), rgba(255,255,255,0.012);
+    margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+  .prompt .l{display:flex;align-items:center;gap:12px;font-size:13px;line-height:1.5}
+  .prompt .l:before{content:"";width:8px;height:8px;border-radius:99px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);flex-shrink:0}
+  .prompt .l b{color:var(--cyan);font-weight:600}
+
+  /* writing area */
+  .write-card{padding:36px 44px;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.10), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.06), transparent 60%),
+      var(--bg-card)}
+  .write-card .date-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .write-card .date{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px;font-weight:600}
+  .write-card .date:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--violet);box-shadow:0 0 6px var(--violet)}
+  .write-card .save-state{display:flex;align-items:center;gap:7px;font-size:10.5px;font-family:var(--f-mono);color:var(--pos);letter-spacing:0.04em}
+  .write-card .save-state:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--pos);box-shadow:0 0 4px var(--pos)}
+
+  .q-block{padding:14px 0;border-bottom:1px solid var(--line)}
+  .q-block:last-child{border-bottom:0}
+  .q-block .q{font-family:'EB Garamond', serif;font-size:22px;font-weight:500;letter-spacing:-0.01em;color:var(--ink);line-height:1.3}
+  .q-block .q .num{font-family:var(--f-mono);font-size:11px;color:var(--ink-4);letter-spacing:0.20em;margin-right:10px;vertical-align:top;font-weight:500;display:inline-block;padding-top:6px}
+  .q-block textarea{width:100%;background:transparent;border:0;color:var(--ink-2);font-family:var(--f-sans);font-size:15px;line-height:1.65;letter-spacing:-0.005em;resize:none;padding:14px 0 4px;margin-left:38px;width:calc(100% - 38px);min-height:24px}
+  .q-block textarea:focus{outline:0;color:var(--ink)}
+  .q-block textarea::placeholder{color:var(--ink-4);font-style:italic}
+  .q-block.empty .q{color:var(--ink-3)}
+  .q-block.filled .ts{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-4);margin-left:38px;margin-top:4px;letter-spacing:0.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .q-block.filled .ts:before{content:"";width:4px;height:4px;border-radius:99px;background:var(--ink-4)}
+
+  .write-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .write-foot .word-ct{font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em;font-family:var(--f-mono);text-transform:uppercase}
+  .write-foot .actions{display:flex;gap:8px}
+
+  /* history */
+  .hist-month-head{font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:14px 0 8px;border-bottom:1px solid var(--line);margin-top:8px;display:flex;justify-content:space-between}
+  .hist-month-head .ct{font-family:var(--f-mono);color:var(--ink-4);font-size:10px;letter-spacing:0.06em}
+
+  .hist-card{padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.012);margin-top:8px;cursor:pointer;transition:all var(--t-1)}
+  .hist-card:hover{border-color:var(--line-hi);background:rgba(255,255,255,0.025)}
+  .hist-card .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .hist-card .dt{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);letter-spacing:0.08em;text-transform:uppercase}
+  .hist-card .dt b{color:var(--ink);font-weight:500}
+  .hist-card .mood{font-size:14px}
+  .hist-card .preview{font-family:'EB Garamond', serif;font-size:14px;font-style:italic;color:var(--ink-2);line-height:1.5}
+  .hist-card .preview .ans{color:var(--ink);font-style:normal;font-family:var(--f-sans);font-size:13px}
+  .hist-card.expanded{background:rgba(179,136,255,0.04);border-color:rgba(179,136,255,0.30)}
+  .hist-card .full{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .hist-card.expanded .full{display:block}
+  .hist-card .full .q{font-family:'EB Garamond', serif;font-size:14px;font-style:italic;color:var(--ink-3);margin-top:8px;line-height:1.4}
+  .hist-card .full .q:first-child{margin-top:0}
+  .hist-card .full .a{font-size:13px;color:var(--ink-2);margin-top:4px;line-height:1.55;padding-left:14px;border-left:1.5px solid rgba(179,136,255,0.30)}
+
+  /* sidebar */
+  .stat-card{padding:18px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.012)}
+  .stat-card .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .stat-card .v{font-size:30px;font-weight:200;letter-spacing:-0.03em;line-height:1;margin-top:4px;font-family:var(--f-mono);
+    background:var(--grad);-webkit-background-clip:text;color:transparent}
+  .stat-card .d{font-size:10.5px;color:var(--ink-3);margin-top:3px;letter-spacing:0.04em;font-family:var(--f-mono)}
+  .stat-card .d.pos{color:var(--pos)}
+
+  /* themes */
+  .theme-tag{padding:4px 10px;font-size:10.5px;border:1px solid var(--line);border-radius:99px;color:var(--ink-2);letter-spacing:-0.005em;display:inline-flex;align-items:center;gap:5px}
+  .theme-tag .ct{color:var(--ink-4);font-family:var(--f-mono);font-size:10px}
+
+  /* mobile */
+  .mob-write{padding:20px 18px;border:1px solid var(--line);border-radius:14px;background:radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.10), transparent 60%), var(--bg-card);margin-bottom:10px}
+  .mob-q{font-family:'EB Garamond', serif;font-size:16px;font-weight:500;color:var(--ink);line-height:1.3;margin-top:14px}
+  .mob-q:first-child{margin-top:0}
+  .mob-q .num{font-family:var(--f-mono);font-size:9.5px;color:var(--ink-4);letter-spacing:0.18em;margin-right:8px}
+  .mob-q textarea{width:100%;margin-top:6px;background:transparent;border:0;color:var(--ink);font-size:13px;line-height:1.55;resize:none;font-family:var(--f-sans);min-height:24px}
+  .mob-q textarea:focus{outline:0}
+  .mob-q textarea::placeholder{color:var(--ink-4);font-style:italic}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Journal Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Journal Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Journal Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="journal" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Journal<span class="grad-text">.</span></h1>
+        <div class="sub">Three questions a night Â· 8 entries this month Â· 23-day streak</div>
+      </div>
+      <div class="actions">
+        <div class="cc-search" style="width:280px"><span data-icon="search"></span><input placeholder="Search 247 entriesâ¦"/><span class="kbd">/</span></div>
+        <button class="cc-btn cc-btn-ghost"><span data-icon="edit"></span>Edit prompts</button>
+      </div>
+    </div>
+
+    <div class="prompt">
+      <div class="l">
+        <span>It's <b>14:42</b> â your usual journal time is <b>21:30</b>. Three questions waiting tonight.</span>
+      </div>
+      <span class="cc-tag cyan">Reminder set</span>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: today's entry -->
+      <div>
+        <div class="cc-card write-card">
+          <div class="date-row">
+            <div class="date">Wednesday Â· May 13, 2026 Â· Tonight's entry</div>
+            <div class="save-state">Auto-saved 2m ago</div>
+          </div>
+
+          <div class="q-block empty">
+            <div class="q"><span class="num">01</span>What went well today?</div>
+            <textarea placeholder="Tap to start writing â autosaves every 5 seconds of pause."></textarea>
+          </div>
+
+          <div class="q-block filled">
+            <div class="q"><span class="num">02</span>What didn't go well?</div>
+            <textarea>Afternoon slump after the second meeting was brutal. I kept context-switching and lost an hour on the migration ticket. Should have just blocked focus time on the calendar instead of pretending I'd find the gap.</textarea>
+            <div class="ts">PARTIAL Â· 47 WORDS Â· LAST EDIT 2M AGO</div>
+          </div>
+
+          <div class="q-block empty">
+            <div class="q"><span class="num">03</span>One thing for tomorrow?</div>
+            <textarea placeholder="One sentence is enough."></textarea>
+          </div>
+
+          <div class="write-foot">
+            <div class="word-ct">47 words Â· 1 of 3 answered Â· 2 to go</div>
+            <div class="actions">
+              <button class="cc-btn cc-btn-ghost">Skip tonight</button>
+              <button class="cc-btn cc-btn-primary"><span data-icon="check"></span>Mark complete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div style="margin-top:24px">
+          <div class="cc-spread">
+            <h3 class="cc-sechead" style="margin:0">Past entries<span class="tail">12 in May Â· 23-day streak</span></h3>
+            <div class="cc-tabs">
+              <a class="cc-tab cur">By month</a>
+              <a class="cc-tab">By theme</a>
+              <a class="cc-tab">Starred</a>
+            </div>
+          </div>
+
+          <div class="hist-month-head"><span>May 2026</span><span class="ct">12 entries Â· â² +4 vs Apr</span></div>
+
+          <div class="hist-card expanded">
+            <div class="top">
+              <div class="dt"><b>TUE Â· 12 MAY</b> Â· 21:48 Â· 142 WORDS</div>
+              <div class="mood" style="display:flex;align-items:center;gap:6px">
+                <span>ð</span>
+                <span class="cc-tag neutral" style="padding:2px 7px;font-size:9px">work</span>
+              </div>
+            </div>
+            <div class="preview">"<span class="ans">Shipped the auth refactor â pleased with how clean the diff turned out.</span>"</div>
+            <div class="full">
+              <div class="q">01 Â· What went well today?</div>
+              <div class="a">Shipped the auth refactor â pleased with how clean the diff turned out. Got compliments on the PR description; that took 30 minutes to write but saved everyone time in review.</div>
+              <div class="q" style="margin-top:10px">02 Â· What didn't go well?</div>
+              <div class="a">Sat on Twitter for 40 minutes after lunch instead of starting the next task. Knew I was doing it, didn't stop. Phone in another room next time.</div>
+              <div class="q" style="margin-top:10px">03 Â· One thing for tomorrow?</div>
+              <div class="a">Phone in the kitchen drawer from 09:00 to 13:00. No exceptions.</div>
+            </div>
+          </div>
+
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>MON Â· 11 MAY</b> Â· 22:12 Â· 98 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Push session was the best in weeks. Hit 80kg bench Ã 5 cleanly.</span>"</div>
+          </div>
+
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>SUN Â· 10 MAY</b> Â· 22:35 Â· 76 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Quiet day. Walked along the coast for an hour. Didn't open the laptop.</span>"</div>
+          </div>
+
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>SAT Â· 09 MAY</b> Â· 23:05 Â· 184 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Hike with Yacine and Reda. Best Saturday in a long time â completely off-grid for six hours.</span>"</div>
+          </div>
+
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>FRI Â· 08 MAY</b> Â· 21:38 Â· 112 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Closed three tickets and the Friday demo went better than I expected.</span>"</div>
+          </div>
+
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>WED Â· 06 MAY</b> Â· 22:01 Â· 89 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Slept badly. Whole day felt like wading through fog.</span>"</div>
+          </div>
+
+          <div class="hist-month-head"><span>April 2026</span><span class="ct">8 entries</span></div>
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>WED Â· 30 APR</b> Â· 21:45 Â· 124 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Last journal of the month. Looking back, April was about discipline.</span>"</div>
+          </div>
+          <div class="hist-card">
+            <div class="top">
+              <div class="dt"><b>MON Â· 28 APR</b> Â· 22:08 Â· 87 WORDS</div>
+              <div class="mood">ð</div>
+            </div>
+            <div class="preview">"<span class="ans">Long all-hands. Felt restless.</span>"</div>
+          </div>
+
+          <button class="cc-btn cc-btn-ghost" style="margin-top:12px;width:100%;justify-content:center">Show 226 older entries â</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: stats + themes -->
+      <div>
+        <div class="cc-card" style="margin-bottom:14px;padding:18px">
+          <div class="cc-card-head"><div class="title">This month</div><div class="tail">May</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="stat-card">
+              <div class="l">Entries</div>
+              <div class="v num">12</div>
+              <div class="d pos">â² +4 vs Apr</div>
+            </div>
+            <div class="stat-card">
+              <div class="l">Streak</div>
+              <div class="v num">23<span style="font-size:14px;-webkit-text-fill-color:var(--ink-3)">d</span></div>
+              <div class="d">longest active</div>
+            </div>
+            <div class="stat-card">
+              <div class="l">Words</div>
+              <div class="v num">1,847</div>
+              <div class="d pos">avg 154/entry</div>
+            </div>
+            <div class="stat-card">
+              <div class="l">Done at</div>
+              <div class="v num" style="font-size:22px;margin-top:8px">21:42</div>
+              <div class="d">median time</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Themes</div><div class="tail">last 90d Â· auto-clustered</div></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="theme-tag">Work focus<span class="ct">23</span></span>
+            <span class="theme-tag">Workouts<span class="ct">18</span></span>
+            <span class="theme-tag">Phone habits<span class="ct">14</span></span>
+            <span class="theme-tag">Family<span class="ct">12</span></span>
+            <span class="theme-tag">Reading<span class="ct">11</span></span>
+            <span class="theme-tag">Sleep<span class="ct">9</span></span>
+            <span class="theme-tag">Friends<span class="ct">8</span></span>
+            <span class="theme-tag">Travel<span class="ct">6</span></span>
+            <span class="theme-tag">Cooking<span class="ct">4</span></span>
+            <span class="theme-tag">Money<span class="ct">3</span></span>
+          </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);line-height:1.5">
+            <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--violet);font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+              <span style="width:5px;height:5px;border-radius:99px;background:var(--violet);box-shadow:0 0 6px var(--violet)"></span>Pattern Â· last 30d
+            </div>
+            "Phone habits" appears in 14 entries Â· usually flagged as <i>didn't go well</i>. You've planned this fix <b style="color:var(--ink)">5 times</b>.
+          </div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head"><div class="title">Yearly</div><div class="tail">2026</div></div>
+          <div style="display:flex;align-items:baseline;gap:8px"><span class="num grad-text" style="font-size:34px;font-weight:200;letter-spacing:-0.03em">73</span><span style="color:var(--ink-3);font-size:13px">/ 365 days</span></div>
+          <div class="cc-bar" style="margin-top:10px"><div class="fg" style="width:20%"></div></div>
+          <div style="font-size:10.5px;color:var(--ink-3);margin-top:6px;font-family:var(--f-mono);letter-spacing:0.04em">20% Â· 56% of 73 elapsed days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Journal Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="search" style="width:14px"></span></button>
+      </div>
+      <h2 class="cc-mob-title">Journal<span class="grad-text">.</span></h2>
+      <div class="cc-mob-sub">Wed Â· May 13 Â· 23-day streak</div>
+
+      <div class="cc-mob-card" style="border-color:rgba(126,231,255,0.20);background:rgba(126,231,255,0.06)">
+        <div class="ch" style="margin-bottom:4px"><span style="color:var(--cyan)"><span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);display:inline-block;margin-right:6px"></span>Reminder set</span><span style="color:var(--ink-4)">21:30</span></div>
+        <div style="font-size:12.5px;color:var(--ink-2);line-height:1.5">It's 14:42 â three questions waiting tonight.</div>
+      </div>
+
+      <div class="mob-write">
+        <div class="cc-spread" style="margin-bottom:10px">
+          <div style="font-size:9.5px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Tonight Â· May 13</div>
+          <div style="font-size:9.5px;color:var(--pos);font-family:var(--f-mono);letter-spacing:0.04em">SAVED 2M</div>
+        </div>
+
+        <div class="mob-q"><span class="num">01</span>What went well today?
+          <textarea placeholder="Tap to writeâ¦"></textarea>
+        </div>
+        <div class="mob-q"><span class="num">02</span>What didn't go well?
+          <textarea>Afternoon slump after the second meeting was brutal. Context-switched for an hour.</textarea>
+        </div>
+        <div class="mob-q"><span class="num">03</span>One thing for tomorrow?
+          <textarea placeholder="One sentence is enough."></textarea>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.04em">47 WORDS Â· 1/3</div>
+          <button class="cc-btn cc-btn-primary" style="padding:8px 14px;font-size:12px"><span data-icon="check"></span>Mark complete</button>
+        </div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Past entries</span><span style="color:var(--ink-4)">May Â· 12</span></div>
+        <div class="hist-card" style="margin-top:0;padding:10px 12px">
+          <div class="top" style="margin-bottom:5px"><div class="dt" style="font-size:10px"><b>TUE 12</b> Â· 21:48</div><div class="mood" style="font-size:13px">ð</div></div>
+          <div class="preview" style="font-size:12.5px">"<span class="ans" style="font-size:11.5px">Shipped the auth refactor.</span>"</div>
+        </div>
+        <div class="hist-card" style="padding:10px 12px">
+          <div class="top" style="margin-bottom:5px"><div class="dt" style="font-size:10px"><b>MON 11</b> Â· 22:12</div><div class="mood" style="font-size:13px">ð</div></div>
+          <div class="preview" style="font-size:12.5px">"<span class="ans" style="font-size:11.5px">Push session was the best in weeks.</span>"</div>
+        </div>
+        <div class="hist-card" style="padding:10px 12px">
+          <div class="top" style="margin-bottom:5px"><div class="dt" style="font-size:10px"><b>SUN 10</b> Â· 22:35</div><div class="mood" style="font-size:13px">ð</div></div>
+          <div class="preview" style="font-size:12.5px">"<span class="ans" style="font-size:11.5px">Quiet day. Coast walk for an hour.</span>"</div>
+        </div>
+        <div class="hist-card" style="padding:10px 12px">
+          <div class="top" style="margin-bottom:5px"><div class="dt" style="font-size:10px"><b>SAT 09</b> Â· 23:05</div><div class="mood" style="font-size:13px">ð</div></div>
+          <div class="preview" style="font-size:12.5px">"<span class="ans" style="font-size:11.5px">Hike with Yacine and Reda.</span>"</div>
+        </div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="journal"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+<script>
+  // expand history cards
+  document.querySelectorAll('.hist-card').forEach(c=>{
+    c.addEventListener('click', ()=> c.classList.toggle('expanded'));
+  });
+  // autosize textareas (simple)
+  document.querySelectorAll('.q-block textarea, .mob-q textarea').forEach(t=>{
+    const grow = ()=>{ t.style.height='auto'; t.style.height=(t.scrollHeight)+'px'; };
+    t.addEventListener('input', grow); grow();
+  });
+</script>
+</body>
+</html>

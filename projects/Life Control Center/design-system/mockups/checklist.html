@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Checklist â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .layout{display:grid;grid-template-columns:8fr 4fr;gap:14px}
+
+  /* hero â large progress */
+  .progress-card{padding:30px 32px;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+      var(--bg-card)}
+  .progress-card .lbl{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .progress-card .lbl:before{content:"";width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+  .progress-card .row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-top:6px}
+  .progress-card .pct{font-size:88px;font-weight:200;letter-spacing:-0.05em;line-height:0.9;
+    background:var(--grad);-webkit-background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 24px rgba(179,136,255,0.20))}
+  .progress-card .pct .sm{font-size:24px;-webkit-text-fill-color:var(--ink-3)}
+  .progress-card .meta{font-size:13px;color:var(--ink-2);max-width:28ch;line-height:1.55;text-align:right}
+  .progress-card .meta b{color:var(--ink);font-weight:500}
+  .progress-card .bar{height:8px;background:rgba(255,255,255,0.04);border-radius:99px;margin-top:18px;overflow:hidden}
+  .progress-card .bar .fg{height:100%;background:var(--grad);border-radius:99px;box-shadow:0 0 14px rgba(179,136,255,0.40);transition:width var(--t-3) var(--easeOut)}
+
+  /* checklist rows */
+  .ck-list{display:flex;flex-direction:column}
+  .ck-row{display:grid;grid-template-columns: 24px 1fr auto auto;gap:16px;align-items:center;
+    padding:14px 8px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;
+    transition:transform var(--t-2) var(--easeOut), background var(--t-1)}
+  .ck-row:last-child{border-bottom:0}
+  .ck-row:hover{background:rgba(255,255,255,0.015)}
+  .ck-row.done .lbl{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--ink-4);text-decoration-thickness:1px}
+  .ck-row.done{transform:translateX(5px)}
+  .ck-row.done .lbl-sub{color:var(--ink-4)}
+  .ck-row .lbl{font-size:15px;letter-spacing:-0.005em;transition:color var(--t-1)}
+  .ck-row .lbl-sub{font-size:11.5px;color:var(--ink-3);margin-top:2px;letter-spacing:0.01em}
+  .ck-row .ts{font-size:10.5px;color:var(--ink-4);letter-spacing:0.04em;font-family:var(--f-mono)}
+  .ck-row .streak{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;
+    border:1px solid var(--line);font-size:11px;color:var(--ink-3);letter-spacing:0.02em;font-family:var(--f-mono);
+    transition:all var(--t-1)}
+  .ck-row .streak svg{width:11px;height:11px;color:var(--ink-3)}
+  .ck-row .streak.warm{border-color:rgba(255,193,92,0.30);color:var(--warn);background:rgba(255,193,92,0.05)}
+  .ck-row .streak.warm svg{color:var(--warn);filter:drop-shadow(0 0 4px var(--warn))}
+  .ck-row .streak.hot{border-color:rgba(179,136,255,0.40);background:rgba(179,136,255,0.10);color:var(--violet);
+    box-shadow:0 0 12px rgba(179,136,255,0.25)}
+  .ck-row .streak.hot svg{color:var(--violet);filter:drop-shadow(0 0 6px var(--violet))}
+  .ck-row .streak.broken{border-color:rgba(255,138,138,0.20);color:var(--neg);background:rgba(255,138,138,0.05)}
+  .ck-row .streak.broken svg{color:var(--neg);opacity:0.6}
+  .ck-row .auto-tag{font-family:var(--f-mono);font-size:9px;letter-spacing:0.18em;color:var(--cyan);padding:2px 7px;border-radius:99px;background:rgba(126,231,255,0.10);border:1px solid rgba(126,231,255,0.25);text-transform:uppercase}
+
+  /* sidebar â weekly grid */
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:8px}
+  .wkrow{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:10px;padding:6px 0}
+  .wkrow .nm{font-size:11.5px;color:var(--ink-2);letter-spacing:0.005em}
+  .wkrow .nm .ico{display:inline-block;width:6px;height:6px;border-radius:99px;background:var(--ink-4);margin-right:8px;vertical-align:middle}
+  .wkrow .nm.alive .ico{background:var(--pos);box-shadow:0 0 5px rgba(111,212,154,0.50)}
+  .wkrow .nm.broken .ico{background:var(--neg)}
+  .cell{aspect-ratio:1/1;border:1px solid var(--line);border-radius:4px;background:rgba(255,255,255,0.015)}
+  .cell.done{background:linear-gradient(135deg, rgba(179,136,255,0.40), rgba(126,231,255,0.20));border-color:rgba(179,136,255,0.40);box-shadow:inset 0 0 8px rgba(179,136,255,0.20)}
+  .cell.miss{background:rgba(255,138,138,0.08);border-color:rgba(255,138,138,0.18)}
+  .cell.future{background:transparent;border-style:dashed;border-color:var(--line)}
+  .cell.today{outline:1px dashed rgba(126,231,255,0.50);outline-offset:1px}
+
+  /* drawer */
+  .drawer{position:absolute;top:0;right:0;bottom:0;width:380px;background:rgba(10,10,20,0.95);
+    border-left:1px solid var(--line-hi);padding:28px;backdrop-filter:blur(40px);
+    transform:translateX(100%);transition:transform var(--t-3) var(--easeOut);z-index:9;
+    overflow-y:auto;box-shadow:-30px 0 80px rgba(0,0,0,0.6)}
+  .drawer.open{transform:translateX(0)}
+  .drawer h3{margin:0 0 6px;font-size:18px;font-weight:500;letter-spacing:-0.01em}
+  .drawer .sub{font-size:11.5px;color:var(--ink-3);margin-bottom:22px;letter-spacing:0.01em}
+  .drawer-item{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;
+    padding:10px 4px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:rgba(255,255,255,0.015)}
+  .drawer-item .drag{color:var(--ink-4);cursor:grab}
+  .drawer-item input.cc-input{background:transparent;border:0;padding:0;font-size:13px}
+  .drawer-item input.cc-input:focus{box-shadow:none}
+  .drawer-item .stk{font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);white-space:nowrap}
+  .drawer-item button.del{color:var(--ink-4);transition:color var(--t-1)}
+  .drawer-item button.del:hover{color:var(--neg)}
+  .drawer-item button.del svg{width:13px;height:13px}
+
+  /* feedback toast (sample) */
+  .toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);padding:10px 18px;
+    background:var(--bg-card);border:1px solid var(--line-hi);border-radius:10px;font-size:12px;
+    backdrop-filter:blur(20px);box-shadow:0 12px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;z-index:11}
+
+  /* mobile */
+  .mob-progress{padding:22px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;
+    background:radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.16), transparent 60%), var(--bg-card)}
+  .mob-progress .pct{font-size:62px;font-weight:200;letter-spacing:-0.05em;line-height:0.9;background:var(--grad);-webkit-background-clip:text;color:transparent}
+  .mob-progress .pct .sm{font-size:18px;-webkit-text-fill-color:var(--ink-3)}
+  .mob-progress .bar{height:6px;background:rgba(255,255,255,0.04);border-radius:99px;margin-top:14px;overflow:hidden}
+  .mob-progress .bar .fg{height:100%;background:var(--grad);border-radius:99px;box-shadow:0 0 10px rgba(179,136,255,0.40)}
+
+</style>
+</head>
+<body class="cc-page" data-screen-label="Checklist Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Checklist Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Checklist Â· Desktop" style="position:relative">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="checklist" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Today<span class="grad-text">.</span></h1>
+        <div class="sub">Wednesday, May 13, 2026 Â· 14:42 Â· 8 daily non-negotiables Â· 31-day longest active streak</div>
+      </div>
+      <div class="actions">
+        <button class="cc-btn" id="edit-btn"><span data-icon="edit"></span>Edit list</button>
+        <button class="cc-btn cc-btn-primary" style="padding:10px 16px;font-size:13px"><span data-icon="plus"></span>Add item</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: progress + list -->
+      <div>
+        <div class="cc-card progress-card" style="margin-bottom:14px">
+          <div class="lbl">Today's completion</div>
+          <div class="row">
+            <div class="pct num" id="pct">50<span class="sm">%</span></div>
+            <div class="meta">
+              <div id="ct-text"><b>4 of 8</b> done Â· <b>4</b> remain</div>
+              <div style="margin-top:6px;color:var(--ink-3);font-size:11.5px">7-day avg <b style="color:var(--ink)">81%</b> Â· monthly <b style="color:var(--ink)">76%</b></div>
+            </div>
+          </div>
+          <div class="bar"><div class="fg" id="bar" style="width:50%"></div></div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head">
+            <div class="title">Daily list</div>
+            <div class="tail">tap to check Â· auto-saves</div>
+          </div>
+          <div class="ck-list" id="ck-list">
+
+            <div class="ck-row">
+              <span class="cc-check"><span data-icon="check"></span></span>
+              <div><div class="lbl">Drink 3L water</div><div class="lbl-sub">Hydration Â· spread across the day</div></div>
+              <div class="ts">due all day</div>
+              <span class="streak hot"><span data-icon="flame"></span>23d</span>
+            </div>
+
+            <div class="ck-row">
+              <span class="cc-check"><span data-icon="check"></span></span>
+              <div><div class="lbl">10,000 steps</div><div class="lbl-sub">Auto-synced from Apple Health Â· 7,412 so far</div></div>
+              <div class="ts">74% done</div>
+              <span class="streak warm"><span data-icon="flame"></span>12d</span>
+            </div>
+
+            <div class="ck-row done">
+              <span class="cc-check done"><span data-icon="check"></span></span>
+              <div><div class="lbl">Read 30 min</div><div class="lbl-sub">Meditations Â· 34 min logged Â· Book IV</div></div>
+              <div class="ts">8:14 AM</div>
+              <span class="streak warm"><span data-icon="flame"></span>8d</span>
+            </div>
+
+            <div class="ck-row">
+              <span class="cc-check"><span data-icon="check"></span></span>
+              <div><div class="lbl">Meditate Â· 10 min</div><div class="lbl-sub">Box breathing or unguided</div></div>
+              <div class="ts">due 21:00</div>
+              <span class="streak"><span data-icon="flame"></span>4d</span>
+            </div>
+
+            <div class="ck-row">
+              <span class="cc-check"><span data-icon="check"></span></span>
+              <div><div class="lbl">Journal</div><div class="lbl-sub">3 questions Â· end of day</div></div>
+              <div class="ts">due 21:30</div>
+              <span class="streak broken"><span data-icon="flame"></span>0d</span>
+            </div>
+
+            <div class="ck-row">
+              <span class="cc-check auto" style="position:relative"></span>
+              <div>
+                <div class="lbl" style="display:flex;align-items:center;gap:8px">Workout â Push <span class="auto-tag">auto-tracked</span></div>
+                <div class="lbl-sub">From Workouts Â· checks when session logged complete</div>
+              </div>
+              <div class="ts">15:30</div>
+              <span class="streak warm"><span data-icon="flame"></span>11d</span>
+            </div>
+
+            <div class="ck-row done">
+              <span class="cc-check done"><span data-icon="check"></span></span>
+              <div><div class="lbl">No phone before 9am</div><div class="lbl-sub">Screen-time gate Â· enforced</div></div>
+              <div class="ts">9:02 AM</div>
+              <span class="streak warm"><span data-icon="flame"></span>18d</span>
+            </div>
+
+            <div class="ck-row done">
+              <span class="cc-check done"><span data-icon="check"></span></span>
+              <div><div class="lbl">Vitamins + creatine</div><div class="lbl-sub">D3 Â· Omega-3 Â· 5g creatine</div></div>
+              <div class="ts">7:48 AM</div>
+              <span class="streak hot"><span data-icon="flame"></span>31d</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: 7-day grid + month avg + streak hall -->
+      <div>
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head">
+            <div class="title">Last 7 days</div>
+            <div class="tail">May 7 â May 13</div>
+          </div>
+          <div class="week-grid" style="margin-bottom:4px">
+            <div style="font-size:9px;color:var(--ink-4);letter-spacing:0.10em;text-align:center">7</div>
+            <div style="font-size:9px;color:var(--ink-4);letter-spacing:0.10em;text-align:center">8</div>
+            <div style="font-size:9px;color:var(--ink-4);letter-spacing:0.10em;text-align:center">9</div>
+            <div style="font-size:9px;color:var(--ink-4);letter-spacing:0.10em;text-align:center">10</div>
+            <div style="font-size:9px;color:var(--ink-4);letter-spacing:0.10em;text-align:center">11</div>
+            <div style="font-size:9px;color:var(--ink-4);letter-spacing:0.10em;text-align:center">12</div>
+            <div style="font-size:9px;color:var(--cyan);letter-spacing:0.10em;text-align:center">TDY</div>
+          </div>
+
+          <div class="wkrow"><div class="nm alive">Water</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell future today"></div></div></div>
+          <div class="wkrow"><div class="nm alive">Steps</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell miss"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell future today"></div></div></div>
+          <div class="wkrow"><div class="nm alive">Read</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done today"></div></div></div>
+          <div class="wkrow"><div class="nm alive">Meditate</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell miss"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell future today"></div></div></div>
+          <div class="wkrow"><div class="nm broken">Journal</div><div class="week-grid"><div class="cell done"></div><div class="cell miss"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell miss"></div><div class="cell future today"></div></div></div>
+          <div class="wkrow"><div class="nm alive">Workout</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell future today"></div></div></div>
+          <div class="wkrow"><div class="nm alive">No phone</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done today"></div></div></div>
+          <div class="wkrow"><div class="nm alive">Vitamins</div><div class="week-grid"><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done"></div><div class="cell done today"></div></div></div>
+        </div>
+
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Streak hall</div><div class="tail">longest active</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+              <div>
+                <div style="font-size:13px">Vitamins + creatine</div>
+                <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">Started Apr 12 Â· longest ever</div>
+              </div>
+              <span class="streak hot"><span data-icon="flame" style="color:var(--violet)"></span>31d</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+              <div>
+                <div style="font-size:13px">Drink 3L water</div>
+                <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">Started Apr 20</div>
+              </div>
+              <span class="streak hot"><span data-icon="flame" style="color:var(--violet)"></span>23d</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+              <div>
+                <div style="font-size:13px">No phone before 9am</div>
+                <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">Started Apr 25</div>
+              </div>
+              <span class="streak warm"><span data-icon="flame"></span>18d</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head"><div class="title">Month at a glance</div><div class="tail">May</div></div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+            <div style="padding:14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.015)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Avg completion</div>
+              <div class="num grad-text" style="font-size:30px;font-weight:300;letter-spacing:-0.03em;margin-top:4px">76%</div>
+              <div style="font-size:10.5px;color:var(--pos);letter-spacing:0.04em;margin-top:2px;font-family:var(--f-mono)">â² +8% vs Apr</div>
+            </div>
+            <div style="padding:14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.015)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Perfect days</div>
+              <div class="num" style="font-size:30px;font-weight:300;letter-spacing:-0.03em;margin-top:4px">3<span style="color:var(--ink-3);font-size:18px"> /13</span></div>
+              <div style="font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em;margin-top:2px;font-family:var(--f-mono)">Apr: 5/30 Â· YTD: 18</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- toast sample -->
+    <div class="toast" id="toast">
+      <span style="width:8px;height:8px;border-radius:99px;background:var(--grad);box-shadow:0 0 6px var(--violet)"></span>
+      <span>Read 30 min Â· streak +1 â 8d</span>
+    </div>
+
+    <!-- Edit list drawer -->
+    <div class="drawer" id="drawer">
+      <div class="cc-spread" style="margin-bottom:6px">
+        <h3>Edit checklist</h3>
+        <button class="cc-btn cc-btn-icon cc-btn-ghost" id="drawer-close" style="padding:0;width:30px;height:30px"><span data-icon="x"></span></button>
+      </div>
+      <div class="sub">Drag to reorder Â· tap pencil to rename Â· trash to delete</div>
+
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="Drink 3L water"/><span class="stk">â¡23d</span><button class="del"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="10,000 steps"/><span class="stk">â¡12d</span><button class="del"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="Read 30 min"/><span class="stk">â¡8d</span><button class="del"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="Meditate Â· 10 min"/><span class="stk">â¡4d</span><button class="del"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="Journal"/><span class="stk" style="color:var(--neg)">Ã0d</span><button class="del"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item" style="background:rgba(126,231,255,0.04);border-color:rgba(126,231,255,0.20)"><span class="drag" data-icon="drag"></span><input class="cc-input" value="Workout (auto)" readonly style="color:var(--ink-3)"/><span class="stk" style="color:var(--cyan)">AUTO</span><button class="del" disabled style="opacity:0.3"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="No phone before 9am"/><span class="stk">â¡18d</span><button class="del"><span data-icon="trash"></span></button></div>
+      <div class="drawer-item"><span class="drag" data-icon="drag"></span><input class="cc-input" value="Vitamins + creatine"/><span class="stk" style="color:var(--violet)">â¡31d</span><button class="del"><span data-icon="trash"></span></button></div>
+
+      <button class="cc-btn" style="margin-top:14px;width:100%;justify-content:center;border-style:dashed">
+        <span data-icon="plus"></span>Add new item
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Checklist Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="edit" style="width:14px"></span></button>
+      </div>
+      <h2 class="cc-mob-title">Today<span class="grad-text">.</span></h2>
+      <div class="cc-mob-sub">Wed Â· May 13 Â· 4 of 8 done</div>
+
+      <div class="mob-progress">
+        <div style="font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px">
+          <span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span>Completion
+        </div>
+        <div class="cc-spread" style="margin-top:6px;align-items:flex-end">
+          <div class="pct num">50<span class="sm">%</span></div>
+          <div style="font-size:11px;color:var(--ink-3);text-align:right">4 of 8 done<br><span style="color:var(--ink-4)">avg 81%</span></div>
+        </div>
+        <div class="bar"><div class="fg" style="width:50%"></div></div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Daily list</span><span style="color:var(--ink-4)">8 items</span></div>
+        <div class="ck-list">
+          <div class="ck-row" style="padding:11px 4px"><span class="cc-check"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">Drink 3L water</div></div><span class="streak hot" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>23d</span></div>
+          <div class="ck-row" style="padding:11px 4px"><span class="cc-check"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">10,000 steps</div></div><span class="streak warm" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>12d</span></div>
+          <div class="ck-row done" style="padding:11px 4px"><span class="cc-check done"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">Read 30 min</div></div><span class="streak warm" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>8d</span></div>
+          <div class="ck-row" style="padding:11px 4px"><span class="cc-check"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">Meditate</div></div><span class="streak" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>4d</span></div>
+          <div class="ck-row" style="padding:11px 4px"><span class="cc-check"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">Journal</div></div><span class="streak broken" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>0d</span></div>
+          <div class="ck-row" style="padding:11px 4px"><span class="cc-check auto"></span><div><div class="lbl" style="font-size:13.5px;display:flex;gap:6px;align-items:center">Workout Â· Push <span class="auto-tag" style="font-size:8px">AUTO</span></div></div><span class="streak warm" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>11d</span></div>
+          <div class="ck-row done" style="padding:11px 4px"><span class="cc-check done"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">No phone before 9am</div></div><span class="streak warm" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>18d</span></div>
+          <div class="ck-row done" style="padding:11px 4px"><span class="cc-check done"><span data-icon="check"></span></span><div><div class="lbl" style="font-size:13.5px">Vitamins + creatine</div></div><span class="streak hot" style="padding:3px 8px;font-size:10px"><span data-icon="flame"></span>31d</span></div>
+        </div>
+      </div>
+
+      <button class="cc-btn" style="width:100%;justify-content:center;border-style:dashed">
+        <span data-icon="plus"></span>Add item
+      </button>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="checklist"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+<script>
+  // checklist toggle
+  function updateProgress(){
+    const total = document.querySelectorAll('.cc-frame-desktop #ck-list .ck-row').length;
+    const done = document.querySelectorAll('.cc-frame-desktop #ck-list .ck-row.done').length;
+    const pct = Math.round(done/total*100);
+    document.getElementById('pct').innerHTML = pct + '<span class="sm">%</span>';
+    document.getElementById('bar').style.width = pct + '%';
+    document.getElementById('ct-text').innerHTML = `<b>${done} of ${total}</b> done Â· <b>${total-done}</b> remain`;
+  }
+  document.querySelectorAll('.cc-frame-desktop #ck-list .ck-row').forEach(row=>{
+    row.addEventListener('click', e=>{
+      if(row.querySelector('.cc-check.auto')) return;
+      const c = row.querySelector('.cc-check');
+      const wasDone = c.classList.contains('done');
+      c.classList.toggle('done');
+      row.classList.toggle('done');
+      updateProgress();
+      // toast
+      if(!wasDone){
+        const t = document.getElementById('toast');
+        t.style.opacity = 1;
+        clearTimeout(window._tt);
+        window._tt = setTimeout(()=> t.style.opacity = 0, 2200);
+      }
+    });
+  });
+  document.querySelectorAll('.cc-frame-mobile .ck-row').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      if(row.querySelector('.cc-check.auto')) return;
+      const c = row.querySelector('.cc-check');
+      c.classList.toggle('done');
+      row.classList.toggle('done');
+    });
+  });
+  // toast fade
+  const toast = document.getElementById('toast');
+  toast.style.transition = 'opacity 200ms ease';
+  toast.style.opacity = 0;
+
+  // drawer
+  document.getElementById('edit-btn').addEventListener('click', ()=> document.getElementById('drawer').classList.add('open'));
+  document.getElementById('drawer-close').addEventListener('click', ()=> document.getElementById('drawer').classList.remove('open'));
+</script>
+</body>
+</html>

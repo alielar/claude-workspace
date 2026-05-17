@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Sleep â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  /* this page uses a slightly cooler tint */
+  body.cc-page{
+    background:
+      radial-gradient(70% 50% at 15% 0%, rgba(120,160,255,0.08), transparent 60%),
+      radial-gradient(60% 50% at 100% 80%, rgba(126,231,255,0.10), transparent 60%),
+      radial-gradient(80% 60% at 60% 30%, rgba(50, 70, 120, 0.05), transparent 60%),
+      var(--bg-deep);
+  }
+
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:14px}
+
+  /* hero â last night */
+  .lastnight{padding:30px 32px;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(126,231,255,0.12), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.10), transparent 60%),
+      var(--bg-card)}
+  .lastnight .lbl{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px;font-weight:600}
+  .lastnight .lbl:before{content:"";width:6px;height:6px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+  .lastnight .row1{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:6px}
+  .lastnight .big{font-size:88px;font-weight:200;letter-spacing:-0.05em;line-height:0.9;
+    background:linear-gradient(100deg, #7EE7FF 0%, #B388FF 100%);-webkit-background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 20px rgba(126,231,255,0.20))}
+  .lastnight .big .sm{font-size:24px;-webkit-text-fill-color:var(--ink-3);color:var(--ink-3)}
+  .lastnight .meta{text-align:right}
+  .lastnight .meta .when{font-size:13px;color:var(--ink-2);letter-spacing:0.01em}
+  .lastnight .meta .when b{color:var(--ink);font-weight:500;font-family:var(--f-mono)}
+
+  /* time picker mock */
+  .time-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px;padding-top:24px;border-top:1px solid var(--line)}
+  .time-cell{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.012)}
+  .time-cell .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:6px}
+  .time-cell .l:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--cyan)}
+  .time-cell.wake .l:before{background:var(--warn)}
+  .time-cell .v{font-size:32px;font-weight:300;letter-spacing:-0.03em;line-height:1;margin-top:6px;font-family:var(--f-mono)}
+  .time-cell .v .ampm{font-size:13px;color:var(--ink-3);margin-left:4px}
+  .time-cell .d{font-size:11px;color:var(--ink-3);margin-top:4px;letter-spacing:0.04em}
+
+  .quality-row{margin-top:14px;padding:18px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.012)}
+  .quality-row .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+  .quality-row .top .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .quality-row .top .v{font-size:24px;font-weight:300;letter-spacing:-0.02em;font-family:var(--f-mono)}
+  .quality-row .top .v .of{color:var(--ink-3);font-size:14px}
+  .qslide{position:relative;height:18px}
+  .qslide .track{position:absolute;top:7px;left:0;right:0;height:4px;border-radius:99px;
+    background:linear-gradient(90deg, rgba(255,138,138,0.40) 0%, rgba(255,193,92,0.40) 30%, rgba(126,231,255,0.40) 60%, rgba(111,212,154,0.40) 100%)}
+  .qslide .ticks{position:absolute;top:1px;left:0;right:0;height:14px;display:flex;justify-content:space-between}
+  .qslide .ticks i{width:1px;height:14px;background:var(--ink-5);opacity:0.5}
+  .qslide .thumb{position:absolute;top:0;width:18px;height:18px;border-radius:99px;background:#0A0A14;border:2px solid var(--cyan);box-shadow:0 0 12px rgba(126,231,255,0.50);left:calc(70% - 9px)}
+  .qslide .ticks-row{position:absolute;left:0;right:0;top:24px;display:flex;justify-content:space-between;font-size:9px;color:var(--ink-4);font-family:var(--f-mono);letter-spacing:0.04em}
+
+  .save-row{margin-top:20px;display:flex;justify-content:space-between;align-items:center}
+
+  /* weekly bars */
+  .week-card{padding:24px}
+  .bar-chart{height:200px;display:flex;align-items:flex-end;gap:14px;padding:14px 0;position:relative;border-bottom:1px solid var(--line)}
+  .bar-chart .target{position:absolute;left:0;right:0;border-top:1px dashed rgba(126,231,255,0.40);font-size:9.5px;color:var(--cyan);letter-spacing:0.10em;font-family:var(--f-mono);padding-right:6px;text-align:right;text-transform:uppercase}
+  .bar-chart .target:after{content:"8H TARGET";padding-left:8px}
+  .bar{flex:1;background:linear-gradient(180deg, rgba(126,231,255,0.40), rgba(126,231,255,0.10));
+    border-radius:6px 6px 0 0;position:relative;border:1px solid rgba(126,231,255,0.20);
+    border-bottom:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+    transition:filter var(--t-1)}
+  .bar:hover{filter:brightness(1.2)}
+  .bar.deficit{background:linear-gradient(180deg, rgba(255,193,92,0.35), rgba(255,193,92,0.10));border-color:rgba(255,193,92,0.30)}
+  .bar.good{background:linear-gradient(180deg, rgba(111,212,154,0.40), rgba(111,212,154,0.10));border-color:rgba(111,212,154,0.30)}
+  .bar.today{background:linear-gradient(180deg, rgba(179,136,255,0.45), rgba(126,231,255,0.10));border:1px solid rgba(179,136,255,0.40);box-shadow:0 0 14px rgba(179,136,255,0.25)}
+  .bar .label{position:absolute;bottom:-30px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.04em}
+  .bar .label .dow{font-weight:600;color:var(--ink-2)}
+  .bar .h{position:absolute;top:-22px;left:0;right:0;text-align:center;font-size:11px;color:var(--ink);font-family:var(--f-mono);letter-spacing:-0.005em}
+  .bar-x{margin-top:36px;display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink-4);letter-spacing:0.06em;font-family:var(--f-mono);text-transform:uppercase}
+
+  /* debt indicator */
+  .debt-card{padding:18px}
+  .debt-card .lbl{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .debt-card .v{font-size:38px;font-weight:200;letter-spacing:-0.04em;line-height:1;margin-top:4px;font-family:var(--f-mono);color:var(--warn)}
+  .debt-card .v.ok{color:var(--pos)}
+  .debt-card .d{font-size:11.5px;color:var(--ink-3);margin-top:4px;letter-spacing:0.02em;font-family:var(--f-mono)}
+  .debt-card .pulse-warn{animation:pulse-warn 3s ease-in-out infinite}
+  @keyframes pulse-warn{0%,100%{box-shadow:0 0 0 rgba(255,193,92,0)}50%{box-shadow:0 0 24px rgba(255,193,92,0.15)}}
+
+  /* quality trend */
+  .qchart-svg{width:100%;height:110px}
+  .qchart-svg .line{fill:none;stroke:var(--cyan);stroke-width:1.5;filter:drop-shadow(0 0 4px rgba(126,231,255,0.3))}
+  .qchart-svg .area{fill:url(#ccGradFillCyan)}
+  .qchart-svg .grid line{stroke:var(--line);stroke-width:1}
+
+  /* AppleHealth placeholder */
+  .ah-card{padding:18px;border:1px dashed var(--line-hi);border-radius:12px;background:rgba(255,255,255,0.012);display:flex;align-items:center;gap:14px;opacity:0.65}
+  .ah-card .icon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+  .ah-card .icon svg{width:22px;height:22px}
+  .ah-card .ti{font-size:13.5px;font-weight:500}
+  .ah-card .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .ah-toggle{margin-left:auto;width:38px;height:22px;border-radius:99px;background:rgba(255,255,255,0.05);position:relative}
+  .ah-toggle:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:99px;background:var(--ink-4)}
+
+  /* mobile */
+  .mob-lastnight{padding:20px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;
+    background:radial-gradient(60% 70% at 0% 0%, rgba(126,231,255,0.16), transparent 60%), var(--bg-card)}
+  .mob-lastnight .big{font-size:54px;font-weight:200;letter-spacing:-0.05em;line-height:1;background:linear-gradient(100deg, #7EE7FF 0%, #B388FF 100%);-webkit-background-clip:text;color:transparent}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Sleep Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Sleep Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Sleep Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="sleep" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Sleep<span class="grad-text">.</span></h1>
+        <div class="sub">Manual log Â· weekly avg <b style="color:var(--ink)">7h 16m</b> Â· debt <b style="color:var(--warn)">1.4h</b> Â· target 8h</div>
+      </div>
+      <div class="actions">
+        <button class="cc-btn"><span data-icon="history"></span>History</button>
+        <button class="cc-btn cc-btn-ghost"><span data-icon="edit"></span>Settings</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT -->
+      <div>
+        <!-- LAST NIGHT -->
+        <div class="cc-card lastnight" style="margin-bottom:14px">
+          <div class="lbl">Log last night Â· Tue â Wed</div>
+          <div class="row1">
+            <div>
+              <div class="big num">7h 30m</div>
+              <div style="font-size:12px;color:var(--ink-3);margin-top:6px">9 to 8h target Â· â30m</div>
+            </div>
+            <div class="meta">
+              <div class="when"><b>23:30</b> â <b>07:00</b></div>
+              <div style="font-size:11px;color:var(--ink-4);margin-top:4px;font-family:var(--f-mono);letter-spacing:0.04em">7H 30M IN BED Â· 6H 52M ASLEEP (EST.)</div>
+              <div style="margin-top:8px"><span class="cc-tag cyan">Quality 7 / 10</span></div>
+            </div>
+          </div>
+
+          <div class="time-row">
+            <div class="time-cell">
+              <div class="l">Bedtime</div>
+              <div class="v num">23:30</div>
+              <div class="d">tap to edit Â· â+â to step 15m</div>
+            </div>
+            <div class="time-cell wake">
+              <div class="l">Wake</div>
+              <div class="v num">07:00</div>
+              <div class="d">alarm + 12m</div>
+            </div>
+          </div>
+
+          <div class="quality-row">
+            <div class="top">
+              <span class="l">Quality</span>
+              <div class="v num">7<span class="of"> / 10</span></div>
+            </div>
+            <div class="qslide">
+              <div class="track"></div>
+              <div class="ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="thumb"></div>
+              <div class="ticks-row"><span>1</span><span></span><span></span><span></span><span></span><span>5</span><span></span><span></span><span></span><span></span><span>10</span></div>
+            </div>
+          </div>
+
+          <div class="save-row">
+            <div style="font-size:11px;color:var(--pos);letter-spacing:0.04em;display:flex;align-items:center;gap:6px;font-family:var(--f-mono)">
+              <span style="width:6px;height:6px;border-radius:99px;background:var(--pos);box-shadow:0 0 5px var(--pos)"></span>
+              SAVED 06:58 Â· last edit
+            </div>
+            <button class="cc-btn cc-btn-primary"><span data-icon="check"></span>Save log</button>
+          </div>
+        </div>
+
+        <!-- WEEK BAR CHART -->
+        <div class="cc-card week-card">
+          <div class="cc-card-head">
+            <div class="title">This week Â· hours slept</div>
+            <div class="tail">avg <b style="color:var(--ink)">7h 16m</b> Â· target 8h</div>
+          </div>
+          <div class="bar-chart" style="margin-top:24px">
+            <div class="target" style="bottom:33%"></div>
+            <!-- 6.8 7.2 7.5 6.5 8.0 7.3 7.5 -->
+            <div class="bar deficit" style="height:54%"><div class="h">6:48</div><div class="label"><div class="dow">THU</div>7</div></div>
+            <div class="bar" style="height:64%"><div class="h">7:12</div><div class="label"><div class="dow">FRI</div>8</div></div>
+            <div class="bar" style="height:71%"><div class="h">7:30</div><div class="label"><div class="dow">SAT</div>9</div></div>
+            <div class="bar deficit" style="height:48%"><div class="h">6:30</div><div class="label"><div class="dow">SUN</div>10</div></div>
+            <div class="bar good" style="height:90%"><div class="h">8:00</div><div class="label"><div class="dow">MON</div>11</div></div>
+            <div class="bar" style="height:66%"><div class="h">7:18</div><div class="label"><div class="dow">TUE</div>12</div></div>
+            <div class="bar today" style="height:71%"><div class="h">7:30</div><div class="label"><div class="dow" style="color:var(--cyan)">WED</div>13</div></div>
+          </div>
+          <div class="bar-x" style="margin-top:46px">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(255,193,92,0.40);margin-right:5px;vertical-align:middle"></span>Below target</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(111,212,154,0.40);margin-right:5px;vertical-align:middle"></span>Hit 8h</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(126,231,255,0.40);margin-right:5px;vertical-align:middle"></span>Slightly under</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(179,136,255,0.40);margin-right:5px;vertical-align:middle"></span>Today</span>
+          </div>
+        </div>
+
+        <!-- QUALITY TREND -->
+        <div class="cc-card" style="margin-top:14px;padding:24px">
+          <div class="cc-card-head">
+            <div class="title">Quality Â· 30 days</div>
+            <div class="tail">avg <b style="color:var(--ink)">7.1</b> Â· Ï 0.9</div>
+          </div>
+          <svg class="qchart-svg" viewBox="0 0 600 110" preserveAspectRatio="none">
+            <g class="grid">
+              <line x1="0" x2="600" y1="20" y2="20"/>
+              <line x1="0" x2="600" y1="55" y2="55"/>
+              <line x1="0" x2="600" y1="90" y2="90"/>
+            </g>
+            <path class="area" d="M0,55 L20,60 L40,50 L60,52 L80,45 L100,42 L120,48 L140,52 L160,40 L180,38 L200,42 L220,38 L240,35 L260,45 L280,42 L300,32 L320,38 L340,28 L360,34 L380,28 L400,32 L420,25 L440,30 L460,28 L480,32 L500,25 L520,30 L540,28 L560,32 L580,28 L600,32 L600,110 L0,110 Z"/>
+            <path class="line"   d="M0,55 L20,60 L40,50 L60,52 L80,45 L100,42 L120,48 L140,52 L160,40 L180,38 L200,42 L220,38 L240,35 L260,45 L280,42 L300,32 L320,38 L340,28 L360,34 L380,28 L400,32 L420,25 L440,30 L460,28 L480,32 L500,25 L520,30 L540,28 L560,32 L580,28 L600,32"/>
+            <circle r="3" cx="600" cy="32" fill="#7EE7FF" filter="drop-shadow(0 0 4px #7EE7FF)"/>
+          </svg>
+          <div class="cc-spread" style="margin-top:8px;font-size:10.5px;color:var(--ink-4);font-family:var(--f-mono);letter-spacing:0.06em;text-transform:uppercase">
+            <span>13 APR</span><span>28 APR</span><span>13 MAY</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="cc-card debt-card pulse-warn" style="margin-bottom:14px">
+          <div class="lbl">Sleep debt Â· 7-day cumulative</div>
+          <div class="v num">â1.4<span style="color:var(--ink-3);font-size:18px;-webkit-text-fill-color:var(--ink-3)"> hr</span></div>
+          <div class="d">vs 56h target Â· 54.6h slept</div>
+          <div style="margin-top:14px;padding:12px 14px;border:1px solid rgba(255,193,92,0.20);border-radius:8px;background:rgba(255,193,92,0.04)">
+            <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--warn);font-weight:600;margin-bottom:4px">Hint</div>
+            <div style="font-size:12px;color:var(--ink-2);line-height:1.5">Bed by 22:30 tonight to keep debt below 2h. Skipping won't trigger an alarm â it's just on you.</div>
+          </div>
+        </div>
+
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Patterns Â· last 30d</div><div class="tail">auto-detected</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px">
+            <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,0.012)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:4px">Best night of week</div>
+              <div><b>Saturdays</b> Â· avg 8h 12m Â· quality 8.1</div>
+            </div>
+            <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,0.012)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:4px">Worst night</div>
+              <div><b>Sundays</b> Â· avg 6h 41m Â· quality 5.8</div>
+            </div>
+            <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(126,231,255,0.04);border-color:rgba(126,231,255,0.20)">
+              <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--cyan);font-weight:600;margin-bottom:4px">Correlation</div>
+              <div>Workouts <span style="color:var(--cyan)">+0.4 quality</span> next-night avg</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ah-card">
+          <div class="icon"><span data-icon="sleep"></span></div>
+          <div>
+            <div class="ti">Apple Health</div>
+            <div class="sub">Auto-import sleep stages Â· coming soon</div>
+          </div>
+          <div class="ah-toggle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Sleep Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="history" style="width:14px"></span></button>
+      </div>
+      <h2 class="cc-mob-title">Sleep<span class="grad-text">.</span></h2>
+      <div class="cc-mob-sub">Wed Â· 7h 16m wk avg Â· debt 1.4h</div>
+
+      <div class="mob-lastnight">
+        <div style="font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px"><span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span>Last night</div>
+        <div class="cc-spread" style="align-items:flex-end;margin-top:4px">
+          <div class="big num">7h 30m</div>
+          <div style="font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.04em;text-align:right">23:30 â 07:00<br><span style="color:var(--cyan)">QUALITY 7/10</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+          <div class="time-cell" style="padding:10px 12px"><div class="l" style="font-size:9px">Bedtime</div><div class="v num" style="font-size:22px;margin-top:3px">23:30</div></div>
+          <div class="time-cell wake" style="padding:10px 12px"><div class="l" style="font-size:9px">Wake</div><div class="v num" style="font-size:22px;margin-top:3px">07:00</div></div>
+        </div>
+        <button class="cc-btn cc-btn-primary" style="margin-top:14px;width:100%;justify-content:center;font-size:12px"><span data-icon="check"></span>Save log</button>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>This week</span><span style="color:var(--ink-4)">avg 7h 16m</span></div>
+        <div class="bar-chart" style="height:140px;gap:6px">
+          <div class="target" style="bottom:33%"></div>
+          <div class="bar deficit" style="height:54%"><div class="label" style="font-size:9px"><div class="dow">T</div>7</div></div>
+          <div class="bar" style="height:64%"><div class="label" style="font-size:9px"><div class="dow">F</div>8</div></div>
+          <div class="bar" style="height:71%"><div class="label" style="font-size:9px"><div class="dow">S</div>9</div></div>
+          <div class="bar deficit" style="height:48%"><div class="label" style="font-size:9px"><div class="dow">S</div>10</div></div>
+          <div class="bar good" style="height:90%"><div class="label" style="font-size:9px"><div class="dow">M</div>11</div></div>
+          <div class="bar" style="height:66%"><div class="label" style="font-size:9px"><div class="dow">T</div>12</div></div>
+          <div class="bar today" style="height:71%"><div class="label" style="font-size:9px"><div class="dow" style="color:var(--cyan)">W</div>13</div></div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card debt-card" style="background:rgba(255,193,92,0.04);border-color:rgba(255,193,92,0.20)">
+        <div class="ch"><span>Sleep debt Â· 7d</span></div>
+        <div class="v num" style="font-size:30px">â1.4<span style="font-size:14px;color:var(--ink-3);-webkit-text-fill-color:var(--ink-3)"> hr</span></div>
+        <div class="d" style="font-size:11px">Bed by 22:30 to recover.</div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="sleep"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+</body>
+</html>

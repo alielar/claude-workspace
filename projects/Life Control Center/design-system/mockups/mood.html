@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Mood â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:14px}
+
+  /* mood scale (today) */
+  .today-card{padding:32px;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.12), transparent 60%),
+      radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.08), transparent 60%),
+      var(--bg-card)}
+  .today-card .top-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .today-card .lbl{font-size:11px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:8px}
+  .today-card .lbl:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+  .today-card .ts{font-size:11px;color:var(--ink-4);letter-spacing:0.04em;font-family:var(--f-mono)}
+
+  .scale{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:24px}
+  .scale .opt{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 8px;
+    border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,0.012);cursor:pointer;
+    transition:all var(--t-2) var(--easeOut)}
+  .scale .opt:hover{background:rgba(255,255,255,0.025);border-color:var(--line-hi);transform:translateY(-2px)}
+  .scale .opt .face{font-size:42px;line-height:1;filter:grayscale(50%) opacity(.7);transition:all var(--t-2)}
+  .scale .opt .name{font-size:11px;color:var(--ink-3);letter-spacing:0.06em;text-transform:uppercase;font-weight:500;font-family:var(--f-mono)}
+  .scale .opt.sel{
+    background:linear-gradient(160deg, rgba(179,136,255,0.18), rgba(126,231,255,0.10));
+    border-color:rgba(179,136,255,0.40);
+    box-shadow:0 0 24px rgba(179,136,255,0.25), inset 0 0 16px rgba(179,136,255,0.06)
+  }
+  .scale .opt.sel .face{filter:grayscale(0) opacity(1);transform:scale(1.1)}
+  .scale .opt.sel .name{color:var(--ink)}
+
+  .note-row{margin-top:24px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;
+    background:rgba(255,255,255,0.012)}
+  .note-row .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+  .note-row .l .save{font-family:var(--f-mono);font-size:9.5px;color:var(--pos);letter-spacing:0.04em;display:flex;align-items:center;gap:5px;text-transform:none}
+  .note-row .l .save:before{content:"";width:5px;height:5px;border-radius:99px;background:var(--pos);box-shadow:0 0 4px var(--pos)}
+  .note-row textarea{width:100%;background:transparent;border:0;color:var(--ink);font-size:14px;line-height:1.55;resize:none;font-family:var(--f-sans);min-height:40px;letter-spacing:-0.005em}
+  .note-row textarea:focus{outline:0}
+
+  /* heatmap */
+  .heat-card{padding:24px}
+  .heat-grid{display:grid;grid-template-columns:auto repeat(7,1fr);gap:4px;align-items:center}
+  .heat-grid .dow{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-4);font-weight:600;text-align:center;font-family:var(--f-mono)}
+  .heat-grid .wk-lbl{font-size:9px;letter-spacing:0.10em;color:var(--ink-4);font-family:var(--f-mono);text-align:right;padding-right:6px}
+  .heat-cell{aspect-ratio:1/1;border:1px solid var(--line);border-radius:5px;background:rgba(255,255,255,0.015);position:relative;cursor:pointer;transition:transform var(--t-1)}
+  .heat-cell:hover{transform:scale(1.10);z-index:2}
+  .heat-cell.m1{background:rgba(255,138,138,0.20);border-color:rgba(255,138,138,0.30)}
+  .heat-cell.m2{background:rgba(255,193,92,0.18);border-color:rgba(255,193,92,0.30)}
+  .heat-cell.m3{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.10)}
+  .heat-cell.m4{background:linear-gradient(135deg, rgba(179,136,255,0.30), rgba(126,231,255,0.10));border-color:rgba(179,136,255,0.30)}
+  .heat-cell.m5{background:linear-gradient(135deg, rgba(179,136,255,0.55), rgba(126,231,255,0.25));border-color:rgba(179,136,255,0.50);box-shadow:0 0 8px rgba(179,136,255,0.20)}
+  .heat-cell.future{background:transparent;border-style:dashed;cursor:default}
+  .heat-cell.today{box-shadow:inset 0 0 0 1px var(--cyan), 0 0 10px rgba(126,231,255,0.30)}
+  .heat-cell.empty{visibility:hidden}
+  .heat-cell .n{position:absolute;top:3px;left:5px;font-size:8.5px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.02em}
+  .heat-cell .em{position:absolute;bottom:3px;right:4px;font-size:11px;line-height:1;filter:grayscale(40%)}
+  .heat-legend{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em;font-family:var(--f-mono)}
+  .heat-legend .scale-bar{display:flex;align-items:center;gap:6px}
+  .heat-legend .scale-bar i{display:inline-block;width:11px;height:11px;border-radius:3px}
+
+  /* trend chart */
+  .chart{padding:24px}
+  .chart-svg{width:100%;height:160px}
+  .chart-svg .area{fill:url(#ccGradFill)}
+  .chart-svg .line{fill:none;stroke:url(#ccGradStroke);stroke-width:1.5;filter:drop-shadow(0 0 4px rgba(179,136,255,0.3))}
+  .chart-svg .dot{r:2.5;fill:var(--cyan);filter:drop-shadow(0 0 4px var(--cyan))}
+  .chart-svg .grid line{stroke:var(--line);stroke-width:1}
+  .chart-svg .axis{font-size:9px;fill:var(--ink-4);font-family:var(--f-mono);letter-spacing:0.06em}
+
+  /* big number */
+  .month-stat{padding:18px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.012)}
+  .month-stat .lbl{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .month-stat .v{font-size:46px;font-weight:200;letter-spacing:-0.04em;line-height:1;margin-top:4px;
+    background:var(--grad);-webkit-background-clip:text;color:transparent}
+  .month-stat .v .sm{font-size:18px;-webkit-text-fill-color:var(--ink-3);color:var(--ink-3)}
+  .month-stat .d{font-size:11px;color:var(--pos);margin-top:4px;font-family:var(--f-mono);letter-spacing:0.04em}
+
+  /* history list */
+  .hist-month{font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:14px 0 8px;border-bottom:1px solid var(--line);margin-top:8px}
+  .hist-row{display:grid;grid-template-columns:60px 32px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;font-size:12.5px}
+  .hist-row:last-child{border-bottom:0}
+  .hist-row .d{font-family:var(--f-mono);color:var(--ink-3);font-size:11px;letter-spacing:0.04em}
+  .hist-row .em{font-size:20px;line-height:1}
+  .hist-row .nt{color:var(--ink-2);line-height:1.4}
+  .hist-row .score{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);letter-spacing:0.04em}
+
+  /* tweak: emoji softer */
+  .em-w{filter:grayscale(20%)}
+
+  /* mobile */
+  .mob-today{padding:20px;border:1px solid var(--line);border-radius:14px;
+    background:radial-gradient(60% 70% at 0% 0%, rgba(179,136,255,0.14), transparent 60%), var(--bg-card);
+    margin-bottom:10px}
+  .mob-today .scale{grid-template-columns:repeat(5,1fr);gap:5px;margin-top:14px}
+  .mob-today .scale .opt{padding:12px 4px;gap:5px}
+  .mob-today .scale .opt .face{font-size:24px}
+  .mob-today .scale .opt .name{font-size:8.5px;letter-spacing:0.10em}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Mood Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Mood Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Mood Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="mood" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="cc-pagetitle">
+      <div>
+        <h1>Mood<span class="grad-text">.</span></h1>
+        <div class="sub">5-second daily log Â· 28-day streak Â· monthly avg 3.6 / 5</div>
+      </div>
+      <div class="actions">
+        <div class="cc-tabs">
+          <a class="cc-tab cur">Month</a>
+          <a class="cc-tab">90 days</a>
+          <a class="cc-tab">All time</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT -->
+      <div>
+        <div class="cc-card today-card" style="margin-bottom:14px">
+          <div class="top-row">
+            <div class="lbl">Today Â· Wed 13 May</div>
+            <div class="ts">Logged 09:14 Â· auto-saved</div>
+          </div>
+          <div class="scale">
+            <div class="opt" data-v="1"><div class="face em-w">ð</div><div class="name">Awful</div></div>
+            <div class="opt" data-v="2"><div class="face em-w">ð</div><div class="name">Low</div></div>
+            <div class="opt" data-v="3"><div class="face em-w">ð</div><div class="name">OK</div></div>
+            <div class="opt sel" data-v="4"><div class="face em-w">ð</div><div class="name">Good</div></div>
+            <div class="opt" data-v="5"><div class="face em-w">ð</div><div class="name">Great</div></div>
+          </div>
+          <div class="note-row">
+            <div class="l"><span>Optional note</span><span class="save">Saved 2m ago</span></div>
+            <textarea>Good gym session this morning. Felt sharp at standup. Slight afternoon dip â need water.</textarea>
+          </div>
+        </div>
+
+        <div class="cc-card heat-card">
+          <div class="cc-card-head">
+            <div class="title">May Â· heatmap</div>
+            <div class="tail">avg <b style="color:var(--ink)">3.6</b> Â· â² +0.4 vs Apr</div>
+          </div>
+          <div class="heat-grid" style="margin-top:6px;margin-bottom:4px">
+            <div class="wk-lbl"></div>
+            <div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div class="dow">S</div>
+          </div>
+          <!-- May 2026 â May 1 = Fri -->
+          <div class="heat-grid">
+            <div class="wk-lbl">W18</div>
+            <div class="heat-cell empty"></div>
+            <div class="heat-cell empty"></div>
+            <div class="heat-cell empty"></div>
+            <div class="heat-cell empty"></div>
+            <div class="heat-cell m4"><span class="n">1</span><span class="em">ð</span></div>
+            <div class="heat-cell m5"><span class="n">2</span><span class="em">ð</span></div>
+            <div class="heat-cell m3"><span class="n">3</span><span class="em">ð</span></div>
+          </div>
+          <div class="heat-grid">
+            <div class="wk-lbl">W19</div>
+            <div class="heat-cell m4"><span class="n">4</span><span class="em">ð</span></div>
+            <div class="heat-cell m4"><span class="n">5</span><span class="em">ð</span></div>
+            <div class="heat-cell m2"><span class="n">6</span><span class="em">ð</span></div>
+            <div class="heat-cell m3"><span class="n">7</span><span class="em">ð</span></div>
+            <div class="heat-cell m4"><span class="n">8</span><span class="em">ð</span></div>
+            <div class="heat-cell m5"><span class="n">9</span><span class="em">ð</span></div>
+            <div class="heat-cell m3"><span class="n">10</span><span class="em">ð</span></div>
+          </div>
+          <div class="heat-grid">
+            <div class="wk-lbl">W20</div>
+            <div class="heat-cell m4"><span class="n">11</span><span class="em">ð</span></div>
+            <div class="heat-cell m3"><span class="n">12</span><span class="em">ð</span></div>
+            <div class="heat-cell m4 today"><span class="n">13</span><span class="em">ð</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">14</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">15</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">16</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">17</span></div>
+          </div>
+          <div class="heat-grid">
+            <div class="wk-lbl">W21</div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">18</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">19</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">20</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">21</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">22</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">23</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">24</span></div>
+          </div>
+          <div class="heat-grid">
+            <div class="wk-lbl">W22</div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">25</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">26</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">27</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">28</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">29</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">30</span></div>
+            <div class="heat-cell future"><span class="n" style="color:var(--ink-4)">31</span></div>
+          </div>
+
+          <div class="heat-legend">
+            <div>Hover any day to view note</div>
+            <div class="scale-bar">
+              <span>Low</span>
+              <i class="m1" style="background:rgba(255,138,138,0.20);border:1px solid rgba(255,138,138,0.30)"></i>
+              <i class="m2" style="background:rgba(255,193,92,0.18);border:1px solid rgba(255,193,92,0.30)"></i>
+              <i class="m3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10)"></i>
+              <i class="m4" style="background:linear-gradient(135deg, rgba(179,136,255,0.30), rgba(126,231,255,0.10));border:1px solid rgba(179,136,255,0.30)"></i>
+              <i class="m5" style="background:linear-gradient(135deg, rgba(179,136,255,0.55), rgba(126,231,255,0.25));border:1px solid rgba(179,136,255,0.50)"></i>
+              <span>High</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- chart -->
+        <div class="cc-card chart" style="margin-top:14px">
+          <div class="cc-card-head">
+            <div class="title">30-day trend</div>
+            <div class="tail">smoothed Â· 7-day rolling</div>
+          </div>
+          <svg class="chart-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+            <g class="grid">
+              <line x1="0" x2="600" y1="20" y2="20"/>
+              <line x1="0" x2="600" y1="55" y2="55"/>
+              <line x1="0" x2="600" y1="90" y2="90"/>
+              <line x1="0" x2="600" y1="125" y2="125"/>
+            </g>
+            <path class="area" d="M0,90 C30,80 60,75 90,72 C120,69 150,82 180,78 C210,74 240,60 270,55 C300,50 330,68 360,62 C390,56 420,45 450,42 C480,40 510,52 540,48 C570,44 600,38 600,38 L600,160 L0,160 Z"/>
+            <path class="line"   d="M0,90 C30,80 60,75 90,72 C120,69 150,82 180,78 C210,74 240,60 270,55 C300,50 330,68 360,62 C390,56 420,45 450,42 C480,40 510,52 540,48 C570,44 600,38 600,38"/>
+            <circle class="dot" cx="600" cy="38"/>
+            <text class="axis" x="0" y="153">13 APR</text>
+            <text class="axis" x="290" y="153">28 APR</text>
+            <text class="axis" x="558" y="153">13 MAY</text>
+            <text class="axis" x="6" y="15">5</text>
+            <text class="axis" x="6" y="50">4</text>
+            <text class="axis" x="6" y="85">3</text>
+            <text class="axis" x="6" y="120">2</text>
+          </svg>
+          <div class="cc-spread" style="margin-top:6px">
+            <div style="display:flex;gap:14px;font-size:11px;color:var(--ink-3);letter-spacing:0.02em">
+              <span><span style="color:var(--pos)">â² +0.4</span> vs prev 30d</span>
+              <span><span style="color:var(--cyan)">â</span> mood up after workouts</span>
+              <span><span style="color:var(--warn)">â</span> dips on Wednesdays</span>
+            </div>
+            <span style="font-size:11px;color:var(--ink-4)">Î¼ <b style="color:var(--ink)">3.6</b> Â· Ï 0.8</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="cc-card" style="margin-bottom:14px">
+          <div class="cc-card-head"><div class="title">Month overview</div><div class="tail">May</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="month-stat">
+              <div class="lbl">Avg</div>
+              <div class="v num">3.6<span class="sm">/5</span></div>
+              <div class="d">â² +0.4 vs Apr</div>
+            </div>
+            <div class="month-stat">
+              <div class="lbl">Streak</div>
+              <div class="v num">28<span class="sm">d</span></div>
+              <div class="d">longest active</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.015)">
+            <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:8px">Distribution Â· last 30d</div>
+            <div style="display:flex;flex-direction:column;gap:4px;font-family:var(--f-mono);font-size:11px">
+              <div style="display:grid;grid-template-columns:24px 1fr 32px;gap:8px;align-items:center"><span>ð</span><div style="height:5px;background:rgba(179,136,255,0.45);border-radius:99px;width:32%"></div><span style="color:var(--ink-3)">10Ã</span></div>
+              <div style="display:grid;grid-template-columns:24px 1fr 32px;gap:8px;align-items:center"><span>ð</span><div style="height:5px;background:rgba(179,136,255,0.30);border-radius:99px;width:46%"></div><span style="color:var(--ink-3)">14Ã</span></div>
+              <div style="display:grid;grid-template-columns:24px 1fr 32px;gap:8px;align-items:center"><span>ð</span><div style="height:5px;background:rgba(255,255,255,0.10);border-radius:99px;width:14%"></div><span style="color:var(--ink-3)">4Ã</span></div>
+              <div style="display:grid;grid-template-columns:24px 1fr 32px;gap:8px;align-items:center"><span>ð</span><div style="height:5px;background:rgba(255,193,92,0.30);border-radius:99px;width:6%"></div><span style="color:var(--ink-3)">2Ã</span></div>
+              <div style="display:grid;grid-template-columns:24px 1fr 32px;gap:8px;align-items:center"><span>ð</span><div style="height:5px;background:rgba(255,138,138,0.30);border-radius:99px;width:1%"></div><span style="color:var(--ink-3)">0Ã</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-card">
+          <div class="cc-card-head"><div class="title">History</div><div class="tail">latest 7</div></div>
+          <div class="hist-row"><span class="d">WED 13</span><span class="em">ð</span><span class="nt">Good gym session this morning. Felt sharp at standup.</span><span class="score">4 / 5</span></div>
+          <div class="hist-row"><span class="d">TUE 12</span><span class="em">ð</span><span class="nt">Long meetings Â· slow recovery from Mon.</span><span class="score">3 / 5</span></div>
+          <div class="hist-row"><span class="d">MON 11</span><span class="em">ð</span><span class="nt">Tough push session Â· proud.</span><span class="score">4 / 5</span></div>
+          <div class="hist-row"><span class="d">SUN 10</span><span class="em">ð</span><span class="nt">Quiet rest day.</span><span class="score">3 / 5</span></div>
+          <div class="hist-row"><span class="d">SAT 09</span><span class="em">ð</span><span class="nt">Hike with friends Â· perfect weather.</span><span class="score">5 / 5</span></div>
+          <div class="hist-row"><span class="d">FRI 08</span><span class="em">ð</span><span class="nt">Solid friday Â· finished a hard task.</span><span class="score">4 / 5</span></div>
+          <div class="hist-row"><span class="d">THU 07</span><span class="em">ð</span><span class="nt">â</span><span class="score">3 / 5</span></div>
+          <a class="cc-btn cc-btn-ghost" style="margin-top:10px;width:100%;justify-content:center">All history â</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Mood Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <div class="brand"><span class="dot"></span>Control Center</div>
+      </div>
+      <h2 class="cc-mob-title">Mood<span class="grad-text">.</span></h2>
+      <div class="cc-mob-sub">Wed Â· May 13 Â· avg 3.6 / 5</div>
+
+      <div class="mob-today">
+        <div style="font-size:10px;letter-spacing:0.20em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px"><span style="width:5px;height:5px;border-radius:99px;background:var(--cyan);box-shadow:0 0 6px var(--cyan)"></span>Today</div>
+        <div class="scale">
+          <div class="opt" data-v="1"><div class="face em-w">ð</div><div class="name">Awful</div></div>
+          <div class="opt" data-v="2"><div class="face em-w">ð</div><div class="name">Low</div></div>
+          <div class="opt" data-v="3"><div class="face em-w">ð</div><div class="name">OK</div></div>
+          <div class="opt sel" data-v="4"><div class="face em-w">ð</div><div class="name">Good</div></div>
+          <div class="opt" data-v="5"><div class="face em-w">ð</div><div class="name">Great</div></div>
+        </div>
+        <div class="note-row" style="margin-top:14px;padding:12px;border-radius:10px">
+          <div class="l" style="margin-bottom:4px"><span style="font-size:9px">Note</span><span class="save" style="font-size:9px">Saved</span></div>
+          <div style="font-size:13px;color:var(--ink-2);line-height:1.4">Good gym session this morning.</div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>May</span><span style="color:var(--ink-4)">avg 3.6</span></div>
+        <div class="heat-grid" style="grid-template-columns:repeat(7,1fr)">
+          <div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div class="dow">S</div>
+        </div>
+        <div class="heat-grid" style="grid-template-columns:repeat(7,1fr);margin-top:4px">
+          <div class="heat-cell empty"></div><div class="heat-cell empty"></div><div class="heat-cell empty"></div><div class="heat-cell empty"></div><div class="heat-cell m4"><span class="n">1</span></div><div class="heat-cell m5"><span class="n">2</span></div><div class="heat-cell m3"><span class="n">3</span></div>
+        </div>
+        <div class="heat-grid" style="grid-template-columns:repeat(7,1fr);margin-top:4px">
+          <div class="heat-cell m4"><span class="n">4</span></div><div class="heat-cell m4"><span class="n">5</span></div><div class="heat-cell m2"><span class="n">6</span></div><div class="heat-cell m3"><span class="n">7</span></div><div class="heat-cell m4"><span class="n">8</span></div><div class="heat-cell m5"><span class="n">9</span></div><div class="heat-cell m3"><span class="n">10</span></div>
+        </div>
+        <div class="heat-grid" style="grid-template-columns:repeat(7,1fr);margin-top:4px">
+          <div class="heat-cell m4"><span class="n">11</span></div><div class="heat-cell m3"><span class="n">12</span></div><div class="heat-cell m4 today"><span class="n">13</span></div><div class="heat-cell future"><span class="n">14</span></div><div class="heat-cell future"><span class="n">15</span></div><div class="heat-cell future"><span class="n">16</span></div><div class="heat-cell future"><span class="n">17</span></div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Latest</span><span style="color:var(--ink-4)">7 days</span></div>
+        <div class="hist-row" style="grid-template-columns:50px 26px 1fr auto;padding:8px 0"><span class="d">WED 13</span><span class="em" style="font-size:16px">ð</span><span class="nt" style="font-size:11.5px">Good gym session.</span><span class="score">4</span></div>
+        <div class="hist-row" style="grid-template-columns:50px 26px 1fr auto;padding:8px 0"><span class="d">TUE 12</span><span class="em" style="font-size:16px">ð</span><span class="nt" style="font-size:11.5px">Long meetings.</span><span class="score">3</span></div>
+        <div class="hist-row" style="grid-template-columns:50px 26px 1fr auto;padding:8px 0"><span class="d">MON 11</span><span class="em" style="font-size:16px">ð</span><span class="nt" style="font-size:11.5px">Push session.</span><span class="score">4</span></div>
+        <div class="hist-row" style="grid-template-columns:50px 26px 1fr auto;padding:8px 0"><span class="d">SUN 10</span><span class="em" style="font-size:16px">ð</span><span class="nt" style="font-size:11.5px">Rest day.</span><span class="score">3</span></div>
+        <div class="hist-row" style="grid-template-columns:50px 26px 1fr auto;padding:8px 0"><span class="d">SAT 09</span><span class="em" style="font-size:16px">ð</span><span class="nt" style="font-size:11.5px">Hike with friends.</span><span class="score">5</span></div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="mood"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+<script>
+  document.querySelectorAll('.scale .opt').forEach(o=>{
+    o.addEventListener('click', ()=>{
+      const parent = o.parentElement;
+      parent.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+      o.classList.add('sel');
+    });
+  });
+</script>
+</body>
+</html>

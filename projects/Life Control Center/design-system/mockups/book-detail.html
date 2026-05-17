@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1900" />
+<title>Library Â· Book Detail â Ambient Futurism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;450;500;600;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="system.css" />
+<style>
+  .layout{display:grid;grid-template-columns: 360px 1fr;gap:24px;align-items:start}
+
+  /* breadcrumb */
+  .breadcrumb{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-3);margin-bottom:18px;letter-spacing:0.01em}
+  .breadcrumb a{transition:color var(--t-1)}
+  .breadcrumb a:hover{color:var(--ink)}
+  .breadcrumb .sep{color:var(--ink-5);font-size:9px}
+
+  /* big cover */
+  .big-cover{width:300px;height:430px;font-family:'EB Garamond', serif;position:relative;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 40px rgba(179,136,255,0.12);
+    border-radius:6px}
+  .big-cover .ttl{position:absolute;left:24px;right:18px;top:36px;font-size:24px;font-weight:600;
+    letter-spacing:0.02em;line-height:1.15;color:rgba(255,255,255,0.85);text-transform:uppercase}
+  .big-cover .au{position:absolute;left:24px;bottom:32px;font-size:13px;letter-spacing:0.10em;
+    text-transform:uppercase;color:rgba(255,255,255,0.55);font-weight:500}
+  .big-cover .ed{position:absolute;left:24px;bottom:18px;font-size:9.5px;color:rgba(255,255,255,0.35);letter-spacing:0.18em;text-transform:uppercase;font-family:var(--f-sans)}
+  .big-cover:after{content:"";position:absolute;left:8px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.10)}
+
+  .meta-strip{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+
+  .info-stack .h1{font-size:38px;font-weight:300;letter-spacing:-0.02em;margin:0;line-height:1.1}
+  .info-stack .au{font-size:15px;color:var(--ink-2);margin-top:6px;letter-spacing:-0.005em}
+  .info-stack .au b{color:var(--ink);font-weight:500}
+
+  /* progress hero */
+  .prog-hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;
+    margin-top:24px;padding:22px 24px;border:1px solid rgba(179,136,255,0.20);border-radius:14px;
+    background:
+      radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.12), transparent 60%),
+      radial-gradient(40% 80% at 100% 100%, rgba(126,231,255,0.08), transparent 60%),
+      rgba(255,255,255,0.02)}
+  .ring-svg{width:96px;height:96px}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:6}
+  .ring-fg{fill:none;stroke:url(#ccRingGrad);stroke-width:6;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(179,136,255,0.4))}
+  .prog-hero .pct-big{font-size:36px;font-weight:300;letter-spacing:-0.03em;
+    background:var(--grad);-webkit-background-clip:text;color:transparent;line-height:1}
+  .prog-hero .pct-sub{font-size:11.5px;color:var(--ink-3);margin-top:4px;letter-spacing:0.02em;font-family:var(--f-mono)}
+  .prog-hero .stats{display:grid;grid-template-columns:repeat(3,auto);gap:24px;margin-top:14px}
+  .prog-hero .stats .l{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .prog-hero .stats .v{font-size:16px;font-weight:500;letter-spacing:-0.005em;margin-top:3px;font-family:var(--f-mono)}
+  .prog-hero .row-r{display:flex;align-items:center;justify-content:space-between;gap:16px}
+
+  /* sessions */
+  .sessions{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .sess{display:grid;grid-template-columns:64px 1fr auto auto;gap:14px;align-items:center;padding:12px 16px;
+    border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.012);transition:border-color var(--t-1)}
+  .sess:hover{border-color:var(--line-hi)}
+  .sess .date{text-align:center}
+  .sess .date .d{font-size:18px;font-weight:500;font-family:var(--f-mono);letter-spacing:-0.02em}
+  .sess .date .m{font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-top:1px}
+  .sess .body{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+  .sess .body b{color:var(--ink);font-weight:500}
+  .sess .pg{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);letter-spacing:0.04em}
+  .sess .dur{font-family:var(--f-mono);font-size:13px;color:var(--ink);letter-spacing:-0.005em}
+
+  /* notes */
+  .note-block{padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,0.012);margin-bottom:8px}
+  .note-block .head{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ink-3);margin-bottom:8px;letter-spacing:0.02em}
+  .note-block .head .pg{font-family:var(--f-mono);color:var(--cyan);font-size:10.5px;letter-spacing:0.04em}
+  .note-block .head .pg:before{content:"p. "}
+  .note-block .body{font-size:13.5px;color:var(--ink);line-height:1.55;letter-spacing:-0.005em}
+  .note-block .quote{font-family:'EB Garamond', serif;font-size:15px;font-style:italic;color:var(--ink-2);padding-left:14px;border-left:2px solid rgba(179,136,255,0.40);line-height:1.55}
+  .note-block .row{display:flex;gap:8px;margin-top:10px}
+
+  /* highlights bar */
+  .selected-text{padding:14px 16px;border:1px solid rgba(126,231,255,0.30);border-radius:10px;
+    background:rgba(126,231,255,0.05);margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .selected-text .preview{font-style:italic;font-size:12.5px;color:var(--ink-2);font-family:'EB Garamond', serif;font-size:14px}
+
+  /* word adds from book */
+  .words-from{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .words-from .chip{padding:5px 10px;font-size:11.5px;border:1px solid var(--line);border-radius:99px;color:var(--ink-2);
+    background:rgba(179,136,255,0.04);letter-spacing:-0.005em}
+
+  /* mobile */
+  .mob-cover{width:140px;height:200px;margin:0 auto;font-family:'EB Garamond', serif;display:block;position:relative;box-shadow:0 20px 40px rgba(0,0,0,0.5), 0 0 30px rgba(179,136,255,0.15)}
+  .mob-cover .ttl{position:absolute;left:14px;right:10px;top:22px;font-size:13px;font-weight:600;letter-spacing:0.02em;line-height:1.15;color:rgba(255,255,255,0.85);text-transform:uppercase}
+  .mob-cover .au{position:absolute;left:14px;bottom:14px;font-size:9px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(255,255,255,0.55);font-weight:500}
+  .mob-cover:after{content:"";position:absolute;left:5px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.10)}
+</style>
+</head>
+<body class="cc-page" data-screen-label="Library Â· Book Detail Â· Ambient Futurism">
+
+<div class="cc-pagehead">
+  <h1>Library Â· Book Detail Â· Ambient Futurism</h1>
+  <div class="lbl">Desktop 1440 Â· Mobile 390</div>
+</div>
+
+<div class="cc-frames">
+
+  <!-- DESKTOP -->
+  <div class="cc-frame cc-frame-desktop" data-screen-label="Book Detail Â· Desktop">
+    <span class="cc-frame-label">Desktop Â· 1440</span>
+    <div class="cc-top" data-cc-nav="library" data-date="Wed Â· May 13 Â· 2026"></div>
+
+    <div class="breadcrumb">
+      <a href="library.html">Library</a><span class="sep">âº</span>
+      <a href="#">2026</a><span class="sep">âº</span>
+      <a href="#">May</a><span class="sep">âº</span>
+      <span style="color:var(--ink)">Meditations</span>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: cover -->
+      <div>
+        <div class="cc-cover big-cover v-meditations">
+          <div class="ttl">Meditations</div>
+          <div class="au">Marcus Aurelius</div>
+          <div class="ed">Modern Library Â· trans. G. Hays</div>
+        </div>
+        <div class="meta-strip">
+          <span class="cc-tag violet">Philosophy</span>
+          <span class="cc-tag violet">Stoicism</span>
+          <span class="cc-tag cyan">PDF Â· 304p</span>
+        </div>
+
+        <div style="margin-top:24px;padding:16px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,0.012)">
+          <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:10px">Details</div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px">
+            <div class="cc-spread"><span style="color:var(--ink-3)">Edition</span><span>Modern Library, 2003</span></div>
+            <div class="cc-spread"><span style="color:var(--ink-3)">Translator</span><span>Gregory Hays</span></div>
+            <div class="cc-spread"><span style="color:var(--ink-3)">Original</span><span class="mono">~170 CE Â· Greek</span></div>
+            <div class="cc-spread"><span style="color:var(--ink-3)">Pages</span><span class="mono">304</span></div>
+            <div class="cc-spread"><span style="color:var(--ink-3)">Added</span><span class="mono">May 1, 2026</span></div>
+            <div class="cc-spread"><span style="color:var(--ink-3)">ISBN</span><span class="mono">978-0-679-64260-3</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:12px">
+          <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:8px">Words added from book</div>
+          <div class="words-from">
+            <span class="chip">ephemeral</span>
+            <span class="chip">sanguine</span>
+            <span class="chip">perspicacious</span>
+            <span class="chip">lugubrious</span>
+            <span class="chip">phlegmatic</span>
+            <span class="chip">sapient</span>
+            <span class="chip">ineluctable</span>
+            <span class="chip">stoic</span>
+            <span class="chip">+3 more</span>
+          </div>
+          <button class="cc-btn cc-btn-ghost" style="margin-top:12px;width:100%;justify-content:center;font-size:11px">View in Word Bank âº</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: info + progress + sessions + notes -->
+      <div class="info-stack">
+        <div class="cc-spread" style="align-items:flex-start">
+          <div>
+            <h1 class="h1">Meditations<span class="grad-text">.</span></h1>
+            <div class="au">by <b>Marcus Aurelius</b> Â· trans. <b>Gregory Hays</b></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="cc-btn"><span data-icon="edit"></span>Edit</button>
+            <button class="cc-btn cc-btn-ghost cc-btn-icon"><span data-icon="trash"></span></button>
+          </div>
+        </div>
+
+        <div class="prog-hero">
+          <svg class="ring-svg" viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="40"/>
+            <circle class="ring-fg" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="133" transform="rotate(-90 50 50)"/>
+          </svg>
+          <div>
+            <div class="row-r">
+              <div>
+                <div class="pct-big num">47%</div>
+                <div class="pct-sub">p. 142 / 304 Â· Book IV</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="cc-btn cc-btn-primary"><span data-icon="play"></span>Resume reading</button>
+                <button class="cc-btn"><span data-icon="notes"></span>Notes</button>
+              </div>
+            </div>
+            <div class="stats">
+              <div><div class="l">Last read</div><div class="v">2 days ago</div></div>
+              <div><div class="l">Sessions</div><div class="v">9 Â· 4h 12m</div></div>
+              <div><div class="l">Pace</div><div class="v">28 p/h</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- selected text floating action â mock visible -->
+        <div class="selected-text">
+          <div>
+            <div style="font-size:9.5px;letter-spacing:0.20em;text-transform:uppercase;color:var(--cyan);font-weight:600;margin-bottom:4px">SELECTED Â· p. 142</div>
+            <div class="preview">"Sapient" â possessing wisdom, capacity for sound judgment.</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="cc-btn cc-btn-cyan" style="padding:7px 12px;font-size:12px"><span data-icon="plus"></span>Add to Word Bank</button>
+            <button class="cc-btn" style="padding:7px 12px;font-size:12px"><span data-icon="notes"></span>Add note</button>
+          </div>
+        </div>
+
+        <!-- sessions -->
+        <div class="cc-spread" style="margin-top:24px;margin-bottom:10px">
+          <h3 class="cc-sechead" style="margin:0">Reading sessions<span class="tail">9 sessions Â· 4h 12m total</span></h3>
+          <a class="cc-btn cc-btn-ghost" style="font-size:11px"><span data-icon="history"></span>All sessions</a>
+        </div>
+        <div class="sessions">
+          <div class="sess">
+            <div class="date"><div class="d">11</div><div class="m">MON</div></div>
+            <div class="body">Book IV Â· the discipline of perception. <b>"Everything we hear is opinion, not fact."</b></div>
+            <div class="pg">p. 138 â 142</div>
+            <div class="dur">14m</div>
+          </div>
+          <div class="sess">
+            <div class="date"><div class="d">09</div><div class="m">SAT</div></div>
+            <div class="body">Book III, sections 12â16 Â· on retreating into oneself.</div>
+            <div class="pg">p. 112 â 138</div>
+            <div class="dur">22m</div>
+          </div>
+          <div class="sess">
+            <div class="date"><div class="d">07</div><div class="m">THU</div></div>
+            <div class="body">Book III intro Â· resumed after a 4-day gap.</div>
+            <div class="pg">p. 96 â 112</div>
+            <div class="dur">18m</div>
+          </div>
+          <div class="sess">
+            <div class="date"><div class="d">02</div><div class="m">SAT</div></div>
+            <div class="body">Book II Â· all aphorisms Â· 3 word adds.</div>
+            <div class="pg">p. 78 â 96</div>
+            <div class="dur">26m</div>
+          </div>
+          <div class="sess">
+            <div class="date"><div class="d">01</div><div class="m">FRI</div></div>
+            <div class="body">Book I complete Â· started May 1.</div>
+            <div class="pg">p. 0 â 78</div>
+            <div class="dur">48m</div>
+          </div>
+        </div>
+
+        <!-- notes -->
+        <div class="cc-spread" style="margin-top:24px;margin-bottom:10px">
+          <h3 class="cc-sechead" style="margin:0">Notes &amp; highlights<span class="tail">9 notes Â· 12 highlights</span></h3>
+          <button class="cc-btn cc-btn-primary" style="padding:7px 12px;font-size:12px"><span data-icon="plus"></span>New note</button>
+        </div>
+
+        <div class="note-block">
+          <div class="head"><span>Book IV Â· 6 May Â· note</span><span class="pg">142</span></div>
+          <div class="quote">"You have power over your mind â not outside events. Realize this, and you will find strength."</div>
+          <div class="body" style="margin-top:10px">Connect to <b>locus of control</b> â Aurelius preempts modern CBT by 1800 years. Worth re-reading when work pressure spikes.</div>
+        </div>
+
+        <div class="note-block">
+          <div class="head"><span>Book III Â· 9 May Â· highlight</span><span class="pg">128</span></div>
+          <div class="quote">"At dawn, when you have trouble getting out of bed, tell yourself: 'I have to go to work â as a human being.'"</div>
+        </div>
+
+        <div class="note-block">
+          <div class="head"><span>Book II Â· 2 May Â· highlight</span><span class="pg">82</span></div>
+          <div class="quote">"Confine yourself to the present."</div>
+        </div>
+
+        <button class="cc-btn cc-btn-ghost" style="margin-top:8px;width:100%;justify-content:center">Show 6 more notes â</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="cc-frame cc-frame-mobile" data-screen-label="Book Detail Â· Mobile">
+    <span class="cc-frame-label">Mobile Â· 390</span>
+    <div class="cc-mob-inner">
+      <div class="cc-mob-top">
+        <a href="library.html" class="brand"><span class="dot"></span><span data-icon="chevL" style="width:12px;height:12px;color:var(--ink-3)"></span><span style="color:var(--ink-2)">Library</span></a>
+        <button class="cc-btn cc-btn-ghost cc-btn-icon" style="padding:6px"><span data-icon="edit" style="width:14px"></span></button>
+      </div>
+
+      <div style="margin-top:8px">
+        <div class="cc-cover mob-cover v-meditations">
+          <div class="ttl">Meditations</div>
+          <div class="au">M. Aurelius</div>
+        </div>
+      </div>
+
+      <h2 class="cc-mob-title" style="text-align:center;margin-top:18px;font-size:22px">Meditations</h2>
+      <div class="cc-mob-sub" style="text-align:center">Marcus Aurelius Â· trans. G. Hays</div>
+
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px">
+        <span class="cc-tag violet">Philosophy</span>
+        <span class="cc-tag violet">Stoicism</span>
+        <span class="cc-tag cyan">PDF Â· 304p</span>
+      </div>
+
+      <div class="cc-mob-card" style="padding:18px">
+        <div class="cc-spread">
+          <svg class="ring-svg" viewBox="0 0 100 100" style="width:64px;height:64px">
+            <circle class="ring-bg" cx="50" cy="50" r="40"/>
+            <circle class="ring-fg" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="133" transform="rotate(-90 50 50)"/>
+          </svg>
+          <div style="text-align:right">
+            <div class="num grad-text" style="font-size:30px;font-weight:300;letter-spacing:-0.03em">47%</div>
+            <div style="font-size:10px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:0.04em">P. 142 / 304</div>
+            <div style="font-size:9.5px;color:var(--ink-4);font-family:var(--f-mono);margin-top:2px">2D AGO Â· BOOK IV</div>
+          </div>
+        </div>
+        <button class="cc-btn cc-btn-primary" style="margin-top:14px;width:100%;justify-content:center">
+          <span data-icon="play"></span>Resume reading
+        </button>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Recent sessions</span><span style="color:var(--ink-4)">5 / 9</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="cc-spread" style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px">
+            <div><div style="color:var(--ink)">MON Â· Book IV</div><div style="font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);margin-top:2px">p. 138 â 142</div></div>
+            <div style="font-family:var(--f-mono);font-size:13px">14m</div>
+          </div>
+          <div class="cc-spread" style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px">
+            <div><div style="color:var(--ink)">SAT Â· Book III</div><div style="font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);margin-top:2px">p. 112 â 138</div></div>
+            <div style="font-family:var(--f-mono);font-size:13px">22m</div>
+          </div>
+          <div class="cc-spread" style="padding:8px 0;font-size:12.5px">
+            <div><div style="color:var(--ink)">THU Â· Book III</div><div style="font-size:10.5px;color:var(--ink-3);font-family:var(--f-mono);margin-top:2px">p. 96 â 112</div></div>
+            <div style="font-family:var(--f-mono);font-size:13px">18m</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cc-mob-card">
+        <div class="ch"><span>Highlights</span><span style="color:var(--ink-4)">3 / 12</span></div>
+        <div class="quote" style="font-family:'EB Garamond', serif;font-size:13.5px;font-style:italic;color:var(--ink-2);padding-left:12px;border-left:2px solid rgba(179,136,255,0.40);line-height:1.55">"Confine yourself to the present."</div>
+        <div style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:var(--f-mono);letter-spacing:0.04em">P. 82 Â· BOOK II</div>
+      </div>
+
+      <div class="cc-mob-nav" data-cc-mob-nav="library"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="system.js"></script>
+</body>
+</html>
