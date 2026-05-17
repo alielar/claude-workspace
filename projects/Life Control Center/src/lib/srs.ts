@@ -72,7 +72,7 @@ export function srsReview(
     newStreak = streak + 1;
   }
 
-  const daysAhead = STEPS[newStep as keyof typeof STEPS] ?? 0;
+  const daysAhead: number = (STEPS as readonly number[])[newStep] ?? 0;
   const nextReviewDate =
     daysAhead === 0
       ? today // "again" → due today again (back of queue)
