@@ -36,10 +36,34 @@
   --c-mena:     #FFC15C;
   --c-biz:      #6FD49A;
 
-  /* Borders */
+  /* Borders (legacy — kept for backwards compat) */
   --border:       rgba(255, 255, 255, 0.07);
   --border-hi:    rgba(255, 255, 255, 0.13);
   --border-focus: rgba(179, 136, 255, 0.50);
+
+  /* Line tokens — V2 blue-tinted borders (use these going forward) */
+  --line:        rgba(180, 180, 240, 0.08);
+  --line-hi:     rgba(180, 180, 240, 0.16);
+  --line-strong: rgba(180, 180, 240, 0.24);
+
+  /* Input surfaces */
+  --bg-input:   rgba(255, 255, 255, 0.025);
+  --bg-input-2: rgba(255, 255, 255, 0.04);
+
+  /* Gradient (soft variant for backgrounds) */
+  --grad-soft: linear-gradient(100deg, rgba(179,136,255,0.18) 0%, rgba(126,231,255,0.10) 100%);
+
+  /* Card shadow — creates the "lifted glass edge" illusion */
+  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 0 rgba(0,0,0,0.30);
+
+  /* Glow (stronger variant) */
+  --glow-violet-hi: 0 0 32px rgba(179,136,255,0.55);
+
+  /* Motion */
+  --easeOut: cubic-bezier(.22,.61,.36,1);
+  --t-1: 120ms;
+  --t-2: 180ms;
+  --t-3: 240ms;
 
   /* Spacing scale (4px base) */
   --s-1: 4px;
@@ -136,16 +160,29 @@ html, body {
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .font-mono    { font-family: var(--f-mono); }
 
-/* ─── Ambient background gradient ────────────────────────────────────────── */
+/* ─── Ambient background gradient (verbatim from system.css) ─────────────── */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 0% 100%,  rgba(179,136,255,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 100% 0%,  rgba(126,231,255,0.05) 0%, transparent 50%);
+    radial-gradient(70% 50% at 15% 0%, rgba(179,136,255,0.10), transparent 60%),
+    radial-gradient(60% 50% at 100% 80%, rgba(126,231,255,0.08), transparent 60%),
+    radial-gradient(80% 60% at 60% 30%, rgba(80,50,140,0.05), transparent 60%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* ─── Film grain overlay (very subtle texture) ───────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 /* ─── App layout ─────────────────────────────────────────────────────────── */
@@ -401,26 +438,32 @@ body::before {
 /* ─── Card ───────────────────────────────────────────────────────────────── */
 .cc-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);           /* blue-tinted, not white */
   border-radius: var(--r-lg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px) saturate(140%);  /* saturate is load-bearing on near-black bg */
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: var(--shadow-card);          /* lifted glass edge illusion */
+  transition: border-color var(--t-2) var(--easeOut);
+  position: relative;
 }
+.cc-card:hover { border-color: var(--line-hi); }
 
 .cc-card-2 {
   background: var(--bg-card-2);
-  border: 1px solid var(--border-hi);
+  border: 1px solid var(--line-hi);
   border-radius: var(--r-lg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: var(--shadow-card);
+  position: relative;
 }
 
 .cc-card-hover {
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color var(--t-2) var(--easeOut), background var(--t-2) var(--easeOut);
   cursor: pointer;
 }
 .cc-card-hover:hover {
-  border-color: var(--border-hi);
+  border-color: var(--line-hi);
   background: var(--bg-card-2);
 }
 
@@ -574,6 +617,50 @@ body::before {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
+}
+
+/* ─── Section header with violet glow dot (V2) ───────────────────────────── */
+.cc-sechead {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.cc-sechead::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--violet);
+  box-shadow: 0 0 6px var(--violet);
+  flex-shrink: 0;
+}
+
+/* ─── Page title block (V2: 32px weight-300 light heading) ───────────────── */
+.cc-pagetitle {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 26px;
+  gap: 24px;
+}
+.cc-pagetitle h1 {
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.05;
+}
+.cc-pagetitle .sub {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 6px;
+  letter-spacing: 0.01em;
 }
 
 /* ─── Progress ───────────────────────────────────────────────────────────── */
