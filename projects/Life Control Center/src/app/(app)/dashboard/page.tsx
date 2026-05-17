@@ -1,59 +1,22 @@
 /**
- * /dashboard — V2 Command center.
- *
- * Layout (desktop 12-col grid):
- *   Row 1 — greeting + quick links
- *   Row 2 — Stats / Activity (8) │ Next Workout (4)
- *   Row 3 — Checklist (4) + Words (4) + Reading (4)
- *   Row 4 — News Brief (8) │ Mood (4)
- *   Row 5 — 7-day heatmap
- *
- * Mobile: single-column stack.
+ * /dashboard — V2 Ambient Futurism
+ * Reproduced directly from design-system/mockups/Life Control Center Mockup.html
  */
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
   workoutSessions, workoutPrograms, workoutLogs,
-  exercises as exercisesTable, personalRecords,
+  exercises as exercisesTable,
   newsBriefs, books, readingProgress, wordBankEntries,
   checklistItems, checklistCompletions,
 } from "@/db/schema";
 import { eq, desc, and, lte } from "drizzle-orm";
 import Link from "next/link";
-import {
-  Play, ArrowRight, Flame, Activity, BookOpen, BookMarked,
-  Newspaper, SmilePlus, CheckSquare, Clock, Dumbbell, Check,
-} from "lucide-react";
+import { Play, ArrowRight, Check } from "lucide-react";
 import { format, subDays, startOfWeek } from "date-fns";
 
-// ─── V2 session colour palette ────────────────────────────────────────────────
-const SESSION_COLORS: Record<string, { primary: string; bg: string }> = {
-  Push:            { primary: "#FF8A8A", bg: "rgba(255,138,138,0.10)" },
-  Pull:            { primary: "#7EE7FF", bg: "rgba(126,231,255,0.08)" },
-  Legs:            { primary: "#6FD49A", bg: "rgba(111,212,154,0.10)" },
-  Core:            { primary: "#FFC15C", bg: "rgba(255,193,92,0.10)"  },
-  "Push-Up Skill": { primary: "#B388FF", bg: "rgba(179,136,255,0.10)" },
-};
-
 const ROTATION = ["Push", "Pull", "Legs", "Core", "Push", "Pull", "Push-Up Skill"];
-const SESSION_DURATION: Record<string, string> = {
-  Push: "~50 min", Pull: "~50 min", Legs: "~55 min",
-  Core: "~20 min", "Push-Up Skill": "~15 min",
-};
-
-type NewsStory = { headline: string; summary: string; category: string };
-
-const CATEGORY_COLORS: Record<string, string> = {
-  football:   "#FF8A8A",
-  geopolitics:"#FF8A8A",
-  politics:   "#FF8A8A",
-  business:   "#6FD49A",
-  tech:       "#7EE7FF",
-  ai:         "#B388FF",
-  "morocco/mena": "#FFC15C",
-  other:      "#6E6E86",
-};
 
 function greeting(h: number) {
   if (h < 5)  return "Still up";
@@ -62,55 +25,60 @@ function greeting(h: number) {
   return "Good evening";
 }
 
-// ─── Sparkline bars (30-day activity) ─────────────────────────────────────────
-function WorkoutBars({ days }: { days: boolean[] }) {
-  return (
-    <div className="flex items-end gap-[3px]" style={{ height: 28 }}>
-      {days.map((active, i) => (
-        <div
-          key={i}
-          style={{
-            width: 6,
-            height: active ? 22 : 5,
-            borderRadius: 3,
-            background: active ? "var(--violet)" : "var(--ink-5)",
-            opacity: active ? (0.5 + 0.5 * (i / days.length)) : 1,
-            flexShrink: 0,
-          }}
-        />
-      ))}
-    </div>
-  );
+/** Convert boolean[] activity to SVG sparkline paths */
+function sparkline(days: boolean[], W = 220, H = 80) {
+  const n = days.length;
+  const pts = days.map((active, i) => ({
+    x: (i / Math.max(n - 1, 1)) * W,
+    y: active ? 10 + (1 - i / n) * 25 : 58 + (i % 4) * 2,
+  }));
+  const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const area = line + ` L${W},${H} L0,${H} Z`;
+  const lastY = pts[pts.length - 1]?.y ?? H / 2;
+  return { line, area, lastY };
 }
 
-// ─── Stat tile ────────────────────────────────────────────────────────────────
-function StatTile({
-  label, value, unit, accent, icon: Icon,
-}: {
-  label: string; value: number | string; unit?: string;
-  accent?: boolean; icon: React.ElementType;
-}) {
-  return (
-    <div
-      className="flex flex-col gap-1.5 p-3 rounded-xl flex-1 min-w-0"
-      style={{
-        background: accent ? "rgba(179,136,255,0.10)" : "rgba(255,255,255,0.03)",
-        border: `1px solid ${accent ? "rgba(179,136,255,0.22)" : "var(--border)"}`,
-      }}
-    >
-      <Icon size={13} style={{ color: accent ? "var(--violet)" : "var(--ink-3)" }} />
-      <div className="flex items-baseline gap-1 tabular-nums">
-        <span style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>
-          {value}
-        </span>
-        {unit && (
-          <span style={{ fontSize: 11, color: "var(--ink-3)", fontWeight: 500 }}>{unit}</span>
-        )}
-      </div>
-      <span className="cc-section-label">{label}</span>
-    </div>
-  );
+/** Heatmap cell style from session name (matches mockup gradients) */
+function heatStyle(name: string | null, isToday: boolean): React.CSSProperties {
+  if (name === "Push")
+    return { background: "linear-gradient(135deg, rgba(179,136,255,0.20), rgba(179,136,255,0.05))", borderColor: "rgba(179,136,255,0.30)", boxShadow: "inset 0 0 14px rgba(179,136,255,0.12)" };
+  if (name === "Pull")
+    return { background: "linear-gradient(135deg, rgba(179,136,255,0.32), rgba(126,231,255,0.10))", borderColor: "rgba(179,136,255,0.40)", boxShadow: "inset 0 0 16px rgba(179,136,255,0.18)" };
+  if (name === "Legs")
+    return { background: "linear-gradient(135deg, rgba(179,136,255,0.50), rgba(126,231,255,0.20))", borderColor: "rgba(179,136,255,0.55)", boxShadow: "inset 0 0 22px rgba(179,136,255,0.28)" };
+  if (name)
+    return { background: "linear-gradient(135deg, rgba(126,231,255,0.20), rgba(126,231,255,0.04))", borderColor: "rgba(126,231,255,0.30)", boxShadow: "inset 0 0 14px rgba(126,231,255,0.12)" };
+  if (isToday)
+    return { background: "rgba(255,255,255,0.015)", borderColor: "rgba(126,231,255,0.50)" };
+  return { background: "rgba(255,255,255,0.015)", borderColor: "var(--line)" };
 }
+
+/** News category pill style */
+const CAT_STYLES: Record<string, React.CSSProperties> = {
+  politics:   { color: "#FFB266", borderColor: "rgba(255,178,102,0.30)", background: "rgba(255,178,102,0.06)" },
+  football:   { color: "#FFB266", borderColor: "rgba(255,178,102,0.30)", background: "rgba(255,178,102,0.06)" },
+  geopolitics:{ color: "#FFB266", borderColor: "rgba(255,178,102,0.30)", background: "rgba(255,178,102,0.06)" },
+  tech:       { color: "#B388FF", borderColor: "rgba(179,136,255,0.30)", background: "rgba(179,136,255,0.06)" },
+  ai:         { color: "#7EE7FF", borderColor: "rgba(126,231,255,0.30)", background: "rgba(126,231,255,0.06)" },
+  "morocco/mena": { color: "#9CE0B4", borderColor: "rgba(156,224,180,0.30)", background: "rgba(156,224,180,0.06)" },
+  mena:       { color: "#9CE0B4", borderColor: "rgba(156,224,180,0.30)", background: "rgba(156,224,180,0.06)" },
+  business:   { color: "#E0A4D7", borderColor: "rgba(224,164,215,0.30)", background: "rgba(224,164,215,0.06)" },
+  other:      { color: "var(--ink-3)", borderColor: "var(--line)", background: "rgba(255,255,255,0.02)" },
+};
+
+/** Shared card-head dot style */
+const DOT: React.CSSProperties = {
+  width: 5, height: 5, borderRadius: "50%",
+  background: "var(--violet)", boxShadow: "0 0 8px var(--violet)",
+  flexShrink: 0,
+};
+
+/** Shared card-head title row style */
+const CARD_HEAD_TITLE: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: 8,
+  fontSize: 10.5, fontWeight: 500, letterSpacing: "0.18em",
+  textTransform: "uppercase", color: "var(--ink-3)",
+};
 
 export default async function DashboardPage() {
   const session  = await auth();
@@ -124,7 +92,7 @@ export default async function DashboardPage() {
 
   // ── Parallel data fetches ──────────────────────────────────────────────────
   const [
-    allSessions, recentLogs, _prs, [brief],
+    allSessions, recentLogs, [brief],
     [currentBook], dueWords, totalWords,
     checkItems, todayCompletions,
   ] = await Promise.all([
@@ -137,10 +105,6 @@ export default async function DashboardPage() {
       .where(eq(workoutLogs.userId, userId))
       .orderBy(desc(workoutLogs.startedAt))
       .limit(60),
-
-    db.select().from(personalRecords)
-      .where(eq(personalRecords.userId, userId))
-      .limit(3),
 
     db.select().from(newsBriefs)
       .where(and(eq(newsBriefs.userId, userId), eq(newsBriefs.date, today)))
@@ -166,50 +130,48 @@ export default async function DashboardPage() {
       .catch(() => []),
   ]);
 
-  // Checklist
-  const completedItemIds = new Set(todayCompletions.map((c) => c.itemId));
-  const checkDone  = checkItems.filter((i) => completedItemIds.has(i.id)).length;
+  // ── Checklist ──────────────────────────────────────────────────────────────
+  const completedIds = new Set(todayCompletions.map((c) => c.itemId));
+  const checkDone  = checkItems.filter((i) => completedIds.has(i.id)).length;
   const checkTotal = checkItems.length;
+  const checkPct   = checkTotal > 0 ? Math.round((checkDone / checkTotal) * 100) : 0;
 
-  // Next session
+  // ── Next session ───────────────────────────────────────────────────────────
   const lastLog = recentLogs[0] ?? null;
   const lastSessionName = lastLog
     ? allSessions.find((s) => s.workout_sessions.id === lastLog.sessionId)?.workout_sessions.name
     : null;
-  const lastIdx = lastSessionName ? ROTATION.lastIndexOf(lastSessionName) : -1;
+  const lastIdx         = lastSessionName ? ROTATION.lastIndexOf(lastSessionName) : -1;
   const nextSessionName = ROTATION[(lastIdx + 1) % ROTATION.length];
   const nextSession     = allSessions.find((s) => s.workout_sessions.name === nextSessionName);
-  const nextColor       = SESSION_COLORS[nextSessionName] ?? SESSION_COLORS.Push;
 
   const heroExercises = nextSession
-    ? await db.select({ name: exercisesTable.name })
+    ? await db.select({ name: exercisesTable.name, sets: exercisesTable.defaultSets, reps: exercisesTable.defaultReps })
         .from(exercisesTable)
         .where(eq(exercisesTable.sessionId, nextSession.workout_sessions.id))
         .orderBy(exercisesTable.sortOrder)
         .limit(5)
     : [];
 
-  // Streak calc
+  // ── Streak ─────────────────────────────────────────────────────────────────
   let streak = 0;
   if (recentLogs.length > 0) {
     const logDays = [...new Set(recentLogs.map((l) => format(new Date(l.startedAt!), "yyyy-MM-dd")))];
     let check = format(now, "yyyy-MM-dd");
     if (!logDays.includes(check)) check = format(subDays(now, 1), "yyyy-MM-dd");
     for (const day of logDays) {
-      if (day === check) {
-        streak++;
-        check = format(subDays(new Date(check), 1), "yyyy-MM-dd");
-      } else if (day < check) break;
+      if (day === check) { streak++; check = format(subDays(new Date(check), 1), "yyyy-MM-dd"); }
+      else if (day < check) break;
     }
   }
   const weekCount = recentLogs.filter((l) => new Date(l.startedAt!) >= weekStart).length;
 
-  // Books
+  // ── Books ──────────────────────────────────────────────────────────────────
   const finishedBooks = await db.select({ id: books.id }).from(books)
     .where(and(eq(books.userId, userId), eq(books.status, "finished")));
   const booksFinished = finishedBooks.length;
 
-  // Reading progress
+  // ── Reading progress ───────────────────────────────────────────────────────
   let readPct = 0, currentPage = 0;
   if (currentBook) {
     const [prog] = await db.select().from(readingProgress)
@@ -218,14 +180,17 @@ export default async function DashboardPage() {
     readPct = currentBook.totalPages
       ? Math.round((currentPage / currentBook.totalPages) * 100) : 0;
   }
+  const ringCircumference = 201;
+  const ringOffset = ringCircumference - (readPct / 100) * ringCircumference;
 
-  // 30-day bar chart
+  // ── 30-day bars ────────────────────────────────────────────────────────────
   const last30 = Array.from({ length: 30 }, (_, i) => {
     const d = format(subDays(now, 29 - i), "yyyy-MM-dd");
     return recentLogs.some((l) => format(new Date(l.startedAt!), "yyyy-MM-dd") === d);
   });
+  const spark = sparkline(last30);
 
-  // 7-day heatmap
+  // ── 7-day heatmap ──────────────────────────────────────────────────────────
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d   = subDays(now, 6 - i);
     const key = format(d, "yyyy-MM-dd");
@@ -236,318 +201,383 @@ export default async function DashboardPage() {
     return { label: format(d, "EEE"), dayNum: format(d, "d"), name, isToday: key === today };
   });
 
-  // News stories
-  let stories: NewsStory[] = [];
+  // ── News ───────────────────────────────────────────────────────────────────
+  type Story = { headline: string; summary?: string; category: string };
+  let stories: Story[] = [];
   if (brief) {
-    try { stories = (JSON.parse(brief.content).stories ?? []).slice(0, 3); } catch { /* */ }
+    try { stories = (JSON.parse(brief.content).stories ?? []).slice(0, 5); } catch { /* */ }
   }
 
   return (
-    <div className="page-enter" style={{ padding: "20px 20px 32px" }}>
+    <div className="page-enter" style={{ padding: "28px 32px 64px", maxWidth: 1500, margin: "0 auto" }}>
 
-      {/* ── Row 1: Header ─────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
+      {/* ── Top bar ──────────────────────────────────────────────────────────── */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 30 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em" }}>
+          <h2 style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.025em", margin: 0, lineHeight: 1.05 }}>
             {greeting(hour)},{" "}
-            <span className="cc-grad-text">{userName}</span>
-          </h1>
-          <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 3, fontWeight: 500 }}>
-            {format(now, "EEEE, MMMM d")}
-          </p>
+            <span className="cc-grad-text" style={{ fontWeight: 400 }}>{userName}</span>
+          </h2>
         </div>
-
-        {/* Quick links */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {[
-            { label: "News",              href: "/news",     color: "#7EE7FF" },
-            { label: `${dueWords.length} due`, href: "/wordbank", color: "#B388FF" },
-            { label: "Journal",           href: "/journal",  color: "#FB923C" },
-          ].map((p) => (
-            <Link
-              key={p.href}
-              href={p.href}
-              className="text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
-              style={{
-                background: `${p.color}18`,
-                color: p.color,
-                border: `1px solid ${p.color}35`,
-              }}
-            >
-              {p.label}
-            </Link>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 12, color: "var(--ink-3)" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 10px", border: "1px solid var(--line-hi)", borderRadius: 99, fontSize: 11, color: "var(--ink-2)", background: "rgba(255,255,255,0.02)" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cyan)", boxShadow: "0 0 0 5px rgba(126,231,255,0.10), 0 0 12px var(--cyan)", display: "inline-block" }} />
+            Synced
+          </span>
+          <span>{format(now, "EEEE, MMMM d, yyyy")}</span>
         </div>
       </div>
 
-      {/* ── Main grid ─────────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* ── 12-column grid ───────────────────────────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gridAutoRows: "auto", gap: 14 }}>
 
-        {/* Row 2: Stats (2fr) + Next Workout (1fr) */}
-        <div className="dash-row2" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 12 }}>
-
-          {/* STATS CARD */}
-          <div className="cc-card p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <p className="cc-section-label">Activity</p>
-              {streak > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <Flame size={12} style={{ color: "#FF8A8A" }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#FF8A8A" }}>
-                    {streak}d streak
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2" style={{ flexWrap: "wrap" }}>
-              <StatTile label="Streak" value={streak} unit="days" accent={streak >= 3} icon={Flame} />
-              <StatTile label="This week" value={weekCount} unit="sessions" icon={Activity} />
-              <StatTile label="Books" value={booksFinished} unit="/ 12" icon={BookOpen} />
-              <StatTile label="Words" value={totalWords.length} icon={BookMarked} />
-            </div>
-
+        {/* ── HERO (6 cols × 2 rows) ────────────────────────────────────────── */}
+        <div className="cc-card" style={{
+          gridColumn: "span 6", gridRow: "span 2",
+          padding: "30px 32px",
+          display: "flex", flexDirection: "column", gap: 24,
+          background: `
+            radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%),
+            radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+            var(--bg-card)`,
+          overflow: "hidden",
+        }}>
+          {/* Lead: big number + sparkline */}
+          <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 36, alignItems: "end" }}>
             <div>
-              <p className="cc-section-label mb-1.5">30-day activity</p>
-              <WorkoutBars days={last30} />
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 16 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)", flexShrink: 0 }} />
+                Overall streak · current
+              </div>
+              <div className="tabular-nums" style={{
+                fontSize: 140, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.82,
+                background: "var(--grad)",
+                WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+                filter: "drop-shadow(0 0 24px rgba(179,136,255,0.20))",
+              }}>
+                {streak}
+                <sup style={{ fontSize: 32, fontWeight: 300, letterSpacing: 0, marginLeft: 6, verticalAlign: "top", position: "relative", top: 24, color: "var(--ink-3)", WebkitTextFillColor: "var(--ink-3)", background: "none" }}>d</sup>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 10, maxWidth: "32ch", lineHeight: 1.55 }}>
+                {streak >= 7
+                  ? <>Personal milestone. <strong style={{ color: "var(--ink)", fontWeight: 500 }}>Keep going!</strong></>
+                  : streak > 0
+                    ? <>Nice work. <strong style={{ color: "var(--ink)", fontWeight: 500 }}>Build the streak.</strong></>
+                    : "Start your streak today."}
+              </div>
+            </div>
+            <div>
+              <svg viewBox="0 0 220 80" preserveAspectRatio="none" style={{ height: 90, width: "100%", display: "block" }}>
+                <defs>
+                  <linearGradient id="db-spark-stroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#B388FF" />
+                    <stop offset="100%" stopColor="#7EE7FF" />
+                  </linearGradient>
+                  <linearGradient id="db-spark-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(179,136,255,0.18)" />
+                    <stop offset="100%" stopColor="rgba(179,136,255,0)" />
+                  </linearGradient>
+                </defs>
+                <path fill="url(#db-spark-fill)" d={spark.area} />
+                <path fill="none" stroke="url(#db-spark-stroke)" strokeWidth={1.5} d={spark.line} />
+                <circle cx="220" cy={spark.lastY} r="3" fill="var(--cyan)" style={{ filter: "drop-shadow(0 0 4px var(--cyan))" }} />
+              </svg>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.08em", marginTop: 6 }}>
+                <span>30D AGO</span><span>TODAY</span>
+              </div>
             </div>
           </div>
 
-          {/* NEXT WORKOUT CARD */}
-          {allSessions.length > 0 && nextSession ? (
-            <Link href={`/workouts/session/${nextSession.workout_sessions.id}`} className="block">
-              <div
-                className="cc-card cc-card-hover flex flex-col h-full p-4"
-                style={{
-                  borderColor: `${nextColor.primary}30`,
-                  background: `linear-gradient(160deg, var(--bg-card) 0%, ${nextColor.bg} 100%)`,
-                  minHeight: 160,
-                }}
-              >
-                <p className="cc-section-label mb-2" style={{ color: nextColor.primary }}>Next session</p>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
-                  {nextSessionName}
-                </p>
-                <div className="flex items-center gap-1 mt-1 mb-3">
-                  <Clock size={10} style={{ color: "var(--ink-3)" }} />
-                  <span style={{ fontSize: 11, color: "var(--ink-3)" }}>
-                    {SESSION_DURATION[nextSessionName] ?? "~45 min"}
-                  </span>
+          {/* 4 stat mini-tiles */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginTop: 6 }}>
+            {([
+              { k: "Workouts", sub: "/wk", v: weekCount, of: "5", delta: `${weekCount >= 5 ? "goal met" : `${5 - weekCount} more`}` },
+              { k: "Books",    sub: "/yr", v: booksFinished, of: "12", delta: "on pace" },
+              { k: "Words",    sub: "learned", v: totalWords.length, delta: `${dueWords.length} due` },
+              { k: "Streak",   sub: "days",    v: streak, delta: streak > 0 ? "active" : "start today" },
+            ] as const).map((s) => (
+              <div key={s.k} style={{ padding: "16px 16px 14px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.018)", position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(179,136,255,0.30), transparent)" }} />
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--ink-3)", marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>{s.k}</span>
+                  <span style={{ fontFamily: "var(--f-mono)" }}>{s.sub}</span>
                 </div>
-
-                {heroExercises.slice(0, 4).map((ex, i) => (
-                  <div key={i} className="flex items-center gap-2 mb-1.5">
-                    <div style={{ width: 4, height: 4, borderRadius: "50%", flexShrink: 0, background: nextColor.primary, opacity: 1 - i * 0.2 }} />
-                    <span style={{ fontSize: 12, color: "var(--ink-2)", fontWeight: 500 }}>{ex.name}</span>
-                  </div>
-                ))}
-
-                <div
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold mt-auto self-start"
-                  style={{ background: nextColor.primary, color: "#06060B" }}
-                >
-                  <Play size={10} fill="#06060B" />
-                  Start
-                  <ArrowRight size={10} />
+                <div className="tabular-nums" style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1 }}>
+                  {s.v}
+                  {"of" in s && s.of && <span style={{ color: "var(--ink-3)", fontSize: 16, marginLeft: 4 }}>/{s.of}</span>}
                 </div>
-              </div>
-            </Link>
-          ) : (
-            <Link href="/workouts" className="block">
-              <div className="cc-card cc-card-hover flex flex-col items-center justify-center text-center h-full p-4" style={{ minHeight: 160 }}>
-                <Dumbbell size={28} style={{ color: "var(--ink-3)", marginBottom: 10 }} />
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>Set up workouts</p>
-                <p style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 4 }}>Load your PPL program</p>
-              </div>
-            </Link>
-          )}
-        </div>
-
-        {/* Row 3: Checklist + Words + Reading */}
-        <div className="dash-row3" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
-
-          {/* CHECKLIST */}
-          <Link href="/checklist" className="block">
-            <div className="cc-card cc-card-hover p-4" style={{ minHeight: 110 }}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="cc-section-label">Checklist</p>
-                <CheckSquare size={13} style={{ color: "var(--pos)" }} />
-              </div>
-              {checkTotal > 0 ? (
-                <>
-                  <div className="flex items-baseline gap-1.5 tabular-nums mb-1">
-                    <span style={{ fontSize: 26, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>{checkDone}</span>
-                    <span style={{ fontSize: 13, color: "var(--ink-3)" }}>/ {checkTotal}</span>
-                  </div>
-                  <p style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 8 }}>
-                    {checkDone === checkTotal ? "All done 🎉" : `${checkTotal - checkDone} remaining`}
-                  </p>
-                  <div className="space-y-1">
-                    {checkItems.slice(0, 3).map((item) => {
-                      const done = completedItemIds.has(item.id);
-                      return (
-                        <div key={item.id} className="flex items-center gap-2">
-                          <div style={{ width: 12, height: 12, borderRadius: 3, flexShrink: 0, background: done ? "var(--pos)" : "transparent", border: `1.5px solid ${done ? "var(--pos)" : "var(--border-hi)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {done && <Check size={7} color="#06060B" strokeWidth={3} />}
-                          </div>
-                          <span style={{ fontSize: 11, color: done ? "var(--ink-4)" : "var(--ink-2)", textDecoration: done ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {item.emoji ? `${item.emoji} ` : ""}{item.title}
-                          </span>
-                        </div>
-                      );
-                    })}
-                    {checkItems.length > 3 && (
-                      <p style={{ fontSize: 10, color: "var(--ink-4)", paddingLeft: 2 }}>+{checkItems.length - 3} more</p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <p style={{ fontSize: 11, color: "var(--ink-3)" }}>Set up checklist →</p>
-              )}
-            </div>
-          </Link>
-
-          {/* WORDS */}
-          <Link href="/wordbank" className="block">
-            <div className="cc-card cc-card-hover p-4" style={{ minHeight: 110 }}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="cc-section-label">Words</p>
-                <BookMarked size={13} style={{ color: "var(--violet)" }} />
-              </div>
-              <p style={{ fontSize: 26, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>{dueWords.length}</p>
-              <p style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 4 }}>due · {totalWords.length} total</p>
-              {dueWords.length > 0 && (
-                <div className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 mt-3" style={{ background: "rgba(179,136,255,0.12)", color: "var(--violet)" }}>
-                  Review now <ArrowRight size={9} />
-                </div>
-              )}
-            </div>
-          </Link>
-
-          {/* READING */}
-          <Link href={currentBook ? `/library/read/${currentBook.id}` : "/library"} className="block">
-            <div className="cc-card cc-card-hover p-4" style={{ minHeight: 110 }}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="cc-section-label">Reading</p>
-                <BookOpen size={13} style={{ color: "var(--cyan)" }} />
-              </div>
-              {currentBook ? (
-                <>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", lineHeight: 1.3 }} className="truncate">{currentBook.title}</p>
-                  <p style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }} className="truncate">{currentBook.author}</p>
-                  <div className="cc-progress-track mt-3">
-                    <div className="cc-progress-fill" style={{ width: `${readPct}%` }} />
-                  </div>
-                  <div className="flex justify-between mt-1.5">
-                    <span style={{ fontSize: 10, color: "var(--ink-3)" }}>p.{currentPage}</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "var(--cyan)" }}>{readPct}%</span>
-                  </div>
-                </>
-              ) : (
-                <p style={{ fontSize: 11, color: "var(--ink-3)" }}>Load reading list →</p>
-              )}
-            </div>
-          </Link>
-        </div>
-
-        {/* Row 4: News (2fr) + Mood (1fr) */}
-        <div className="dash-row4" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 12 }}>
-
-          {/* NEWS */}
-          <div className="cc-card p-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="cc-section-label">Today's Brief</p>
-              <Link href="/news">
-                <Newspaper size={13} style={{ color: "var(--cyan)" }} />
-              </Link>
-            </div>
-            {stories.length > 0 ? (
-              <div className="space-y-3">
-                {stories.map((s, i) => {
-                  const cat = s.category?.toLowerCase() ?? "other";
-                  const c = CATEGORY_COLORS[cat] ?? "var(--ink-3)";
-                  return (
-                    <div key={i} className="flex gap-2.5">
-                      <div style={{ width: 2, flexShrink: 0, borderRadius: 2, background: c, opacity: 0.7, alignSelf: "stretch", minHeight: 14 }} />
-                      <div className="min-w-0">
-                        <p style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", lineHeight: 1.4 }}>{s.headline}</p>
-                        <p style={{ fontSize: 10, color: c, marginTop: 2, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.category}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-                <Link href="/news" className="flex items-center gap-1 text-[11px] font-semibold hover:opacity-80" style={{ color: "var(--cyan)", marginTop: 4 }}>
-                  Full brief <ArrowRight size={10} />
-                </Link>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-4 gap-2">
-                <Newspaper size={24} style={{ color: "var(--ink-3)" }} />
-                <Link href="/news" className="text-xs font-semibold hover:opacity-80" style={{ color: "var(--cyan)" }}>
-                  Generate today's brief →
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* MOOD */}
-          <Link href="/mood" className="block">
-            <div className="cc-card cc-card-hover p-4 flex flex-col h-full" style={{ minHeight: 120 }}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="cc-section-label">Mood</p>
-                <SmilePlus size={13} style={{ color: "var(--warn)" }} />
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-2">
-                <p style={{ fontSize: 28 }}>🙂</p>
-                <p style={{ fontSize: 11, color: "var(--ink-3)" }}>Log today →</p>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Row 5: 7-day heatmap */}
-        <div className="cc-card p-4">
-          <p className="cc-section-label mb-3">Last 7 days</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}>
-            {weekDays.map(({ label, dayNum, name, isToday }) => {
-              const sc = name ? SESSION_COLORS[name] : null;
-              return (
-                <div key={dayNum} className="flex flex-col items-center gap-1.5">
-                  <span style={{ fontSize: 9, fontWeight: 600, color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
-                  <div style={{ width: "100%", aspectRatio: "1 / 1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: sc ? sc.bg : "rgba(255,255,255,0.02)", border: `1px solid ${isToday ? "var(--border-hi)" : "var(--border)"}` }}>
-                    {sc
-                      ? <div style={{ width: 7, height: 7, borderRadius: "50%", background: sc.primary }} />
-                      : <span style={{ fontSize: 11, color: "var(--ink-3)", fontWeight: 500 }}>{dayNum}</span>
-                    }
-                  </div>
-                  <span style={{ fontSize: 9, fontWeight: 500, color: sc ? sc.primary : "var(--ink-4)" }}>
-                    {name ? name.slice(0, 3) : ""}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap gap-3 mt-3">
-            {Object.entries(SESSION_COLORS).map(([name, c]) => (
-              <div key={name} className="flex items-center gap-1.5">
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: c.primary }} />
-                <span style={{ fontSize: 9, color: "var(--ink-3)", fontWeight: 500 }}>{name}</span>
+                <div style={{ fontSize: 10.5, color: "var(--cyan)", letterSpacing: "0.04em", marginTop: 4 }}>{s.delta}</div>
               </div>
             ))}
           </div>
         </div>
 
-      </div>
+        {/* ── WORKOUT (6 cols) ──────────────────────────────────────────────── */}
+        {allSessions.length > 0 && nextSession ? (
+          <Link href={`/workouts/session/${nextSession.workout_sessions.id}`} style={{ gridColumn: "span 6", display: "block" }}>
+            <div className="cc-card cc-card-hover" style={{ padding: 22, height: "100%", display: "flex", flexDirection: "column" }}>
+              {/* Card head */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <div style={CARD_HEAD_TITLE}><span style={DOT} />Next Workout</div>
+                <span style={{ fontSize: 11, letterSpacing: "0.04em", color: "var(--ink-3)" }}>queued · today</span>
+              </div>
+              {/* Session name + meta */}
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 24, fontWeight: 400, letterSpacing: "-0.01em" }}>{nextSessionName}</div>
+                <div style={{ fontSize: 12, color: "var(--ink-3)" }}>
+                  {heroExercises.length} exercises
+                </div>
+              </div>
+              {/* Exercise rows */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18, flex: 1 }}>
+                {heroExercises.map((ex, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "26px 1fr auto", alignItems: "center", gap: 12, padding: "9px 12px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)", fontSize: 13 }}>
+                    <span style={{ color: "var(--ink-4)", fontSize: 10.5, letterSpacing: "0.04em", fontFamily: "var(--f-mono)" }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span style={{ color: "var(--ink)" }}>{ex.name}</span>
+                    <span style={{ color: "var(--ink-3)", fontSize: 11.5, letterSpacing: "0.02em", fontFamily: "var(--f-mono)" }}>
+                      {ex.sets ?? 3} × {ex.reps ?? 10}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {/* Start button */}
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 18px", borderRadius: 10, background: "var(--grad)", color: "#0A0A14", fontSize: 13, fontWeight: 600, letterSpacing: "-0.005em", boxShadow: "0 0 24px rgba(179,136,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40)", alignSelf: "flex-start" }}>
+                <Play size={13} fill="#0A0A14" />
+                Start session
+              </div>
+            </div>
+          </Link>
+        ) : (
+          <Link href="/workouts" style={{ gridColumn: "span 6", display: "block" }}>
+            <div className="cc-card cc-card-hover" style={{ padding: 22, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 13, color: "var(--ink-3)" }}>Set up your workout program →</span>
+            </div>
+          </Link>
+        )}
 
-      {/* Mobile responsive overrides */}
-      <style>{`
-        @media (max-width: 767px) {
-          .dash-row2, .dash-row4 { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 639px) {
-          .dash-row3 { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+        {/* ── CHECKLIST (4 cols × 2 rows) ───────────────────────────────────── */}
+        <Link href="/checklist" style={{ gridColumn: "span 4", gridRow: "span 2", display: "block" }}>
+          <div className="cc-card cc-card-hover" style={{ padding: 22, height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={CARD_HEAD_TITLE}><span style={DOT} />Today · Checklist</div>
+              <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{checkDone} of {checkTotal}</span>
+            </div>
+            {/* Big % number */}
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
+              <div className="tabular-nums" style={{ fontSize: 48, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                {checkPct}
+                <span style={{ fontSize: 18, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)" }}>%</span>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.06em" }}>
+                {checkTotal - checkDone} REMAIN
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div style={{ height: 6, background: "rgba(255,255,255,0.04)", borderRadius: 99, marginBottom: 18, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${checkPct}%`, background: "var(--grad)", borderRadius: 99, boxShadow: "0 0 12px rgba(179,136,255,0.40)", transition: "width 0.25s ease" }} />
+            </div>
+            {/* Check rows */}
+            <div>
+              {checkItems.map((item, idx) => {
+                const done = completedIds.has(item.id);
+                return (
+                  <div key={item.id} style={{ display: "grid", gridTemplateColumns: "22px 1fr auto", gap: 12, alignItems: "center", padding: "10px 0", borderBottom: idx < checkItems.length - 1 ? "1px solid var(--line)" : "none" }}>
+                    <span style={{ width: 18, height: 18, border: `1.4px solid ${done ? "transparent" : "var(--line-hi)"}`, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", background: done ? "var(--grad)" : "rgba(255,255,255,0.02)", boxShadow: done ? "0 0 10px rgba(179,136,255,0.50)" : "none", flexShrink: 0 }}>
+                      {done && <Check size={11} color="#0A0A14" strokeWidth={3} />}
+                    </span>
+                    <span style={{ fontSize: 13.5, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)", textDecorationThickness: 1 }}>
+                      {item.emoji ? `${item.emoji} ` : ""}{item.title}
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 5, letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
+                      🔥 {(item as { streak?: number }).streak ?? 0}d
+                    </span>
+                  </div>
+                );
+              })}
+              {checkTotal === 0 && (
+                <p style={{ fontSize: 13, color: "var(--ink-3)" }}>Set up your checklist →</p>
+              )}
+            </div>
+          </div>
+        </Link>
+
+        {/* ── HEATMAP (3 cols) ──────────────────────────────────────────────── */}
+        <div className="cc-card" style={{ gridColumn: "span 3", padding: 22 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={CARD_HEAD_TITLE}><span style={DOT} />Last 7 Days</div>
+            <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{weekDays.filter((d) => d.name).length} sessions</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginTop: 4 }}>
+            {weekDays.map(({ label, dayNum, name, isToday }) => {
+              const cs = heatStyle(name, isToday);
+              const tagLabel = name
+                ? name.slice(0, 4).toUpperCase()
+                : isToday ? "TDY" : "REST";
+              const tagColor = name ? "var(--ink-2)" : isToday ? "var(--cyan)" : "var(--ink-4)";
+              return (
+                <div key={dayNum} style={{
+                  aspectRatio: "1/1", borderRadius: 8,
+                  border: `1px ${isToday && !name ? "dashed" : "solid"} ${cs.borderColor ?? "var(--line)"}`,
+                  display: "flex", alignItems: "flex-end", padding: 6,
+                  position: "relative", overflow: "hidden",
+                  ...cs,
+                }}>
+                  <span style={{ position: "absolute", top: 6, left: 7, fontSize: 9.5, letterSpacing: "0.04em", fontWeight: 500, color: tagColor }}>
+                    {tagLabel}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: 14, marginTop: 14, fontSize: 10.5, color: "var(--ink-3)", letterSpacing: "0.04em" }}>
+            {[
+              { label: "Legs", bg: "linear-gradient(135deg, rgba(179,136,255,0.50), rgba(126,231,255,0.20))" },
+              { label: "Pull", bg: "linear-gradient(135deg, rgba(179,136,255,0.32), rgba(126,231,255,0.10))" },
+              { label: "Push", bg: "linear-gradient(135deg, rgba(179,136,255,0.20), rgba(179,136,255,0.05))" },
+            ].map((l) => (
+              <span key={l.label}>
+                <i style={{ display: "inline-block", width: 8, height: 8, borderRadius: 3, marginRight: 6, verticalAlign: "middle", background: l.bg }} />
+                {l.label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── MOOD (3 cols) ────────────────────────────────────────────────── */}
+        <Link href="/mood" style={{ gridColumn: "span 3", display: "block" }}>
+          <div className="cc-card cc-card-hover" style={{ padding: 22, height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={CARD_HEAD_TITLE}><span style={DOT} />Mood · Today</div>
+              <span style={{ fontSize: 11, color: "var(--ink-3)" }}>log</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, gap: 6 }}>
+              {["😞", "😕", "😐", "🙂", "😄"].map((emoji, i) => (
+                <div key={i} style={{ flex: 1, height: 48, border: "1px solid var(--line)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, background: "rgba(255,255,255,0.015)" }}>
+                  {emoji}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: 8 }}>
+              <span>Heavy</span><span>Light</span>
+            </div>
+            <div style={{ display: "flex", gap: 5, marginTop: 14 }}>
+              {[0.22, 0.50, 0.22, 0.80, 0.50, 0.80, 0.80].map((v, i) => (
+                <div key={i} style={{ flex: 1, height: 7, borderRadius: 3, background: v > 0.6 ? "var(--grad)" : v > 0.3 ? "rgba(179,136,255,0.50)" : "rgba(179,136,255,0.22)", boxShadow: v > 0.6 ? "0 0 8px rgba(179,136,255,0.40)" : "none" }} />
+              ))}
+            </div>
+          </div>
+        </Link>
+
+        {/* ── READING (3 cols) ─────────────────────────────────────────────── */}
+        <Link href={currentBook ? `/library/read/${currentBook.id}` : "/library"} style={{ gridColumn: "span 3", display: "block" }}>
+          <div className="cc-card cc-card-hover" style={{ padding: 22, height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={CARD_HEAD_TITLE}><span style={DOT} />Reading · Current</div>
+              <span style={{ fontSize: 11, color: "var(--ink-3)" }}>today</span>
+            </div>
+            {currentBook ? (
+              <>
+                <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginTop: 2 }}>
+                  <div style={{ width: 48, height: 68, borderRadius: 4, background: "linear-gradient(160deg,#3A2E22 0%,#1A1714 100%)", border: "1px solid var(--line-hi)", flexShrink: 0, position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", left: 5, top: 0, bottom: 0, width: 1, background: "rgba(255,255,255,0.10)" }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14.5, fontWeight: 500, lineHeight: 1.25 }}>{currentBook.title}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 3 }}>{currentBook.author}</div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 16 }}>
+                  <svg width="74" height="74" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
+                    <defs>
+                      <linearGradient id="db-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#B388FF" />
+                        <stop offset="100%" stopColor="#7EE7FF" />
+                      </linearGradient>
+                    </defs>
+                    <circle fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" cx="40" cy="40" r="32" />
+                    <circle fill="none" stroke="url(#db-ring-grad)" strokeWidth="6" strokeLinecap="round"
+                      cx="40" cy="40" r="32"
+                      strokeDasharray={ringCircumference}
+                      strokeDashoffset={ringOffset}
+                      transform="rotate(-90 40 40)"
+                      style={{ filter: "drop-shadow(0 0 6px rgba(179,136,255,0.4))" }}
+                    />
+                  </svg>
+                  <div>
+                    <div className="tabular-nums" style={{ fontSize: 24, fontWeight: 300, letterSpacing: "-0.02em", background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                      {readPct}%
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                      p. {currentPage} / {currentBook.totalPages ?? "?"}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 12 }}>No book in progress →</div>
+            )}
+          </div>
+        </Link>
+
+        {/* ── WORDS (3 cols) ───────────────────────────────────────────────── */}
+        <Link href="/wordbank" style={{ gridColumn: "span 3", display: "block" }}>
+          <div className="cc-card cc-card-hover" style={{ padding: 22, height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={CARD_HEAD_TITLE}><span style={DOT} />Word Bank · Due</div>
+              <span style={{ fontSize: 11, color: "var(--ink-3)" }}>SRS</span>
+            </div>
+            <div className="tabular-nums" style={{ fontSize: 50, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 1, marginTop: 2, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 14px rgba(179,136,255,0.25))" }}>
+              {dueWords.length}
+              <span style={{ fontSize: 18, color: "var(--ink-3)", marginLeft: 6, letterSpacing: 0, WebkitTextFillColor: "var(--ink-3)" }}>due</span>
+            </div>
+            <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 6, letterSpacing: "0.02em" }}>
+              {totalWords.length} total in bank
+            </div>
+            <div style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 14px", border: "1px solid var(--line-hi)", borderRadius: 10, fontSize: 12, color: "var(--ink)", background: "rgba(255,255,255,0.02)" }}>
+              <ArrowRight size={11} />
+              Start review
+            </div>
+          </div>
+        </Link>
+
+        {/* ── NEWS (12 cols) ───────────────────────────────────────────────── */}
+        <div className="cc-card" style={{ gridColumn: "span 12", padding: 22 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={CARD_HEAD_TITLE}><span style={DOT} />News Brief · Top 5 Today</div>
+            <Link href="/news" style={{ fontSize: 11, letterSpacing: "0.04em", color: "var(--ink-3)" }}>
+              curated {format(now, "HH:mm")} · 5 sources
+            </Link>
+          </div>
+          {stories.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10, marginTop: 4 }}>
+              {stories.map((s, i) => {
+                const cat = s.category?.toLowerCase() ?? "other";
+                const catStyle = CAT_STYLES[cat] ?? CAT_STYLES.other;
+                return (
+                  <div key={i} style={{ padding: "16px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.018)", position: "relative", overflow: "hidden" }}>
+                    <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em", marginBottom: 6, display: "block" }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span style={{ display: "inline-block", fontSize: 9.5, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 10, padding: "3px 9px", borderRadius: 99, border: "1px solid", ...catStyle }}>
+                      {s.category}
+                    </span>
+                    <div style={{ fontSize: 13.5, lineHeight: 1.4, letterSpacing: "-0.005em", color: "var(--ink)", fontWeight: 450 }}>
+                      {s.headline}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 0", gap: 12 }}>
+              <Link href="/news" style={{ fontSize: 13, color: "var(--cyan)" }}>Generate today's brief →</Link>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 }
