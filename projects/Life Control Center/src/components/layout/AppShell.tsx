@@ -3,19 +3,16 @@
 /**
  * AppShell — V2 "Ambient Futurism" layout shell.
  *
- * Replaces sidebar layout with horizontal TopNav (fixed top) + MobileNav (fixed bottom).
+ * Desktop: 56px fixed vertical Sidebar + scrollable main content.
+ * Mobile:  no sidebar — MobileNav (fixed bottom tab bar) handles navigation.
  *
- * Provides global state for:
- *   - CommandPalette (⌘K)
+ * Global state managed here:
+ *   - CommandPalette (⌘K / Ctrl+K — keyboard-discovered, not advertised)
  *   - QuickCapture FAB + modal
- *
- * Session provider is wired here so TopNav can access user info.
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { SessionProvider } from "next-auth/react";
-import { TopNav } from "@/components/layout/TopNav";
-import { MobileNav } from "@/components/layout/MobileNav";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { QuickCapture, QuickCaptureFAB } from "@/components/QuickCapture";
 
@@ -24,7 +21,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [captureOpen, setCaptureOpen] = useState(false);
   const [captureTab, setCaptureTab]   = useState<"word" | "mood" | "journal" | "checklist">("word");
 
-  // ⌘K / Ctrl+K binding
+  // ⌘K / Ctrl+K — keyboard-only discovery, no visible hint in chrome
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -42,17 +39,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <SessionProvider>
-      {/* Top navigation bar */}
-      <TopNav onSearch={() => setPaletteOpen(true)} />
+    <>
+      {/* Vertical icon sidebar — desktop only, always collapsed */}
+      <Sidebar />
 
-      {/* Main content */}
+      {/* Main content — pushed right on desktop by sidebar width via .app-main CSS */}
       <main className="app-main">
-        {children}
+        <div className="app-content">
+          {children}
+        </div>
       </main>
-
-      {/* Mobile bottom nav */}
-      <MobileNav />
 
       {/* ⌘K Command palette */}
       <CommandPalette
@@ -70,6 +66,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         initialTab={captureTab}
         onClose={() => setCaptureOpen(false)}
       />
-    </SessionProvider>
+    </>
   );
 }

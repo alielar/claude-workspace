@@ -1,16 +1,10 @@
 /**
- * Authenticated app layout.
- * All protected routes live inside this route group.
- * Wraps content in AppShell (sidebar + mobile nav).
+ * Authenticated app layout — all protected routes live inside this group.
+ * Single-user app: no auth check, no redirect. Just renders AppShell.
  */
 
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return <AppShell>{children}</AppShell>;
 }

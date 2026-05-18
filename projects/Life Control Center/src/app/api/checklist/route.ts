@@ -93,6 +93,7 @@ export async function GET() {
       title: item.title,
       emoji: item.emoji,
       sortOrder: item.sortOrder,
+      timeOfDay: item.timeOfDay ?? "anytime",
       completedToday: itemCompletions.includes(today),
       streak: calcStreak(itemCompletions, today),
       source: "manual" as const,
@@ -126,7 +127,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { title, emoji } = await req.json();
+  const { title, emoji, timeOfDay } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
 
   // Assign next sort order
@@ -141,6 +142,7 @@ export async function POST(req: Request) {
     userId,
     title: title.trim(),
     emoji: emoji?.trim() || null,
+    timeOfDay: timeOfDay ?? "anytime",
     sortOrder: nextOrder,
   }).returning();
 

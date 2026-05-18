@@ -44,6 +44,21 @@ export async function POST() {
     `CREATE UNIQUE INDEX IF NOT EXISTS
       ux_checklist_completion ON checklist_completions(item_id, user_id, date)`,
 
+    // ── Checklist: time-of-day tag (additive — safe to re-run) ─────────────
+    `ALTER TABLE checklist_items ADD COLUMN time_of_day TEXT NOT NULL DEFAULT 'anytime'`,
+
+    // ── Reading sessions ─────────────────────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS reading_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      start_page INTEGER NOT NULL DEFAULT 1,
+      end_page INTEGER NOT NULL DEFAULT 1,
+      duration_minutes INTEGER NOT NULL DEFAULT 0,
+      date TEXT NOT NULL,
+      started_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+
     // ── Word Bank new columns (additive — safe to re-run) ───────────────────
     `ALTER TABLE word_bank_entries ADD COLUMN part_of_speech TEXT`,
     `ALTER TABLE word_bank_entries ADD COLUMN language TEXT NOT NULL DEFAULT 'en'`,

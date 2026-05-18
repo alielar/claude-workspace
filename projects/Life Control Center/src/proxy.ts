@@ -1,23 +1,15 @@
 /**
- * Auth proxy — protects all routes except /login and /api/auth/*.
- * Unauthenticated requests are redirected to /login.
- * (Renamed from middleware.ts per Next.js 16 convention.)
+ * Proxy (Next.js 16 middleware) — passthrough.
+ * Single-user app, no auth gating needed.
  */
 
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const isAuthRoute =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/api/auth");
-
-  if (!isLoggedIn && !isAuthRoute) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-});
+export default function proxy(_req: NextRequest) {
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
+  matcher: [],
 };

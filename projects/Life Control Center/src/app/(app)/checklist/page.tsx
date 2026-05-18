@@ -1,518 +1,608 @@
 "use client";
 
 /**
- * /checklist — Daily recurring checklist.
+ * /checklist — Daily recurring checklist. V2 Ambient Futurism.
  *
- * Features:
- * - Virtual workout item at top (auto from workout rotation)
- * - Per-item flame streak
- * - Tap to check with spring animation
- * - Completion % in header
- * - Settings drawer: add / rename / delete items
- * - Seeds 4 default items on first use
+ * Items grouped by time-of-day tag: Morning → Afternoon → Evening → Anytime.
+ * Slide-in edit drawer for adding/editing items (emoji, title, timeOfDay).
+ * No per-item streak badges. Subtle all-done celebration.
+ * Left: progress hero + grouped list. Right: last-7-days grid + month stats.
  */
 
-import { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Flame, Plus, X, Check, Settings, GripVertical,
-  Dumbbell, Pencil, ChevronRight,
-} from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
 
 type Item = {
   id: number;
   title: string;
   emoji: string | null;
   sortOrder: number;
+  timeOfDay: TimeOfDay;
   completedToday: boolean;
   streak: number;
   source: "manual" | "workout";
-  href?: string;
 };
 
-// ─── Default seeds (shown on first-use empty state) ──────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-const SUGGESTED = [
-  { emoji: "📚", title: "Read 30 min" },
-  { emoji: "🧠", title: "Study / coursework" },
-  { emoji: "💧", title: "Drink 2L water" },
-  { emoji: "🌙", title: "Journal reflection" },
+const TIME_SECTIONS: { key: TimeOfDay; label: string; color: string }[] = [
+  { key: "morning",   label: "Morning",   color: "var(--warn)"   },
+  { key: "afternoon", label: "Afternoon", color: "var(--cyan)"   },
+  { key: "evening",   label: "Evening",   color: "var(--violet)" },
+  { key: "anytime",   label: "Anytime",   color: "var(--ink-3)"  },
 ];
 
-// ─── CheckItem component ─────────────────────────────────────────────────────
+// ─── Drawer ───────────────────────────────────────────────────────────────────
 
-function CheckItem({
-  item,
-  onToggle,
-  onEdit,
-  onDelete,
-  editMode,
-}: {
-  item: Item;
-  onToggle: (id: number, source: Item["source"]) => void;
-  onEdit?: (id: number, title: string, emoji: string | null) => void;
-  onDelete?: (id: number) => void;
-  editMode: boolean;
-}) {
-  const [animating, setAnimating] = useState(false);
+interface DrawerProps {
+  open: boolean;
+  item: Item | null;      // null = new item
+  onClose: () => void;
+  onSave: (data: { title: string; emoji: string; timeOfDay: TimeOfDay }) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
+}
 
-  const handleToggle = () => {
-    if (item.source === "workout") return; // virtual — not togglable
-    setAnimating(true);
-    onToggle(item.id, item.source);
-    setTimeout(() => setAnimating(false), 400);
+function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
+  const [title, setTitle]       = useState("");
+  const [emoji, setEmoji]       = useState("");
+  const [tod, setTod]           = useState<TimeOfDay>("anytime");
+  const [saving, setSaving]     = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+
+  // Sync state when the target item changes
+  useEffect(() => {
+    if (open) {
+      setTitle(item?.title ?? "");
+      setEmoji(item?.emoji ?? "");
+      setTod(item?.timeOfDay ?? "anytime");
+      setSaving(false);
+      setDeleting(false);
+      setTimeout(() => titleRef.current?.focus(), 80);
+    }
+  }, [open, item]);
+
+  const handleSave = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    await onSave({ title: title.trim(), emoji: emoji.trim(), timeOfDay: tod });
+    setSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (!item) return;
+    setDeleting(true);
+    await onDelete(item.id);
+    setDeleting(false);
   };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-      className="flex items-center gap-3"
-      style={{
-        padding: "11px 14px",
-        borderRadius: 10,
-        background: item.completedToday
-          ? "var(--success-glow)"
-          : "var(--bg-elevated)",
-        border: `1px solid ${item.completedToday
-          ? "rgba(16,185,129,0.2)"
-          : "var(--border-subtle)"}`,
-        marginBottom: 6,
-        transition: "background 200ms, border-color 200ms",
-        minHeight: 48,
-      }}
-    >
-      {/* Edit mode drag handle */}
-      {editMode && item.source === "manual" && (
-        <GripVertical size={14} style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
-      )}
-
-      {/* Checkbox */}
-      {item.source !== "workout" && (
-        <button
-          onClick={handleToggle}
-          className="flex items-center justify-center shrink-0 transition-all"
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 6,
-            border: `1.5px solid ${item.completedToday ? "var(--success)" : "var(--border-default)"}`,
-            background: item.completedToday ? "var(--success)" : "transparent",
-            flexShrink: 0,
-          }}
-        >
-          <AnimatePresence>
-            {item.completedToday && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 500, damping: 28 }}
-              >
-                <Check size={12} color="#fff" strokeWidth={2.5} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </button>
-      )}
-
-      {/* Workout icon (virtual) */}
-      {item.source === "workout" && (
+    <>
+      {/* Backdrop */}
+      {open && (
         <div
-          className="flex items-center justify-center shrink-0"
+          onClick={onClose}
           style={{
-            width: 22, height: 22, borderRadius: 6,
-            background: item.completedToday ? "var(--module-workout)" : "rgba(249,115,22,0.12)",
+            position: "fixed", inset: 0, zIndex: 49,
+            background: "rgba(0,0,0,0.55)",
+            backdropFilter: "blur(4px)",
+            animation: "fadeIn 0.15s ease",
           }}
-        >
-          <Dumbbell size={11} style={{ color: item.completedToday ? "#fff" : "var(--module-workout)" }} />
-        </div>
+        />
       )}
 
-      {/* Label */}
-      <div className="flex-1 min-w-0 flex items-center gap-2">
-        {item.emoji && (
-          <span style={{ fontSize: 15 }}>{item.emoji}</span>
-        )}
-        <span
-          style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: item.completedToday ? "var(--text-secondary)" : "var(--text-primary)",
-            textDecoration: item.completedToday ? "line-through" : "none",
-            transition: "color 200ms",
-          }}
-          className="truncate"
-        >
-          {item.title}
-        </span>
-        {item.source === "workout" && (
-          <span
-            className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-            style={{ background: "rgba(249,115,22,0.12)", color: "var(--module-workout)", flexShrink: 0 }}
+      {/* Drawer panel */}
+      <div style={{
+        position: "fixed", top: 0, right: 0, bottom: 0,
+        width: 360,
+        zIndex: 50,
+        background: "rgba(12,12,22,0.97)",
+        backdropFilter: "blur(24px)",
+        borderLeft: "1px solid var(--line-hi)",
+        display: "flex",
+        flexDirection: "column",
+        transform: open ? "translateX(0)" : "translateX(100%)",
+        transition: "transform 0.24s var(--easeOut)",
+      }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px 16px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.01em", color: "var(--ink)" }}>
+            {item ? "Edit item" : "New item"}
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-3)", padding: 4, display: "flex" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <div style={{ flex: 1, padding: "24px", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto" }}>
+
+          {/* Emoji + Title row */}
+          <div>
+            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Item</label>
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <input
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🔥"
+                maxLength={4}
+                style={{
+                  width: 52, textAlign: "center", fontSize: 20,
+                  background: "var(--bg-input)", border: "1px solid var(--line-hi)",
+                  borderRadius: 10, padding: "10px 8px", color: "var(--ink)", outline: "none",
+                  flexShrink: 0,
+                }}
+              />
+              <input
+                ref={titleRef}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                placeholder="e.g. Drink 2L water"
+                style={{
+                  flex: 1, fontSize: 14,
+                  background: "var(--bg-input)", border: "1px solid var(--line-hi)",
+                  borderRadius: 10, padding: "10px 14px", color: "var(--ink)", outline: "none",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Time-of-day selector */}
+          <div>
+            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Time of day</label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8, marginTop: 8 }}>
+              {TIME_SECTIONS.map(({ key, label, color }) => (
+                <button
+                  key={key}
+                  onClick={() => setTod(key)}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    border: `1px solid ${tod === key ? color : "var(--line)"}`,
+                    background: tod === key ? `${color}18` : "rgba(255,255,255,0.02)",
+                    color: tod === key ? color : "var(--ink-3)",
+                    fontSize: 13,
+                    fontWeight: 450,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.15s",
+                    display: "flex", alignItems: "center", gap: 8,
+                  }}
+                >
+                  <span style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: tod === key ? color : "var(--ink-4)",
+                    boxShadow: tod === key ? `0 0 6px ${color}` : "none",
+                    flexShrink: 0,
+                  }} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div style={{ padding: "16px 24px", borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 8 }}>
+          <button
+            className="cc-btn cc-btn-primary"
+            onClick={handleSave}
+            disabled={!title.trim() || saving}
+            style={{ width: "100%", justifyContent: "center", opacity: (!title.trim() || saving) ? 0.5 : 1 }}
           >
-            auto
-          </span>
-        )}
+            {saving ? "Saving…" : item ? "Save changes" : "Add item"}
+          </button>
+          {item && item.source !== "workout" && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{
+                width: "100%", padding: "10px", borderRadius: 10,
+                background: "none", border: "1px solid rgba(255,138,138,0.20)",
+                color: "var(--neg)", fontSize: 13, cursor: "pointer",
+                opacity: deleting ? 0.5 : 1, transition: "all 0.15s",
+              }}
+            >
+              {deleting ? "Deleting…" : "Delete item"}
+            </button>
+          )}
+        </div>
       </div>
-
-      {/* Streak badge */}
-      {item.streak >= 2 && !editMode && (
-        <div className="flex items-center gap-1 shrink-0">
-          <Flame size={12} style={{ color: "#F97316" }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#F97316" }}>{item.streak}</span>
-        </div>
-      )}
-
-      {/* Edit mode actions */}
-      {editMode && item.source === "manual" && (
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => onEdit?.(item.id, item.title, item.emoji)}
-            className="p-1.5 rounded-lg transition-colors"
-            style={{ background: "var(--bg-elevated-2)" }}
-          >
-            <Pencil size={11} style={{ color: "var(--text-secondary)" }} />
-          </button>
-          <button
-            onClick={() => onDelete?.(item.id)}
-            className="p-1.5 rounded-lg transition-colors"
-            style={{ background: "var(--danger-glow)" }}
-          >
-            <X size={11} style={{ color: "var(--danger)" }} />
-          </button>
-        </div>
-      )}
-
-      {/* Workout item → link to workout */}
-      {item.source === "workout" && !editMode && !item.completedToday && (
-        <ChevronRight size={13} style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
-      )}
-    </motion.div>
+    </>
   );
 }
 
-// ─── Add / Edit item form ─────────────────────────────────────────────────────
+// ─── Check row ────────────────────────────────────────────────────────────────
 
-function ItemForm({
-  initial,
-  onSave,
-  onCancel,
-}: {
-  initial?: { title: string; emoji: string | null };
-  onSave: (title: string, emoji: string | null) => void;
-  onCancel: () => void;
+function CkRow({ item, onToggle, onEdit }: {
+  item: Item;
+  onToggle: (id: number) => void;
+  onEdit: (item: Item) => void;
 }) {
-  const [title, setTitle] = useState(initial?.title ?? "");
-  const [emoji, setEmoji] = useState(initial?.emoji ?? "");
+  const isWorkout = item.source === "workout";
+  const done = item.completedToday;
 
   return (
-    <div
-      className="rounded-xl p-3 space-y-2"
-      style={{ background: "var(--bg-elevated-2)", border: "1px solid var(--border-default)" }}
-    >
-      <div className="flex gap-2">
-        <input
-          value={emoji}
-          onChange={(e) => setEmoji(e.target.value)}
-          placeholder="✨"
-          maxLength={2}
-          className="input text-center"
-          style={{ width: 44, flexShrink: 0, padding: "8px 4px" }}
-        />
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Item title…"
-          className="input flex-1"
-          autoFocus
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && title.trim()) onSave(title, emoji.trim() || null);
-            if (e.key === "Escape") onCancel();
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "22px 1fr auto",
+      gap: 14,
+      alignItems: "center",
+      padding: "11px 0",
+      borderBottom: "1px solid var(--line)",
+    }}>
+      {/* Checkbox */}
+      <span
+        onClick={() => !isWorkout && onToggle(item.id)}
+        style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 20, height: 20, borderRadius: isWorkout ? 99 : 6,
+          border: `1.5px solid ${done ? "transparent" : isWorkout ? "rgba(126,231,255,0.30)" : "var(--line-hi)"}`,
+          borderStyle: isWorkout ? "dashed" : "solid",
+          background: done
+            ? isWorkout ? "rgba(126,231,255,0.20)" : "var(--grad)"
+            : isWorkout ? "rgba(126,231,255,0.04)" : "transparent",
+          boxShadow: done && !isWorkout ? "0 0 10px rgba(179,136,255,0.40)" : "none",
+          flexShrink: 0,
+          cursor: isWorkout ? "default" : "pointer",
+          transition: "all 0.15s",
+        }}
+      >
+        {done && !isWorkout && (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0A0A14" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        )}
+        {done && isWorkout && (
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        )}
+      </span>
+
+      {/* Label */}
+      <div>
+        <div style={{
+          fontSize: 14, letterSpacing: "-0.005em",
+          color: done ? "var(--ink-3)" : "var(--ink)",
+          textDecoration: done ? "line-through" : "none",
+          textDecorationColor: "var(--ink-5)",
+          textDecorationThickness: 1,
+          display: "flex", alignItems: "center", gap: 7,
+          transition: "color 0.2s",
+        }}>
+          {item.emoji && <span>{item.emoji}</span>}
+          {item.title}
+          {isWorkout && (
+            <span style={{
+              fontFamily: "var(--f-mono)", fontSize: 8.5, letterSpacing: "0.18em",
+              color: "var(--cyan)", padding: "2px 6px", borderRadius: 99,
+              background: "rgba(126,231,255,0.10)", border: "1px solid rgba(126,231,255,0.25)",
+              textTransform: "uppercase",
+            }}>auto</span>
+          )}
+        </div>
+      </div>
+
+      {/* Edit button (manual items only) */}
+      {!isWorkout && (
+        <button
+          onClick={() => onEdit(item)}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: "var(--ink-4)", padding: 4, display: "flex",
+            opacity: 0.6, transition: "opacity 0.15s",
           }}
-        />
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={() => title.trim() && onSave(title, emoji.trim() || null)}
-          disabled={!title.trim()}
-          className="btn btn-primary flex-1"
-          style={{ fontSize: 13, padding: "7px 0" }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
         >
-          Save
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
         </button>
-        <button
-          onClick={onCancel}
-          className="btn btn-ghost"
-          style={{ fontSize: 13, padding: "7px 14px" }}
-        >
-          Cancel
-        </button>
-      </div>
+      )}
     </div>
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ChecklistPage() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<{ id: number; title: string; emoji: string | null } | null>(null);
-  const [migrated, setMigrated] = useState(false);
+  const [items, setItems]       = useState<Item[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Item | null>(null);
 
+  // Run migration + load on mount
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/checklist");
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data);
-      }
+      if (res.ok) setItems(await res.json());
     } catch { /* ignore */ }
     setLoading(false);
   }, []);
 
-  // Run migration on first load (creates tables if needed), then load items
   useEffect(() => {
     (async () => {
-      if (!migrated) {
-        await fetch("/api/admin/migrate", { method: "POST" });
-        setMigrated(true);
-      }
+      await fetch("/api/admin/migrate", { method: "POST" });
       await load();
     })();
-  }, [load, migrated]);
+  }, [load]);
 
-  const toggle = async (id: number, source: Item["source"]) => {
-    if (source === "workout") return;
-    // Optimistic update
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, completedToday: !it.completedToday } : it
-      )
-    );
+  // ── Toggle completion ──
+  const toggle = async (id: number) => {
+    // Optimistic
+    setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
     await fetch("/api/checklist/toggle", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itemId: id }),
     });
-    // Re-fetch to get accurate streak
-    await load();
   };
 
-  const addItem = async (title: string, emoji: string | null) => {
-    const res = await fetch("/api/checklist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, emoji }),
-    });
-    if (res.ok) {
-      setAddOpen(false);
-      await load();
+  // ── Drawer save (create or update) ──
+  const handleSave = async (data: { title: string; emoji: string; timeOfDay: TimeOfDay }) => {
+    if (editTarget) {
+      // Update
+      await fetch(`/api/checklist/${editTarget.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    } else {
+      // Create
+      await fetch("/api/checklist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
     }
-  };
-
-  const seedItem = async (emoji: string, title: string) => {
-    await fetch("/api/checklist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, emoji }),
-    });
+    setDrawerOpen(false);
     await load();
   };
 
-  const editItem = async (id: number, title: string, emoji: string | null) => {
-    await fetch(`/api/checklist/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, emoji }),
-    });
-    setEditTarget(null);
-    await load();
-  };
-
-  const deleteItem = async (id: number) => {
-    // Optimistic
-    setItems((prev) => prev.filter((it) => it.id !== id));
+  // ── Drawer delete ──
+  const handleDelete = async (id: number) => {
     await fetch(`/api/checklist/${id}`, { method: "DELETE" });
+    setDrawerOpen(false);
+    await load();
   };
 
-  // Stats
-  const manualItems  = items.filter((i) => i.source === "manual");
-  const allCheckable = items.filter((i) => i.source !== "workout" || true); // include workout virtual
-  const completed    = items.filter((i) => i.completedToday).length;
-  const total        = items.length;
-  const pct          = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const hasManual    = manualItems.length > 0;
+  const openNew  = () => { setEditTarget(null);  setDrawerOpen(true); };
+  const openEdit = (item: Item) => { setEditTarget(item); setDrawerOpen(true); };
+
+  // ── Derived stats ──
+  const manualItems = items.filter((i) => i.source !== "workout");
+  const completed   = items.filter((i) => i.completedToday).length;
+  const total       = items.length;
+  const pct         = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const allDone     = total > 0 && completed === total;
+
+  // Group by time-of-day, preserving section order
+  const grouped = TIME_SECTIONS.map(({ key, label, color }) => ({
+    key, label, color,
+    items: items.filter((i) => (i.timeOfDay ?? "anytime") === key),
+  })).filter((g) => g.items.length > 0);
+
+  // Last 7 days
+  const now = new Date();
+  const dayNames   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (6 - i));
+    return d.getDate();
+  });
 
   return (
-    <div className="page-enter" style={{ padding: "20px 20px 40px", maxWidth: 640, margin: "0 auto" }}>
+    <div style={{ padding: "0 0 40px" }}>
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-5">
+      {/* Page title */}
+      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-            Daily Checklist
-          </h1>
-          {!loading && total > 0 && (
-            <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 3 }}>
-              {completed}/{total} completed
-              {pct === 100 && " · 🎉 All done!"}
-            </p>
-          )}
+          <h1>Today<span className="grad-text">.</span></h1>
+          <div className="sub">
+            {dayNames[now.getDay()]}, {monthNames[now.getMonth()]} {now.getDate()}, {now.getFullYear()}
+            {" · "}{total} daily non-negotiables
+          </div>
         </div>
-        <button
-          onClick={() => { setEditMode((e) => !e); setAddOpen(false); setEditTarget(null); }}
-          className="btn btn-ghost"
-          style={{ fontSize: 12, padding: "6px 12px", gap: 5 }}
-        >
-          <Settings size={13} />
-          {editMode ? "Done" : "Manage"}
+        <button className="cc-btn cc-btn-primary" onClick={openNew} style={{ fontSize: 12 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add item
         </button>
       </div>
 
-      {/* Progress bar */}
-      {!loading && total > 0 && (
-        <div className="progress-track mb-4" style={{ height: 4 }}>
-          <div
-            className="progress-fill"
-            style={{
-              width: `${pct}%`,
-              background: pct === 100
-                ? "var(--success)"
-                : "var(--accent-primary)",
-            }}
-          />
-        </div>
-      )}
+      {/* 8fr / 4fr layout */}
+      <div style={{ display: "grid", gridTemplateColumns: "8fr 4fr", gap: 14 }}>
 
-      {/* Skeleton */}
-      {loading && (
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="skeleton" style={{ height: 48, borderRadius: 10 }} />
-          ))}
-        </div>
-      )}
+        {/* ── LEFT ─────────────────────────────────────────────────────────── */}
+        <div>
+          {/* Progress hero */}
+          <div className="cc-card" style={{
+            marginBottom: 14, padding: "28px 32px",
+            background: `
+              radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%),
+              radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+              var(--bg-card)`,
+          }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "99px", background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)", display: "inline-block" }} />
+              Today&rsquo;s completion
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginTop: 6 }}>
+              {/* Big % */}
+              <div style={{
+                fontSize: 88, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
+                background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
+                filter: allDone ? "drop-shadow(0 0 28px rgba(179,136,255,0.55))" : "drop-shadow(0 0 24px rgba(179,136,255,0.20))",
+                transition: "filter 0.6s ease",
+                animation: allDone ? "celebPulse 2.4s ease-in-out infinite" : "none",
+              }}>
+                {loading ? "—" : pct}<span style={{ fontSize: 24, WebkitTextFillColor: "var(--ink-3)" }}>%</span>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                {allDone ? (
+                  <div style={{ fontSize: 12, color: "var(--pos)", fontFamily: "var(--f-mono)", letterSpacing: "0.06em", marginBottom: 4 }}>
+                    ✓ ALL DONE
+                  </div>
+                ) : null}
+                <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
+                  <b style={{ color: "var(--ink)" }}>{completed} of {total}</b> done
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 4 }}>
+                  <b style={{ color: "var(--ink)" }}>{total - completed}</b> remaining
+                </div>
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div style={{ height: 6, background: "rgba(255,255,255,0.04)", borderRadius: 99, marginTop: 18, overflow: "hidden" }}>
+              <div style={{
+                height: "100%", width: `${pct}%`, background: "var(--grad)", borderRadius: 99,
+                boxShadow: pct > 0 ? "0 0 14px rgba(179,136,255,0.40)" : "none",
+                transition: "width 0.5s var(--easeOut)",
+              }} />
+            </div>
+          </div>
 
-      {/* Items */}
-      {!loading && (
-        <AnimatePresence initial={false}>
-          {items.map((item) => (
-            editTarget?.id === item.id
-              ? (
-                <motion.div
-                  key={`edit-${item.id}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  style={{ marginBottom: 6 }}
-                >
-                  <ItemForm
-                    initial={{ title: editTarget.title, emoji: editTarget.emoji }}
-                    onSave={(t, e) => editItem(item.id, t, e)}
-                    onCancel={() => setEditTarget(null)}
-                  />
-                </motion.div>
-              )
-              : (
-                <CheckItem
-                  key={item.id}
-                  item={item}
-                  onToggle={toggle}
-                  onEdit={(id, title, emoji) => setEditTarget({ id, title, emoji })}
-                  onDelete={deleteItem}
-                  editMode={editMode}
-                />
-              )
-          ))}
-        </AnimatePresence>
-      )}
+          {/* Items grouped by time of day */}
+          <div className="cc-card" style={{ padding: 0, overflow: "hidden" }}>
+            {loading && (
+              <div style={{ padding: "32px", textAlign: "center", color: "var(--ink-4)", fontSize: 13 }}>Loading…</div>
+            )}
 
-      {/* Empty state — no user items yet */}
-      {!loading && !hasManual && (
-        <div
-          className="rounded-xl p-5 mt-2"
-          style={{ background: "var(--bg-elevated-2)", border: "1px solid var(--border-subtle)" }}
-        >
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
-            Add your daily habits
-          </p>
-          <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 14 }}>
-            What do you want to do every single day? Start with a few items.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {SUGGESTED.map((s) => (
-              <button
-                key={s.title}
-                onClick={() => seedItem(s.emoji, s.title)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-                style={{
-                  background: "var(--bg-elevated-3)",
-                  border: "1px solid var(--border-default)",
-                  color: "var(--text-secondary)",
-                  fontSize: 12,
-                }}
-              >
-                <span>{s.emoji}</span> {s.title}
-              </button>
+            {!loading && items.length === 0 && (
+              <div style={{ padding: "40px 32px", textAlign: "center" }}>
+                <div style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 12 }}>No items yet.</div>
+                <button className="cc-btn cc-btn-primary" onClick={openNew} style={{ margin: "0 auto" }}>
+                  Add your first item
+                </button>
+              </div>
+            )}
+
+            {!loading && grouped.map((group, gi) => (
+              <div key={group.key}>
+                {/* Section header */}
+                <div style={{
+                  padding: "10px 20px 8px",
+                  borderBottom: "1px solid var(--line)",
+                  borderTop: gi > 0 ? "1px solid var(--line-strong)" : "none",
+                  display: "flex", alignItems: "center", gap: 7,
+                  background: "rgba(255,255,255,0.015)",
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: group.color, boxShadow: `0 0 5px ${group.color}`, flexShrink: 0 }} />
+                  <span style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: group.color }}>
+                    {group.label}
+                  </span>
+                  <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginLeft: "auto" }}>
+                    {group.items.filter((i) => i.completedToday).length}/{group.items.length}
+                  </span>
+                </div>
+
+                {/* Items in section */}
+                <div style={{ padding: "0 20px" }}>
+                  {group.items.map((item) => (
+                    <CkRow key={item.id} item={item} onToggle={toggle} onEdit={openEdit} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Add item form */}
-      <AnimatePresence>
-        {addOpen && !editMode && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mt-2"
-          >
-            <ItemForm onSave={addItem} onCancel={() => setAddOpen(false)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* ── RIGHT ────────────────────────────────────────────────────────── */}
+        <div>
+          {/* Last 7 days grid */}
+          <div className="cc-card" style={{ marginBottom: 14 }}>
+            <div className="cc-card-head">
+              <div className="title">Last 7 days</div>
+              <div className="tail">{monthNames[now.getMonth()]} {last7[0]}–{last7[6]}</div>
+            </div>
 
-      {/* Add button */}
-      {!editMode && !addOpen && (
-        <button
-          onClick={() => setAddOpen(true)}
-          className="flex items-center gap-2 w-full mt-3 rounded-xl"
-          style={{
-            padding: "11px 14px",
-            background: "transparent",
-            border: "1px dashed var(--border-default)",
-            color: "var(--text-tertiary)",
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: "pointer",
-          }}
-        >
-          <Plus size={14} />
-          Add item
-        </button>
-      )}
+            {/* Day headers */}
+            <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, marginBottom: 4 }}>
+              <div />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+                {last7.map((d, i) => (
+                  <div key={i} style={{ fontSize: 9, color: i === 6 ? "var(--cyan)" : "var(--ink-4)", letterSpacing: "0.10em", textAlign: "center" }}>
+                    {i === 6 ? "TDY" : d}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-      {/* Streak info footer */}
-      {!loading && items.some((i) => i.streak >= 2) && !editMode && (
-        <div
-          className="mt-5 rounded-xl p-3 flex items-center gap-2"
-          style={{ background: "var(--bg-elevated-2)", border: "1px solid var(--border-subtle)" }}
-        >
-          <Flame size={14} style={{ color: "#F97316" }} />
-          <p style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-            Keep going — streaks reset if you miss a day.
-          </p>
+            {/* One row per manual item (max 8 for height) */}
+            {manualItems.slice(0, 8).map((item) => (
+              <div key={item.id} style={{ display: "grid", gridTemplateColumns: "80px 1fr", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                <div style={{ fontSize: 11, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {item.emoji ? `${item.emoji} ` : ""}{item.title}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+                  {Array.from({ length: 7 }, (_, i) => {
+                    // We only know today's state; fill the rest as unknown
+                    const isToday = i === 6;
+                    const state = isToday ? (item.completedToday ? "done" : "pending") : "unknown";
+                    return (
+                      <div key={i} style={{
+                        aspectRatio: "1/1", borderRadius: 4,
+                        border: `1px solid ${state === "done" ? "rgba(179,136,255,0.40)" : state === "pending" ? "rgba(126,231,255,0.20)" : "var(--line)"}`,
+                        borderStyle: state === "unknown" ? "dashed" : "solid",
+                        background: state === "done" ? "linear-gradient(135deg, rgba(179,136,255,0.40), rgba(126,231,255,0.20))" : "transparent",
+                        boxShadow: state === "done" ? "inset 0 0 8px rgba(179,136,255,0.20)" : "none",
+                        outline: isToday ? "1px dashed rgba(126,231,255,0.40)" : "none",
+                        outlineOffset: 1,
+                      }} />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Month stats */}
+          <div className="cc-card">
+            <div className="cc-card-head">
+              <div className="title">Month at a glance</div>
+              <div className="tail">{monthNames[now.getMonth()]}</div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+              <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+                <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today</div>
+                <div className="num grad-text" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
+                  {loading ? "—" : pct}<span style={{ fontSize: 14, WebkitTextFillColor: "var(--ink-4)", color: "var(--ink-4)" }}>%</span>
+                </div>
+              </div>
+              <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+                <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Items</div>
+                <div className="num" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
+                  {total}<span style={{ color: "var(--ink-3)", fontSize: 14 }}> total</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Edit/Add drawer */}
+      <Drawer
+        open={drawerOpen}
+        item={editTarget}
+        onClose={() => setDrawerOpen(false)}
+        onSave={handleSave}
+        onDelete={handleDelete}
+      />
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes celebPulse {
+          0%, 100% { filter: drop-shadow(0 0 24px rgba(179,136,255,0.40)); }
+          50% { filter: drop-shadow(0 0 40px rgba(179,136,255,0.70)) drop-shadow(0 0 80px rgba(126,231,255,0.30)); }
+        }
+      `}</style>
     </div>
   );
 }

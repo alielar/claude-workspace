@@ -25,6 +25,7 @@ export async function PATCH(
   if (body.emoji !== undefined) updates.emoji = body.emoji?.trim() || null;
   if (body.active !== undefined) updates.active = body.active;
   if (body.sortOrder !== undefined) updates.sortOrder = body.sortOrder;
+  if (body.timeOfDay !== undefined) updates.timeOfDay = body.timeOfDay;
 
   const [updated] = await db.update(checklistItems)
     .set(updates)

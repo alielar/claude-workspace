@@ -304,6 +304,25 @@ export const annotations = sqliteTable("annotations", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+/** Reading sessions — one row per reading session for streak + habit tracking */
+export const readingSessions = sqliteTable("reading_sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookId: integer("book_id")
+    .notNull()
+    .references(() => books.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  startPage: integer("start_page").notNull().default(1),
+  endPage: integer("end_page").notNull().default(1),
+  durationMinutes: integer("duration_minutes").notNull().default(0),
+  /** Europe/Madrid date YYYY-MM-DD — used for streak calculation */
+  date: text("date").notNull(),
+  startedAt: integer("started_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
 /** Raw PDF bytes stored as base64 — one row per uploaded book */
 export const pdfBlobs = sqliteTable("pdf_blobs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -407,6 +426,8 @@ export const checklistItems = sqliteTable("checklist_items", {
   emoji: text("emoji"),               // optional leading emoji
   active: integer("active", { mode: "boolean" }).notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
+  /** Time-of-day tag: morning | afternoon | evening | anytime */
+  timeOfDay: text("time_of_day").notNull().default("anytime"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

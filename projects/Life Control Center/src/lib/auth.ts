@@ -1,53 +1,39 @@
 /**
- * NextAuth v5 configuration.
+ * Auth — single-user bypass.
  *
- * - Google OAuth only (single user: Ali)
- * - Drizzle adapter for Turso session storage
- * - Google Calendar scope included for bidirectional calendar sync
- * - Access token stored on account for server-side Google API calls
+ * Replaces NextAuth entirely. auth() is a drop-in for all existing API routes
+ * and server components — they all call `const session = await auth()` and
+ * read `session.user.id`, which now resolves to the one DB user.
+ *
+ * signIn / signOut are no-ops (kept for import compatibility if anything still
+ * references them, though they should be removed from UI components).
  */
 
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "@/db";
-import { accounts, sessions, users, verificationTokens } from "@/db/schema";
+import { getUserId } from "@/lib/user";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          // Request Google Calendar read+write access alongside basic profile
-          scope: [
-            "openid",
-            "email",
-            "profile",
-            "https://www.googleapis.com/auth/calendar",
-            "https://www.googleapis.com/auth/calendar.events",
-          ].join(" "),
-          access_type: "offline",
-          prompt: "consent",
-        },
-      },
-    }),
-  ],
-  callbacks: {
-    async session({ session, user }) {
-      // Attach user ID to session for server components
-      session.user.id = user.id;
-      return session;
+type Session = {
+  user: { id: string; name: string; email: string };
+};
+
+/** Drop-in replacement for NextAuth's auth(). Always resolves to the single user. */
+export async function auth(): Promise<Session | null> {
+  const userId = await getUserId();
+  if (!userId) return null; // no user in DB yet — graceful degradation
+  return {
+    user: {
+      id:    userId,
+      name:  "Ali",
+      email: process.env.USER_EMAIL ?? "ali@control.center",
     },
-  },
-  pages: {
-    signIn: "/login",
-  },
-});
+  };
+}
+
+/** Stub handlers — the /api/auth/[...nextauth] route is kept for build compat. */
+export const handlers = {
+  GET:  () => Response.redirect("/dashboard"),
+  POST: () => Response.redirect("/dashboard"),
+};
+
+/** No-op stubs kept so any stray imports don't break the build. */
+export const signIn  = async () => {};
+export const signOut = async () => {};

@@ -36,15 +36,28 @@ Search the web to find today's most significant real news stories.
 Be unbiased — facts only, no editorial opinion. No clickbait.`;
 
 function buildUserPrompt(date: string): string {
-  return `Today is ${date}. Search the web and generate a structured daily news brief.
+  // World Cup 2026 runs June 11 – July 19, 2026
+  const d = new Date(date + "T12:00:00Z");
+  const wc2026Start = new Date("2026-06-11T00:00:00Z");
+  const wc2026End   = new Date("2026-07-19T23:59:59Z");
+  const inWorldCup  = d >= wc2026Start && d <= wc2026End;
+  const wcRule = inWorldCup
+    ? "\n⚽ WORLD CUP 2026 IS ACTIVE — include AT LEAST 2 football stories (FIFA World Cup 2026 results, standout moments, key team updates).\n"
+    : "";
 
-Find 5 real, current stories for EACH of these 5 categories:
+  return `Today is ${date}. Search the web and return a ranked list of today's 10 most significant real news stories across these categories:
 
-1. **football** — KACM (Kawkab Athletic Club Marrakech), Morocco national team (Atlas Lions), World Cup 2026
-2. **geopolitics** — major international events, conflicts, diplomacy, elections
-3. **business** — markets, major company news, economic indicators
-4. **tech** — product launches, industry shifts, regulation
-5. **ai** — research breakthroughs, product releases, policy
+- **football** — KACM (Kawkab Athletic Club Marrakech), Morocco national team (Atlas Lions), World Cup 2026
+- **geopolitics** — major international events, conflicts, diplomacy, elections
+- **business** — markets, major company news, economic indicators
+- **tech** — product launches, industry shifts, regulation
+- **ai** — research breakthroughs, product releases, policy
+${wcRule}
+Rules:
+- Rank stories #1–10 by global significance and reader interest
+- Mix categories — no more than 3 stories from one category
+- Facts only, no editorial opinion, no clickbait headlines
+- Prefer stories with verifiable sources
 
 For each story return:
 - "headline": concise news headline (≤ 12 words)
@@ -61,7 +74,7 @@ Return ONLY a JSON object in this exact shape — no markdown fences, no extra t
   ]
 }
 
-Include all 5 categories with up to 5 stories each (25 stories max).`;
+Return exactly 10 stories, ordered #1 (most significant) to #10.`;
 }
 
 /** Generate a daily news brief using Claude with live web search */

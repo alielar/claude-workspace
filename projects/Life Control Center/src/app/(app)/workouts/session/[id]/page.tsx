@@ -1,23 +1,20 @@
-/**
- * /workouts/session/[id] — Active workout session page.
- * Loads the session template + last session's progression suggestions,
- * then renders the ActiveWorkoutLogger.
- */
-
 "use client";
+
+/**
+ * /workouts/session/[id] — Active workout session page. V2 Ambient Futurism.
+ * Thin wrapper: loads session data + progression suggestions, then renders ActiveWorkoutLogger.
+ */
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import ActiveWorkoutLogger from "@/components/workouts/ActiveWorkoutLogger";
-import { Loader2 } from "lucide-react";
 
 export default function SessionPage() {
-  const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-  const [session, setSession] = useState<any>(null);
+  const { id }   = useParams<{ id: string }>();
+  const router   = useRouter();
+  const [session, setSession]         = useState<any>(null);
   const [suggestions, setSuggestions] = useState<Record<string, any>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -41,33 +38,48 @@ export default function SessionPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 size={24} className="animate-spin" style={{ color: "var(--accent)" }} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", flexDirection: "column", gap: 12 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: "99px",
+          border: "2px solid var(--line-hi)",
+          borderTopColor: "var(--violet)",
+          animation: "spin 0.8s linear infinite",
+        }} />
+        <div style={{ fontSize: 12, color: "var(--ink-4)", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "var(--f-mono)" }}>
+          Loading session…
+        </div>
+        <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p style={{ color: "var(--text-muted)" }}>Session not found.</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+        <div className="cc-card" style={{ padding: "32px 48px", textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 16 }}>Session not found.</div>
+          <button className="cc-btn" onClick={() => router.push("/workouts")}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to workouts
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="h-full flex flex-col"
-    >
-      {/* Progression suggestions banner */}
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Progression suggestion banner */}
       {Object.keys(suggestions).length > 0 && (
-        <div
-          className="px-4 py-2 text-xs"
-          style={{ background: "var(--accent-dim)", color: "var(--accent-bright)", borderBottom: "1px solid var(--border-accent)" }}
-        >
-          💡 Suggestions from last session loaded — see weight hints in each exercise
+        <div style={{
+          padding: "10px 20px", fontSize: 12, letterSpacing: "0.04em",
+          background: "rgba(179,136,255,0.08)",
+          color: "var(--violet)",
+          borderBottom: "1px solid rgba(179,136,255,0.20)",
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", display: "inline-block" }} />
+          Suggestions from last session loaded — see weight hints in each exercise
         </div>
       )}
 
@@ -76,12 +88,11 @@ export default function SessionPage() {
         sessionName={session.name}
         exercises={session.exercises.map((ex: any) => ({
           ...ex,
-          // Inject weight suggestion from last session
           suggestedWeightKg: suggestions[ex.name]?.suggestedWeightKg ?? null,
           suggestionMessage: suggestions[ex.name]?.message ?? null,
         }))}
         onFinish={handleFinish}
       />
-    </motion.div>
+    </div>
   );
 }
