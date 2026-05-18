@@ -66,7 +66,7 @@ export default async function WorkoutsPage() {
   const nextSession     = allSessions.find((s) => s.workout_sessions.name === nextSessionName);
 
   const heroExercises = nextSession
-    ? await db.select({ name: exercisesTable.name, sets: exercisesTable.defaultSets, reps: exercisesTable.defaultReps })
+    ? await db.select({ name: exercisesTable.name })
         .from(exercisesTable)
         .where(eq(exercisesTable.sessionId, nextSession.workout_sessions.id))
         .orderBy(exercisesTable.sortOrder)
@@ -201,7 +201,7 @@ export default async function WorkoutsPage() {
                             </span>
                             <span style={{ color: "var(--ink)" }}>{ex.name}</span>
                             <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-3)", fontSize: 11.5, letterSpacing: "0.02em" }}>
-                              {ex.sets ?? 3}×{ex.reps ?? 10}
+                              3×10
                             </span>
                           </div>
                         ))}
