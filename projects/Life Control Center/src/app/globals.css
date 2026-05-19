@@ -527,6 +527,37 @@ body::after {
   background: var(--ink-4);
 }
 
+/* ─── Card header (title row inside a cc-card) ───────────────────────────── */
+/* Used across all modules — defines padding so content never sits flush      */
+/* against the card border.                                                    */
+.cc-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.cc-card-head .title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+}
+.cc-card-head .tail {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-family: var(--f-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ─── Card body padding helper ───────────────────────────────────────────── */
+/* Wrap card content with this when the card has no explicit padding override */
+.cc-card-body {
+  padding: 14px 16px;
+}
+
 /* ─── Card ───────────────────────────────────────────────────────────────── */
 .cc-card {
   background: var(--bg-card);

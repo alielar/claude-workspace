@@ -6051,3 +6051,16 @@ To github.com:alielar/claude-workspace.git
  1 file changed, 404 insertions(+), 374 deletions(-)
 To github.com:alielar/claude-workspace.git
    d2983bf..3f3aeb4  main -> main
+[main 73ea39a] auto-save: 2026-05-18 23:47
+ 30 files changed, 4988 insertions(+), 2898 deletions(-)
+ create mode 100644 projects/Life Control Center/src/app/(app)/finance/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/journal/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/mood/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/(app)/sleep/page.tsx
+ create mode 100644 projects/Life Control Center/src/app/api/library/sessions/route.ts
+ create mode 100644 projects/Life Control Center/src/app/api/wordbank/suggestions/route.ts
+ create mode 100644 projects/Life Control Center/src/components/dashboard/ChecklistCard.tsx
+ create mode 100644 projects/Life Control Center/src/components/layout/Sidebar.tsx
+ create mode 100644 projects/Life Control Center/src/lib/user.ts
+To github.com:alielar/claude-workspace.git
+   b85aa25..73ea39a  main -> main

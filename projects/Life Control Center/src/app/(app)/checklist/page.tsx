@@ -3,9 +3,9 @@
 /**
  * /checklist — Daily recurring checklist. V2 Ambient Futurism.
  *
- * Items grouped by time-of-day tag: Morning → Afternoon → Evening → Anytime.
- * Slide-in edit drawer for adding/editing items (emoji, title, timeOfDay).
- * No per-item streak badges. Subtle all-done celebration.
+ * Items grouped by time-of-day: Morning → Afternoon → Evening → Anytime.
+ * Each item has: emoji, color accent, streak badge, optional notes, auto-source badge.
+ * Drawer: emoji picker, color swatches, notes, time-of-day, manual/auto-tracked type.
  * Left: progress hero + grouped list. Right: last-7-days grid + month stats.
  */
 
@@ -14,6 +14,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
+type AutoSource = "workout" | "reading" | "words" | "journal" | "mood" | null;
 
 type Item = {
   id: number;
@@ -24,6 +25,9 @@ type Item = {
   completedToday: boolean;
   streak: number;
   source: "manual" | "workout";
+  autoSource: AutoSource;
+  color: string;
+  notes: string | null;
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -35,13 +39,127 @@ const TIME_SECTIONS: { key: TimeOfDay; label: string; color: string }[] = [
   { key: "anytime",   label: "Anytime",   color: "var(--ink-3)"  },
 ];
 
+const ITEM_COLORS = [
+  { id: "violet", hex: "#7C5CFF" },
+  { id: "cyan",   hex: "#7EE7FF" },
+  { id: "green",  hex: "#6FD49A" },
+  { id: "amber",  hex: "#F59E0B" },
+  { id: "red",    hex: "#FF8A8A" },
+  { id: "pink",   hex: "#F472B6" },
+];
+
+const AUTO_SOURCE_OPTIONS: { id: string; label: string; emoji: string }[] = [
+  { id: "workout", label: "Workout",  emoji: "🏋️" },
+  { id: "reading", label: "Reading",  emoji: "📚" },
+  { id: "words",   label: "Word Bank", emoji: "📖" },
+  { id: "journal", label: "Journal",  emoji: "✍️" },
+  { id: "mood",    label: "Mood",     emoji: "😌" },
+];
+
+// 80 curated emojis in 8 rows of 10
+const QUICK_EMOJIS = [
+  "🏋️","🏃","🚴","🧘","💪","🤸","🏊","🥊","🧗","🎯",
+  "💧","🍎","🥗","🥦","💊","😴","🦷","❤️","🫁","🩺",
+  "📚","✍️","🧠","💡","📝","🎓","💻","📖","🔖","🎨",
+  "🌅","🌿","🌱","☀️","🌙","⭐","🌊","🍃","🌸","🔥",
+  "✅","🏆","🥇","💰","🔑","💎","🎁","📅","⏰","🔔",
+  "🍵","☕","🍌","🥑","🍇","🍓","🥥","🍫","🍯","🥛",
+  "⚽","🏀","🎾","🏐","🏓","⛳","🎮","🎵","🎭","🌍",
+  "✨","💫","⚡","🌈","🔮","🚀","🌻","🦋","🐾","🫖",
+];
+
+function colorHex(id: string): string {
+  return ITEM_COLORS.find((c) => c.id === id)?.hex ?? "#7C5CFF";
+}
+
+// ─── Emoji picker ─────────────────────────────────────────────────────────────
+
+function EmojiPicker({ value, onChange }: { value: string; onChange: (e: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          width: 52, height: 44, textAlign: "center", fontSize: 22,
+          background: "var(--bg-input)", border: `1px solid ${open ? "var(--violet)" : "var(--line-hi)"}`,
+          borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "border-color 0.15s",
+        }}
+      >
+        {value || <span style={{ fontSize: 18, opacity: 0.3 }}>＋</span>}
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 60,
+          background: "#0e0e1a", border: "1px solid var(--line-hi)", borderRadius: 12,
+          padding: 10, width: 280, boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+        }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(10,1fr)", gap: 2 }}>
+            {QUICK_EMOJIS.map((em) => (
+              <button
+                key={em}
+                type="button"
+                onClick={() => { onChange(em); setOpen(false); }}
+                style={{
+                  background: value === em ? "rgba(124,92,255,0.25)" : "none",
+                  border: value === em ? "1px solid rgba(124,92,255,0.5)" : "1px solid transparent",
+                  borderRadius: 6, fontSize: 17, cursor: "pointer", padding: "4px 2px",
+                  lineHeight: 1, transition: "background 0.1s",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = value === em ? "rgba(124,92,255,0.25)" : "none"; }}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+          {value && (
+            <button
+              type="button"
+              onClick={() => { onChange(""); setOpen(false); }}
+              style={{
+                marginTop: 8, width: "100%", fontSize: 11, color: "var(--ink-4)",
+                background: "none", border: "1px solid var(--line)", borderRadius: 6,
+                cursor: "pointer", padding: "4px 0",
+              }}
+            >
+              Clear emoji
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Drawer ───────────────────────────────────────────────────────────────────
 
 interface DrawerProps {
   open: boolean;
-  item: Item | null;      // null = new item
+  item: Item | null;
   onClose: () => void;
-  onSave: (data: { title: string; emoji: string; timeOfDay: TimeOfDay }) => Promise<void>;
+  onSave: (data: {
+    title: string;
+    emoji: string;
+    timeOfDay: TimeOfDay;
+    color: string;
+    notes: string;
+    autoSource: string | null;
+  }) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
 }
 
@@ -49,16 +167,29 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   const [title, setTitle]       = useState("");
   const [emoji, setEmoji]       = useState("");
   const [tod, setTod]           = useState<TimeOfDay>("anytime");
+  const [color, setColor]       = useState("violet");
+  const [notes, setNotes]       = useState("");
+  const [isAuto, setIsAuto]     = useState(false);
+  const [autoSource, setAutoSource] = useState<string>("workout");
   const [saving, setSaving]     = useState(false);
   const [deleting, setDeleting] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
-  // Sync state when the target item changes
+  // Is this item a virtual workout (no DB row)? Can't delete or change source.
+  const isVirtualWorkout = item?.source === "workout";
+  // Is this an existing auto-tracked DB item? Can't change auto_source once set.
+  const isExistingAuto = !!item && item.source !== "workout" && item.autoSource !== null;
+
   useEffect(() => {
     if (open) {
       setTitle(item?.title ?? "");
       setEmoji(item?.emoji ?? "");
       setTod(item?.timeOfDay ?? "anytime");
+      setColor(item?.color ?? "violet");
+      setNotes(item?.notes ?? "");
+      const src = item?.autoSource ?? null;
+      setIsAuto(src !== null);
+      setAutoSource(src ?? "workout");
       setSaving(false);
       setDeleting(false);
       setTimeout(() => titleRef.current?.focus(), 80);
@@ -68,7 +199,14 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    await onSave({ title: title.trim(), emoji: emoji.trim(), timeOfDay: tod });
+    await onSave({
+      title: title.trim(),
+      emoji: emoji.trim(),
+      timeOfDay: tod,
+      color,
+      notes: notes.trim(),
+      autoSource: isAuto ? autoSource : null,
+    });
     setSaving(false);
   };
 
@@ -81,61 +219,49 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
 
   return (
     <>
-      {/* Backdrop */}
       {open && (
         <div
           onClick={onClose}
           style={{
             position: "fixed", inset: 0, zIndex: 49,
-            background: "rgba(0,0,0,0.55)",
-            backdropFilter: "blur(4px)",
+            background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
             animation: "fadeIn 0.15s ease",
           }}
         />
       )}
 
-      {/* Drawer panel */}
       <div style={{
         position: "fixed", top: 0, right: 0, bottom: 0,
-        width: 360,
-        zIndex: 50,
-        background: "rgba(12,12,22,0.97)",
-        backdropFilter: "blur(24px)",
+        width: 380, zIndex: 50,
+        background: "rgba(12,12,22,0.98)", backdropFilter: "blur(24px)",
         borderLeft: "1px solid var(--line-hi)",
-        display: "flex",
-        flexDirection: "column",
+        display: "flex", flexDirection: "column",
         transform: open ? "translateX(0)" : "translateX(100%)",
         transition: "transform 0.24s var(--easeOut)",
       }}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px 16px", borderBottom: "1px solid var(--line)" }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 24px 16px", borderBottom: "1px solid var(--line)",
+        }}>
           <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.01em", color: "var(--ink)" }}>
             {item ? "Edit item" : "New item"}
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-3)", padding: 4, display: "flex" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
           </button>
         </div>
 
         {/* Form */}
-        <div style={{ flex: 1, padding: "24px", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto" }}>
+        <div style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto" }}>
 
-          {/* Emoji + Title row */}
+          {/* Emoji + Title */}
           <div>
             <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Item</label>
             <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-              <input
-                value={emoji}
-                onChange={(e) => setEmoji(e.target.value)}
-                placeholder="🔥"
-                maxLength={4}
-                style={{
-                  width: 52, textAlign: "center", fontSize: 20,
-                  background: "var(--bg-input)", border: "1px solid var(--line-hi)",
-                  borderRadius: 10, padding: "10px 8px", color: "var(--ink)", outline: "none",
-                  flexShrink: 0,
-                }}
-              />
+              <EmojiPicker value={emoji} onChange={setEmoji} />
               <input
                 ref={titleRef}
                 value={title}
@@ -151,32 +277,49 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
             </div>
           </div>
 
-          {/* Time-of-day selector */}
+          {/* Color swatches */}
+          <div>
+            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Color</label>
+            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+              {ITEM_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setColor(c.id)}
+                  style={{
+                    width: 24, height: 24, borderRadius: "50%",
+                    background: c.hex,
+                    boxShadow: color === c.id ? `0 0 0 2px #0e0e1a, 0 0 0 4px ${c.hex}` : "none",
+                    border: "none", cursor: "pointer", flexShrink: 0,
+                    transition: "box-shadow 0.15s",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Time of day */}
           <div>
             <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Time of day</label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8, marginTop: 8 }}>
-              {TIME_SECTIONS.map(({ key, label, color }) => (
+              {TIME_SECTIONS.map(({ key, label, color: sectionColor }) => (
                 <button
                   key={key}
+                  type="button"
                   onClick={() => setTod(key)}
                   style={{
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: `1px solid ${tod === key ? color : "var(--line)"}`,
-                    background: tod === key ? `${color}18` : "rgba(255,255,255,0.02)",
-                    color: tod === key ? color : "var(--ink-3)",
-                    fontSize: 13,
-                    fontWeight: 450,
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s",
-                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "10px 14px", borderRadius: 10,
+                    border: `1px solid ${tod === key ? sectionColor : "var(--line)"}`,
+                    background: tod === key ? `${sectionColor}18` : "rgba(255,255,255,0.02)",
+                    color: tod === key ? sectionColor : "var(--ink-3)",
+                    fontSize: 13, fontWeight: 450, cursor: "pointer", textAlign: "left",
+                    transition: "all 0.15s", display: "flex", alignItems: "center", gap: 8,
                   }}
                 >
                   <span style={{
                     width: 6, height: 6, borderRadius: "50%",
-                    background: tod === key ? color : "var(--ink-4)",
-                    boxShadow: tod === key ? `0 0 6px ${color}` : "none",
+                    background: tod === key ? sectionColor : "var(--ink-4)",
+                    boxShadow: tod === key ? `0 0 6px ${sectionColor}` : "none",
                     flexShrink: 0,
                   }} />
                   {label}
@@ -184,9 +327,88 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
               ))}
             </div>
           </div>
+
+          {/* Type selector — hidden for virtual workout item */}
+          {!isVirtualWorkout && (
+            <div>
+              <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Type</label>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                {["Manual", "Auto-tracked"].map((type) => {
+                  const active = type === "Auto-tracked" ? isAuto : !isAuto;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => !isExistingAuto && setIsAuto(type === "Auto-tracked")}
+                      style={{
+                        flex: 1, padding: "10px", borderRadius: 10,
+                        border: `1px solid ${active ? "var(--violet)" : "var(--line)"}`,
+                        background: active ? "rgba(124,92,255,0.12)" : "rgba(255,255,255,0.02)",
+                        color: active ? "var(--violet)" : "var(--ink-3)",
+                        fontSize: 13, cursor: isExistingAuto ? "default" : "pointer",
+                        transition: "all 0.15s", opacity: isExistingAuto && !active ? 0.4 : 1,
+                      }}
+                    >
+                      {type}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {isAuto && (
+                <div style={{ marginTop: 10 }}>
+                  <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, display: "block", marginBottom: 8 }}>
+                    Source module
+                  </label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {AUTO_SOURCE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => !isExistingAuto && setAutoSource(opt.id)}
+                        style={{
+                          padding: "9px 14px", borderRadius: 10, textAlign: "left",
+                          border: `1px solid ${autoSource === opt.id ? "var(--cyan)" : "var(--line)"}`,
+                          background: autoSource === opt.id ? "rgba(126,231,255,0.08)" : "rgba(255,255,255,0.02)",
+                          color: autoSource === opt.id ? "var(--cyan)" : "var(--ink-3)",
+                          fontSize: 13, cursor: isExistingAuto ? "default" : "pointer",
+                          display: "flex", alignItems: "center", gap: 10,
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        <span style={{ fontSize: 16 }}>{opt.emoji}</span>
+                        <span>{opt.label}</span>
+                        {opt.id === "journal" || opt.id === "mood" ? (
+                          <span style={{ marginLeft: "auto", fontSize: 9.5, color: "var(--ink-4)", letterSpacing: "0.1em" }}>SOON</span>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Notes */}
+          <div>
+            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Notes <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, opacity: 0.6 }}>(optional)</span></label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Read 30 min · current book: Meditations"
+              rows={3}
+              style={{
+                width: "100%", marginTop: 8, fontSize: 13,
+                background: "var(--bg-input)", border: "1px solid var(--line-hi)",
+                borderRadius: 10, padding: "10px 14px", color: "var(--ink)", outline: "none",
+                resize: "vertical", fontFamily: "inherit", lineHeight: 1.5,
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
         </div>
 
-        {/* Footer actions */}
+        {/* Footer */}
         <div style={{ padding: "16px 24px", borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 8 }}>
           <button
             className="cc-btn cc-btn-primary"
@@ -196,7 +418,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
           >
             {saving ? "Saving…" : item ? "Save changes" : "Add item"}
           </button>
-          {item && item.source !== "workout" && (
+          {item && !isVirtualWorkout && (
             <button
               onClick={handleDelete}
               disabled={deleting}
@@ -216,6 +438,26 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   );
 }
 
+// ─── Flame streak badge ───────────────────────────────────────────────────────
+
+function StreakBadge({ count, accentHex }: { count: number; accentHex: string }) {
+  if (count === 0) return null;
+  const glow = count >= 30
+    ? `drop-shadow(0 0 6px ${accentHex}) drop-shadow(0 0 12px ${accentHex})`
+    : count >= 7
+    ? `drop-shadow(0 0 4px ${accentHex})`
+    : "none";
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 3,
+      fontSize: 10.5, fontFamily: "var(--f-mono)", letterSpacing: "0.06em",
+      color: accentHex, filter: glow, flexShrink: 0,
+    }}>
+      🔥{count}
+    </span>
+  );
+}
+
 // ─── Check row ────────────────────────────────────────────────────────────────
 
 function CkRow({ item, onToggle, onEdit }: {
@@ -223,71 +465,117 @@ function CkRow({ item, onToggle, onEdit }: {
   onToggle: (id: number) => void;
   onEdit: (item: Item) => void;
 }) {
-  const isWorkout = item.source === "workout";
-  const done = item.completedToday;
+  const isVirtualWorkout = item.source === "workout";
+  const isAutoTracked    = !isVirtualWorkout && item.autoSource !== null;
+  const isAnyAuto        = isVirtualWorkout || isAutoTracked;
+  const done             = item.completedToday;
+  const accent           = colorHex(item.color ?? "violet");
+
+  // Label for auto badge
+  const autoLabel = isVirtualWorkout
+    ? "AUTO"
+    : AUTO_SOURCE_OPTIONS.find((o) => o.id === item.autoSource)?.label.toUpperCase() ?? "AUTO";
+
+  const truncatedNotes = item.notes
+    ? item.notes.length > 60 ? item.notes.slice(0, 60) + "…" : item.notes
+    : null;
 
   return (
     <div style={{
       display: "grid",
-      gridTemplateColumns: "22px 1fr auto",
-      gap: 14,
+      gridTemplateColumns: "2px 22px 1fr auto",
+      gap: "0 12px",
       alignItems: "center",
       padding: "11px 0",
       borderBottom: "1px solid var(--line)",
     }}>
+      {/* Color accent stripe */}
+      <div style={{
+        alignSelf: "stretch",
+        background: accent,
+        borderRadius: 2,
+        opacity: done ? 0.25 : 0.6,
+        transition: "opacity 0.2s",
+      }} />
+
       {/* Checkbox */}
       <span
-        onClick={() => !isWorkout && onToggle(item.id)}
+        onClick={() => !isAnyAuto && onToggle(item.id)}
         style={{
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          width: 20, height: 20, borderRadius: isWorkout ? 99 : 6,
-          border: `1.5px solid ${done ? "transparent" : isWorkout ? "rgba(126,231,255,0.30)" : "var(--line-hi)"}`,
-          borderStyle: isWorkout ? "dashed" : "solid",
+          width: 20, height: 20,
+          borderRadius: isVirtualWorkout ? 99 : 6,
+          border: `1.5px solid ${
+            done
+              ? "transparent"
+              : isVirtualWorkout ? "rgba(126,231,255,0.30)"
+              : isAutoTracked ? `${accent}60`
+              : "var(--line-hi)"
+          }`,
+          borderStyle: isVirtualWorkout ? "dashed" : "solid",
           background: done
-            ? isWorkout ? "rgba(126,231,255,0.20)" : "var(--grad)"
-            : isWorkout ? "rgba(126,231,255,0.04)" : "transparent",
-          boxShadow: done && !isWorkout ? "0 0 10px rgba(179,136,255,0.40)" : "none",
+            ? isVirtualWorkout ? "rgba(126,231,255,0.20)" : accent + "33"
+            : "transparent",
+          boxShadow: done && !isVirtualWorkout ? `0 0 10px ${accent}66` : "none",
           flexShrink: 0,
-          cursor: isWorkout ? "default" : "pointer",
+          cursor: isAnyAuto ? "default" : "pointer",
           transition: "all 0.15s",
         }}
       >
-        {done && !isWorkout && (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0A0A14" strokeWidth="3">
+        {done && !isVirtualWorkout && (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         )}
-        {done && isWorkout && (
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        {done && isVirtualWorkout && (
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" strokeWidth="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         )}
       </span>
 
-      {/* Label */}
-      <div>
+      {/* Label + notes */}
+      <div style={{ minWidth: 0 }}>
         <div style={{
-          fontSize: 14, letterSpacing: "-0.005em",
-          color: done ? "var(--ink-3)" : "var(--ink)",
-          textDecoration: done ? "line-through" : "none",
-          textDecorationColor: "var(--ink-5)",
-          textDecorationThickness: 1,
-          display: "flex", alignItems: "center", gap: 7,
-          transition: "color 0.2s",
+          display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap",
         }}>
-          {item.emoji && <span>{item.emoji}</span>}
-          {item.title}
-          {isWorkout && (
+          {item.emoji && <span style={{ flexShrink: 0 }}>{item.emoji}</span>}
+          <span style={{
+            fontSize: 14, letterSpacing: "-0.005em",
+            color: done ? "var(--ink-3)" : "var(--ink)",
+            textDecoration: done ? "line-through" : "none",
+            textDecorationColor: "var(--ink-5)",
+            textDecorationThickness: 1,
+            transition: "color 0.2s",
+          }}>
+            {item.title}
+          </span>
+          {item.streak > 0 && <StreakBadge count={item.streak} accentHex={accent} />}
+          {isAnyAuto && (
             <span style={{
               fontFamily: "var(--f-mono)", fontSize: 8.5, letterSpacing: "0.18em",
-              color: "var(--cyan)", padding: "2px 6px", borderRadius: 99,
-              background: "rgba(126,231,255,0.10)", border: "1px solid rgba(126,231,255,0.25)",
-              textTransform: "uppercase",
-            }}>auto</span>
+              color: isVirtualWorkout ? "var(--cyan)" : accent,
+              padding: "2px 6px", borderRadius: 99,
+              background: isVirtualWorkout ? "rgba(126,231,255,0.10)" : `${accent}18`,
+              border: `1px solid ${isVirtualWorkout ? "rgba(126,231,255,0.25)" : `${accent}40`}`,
+              textTransform: "uppercase", flexShrink: 0,
+            }}>
+              {autoLabel}
+            </span>
           )}
         </div>
+        {truncatedNotes && (
+          <div style={{
+            fontSize: 11.5, color: "var(--ink-4)", fontStyle: "italic",
+            marginTop: 3, lineHeight: 1.4,
+          }}>
+            {truncatedNotes}
+          </div>
+        )}
       </div>
 
-      {/* Edit button (manual items only) */}
-      {!isWorkout && (
+      {/* Edit button — all DB items (not virtual workout) */}
+      {!isVirtualWorkout && (
         <button
           onClick={() => onEdit(item)}
           style={{
@@ -295,8 +583,8 @@ function CkRow({ item, onToggle, onEdit }: {
             color: "var(--ink-4)", padding: 4, display: "flex",
             opacity: 0.6, transition: "opacity 0.15s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.6")}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -304,6 +592,7 @@ function CkRow({ item, onToggle, onEdit }: {
           </svg>
         </button>
       )}
+      {isVirtualWorkout && <div />}
     </div>
   );
 }
@@ -311,12 +600,11 @@ function CkRow({ item, onToggle, onEdit }: {
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ChecklistPage() {
-  const [items, setItems]       = useState<Item[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const [items, setItems]           = useState<Item[]>([]);
+  const [loading, setLoading]       = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Item | null>(null);
 
-  // Run migration + load on mount
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/checklist");
@@ -334,26 +622,30 @@ export default function ChecklistPage() {
 
   // ── Toggle completion ──
   const toggle = async (id: number) => {
-    // Optimistic
     setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
-    await fetch("/api/checklist/toggle", {
+    const res = await fetch("/api/checklist/toggle", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itemId: id }),
     });
+    if (!res.ok) {
+      // Rollback on error
+      setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
+    }
   };
 
-  // ── Drawer save (create or update) ──
-  const handleSave = async (data: { title: string; emoji: string; timeOfDay: TimeOfDay }) => {
+  // ── Drawer save ──
+  const handleSave = async (data: {
+    title: string; emoji: string; timeOfDay: TimeOfDay;
+    color: string; notes: string; autoSource: string | null;
+  }) => {
     if (editTarget) {
-      // Update
       await fetch(`/api/checklist/${editTarget.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
     } else {
-      // Create
       await fetch("/api/checklist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -364,7 +656,6 @@ export default function ChecklistPage() {
     await load();
   };
 
-  // ── Drawer delete ──
   const handleDelete = async (id: number) => {
     await fetch(`/api/checklist/${id}`, { method: "DELETE" });
     setDrawerOpen(false);
@@ -375,27 +666,27 @@ export default function ChecklistPage() {
   const openEdit = (item: Item) => { setEditTarget(item); setDrawerOpen(true); };
 
   // ── Derived stats ──
-  const manualItems = items.filter((i) => i.source !== "workout");
-  const completed   = items.filter((i) => i.completedToday).length;
-  const total       = items.length;
-  const pct         = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const allDone     = total > 0 && completed === total;
+  const completed = items.filter((i) => i.completedToday).length;
+  const total     = items.length;
+  const pct       = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const allDone   = total > 0 && completed === total;
 
-  // Group by time-of-day, preserving section order
   const grouped = TIME_SECTIONS.map(({ key, label, color }) => ({
     key, label, color,
     items: items.filter((i) => (i.timeOfDay ?? "anytime") === key),
   })).filter((g) => g.items.length > 0);
 
-  // Last 7 days
-  const now = new Date();
-  const dayNames   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  // Last 7 days helpers
+  const now       = new Date();
+  const dayNames  = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - (6 - i));
     return d.getDate();
   });
+
+  const manualItems = items.filter((i) => i.source !== "workout");
 
   return (
     <div style={{ padding: "0 0 40px" }}>
@@ -435,7 +726,6 @@ export default function ChecklistPage() {
               Today&rsquo;s completion
             </div>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginTop: 6 }}>
-              {/* Big % */}
               <div style={{
                 fontSize: 88, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
                 background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
@@ -446,11 +736,11 @@ export default function ChecklistPage() {
                 {loading ? "—" : pct}<span style={{ fontSize: 24, WebkitTextFillColor: "var(--ink-3)" }}>%</span>
               </div>
               <div style={{ textAlign: "right" }}>
-                {allDone ? (
+                {allDone && (
                   <div style={{ fontSize: 12, color: "var(--pos)", fontFamily: "var(--f-mono)", letterSpacing: "0.06em", marginBottom: 4 }}>
                     ✓ ALL DONE
                   </div>
-                ) : null}
+                )}
                 <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
                   <b style={{ color: "var(--ink)" }}>{completed} of {total}</b> done
                 </div>
@@ -459,7 +749,6 @@ export default function ChecklistPage() {
                 </div>
               </div>
             </div>
-            {/* Progress bar */}
             <div style={{ height: 6, background: "rgba(255,255,255,0.04)", borderRadius: 99, marginTop: 18, overflow: "hidden" }}>
               <div style={{
                 height: "100%", width: `${pct}%`, background: "var(--grad)", borderRadius: 99,
@@ -486,7 +775,6 @@ export default function ChecklistPage() {
 
             {!loading && grouped.map((group, gi) => (
               <div key={group.key}>
-                {/* Section header */}
                 <div style={{
                   padding: "10px 20px 8px",
                   borderBottom: "1px solid var(--line)",
@@ -502,8 +790,6 @@ export default function ChecklistPage() {
                     {group.items.filter((i) => i.completedToday).length}/{group.items.length}
                   </span>
                 </div>
-
-                {/* Items in section */}
                 <div style={{ padding: "0 20px" }}>
                   {group.items.map((item) => (
                     <CkRow key={item.id} item={item} onToggle={toggle} onEdit={openEdit} />
@@ -523,44 +809,45 @@ export default function ChecklistPage() {
               <div className="tail">{monthNames[now.getMonth()]} {last7[0]}–{last7[6]}</div>
             </div>
 
-            {/* Day headers */}
-            <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, marginBottom: 4 }}>
-              <div />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
-                {last7.map((d, i) => (
-                  <div key={i} style={{ fontSize: 9, color: i === 6 ? "var(--cyan)" : "var(--ink-4)", letterSpacing: "0.10em", textAlign: "center" }}>
-                    {i === 6 ? "TDY" : d}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* One row per manual item (max 8 for height) */}
-            {manualItems.slice(0, 8).map((item) => (
-              <div key={item.id} style={{ display: "grid", gridTemplateColumns: "80px 1fr", alignItems: "center", gap: 8, padding: "5px 0" }}>
-                <div style={{ fontSize: 11, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {item.emoji ? `${item.emoji} ` : ""}{item.title}
-                </div>
+            {/* padded wrapper so grid cells don't sit flush against card border */}
+            <div style={{ padding: "12px 16px 14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, marginBottom: 4 }}>
+                <div />
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
-                  {Array.from({ length: 7 }, (_, i) => {
-                    // We only know today's state; fill the rest as unknown
-                    const isToday = i === 6;
-                    const state = isToday ? (item.completedToday ? "done" : "pending") : "unknown";
-                    return (
-                      <div key={i} style={{
-                        aspectRatio: "1/1", borderRadius: 4,
-                        border: `1px solid ${state === "done" ? "rgba(179,136,255,0.40)" : state === "pending" ? "rgba(126,231,255,0.20)" : "var(--line)"}`,
-                        borderStyle: state === "unknown" ? "dashed" : "solid",
-                        background: state === "done" ? "linear-gradient(135deg, rgba(179,136,255,0.40), rgba(126,231,255,0.20))" : "transparent",
-                        boxShadow: state === "done" ? "inset 0 0 8px rgba(179,136,255,0.20)" : "none",
-                        outline: isToday ? "1px dashed rgba(126,231,255,0.40)" : "none",
-                        outlineOffset: 1,
-                      }} />
-                    );
-                  })}
+                  {last7.map((d, i) => (
+                    <div key={i} style={{ fontSize: 9, color: i === 6 ? "var(--cyan)" : "var(--ink-4)", letterSpacing: "0.10em", textAlign: "center" }}>
+                      {i === 6 ? "TDY" : d}
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+
+              {manualItems.slice(0, 8).map((item) => (
+                <div key={item.id} style={{ display: "grid", gridTemplateColumns: "80px 1fr", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                  <div style={{ fontSize: 11, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {item.emoji ? `${item.emoji} ` : ""}{item.title}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+                    {Array.from({ length: 7 }, (_, i) => {
+                      const isToday = i === 6;
+                      const state = isToday ? (item.completedToday ? "done" : "pending") : "unknown";
+                      const accent = colorHex(item.color ?? "violet");
+                      return (
+                        <div key={i} style={{
+                          aspectRatio: "1/1", borderRadius: 4,
+                          border: `1px solid ${state === "done" ? `${accent}60` : state === "pending" ? "rgba(126,231,255,0.20)" : "var(--line)"}`,
+                          borderStyle: state === "unknown" ? "dashed" : "solid",
+                          background: state === "done" ? `${accent}33` : "transparent",
+                          boxShadow: state === "done" ? `inset 0 0 8px ${accent}33` : "none",
+                          outline: isToday ? "1px dashed rgba(126,231,255,0.40)" : "none",
+                          outlineOffset: 1,
+                        }} />
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Month stats */}
@@ -569,7 +856,7 @@ export default function ChecklistPage() {
               <div className="title">Month at a glance</div>
               <div className="tail">{monthNames[now.getMonth()]}</div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12, padding: 14 }}>
               <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
                 <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today</div>
                 <div className="num grad-text" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
@@ -587,7 +874,6 @@ export default function ChecklistPage() {
         </div>
       </div>
 
-      {/* Edit/Add drawer */}
       <Drawer
         open={drawerOpen}
         item={editTarget}

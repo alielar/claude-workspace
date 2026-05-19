@@ -1,83 +1,44 @@
 /**
  * GET /api/news/cron
- * Called by Vercel Cron Jobs at 9 AM (user's timezone).
+ * Called by Vercel Cron Jobs at 06:00 UTC daily (07:00 Madrid winter / 08:00 summer).
  * Protected by CRON_SECRET to prevent unauthorized triggering.
  *
- * Configure in vercel.json:
- * {
- *   "crons": [{ "path": "/api/news/cron", "schedule": "0 9 * * *" }]
- * }
+ * Generates today's brief for every user. Idempotent — safe to call multiple times.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { users, newsBriefs, userSettings } from "@/db/schema";
-import { generateNewsBrief, formatBriefAsEmail } from "@/lib/news-brief";
-import { todayInTz } from "@/lib/utils";
-import { Resend } from "resend";
-import { eq, and } from "drizzle-orm";
+import { users, newsBriefs } from "@/db/schema";
+import { ensureTodaysBrief } from "@/lib/news/generateBrief";
+import { lt } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  // Verify cron secret
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const allUsers = await db.select().from(users);
+  const results = { ok: 0, failed: 0 };
 
   for (const user of allUsers) {
     try {
-      const [settings] = await db
-        .select()
-        .from(userSettings)
-        .where(eq(userSettings.userId, user.id));
-
-      if (!settings?.newsEmailEnabled) continue;
-
-      const tz = settings?.timezone ?? "Europe/Madrid";
-      const today = todayInTz(tz);
-
-      // Skip if already generated today
-      const [existing] = await db
-        .select()
-        .from(newsBriefs)
-        .where(and(eq(newsBriefs.userId, user.id), eq(newsBriefs.date, today)));
-
-      if (existing?.emailSentAt) continue;
-
-      const brief = await generateNewsBrief(today);
-
-      let briefId: number;
-      if (existing) {
-        briefId = existing.id;
-      } else {
-        const [saved] = await db
-          .insert(newsBriefs)
-          .values({ userId: user.id, date: today, content: JSON.stringify(brief) })
-          .returning();
-        briefId = saved.id;
-      }
-
-      // Send email
-      if (user.email && process.env.RESEND_API_KEY) {
-        await resend.emails.send({
-          from: process.env.NEWS_EMAIL_FROM ?? "Life Control Center <onboarding@resend.dev>",
-          to: process.env.NEWS_EMAIL_TO ?? user.email,
-          subject: `Daily Brief — ${new Date(today).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`,
-          html: formatBriefAsEmail(brief),
-        });
-
-        await db
-          .update(newsBriefs)
-          .set({ emailSentAt: new Date() })
-          .where(eq(newsBriefs.id, briefId));
-      }
+      await ensureTodaysBrief(user.id);
+      results.ok++;
     } catch (err) {
-      console.error(`Failed to generate brief for user ${user.id}:`, err);
+      console.error(`[news-cron] Failed for user ${user.id}:`, err);
+      results.failed++;
     }
   }
 
-  return NextResponse.json({ ok: true });
+  // Prune briefs older than 30 days (all users) — runs after generation so today's data is safe
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  await db.delete(newsBriefs).where(lt(newsBriefs.createdAt, cutoff));
+
+  if (results.failed > 0 && results.ok === 0) {
+    return NextResponse.json({ error: "All users failed", ok: results.ok, failed: results.failed }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, generated: results.ok, failed: results.failed });
 }

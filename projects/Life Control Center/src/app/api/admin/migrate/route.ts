@@ -63,6 +63,32 @@ export async function POST() {
     `ALTER TABLE word_bank_entries ADD COLUMN part_of_speech TEXT`,
     `ALTER TABLE word_bank_entries ADD COLUMN language TEXT NOT NULL DEFAULT 'en'`,
     `ALTER TABLE word_bank_entries ADD COLUMN streak INTEGER NOT NULL DEFAULT 0`,
+
+    // ── Checklist: auto-source, color, notes (additive — safe to re-run) ───
+    `ALTER TABLE checklist_items ADD COLUMN auto_source TEXT`,
+    `ALTER TABLE checklist_items ADD COLUMN color TEXT NOT NULL DEFAULT 'violet'`,
+    `ALTER TABLE checklist_items ADD COLUMN notes TEXT`,
+
+    // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
+    `CREATE TABLE IF NOT EXISTS checklist_suggestions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      week_start TEXT NOT NULL,
+      title TEXT NOT NULL,
+      rationale TEXT NOT NULL,
+      suggested_emoji TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+
+    // ── Weekly reviews (AI pattern observations) ────────────────────────────
+    `CREATE TABLE IF NOT EXISTS weekly_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      week_start TEXT NOT NULL,
+      pattern_observation TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
   ];
 
   const results: string[] = [];

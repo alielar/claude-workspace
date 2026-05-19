@@ -16,11 +16,15 @@ export type NewsCategory = "football" | "geopolitics" | "business" | "tech" | "a
 
 export type NewsStory = {
   headline: string;
+  /** 3-4 sentence factual summary: who/what/where/when. No opinion or implications. */
   summary: string;
-  whyItMatters: string;
+  /** 2-3 factual bullet points: key facts, numbers, quotes. Empty array if none. */
+  keyPoints: string[];
   category: NewsCategory | "other";
   /** Optional source URL from web search */
   source?: string;
+  /** @deprecated Kept for backward compat with briefs generated before 2026-05-19 */
+  whyItMatters?: string;
 };
 
 export type NewsBrief = {
@@ -42,39 +46,49 @@ function buildUserPrompt(date: string): string {
   const wc2026End   = new Date("2026-07-19T23:59:59Z");
   const inWorldCup  = d >= wc2026Start && d <= wc2026End;
   const wcRule = inWorldCup
-    ? "\n⚽ WORLD CUP 2026 IS ACTIVE — include AT LEAST 2 football stories (FIFA World Cup 2026 results, standout moments, key team updates).\n"
+    ? "\n⚽ WORLD CUP 2026 IS ACTIVE — include all 5 football stories focused on FIFA World Cup 2026 (results, standout moments, key team updates).\n"
     : "";
 
-  return `Today is ${date}. Search the web and return a ranked list of today's 10 most significant real news stories across these categories:
+  return `Today is ${date}. Search the web and return exactly 20 news stories organized into 4 groups of 5:
 
-- **football** — KACM (Kawkab Athletic Club Marrakech), Morocco national team (Atlas Lions), World Cup 2026
-- **geopolitics** — major international events, conflicts, diplomacy, elections
-- **business** — markets, major company news, economic indicators
-- **tech** — product launches, industry shifts, regulation
-- **ai** — research breakthroughs, product releases, policy
+**Group 1 — Football (5 stories, category: "football")**
+KACM (Kawkab Athletic Club Marrakech), Morocco national team (Atlas Lions), World Cup 2026, Champions League, top European leagues
 ${wcRule}
+**Group 2 — Geopolitics (5 stories, category: "geopolitics")**
+REQUIRED: AT LEAST 1 of these 5 stories must cover Morocco-specific political or geopolitical news — government decisions, foreign policy, regional affairs, diplomatic moves, Moroccan-MENA relations.
+Preferred sources for Morocco news: hespress.com, moroccoworldnews.com, le360.ma, yabiladi.com, africanews.com
+FALLBACK: If no significant Morocco political news exists today, include a MENA-region story that involves or significantly affects Morocco.
+Remaining 4 stories: major international events, conflicts, diplomacy, elections from anywhere in the world.
+
+**Group 3 — Business (5 stories, category: "business")**
+Markets, major company news, economic indicators, mergers, earnings
+
+**Group 4 — Tech & AI (5 stories total, mix of category: "tech" and "ai" freely)**
+Tech: product launches, industry shifts, regulation
+AI: research breakthroughs, product releases, policy, safety
+
 Rules:
-- Rank stories #1–10 by global significance and reader interest
-- Mix categories — no more than 3 stories from one category
+- Return exactly 5 stories per group (20 total)
+- Within each group, rank stories #1–5 by significance
 - Facts only, no editorial opinion, no clickbait headlines
 - Prefer stories with verifiable sources
 
 For each story return:
 - "headline": concise news headline (≤ 12 words)
-- "summary": 2–3 sentences, facts only, no opinion
-- "whyItMatters": 1–2 sentences of significance
+- "summary": 3–4 sentences covering the WHAT of the story — who, what, where, when, key facts. No opinion, no implications, no "why this matters". Pure factual content as if summarizing a Reuters dispatch.
+- "keyPoints": array of 2–3 short strings with the most important facts, numbers, or direct quotes from the story. Use an empty array [] if no discrete factual nuggets stand out.
 - "category": one of [football, geopolitics, business, tech, ai]
 - "source": source URL if available
 
 Return ONLY a JSON object in this exact shape — no markdown fences, no extra text:
 {
   "stories": [
-    { "headline": "...", "summary": "...", "whyItMatters": "...", "category": "...", "source": "..." },
+    { "headline": "...", "summary": "...", "keyPoints": ["...", "..."], "category": "...", "source": "..." },
     ...
   ]
 }
 
-Return exactly 10 stories, ordered #1 (most significant) to #10.`;
+Return exactly 20 stories in this order: 5 football, then 5 geopolitics, then 5 business, then 5 tech/AI.`;
 }
 
 /** Generate a daily news brief using Claude with live web search */
@@ -117,7 +131,10 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
 
   return {
     date,
-    stories: parsed.stories ?? [],
+    stories: (parsed.stories ?? []).map((s: NewsStory) => ({
+      ...s,
+      keyPoints: Array.isArray(s.keyPoints) ? s.keyPoints : [],
+    })),
     generatedAt: new Date().toISOString(),
   };
 }

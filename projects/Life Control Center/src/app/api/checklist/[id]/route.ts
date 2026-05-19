@@ -26,6 +26,9 @@ export async function PATCH(
   if (body.active !== undefined) updates.active = body.active;
   if (body.sortOrder !== undefined) updates.sortOrder = body.sortOrder;
   if (body.timeOfDay !== undefined) updates.timeOfDay = body.timeOfDay;
+  if (body.color !== undefined) updates.color = body.color;
+  if (body.notes !== undefined) updates.notes = body.notes?.trim() || null;
+  if (body.autoSource !== undefined) updates.autoSource = body.autoSource ?? null;
 
   const [updated] = await db.update(checklistItems)
     .set(updates)

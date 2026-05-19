@@ -19,7 +19,6 @@ function todayMadrid(): string {
 function calcStreak(dates: string[], today: string): number {
   if (dates.length === 0) return 0;
   const yesterday = format(subDays(new Date(today + "T12:00:00"), 1), "yyyy-MM-dd");
-  // Start from today if done, otherwise yesterday
   let check = dates.includes(today) ? today : yesterday;
   let count = 0;
   for (const d of dates) {
@@ -74,7 +73,6 @@ export async function GET() {
   const workoutToday = recentLogs.some(
     (l) => format(new Date(l.startedAt!), "yyyy-MM-dd") === today
   );
-  // Is today's workout logged specifically the next session?
   const nextDoneToday = workoutToday && recentLogs.some((l) => {
     const name = allSessions.find((s) => s.workout_sessions.id === l.sessionId)?.workout_sessions.name;
     return name === nextSessionName && format(new Date(l.startedAt!), "yyyy-MM-dd") === today;
@@ -93,23 +91,30 @@ export async function GET() {
       title: item.title,
       emoji: item.emoji,
       sortOrder: item.sortOrder,
-      timeOfDay: item.timeOfDay ?? "anytime",
+      timeOfDay: (item.timeOfDay ?? "anytime") as "morning" | "afternoon" | "evening" | "anytime",
       completedToday: itemCompletions.includes(today),
       streak: calcStreak(itemCompletions, today),
       source: "manual" as const,
+      autoSource: item.autoSource ?? null,
+      color: item.color ?? "violet",
+      notes: item.notes ?? null,
     };
   });
 
   // ── Prepend virtual workout item ──
   const workoutItem = allSessions.length > 0
     ? {
-        id: -1,               // virtual
+        id: -1,
         title: nextSessionName + " workout",
         emoji: "🏋️",
         sortOrder: -1,
+        timeOfDay: "anytime" as const,
         completedToday: nextDoneToday,
-        streak: 0,            // not tracked for virtual
+        streak: 0,
         source: "workout" as const,
+        autoSource: null,
+        color: "cyan",
+        notes: null,
         href: `/workouts`,
       }
     : null;
@@ -127,10 +132,9 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { title, emoji, timeOfDay } = await req.json();
+  const { title, emoji, timeOfDay, autoSource, color, notes } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
 
-  // Assign next sort order
   const existing = await db.select({ sortOrder: checklistItems.sortOrder })
     .from(checklistItems)
     .where(eq(checklistItems.userId, userId))
@@ -143,6 +147,9 @@ export async function POST(req: Request) {
     title: title.trim(),
     emoji: emoji?.trim() || null,
     timeOfDay: timeOfDay ?? "anytime",
+    autoSource: autoSource ?? null,
+    color: color ?? "violet",
+    notes: notes?.trim() || null,
     sortOrder: nextOrder,
   }).returning();
 
