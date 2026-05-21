@@ -178,6 +178,9 @@ export async function POST() {
 
     // ── Workouts v2: rename default program (idempotent data migration) ───────
     `UPDATE programs SET name = 'My Program' WHERE name = 'Beta'`,
+
+    // ── exercise_db: tracking type column ────────────────────────────────────
+    `ALTER TABLE exercise_db ADD COLUMN tracking_type TEXT NOT NULL DEFAULT 'reps_weight'`,
   ];
 
   const results: string[] = [];

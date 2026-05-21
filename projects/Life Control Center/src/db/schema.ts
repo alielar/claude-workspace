@@ -456,6 +456,9 @@ export const exerciseDb = sqliteTable("exercise_db", {
   // Demo video: YouTube embed URL or Vercel Blob URL
   videoUrl: text("video_url"),
   videoType: text("video_type"), // "youtube" | "upload" | null
+  // How sets are tracked in the active session
+  // "reps_weight" | "reps_only" | "time_weight" | "time_only" | "distance"
+  trackingType: text("tracking_type").notNull().default("reps_weight"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

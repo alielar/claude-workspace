@@ -215,10 +215,26 @@ export default async function WorkoutsPage() {
             Push · Pull · Legs · Week {weekNum} · {sessionYTD[0]?.count ?? 0} sessions YTD
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/workouts/analytics" className="cc-btn">Analytics</Link>
-          <Link href="/workouts/templates" className="cc-btn">Templates</Link>
-          <Link href="/workouts/exercises" className="cc-btn">Exercises</Link>
+        <div style={{ display: "flex", gap: 6, alignSelf: "flex-end", paddingBottom: 2 }}>
+          {[
+            { href: "/workouts/analytics", label: "Analytics" },
+            { href: "/workouts/templates", label: "Templates" },
+            { href: "/workouts/exercises", label: "Exercises" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                padding: "5px 12px", borderRadius: 7, fontSize: 12,
+                color: "var(--ink-4)", border: "1px solid var(--line)",
+                background: "transparent", letterSpacing: "0.02em",
+                transition: "color 0.15s, border-color 0.15s",
+                textDecoration: "none",
+              }}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 

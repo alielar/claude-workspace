@@ -46,11 +46,15 @@ export async function PATCH(
 
   const body = await req.json();
   const update: Partial<typeof exerciseDb.$inferInsert> = {};
-  if (body.name !== undefined) update.name = body.name;
-  if (body.primaryMuscle !== undefined) update.primaryMuscle = body.primaryMuscle;
+  if (body.name             !== undefined) update.name             = body.name;
+  if (body.primaryMuscle    !== undefined) update.primaryMuscle    = body.primaryMuscle;
   if (body.secondaryMuscles !== undefined) update.secondaryMuscles = JSON.stringify(body.secondaryMuscles);
-  if (body.equipment !== undefined) update.equipment = body.equipment;
-  if (body.notes !== undefined) update.notes = body.notes;
+  if (body.equipment        !== undefined) update.equipment        = body.equipment;
+  if (body.notes            !== undefined) update.notes            = body.notes;
+  if (body.weightIncrement  !== undefined) update.weightIncrement  = body.weightIncrement;
+  if (body.trackingType     !== undefined) update.trackingType     = body.trackingType;
+  if (body.videoUrl         !== undefined) update.videoUrl         = body.videoUrl;
+  if (body.videoType        !== undefined) update.videoType        = body.videoType;
 
   await db
     .update(exerciseDb)

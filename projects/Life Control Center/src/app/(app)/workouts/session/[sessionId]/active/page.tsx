@@ -14,6 +14,8 @@ interface SetConfig {
   restS: number;
 }
 
+type TrackingType = "reps_weight" | "reps_only" | "time_weight" | "time_only" | "distance";
+
 interface TemplateExercise {
   planExerciseId: number;
   exerciseId: number;
@@ -21,6 +23,7 @@ interface TemplateExercise {
   primaryMuscle: string | null;
   equipment: string | null;
   weightIncrement: number;
+  trackingType: TrackingType;
   sortOrder: number;
   setConfig: SetConfig[];
 }
@@ -214,19 +217,28 @@ interface SetCardProps {
   logged: LoggedSet | null;
   currentPr1rm: number;
   weightIncrement: number;
-  onLog: (data: { setType: string; weightKg: number | null; reps: number | null; rir: number | null }) => void;
+  trackingType: TrackingType;
+  onLog: (data: { setType: string; weightKg: number | null; reps: number | null; rir: number | null; durationSeconds?: number | null }) => void;
   onUndo: () => void;
 }
 
-function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrement, onLog, onUndo }: SetCardProps) {
-  const initialWeight = logged?.weightKg?.toString() ?? prefill?.weightKg?.toString() ?? "";
-  const initialReps   = logged?.reps?.toString()    ?? prefill?.reps?.toString()    ?? config.repMax.toString();
-  const initialRir    = logged?.rir?.toString()     ?? prefill?.rir?.toString()     ?? config.rir.toString();
+function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrement, trackingType, onLog, onUndo }: SetCardProps) {
+  const initialWeight   = logged?.weightKg?.toString()       ?? prefill?.weightKg?.toString() ?? "";
+  const initialReps     = logged?.reps?.toString()           ?? prefill?.reps?.toString()     ?? config.repMax.toString();
+  const initialRir      = logged?.rir?.toString()            ?? prefill?.rir?.toString()      ?? config.rir.toString();
+  const initialDuration = logged?.durationSeconds?.toString() ?? "";
 
-  const [weight, setWeight] = useState(initialWeight);
-  const [reps,   setReps]   = useState(initialReps);
-  const [rir,    setRir]    = useState(initialRir);
-  const [setType, setSetType] = useState<string>(logged?.setType ?? config.type);
+  const [weight,   setWeight]   = useState(initialWeight);
+  const [reps,     setReps]     = useState(initialReps);
+  const [rir,      setRir]      = useState(initialRir);
+  const [duration, setDuration] = useState(initialDuration); // seconds for time types; km for distance
+  const [setType,  setSetType]  = useState<string>(logged?.setType ?? config.type);
+
+  const needsWeight   = trackingType === "reps_weight" || trackingType === "time_weight";
+  const needsReps     = trackingType === "reps_weight" || trackingType === "reps_only";
+  const needsRir      = needsReps;
+  const needsDuration = trackingType === "time_weight" || trackingType === "time_only";
+  const needsDist     = trackingType === "distance";
 
   // Reset inputs when "undo" clears the logged prop
   const prevLogged = useRef(logged);
@@ -248,14 +260,17 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
   const isPr = estimated1rm !== null && estimated1rm > currentPr1rm && currentPr1rm > 0;
 
   function handleLog() {
-    const weightKg = parseFloat(weight) || null;
-    const repsVal  = parseInt(reps, 10);
-    const rirVal   = parseInt(rir, 10);
+    const weightKg  = needsWeight  ? (parseFloat(weight) || null)    : null;
+    const repsVal   = parseInt(reps, 10);
+    const rirVal    = parseInt(rir, 10);
+    const durVal    = needsDuration ? (parseInt(duration, 10) || null) : null;
+    const distVal   = needsDist     ? (parseFloat(duration) || null)   : null;
     onLog({
       setType,
       weightKg,
-      reps: !isNaN(repsVal) ? repsVal : null,
-      rir:  !isNaN(rirVal)  ? rirVal  : null,
+      reps:            needsReps ? (!isNaN(repsVal) ? repsVal : null) : null,
+      rir:             needsRir  ? (!isNaN(rirVal)  ? rirVal  : null) : null,
+      durationSeconds: durVal ?? (distVal ? Math.round(distVal * 1000) : null), // encode km as metres for distance
     });
   }
 
@@ -325,35 +340,39 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
         </div>
       )}
 
-      {/* Steppers */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
-        <Stepper
-          label="Weight"
-          value={weight}
-          onChange={setWeight}
-          step={weightIncrement}
-          unit="kg"
-          disabled={isDone}
-          hint={prefill?.weightKg ? `last: ${prefill.weightKg}kg` : undefined}
-        />
-        <Stepper
-          label="Reps"
-          value={reps}
-          onChange={setReps}
-          step={1}
-          unit="reps"
-          disabled={isDone}
-          hint={`${config.repMin}–${config.repMax}`}
-        />
-        <Stepper
-          label="RIR"
-          value={rir}
-          onChange={setRir}
-          step={1}
-          unit="in tank"
-          disabled={isDone}
-          hint={`target: ${config.rir}`}
-        />
+      {/* Adaptive steppers */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: [needsWeight, needsReps || needsDuration || needsDist, needsRir]
+          .filter(Boolean).length === 3 ? "1fr 1fr 1fr"
+          : [needsWeight, needsReps || needsDuration || needsDist, needsRir].filter(Boolean).length === 2 ? "1fr 1fr"
+          : "1fr",
+        gap: 12, marginBottom: 16,
+      }}>
+        {needsWeight && (
+          <Stepper label="Weight" value={weight} onChange={setWeight}
+            step={weightIncrement} unit="kg" disabled={isDone}
+            hint={prefill?.weightKg ? `last: ${prefill.weightKg}kg` : undefined} />
+        )}
+        {needsDuration && (
+          <Stepper label="Duration" value={duration} onChange={setDuration}
+            step={5} unit="sec" disabled={isDone} min={0}
+            hint="seconds" />
+        )}
+        {needsDist && (
+          <Stepper label="Distance" value={duration} onChange={setDuration}
+            step={0.1} unit="km" disabled={isDone} min={0} />
+        )}
+        {needsReps && (
+          <Stepper label="Reps" value={reps} onChange={setReps}
+            step={1} unit="reps" disabled={isDone}
+            hint={`${config.repMin}–${config.repMax}`} />
+        )}
+        {needsRir && (
+          <Stepper label="RIR" value={rir} onChange={setRir}
+            step={1} unit="in tank" disabled={isDone}
+            hint={`target: ${config.rir}`} />
+        )}
       </div>
 
       {/* Action button */}
@@ -394,7 +413,7 @@ interface ExerciseBlockProps {
   prefill: PrefillSet[];
   prMap: Record<number, number>;
   onLogSet: (exerciseId: number, exerciseName: string, data: {
-    setType: string; weightKg: number | null; reps: number | null; rir: number | null;
+    setType: string; weightKg: number | null; reps: number | null; rir: number | null; durationSeconds?: number | null;
   }, restS: number) => void;
   onUndoSet: (setId: number) => void;
 }
@@ -461,6 +480,7 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
                 logged={loggedSet}
                 currentPr1rm={currentPr}
                 weightIncrement={exercise.weightIncrement}
+                trackingType={exercise.trackingType}
                 onLog={(data) => onLogSet(exercise.exerciseId, exercise.name, data, cfg.restS)}
                 onUndo={() => loggedSet && onUndoSet(loggedSet.id)}
               />
@@ -642,7 +662,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
   const handleLogSet = useCallback(async (
     exerciseId: number,
     exerciseName: string,
-    setData: { setType: string; weightKg: number | null; reps: number | null; rir: number | null },
+    setData: { setType: string; weightKg: number | null; reps: number | null; rir: number | null; durationSeconds?: number | null },
     restS: number,
     setNumber: number,
   ) => {
@@ -657,7 +677,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       setLoggedSets((prev) => [...prev, {
         id: json.setId, exerciseId, exerciseName, setNumber,
         setType: setData.setType, weightKg: setData.weightKg,
-        reps: setData.reps, rir: setData.rir, durationSeconds: null,
+        reps: setData.reps, rir: setData.rir, durationSeconds: setData.durationSeconds ?? null,
       }]);
       if (restS > 0 && setData.setType !== "warmup") {
         setRestTimer({ seconds: restS });
