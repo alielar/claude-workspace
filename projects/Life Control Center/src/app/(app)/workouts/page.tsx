@@ -72,7 +72,7 @@ export default async function WorkoutsPage() {
         </div>
         <div className="cc-card" style={{ padding: 48, textAlign: "center" }}>
           <p style={{ color: "var(--ink-3)", marginBottom: 20 }}>
-            No active program found. Run the import script to load your Beta program.
+            No active program found. Go to Templates to set up your program.
           </p>
           <Link href="/workouts/templates" className="cc-btn cc-btn-primary">
             Manage Programs
@@ -172,8 +172,10 @@ export default async function WorkoutsPage() {
     const d = addDays(mon, i);
     const dateStr = format(d, "yyyy-MM-dd");
     const sessionName = weekSessionMap.get(dateStr);
-    // Extract short name: "Beta (Push)" → "Push"
-    const shortName = sessionName?.match(/\((.+)\)/)?.[1] ?? null;
+    // Short name: strip legacy "ProgramName (WorkoutName)" prefix if present, else use as-is
+    const shortName = sessionName
+      ? (sessionName.match(/\((.+)\)/)?.[1] ?? sessionName)
+      : null;
     return {
       dow: format(d, "EEE").toUpperCase(),
       dnum: format(d, "d"),
@@ -198,7 +200,7 @@ export default async function WorkoutsPage() {
         <div>
           <h1>Workouts<span className="grad-text">.</span></h1>
           <div className="sub">
-            {activeProgram.name} · Push · Pull · Legs · Wk {weekNum} of {format(now, "yyyy")} · {sessionYTD[0]?.count ?? 0} sessions YTD
+            Push · Pull · Legs · Week {weekNum} · {sessionYTD[0]?.count ?? 0} sessions YTD
           </div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
@@ -326,8 +328,10 @@ export default async function WorkoutsPage() {
               {/* Footer */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--line)" }}>
                 <div style={{ display: "flex", gap: 24, fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.02em" }}>
-                  <span><strong style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "var(--f-mono)", marginRight: 4 }}>{activeProgram.name}</strong>· Cycle {activeProgram.cycles ?? "?"}</span>
                   <span><strong style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "var(--f-mono)", marginRight: 4 }}>{exCountMap.get(upNextPlan.id) ?? 0}</strong>exercises</span>
+                  {upNextLastDate && (
+                    <span>last done: <strong style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "var(--f-mono)" }}>{daysAgo(upNextLastDate)}</strong></span>
+                  )}
                 </div>
                 <Link href={`/workouts/templates/${upNextPlan.id}`} style={{ fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em" }}>
                   Edit template →

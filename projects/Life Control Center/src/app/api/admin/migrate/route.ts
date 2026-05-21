@@ -175,6 +175,9 @@ export async function POST() {
     `ALTER TABLE exercise_db ADD COLUMN weight_increment REAL NOT NULL DEFAULT 2.5`,
     `ALTER TABLE exercise_db ADD COLUMN video_url TEXT`,
     `ALTER TABLE exercise_db ADD COLUMN video_type TEXT`,
+
+    // ── Workouts v2: rename default program (idempotent data migration) ───────
+    `UPDATE programs SET name = 'My Program' WHERE name = 'Beta'`,
   ];
 
   const results: string[] = [];
