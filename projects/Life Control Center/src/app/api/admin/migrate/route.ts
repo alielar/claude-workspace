@@ -89,6 +89,87 @@ export async function POST() {
       pattern_observation TEXT,
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
+
+    // ── Workouts v2: programs ────────────────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS programs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      description TEXT,
+      cycles INTEGER,
+      is_active INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+
+    // ── Workouts v2: workout_plans (day templates) ───────────────────────────
+    `CREATE TABLE IF NOT EXISTS workout_plans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      program_id INTEGER NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'strength',
+      sort_order INTEGER NOT NULL DEFAULT 0
+    )`,
+
+    // ── Workouts v2: exercise_db (master library) ────────────────────────────
+    `CREATE TABLE IF NOT EXISTS exercise_db (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      primary_muscle TEXT,
+      secondary_muscles TEXT,
+      equipment TEXT,
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+
+    // ── Workouts v2: plan_exercises (exercise slots in templates) ────────────
+    `CREATE TABLE IF NOT EXISTS plan_exercises (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      plan_id INTEGER NOT NULL REFERENCES workout_plans(id) ON DELETE CASCADE,
+      exercise_id INTEGER NOT NULL REFERENCES exercise_db(id) ON DELETE CASCADE,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      set_config TEXT NOT NULL DEFAULT '[]'
+    )`,
+
+    // ── Workouts v2: gym_sessions (logged workouts) ──────────────────────────
+    `CREATE TABLE IF NOT EXISTS gym_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      plan_id INTEGER REFERENCES workout_plans(id),
+      program_id INTEGER REFERENCES programs(id),
+      workout_name TEXT NOT NULL,
+      date TEXT NOT NULL,
+      duration_seconds INTEGER,
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+
+    // ── Workouts v2: gym_sets (individual sets) ──────────────────────────────
+    `CREATE TABLE IF NOT EXISTS gym_sets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL REFERENCES gym_sessions(id) ON DELETE CASCADE,
+      exercise_id INTEGER REFERENCES exercise_db(id),
+      exercise_name TEXT NOT NULL,
+      set_number INTEGER NOT NULL,
+      set_type TEXT NOT NULL DEFAULT 'standard',
+      weight_kg REAL,
+      reps INTEGER,
+      rir INTEGER,
+      duration_seconds INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+
+    // ── Workouts v2: exercise_prs (personal records) ─────────────────────────
+    `CREATE TABLE IF NOT EXISTS exercise_prs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      exercise_id INTEGER NOT NULL REFERENCES exercise_db(id) ON DELETE CASCADE,
+      exercise_name TEXT NOT NULL,
+      best_weight_kg REAL,
+      best_reps INTEGER,
+      estimated_1rm REAL,
+      achieved_at TEXT NOT NULL
+    )`,
   ];
 
   const results: string[] = [];

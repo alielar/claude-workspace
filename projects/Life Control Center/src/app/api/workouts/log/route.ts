@@ -13,6 +13,7 @@ import { db } from "@/db";
 import { workoutLogs, setLogs, personalRecords } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { epley1rm } from "@/lib/utils";
+import { autoCheck } from "@/lib/checklist/autoCheck";
 
 // ─── POST: save a finished workout ───────────────────────────────────────────
 
@@ -116,6 +117,9 @@ export async function POST(req: NextRequest) {
       }
     }
   }
+
+  // Auto-check any checklist items tracking workouts
+  autoCheck(userId, "workout").catch(() => {});
 
   return NextResponse.json({ logId: log.id });
 }

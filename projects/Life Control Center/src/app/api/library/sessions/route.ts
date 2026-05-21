@@ -11,6 +11,7 @@ import { db } from "@/db";
 import { readingSessions, books } from "@/db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 import { format, subDays } from "date-fns";
+import { autoCheck } from "@/lib/checklist/autoCheck";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -53,6 +54,11 @@ export async function POST(req: NextRequest) {
     durationMinutes,
     date: today,
   });
+
+  // Auto-check reading items (sessions >= 5 min count)
+  if (durationMinutes >= 5) {
+    autoCheck(userId, "reading").catch(() => {});
+  }
 
   return NextResponse.json({ ok: true });
 }

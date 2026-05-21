@@ -15,6 +15,7 @@ import { db } from "@/db";
 import { wordBankEntries } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { srsReview, type SrsButton } from "@/lib/srs";
+import { autoCheck } from "@/lib/checklist/autoCheck";
 
 const VALID_BUTTONS = new Set<string>(["again", "good", "easy"]);
 
@@ -62,6 +63,9 @@ export async function POST(req: NextRequest) {
       masteryStatus: result.masteryStatus,
     })
     .where(eq(wordBankEntries.id, wordId));
+
+  // Auto-check word bank items (fires on every review; idempotent)
+  autoCheck(session.user.id, "words").catch(() => {});
 
   return NextResponse.json({ success: true, ...result });
 }

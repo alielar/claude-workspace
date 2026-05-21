@@ -412,6 +412,116 @@ export const goals = sqliteTable("goals", {
   completedAt: integer("completed_at", { mode: "timestamp_ms" }),
 });
 
+// ─── Workouts v2 (MacroFactor import — non-conflicting names) ──────────────────
+
+/** Named training programs (e.g. "Beta", "Alpha") */
+export const programs = sqliteTable("programs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),           // "Beta"
+  description: text("description"),
+  cycles: integer("cycles"),             // 7
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** Workout day templates within a program (Push / Pull / Legs / Push-Up SESH) */
+export const workoutPlans = sqliteTable("workout_plans", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  programId: integer("program_id")
+    .notNull()
+    .references(() => programs.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),           // "Push", "Pull", "Legs", "Push-Up SESH"
+  type: text("type").notNull().default("strength"), // "strength" | "skill" | "cardio"
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+/** Master exercise library — one row per unique movement */
+export const exerciseDb = sqliteTable("exercise_db", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  primaryMuscle: text("primary_muscle"),   // "chest" | "lats" | "quads" | ...
+  secondaryMuscles: text("secondary_muscles"), // JSON array string
+  equipment: text("equipment"),            // "dumbbell" | "cable" | "bodyweight" | ...
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** Exercise slots in a workout plan template, with set prescriptions */
+export const planExercises = sqliteTable("plan_exercises", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  planId: integer("plan_id")
+    .notNull()
+    .references(() => workoutPlans.id, { onDelete: "cascade" }),
+  exerciseId: integer("exercise_id")
+    .notNull()
+    .references(() => exerciseDb.id, { onDelete: "cascade" }),
+  sortOrder: integer("sort_order").notNull().default(0),
+  // JSON array: [{type, repMin, repMax, rir, restS}]
+  setConfig: text("set_config").notNull().default("[]"),
+});
+
+/** Actual logged gym sessions */
+export const gymSessions = sqliteTable("gym_sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  planId: integer("plan_id").references(() => workoutPlans.id),
+  programId: integer("program_id").references(() => programs.id),
+  workoutName: text("workout_name").notNull(), // "Beta (Push)"
+  date: text("date").notNull(),               // "YYYY-MM-DD"
+  durationSeconds: integer("duration_seconds"),
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** Individual sets within a logged gym session */
+export const gymSets = sqliteTable("gym_sets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => gymSessions.id, { onDelete: "cascade" }),
+  exerciseId: integer("exercise_id").references(() => exerciseDb.id),
+  exerciseName: text("exercise_name").notNull(), // denormalized for resilience
+  setNumber: integer("set_number").notNull(),
+  setType: text("set_type").notNull().default("standard"), // "standard"|"warmup"|"drop"|"failure"
+  weightKg: real("weight_kg"),
+  reps: integer("reps"),
+  rir: integer("rir"),
+  durationSeconds: integer("duration_seconds"), // for timed sets
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** Personal records per exercise — updated by import + live logging */
+export const exercisePrs = sqliteTable("exercise_prs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  exerciseId: integer("exercise_id")
+    .notNull()
+    .references(() => exerciseDb.id, { onDelete: "cascade" }),
+  exerciseName: text("exercise_name").notNull(),
+  bestWeightKg: real("best_weight_kg"),
+  bestReps: integer("best_reps"),
+  estimated1rm: real("estimated_1rm"),
+  achievedAt: text("achieved_at").notNull(), // "YYYY-MM-DD"
+});
+
 // ─── Checklist ─────────────────────────────────────────────────────────────────
 // Items are "same every day" recurring tasks. The workout item is virtual
 // (computed from the workout module) and shown automatically.

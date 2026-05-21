@@ -6,7 +6,8 @@
  * Items grouped by time-of-day: Morning → Afternoon → Evening → Anytime.
  * Each item has: emoji, color accent, streak badge, optional notes, auto-source badge.
  * Drawer: emoji picker, color swatches, notes, time-of-day, manual/auto-tracked type.
- * Left: progress hero + grouped list. Right: last-7-days grid + month stats.
+ * Left: progress hero + grouped list.
+ * Right: last-7-days grid (real data) + month heatmap + 30-day stats + AI suggestions + weekly review.
  */
 
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -24,10 +25,27 @@ type Item = {
   timeOfDay: TimeOfDay;
   completedToday: boolean;
   streak: number;
+  last7: boolean[];
   source: "manual" | "workout";
   autoSource: AutoSource;
   color: string;
   notes: string | null;
+};
+
+type ChecklistData = {
+  items: Item[];
+  overallStreak: number;
+  monthlyPct: { date: string; pct: number }[];
+  thirtyDayAvg: number;
+  bestStreak30: number;
+};
+
+type Suggestion = {
+  id: number;
+  title: string;
+  rationale: string;
+  emoji: string | null;
+  weekStart: string;
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -49,14 +67,13 @@ const ITEM_COLORS = [
 ];
 
 const AUTO_SOURCE_OPTIONS: { id: string; label: string; emoji: string }[] = [
-  { id: "workout", label: "Workout",  emoji: "🏋️" },
-  { id: "reading", label: "Reading",  emoji: "📚" },
+  { id: "workout", label: "Workout",   emoji: "🏋️" },
+  { id: "reading", label: "Reading",   emoji: "📚" },
   { id: "words",   label: "Word Bank", emoji: "📖" },
-  { id: "journal", label: "Journal",  emoji: "✍️" },
-  { id: "mood",    label: "Mood",     emoji: "😌" },
+  { id: "journal", label: "Journal",   emoji: "✍️" },
+  { id: "mood",    label: "Mood",      emoji: "😌" },
 ];
 
-// 80 curated emojis in 8 rows of 10
 const QUICK_EMOJIS = [
   "🏋️","🏃","🚴","🧘","💪","🤸","🏊","🥊","🧗","🎯",
   "💧","🍎","🥗","🥦","💊","😴","🦷","❤️","🫁","🩺",
@@ -153,12 +170,8 @@ interface DrawerProps {
   item: Item | null;
   onClose: () => void;
   onSave: (data: {
-    title: string;
-    emoji: string;
-    timeOfDay: TimeOfDay;
-    color: string;
-    notes: string;
-    autoSource: string | null;
+    title: string; emoji: string; timeOfDay: TimeOfDay;
+    color: string; notes: string; autoSource: string | null;
   }) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
 }
@@ -175,10 +188,8 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   const [deleting, setDeleting] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
-  // Is this item a virtual workout (no DB row)? Can't delete or change source.
   const isVirtualWorkout = item?.source === "workout";
-  // Is this an existing auto-tracked DB item? Can't change auto_source once set.
-  const isExistingAuto = !!item && item.source !== "workout" && item.autoSource !== null;
+  const isExistingAuto   = !!item && item.source !== "workout" && item.autoSource !== null;
 
   useEffect(() => {
     if (open) {
@@ -199,14 +210,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    await onSave({
-      title: title.trim(),
-      emoji: emoji.trim(),
-      timeOfDay: tod,
-      color,
-      notes: notes.trim(),
-      autoSource: isAuto ? autoSource : null,
-    });
+    await onSave({ title: title.trim(), emoji: emoji.trim(), timeOfDay: tod, color, notes: notes.trim(), autoSource: isAuto ? autoSource : null });
     setSaving(false);
   };
 
@@ -229,22 +233,19 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
           }}
         />
       )}
-
       <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0,
-        width: 380, zIndex: 50,
+        position: "fixed", top: 0, right: 0, bottom: 0, width: 380, zIndex: 50,
         background: "rgba(12,12,22,0.98)", backdropFilter: "blur(24px)",
         borderLeft: "1px solid var(--line-hi)",
         display: "flex", flexDirection: "column",
         transform: open ? "translateX(0)" : "translateX(100%)",
         transition: "transform 0.24s var(--easeOut)",
       }}>
-        {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "20px 24px 16px", borderBottom: "1px solid var(--line)",
         }}>
-          <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.01em", color: "var(--ink)" }}>
+          <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.01em" }}>
             {item ? "Edit item" : "New item"}
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-3)", padding: 4, display: "flex" }}>
@@ -254,10 +255,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
           </button>
         </div>
 
-        {/* Form */}
         <div style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto" }}>
-
-          {/* Emoji + Title */}
           <div>
             <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Item</label>
             <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
@@ -277,7 +275,6 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
             </div>
           </div>
 
-          {/* Color swatches */}
           <div>
             <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Color</label>
             <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
@@ -287,39 +284,36 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
                   type="button"
                   onClick={() => setColor(c.id)}
                   style={{
-                    width: 24, height: 24, borderRadius: "50%",
-                    background: c.hex,
+                    width: 24, height: 24, borderRadius: "50%", background: c.hex,
                     boxShadow: color === c.id ? `0 0 0 2px #0e0e1a, 0 0 0 4px ${c.hex}` : "none",
-                    border: "none", cursor: "pointer", flexShrink: 0,
-                    transition: "box-shadow 0.15s",
+                    border: "none", cursor: "pointer", flexShrink: 0, transition: "box-shadow 0.15s",
                   }}
                 />
               ))}
             </div>
           </div>
 
-          {/* Time of day */}
           <div>
             <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Time of day</label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8, marginTop: 8 }}>
-              {TIME_SECTIONS.map(({ key, label, color: sectionColor }) => (
+              {TIME_SECTIONS.map(({ key, label, color: sc }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setTod(key)}
                   style={{
                     padding: "10px 14px", borderRadius: 10,
-                    border: `1px solid ${tod === key ? sectionColor : "var(--line)"}`,
-                    background: tod === key ? `${sectionColor}18` : "rgba(255,255,255,0.02)",
-                    color: tod === key ? sectionColor : "var(--ink-3)",
+                    border: `1px solid ${tod === key ? sc : "var(--line)"}`,
+                    background: tod === key ? `${sc}18` : "rgba(255,255,255,0.02)",
+                    color: tod === key ? sc : "var(--ink-3)",
                     fontSize: 13, fontWeight: 450, cursor: "pointer", textAlign: "left",
                     transition: "all 0.15s", display: "flex", alignItems: "center", gap: 8,
                   }}
                 >
                   <span style={{
                     width: 6, height: 6, borderRadius: "50%",
-                    background: tod === key ? sectionColor : "var(--ink-4)",
-                    boxShadow: tod === key ? `0 0 6px ${sectionColor}` : "none",
+                    background: tod === key ? sc : "var(--ink-4)",
+                    boxShadow: tod === key ? `0 0 6px ${sc}` : "none",
                     flexShrink: 0,
                   }} />
                   {label}
@@ -328,7 +322,6 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
             </div>
           </div>
 
-          {/* Type selector — hidden for virtual workout item */}
           {!isVirtualWorkout && (
             <div>
               <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Type</label>
@@ -378,9 +371,9 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
                       >
                         <span style={{ fontSize: 16 }}>{opt.emoji}</span>
                         <span>{opt.label}</span>
-                        {opt.id === "journal" || opt.id === "mood" ? (
+                        {(opt.id === "journal" || opt.id === "mood") && (
                           <span style={{ marginLeft: "auto", fontSize: 9.5, color: "var(--ink-4)", letterSpacing: "0.1em" }}>SOON</span>
-                        ) : null}
+                        )}
                       </button>
                     ))}
                   </div>
@@ -389,9 +382,10 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
             </div>
           )}
 
-          {/* Notes */}
           <div>
-            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Notes <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, opacity: 0.6 }}>(optional)</span></label>
+            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>
+              Notes <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, opacity: 0.6 }}>(optional)</span>
+            </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -401,14 +395,12 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
                 width: "100%", marginTop: 8, fontSize: 13,
                 background: "var(--bg-input)", border: "1px solid var(--line-hi)",
                 borderRadius: 10, padding: "10px 14px", color: "var(--ink)", outline: "none",
-                resize: "vertical", fontFamily: "inherit", lineHeight: 1.5,
-                boxSizing: "border-box",
+                resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, boxSizing: "border-box",
               }}
             />
           </div>
         </div>
 
-        {/* Footer */}
         <div style={{ padding: "16px 24px", borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 8 }}>
           <button
             className="cc-btn cc-btn-primary"
@@ -438,7 +430,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   );
 }
 
-// ─── Flame streak badge ───────────────────────────────────────────────────────
+// ─── Streak badge ─────────────────────────────────────────────────────────────
 
 function StreakBadge({ count, accentHex }: { count: number; accentHex: string }) {
   if (count === 0) return null;
@@ -471,7 +463,6 @@ function CkRow({ item, onToggle, onEdit }: {
   const done             = item.completedToday;
   const accent           = colorHex(item.color ?? "violet");
 
-  // Label for auto badge
   const autoLabel = isVirtualWorkout
     ? "AUTO"
     : AUTO_SOURCE_OPTIONS.find((o) => o.id === item.autoSource)?.label.toUpperCase() ?? "AUTO";
@@ -489,7 +480,6 @@ function CkRow({ item, onToggle, onEdit }: {
       padding: "11px 0",
       borderBottom: "1px solid var(--line)",
     }}>
-      {/* Color accent stripe */}
       <div style={{
         alignSelf: "stretch",
         background: accent,
@@ -498,7 +488,6 @@ function CkRow({ item, onToggle, onEdit }: {
         transition: "opacity 0.2s",
       }} />
 
-      {/* Checkbox */}
       <span
         onClick={() => !isAnyAuto && onToggle(item.id)}
         style={{
@@ -506,11 +495,10 @@ function CkRow({ item, onToggle, onEdit }: {
           width: 20, height: 20,
           borderRadius: isVirtualWorkout ? 99 : 6,
           border: `1.5px solid ${
-            done
-              ? "transparent"
-              : isVirtualWorkout ? "rgba(126,231,255,0.30)"
-              : isAutoTracked ? `${accent}60`
-              : "var(--line-hi)"
+            done ? "transparent"
+            : isVirtualWorkout ? "rgba(126,231,255,0.30)"
+            : isAutoTracked ? `${accent}60`
+            : "var(--line-hi)"
           }`,
           borderStyle: isVirtualWorkout ? "dashed" : "solid",
           background: done
@@ -534,11 +522,8 @@ function CkRow({ item, onToggle, onEdit }: {
         )}
       </span>
 
-      {/* Label + notes */}
       <div style={{ minWidth: 0 }}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap",
-        }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
           {item.emoji && <span style={{ flexShrink: 0 }}>{item.emoji}</span>}
           <span style={{
             fontSize: 14, letterSpacing: "-0.005em",
@@ -565,17 +550,13 @@ function CkRow({ item, onToggle, onEdit }: {
           )}
         </div>
         {truncatedNotes && (
-          <div style={{
-            fontSize: 11.5, color: "var(--ink-4)", fontStyle: "italic",
-            marginTop: 3, lineHeight: 1.4,
-          }}>
+          <div style={{ fontSize: 11.5, color: "var(--ink-4)", fontStyle: "italic", marginTop: 3, lineHeight: 1.4 }}>
             {truncatedNotes}
           </div>
         )}
       </div>
 
-      {/* Edit button — all DB items (not virtual workout) */}
-      {!isVirtualWorkout && (
+      {!isVirtualWorkout ? (
         <button
           onClick={() => onEdit(item)}
           style={{
@@ -591,8 +572,70 @@ function CkRow({ item, onToggle, onEdit }: {
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
         </button>
-      )}
-      {isVirtualWorkout && <div />}
+      ) : <div />}
+    </div>
+  );
+}
+
+// ─── Monthly heatmap ──────────────────────────────────────────────────────────
+
+function MonthlyHeatmap({ monthlyPct, todayStr }: { monthlyPct: { date: string; pct: number }[]; todayStr: string }) {
+  if (monthlyPct.length === 0) return (
+    <div style={{ fontSize: 11, color: "var(--ink-4)", textAlign: "center", padding: "10px 0" }}>
+      No data yet this month
+    </div>
+  );
+
+  const firstDate  = new Date(monthlyPct[0].date + "T12:00:00");
+  const firstDow   = firstDate.getDay(); // 0=Sun
+  const offset     = (firstDow + 6) % 7; // Monday-first
+  const dayLetters = ["M","T","W","T","F","S","S"];
+
+  function pctToStyle(pct: number, isToday: boolean) {
+    const bg = pct === 100
+      ? "rgba(179,136,255,0.65)"
+      : pct >= 50
+      ? "rgba(179,136,255,0.35)"
+      : pct > 0
+      ? "rgba(179,136,255,0.15)"
+      : "rgba(255,255,255,0.02)";
+
+    return {
+      aspectRatio: "1/1",
+      borderRadius: 3,
+      background: bg,
+      border: isToday
+        ? "1px solid rgba(126,231,255,0.55)"
+        : pct === 100
+        ? "1px solid rgba(179,136,255,0.40)"
+        : "1px solid transparent",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: 8,
+      color: pct > 0 ? "var(--ink-2)" : "var(--ink-5)",
+      fontFamily: "var(--f-mono)",
+      boxShadow: pct === 100 ? "0 0 6px rgba(179,136,255,0.30)" : "none",
+    };
+  }
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3, marginBottom: 4 }}>
+        {dayLetters.map((l, i) => (
+          <div key={i} style={{ textAlign: "center", fontSize: 8.5, color: "var(--ink-4)", letterSpacing: "0.06em" }}>{l}</div>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
+        {Array.from({ length: offset }, (_, i) => <div key={`off-${i}`} />)}
+        {monthlyPct.map(({ date, pct }) => {
+          const day = parseInt(date.split("-")[2]);
+          const isToday = date === todayStr;
+          return (
+            <div key={date} title={`${pct}%`} style={pctToStyle(pct, isToday)}>
+              {day}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -600,27 +643,56 @@ function CkRow({ item, onToggle, onEdit }: {
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ChecklistPage() {
-  const [items, setItems]           = useState<Item[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<Item | null>(null);
+  const [items, setItems]               = useState<Item[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [drawerOpen, setDrawerOpen]     = useState(false);
+  const [editTarget, setEditTarget]     = useState<Item | null>(null);
+  const [overallStreak, setOverallStreak] = useState(0);
+  const [monthlyPct, setMonthlyPct]     = useState<{ date: string; pct: number }[]>([]);
+  const [thirtyDayAvg, setThirtyDayAvg] = useState(0);
+  const [bestStreak30, setBestStreak30] = useState(0);
+  const [suggestions, setSuggestions]   = useState<Suggestion[]>([]);
+  const [weeklyReview, setWeeklyReview] = useState<string | null>(null);
+  const [loadingSug, setLoadingSug]     = useState(true);
+
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
 
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/checklist");
-      if (res.ok) setItems(await res.json());
+      if (res.ok) {
+        const data: ChecklistData = await res.json();
+        setItems(data.items);
+        setOverallStreak(data.overallStreak);
+        setMonthlyPct(data.monthlyPct);
+        setThirtyDayAvg(data.thirtyDayAvg);
+        setBestStreak30(data.bestStreak30);
+      }
     } catch { /* ignore */ }
     setLoading(false);
+  }, []);
+
+  const loadSuggestions = useCallback(async () => {
+    setLoadingSug(true);
+    try {
+      const res = await fetch("/api/checklist/suggestions");
+      if (res.ok) {
+        const data = await res.json();
+        setSuggestions(data.suggestions ?? []);
+        setWeeklyReview(data.weeklyReview ?? null);
+      }
+    } catch { /* ignore */ }
+    setLoadingSug(false);
   }, []);
 
   useEffect(() => {
     (async () => {
       await fetch("/api/admin/migrate", { method: "POST" });
-      await load();
+      await Promise.all([load(), loadSuggestions()]);
     })();
-  }, [load]);
+  }, [load, loadSuggestions]);
 
-  // ── Toggle completion ──
+  // ── Toggle ──
   const toggle = async (id: number) => {
     setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
     const res = await fetch("/api/checklist/toggle", {
@@ -629,7 +701,6 @@ export default function ChecklistPage() {
       body: JSON.stringify({ itemId: id }),
     });
     if (!res.ok) {
-      // Rollback on error
       setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
     }
   };
@@ -662,10 +733,21 @@ export default function ChecklistPage() {
     await load();
   };
 
+  // ── Suggestion actions ──
+  const handleSuggestion = async (id: number, action: "accept" | "dismiss") => {
+    setSuggestions((prev) => prev.filter((s) => s.id !== id));
+    await fetch(`/api/checklist/suggestions/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    if (action === "accept") await load();
+  };
+
   const openNew  = () => { setEditTarget(null);  setDrawerOpen(true); };
   const openEdit = (item: Item) => { setEditTarget(item); setDrawerOpen(true); };
 
-  // ── Derived stats ──
+  // ── Derived ──
   const completed = items.filter((i) => i.completedToday).length;
   const total     = items.length;
   const pct       = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -676,11 +758,12 @@ export default function ChecklistPage() {
     items: items.filter((i) => (i.timeOfDay ?? "anytime") === key),
   })).filter((g) => g.items.length > 0);
 
-  // Last 7 days helpers
-  const now       = new Date();
-  const dayNames  = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const now        = new Date();
+  const dayNames   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const last7 = Array.from({ length: 7 }, (_, i) => {
+
+  // Build last-7 date labels
+  const last7Labels = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - (6 - i));
     return d.getDate();
@@ -747,6 +830,11 @@ export default function ChecklistPage() {
                 <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 4 }}>
                   <b style={{ color: "var(--ink)" }}>{total - completed}</b> remaining
                 </div>
+                {overallStreak > 0 && (
+                  <div style={{ fontSize: 11.5, color: "var(--violet)", fontFamily: "var(--f-mono)", marginTop: 6, letterSpacing: "0.04em" }}>
+                    🔥 {overallStreak}d streak
+                  </div>
+                )}
               </div>
             </div>
             <div style={{ height: 6, background: "rgba(255,255,255,0.04)", borderRadius: 99, marginTop: 18, overflow: "hidden" }}>
@@ -763,7 +851,6 @@ export default function ChecklistPage() {
             {loading && (
               <div style={{ padding: "32px", textAlign: "center", color: "var(--ink-4)", fontSize: 13 }}>Loading…</div>
             )}
-
             {!loading && items.length === 0 && (
               <div style={{ padding: "40px 32px", textAlign: "center" }}>
                 <div style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 12 }}>No items yet.</div>
@@ -772,7 +859,6 @@ export default function ChecklistPage() {
                 </button>
               </div>
             )}
-
             {!loading && grouped.map((group, gi) => (
               <div key={group.key}>
                 <div style={{
@@ -801,20 +887,19 @@ export default function ChecklistPage() {
         </div>
 
         {/* ── RIGHT ────────────────────────────────────────────────────────── */}
-        <div>
-          {/* Last 7 days grid */}
-          <div className="cc-card" style={{ marginBottom: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+          {/* Last 7 days grid — real historical data */}
+          <div className="cc-card">
             <div className="cc-card-head">
               <div className="title">Last 7 days</div>
-              <div className="tail">{monthNames[now.getMonth()]} {last7[0]}–{last7[6]}</div>
+              <div className="tail">{monthNames[now.getMonth()]} {last7Labels[0]}–{last7Labels[6]}</div>
             </div>
-
-            {/* padded wrapper so grid cells don't sit flush against card border */}
-            <div style={{ padding: "12px 16px 14px" }}>
+            <div style={{ padding: "4px 16px 14px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, marginBottom: 4 }}>
                 <div />
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
-                  {last7.map((d, i) => (
+                  {last7Labels.map((d, i) => (
                     <div key={i} style={{ fontSize: 9, color: i === 6 ? "var(--cyan)" : "var(--ink-4)", letterSpacing: "0.10em", textAlign: "center" }}>
                       {i === 6 ? "TDY" : d}
                     </div>
@@ -822,55 +907,157 @@ export default function ChecklistPage() {
                 </div>
               </div>
 
-              {manualItems.slice(0, 8).map((item) => (
-                <div key={item.id} style={{ display: "grid", gridTemplateColumns: "80px 1fr", alignItems: "center", gap: 8, padding: "5px 0" }}>
-                  <div style={{ fontSize: 11, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {item.emoji ? `${item.emoji} ` : ""}{item.title}
+              {manualItems.slice(0, 8).map((item) => {
+                const accent = colorHex(item.color ?? "violet");
+                return (
+                  <div key={item.id} style={{ display: "grid", gridTemplateColumns: "80px 1fr", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                    <div style={{ fontSize: 11, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {item.emoji ? `${item.emoji} ` : ""}{item.title}
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+                      {(item.last7 ?? Array(7).fill(false)).map((done: boolean, i: number) => {
+                        const isToday = i === 6;
+                        return (
+                          <div key={i} style={{
+                            aspectRatio: "1/1", borderRadius: 4,
+                            border: `1px solid ${done ? `${accent}60` : isToday ? "rgba(126,231,255,0.20)" : "var(--line)"}`,
+                            borderStyle: (!done && !isToday) ? "dashed" : "solid",
+                            background: done ? `${accent}33` : "transparent",
+                            boxShadow: done ? `inset 0 0 8px ${accent}33` : "none",
+                            outline: isToday ? "1px dashed rgba(126,231,255,0.40)" : "none",
+                            outlineOffset: 1,
+                          }} />
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
-                    {Array.from({ length: 7 }, (_, i) => {
-                      const isToday = i === 6;
-                      const state = isToday ? (item.completedToday ? "done" : "pending") : "unknown";
-                      const accent = colorHex(item.color ?? "violet");
-                      return (
-                        <div key={i} style={{
-                          aspectRatio: "1/1", borderRadius: 4,
-                          border: `1px solid ${state === "done" ? `${accent}60` : state === "pending" ? "rgba(126,231,255,0.20)" : "var(--line)"}`,
-                          borderStyle: state === "unknown" ? "dashed" : "solid",
-                          background: state === "done" ? `${accent}33` : "transparent",
-                          boxShadow: state === "done" ? `inset 0 0 8px ${accent}33` : "none",
-                          outline: isToday ? "1px dashed rgba(126,231,255,0.40)" : "none",
-                          outlineOffset: 1,
-                        }} />
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Month stats */}
+          {/* Month at a glance — streak stats + heatmap */}
           <div className="cc-card">
             <div className="cc-card-head">
               <div className="title">Month at a glance</div>
               <div className="tail">{monthNames[now.getMonth()]}</div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12, padding: 14 }}>
-              <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
-                <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today</div>
-                <div className="num grad-text" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
-                  {loading ? "—" : pct}<span style={{ fontSize: 14, WebkitTextFillColor: "var(--ink-4)", color: "var(--ink-4)" }}>%</span>
+            <div style={{ padding: "4px 16px 14px" }}>
+              {/* Stats row */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 14 }}>
+                <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today</div>
+                  <div className="num grad-text" style={{ fontSize: 26, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
+                    {loading ? "—" : pct}<span style={{ fontSize: 13, WebkitTextFillColor: "var(--ink-4)", color: "var(--ink-4)" }}>%</span>
+                  </div>
+                </div>
+                <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Streak</div>
+                  <div className="num" style={{ fontSize: 26, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
+                    {overallStreak}<span style={{ color: "var(--ink-3)", fontSize: 13 }}> days</span>
+                  </div>
                 </div>
               </div>
-              <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
-                <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Items</div>
-                <div className="num" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
-                  {total}<span style={{ color: "var(--ink-3)", fontSize: 14 }}> total</span>
+
+              {/* Monthly heatmap */}
+              <MonthlyHeatmap monthlyPct={monthlyPct} todayStr={todayStr} />
+
+              {/* 30-day stats */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 3 }}>30-day avg</div>
+                  <div className="num" style={{ fontSize: 16, fontWeight: 500, color: thirtyDayAvg >= 70 ? "var(--pos)" : thirtyDayAvg >= 40 ? "var(--warn)" : "var(--neg)" }}>
+                    {loading ? "—" : `${thirtyDayAvg}%`}
+                  </div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 3 }}>Best streak</div>
+                  <div className="num" style={{ fontSize: 16, fontWeight: 500, color: "var(--ink-2)" }}>
+                    {loading ? "—" : `${bestStreak30}d`}
+                  </div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 3 }}>Total items</div>
+                  <div className="num" style={{ fontSize: 16, fontWeight: 500, color: "var(--ink-2)" }}>
+                    {total}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* AI habit suggestions */}
+          {!loadingSug && (suggestions.length > 0 || weeklyReview) && (
+            <>
+              {suggestions.length > 0 && (
+                <div className="cc-card">
+                  <div className="cc-card-head">
+                    <div className="title">This week&rsquo;s habits</div>
+                    <div className="tail" style={{ color: "var(--violet)", fontSize: 10 }}>AI</div>
+                  </div>
+                  <div style={{ padding: "4px 16px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+                    {suggestions.map((s) => (
+                      <div key={s.id} style={{
+                        padding: "12px 14px", borderRadius: 10,
+                        border: "1px solid var(--line)",
+                        background: "rgba(179,136,255,0.04)",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
+                          {s.emoji && <span style={{ fontSize: 18, flexShrink: 0 }}>{s.emoji}</span>}
+                          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", lineHeight: 1.3 }}>
+                            {s.title}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "var(--ink-3)", lineHeight: 1.4, marginBottom: 10 }}>
+                          {s.rationale}
+                        </div>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={() => handleSuggestion(s.id, "accept")}
+                            style={{
+                              flex: 1, padding: "7px 10px", borderRadius: 8, fontSize: 11.5, fontWeight: 500,
+                              background: "rgba(179,136,255,0.14)", border: "1px solid rgba(179,136,255,0.35)",
+                              color: "var(--violet)", cursor: "pointer", transition: "all 0.15s",
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(179,136,255,0.22)"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(179,136,255,0.14)"; }}
+                          >
+                            Add this
+                          </button>
+                          <button
+                            onClick={() => handleSuggestion(s.id, "dismiss")}
+                            style={{
+                              padding: "7px 10px", borderRadius: 8, fontSize: 11.5,
+                              background: "none", border: "1px solid var(--line)",
+                              color: "var(--ink-4)", cursor: "pointer", transition: "all 0.15s",
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--ink-2)"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--ink-4)"; }}
+                          >
+                            Not now
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {weeklyReview && (
+                <div className="cc-card">
+                  <div className="cc-card-head">
+                    <div className="title">Weekly insight</div>
+                    <div className="tail" style={{ color: "var(--cyan)", fontSize: 10 }}>AI</div>
+                  </div>
+                  <div style={{ padding: "4px 16px 14px" }}>
+                    <p style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6, margin: 0 }}>
+                      {weeklyReview}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
