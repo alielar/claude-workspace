@@ -52,7 +52,10 @@ function ExerciseLibraryInner() {
   const [editForm, setEditForm] = useState<Partial<Exercise> | null>(null);
   const [saving, setSaving] = useState(false);
   const [youtubeInput, setYoutubeInput] = useState("");
+  const [newName, setNewName] = useState("");
+  const [showNewForm, setShowNewForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const newNameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/workouts/exercises")
@@ -109,9 +112,8 @@ function ExerciseLibraryInner() {
     setEditForm((prev) => prev ? { ...prev, videoUrl, videoType: "youtube" } : prev);
   }
 
-  async function createExercise() {
-    const name = prompt("Exercise name:");
-    if (!name?.trim()) return;
+  async function createExercise(name: string) {
+    if (!name.trim()) return;
     const res = await fetch("/api/workouts/exercises", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -119,6 +121,8 @@ function ExerciseLibraryInner() {
     });
     const newEx = await res.json();
     setExercises((prev) => [...prev, newEx].sort((a, b) => a.name.localeCompare(b.name)));
+    setNewName("");
+    setShowNewForm(false);
     openDetail(newEx);
   }
 
@@ -146,7 +150,7 @@ function ExerciseLibraryInner() {
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <Link href="/workouts/templates" className="cc-btn">← Templates</Link>
-          <button className="cc-btn cc-btn-primary" onClick={createExercise}>+ New exercise</button>
+          <button className="cc-btn cc-btn-primary" onClick={() => { setShowNewForm(true); setTimeout(() => newNameRef.current?.focus(), 50); }}>+ New exercise</button>
         </div>
       </div>
 
@@ -179,6 +183,34 @@ function ExerciseLibraryInner() {
           ))}
         </div>
       </div>
+
+      {/* New exercise inline form */}
+      {showNewForm && (
+        <div className="cc-card" style={{ marginBottom: 16, padding: "16px 20px" }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>New Exercise</div>
+          <form
+            onSubmit={(e) => { e.preventDefault(); createExercise(newName); }}
+            style={{ display: "flex", gap: 8, alignItems: "center" }}
+          >
+            <input
+              ref={newNameRef}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="e.g. Incline Dumbbell Press"
+              style={{
+                flex: 1, background: "var(--bg-input)", border: "1px solid var(--line)",
+                borderRadius: 8, padding: "9px 14px", color: "var(--ink)", fontSize: 13, outline: "none",
+              }}
+            />
+            <button type="submit" className="cc-btn cc-btn-primary" disabled={!newName.trim()}>
+              Create
+            </button>
+            <button type="button" className="cc-btn" onClick={() => { setShowNewForm(false); setNewName(""); }}>
+              Cancel
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Exercise list */}
       {loading ? (
