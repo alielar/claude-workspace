@@ -14,6 +14,7 @@ import {
 import { eq, and, desc, isNotNull, sql } from "drizzle-orm";
 import Link from "next/link";
 import { format, startOfWeek, addDays, differenceInDays } from "date-fns";
+import RunningCard from "@/components/workouts/RunningCard";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -437,27 +438,8 @@ export default async function WorkoutsPage() {
             </div>
           </div>
 
-          {/* Running placeholder */}
-          <div className="cc-card">
-            <div className="cc-card-head">
-              <div className="title" style={{ color: "var(--cyan)" }}>Running · 5K Goal</div>
-              <div className="tail">non-stop target</div>
-            </div>
-            <div className="cc-card-body">
-              <div style={{ padding: 16, border: "1px solid rgba(126,231,255,0.20)", borderRadius: 12, background: "radial-gradient(60% 80% at 100% 0%, rgba(126,231,255,0.10), transparent 60%), rgba(255,255,255,0.018)" }}>
-                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--cyan)", fontWeight: 600 }}>Furthest non-stop</div>
-                <div style={{ fontSize: 28, fontWeight: 200, letterSpacing: "-0.03em", marginTop: 6, fontFamily: "var(--f-mono)" }}>
-                  —<span style={{ color: "var(--ink-3)", fontSize: 14 }}> / 5.0 km</span>
-                </div>
-                <div style={{ marginTop: 10, height: 5, background: "rgba(255,255,255,0.04)", borderRadius: 99 }}>
-                  <div style={{ height: "100%", width: "0%", background: "var(--grad)", borderRadius: 99 }} />
-                </div>
-              </div>
-              <div style={{ marginTop: 12, fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em", textAlign: "center" as const }}>
-                Apple Health integration · coming soon
-              </div>
-            </div>
-          </div>
+          {/* Running card — live data, client component */}
+          <RunningCard />
         </div>
       </div>
     </div>

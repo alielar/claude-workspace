@@ -1,13 +1,13 @@
 /**
  * GET /api/workouts/prs
- * Returns all personal records for the user, joined with exercise name.
+ * Returns all personal records for the user from exercisePrs table.
  */
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { personalRecords, exercises } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { exercisePrs, exerciseDb } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export async function GET() {
   const session = await auth();
@@ -17,19 +17,19 @@ export async function GET() {
 
   const prs = await db
     .select({
-      id: personalRecords.id,
-      exerciseId: personalRecords.exerciseId,
-      exerciseName: exercises.name,
-      muscleGroup: exercises.muscleGroup,
-      bestWeightKg: personalRecords.bestWeightKg,
-      bestReps: personalRecords.bestReps,
-      estimated1rm: personalRecords.estimated1rm,
-      achievedAt: personalRecords.achievedAt,
+      id: exercisePrs.id,
+      exerciseId: exercisePrs.exerciseId,
+      exerciseName: exercisePrs.exerciseName,
+      muscleGroup: exerciseDb.primaryMuscle,
+      bestWeightKg: exercisePrs.bestWeightKg,
+      bestReps: exercisePrs.bestReps,
+      estimated1rm: exercisePrs.estimated1rm,
+      achievedAt: exercisePrs.achievedAt,
     })
-    .from(personalRecords)
-    .innerJoin(exercises, eq(personalRecords.exerciseId, exercises.id))
-    .where(eq(personalRecords.userId, session.user.id))
-    .orderBy(exercises.name);
+    .from(exercisePrs)
+    .leftJoin(exerciseDb, eq(exercisePrs.exerciseId, exerciseDb.id))
+    .where(eq(exercisePrs.userId, session.user.id))
+    .orderBy(exercisePrs.exerciseName);
 
   return NextResponse.json(prs);
 }

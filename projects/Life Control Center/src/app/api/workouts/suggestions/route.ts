@@ -1,20 +1,24 @@
 /**
- * GET /api/workouts/suggestions?sessionId=X
- * Returns progressive overload suggestions for each exercise
- * based on the most recent log of this session type.
+ * GET /api/workouts/suggestions?planId=X
+ *
+ * Returns progressive overload suggestions for each exercise in a plan,
+ * based on the most recent completed session of that plan type.
+ *
+ * Returns: { [exerciseName]: ProgressionSuggestion }
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
-  workoutLogs,
-  setLogs,
-  exercises,
-  setTemplates,
-  workoutSessions,
+  gymSessions,
+  gymSets,
+  planExercises,
+  exerciseDb,
+  workoutPlans,
+  programs,
 } from "@/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { computeProgressionSuggestion } from "@/lib/progressive-overload";
 
 export async function GET(req: NextRequest) {
@@ -24,82 +28,64 @@ export async function GET(req: NextRequest) {
   }
   const userId = session.user.id;
 
-  const sessionId = parseInt(req.nextUrl.searchParams.get("sessionId") ?? "0");
-  if (!sessionId) return NextResponse.json({});
+  const planId = parseInt(req.nextUrl.searchParams.get("planId") ?? "0");
+  if (!planId) return NextResponse.json({});
 
-  // Get session name to find all logs of this session type (Push appears twice in rotation)
-  const [ws] = await db
-    .select()
-    .from(workoutSessions)
-    .where(eq(workoutSessions.id, sessionId));
-  if (!ws) return NextResponse.json({});
+  // Verify plan ownership
+  const [plan] = await db
+    .select({ id: workoutPlans.id, name: workoutPlans.name })
+    .from(workoutPlans)
+    .innerJoin(programs, eq(workoutPlans.programId, programs.id))
+    .where(and(eq(workoutPlans.id, planId), eq(programs.userId, userId)))
+    .limit(1);
+  if (!plan) return NextResponse.json({});
 
-  // All session IDs with the same name (e.g. both "Push" sessions)
-  const sameSessions = await db
-    .select({ id: workoutSessions.id })
-    .from(workoutSessions)
-    .where(eq(workoutSessions.name, ws.name));
-  const sameSessionIds = sameSessions.map((s) => s.id);
-
-  // Most recent log of this session type for this user
-  const [recentLog] = await db
-    .select()
-    .from(workoutLogs)
-    .where(
-      and(
-        eq(workoutLogs.userId, userId),
-        inArray(workoutLogs.sessionId, sameSessionIds)
-      )
-    )
-    .orderBy(desc(workoutLogs.startedAt))
+  // Most recent completed session for this plan
+  const [lastSession] = await db
+    .select({ id: gymSessions.id })
+    .from(gymSessions)
+    .where(and(eq(gymSessions.planId, planId), eq(gymSessions.userId, userId)))
+    .orderBy(desc(gymSessions.date))
     .limit(1);
 
-  if (!recentLog) return NextResponse.json({});
+  if (!lastSession) return NextResponse.json({});
 
-  // Get set logs for that workout
-  const logs = await db
+  // Sets from that session
+  const sets = await db
     .select()
-    .from(setLogs)
-    .where(eq(setLogs.workoutLogId, recentLog.id));
+    .from(gymSets)
+    .where(eq(gymSets.sessionId, lastSession.id));
 
-  // Get exercises + set templates for this session (for repRangeMax)
-  const exList = await db
-    .select()
-    .from(exercises)
-    .where(eq(exercises.sessionId, sessionId))
-    .orderBy(exercises.sortOrder);
+  // Plan exercises with set configs (for repRangeMax)
+  const planExs = await db
+    .select({
+      exerciseId: planExercises.exerciseId,
+      exerciseName: exerciseDb.name,
+      setConfig: planExercises.setConfig,
+    })
+    .from(planExercises)
+    .innerJoin(exerciseDb, eq(planExercises.exerciseId, exerciseDb.id))
+    .where(eq(planExercises.planId, planId))
+    .orderBy(planExercises.sortOrder);
 
-  // Build a map of exerciseId → setNumber → repRangeMax from templates
-  const allTemplates = await db
-    .select()
-    .from(setTemplates)
-    .where(
-      inArray(
-        setTemplates.exerciseId,
-        exList.map((e) => e.id)
-      )
-    );
-
-  const templateMap = new Map<string, number | null>();
-  for (const t of allTemplates) {
-    templateMap.set(`${t.exerciseId}:${t.setNumber}`, t.repRangeMax ?? null);
-  }
-
-  // Compute suggestions per exercise
   const suggestions: Record<string, ReturnType<typeof computeProgressionSuggestion>> = {};
-  for (const ex of exList) {
-    const exSets = logs
-      .filter((l) => l.exerciseId === ex.id)
-      .map((l) => ({
-        setType: l.setType as "standard" | "drop" | "warmup",
-        weightKg: l.weightKg,
-        repsLogged: l.repsLogged,
-        rirLogged: l.rirLogged,
-        repRangeMax: templateMap.get(`${ex.id}:${l.setNumber}`) ?? null,
+
+  for (const ex of planExs) {
+    let config: Array<{ repMin: number; repMax: number; type: string }> = [];
+    try { config = JSON.parse(ex.setConfig); } catch { config = []; }
+
+    const exSets = sets
+      .filter((s) => s.exerciseId === ex.exerciseId)
+      .map((s, idx) => ({
+        setType: (s.setType ?? "standard") as "standard" | "drop" | "warmup",
+        weightKg: s.weightKg,
+        repsLogged: s.reps,
+        rirLogged: s.rir,
+        repRangeMax: config[idx]?.repMax ?? null,
       }));
 
     if (exSets.length > 0) {
-      suggestions[ex.name] = computeProgressionSuggestion(ex.name, exSets);
+      suggestions[ex.exerciseName] = computeProgressionSuggestion(ex.exerciseName, exSets);
     }
   }
 

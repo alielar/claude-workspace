@@ -346,6 +346,14 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
   );
 }
 
+// ─── Progression suggestion colors ───────────────────────────────────────────
+
+const SUGGESTION_COLOR: Record<string, string> = {
+  increase: "var(--pos)",
+  maintain: "var(--ink-3)",
+  deload: "var(--warn)",
+};
+
 // ─── Session Summary ──────────────────────────────────────────────────────────
 
 function SessionSummary({
@@ -357,21 +365,35 @@ function SessionSummary({
   elapsedSeconds: number;
   onClose: () => void;
 }) {
+  const [suggestions, setSuggestions] = useState<Record<string, { action: string; suggestedWeightKg: number | null; message: string }>>({});
+
+  useEffect(() => {
+    if (data.session.planId) {
+      fetch(`/api/workouts/suggestions?planId=${data.session.planId}`)
+        .then((r) => r.json())
+        .then((d) => setSuggestions(d ?? {}))
+        .catch(() => {});
+    }
+  }, [data.session.planId]);
+
   const totalSets = data.loggedSets.length;
   const totalVolume = data.loggedSets.reduce((sum, s) => sum + (s.weightKg ?? 0) * (s.reps ?? 0), 0);
   const min = Math.floor(elapsedSeconds / 60);
   const sec = elapsedSeconds % 60;
+
+  const suggestionEntries = Object.entries(suggestions);
 
   return (
     <div style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300,
     }}>
-      <div className="cc-card" style={{ width: 360, maxHeight: "80vh", overflow: "auto" }}>
+      <div className="cc-card" style={{ width: 420, maxHeight: "85vh", overflow: "auto" }}>
         <div className="cc-card-head">
           <div className="title">Session complete</div>
         </div>
         <div className="cc-card-body">
+          {/* Stats */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
             <div style={{ textAlign: "center" }}>
               <div className="num" style={{ fontSize: 28 }}>{totalSets}</div>
@@ -391,7 +413,37 @@ function SessionSummary({
             {data.session.workoutName} · {data.session.date}
           </div>
 
-          <button onClick={onClose} className="cc-btn-primary" style={{ width: "100%", padding: "10px 0" }}>
+          {/* Progression suggestions */}
+          {suggestionEntries.length > 0 && (
+            <div style={{ marginBottom: 16, borderTop: "1px solid var(--line)", paddingTop: 14 }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: "var(--ink-4)", fontWeight: 600, marginBottom: 10 }}>
+                Next session · progression
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {suggestionEntries.map(([name, s]) => (
+                  <div key={name} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <span style={{
+                      fontSize: 9, fontFamily: "var(--f-mono)", fontWeight: 700, letterSpacing: "0.1em",
+                      color: SUGGESTION_COLOR[s.action] ?? "var(--ink-3)",
+                      background: `${SUGGESTION_COLOR[s.action] ?? "var(--line)"}20`,
+                      padding: "2px 6px", borderRadius: 4, flexShrink: 0, marginTop: 2,
+                    }}>
+                      {s.action === "increase" ? "↑ UP" : s.action === "deload" ? "↓ DELOAD" : "= HOLD"}
+                    </span>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 500 }}>{name}</div>
+                      <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 1 }}>{s.message}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button onClick={onClose} style={{
+            width: "100%", padding: "10px 0", borderRadius: 8,
+            background: "var(--grad)", color: "#0A0A14", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+          }}>
             Done
           </button>
         </div>

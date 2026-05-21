@@ -1,16 +1,17 @@
 /**
  * GET /api/workouts/exercise-history?exerciseId=X
  *
- * Returns set logs for a specific exercise across all workout sessions,
+ * Returns logged sets for a specific exercise across all gym sessions,
  * ordered by date. Used to render per-exercise progress charts.
  *
- * Returns: [{ date, weightKg, repsLogged, rirLogged, estimated1rm }]
+ * Returns: [{ date, bestWeightKg, repsLogged, rirLogged, estimated1rm }]
+ * One entry per session date — best set (highest Epley 1RM) is kept.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { setLogs, workoutLogs, exercises } from "@/db/schema";
+import { gymSets, gymSessions } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { epley1rm } from "@/lib/utils";
 
@@ -27,23 +28,23 @@ export async function GET(req: NextRequest) {
 
   const rows = await db
     .select({
-      startedAt: workoutLogs.startedAt,
-      setType: setLogs.setType,
-      weightKg: setLogs.weightKg,
-      repsLogged: setLogs.repsLogged,
-      rirLogged: setLogs.rirLogged,
-      setNumber: setLogs.setNumber,
+      date: gymSessions.date,
+      setType: gymSets.setType,
+      weightKg: gymSets.weightKg,
+      reps: gymSets.reps,
+      rir: gymSets.rir,
+      setNumber: gymSets.setNumber,
     })
-    .from(setLogs)
-    .innerJoin(workoutLogs, eq(setLogs.workoutLogId, workoutLogs.id))
+    .from(gymSets)
+    .innerJoin(gymSessions, eq(gymSets.sessionId, gymSessions.id))
     .where(
       and(
-        eq(setLogs.exerciseId, exerciseId),
-        eq(workoutLogs.userId, session.user.id)
+        eq(gymSets.exerciseId, exerciseId),
+        eq(gymSessions.userId, session.user.id)
       )
     )
-    .orderBy(desc(workoutLogs.startedAt))
-    .limit(200);
+    .orderBy(desc(gymSessions.date))
+    .limit(300);
 
   // Group by session date — keep only working sets, pick best set per session
   const byDate = new Map<
@@ -52,17 +53,15 @@ export async function GET(req: NextRequest) {
   >();
 
   for (const row of rows) {
-    if (row.setType !== "standard" || !row.weightKg || !row.repsLogged) continue;
-    const date = new Date(row.startedAt!).toISOString().split("T")[0];
-    const e1rm = epley1rm(row.weightKg, row.repsLogged);
-
-    const existing = byDate.get(date);
+    if (row.setType !== "standard" || !row.weightKg || !row.reps) continue;
+    const e1rm = epley1rm(row.weightKg, row.reps);
+    const existing = byDate.get(row.date);
     if (!existing || e1rm > existing.estimated1rm) {
-      byDate.set(date, {
-        date,
+      byDate.set(row.date, {
+        date: row.date,
         bestWeightKg: row.weightKg,
-        repsLogged: row.repsLogged,
-        rirLogged: row.rirLogged,
+        repsLogged: row.reps,
+        rirLogged: row.rir,
         estimated1rm: e1rm,
       });
     }
