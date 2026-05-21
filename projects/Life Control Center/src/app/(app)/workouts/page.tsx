@@ -15,6 +15,8 @@ import { eq, and, desc, isNotNull, sql } from "drizzle-orm";
 import Link from "next/link";
 import { format, startOfWeek, addDays, differenceInDays } from "date-fns";
 import RunningCard from "@/components/workouts/RunningCard";
+import WeekCalendar from "@/components/workouts/WeekCalendar";
+import PrTickerClient from "@/components/workouts/PrTickerClient";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -142,8 +144,18 @@ export default async function WorkoutsPage() {
 
   // ── PRs ───────────────────────────────────────────────────────────────────
   const prs = await db
-    .select()
+    .select({
+      id: exercisePrs.id,
+      exerciseId: exercisePrs.exerciseId,
+      exerciseName: exercisePrs.exerciseName,
+      muscleGroup: exerciseDb.primaryMuscle,
+      bestWeightKg: exercisePrs.bestWeightKg,
+      bestReps: exercisePrs.bestReps,
+      estimated1rm: exercisePrs.estimated1rm,
+      achievedAt: exercisePrs.achievedAt,
+    })
     .from(exercisePrs)
+    .leftJoin(exerciseDb, eq(exercisePrs.exerciseId, exerciseDb.id))
     .where(eq(exercisePrs.userId, userId))
     .orderBy(desc(exercisePrs.achievedAt))
     .limit(6);
@@ -153,7 +165,7 @@ export default async function WorkoutsPage() {
   const weekEnd = format(addDays(startOfWeek(now, { weekStartsOn: 1 }), 6), "yyyy-MM-dd");
 
   const weekSessions = await db
-    .select({ date: gymSessions.date, planId: gymSessions.planId, workoutName: gymSessions.workoutName })
+    .select({ id: gymSessions.id, date: gymSessions.date, planId: gymSessions.planId, workoutName: gymSessions.workoutName })
     .from(gymSessions)
     .where(
       and(
@@ -163,26 +175,26 @@ export default async function WorkoutsPage() {
       )
     );
 
-  const weekSessionMap = new Map<string, string>(); // date → workoutName
-  for (const s of weekSessions) weekSessionMap.set(s.date, s.workoutName);
+  const weekSessionMap = new Map<string, { name: string; id: number }>(); // date → { name, id }
+  for (const s of weekSessions) {
+    const shortName = s.workoutName.match(/\((.+)\)/)?.[1] ?? s.workoutName;
+    weekSessionMap.set(s.date, { name: shortName, id: s.id });
+  }
 
   // ── Build week strip ─────────────────────────────────────────────────────
   const mon = startOfWeek(now, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = addDays(mon, i);
     const dateStr = format(d, "yyyy-MM-dd");
-    const sessionName = weekSessionMap.get(dateStr);
-    // Short name: strip legacy "ProgramName (WorkoutName)" prefix if present, else use as-is
-    const shortName = sessionName
-      ? (sessionName.match(/\((.+)\)/)?.[1] ?? sessionName)
-      : null;
+    const sessionData = weekSessionMap.get(dateStr);
     return {
       dow: format(d, "EEE").toUpperCase(),
       dnum: format(d, "d"),
       dateStr,
-      sessionName: shortName,
+      sessionName: sessionData?.name ?? null,
+      sessionId: sessionData?.id ?? null,
       isToday: dateStr === today,
-      isRest: !shortName && dateStr < today,
+      isRest: !sessionData && dateStr < today,
     };
   });
 
@@ -204,47 +216,14 @@ export default async function WorkoutsPage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/workouts/history" className="cc-btn">History</Link>
+          <Link href="/workouts/analytics" className="cc-btn">Analytics</Link>
           <Link href="/workouts/templates" className="cc-btn">Templates</Link>
           <Link href="/workouts/exercises" className="cc-btn">Exercises</Link>
         </div>
       </div>
 
-      {/* ── PR Ticker ─────────────────────────────────────────────────────── */}
-      {prs.length > 0 && (
-        <div style={{ marginBottom: 18 }}>
-          <div className="cc-sechead">
-            Recent PRs
-            <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em", textTransform: "none", fontWeight: 400 }}>
-              personal records · all time
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "thin" as const }}>
-            {prs.map((pr) => (
-              <div key={pr.id} style={{ flexShrink: 0, padding: "14px 18px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.018)", minWidth: 220 }}>
-                <div style={{ fontSize: 9.5, letterSpacing: "0.20em", textTransform: "uppercase" as const, color: "var(--warn)", fontWeight: 600 }}>
-                  ↑ {pr.exerciseName}
-                </div>
-                <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 4 }}>
-                  {MUSCLE_LABELS[pr.exerciseName] ?? ""}
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: "-0.02em", marginTop: 4, fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-                  {pr.bestWeightKg != null ? `${pr.bestWeightKg}` : "BW"}
-                  <span style={{ color: "var(--ink-3)", fontSize: 13 }}>
-                    {pr.bestWeightKg != null ? " kg" : ""}
-                    {pr.bestReps != null ? ` × ${pr.bestReps}` : ""}
-                  </span>
-                </div>
-                {pr.estimated1rm != null && (
-                  <div style={{ fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.04em", marginTop: 2, fontFamily: "var(--f-mono)" }}>
-                    est. 1RM {pr.estimated1rm}kg · {daysAgo(pr.achievedAt)}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ── PR Ticker (client — tappable → full PR drawer) ─────────────────── */}
+      <PrTickerClient initialPrs={prs} />
 
       {/* ── Main 2-col layout (8fr / 4fr) ────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "8fr 4fr", gap: 14 }}>
@@ -404,43 +383,14 @@ export default async function WorkoutsPage() {
         {/* RIGHT */}
         <div>
 
-          {/* Week strip */}
-          <div className="cc-card" style={{ marginBottom: 14 }}>
-            <div className="cc-card-head">
-              <div className="title">
-                Wk {weekNum} · {format(mon, "MMM d")}–{format(addDays(mon, 6), "d")}
-              </div>
-              <div className="tail">{weekSessions.length} / 7 days</div>
-            </div>
-            <div className="cc-card-body">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
-                {weekDays.map(({ dow, dnum, dateStr, sessionName, isToday, isRest }) => (
-                  <div key={dateStr} style={{
-                    padding: "12px 6px", textAlign: "left", position: "relative", overflow: "hidden", borderRadius: 10,
-                    border: `1px solid ${isToday ? "rgba(179,136,255,0.40)" : "var(--line)"}`,
-                    background: isToday
-                      ? "radial-gradient(70% 80% at 0% 0%, rgba(179,136,255,0.18), transparent 60%), rgba(255,255,255,0.025)"
-                      : "rgba(255,255,255,0.018)",
-                    boxShadow: isToday ? "0 0 20px rgba(179,136,255,0.18), inset 0 0 10px rgba(179,136,255,0.06)" : "none",
-                  }}>
-                    {isToday && (
-                      <span style={{ position: "absolute", top: 5, right: 5, fontSize: 7, fontFamily: "var(--f-mono)", color: "var(--cyan)", letterSpacing: "0.10em" }}>
-                        NOW
-                      </span>
-                    )}
-                    <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: "var(--ink-3)", fontWeight: 600 }}>{dow}</div>
-                    <div style={{ fontSize: 16, fontWeight: 500, marginTop: 1, color: "var(--ink)" }}>{dnum}</div>
-                    <div style={{ marginTop: 8, fontSize: 11, color: isToday ? "var(--violet)" : isRest ? "var(--ink-4)" : sessionName ? "var(--ink-2)" : "var(--ink-4)" }}>
-                      {sessionName ? "🏋" : isRest ? "—" : "·"}
-                    </div>
-                    <div style={{ fontSize: 10, fontWeight: 500, marginTop: 4, color: isToday ? "var(--ink)" : isRest ? "var(--ink-3)" : "var(--ink-2)", lineHeight: 1.2 }}>
-                      {sessionName ?? (isRest ? "Rest" : "—")}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Week strip — client component (clickable days, session modal, all-sessions drawer) */}
+          <WeekCalendar
+            weekDays={weekDays}
+            weekNum={weekNum}
+            weekRange={`${format(mon, "MMM d")}–${format(addDays(mon, 6), "d")}`}
+            weekSessionCount={weekSessions.length}
+            upNextPlanId={upNextPlan.id}
+          />
 
           {/* Running card — live data, client component */}
           <RunningCard />
