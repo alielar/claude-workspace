@@ -58,15 +58,24 @@ function ExerciseLibraryInner() {
   const newNameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/workouts/exercises")
-      .then((r) => r.json())
-      .then((data: Exercise[]) => {
-        setExercises(data);
-        setLoading(false);
-        if (editId) {
-          const ex = data.find((e) => e.id === parseInt(editId));
-          if (ex) openDetail(ex);
-        }
+    // Run migration first (adds weight_increment, video_url, video_type columns if missing)
+    fetch("/api/admin/migrate", { method: "POST" })
+      .catch(() => {}) // ignore migrate errors — table may already be up to date
+      .finally(() => {
+        fetch("/api/workouts/exercises")
+          .then((r) => {
+            if (!r.ok) throw new Error("fetch failed");
+            return r.json();
+          })
+          .then((data: Exercise[]) => {
+            if (Array.isArray(data)) setExercises(data);
+            setLoading(false);
+            if (editId) {
+              const ex = (Array.isArray(data) ? data : []).find((e) => e.id === parseInt(editId));
+              if (ex) openDetail(ex);
+            }
+          })
+          .catch(() => setLoading(false));
       });
   }, [editId]);
 

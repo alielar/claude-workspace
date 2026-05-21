@@ -617,21 +617,25 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
     return () => clearInterval(t);
   }, []);
 
-  // Load session data
+  // Load session data (migrate first to ensure exercise_db columns exist)
   useEffect(() => {
-    fetch(`/api/workouts/session/${sid}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Session not found");
-        return r.json();
-      })
-      .then((d: SessionData) => {
-        setData(d);
-        setLoggedSets(d.loggedSets ?? []);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e.message ?? "Failed to load session");
-        setLoading(false);
+    fetch("/api/admin/migrate", { method: "POST" })
+      .catch(() => {})
+      .finally(() => {
+        fetch(`/api/workouts/session/${sid}`)
+          .then((r) => {
+            if (!r.ok) throw new Error("Session not found");
+            return r.json();
+          })
+          .then((d: SessionData) => {
+            setData(d);
+            setLoggedSets(d.loggedSets ?? []);
+            setLoading(false);
+          })
+          .catch((e: Error) => {
+            setError(e.message ?? "Failed to load session");
+            setLoading(false);
+          });
       });
   }, [sid]);
 
