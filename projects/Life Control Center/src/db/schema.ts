@@ -451,6 +451,11 @@ export const exerciseDb = sqliteTable("exercise_db", {
   secondaryMuscles: text("secondary_muscles"), // JSON array string
   equipment: text("equipment"),            // "dumbbell" | "cable" | "bodyweight" | ...
   notes: text("notes"),
+  // Default weight increment for progressive overload suggestions
+  weightIncrement: real("weight_increment").notNull().default(2.5),
+  // Demo video: YouTube embed URL or Vercel Blob URL
+  videoUrl: text("video_url"),
+  videoType: text("video_type"), // "youtube" | "upload" | null
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

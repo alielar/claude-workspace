@@ -10,7 +10,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "import:macrofactor": "npx tsx scripts/import-macrofactor.ts"
+    "import:macrofactor": "npx tsx scripts/import-macrofactor.ts",
+    "seed:plan-exercises": "npx tsx scripts/seed-plan-exercises.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",

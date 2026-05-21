@@ -170,6 +170,11 @@ export async function POST() {
       estimated_1rm REAL,
       achieved_at TEXT NOT NULL
     )`,
+
+    // ── Workouts v2: exercise_db new columns ─────────────────────────────────
+    `ALTER TABLE exercise_db ADD COLUMN weight_increment REAL NOT NULL DEFAULT 2.5`,
+    `ALTER TABLE exercise_db ADD COLUMN video_url TEXT`,
+    `ALTER TABLE exercise_db ADD COLUMN video_type TEXT`,
   ];
 
   const results: string[] = [];
