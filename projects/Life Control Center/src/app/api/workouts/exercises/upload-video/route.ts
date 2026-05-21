@@ -9,7 +9,7 @@ import { auth } from "@/lib/auth";
 import { put } from "@vercel/blob";
 import { db } from "@/db";
 import { exerciseDb } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -28,6 +28,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid exerciseId" }, { status: 400 });
   }
 
+  // Verify this exercise belongs to the authenticated user
+  const [exercise] = await db
+    .select({ id: exerciseDb.id })
+    .from(exerciseDb)
+    .where(and(eq(exerciseDb.id, exerciseId), eq(exerciseDb.userId, session.user.id)))
+    .limit(1);
+  if (!exercise) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   const ext = file.name.split(".").pop() ?? "mp4";
   const blobName = `exercise-videos/${exerciseId}-${Date.now()}.${ext}`;
 
@@ -36,7 +44,7 @@ export async function POST(req: NextRequest) {
   await db
     .update(exerciseDb)
     .set({ videoUrl: blob.url, videoType: "upload" })
-    .where(eq(exerciseDb.id, exerciseId));
+    .where(and(eq(exerciseDb.id, exerciseId), eq(exerciseDb.userId, session.user.id)));
 
   return NextResponse.json({ url: blob.url });
 }
