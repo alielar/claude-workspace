@@ -11,12 +11,12 @@ export type NavItem = {
 };
 
 export const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard", color: "#B388FF" },
+  { href: "/dashboard", label: "Dashboard", icon: "dashboard", color: "#7C4DFF" },
   { href: "/workouts",  label: "Workouts",  icon: "workouts",  color: "#FF8A8A" },
-  { href: "/news",      label: "News",      icon: "news",      color: "#7EE7FF" },
+  { href: "/news",      label: "News",      icon: "news",      color: "#64FFDA" },
   { href: "/checklist", label: "Checklist", icon: "checklist", color: "#6FD49A" },
-  { href: "/wordbank",  label: "Words",     icon: "words",     color: "#B388FF" },
-  { href: "/library",   label: "Library",   icon: "library",   color: "#7EE7FF" },
+  { href: "/wordbank",  label: "Words",     icon: "words",     color: "#7C4DFF" },
+  { href: "/library",   label: "Library",   icon: "library",   color: "#64FFDA" },
   { href: "/mood",      label: "Mood",      icon: "mood",      color: "#FFC15C" },
   { href: "/sleep",     label: "Sleep",     icon: "sleep",     color: "#818CF8" },
   { href: "/finance",   label: "Finance",   icon: "finance",   color: "#6FD49A" },

@@ -27,7 +27,7 @@ const COLUMNS = [
   { id: "football",    label: "Football",    color: "#F97316", categories: ["football"] },
   { id: "geopolitics", label: "Geopolitics", color: "#FF8A8A", categories: ["geopolitics"] },
   { id: "business",    label: "Business",    color: "#6FD49A", categories: ["business"] },
-  { id: "tech",        label: "Tech & AI",   color: "#7EE7FF", categories: ["tech", "ai"] },
+  { id: "tech",        label: "Tech & AI",   color: "#64FFDA", categories: ["tech", "ai"] },
 ];
 
 // ─── Story card ───────────────────────────────────────────────────────────────

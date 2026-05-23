@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, lazy, Suspense } from "react";
+import { useRouter } from "next/navigation";
 
 const AnalyticsPanel = lazy(() => import("./AnalyticsPanel"));
 const WorkoutsPanel = lazy(() => import("./WorkoutsPanel"));
@@ -16,18 +17,35 @@ const DRAWER_TITLES: Record<Exclude<DrawerType, null>, string> = {
 
 export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "cards" | "hidden" }) {
   const [open, setOpen] = useState<DrawerType>(null);
+  // Track which panels have been opened so we can keep them mounted (cached)
+  const [mounted, setMounted] = useState<Set<Exclude<DrawerType, null>>>(new Set());
+  const router = useRouter();
+
+  function openDrawer(key: Exclude<DrawerType, null>) {
+    setMounted((prev) => new Set(prev).add(key));
+    setOpen(key);
+  }
 
   // Listen for external open requests (e.g. empty state CTA)
+  // Only register on non-hidden instances to prevent double-drawer bug
   useEffect(() => {
+    if (mode === "hidden") return;
     function handler(e: Event) {
       const detail = (e as CustomEvent).detail;
       if (detail && DRAWER_TITLES[detail as Exclude<DrawerType, null>]) {
-        setOpen(detail as Exclude<DrawerType, null>);
+        openDrawer(detail as Exclude<DrawerType, null>);
       }
     }
     window.addEventListener("open-workout-drawer", handler);
     return () => window.removeEventListener("open-workout-drawer", handler);
-  }, []);
+  }, [mode]);
+
+  // Listen for data changes from drawer panels and refresh the page
+  useEffect(() => {
+    function handler() { router.refresh(); }
+    window.addEventListener("workouts-data-changed", handler);
+    return () => window.removeEventListener("workouts-data-changed", handler);
+  }, [router]);
 
   const items: { key: Exclude<DrawerType, null>; label: string; desc: string }[] = [
     { key: "analytics", label: "Analytics", desc: "Volume, trends, PRs" },
@@ -43,7 +61,7 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
           {items.map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setOpen(key)}
+              onClick={() => openDrawer(key)}
               style={{
                 padding: "5px 12px", borderRadius: 7, fontSize: 12,
                 color: "var(--ink-4)", border: "1px solid var(--line)",
@@ -59,11 +77,11 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
 
       {/* Section cards */}
       {mode === "cards" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 14 }}>
+        <div className="workout-section-cards" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 14 }}>
           {items.map(({ key, label, desc }) => (
             <button
               key={key}
-              onClick={() => setOpen(key)}
+              onClick={() => openDrawer(key)}
               className="cc-card"
               style={{
                 padding: "18px 20px", cursor: "pointer", textAlign: "left",
@@ -116,15 +134,15 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
               </button>
             </div>
 
-            {/* Panel content */}
+            {/* Panel content — keep mounted panels alive for caching */}
             <Suspense fallback={
               <div style={{ padding: "40px 24px", color: "var(--ink-4)", fontSize: 13, fontFamily: "var(--f-mono)" }}>
                 Loading {DRAWER_TITLES[open]}...
               </div>
             }>
-              {open === "analytics" && <AnalyticsPanel />}
-              {open === "workouts" && <WorkoutsPanel />}
-              {open === "exercises" && <ExercisesPanel />}
+              {mounted.has("analytics") && <div style={{ display: open === "analytics" ? "block" : "none" }}><AnalyticsPanel /></div>}
+              {mounted.has("workouts") && <div style={{ display: open === "workouts" ? "block" : "none" }}><WorkoutsPanel /></div>}
+              {mounted.has("exercises") && <div style={{ display: open === "exercises" ? "block" : "none" }}><ExercisesPanel /></div>}
             </Suspense>
           </div>
         </div>

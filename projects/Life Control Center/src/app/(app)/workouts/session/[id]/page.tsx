@@ -73,9 +73,9 @@ export default function SessionPage() {
       {Object.keys(suggestions).length > 0 && (
         <div style={{
           padding: "10px 20px", fontSize: 12, letterSpacing: "0.04em",
-          background: "rgba(179,136,255,0.08)",
+          background: "rgba(124,77,255,0.08)",
           color: "var(--violet)",
-          borderBottom: "1px solid rgba(179,136,255,0.20)",
+          borderBottom: "1px solid rgba(124,77,255,0.20)",
           display: "flex", alignItems: "center", gap: 8,
         }}>
           <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", display: "inline-block" }} />

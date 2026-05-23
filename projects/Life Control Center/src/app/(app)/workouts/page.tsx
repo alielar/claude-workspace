@@ -18,6 +18,8 @@ import PrTickerClient from "@/components/workouts/PrTickerClient";
 import MonthCalendar from "@/components/workouts/MonthCalendar";
 import WorkoutDrawers from "@/components/workouts/WorkoutDrawers";
 import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
+import RecentSessions from "@/components/workouts/RecentSessions";
+import WeeklyVolume from "@/components/workouts/WeeklyVolume";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -279,14 +281,14 @@ export default async function WorkoutsPage() {
             }
           </div>
         </div>
-        <WorkoutDrawers mode="hidden" />
+        {/* WorkoutDrawers cards instance below handles all drawers */}
       </div>
 
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
       {prs.length > 0 && <PrTickerClient initialPrs={prs} />}
 
       {/* ── Main 2-col layout ────────────────────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "8fr 4fr", gap: 14 }}>
+      <div className="workout-main-grid" style={{ display: "grid", gridTemplateColumns: "8fr 4fr", gap: 14 }}>
 
         {/* LEFT */}
         <div>
@@ -296,21 +298,21 @@ export default async function WorkoutsPage() {
               <div className="cc-card" style={{
                 marginBottom: 14, padding: 0, overflow: "hidden",
                 background: `
-                  radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.16), transparent 60%),
-                  radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+                  radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.16), transparent 60%),
+                  radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.10), transparent 60%),
                   var(--bg-card)`,
               }}>
                 <div style={{ padding: "30px 32px" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div className="workout-hero-layout" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, letterSpacing: "0.20em", textTransform: "uppercase" as const, color: "var(--ink-3)", marginBottom: 12 }}>
                         <span style={{ width: 6, height: 6, borderRadius: "50%", background: isRestDay ? "var(--ink-4)" : "var(--cyan)", boxShadow: isRestDay ? "none" : "0 0 8px var(--cyan)", flexShrink: 0 }} />
                         {isRestDay ? "Rest day · no session planned" : `Today · ${upNextPlan.name}`}
                       </div>
-                      <div style={{
+                      <div className="workout-hero-title" style={{
                         fontSize: 64, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 0.9,
                         background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text",
-                        color: "transparent", filter: "drop-shadow(0 0 24px rgba(179,136,255,0.20))",
+                        color: "transparent", filter: "drop-shadow(0 0 24px rgba(124,77,255,0.20))",
                       }}>
                         {upNextPlan.name.toUpperCase()}
                       </div>
@@ -343,7 +345,7 @@ export default async function WorkoutsPage() {
                         padding: "14px 22px", borderRadius: 10,
                         background: "var(--grad)", color: "#0A0A14",
                         fontSize: 14, fontWeight: 600, letterSpacing: "-0.005em",
-                        boxShadow: "0 0 24px rgba(179,136,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40)",
+                        boxShadow: "0 0 24px rgba(124,77,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40)",
                         flexShrink: 0,
                       }}
                     >
@@ -353,7 +355,7 @@ export default async function WorkoutsPage() {
 
                   {/* Exercise preview grid */}
                   {upNextExercises.length > 0 && (
-                    <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                    <div className="workout-exercise-preview" style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
                       {upNextExercises.map((ex, i) => (
                         <div key={i} style={{
                           display: "grid", gridTemplateColumns: "24px 1fr auto",
@@ -392,7 +394,7 @@ export default async function WorkoutsPage() {
                   <div className="tail">{plans.length} workouts</div>
                 </div>
                 <div className="cc-card-body">
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                  <div className="workout-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                     {plans.map((p) => {
                       const isNext = p.id === upNextPlan.id;
                       const lastDate = lastDoneMap.get(p.id);
@@ -402,9 +404,9 @@ export default async function WorkoutsPage() {
                         <Link key={p.id} href={`/workouts/session/new?planId=${p.id}`} style={{ display: "block", textDecoration: "none" }}>
                           <div style={{
                             padding: 16, borderRadius: 12, cursor: "pointer", position: "relative", transition: "all 0.12s",
-                            border: `1px solid ${isNext ? "rgba(179,136,255,0.30)" : "var(--line)"}`,
+                            border: `1px solid ${isNext ? "rgba(124,77,255,0.30)" : "var(--line)"}`,
                             background: isNext
-                              ? "radial-gradient(70% 80% at 0% 0%, rgba(179,136,255,0.12), transparent 60%), rgba(255,255,255,0.025)"
+                              ? "radial-gradient(70% 80% at 0% 0%, rgba(124,77,255,0.12), transparent 60%), rgba(255,255,255,0.025)"
                               : "rgba(255,255,255,0.018)",
                           }}>
                             {isNext && (
@@ -447,13 +449,13 @@ export default async function WorkoutsPage() {
               <div style={{
                 padding: "48px 40px", textAlign: "center",
                 background: `
-                  radial-gradient(50% 60% at 50% 0%, rgba(179,136,255,0.08), transparent 70%),
+                  radial-gradient(50% 60% at 50% 0%, rgba(124,77,255,0.08), transparent 70%),
                   var(--bg-card)`,
               }}>
                 <div style={{
-                  fontSize: 48, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
+                  fontSize: 48, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1.2,
                   background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text",
-                  color: "transparent", marginBottom: 16,
+                  color: "transparent", marginBottom: 16, paddingBottom: "0.15em",
                 }}>
                   Build your program
                 </div>
@@ -468,7 +470,7 @@ export default async function WorkoutsPage() {
                     padding: "14px 28px", borderRadius: 10,
                     background: "var(--grad)", color: "#0A0A14",
                     fontSize: 15, fontWeight: 600, letterSpacing: "-0.005em",
-                    boxShadow: "0 0 24px rgba(179,136,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40)",
+                    boxShadow: "0 0 24px rgba(124,77,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40)",
                     border: "none", cursor: "pointer",
                   }}
                 >
@@ -485,12 +487,18 @@ export default async function WorkoutsPage() {
             </div>
           )}
 
+          {/* ── Recent Sessions ───────────────────────────────────── */}
+          <RecentSessions />
+
           {/* ── Section cards ────────────────────────────────────────── */}
           <WorkoutDrawers mode="cards" />
         </div>
 
         {/* RIGHT */}
         <div>
+          {/* Weekly volume summary */}
+          <WeeklyVolume />
+
           {/* Month calendar */}
           <MonthCalendar
             initialSessions={calendarSessions}

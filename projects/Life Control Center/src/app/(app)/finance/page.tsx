@@ -53,8 +53,8 @@ const DEMO_LIABILITIES: Liability[] = [
 
 // Category colors for allocation bar
 const CAT_COLORS: Record<string, string> = {
-  Cash:   "#7EE7FF",
-  Equity: "#B388FF",
+  Cash:   "#64FFDA",
+  Equity: "#7C4DFF",
   Bonds:  "#9AA8D6",
   Crypto: "#FFC15C",
   RE:     "#6FD49A",
@@ -129,7 +129,7 @@ export default function FinancePage() {
           {/* NW hero */}
           <div className="cc-card" style={{
             padding: "36px 40px 32px", marginBottom: 14,
-            background: "radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(111,212,154,0.10), transparent 60%), var(--bg-card)",
+            background: "radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.14), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(111,212,154,0.10), transparent 60%), var(--bg-card)",
           }}>
             {/* Label */}
             <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
@@ -144,7 +144,7 @@ export default function FinancePage() {
                 <div style={{
                   fontSize: 96, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9, marginTop: 6,
                   background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
-                  filter: "drop-shadow(0 0 28px rgba(179,136,255,0.22))", fontFamily: "var(--f-mono)",
+                  filter: "drop-shadow(0 0 28px rgba(124,77,255,0.22))", fontFamily: "var(--f-mono)",
                 }}>
                   <span style={{ fontSize: 36, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)", marginRight: 8, fontWeight: 300 }}>€</span>
                   {fmtFull(netWorth)}
@@ -203,7 +203,7 @@ export default function FinancePage() {
                     style={{
                       padding: "5px 11px", fontSize: 11, color: range === r ? "var(--violet)" : "var(--ink-3)",
                       fontFamily: "var(--f-mono)", letterSpacing: "0.06em", cursor: "pointer", borderRadius: 6,
-                      border: 0, background: range === r ? "rgba(179,136,255,0.15)" : "transparent",
+                      border: 0, background: range === r ? "rgba(124,77,255,0.15)" : "transparent",
                       transition: "all var(--t-1)",
                     }}
                   >{r}</button>
@@ -215,12 +215,12 @@ export default function FinancePage() {
             <svg viewBox="0 0 800 260" preserveAspectRatio="none" style={{ width: "100%", height: 260, display: "block", marginTop: 16 }}>
               <defs>
                 <linearGradient id="finGradFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="rgba(179,136,255,0.35)" />
-                  <stop offset="100%" stopColor="rgba(179,136,255,0)" />
+                  <stop offset="0%" stopColor="rgba(124,77,255,0.35)" />
+                  <stop offset="100%" stopColor="rgba(124,77,255,0)" />
                 </linearGradient>
                 <linearGradient id="finGradStroke" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#B388FF" />
-                  <stop offset="100%" stopColor="#7EE7FF" />
+                  <stop offset="0%" stopColor="#7C4DFF" />
+                  <stop offset="100%" stopColor="#64FFDA" />
                 </linearGradient>
               </defs>
               {/* Grid lines */}
@@ -240,10 +240,10 @@ export default function FinancePage() {
               <path
                 d="M 60,228 L 91,222 L 122,218 L 153,212 L 184,205 L 215,202 L 246,193 L 277,196 L 308,185 L 339,170 L 370,162 L 401,158 L 432,148 L 463,138 L 494,132 L 525,118 L 556,112 L 587,104 L 618,90 L 649,80 L 680,72 L 711,65 L 742,52 L 773,42 L 800,45"
                 fill="none" stroke="url(#finGradStroke)" strokeWidth="2"
-                style={{ filter: "drop-shadow(0 0 4px rgba(179,136,255,0.3))" }}
+                style={{ filter: "drop-shadow(0 0 4px rgba(124,77,255,0.3))" }}
               />
               {/* Latest marker */}
-              <line x1="773" y1="42" x2="773" y2="240" stroke="rgba(126,231,255,0.30)" strokeWidth="1" strokeDasharray="2 3" />
+              <line x1="773" y1="42" x2="773" y2="240" stroke="rgba(100,255,218,0.30)" strokeWidth="1" strokeDasharray="2 3" />
               <circle cx="773" cy="42" r="4" fill="var(--cyan)" style={{ filter: "drop-shadow(0 0 5px var(--cyan))" }} />
               {/* X axis labels */}
               {[["APR 24",60],["OCT 24",220],["APR 25",400],["OCT 25",580],["MAY 26",773]].map(([label,x]) => (

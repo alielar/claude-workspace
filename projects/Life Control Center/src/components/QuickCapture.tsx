@@ -18,7 +18,7 @@ import { Icon } from "@/components/Icon";
 type Tab = "word" | "mood" | "journal" | "checklist";
 
 const TABS: { id: Tab; label: string; icon: string; color: string }[] = [
-  { id: "word",      label: "Word",      icon: "words",     color: "#B388FF" },
+  { id: "word",      label: "Word",      icon: "words",     color: "#7C4DFF" },
   { id: "mood",      label: "Mood",      icon: "mood",      color: "#FFC15C" },
   { id: "journal",   label: "Journal",   icon: "journal",   color: "#FB923C" },
   { id: "checklist", label: "Checklist", icon: "checklist", color: "#6FD49A" },
@@ -192,8 +192,8 @@ export function QuickCapture({ open, initialTab = "word", onClose }: QuickCaptur
                         onClick={() => setMoodScore(m.value)}
                         className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
                         style={{
-                          background: moodScore === m.value ? "rgba(179,136,255,0.18)" : "var(--bg-card)",
-                          border: `1px solid ${moodScore === m.value ? "rgba(179,136,255,0.4)" : "var(--border)"}`,
+                          background: moodScore === m.value ? "rgba(124,77,255,0.18)" : "var(--bg-card)",
+                          border: `1px solid ${moodScore === m.value ? "rgba(124,77,255,0.4)" : "var(--border)"}`,
                         }}
                       >
                         <span className="text-xl">{m.emoji}</span>

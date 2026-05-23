@@ -129,7 +129,7 @@ function MuscleVolumeSection({ data }: { data: AnalyticsData["muscleVolume"] }) 
               style={{
                 padding: "3px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
                 border: `1px solid ${view === v ? "var(--violet)" : "var(--line)"}`,
-                background: view === v ? "rgba(179,136,255,0.15)" : "transparent",
+                background: view === v ? "rgba(124,77,255,0.15)" : "transparent",
                 color: view === v ? "var(--violet)" : "var(--ink-4)",
               }}
             >
@@ -243,8 +243,8 @@ function WeeklyTrendSection({ data }: { data: AnalyticsData["weeklyTrend"] }) {
           <AreaChart data={chartData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#B388FF" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="#7EE7FF" stopOpacity={0.05} />
+                <stop offset="5%"  stopColor="#7C4DFF" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#64FFDA" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -256,8 +256,8 @@ function WeeklyTrendSection({ data }: { data: AnalyticsData["weeklyTrend"] }) {
               labelStyle={{ color: "var(--ink-3)" }}
               formatter={(v) => [`${Number(v).toLocaleString()} kg`, "Tonnage"]}
             />
-            <Area type="monotone" dataKey="tonnage" stroke="#B388FF" strokeWidth={2}
-              fill="url(#volGrad)" dot={{ fill: "#B388FF", r: 3 }} activeDot={{ r: 5 }} />
+            <Area type="monotone" dataKey="tonnage" stroke="#7C4DFF" strokeWidth={2}
+              fill="url(#volGrad)" dot={{ fill: "#7C4DFF", r: 3 }} activeDot={{ r: 5 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -323,7 +323,7 @@ function ExerciseProgressionSection({
               style={{
                 padding: "3px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
                 border: `1px solid ${metric === m ? "var(--cyan)" : "var(--line)"}`,
-                background: metric === m ? "rgba(126,231,255,0.12)" : "transparent",
+                background: metric === m ? "rgba(100,255,218,0.12)" : "transparent",
                 color: metric === m ? "var(--cyan)" : "var(--ink-4)",
               }}
             >
@@ -389,8 +389,8 @@ function ExerciseProgressionSection({
                 labelStyle={{ color: "var(--ink-3)" }}
                 formatter={(v) => [`${Number(v)} kg`, metric === "weight" ? "Best weight" : "Est 1RM"]}
               />
-              <Line type="monotone" dataKey="value" stroke="#7EE7FF" strokeWidth={2}
-                dot={{ fill: "#7EE7FF", r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="value" stroke="#64FFDA" strokeWidth={2}
+                dot={{ fill: "#64FFDA", r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -425,7 +425,7 @@ function PRTimelineSection({ prs }: { prs: AnalyticsData["prTimeline"] }) {
               style={{
                 padding: "3px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
                 border: `1px solid ${filter === f ? "var(--violet)" : "var(--line)"}`,
-                background: filter === f ? "rgba(179,136,255,0.15)" : "transparent",
+                background: filter === f ? "rgba(124,77,255,0.15)" : "transparent",
                 color: filter === f ? "var(--violet)" : "var(--ink-4)",
                 textTransform: "capitalize" as const,
               }}
@@ -493,8 +493,8 @@ function PRTimelineSection({ prs }: { prs: AnalyticsData["prTimeline"] }) {
 // ── Section 5: Consistency Heatmap ───────────────────────────────────────────
 
 const HEATMAP_WORKOUT_COLOR: Record<string, string> = {
-  Push:           "rgba(179,136,255,0.85)",
-  Pull:           "rgba(126,231,255,0.85)",
+  Push:           "rgba(124,77,255,0.85)",
+  Pull:           "rgba(100,255,218,0.85)",
   Legs:           "rgba(111,212,154,0.85)",
   "Push-Up SESH": "rgba(255,193,92,0.85)",
 };
@@ -580,7 +580,7 @@ function ConsistencyHeatmapSection({
             // Short name (strip legacy "ProgramName (Plan)" prefix)
             const rawName = session?.workoutName ?? null;
             const shortName = rawName ? (rawName.match(/\((.+)\)/)?.[1] ?? rawName) : null;
-            const color = shortName ? (HEATMAP_WORKOUT_COLOR[shortName] ?? "rgba(179,136,255,0.80)") : null;
+            const color = shortName ? (HEATMAP_WORKOUT_COLOR[shortName] ?? "rgba(124,77,255,0.80)") : null;
 
             return (
               <div
@@ -614,7 +614,7 @@ function ConsistencyHeatmapSection({
         {/* Legend */}
         <div style={{ display: "flex", gap: 10, marginTop: 14, alignItems: "center" }}>
           <span style={{ fontSize: 10, color: "var(--ink-4)" }}>Less</span>
-          {["rgba(255,255,255,0.04)", "rgba(179,136,255,0.30)", "rgba(179,136,255,0.55)", "rgba(179,136,255,0.85)"].map((c, i) => (
+          {["rgba(255,255,255,0.04)", "rgba(124,77,255,0.30)", "rgba(124,77,255,0.55)", "rgba(124,77,255,0.85)"].map((c, i) => (
             <div key={i} style={{ width: 12, height: 12, borderRadius: 2, background: c, border: "1px solid rgba(255,255,255,0.06)" }} />
           ))}
           <span style={{ fontSize: 10, color: "var(--ink-4)" }}>More</span>
@@ -648,11 +648,24 @@ export default function AnalyticsPanel() {
 
   return (
     <div style={{ padding: "0 24px 40px" }}>
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>
-          Analytics<span className="grad-text">.</span>
-        </h2>
-        <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 4 }}>Volume · Progression · PRs · Consistency</div>
+      <div style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>
+            Analytics<span className="grad-text">.</span>
+          </h2>
+          <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 4 }}>Volume · Progression · PRs · Consistency</div>
+        </div>
+        <button
+          onClick={() => { window.location.href = "/api/workouts/export"; }}
+          style={{
+            padding: "6px 14px", borderRadius: 8, fontSize: 11,
+            border: "1px solid var(--line)", background: "rgba(255,255,255,0.04)",
+            color: "var(--ink-3)", cursor: "pointer", letterSpacing: "0.04em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Export CSV →
+        </button>
       </div>
 
       {loading && (

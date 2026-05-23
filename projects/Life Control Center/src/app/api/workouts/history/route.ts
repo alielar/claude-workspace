@@ -61,21 +61,43 @@ export async function GET(req: NextRequest) {
 
   const aggMap = new Map(aggRows.map((r) => [r.sessionId, r]));
 
+  // If ?detail=true, include per-exercise set data
+  const detail = req.nextUrl.searchParams.get("detail") === "true";
+
+  let setsMap: Record<number, Array<{ exerciseName: string; setNumber: number; weightKg: number | null; reps: number | null; setType: string }>> = {};
+  if (detail && sessionIds.length > 0) {
+    const allSets = await db
+      .select({
+        sessionId: gymSets.sessionId,
+        exerciseName: gymSets.exerciseName,
+        setNumber: gymSets.setNumber,
+        weightKg: gymSets.weightKg,
+        reps: gymSets.reps,
+        setType: gymSets.setType,
+      })
+      .from(gymSets)
+      .where(sql`${gymSets.sessionId} in (${sql.join(sessionIds.map((id) => sql`${id}`), sql`,`)})`)
+      .orderBy(gymSets.setNumber);
+    for (const s of allSets) {
+      if (!setsMap[s.sessionId]) setsMap[s.sessionId] = [];
+      setsMap[s.sessionId].push(s);
+    }
+  }
+
   const result = sessions.map((s) => {
     const agg = aggMap.get(s.id);
-    // Extract short name for backward compat: "Beta (Push)" → "Push"
     const sessionName = s.workoutName.match(/\((.+)\)/)?.[1] ?? s.workoutName;
     return {
       id: s.id,
       sessionName,
       workoutName: s.workoutName,
       date: s.date,
-      // Backward compat: startedAt as ms timestamp
       startedAt: s.createdAt?.getTime() ?? Date.now(),
       durationSeconds: s.durationSeconds,
       notes: s.notes,
       setCount: agg?.setCount ?? 0,
       totalVolume: Math.round(agg?.totalVolume ?? 0),
+      ...(detail ? { sets: setsMap[s.id] ?? [] } : {}),
     };
   });
 

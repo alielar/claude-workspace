@@ -33,8 +33,8 @@ function formatDuration(s: number | null): string {
 }
 
 const SESSION_COLOR: Record<string, string> = {
-  Push: "rgba(179,136,255,0.80)",
-  Pull: "rgba(126,231,255,0.80)",
+  Push: "rgba(124,77,255,0.80)",
+  Pull: "rgba(100,255,218,0.80)",
   Legs: "rgba(111,212,154,0.80)",
   "Push-Up SESH": "rgba(255,193,92,0.80)",
 };
@@ -96,7 +96,7 @@ export default function WeekCalendar({
         <div className="cc-card-body">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
             {weekDays.map((day) => {
-              const accentColor = day.sessionName ? (SESSION_COLOR[day.sessionName] ?? "rgba(179,136,255,0.80)") : null;
+              const accentColor = day.sessionName ? (SESSION_COLOR[day.sessionName] ?? "rgba(124,77,255,0.80)") : null;
               const isClickable = day.sessionId != null || day.isToday;
 
               const cellInner = (
@@ -109,18 +109,18 @@ export default function WeekCalendar({
                     borderRadius: 10,
                     border: `1px solid ${
                       day.isToday
-                        ? "rgba(179,136,255,0.40)"
+                        ? "rgba(124,77,255,0.40)"
                         : day.sessionId
-                        ? "rgba(179,136,255,0.18)"
+                        ? "rgba(124,77,255,0.18)"
                         : "var(--line)"
                     }`,
                     background: day.isToday
-                      ? "radial-gradient(70% 80% at 0% 0%, rgba(179,136,255,0.18), transparent 60%), rgba(255,255,255,0.025)"
+                      ? "radial-gradient(70% 80% at 0% 0%, rgba(124,77,255,0.18), transparent 60%), rgba(255,255,255,0.025)"
                       : day.sessionId
-                      ? "rgba(179,136,255,0.06)"
+                      ? "rgba(124,77,255,0.06)"
                       : "rgba(255,255,255,0.018)",
                     boxShadow: day.isToday
-                      ? "0 0 20px rgba(179,136,255,0.18), inset 0 0 10px rgba(179,136,255,0.06)"
+                      ? "0 0 20px rgba(124,77,255,0.18), inset 0 0 10px rgba(124,77,255,0.06)"
                       : "none",
                     cursor: isClickable ? "pointer" : "default",
                     transition: "border-color 0.15s, background 0.15s",
@@ -332,7 +332,7 @@ export default function WeekCalendar({
               <div style={{ color: "var(--ink-4)", fontSize: 13 }}>Loading…</div>
             )}
             {allSessions && allSessions.map((s) => {
-              const color = SESSION_COLOR[s.sessionName] ?? "rgba(179,136,255,0.80)";
+              const color = SESSION_COLOR[s.sessionName] ?? "rgba(124,77,255,0.80)";
               return (
                 <div
                   key={s.id}

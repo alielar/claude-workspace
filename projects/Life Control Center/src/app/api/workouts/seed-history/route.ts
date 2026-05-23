@@ -1,7 +1,9 @@
 /**
  * POST /api/workouts/seed-history
- * Seeds April 2026 with ~19 gym sessions (5/week pattern) and progressive weights.
- * Uses the user's existing exercise_db entries. Skips if April already has data.
+ * Seeds March 16 → May 31 2026 with gym sessions (5/week, Mon–Fri).
+ * Uses the user's existing exercise_db and workout plans.
+ * Progressive weights: +1.25 kg per exercise encounter.
+ * Skips dates that already have sessions.
  */
 
 import { NextResponse } from "next/server";
@@ -10,77 +12,60 @@ import { db } from "@/db";
 import { gymSessions, gymSets, exerciseDb, programs, workoutPlans, planExercises } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
-// Workout day schedule for April 2026 (5 days/week, Mon-Fri, skip weekends)
-// April 1 = Wednesday, so: 1,2,3,4 (Wed-Fri+Mon?), etc.
-// Actual April 2026 calendar:
-// W1: Wed 1, Thu 2, Fri 3
-// W2: Mon 7, Tue 8, Wed 9, Thu 10, Fri 11
-// W3: Mon 14, Tue 15, Wed 16, Thu 17, Fri 18
-// W4: Mon 21, Tue 22, Wed 23, Thu 24, Fri 25
-// W5: Mon 28, Tue 29, Wed 30
-
-const APRIL_TRAINING_DAYS = [
-  1, 2, 3,           // W1: Wed-Fri (3 days)
-  7, 8, 9, 10, 11,   // W2: Mon-Fri (5 days)
-  14, 15, 16, 17, 18, // W3: Mon-Fri (5 days)
-  21, 22, 23, 24, 25, // W4: Mon-Fri (5 days)
-  28, 29,             // W5: Mon-Tue (2 days - partial)
-];
-
-// Take ~19 days from this list
-const SEED_DAYS = APRIL_TRAINING_DAYS.slice(0, 20);
-
-// Rotation pattern: cycles through plans in order
-function getRotation(plans: { id: number; name: string }[]): { id: number; name: string }[] {
-  if (plans.length === 0) return [];
-  const rotation: { id: number; name: string }[] = [];
-  for (let i = 0; i < SEED_DAYS.length; i++) {
-    rotation.push(plans[i % plans.length]);
+// Build weekday dates (Mon–Fri) between two YYYY-MM-DD strings inclusive
+function weekdays(start: string, end: string): string[] {
+  const dates: string[] = [];
+  const d = new Date(start + "T12:00:00Z");
+  const endD = new Date(end + "T12:00:00Z");
+  while (d <= endD) {
+    const dow = d.getUTCDay(); // 0=Sun..6=Sat
+    if (dow >= 1 && dow <= 5) {
+      dates.push(d.toISOString().slice(0, 10));
+    }
+    d.setUTCDate(d.getUTCDate() + 1);
   }
-  return rotation;
+  return dates;
 }
 
-// Progressive weight: starts at baseWeight and adds increment each session for same exercise
-function progressiveWeight(baseKg: number, sessionIndex: number, increment: number): number {
-  return Math.round((baseKg + sessionIndex * increment) * 10) / 10;
-}
-
-// Base weights for common exercises (kg) - realistic beginner-intermediate
+// Base weights for common exercises (kg)
 const BASE_WEIGHTS: Record<string, number> = {
-  "low incline dumbbell press": 20,
+  "incline dumbbell press": 20,
   "dumbbell press": 20,
-  "incline dumbbell press": 18,
   "dumbbell fly": 12,
-  "seated dumbbell overhead press": 14,
+  "dumbbell overhead press": 14,
   "dumbbell shoulder press": 14,
   "cable triceps pushdown": 25,
-  "seated dumbbell lateral raise": 8,
+  "triceps pushdown": 25,
   "dumbbell lateral raise": 8,
-  "dumbbell rear delt fly": 8,
+  "lateral raise": 8,
+  "rear delt": 8,
   "dumbbell wrist curl": 10,
+  "wrist curl": 10,
   "cable lat pulldown": 40,
+  "lat pulldown": 40,
   "dumbbell row": 20,
   "dumbbell pullover": 16,
   "dumbbell bicep curl": 12,
   "dumbbell curl": 12,
   "incline dumbbell curl": 10,
+  "hammer curl": 10,
   "dumbbell shrug": 22,
   "goblet squat": 20,
   "dumbbell lunge": 14,
-  "dumbbell reverse lunge": 14,
+  "reverse lunge": 14,
   "bulgarian split squat": 12,
   "calf raise": 0,
-  "dumbbell romanian deadlift": 18,
   "romanian deadlift": 18,
   "russian twist": 8,
+  "push-up": 0,
 };
 
-function getBaseWeight(exerciseName: string): number {
-  const lower = exerciseName.toLowerCase();
+function getBaseWeight(name: string): number {
+  const lower = name.toLowerCase();
   for (const [key, weight] of Object.entries(BASE_WEIGHTS)) {
     if (lower.includes(key)) return weight;
   }
-  return 10; // default
+  return 10;
 }
 
 export async function POST() {
@@ -90,20 +75,25 @@ export async function POST() {
   }
   const userId = session.user.id;
 
-  // Check if April 2026 already has sessions
-  const [existing] = await db
-    .select({ count: sql<number>`count(*)` })
+  // All weekdays Mar 16 → May 31
+  const allDates = weekdays("2026-03-16", "2026-05-31");
+
+  // Find dates that already have sessions
+  const existingRows = await db
+    .select({ date: gymSessions.date })
     .from(gymSessions)
     .where(
       and(
         eq(gymSessions.userId, userId),
-        sql`${gymSessions.date} >= '2026-04-01'`,
-        sql`${gymSessions.date} <= '2026-04-30'`
+        sql`${gymSessions.date} >= '2026-03-16'`,
+        sql`${gymSessions.date} <= '2026-05-31'`
       )
     );
+  const existingDates = new Set(existingRows.map((r) => r.date));
+  const datesToSeed = allDates.filter((d) => !existingDates.has(d));
 
-  if ((existing?.count ?? 0) > 0) {
-    return NextResponse.json({ message: "April 2026 already has sessions", count: existing.count });
+  if (datesToSeed.length === 0) {
+    return NextResponse.json({ message: "All dates already have sessions", count: 0 });
   }
 
   // Get active program and plans
@@ -143,21 +133,17 @@ export async function POST() {
     planExMap.set(plan.id, rows);
   }
 
-  // Track how many times each exercise has been hit (for progressive overload)
+  // Progressive overload tracking
   const exerciseHitCount = new Map<number, number>();
-
-  const rotation = getRotation(plans);
   let sessionsCreated = 0;
 
-  for (let i = 0; i < SEED_DAYS.length && i < rotation.length; i++) {
-    const day = SEED_DAYS[i];
-    const plan = rotation[i];
-    const date = `2026-04-${String(day).padStart(2, "0")}`;
+  for (let i = 0; i < datesToSeed.length; i++) {
+    const date = datesToSeed[i];
+    const plan = plans[i % plans.length];
     const exercises = planExMap.get(plan.id) ?? [];
-
     if (exercises.length === 0) continue;
 
-    // Vary duration: 35-65 min
+    // Vary duration: 35–65 min
     const durationSeconds = (35 + Math.floor(Math.random() * 30)) * 60;
 
     const [newSession] = await db
@@ -180,7 +166,7 @@ export async function POST() {
       exerciseHitCount.set(ex.exerciseId, hits + 1);
 
       const baseWeight = getBaseWeight(ex.name);
-      const weight = progressiveWeight(baseWeight, hits, 1.25);
+      const weight = Math.round((baseWeight + hits * 1.25) * 10) / 10;
 
       // Parse set config or default to 3 standard sets
       let setConfigs: { type: string; repMin: number; repMax: number }[] = [];
@@ -225,7 +211,7 @@ export async function POST() {
   }
 
   return NextResponse.json({
-    message: `Seeded ${sessionsCreated} sessions in April 2026`,
+    message: `Seeded ${sessionsCreated} sessions from March 16 to May 31, 2026`,
     count: sessionsCreated,
   });
 }

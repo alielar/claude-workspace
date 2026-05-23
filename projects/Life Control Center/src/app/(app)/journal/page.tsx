@@ -171,8 +171,8 @@ export default function JournalPage() {
 
       {/* Reminder banner */}
       <div style={{
-        padding: "18px 22px", border: "1px solid rgba(126,231,255,0.25)", borderRadius: 12,
-        background: "radial-gradient(60% 80% at 0% 0%, rgba(126,231,255,0.10), transparent 60%), rgba(255,255,255,0.012)",
+        padding: "18px 22px", border: "1px solid rgba(100,255,218,0.25)", borderRadius: 12,
+        background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.10), transparent 60%), rgba(255,255,255,0.012)",
         marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 18,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13, lineHeight: 1.5 }}>
@@ -194,7 +194,7 @@ export default function JournalPage() {
           {/* Writing card */}
           <div className="cc-card" style={{
             padding: "36px 44px",
-            background: "radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.10), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.06), transparent 60%), var(--bg-card)",
+            background: "radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.10), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.06), transparent 60%), var(--bg-card)",
           }}>
             {/* Date row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid var(--line)" }}>
@@ -301,8 +301,8 @@ export default function JournalPage() {
                         key={entry.date}
                         onClick={() => setExpandedId(isExpanded ? null : entry.date)}
                         style={{
-                          padding: "14px 16px", border: `1px solid ${isExpanded ? "rgba(179,136,255,0.30)" : "var(--line)"}`,
-                          borderRadius: 10, background: isExpanded ? "rgba(179,136,255,0.04)" : "rgba(255,255,255,0.012)",
+                          padding: "14px 16px", border: `1px solid ${isExpanded ? "rgba(124,77,255,0.30)" : "var(--line)"}`,
+                          borderRadius: 10, background: isExpanded ? "rgba(124,77,255,0.04)" : "rgba(255,255,255,0.012)",
                           marginTop: 8, cursor: "pointer", transition: "all var(--t-1)",
                         }}
                       >
@@ -329,7 +329,7 @@ export default function JournalPage() {
                                   <div style={{ fontFamily: "'EB Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-3)", lineHeight: 1.4 }}>
                                     0{idx+1} · {QUESTIONS[idx]}
                                   </div>
-                                  <div style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 4, lineHeight: 1.55, paddingLeft: 14, borderLeft: "1.5px solid rgba(179,136,255,0.30)" }}>
+                                  <div style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 4, lineHeight: 1.55, paddingLeft: 14, borderLeft: "1.5px solid rgba(124,77,255,0.30)" }}>
                                     {entry.answers[key]}
                                   </div>
                                 </div>

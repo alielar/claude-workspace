@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { workoutPlans, programs, planExercises, exerciseDb } from "@/db/schema";
+import { workoutPlans, programs, planExercises, exerciseDb, gymSessions } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
 async function verifyPlanOwnership(planId: number, userId: string) {
@@ -93,6 +93,15 @@ export async function DELETE(
   if (isNaN(planId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   if (!(await verifyPlanOwnership(planId, session.user.id))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Before deleting, copy workout name into historical sessions so they don't show blank
+  const [planData] = await db.select({ name: workoutPlans.name }).from(workoutPlans).where(eq(workoutPlans.id, planId)).limit(1);
+  if (planData) {
+    await db
+      .update(gymSessions)
+      .set({ originalTemplateName: planData.name, planId: null })
+      .where(eq(gymSessions.planId, planId));
   }
 
   await db.delete(workoutPlans).where(eq(workoutPlans.id, planId));

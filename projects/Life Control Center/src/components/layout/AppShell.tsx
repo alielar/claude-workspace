@@ -40,11 +40,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {/* Skip-to-content for keyboard navigation */}
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+
       {/* Vertical icon sidebar — desktop only, always collapsed */}
       <Sidebar />
 
       {/* Main content — pushed right on desktop by sidebar width via .app-main CSS */}
-      <main className="app-main">
+      <main className="app-main" id="main-content">
         <div className="app-content">
           {children}
         </div>

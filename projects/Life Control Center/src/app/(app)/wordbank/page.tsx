@@ -65,14 +65,14 @@ function FlashCard({ word, mode, onGrade, progress, total }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 14, border: "1px solid var(--line)", borderRadius: 18, background: "rgba(255,255,255,0.012)", position: "relative", overflow: "hidden", minHeight: 480 }}>
       {/* Ambient glow */}
-      <div style={{ position: "absolute", inset: "-40%", background: "radial-gradient(40% 50% at 30% 40%, rgba(179,136,255,0.10), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(126,231,255,0.08), transparent 60%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: "-40%", background: "radial-gradient(40% 50% at 30% 40%, rgba(124,77,255,0.10), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(100,255,218,0.08), transparent 60%)", pointerEvents: "none" }} />
 
       {/* Card */}
       <div style={{
         position: "relative", width: "100%", maxWidth: 580, padding: "42px 48px",
         background: "linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85))",
         border: "1px solid var(--line-hi)", borderRadius: 18,
-        boxShadow: "0 30px 70px rgba(0,0,0,0.50), 0 0 60px rgba(179,136,255,0.10), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "0 30px 70px rgba(0,0,0,0.50), 0 0 60px rgba(124,77,255,0.10), inset 0 1px 0 rgba(255,255,255,0.06)",
         backdropFilter: "blur(20px)",
       }}>
         {/* Top labels */}
@@ -90,7 +90,7 @@ function FlashCard({ word, mode, onGrade, progress, total }: {
         </div>
 
         {/* Word */}
-        <div style={{ fontSize: 64, fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1, textAlign: "center", background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 24px rgba(179,136,255,0.20))", marginTop: 24 }}>
+        <div style={{ fontSize: 64, fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1.2, textAlign: "center", background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 24px rgba(124,77,255,0.20))", marginTop: 24, paddingBottom: "0.15em" }}>
           {word.word}
         </div>
 
@@ -142,7 +142,7 @@ function FlashCard({ word, mode, onGrade, progress, total }: {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, width: "100%", maxWidth: 580, marginTop: 20 }}>
           {([
             { key: "again" as const, label: "Again",  interval: "< 10 min", border: "rgba(255,138,138,0.25)", color: "var(--neg)",    hover: "rgba(255,138,138,0.06)" },
-            { key: "good"  as const, label: "Good",   interval: "3 days",   border: "rgba(126,231,255,0.25)", color: "var(--cyan)",   hover: "rgba(126,231,255,0.06)" },
+            { key: "good"  as const, label: "Good",   interval: "3 days",   border: "rgba(100,255,218,0.25)", color: "var(--cyan)",   hover: "rgba(100,255,218,0.06)" },
             { key: "easy"  as const, label: "Easy",   interval: "7 days",   border: "rgba(111,212,154,0.25)", color: "var(--pos)",    hover: "rgba(111,212,154,0.06)" },
           ]).map((btn) => (
             <button
@@ -309,7 +309,7 @@ export default function WordbankPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.015)", marginBottom: 14 }}>
                 <span style={{ fontSize: 10.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today&apos;s session</span>
                 <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{ height: "100%", background: "var(--grad)", boxShadow: "0 0 8px rgba(179,136,255,0.40)", width: dueWords.length > 0 ? `${Math.round((cardIndex / dueWords.length) * 100)}%` : "0%" }} />
+                  <div style={{ height: "100%", background: "var(--grad)", boxShadow: "0 0 8px rgba(124,77,255,0.40)", width: dueWords.length > 0 ? `${Math.round((cardIndex / dueWords.length) * 100)}%` : "0%" }} />
                 </div>
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--ink)", letterSpacing: "0.04em" }}>
                   {cardIndex} / {dueWords.length}
@@ -365,8 +365,8 @@ export default function WordbankPage() {
                       padding: "6px 12px", border: "1px solid var(--line)", borderRadius: 99, fontSize: 11,
                       color: langFilter === lang ? "var(--ink)" : "var(--ink-3)",
                       letterSpacing: "0.02em", cursor: "pointer", transition: "all 100ms",
-                      background: langFilter === lang ? "rgba(179,136,255,0.10)" : "transparent",
-                      borderColor: langFilter === lang ? "rgba(179,136,255,0.30)" : "var(--line)",
+                      background: langFilter === lang ? "rgba(124,77,255,0.10)" : "transparent",
+                      borderColor: langFilter === lang ? "rgba(124,77,255,0.30)" : "var(--line)",
                     }}
                   >
                     {lang === "all" ? "All" : LANG_LABELS[lang]}
@@ -444,15 +444,15 @@ export default function WordbankPage() {
               <div style={{ display: "flex", gap: 4, height: 6, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.04)", marginTop: 8 }}>
                 {allWords.length > 0 && (
                   <>
-                    <span style={{ display: "block", height: "100%", background: "#7EE7FF", flex: langCounts.en }} />
-                    <span style={{ display: "block", height: "100%", background: "#B388FF", flex: langCounts.fr }} />
+                    <span style={{ display: "block", height: "100%", background: "#64FFDA", flex: langCounts.en }} />
+                    <span style={{ display: "block", height: "100%", background: "#7C4DFF", flex: langCounts.fr }} />
                     <span style={{ display: "block", height: "100%", background: "#FFC15C", flex: langCounts.darija }} />
                   </>
                 )}
               </div>
               <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 10.5, color: "var(--ink-3)", letterSpacing: "0.02em", fontFamily: "var(--f-mono)" }}>
-                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#7EE7FF", marginRight: 5, verticalAlign: "middle" }} />EN {langCounts.en}</span>
-                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#B388FF", marginRight: 5, verticalAlign: "middle" }} />FR {langCounts.fr}</span>
+                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#64FFDA", marginRight: 5, verticalAlign: "middle" }} />EN {langCounts.en}</span>
+                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#7C4DFF", marginRight: 5, verticalAlign: "middle" }} />FR {langCounts.fr}</span>
                 <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#FFC15C", marginRight: 5, verticalAlign: "middle" }} />DA {langCounts.darija}</span>
               </div>
             </div>
@@ -495,8 +495,8 @@ export default function WordbankPage() {
                       fontSize: 8.5, letterSpacing: "0.14em", textTransform: "uppercase", fontFamily: "var(--f-mono)",
                       color: s.source === "news" ? "var(--cyan)" : "var(--violet)",
                       padding: "2px 6px", borderRadius: 99,
-                      background: s.source === "news" ? "rgba(126,231,255,0.08)" : "rgba(179,136,255,0.08)",
-                      border: `1px solid ${s.source === "news" ? "rgba(126,231,255,0.20)" : "rgba(179,136,255,0.20)"}`,
+                      background: s.source === "news" ? "rgba(100,255,218,0.08)" : "rgba(124,77,255,0.08)",
+                      border: `1px solid ${s.source === "news" ? "rgba(100,255,218,0.20)" : "rgba(124,77,255,0.20)"}`,
                     }}>{s.source}</span>
                   </div>
                   <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.context}</div>
@@ -533,7 +533,7 @@ export default function WordbankPage() {
                 <div key={w.id} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                   padding: "8px 0", borderBottom: i < Math.min(dueWords.length, 8) - 1 ? "1px solid var(--line)" : "none", fontSize: 12.5,
-                  background: i === cardIndex ? "linear-gradient(90deg, rgba(179,136,255,0.10), transparent)" : "transparent",
+                  background: i === cardIndex ? "linear-gradient(90deg, rgba(124,77,255,0.10), transparent)" : "transparent",
                   margin: i === cardIndex ? "0 -8px" : "0",
                   borderRadius: i === cardIndex ? 6 : 0,
                 }}>
@@ -563,7 +563,7 @@ export default function WordbankPage() {
       {/* Add word modal */}
       {addOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(6,6,11,0.65)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }} onClick={() => setAddOpen(false)}>
-          <div style={{ width: 520, background: "var(--bg)", border: "1px solid var(--line-hi)", borderRadius: 16, padding: 28, boxShadow: "0 30px 80px rgba(0,0,0,0.5), 0 0 60px rgba(179,136,255,0.15)" }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ width: 520, background: "var(--bg)", border: "1px solid var(--line-hi)", borderRadius: 16, padding: 28, boxShadow: "0 30px 80px rgba(0,0,0,0.5), 0 0 60px rgba(124,77,255,0.15)" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
               <h3 style={{ margin: 0, fontSize: 18, fontWeight: 500, letterSpacing: "-0.01em" }}>Add new word</h3>
               <button className="cc-btn cc-btn-icon" onClick={() => setAddOpen(false)} style={{ width: 30, height: 30, padding: 0 }}>

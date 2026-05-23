@@ -25,6 +25,7 @@ import {
 } from "@/db/schema";
 import { eq, and, desc, max } from "drizzle-orm";
 import { autoCheck } from "@/lib/checklist/autoCheck";
+import { recomputePRs } from "@/lib/workouts/recomputePRs";
 
 async function verifySession(sessionId: number, userId: string) {
   const [row] = await db
@@ -105,14 +106,13 @@ export async function GET(
     .where(eq(gymSets.sessionId, sessionId))
     .orderBy(gymSets.setNumber);
 
-  // Prefill: for each workout exercise, find the last session where it was logged
-  // Return: { exerciseId -> [{ setNumber, weightKg, reps, setType }] }
+  // Prefill: single query for all exercises — find last session's sets per exercise
   const prefillMap: Record<number, Array<{ setNumber: number; weightKg: number | null; reps: number | null; setType: string }>> = {};
 
-  for (const ex of workoutExercises) {
-    // Find the most recent session (other than this one) that has this exercise
-    const lastSets = await db
+  if (workoutExercises.length > 0) {
+    const allPrefillSets = await db
       .select({
+        exerciseId: gymSets.exerciseId,
         setNumber: gymSets.setNumber,
         weightKg: gymSets.weightKg,
         reps: gymSets.reps,
@@ -122,32 +122,33 @@ export async function GET(
       })
       .from(gymSets)
       .innerJoin(gymSessions, eq(gymSets.sessionId, gymSessions.id))
-      .where(
-        and(
-          eq(gymSets.exerciseId, ex.exerciseId),
-          eq(gymSessions.userId, session.user.id!)
-        )
-      )
-      .orderBy(desc(gymSets.createdAt))
-      .limit(20);
+      .where(eq(gymSessions.userId, session.user.id!))
+      .orderBy(desc(gymSets.createdAt));
 
-    // Group by sessionId, pick the most recent session that isn't this one
-    const bySession: Record<number, typeof lastSets> = {};
-    for (const s of lastSets) {
+    // Group by exerciseId → sessionId → sets
+    const byExerciseSession = new Map<number, Map<number, typeof allPrefillSets>>();
+    const exerciseIdSet = new Set(workoutExercises.map((e) => e.exerciseId));
+
+    for (const s of allPrefillSets) {
+      if (!s.exerciseId || !exerciseIdSet.has(s.exerciseId)) continue;
       if (s.sessionId === sessionId) continue;
-      if (!bySession[s.sessionId]) bySession[s.sessionId] = [];
-      bySession[s.sessionId].push(s);
+      if (!byExerciseSession.has(s.exerciseId)) byExerciseSession.set(s.exerciseId, new Map());
+      const sessMap = byExerciseSession.get(s.exerciseId)!;
+      if (!sessMap.has(s.sessionId)) sessMap.set(s.sessionId, []);
+      sessMap.get(s.sessionId)!.push(s);
     }
 
-    const sessionIds = Object.keys(bySession).map(Number);
-    if (sessionIds.length > 0) {
+    for (const [exId, sessMap] of byExerciseSession) {
       // Pick session with highest createdAt
-      const best = sessionIds.reduce((a, b) => {
-        const aTime = bySession[a][0]?.createdAt?.getTime() ?? 0;
-        const bTime = bySession[b][0]?.createdAt?.getTime() ?? 0;
-        return bTime > aTime ? b : a;
-      });
-      prefillMap[ex.exerciseId] = bySession[best].sort((a, b) => a.setNumber - b.setNumber);
+      let bestSessId = -1;
+      let bestTime = 0;
+      for (const [sessId, sets] of sessMap) {
+        const t = sets[0]?.createdAt?.getTime() ?? 0;
+        if (t > bestTime) { bestTime = t; bestSessId = sessId; }
+      }
+      if (bestSessId !== -1) {
+        prefillMap[exId] = sessMap.get(bestSessId)!.sort((a, b) => a.setNumber - b.setNumber);
+      }
     }
   }
 
@@ -278,7 +279,20 @@ export async function DELETE(
   const gymSession = await verifySession(sessionId, session.user.id);
   if (!gymSession) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Collect exercise IDs from this session before deleting (for PR recomputation)
+  const sessionSets = await db
+    .select({ exerciseId: gymSets.exerciseId })
+    .from(gymSets)
+    .where(eq(gymSets.sessionId, sessionId));
+  const affectedExerciseIds = [...new Set(sessionSets.map((s) => s.exerciseId).filter((id): id is number => id !== null))];
+
   // gymSets cascade-delete via FK
   await db.delete(gymSessions).where(eq(gymSessions.id, sessionId));
+
+  // Recompute PRs for affected exercises
+  if (affectedExerciseIds.length > 0) {
+    await recomputePRs(session.user.id, affectedExerciseIds).catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }

@@ -131,7 +131,7 @@ export default async function LibraryPage() {
           {/* Year progress card */}
           <div className="cc-card" style={{
             marginBottom: 14, padding: "24px 28px",
-            background: "radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.12), transparent 60%), var(--bg-card)",
+            background: "radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.12), transparent 60%), var(--bg-card)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24 }}>
               <div>
@@ -139,7 +139,7 @@ export default async function LibraryPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "99px", background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)", display: "inline-block" }} />
                   {currentYear} progress
                 </div>
-                <div style={{ fontSize: 56, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1, background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 18px rgba(179,136,255,0.20))", marginTop: 6 }}>
+                <div style={{ fontSize: 56, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1, background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 18px rgba(124,77,255,0.20))", marginTop: 6 }}>
                   {finished}<span style={{ fontSize: 24, WebkitTextFillColor: "var(--ink-3)" }}> /{allBooks.length} books finished</span>
                 </div>
                 <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 4 }}>
@@ -159,14 +159,14 @@ export default async function LibraryPage() {
                   flex: 1, height: "100%",
                   background:
                     state === "done"    ? "var(--grad)" :
-                    state === "reading" ? "linear-gradient(90deg, rgba(179,136,255,0.50), rgba(126,231,255,0.20))" :
-                    state === "current" ? "rgba(126,231,255,0.20)" :
+                    state === "reading" ? "linear-gradient(90deg, rgba(124,77,255,0.50), rgba(100,255,218,0.20))" :
+                    state === "current" ? "rgba(100,255,218,0.20)" :
                     "rgba(255,255,255,0.025)",
                   boxShadow:
-                    state === "done"    ? "0 0 6px rgba(179,136,255,0.40)" :
-                    state === "current" ? "0 0 8px rgba(126,231,255,0.30)" :
+                    state === "done"    ? "0 0 6px rgba(124,77,255,0.40)" :
+                    state === "current" ? "0 0 8px rgba(100,255,218,0.30)" :
                     "none",
-                  border: state === "current" ? "1px dashed rgba(126,231,255,0.50)" : "none",
+                  border: state === "current" ? "1px dashed rgba(100,255,218,0.50)" : "none",
                   borderRadius: 1,
                 }} />
               ))}
@@ -213,25 +213,25 @@ export default async function LibraryPage() {
                     gap: 18,
                     alignItems: "center",
                     padding: "16px 18px",
-                    border: `1px solid ${isCurrentMonth ? "rgba(179,136,255,0.30)" : "var(--line)"}`,
+                    border: `1px solid ${isCurrentMonth ? "rgba(124,77,255,0.30)" : "var(--line)"}`,
                     borderRadius: 12,
                     background: isCurrentMonth
-                      ? "radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.10), transparent 60%), radial-gradient(40% 80% at 100% 100%, rgba(126,231,255,0.08), transparent 60%), rgba(255,255,255,0.025)"
+                      ? "radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.10), transparent 60%), radial-gradient(40% 80% at 100% 100%, rgba(100,255,218,0.08), transparent 60%), rgba(255,255,255,0.025)"
                       : "rgba(255,255,255,0.012)",
                     cursor: "pointer",
                     marginBottom: 8,
                     position: "relative",
-                    boxShadow: isCurrentMonth ? "0 0 24px rgba(179,136,255,0.10)" : "none",
+                    boxShadow: isCurrentMonth ? "0 0 24px rgba(124,77,255,0.10)" : "none",
                     opacity: isNotStarted && !isCurrentMonth ? 0.8 : 1,
                   }}
                 >
                   {/* Current month left accent */}
                   {isCurrentMonth && (
-                    <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 2, background: "var(--grad)", borderRadius: "2px 0 0 2px", boxShadow: "0 0 10px rgba(179,136,255,0.50)" }} />
+                    <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 2, background: "var(--grad)", borderRadius: "2px 0 0 2px", boxShadow: "0 0 10px rgba(124,77,255,0.50)" }} />
                   )}
                   {/* "This month" badge */}
                   {isCurrentMonth && (
-                    <div style={{ position: "absolute", top: -8, right: 18, fontSize: 9, letterSpacing: "0.20em", textTransform: "uppercase", fontWeight: 600, padding: "2px 8px", background: "var(--grad)", color: "#0A0A14", borderRadius: 99, boxShadow: "0 0 12px rgba(179,136,255,0.40)" }}>
+                    <div style={{ position: "absolute", top: -8, right: 18, fontSize: 9, letterSpacing: "0.20em", textTransform: "uppercase", fontWeight: 600, padding: "2px 8px", background: "var(--grad)", color: "#0A0A14", borderRadius: 99, boxShadow: "0 0 12px rgba(124,77,255,0.40)" }}>
                       This month
                     </div>
                   )}
@@ -252,7 +252,7 @@ export default async function LibraryPage() {
                     background: `linear-gradient(160deg, ${palette[0]}, ${palette[1]})`,
                     position: "relative", flexShrink: 0,
                     opacity: isNotStarted && !isCurrentMonth ? 0.5 : 1,
-                    boxShadow: isCurrentMonth ? "0 0 16px rgba(179,136,255,0.20)" : "0 4px 12px rgba(0,0,0,0.40)",
+                    boxShadow: isCurrentMonth ? "0 0 16px rgba(124,77,255,0.20)" : "0 4px 12px rgba(0,0,0,0.40)",
                   }}>
                     <div style={{ position: "absolute", inset: 6, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                       <div style={{ fontSize: 7.5, color: "rgba(255,255,255,0.75)", lineHeight: 1.15, fontWeight: 500, letterSpacing: 0 }}>
@@ -373,8 +373,8 @@ export default async function LibraryPage() {
           </div>
 
           {/* Drop / add card */}
-          <div style={{ padding: 18, border: "1px dashed var(--line-hi)", borderRadius: 12, background: "rgba(126,231,255,0.04)", textAlign: "center", marginBottom: 14 }}>
-            <div style={{ display: "inline-flex", width: 42, height: 42, borderRadius: "99px", background: "rgba(126,231,255,0.10)", alignItems: "center", justifyContent: "center", color: "var(--cyan)", marginBottom: 8 }}>
+          <div style={{ padding: 18, border: "1px dashed var(--line-hi)", borderRadius: 12, background: "rgba(100,255,218,0.04)", textAlign: "center", marginBottom: 14 }}>
+            <div style={{ display: "inline-flex", width: 42, height: 42, borderRadius: "99px", background: "rgba(100,255,218,0.10)", alignItems: "center", justifyContent: "center", color: "var(--cyan)", marginBottom: 8 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
             <div style={{ fontSize: 13.5, fontWeight: 500 }}>Drop a PDF here</div>

@@ -205,6 +205,10 @@ Wire `autoCheck(userId, source)` from `src/lib/checklist/autoCheck.ts` into:
 
 ## 7. Rules & Conventions
 
+**Communication:**
+- Always use plain, everyday language. No technical jargon or slang.
+- Describe issues in terms of what the user sees or experiences, not internal code details.
+
 **Read first:**
 - Read `node_modules/next/dist/docs/` before writing any Next.js-specific code. This version has breaking API changes.
 

@@ -135,7 +135,7 @@ export default function SleepPage() {
           {/* Last night hero card */}
           <div className="cc-card" style={{
             padding: "30px 32px", marginBottom: 14,
-            background: "radial-gradient(60% 80% at 0% 0%, rgba(126,231,255,0.12), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.10), transparent 60%), var(--bg-card)",
+            background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.12), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.10), transparent 60%), var(--bg-card)",
           }}>
             {/* Header */}
             <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
@@ -148,9 +148,9 @@ export default function SleepPage() {
               <div>
                 <div style={{
                   fontSize: 88, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
-                  background: "linear-gradient(100deg, #7EE7FF 0%, #B388FF 100%)",
+                  background: "linear-gradient(100deg, #64FFDA 0%, #7C4DFF 100%)",
                   WebkitBackgroundClip: "text", color: "transparent",
-                  filter: "drop-shadow(0 0 20px rgba(126,231,255,0.20))",
+                  filter: "drop-shadow(0 0 20px rgba(100,255,218,0.20))",
                 }}>
                   {fmtHours(todayHours).split("h")[0]}<span style={{ fontSize: 40 }}>h</span>
                   {todayHours % 1 !== 0 && <span style={{ fontSize: 40 }}>{" "}{Math.round((todayHours % 1) * 60)}m</span>}
@@ -221,7 +221,7 @@ export default function SleepPage() {
                 {/* Track gradient */}
                 <div style={{
                   position: "absolute", top: 7, left: 0, right: 0, height: 4, borderRadius: 99,
-                  background: "linear-gradient(90deg, rgba(255,138,138,0.40) 0%, rgba(255,193,92,0.40) 30%, rgba(126,231,255,0.40) 60%, rgba(111,212,154,0.40) 100%)",
+                  background: "linear-gradient(90deg, rgba(255,138,138,0.40) 0%, rgba(255,193,92,0.40) 30%, rgba(100,255,218,0.40) 60%, rgba(111,212,154,0.40) 100%)",
                 }} />
                 <input
                   type="range" min={1} max={10} value={quality}
@@ -264,7 +264,7 @@ export default function SleepPage() {
               {/* 8h target line — positioned at 80% of chart height from bottom */}
               <div style={{
                 position: "absolute", left: 0, right: 0, bottom: `${(TARGET_HOURS / maxH) * 100}%`,
-                borderTop: "1px dashed rgba(126,231,255,0.40)",
+                borderTop: "1px dashed rgba(100,255,218,0.40)",
                 fontSize: 9.5, color: "var(--cyan)", letterSpacing: "0.10em", fontFamily: "var(--f-mono)",
                 paddingRight: 6, textAlign: "right",
               }}>
@@ -276,16 +276,16 @@ export default function SleepPage() {
                 const pct    = h > 0 ? Math.min((h / maxH) * 100, 100) : 4;
                 const state  = day.hours !== null ? barState(day.hours, day.isToday) : (day.isToday ? "today" : "");
                 const bgMap: Record<string, string> = {
-                  today:   "linear-gradient(180deg, rgba(179,136,255,0.45), rgba(126,231,255,0.10))",
+                  today:   "linear-gradient(180deg, rgba(124,77,255,0.45), rgba(100,255,218,0.10))",
                   good:    "linear-gradient(180deg, rgba(111,212,154,0.40), rgba(111,212,154,0.10))",
                   deficit: "linear-gradient(180deg, rgba(255,193,92,0.35), rgba(255,193,92,0.10))",
-                  "":      "linear-gradient(180deg, rgba(126,231,255,0.40), rgba(126,231,255,0.10))",
+                  "":      "linear-gradient(180deg, rgba(100,255,218,0.40), rgba(100,255,218,0.10))",
                 };
                 const borderMap: Record<string, string> = {
-                  today:   "rgba(179,136,255,0.40)",
+                  today:   "rgba(124,77,255,0.40)",
                   good:    "rgba(111,212,154,0.30)",
                   deficit: "rgba(255,193,92,0.30)",
-                  "":      "rgba(126,231,255,0.20)",
+                  "":      "rgba(100,255,218,0.20)",
                 };
                 return (
                   <div key={day.date} style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
@@ -299,7 +299,7 @@ export default function SleepPage() {
                     <div style={{
                       height: `${pct}%`, background: bgMap[state], borderRadius: "6px 6px 0 0",
                       border: `1px solid ${borderMap[state]}`, borderBottom: 0,
-                      boxShadow: state === "today" ? "0 0 14px rgba(179,136,255,0.25)" : "none",
+                      boxShadow: state === "today" ? "0 0 14px rgba(124,77,255,0.25)" : "none",
                       transition: "height 300ms var(--easeOut)",
                     }} />
                     {/* Day label */}
@@ -317,8 +317,8 @@ export default function SleepPage() {
               {[
                 { color: "rgba(255,193,92,0.40)", label: "Below target" },
                 { color: "rgba(111,212,154,0.40)", label: "Hit 8h" },
-                { color: "rgba(126,231,255,0.40)", label: "Slightly under" },
-                { color: "rgba(179,136,255,0.40)", label: "Today" },
+                { color: "rgba(100,255,218,0.40)", label: "Slightly under" },
+                { color: "rgba(124,77,255,0.40)", label: "Today" },
               ].map((item) => (
                 <span key={item.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: item.color }} />
@@ -339,8 +339,8 @@ export default function SleepPage() {
             <svg viewBox="0 0 600 110" preserveAspectRatio="none" style={{ width: "100%", height: 110, display: "block" }}>
               <defs>
                 <linearGradient id="sleepQualGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="rgba(126,231,255,0.25)" />
-                  <stop offset="100%" stopColor="rgba(126,231,255,0)" />
+                  <stop offset="0%" stopColor="rgba(100,255,218,0.25)" />
+                  <stop offset="100%" stopColor="rgba(100,255,218,0)" />
                 </linearGradient>
               </defs>
               <line x1="0" x2="600" y1="20" y2="20" stroke="var(--line)" strokeWidth="1" />
@@ -353,9 +353,9 @@ export default function SleepPage() {
               <path
                 d="M0,55 L60,60 L120,50 L180,42 L240,38 L300,32 L360,28 L420,25 L480,30 L540,28 L600,32"
                 fill="none" stroke="var(--cyan)" strokeWidth="1.5"
-                style={{ filter: "drop-shadow(0 0 4px rgba(126,231,255,0.3))" }}
+                style={{ filter: "drop-shadow(0 0 4px rgba(100,255,218,0.3))" }}
               />
-              <circle r="3" cx="600" cy="32" fill="#7EE7FF" style={{ filter: "drop-shadow(0 0 4px #7EE7FF)" }} />
+              <circle r="3" cx="600" cy="32" fill="#64FFDA" style={{ filter: "drop-shadow(0 0 4px #64FFDA)" }} />
             </svg>
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 10.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
               <span>30 days ago</span><span>15 days ago</span><span>Today</span>
@@ -404,8 +404,8 @@ export default function SleepPage() {
               ].map((p) => (
                 <div key={p.label} style={{
                   padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8,
-                  background: p.highlight ? "rgba(126,231,255,0.04)" : "rgba(255,255,255,0.012)",
-                  ...(p.highlight ? { borderColor: "rgba(126,231,255,0.20)" } : {}),
+                  background: p.highlight ? "rgba(100,255,218,0.04)" : "rgba(255,255,255,0.012)",
+                  ...(p.highlight ? { borderColor: "rgba(100,255,218,0.20)" } : {}),
                 }}>
                   <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: p.highlight ? "var(--cyan)" : "var(--ink-3)", fontWeight: 600, marginBottom: 4 }}>
                     {p.label}
@@ -442,7 +442,7 @@ export default function SleepPage() {
           -webkit-appearance: none;
           width: 18px; height: 18px; border-radius: 99px;
           background: #0A0A14; border: 2px solid var(--cyan);
-          box-shadow: 0 0 12px rgba(126,231,255,0.50);
+          box-shadow: 0 0 12px rgba(100,255,218,0.50);
           cursor: pointer;
         }
       `}</style>

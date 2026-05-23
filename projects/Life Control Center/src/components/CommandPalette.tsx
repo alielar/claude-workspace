@@ -45,7 +45,7 @@ export function CommandPalette({ open, onClose, onQuickCapture }: CommandPalette
   // Build item list
   const allItems: PaletteItem[] = [
     // Quick actions
-    { id: "qc-word",      section: "Quick Capture", label: "Add Word",           icon: "words",    color: "#B388FF", action: () => { onQuickCapture?.("word");      onClose(); } },
+    { id: "qc-word",      section: "Quick Capture", label: "Add Word",           icon: "words",    color: "#7C4DFF", action: () => { onQuickCapture?.("word");      onClose(); } },
     { id: "qc-mood",      section: "Quick Capture", label: "Log Mood",           icon: "mood",     color: "#FFC15C", action: () => { onQuickCapture?.("mood");      onClose(); } },
     { id: "qc-journal",   section: "Quick Capture", label: "Journal Entry",      icon: "journal",  color: "#FB923C", action: () => { onQuickCapture?.("journal");   onClose(); } },
     { id: "qc-checklist", section: "Quick Capture", label: "Add Checklist Item", icon: "checklist",color: "#6FD49A", action: () => { onQuickCapture?.("checklist"); onClose(); } },

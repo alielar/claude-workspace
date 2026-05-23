@@ -3,6 +3,53 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 
+function QuickVideoInput({ exerciseId, onSaved }: { exerciseId: number; onSaved: (url: string) => void }) {
+  const [show, setShow] = useState(false);
+  const [url, setUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const match = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    if (!match?.[1]) { alert("Invalid YouTube URL"); return; }
+    setSaving(true);
+    const videoUrl = `https://www.youtube.com/embed/${match[1]}`;
+    const res = await fetch(`/api/workouts/exercises/${exerciseId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoUrl, videoType: "youtube" }),
+    });
+    if (res.ok) { onSaved(videoUrl); setShow(false); }
+    setSaving(false);
+  }
+
+  if (!show) {
+    return (
+      <button onClick={() => setShow(true)} style={{ fontSize: 11, color: "var(--ink-4)", background: "none", border: "none", cursor: "pointer" }}>
+        + Video
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      <input
+        autoFocus value={url} onChange={(e) => setUrl(e.target.value)}
+        placeholder="YouTube URL"
+        style={{
+          width: 160, padding: "4px 8px", borderRadius: 4, fontSize: 11,
+          background: "var(--bg-input)", border: "1px solid var(--line)", color: "var(--ink)", outline: "none",
+        }}
+      />
+      <button onClick={save} disabled={saving} style={{ fontSize: 10, color: "var(--cyan)", background: "none", border: "none", cursor: "pointer" }}>
+        {saving ? "..." : "Save"}
+      </button>
+      <button onClick={() => setShow(false)} style={{ fontSize: 10, color: "var(--ink-4)", background: "none", border: "none", cursor: "pointer" }}>
+        ×
+      </button>
+    </div>
+  );
+}
+
 interface SetConfig {
   type: "standard" | "warmup" | "drop" | "failure";
   repMin: number;
@@ -216,7 +263,10 @@ export default function PlanEditorPage({ params }: { params: Promise<{ planId: s
                   {ex.videoUrl ? (
                     <a href={ex.videoUrl} target="_blank" rel="noopener" style={{ fontSize: 11, color: "var(--cyan)" }}>▶ Video</a>
                   ) : (
-                    <Link href={`/workouts/exercises?edit=${ex.exerciseId}`} style={{ fontSize: 11, color: "var(--ink-4)" }}>+ Video</Link>
+                    <QuickVideoInput
+                      exerciseId={ex.exerciseId}
+                      onSaved={(url) => setExercises((prev) => prev.map((e) => e.id === ex.id ? { ...e, videoUrl: url, videoType: "youtube" } : e))}
+                    />
                   )}
                   <button
                     onClick={() => removeExercise(ex.id)}
@@ -251,7 +301,7 @@ export default function PlanEditorPage({ params }: { params: Promise<{ planId: s
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowPicker(false); }}
         >
-          <div className="cc-card" style={{ width: 560, maxHeight: "70vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div className="cc-card" style={{ width: "min(560px, 100vw - 32px)", maxHeight: "70vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div className="cc-card-head">
               <div className="title">Add exercise to {plan?.name}</div>
               <button onClick={() => setShowPicker(false)} style={{ background: "none", border: "none", color: "var(--ink-4)", cursor: "pointer", fontSize: 18 }}>×</button>
@@ -296,10 +346,8 @@ export default function PlanEditorPage({ params }: { params: Promise<{ planId: s
                 </div>
               )}
             </div>
-            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--line)" }}>
-              <Link href="/workouts/exercises" className="cc-btn" style={{ fontSize: 12 }}>
-                + Create new exercise
-              </Link>
+            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--line)", fontSize: 11, color: "var(--ink-4)" }}>
+              Create new exercises from the main Workouts page → Exercises panel
             </div>
           </div>
         </div>
@@ -333,7 +381,7 @@ function SetEditor({
   }
 
   return (
-    <div style={{ padding: "12px 20px 16px", background: "rgba(179,136,255,0.04)", borderBottom: "1px solid var(--line)" }}>
+    <div style={{ padding: "12px 20px 16px", background: "rgba(124,77,255,0.04)", borderBottom: "1px solid var(--line)" }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" as const }}>
         {/* Set type */}
         <label style={{ fontSize: 11, color: "var(--ink-3)" }}>

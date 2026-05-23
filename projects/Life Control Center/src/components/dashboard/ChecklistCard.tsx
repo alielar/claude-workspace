@@ -79,7 +79,7 @@ export function ChecklistCard({ items, completedIds: initialCompleted, total }: 
             background: allDone ? "var(--grad)" : "var(--grad)",
             WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
             transition: "filter 0.4s ease",
-            filter: allDone ? "drop-shadow(0 0 16px rgba(179,136,255,0.60))" : "none",
+            filter: allDone ? "drop-shadow(0 0 16px rgba(124,77,255,0.60))" : "none",
           }}
         >
           {pct}<span style={{ fontSize: 20, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)" }}>%</span>
@@ -94,7 +94,7 @@ export function ChecklistCard({ items, completedIds: initialCompleted, total }: 
         <div style={{
           height: "100%", width: `${pct}%`, borderRadius: 99,
           background: "var(--grad)",
-          boxShadow: pct > 0 ? "0 0 12px rgba(179,136,255,0.40)" : "none",
+          boxShadow: pct > 0 ? "0 0 12px rgba(124,77,255,0.40)" : "none",
           transition: "width 0.25s var(--easeOut)",
         }} />
       </div>
@@ -129,10 +129,10 @@ export function ChecklistCard({ items, completedIds: initialCompleted, total }: 
                 <span style={{
                   width: 18, height: 18, border: `1.4px solid ${isDone ? "transparent" : "var(--line-hi)"}`,
                   borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  background: isDone ? "var(--grad)" : item.source === "workout" ? "rgba(126,231,255,0.04)" : "rgba(255,255,255,0.02)",
-                  boxShadow: isDone ? "0 0 10px rgba(179,136,255,0.50)" : "none",
+                  background: isDone ? "var(--grad)" : item.source === "workout" ? "rgba(100,255,218,0.04)" : "rgba(255,255,255,0.02)",
+                  boxShadow: isDone ? "0 0 10px rgba(124,77,255,0.50)" : "none",
                   borderStyle: item.source === "workout" ? "dashed" : "solid",
-                  borderColor: item.source === "workout" && !isDone ? "rgba(126,231,255,0.30)" : undefined,
+                  borderColor: item.source === "workout" && !isDone ? "rgba(100,255,218,0.30)" : undefined,
                   flexShrink: 0, transition: "all 0.2s ease",
                 }}>
                   {isDone && (

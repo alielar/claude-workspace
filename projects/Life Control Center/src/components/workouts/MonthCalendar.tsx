@@ -188,7 +188,7 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
       </div>
 
       {/* Calendar grid */}
-      <div className="cc-card-body" style={{ padding: "10px 16px 16px" }}>
+      <div className="cc-card-body" style={{ padding: "10px 16px 16px", overflowX: "auto" }}>
         {/* Day headers */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
           {DOW_HEADERS.map((d) => (
@@ -240,16 +240,16 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
                   border: isToday
                     ? "2px solid var(--violet)"
                     : hasSession
-                    ? "1px solid rgba(179,136,255,0.30)"
+                    ? "1px solid rgba(124,77,255,0.30)"
                     : isMissed
                     ? "1px solid rgba(255,80,80,0.20)"
                     : "1px solid transparent",
                   background: hasSession
-                    ? "linear-gradient(135deg, rgba(179,136,255,0.18), rgba(126,231,255,0.10))"
+                    ? "linear-gradient(135deg, rgba(124,77,255,0.18), rgba(100,255,218,0.10))"
                     : isMissed
                     ? "rgba(255,80,80,0.05)"
                     : isToday
-                    ? "rgba(179,136,255,0.08)"
+                    ? "rgba(124,77,255,0.08)"
                     : isFuture && isPlanned
                     ? "rgba(255,255,255,0.02)"
                     : "transparent",
@@ -327,8 +327,8 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
             {/* Stats */}
             <div style={{
               display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0,
-              background: "rgba(179,136,255,0.06)", borderRadius: 10, overflow: "hidden",
-              border: "1px solid rgba(179,136,255,0.15)", marginBottom: 20,
+              background: "rgba(124,77,255,0.06)", borderRadius: 10, overflow: "hidden",
+              border: "1px solid rgba(124,77,255,0.15)", marginBottom: 20,
             }}>
               {[
                 { value: selectedSession.setCount, label: "sets" },
@@ -337,7 +337,7 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
               ].map((stat, i) => (
                 <div key={stat.label} style={{
                   padding: "14px 10px", textAlign: "center",
-                  borderRight: i < 2 ? "1px solid rgba(179,136,255,0.15)" : "none",
+                  borderRight: i < 2 ? "1px solid rgba(124,77,255,0.15)" : "none",
                 }}>
                   <div style={{ fontSize: 20, fontWeight: 300, fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
                     {stat.value}

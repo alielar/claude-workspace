@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Suspense } from "react";
+import { ensureMigrate } from "@/lib/ensureMigrate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -102,12 +103,14 @@ const INPUT_STYLE: React.CSSProperties = {
 interface NewExerciseModalProps {
   onClose: () => void;
   onCreated: (ex: Exercise) => void;
+  existingNames?: string[];
 }
 
-function NewExerciseModal({ onClose, onCreated }: NewExerciseModalProps) {
+function NewExerciseModal({ onClose, onCreated, existingNames = [] }: NewExerciseModalProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [videoTab, setVideoTab] = useState<"upload" | "youtube">("youtube");
+  const [nameError, setNameError] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -143,7 +146,11 @@ function NewExerciseModal({ onClose, onCreated }: NewExerciseModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) return;
+    // Duplicate check
+    const dup = existingNames.some((n) => n.toLowerCase() === form.name.trim().toLowerCase());
+    if (dup) { setNameError("An exercise with this name already exists"); return; }
     setSaving(true);
+    setNameError("");
 
     try {
       // Create exercise
@@ -200,7 +207,7 @@ function NewExerciseModal({ onClose, onCreated }: NewExerciseModalProps) {
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="cc-card" style={{ width: 620, maxHeight: "90vh", overflow: "auto" }}>
+      <div className="cc-card" style={{ width: "min(620px, 100vw - 32px)", maxHeight: "90vh", overflow: "auto" }}>
         <div className="cc-card-head">
           <div className="title">New Exercise</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--ink-4)", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
@@ -213,11 +220,12 @@ function NewExerciseModal({ onClose, onCreated }: NewExerciseModalProps) {
               <input
                 ref={nameRef}
                 value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setNameError(""); }}
                 placeholder="e.g. Incline Dumbbell Press"
                 required
-                style={INPUT_STYLE}
+                style={{ ...INPUT_STYLE, borderColor: nameError ? "var(--neg)" : undefined }}
               />
+              {nameError && <div style={{ fontSize: 11, color: "var(--neg)", marginTop: 4 }}>{nameError}</div>}
             </Field>
 
             {/* Primary muscle + Equipment */}
@@ -265,7 +273,7 @@ function NewExerciseModal({ onClose, onCreated }: NewExerciseModalProps) {
                         style={{
                           padding: "4px 10px", borderRadius: 12, fontSize: 11, cursor: "pointer",
                           border: `1px solid ${active ? "var(--cyan)" : "var(--line)"}`,
-                          background: active ? "rgba(126,231,255,0.12)" : "transparent",
+                          background: active ? "rgba(100,255,218,0.12)" : "transparent",
                           color: active ? "var(--cyan)" : "var(--ink-4)",
                           transition: "all 0.1s",
                         }}
@@ -290,7 +298,7 @@ function NewExerciseModal({ onClose, onCreated }: NewExerciseModalProps) {
                       style={{
                         textAlign: "left", padding: "10px 14px", borderRadius: 8, cursor: "pointer",
                         border: `1px solid ${active ? "var(--violet)" : "var(--line)"}`,
-                        background: active ? "rgba(179,136,255,0.12)" : "rgba(255,255,255,0.018)",
+                        background: active ? "rgba(124,77,255,0.12)" : "rgba(255,255,255,0.018)",
                         transition: "all 0.1s",
                       }}
                     >
@@ -409,17 +417,14 @@ function ExerciseLibraryInner() {
   const [showNewModal, setShowNewModal] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/migrate", { method: "POST" })
-      .catch(() => {})
-      .finally(() => {
-        fetch("/api/workouts/exercises")
-          .then((r) => { if (!r.ok) throw new Error("fetch failed"); return r.json(); })
-          .then((data: Exercise[]) => {
-            if (Array.isArray(data)) setExercises(data);
-            setLoading(false);
-          })
-          .catch(() => setLoading(false));
-      });
+    ensureMigrate();
+    fetch("/api/workouts/exercises")
+        .then((r) => { if (!r.ok) throw new Error("fetch failed"); return r.json(); })
+        .then((data: Exercise[]) => {
+          if (Array.isArray(data)) setExercises(data);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
   }, []);
 
   const openDetail = useCallback((ex: Exercise) => {
@@ -515,7 +520,7 @@ function ExerciseLibraryInner() {
               style={{
                 padding: "6px 14px", borderRadius: 20, fontSize: 12, cursor: "pointer", transition: "all 0.1s",
                 border: `1px solid ${muscleFilter === mg.key ? "var(--violet)" : "var(--line)"}`,
-                background: muscleFilter === mg.key ? "rgba(179,136,255,0.15)" : "transparent",
+                background: muscleFilter === mg.key ? "rgba(124,77,255,0.15)" : "transparent",
                 color: muscleFilter === mg.key ? "var(--violet)" : "var(--ink-3)",
                 fontWeight: muscleFilter === mg.key ? 500 : 400,
               }}
@@ -586,7 +591,7 @@ function ExerciseLibraryInner() {
       )}
 
       {/* New exercise modal */}
-      {showNewModal && <NewExerciseModal onClose={() => setShowNewModal(false)} onCreated={handleCreated} />}
+      {showNewModal && <NewExerciseModal onClose={() => setShowNewModal(false)} onCreated={handleCreated} existingNames={exercises.map((e) => e.name)} />}
 
       {/* Exercise detail / edit modal */}
       {selected && editForm && (
@@ -594,7 +599,7 @@ function ExerciseLibraryInner() {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
           onClick={(e) => { if (e.target === e.currentTarget) closeDetail(); }}
         >
-          <div className="cc-card" style={{ width: 600, maxHeight: "88vh", overflow: "auto" }}>
+          <div className="cc-card" style={{ width: "min(600px, 100vw - 32px)", maxHeight: "88vh", overflow: "auto" }}>
             <div className="cc-card-head">
               <div className="title">{selected.name}</div>
               <button onClick={closeDetail} style={{ background: "none", border: "none", color: "var(--ink-4)", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>

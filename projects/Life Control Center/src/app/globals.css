@@ -13,9 +13,9 @@
   --bg-card-2: rgba(28, 28, 46, 0.62);
 
   /* Accents */
-  --violet: #B388FF;
-  --cyan:   #7EE7FF;
-  --grad:   linear-gradient(100deg, #B388FF 0%, #7EE7FF 100%);
+  --violet: #7C4DFF;
+  --cyan:   #64FFDA;
+  --grad:   linear-gradient(100deg, #7C4DFF 0%, #64FFDA 100%);
 
   /* Ink (text) */
   --ink:   #ECECF4;
@@ -31,8 +31,8 @@
 
   /* Category colours */
   --c-politics: #FF8A8A;
-  --c-tech:     #7EE7FF;
-  --c-ai:       #B388FF;
+  --c-tech:     #64FFDA;
+  --c-ai:       #7C4DFF;
   --c-mena:     #FFC15C;
   --c-biz:      #6FD49A;
 
@@ -51,13 +51,13 @@
   --bg-input-2: rgba(255, 255, 255, 0.04);
 
   /* Gradient (soft variant for backgrounds) */
-  --grad-soft: linear-gradient(100deg, rgba(179,136,255,0.18) 0%, rgba(126,231,255,0.10) 100%);
+  --grad-soft: linear-gradient(100deg, rgba(124,77,255,0.18) 0%, rgba(100,255,218,0.10) 100%);
 
   /* Card shadow — creates the "lifted glass edge" illusion */
   --shadow-card: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 0 rgba(0,0,0,0.30);
 
   /* Glow (stronger variant) */
-  --glow-violet-hi: 0 0 32px rgba(179,136,255,0.55);
+  --glow-violet-hi: 0 0 32px rgba(124,77,255,0.55);
 
   /* Motion */
   --easeOut: cubic-bezier(.22,.61,.36,1);
@@ -166,9 +166,9 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(70% 50% at 15% 0%, rgba(179,136,255,0.10), transparent 60%),
-    radial-gradient(60% 50% at 100% 80%, rgba(126,231,255,0.08), transparent 60%),
-    radial-gradient(80% 60% at 60% 30%, rgba(80,50,140,0.05), transparent 60%);
+    radial-gradient(70% 50% at 15% 0%, rgba(124,77,255,0.10), transparent 60%),
+    radial-gradient(60% 50% at 100% 80%, rgba(100,255,218,0.08), transparent 60%),
+    radial-gradient(80% 60% at 60% 30%, rgba(50,30,140,0.05), transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -308,7 +308,7 @@ body::after {
 .cc-sidebar-link.active {
   background: var(--grad);
   color: #fff;
-  box-shadow: 0 0 18px rgba(179,136,255,0.35);
+  box-shadow: 0 0 18px rgba(124,77,255,0.35);
 }
 .cc-sidebar-link.active:hover { opacity: 0.9; }
 
@@ -732,7 +732,9 @@ body::after {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  padding-bottom: 0.1em;
+  display: inline-block;
+  line-height: 1.2;
+  padding-bottom: 0.15em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
@@ -978,7 +980,7 @@ body::after {
 }
 .cc-qc-tab:hover { background: rgba(255,255,255,0.05); color: var(--ink-2); }
 .cc-qc-tab.active {
-  background: rgba(var(--qc-color, 179,136,255), 0.15);
+  background: rgba(var(--qc-color, 124,77,255), 0.15);
   color: var(--qc-color, var(--violet));
 }
 /* Color passthrough (CSS variable trick with direct color) */
@@ -1040,16 +1042,16 @@ body::after {
 .card          { background: var(--bg-card);   border: 1px solid var(--border);    border-radius: var(--r-md); }
 .card-hover    { transition: border-color 0.15s, background 0.15s; cursor: pointer; }
 .card-hover:hover { border-color: var(--border-hi); background: var(--bg-card-2); }
-.card-accent   { background: rgba(179,136,255,0.10); border: 1px solid rgba(179,136,255,0.22); border-radius: var(--r-md); }
+.card-accent   { background: rgba(124,77,255,0.10); border: 1px solid rgba(124,77,255,0.22); border-radius: var(--r-md); }
 .glass         { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); }
-.glass-accent  { background: rgba(179,136,255,0.10); border: 1px solid rgba(179,136,255,0.22); border-radius: var(--r-md); }
+.glass-accent  { background: rgba(124,77,255,0.10); border: 1px solid rgba(124,77,255,0.22); border-radius: var(--r-md); }
 .card-frosted  { background: var(--bg-card);   border: 1px solid var(--border);    border-radius: var(--r-md); }
 .card-dark     { background: var(--bg-card-2); border: 1px solid var(--border);    border-radius: var(--r-md); }
 .card-white    { background: var(--bg-card-2); border: 1px solid var(--border-hi); border-radius: var(--r-md); }
 
 .nav-pill { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s, color 0.15s; color: var(--ink-3); white-space: nowrap; }
 .nav-pill:hover  { background: rgba(255,255,255,0.05); color: var(--ink-2); }
-.nav-pill.active { background: rgba(179,136,255,0.12); color: var(--violet); }
+.nav-pill.active { background: rgba(124,77,255,0.12); color: var(--violet); }
 
 .btn          { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, background 0.15s; min-height: 36px; font-family: inherit; border: none; outline: none; white-space: nowrap; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -1079,13 +1081,69 @@ body::after {
 
 .section-label   { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 
-.text-gradient   { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.text-gradient   { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: inline-block; line-height: 1.2; padding-bottom: 0.15em; }
 
 .skeleton { background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-2) 50%, var(--bg-card) 75%); background-size: 200% 100%; animation: cc-shimmer 1.6s infinite; border-radius: var(--r-md); }
 
 .divider         { height: 1px; background: var(--border); }
-.icon-box        { width: 36px; height: 36px; min-width: 36px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; background: rgba(179,136,255,0.12); color: var(--violet); }
+.icon-box        { width: 36px; height: 36px; min-width: 36px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; background: rgba(124,77,255,0.12); color: var(--violet); }
 .card-hover-lift { transition: transform 0.15s, border-color 0.15s; }
 .card-hover-lift:hover { transform: translateY(-1px); border-color: var(--border-hi); }
 .set-row         { min-height: 52px; touch-action: manipulation; }
 .timer-ring      { transform: rotate(-90deg); transform-origin: 50% 50%; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Accessibility
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Focus-visible outlines on all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip-to-content link */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 9999;
+  padding: 12px 20px;
+  background: var(--grad);
+  color: #0A0A14;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: top 0.15s;
+}
+.skip-to-content:focus {
+  top: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mobile responsiveness (≤768px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Workouts main page: 2-col → single col */
+  .workout-main-grid { grid-template-columns: 1fr !important; }
+  /* Workout cards: 3-col → 1 col */
+  .workout-cards-grid { grid-template-columns: 1fr !important; }
+  /* Section cards: 3-col → 1 col */
+  .workout-section-cards { grid-template-columns: 1fr !important; }
+  /* Exercise preview: 2-col → 1 col */
+  .workout-exercise-preview { grid-template-columns: 1fr !important; }
+  /* Page padding tighter on mobile */
+  .page-enter { padding: 16px 16px 80px !important; }
+  /* Up Next hero: stack layout */
+  .workout-hero-layout { flex-direction: column !important; gap: 16px !important; }
+  .workout-hero-layout > a { align-self: stretch !important; text-align: center !important; }
+  /* Hero title smaller on mobile */
+  .workout-hero-title { font-size: 40px !important; }
+  /* Analytics stat grid → single col */
+  .analytics-stat-grid { grid-template-columns: 1fr !important; }
+  /* Session summary stats → stack */
+  .session-summary-grid { grid-template-columns: 1fr !important; }
+}

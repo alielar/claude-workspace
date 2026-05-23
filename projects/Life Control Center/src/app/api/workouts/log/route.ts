@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { workoutLogs, setLogs, personalRecords } from "@/db/schema";
+import { workoutLogs, setLogs, exercisePrs } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { epley1rm } from "@/lib/utils";
 import { autoCheck } from "@/lib/checklist/autoCheck";
@@ -82,38 +82,40 @@ export async function POST(req: NextRequest) {
 
     const current1rm = epley1rm(best.weightKg, best.repsLogged);
 
-    // Check existing PR
+    // Check existing PR in canonical exercisePrs table
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
     const existingPR = await db
       .select()
-      .from(personalRecords)
+      .from(exercisePrs)
       .where(
         and(
-          eq(personalRecords.userId, userId),
-          eq(personalRecords.exerciseId, ex.exerciseId)
+          eq(exercisePrs.userId, userId),
+          eq(exercisePrs.exerciseId, ex.exerciseId)
         )
       )
       .limit(1);
 
     if (existingPR.length === 0 || current1rm > (existingPR[0].estimated1rm ?? 0)) {
       if (existingPR.length === 0) {
-        await db.insert(personalRecords).values({
+        await db.insert(exercisePrs).values({
           userId,
           exerciseId: ex.exerciseId,
+          exerciseName: "",
           bestWeightKg: best.weightKg,
           bestReps: best.repsLogged,
           estimated1rm: current1rm,
-          achievedAt: new Date(),
+          achievedAt: todayStr,
         });
       } else {
         await db
-          .update(personalRecords)
+          .update(exercisePrs)
           .set({
             bestWeightKg: best.weightKg,
             bestReps: best.repsLogged,
             estimated1rm: current1rm,
-            achievedAt: new Date(),
+            achievedAt: todayStr,
           })
-          .where(eq(personalRecords.id, existingPR[0].id));
+          .where(eq(exercisePrs.id, existingPR[0].id));
       }
     }
   }

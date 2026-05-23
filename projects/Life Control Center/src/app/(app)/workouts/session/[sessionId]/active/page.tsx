@@ -98,7 +98,7 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
     }}>
-      <div className="cc-card" style={{ width: 300, padding: "36px 32px", textAlign: "center" }}>
+      <div className="cc-card" style={{ width: "min(300px, 100vw - 32px)", padding: "36px 32px", textAlign: "center" }}>
         <div style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.14em", marginBottom: 20 }}>
           REST TIMER
         </div>
@@ -137,6 +137,18 @@ function NumberPad({
   label: string; unit?: string; allowDecimal?: boolean;
 }) {
   const [input, setInput] = useState(value || "");
+  const padRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap + Escape to close
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    // Focus the pad container on mount
+    padRef.current?.focus();
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   function handleKey(key: string) {
     if (key === "back") setInput((v) => v.slice(0, -1));
@@ -151,10 +163,18 @@ function NumberPad({
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 250, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <div style={{ flex: 1, background: "rgba(0,0,0,0.5)" }} onClick={onClose} />
-      <div style={{
-        background: "var(--bg-card)", borderTop: "1px solid var(--line)",
-        borderRadius: "20px 20px 0 0", padding: "20px 16px 28px",
-      }}>
+      <div
+        ref={padRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Enter ${label}`}
+        tabIndex={-1}
+        style={{
+          background: "var(--bg-card)", borderTop: "1px solid var(--line)",
+          borderRadius: "20px 20px 0 0", padding: "20px 16px 28px",
+          outline: "none",
+        }}
+      >
         {/* Display */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.14em", textTransform: "uppercase" as const, marginBottom: 8 }}>
@@ -171,8 +191,9 @@ function NumberPad({
             <button
               key={i}
               onClick={() => k && handleKey(k)}
+              aria-label={k === "back" ? "Delete last digit" : k === "." ? "Decimal point" : k || undefined}
               style={{
-                height: 56, borderRadius: 12, border: "1px solid var(--line)",
+                height: 56, minWidth: 56, borderRadius: 12, border: "1px solid var(--line)",
                 background: k === "back" ? "rgba(255,100,100,0.08)" : "rgba(255,255,255,0.04)",
                 color: k === "back" ? "var(--neg)" : "var(--ink)",
                 fontSize: k === "back" ? 20 : 22, fontFamily: "var(--f-mono)", fontWeight: 400,
@@ -224,6 +245,7 @@ function Stepper({
           <button
             onClick={() => nudge(-1)}
             disabled={disabled}
+            aria-label={`Decrease ${label}`}
             style={{
               width: 48, height: 48, borderRadius: 10, border: "1px solid var(--line)",
               background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
@@ -234,6 +256,7 @@ function Stepper({
           <button
             onClick={() => !disabled && setShowPad(true)}
             disabled={disabled}
+            aria-label={`Edit ${label} value`}
             style={{
               minWidth: 80, padding: "8px 12px", borderRadius: 10,
               background: disabled ? "transparent" : "var(--bg-input)",
@@ -252,6 +275,7 @@ function Stepper({
           <button
             onClick={() => nudge(1)}
             disabled={disabled}
+            aria-label={`Increase ${label}`}
             style={{
               width: 48, height: 48, borderRadius: 10, border: "1px solid var(--line)",
               background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
@@ -342,11 +366,14 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
-            width: 28, height: 28, borderRadius: 6, background: `${typeColor}22`,
-            border: `1px solid ${typeColor}55`, display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 12, fontWeight: 700, fontFamily: "var(--f-mono)", color: typeColor,
+            width: 28, height: 28, borderRadius: 6,
+            background: isDone ? "rgba(111,212,154,0.20)" : `${typeColor}22`,
+            border: `1px solid ${isDone ? "rgba(111,212,154,0.50)" : `${typeColor}55`}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, fontWeight: 700, fontFamily: "var(--f-mono)",
+            color: isDone ? "var(--pos)" : typeColor,
           }}>
-            {setIndex + 1}
+            {isDone ? "✓" : setIndex + 1}
           </div>
           {/* Set type selector */}
           <select
@@ -496,7 +523,10 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
         }}
       >
         <div style={{ textAlign: "left" }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: allDone ? "var(--pos)" : "var(--ink)" }}>
+          <div style={{
+            fontSize: 15, fontWeight: 600, color: allDone ? "var(--pos)" : "var(--ink)",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
+          }} title={exercise.name}>
             {allDone && <span style={{ marginRight: 6 }}>✓</span>}
             {exercise.name}
           </div>
@@ -521,7 +551,7 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
         <div style={{ padding: "14px 16px" }}>
           {/* PR context */}
           {currentPr > 0 && (
-            <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 14, padding: "8px 12px", background: "rgba(179,136,255,0.06)", borderRadius: 8, borderLeft: "2px solid var(--violet)" }}>
+            <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 14, padding: "8px 12px", background: "rgba(124,77,255,0.06)", borderRadius: 8, borderLeft: "2px solid var(--violet)" }}>
               Current PR: <span style={{ color: "var(--violet)", fontFamily: "var(--f-mono)" }}>est. {currentPr.toFixed(1)} kg 1RM</span>
             </div>
           )}
@@ -592,16 +622,16 @@ function SessionSummary({
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300,
       padding: "0 16px",
     }}>
-      <div className="cc-card" style={{ width: "100%", maxWidth: 440, maxHeight: "88vh", overflow: "auto" }}>
+      <div className="cc-card" style={{ width: "min(440px, 100vw - 32px)", maxHeight: "88vh", overflow: "auto" }}>
         <div className="cc-card-head">
           <div className="title">Session complete 🎉</div>
         </div>
         <div className="cc-card-body">
           {/* Stats hero */}
-          <div style={{
+          <div className="session-summary-grid" style={{
             display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0,
-            background: "rgba(179,136,255,0.06)", borderRadius: 12, overflow: "hidden",
-            border: "1px solid rgba(179,136,255,0.15)", marginBottom: 20,
+            background: "rgba(124,77,255,0.06)", borderRadius: 12, overflow: "hidden",
+            border: "1px solid rgba(124,77,255,0.15)", marginBottom: 20,
           }}>
             {[
               { value: totalSets, label: "sets" },
@@ -610,7 +640,7 @@ function SessionSummary({
             ].map((stat, i) => (
               <div key={stat.label} style={{
                 padding: "18px 12px", textAlign: "center",
-                borderRight: i < 2 ? "1px solid rgba(179,136,255,0.15)" : "none",
+                borderRight: i < 2 ? "1px solid rgba(124,77,255,0.15)" : "none",
               }}>
                 <div style={{ fontSize: 26, fontWeight: 300, fontFamily: "var(--f-mono)", color: "var(--ink)", letterSpacing: "-0.02em" }}>
                   {stat.value}
@@ -683,6 +713,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
   const [showSummary, setShowSummary] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [abandonConfirm, setAbandonConfirm] = useState(false);
+  const [discardConfirm, setDiscardConfirm] = useState(false);
 
   // Elapsed timer
   const startTimeRef = useRef<number>(Date.now());
@@ -695,26 +726,21 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
     return () => clearInterval(t);
   }, []);
 
-  // Load session data (migrate first to ensure exercise_db columns exist)
+  // Load session data
   useEffect(() => {
-    fetch("/api/admin/migrate", { method: "POST" })
-      .catch(() => {})
-      .finally(() => {
-        fetch(`/api/workouts/session/${sid}`)
-          .then((r) => {
-            if (!r.ok) throw new Error("Session not found");
-            return r.json();
-          })
-          .then((d: SessionData) => {
-            setData(d);
-            setLoggedSets(d.loggedSets ?? []);
-            setLoading(false);
-          })
-          .catch((e: Error) => {
-            setError(e.message ?? "Failed to load session");
-            setLoading(false);
-          });
-      });
+    (async () => {
+      try {
+        const r = await fetch(`/api/workouts/session/${sid}`);
+        if (!r.ok) throw new Error("Session not found");
+        const d: SessionData = await r.json();
+        setData(d);
+        setLoggedSets(d.loggedSets ?? []);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to load session");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [sid]);
 
   const handleLogSet = useCallback(async (
@@ -825,14 +851,26 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
             }}>
               {elapsedMin}:{elapsedSec.toString().padStart(2, "0")}
             </div>
-            <button onClick={handleFinish} disabled={finishing} style={{
-              padding: "10px 20px", borderRadius: 10,
-              background: doneSets > 0 ? "var(--grad)" : "rgba(255,255,255,0.06)",
-              border: "none", color: doneSets > 0 ? "#0A0A14" : "var(--ink-3)",
-              fontSize: 14, fontWeight: 700, cursor: finishing ? "wait" : "pointer", letterSpacing: "-0.01em",
-            }}>
-              {finishing ? "Saving…" : "Finish"}
-            </button>
+            {doneSets > 0 ? (
+              <button onClick={handleFinish} disabled={finishing} style={{
+                padding: "10px 20px", borderRadius: 10,
+                background: "var(--grad)", border: "none", color: "#0A0A14",
+                fontSize: 14, fontWeight: 700, cursor: finishing ? "wait" : "pointer", letterSpacing: "-0.01em",
+              }}>
+                {finishing ? "Saving…" : "Finish"}
+              </button>
+            ) : (
+              <button
+                onClick={() => setDiscardConfirm(true)}
+                style={{
+                  padding: "10px 20px", borderRadius: 10,
+                  background: "transparent", border: "1px solid var(--neg)",
+                  color: "var(--neg)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                Discard
+              </button>
+            )}
           </div>
         </div>
 
@@ -900,6 +938,42 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
         )}
       </div>
       </div>{/* end scrollable content */}
+
+      {/* Discard confirmation dialog */}
+      {discardConfirm && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
+        }}>
+          <div className="cc-card" style={{ width: 340, padding: "32px 28px", textAlign: "center" }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "var(--ink)", marginBottom: 8 }}>
+              Discard this session?
+            </div>
+            <div style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 24, lineHeight: 1.5 }}>
+              Nothing will be saved.
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button
+                onClick={() => setDiscardConfirm(false)}
+                className="cc-btn"
+                style={{ padding: "10px 20px", fontSize: 13 }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAbandon}
+                style={{
+                  padding: "10px 20px", borderRadius: 10,
+                  background: "rgba(255,100,100,0.12)", border: "1px solid var(--neg)",
+                  color: "var(--neg)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Overlays */}
       {restTimer && (

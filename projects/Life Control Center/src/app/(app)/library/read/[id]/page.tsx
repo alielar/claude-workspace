@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { ensureMigrate } from "@/lib/ensureMigrate";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useParams, useRouter } from "next/navigation";
 
@@ -49,7 +50,7 @@ function SelectionPopup({ text, position, onAddToBank, onDismiss }: {
         border: "1px solid var(--line-hi)",
         borderRadius: 10,
         padding: "8px 12px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.60), 0 0 24px rgba(179,136,255,0.15)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.60), 0 0 24px rgba(124,77,255,0.15)",
         backdropFilter: "blur(20px)",
         display: "flex",
         alignItems: "center",
@@ -155,8 +156,8 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, onClose }:
             style={{
               padding: "4px 10px", fontSize: 10.5, border: "1px solid var(--line)", borderRadius: 99,
               color: tab === t ? "var(--violet)" : "var(--ink-3)",
-              background: tab === t ? "rgba(179,136,255,0.10)" : "transparent",
-              borderColor: tab === t ? "rgba(179,136,255,0.30)" : "var(--line)",
+              background: tab === t ? "rgba(124,77,255,0.10)" : "transparent",
+              borderColor: tab === t ? "rgba(124,77,255,0.30)" : "var(--line)",
               cursor: "pointer", textTransform: "capitalize", letterSpacing: "0.04em",
             }}
           >
@@ -184,7 +185,7 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, onClose }:
               <div style={{
                 fontFamily: "EB Garamond, Georgia, serif", fontSize: 13, fontStyle: "italic",
                 color: "var(--ink-2)", paddingLeft: 10,
-                borderLeft: "1.5px solid rgba(179,136,255,0.40)", lineHeight: 1.5,
+                borderLeft: "1.5px solid rgba(124,77,255,0.40)", lineHeight: 1.5,
               }}>
                 &ldquo;{a.selectedText}&rdquo;
               </div>
@@ -281,7 +282,7 @@ export default function ReadPage() {
 
   // Load book + annotations + run migration
   useEffect(() => {
-    fetch("/api/admin/migrate", { method: "POST" });
+    ensureMigrate();
     fetch(`/api/library/book/${bookId}`).then((r) => r.json()).then((data) => {
       setBook(data.book);
       const p = data.currentPage ?? 1;
@@ -405,7 +406,7 @@ export default function ReadPage() {
           <button
             className="cc-btn cc-btn-icon"
             onClick={() => setPanel((v) => !v)}
-            style={{ background: panelOpen ? "rgba(179,136,255,0.12)" : undefined, borderColor: panelOpen ? "rgba(179,136,255,0.30)" : undefined }}
+            style={{ background: panelOpen ? "rgba(124,77,255,0.12)" : undefined, borderColor: panelOpen ? "rgba(124,77,255,0.30)" : undefined }}
             title="Highlights panel"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -418,7 +419,7 @@ export default function ReadPage() {
 
       {/* ── Progress strip ────────────────────────────────────────── */}
       <div style={{ height: 2, background: "transparent", flexShrink: 0 }}>
-        <div style={{ height: "100%", background: "var(--grad)", width: `${progressPct}%`, boxShadow: "0 0 8px rgba(179,136,255,0.4)", transition: "width 300ms" }} />
+        <div style={{ height: "100%", background: "var(--grad)", width: `${progressPct}%`, boxShadow: "0 0 8px rgba(124,77,255,0.4)", transition: "width 300ms" }} />
       </div>
 
       {/* ── Body: pdf area + optional panel ──────────────────────── */}

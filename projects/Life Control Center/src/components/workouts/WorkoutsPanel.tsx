@@ -76,6 +76,14 @@ export default function WorkoutsPanel() {
   const [pickerMuscle, setPickerMuscle] = useState<string | null>(null);
   const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
 
+  // Inline exercise creation (inside picker)
+  const [showInlineCreate, setShowInlineCreate] = useState(false);
+  const [inlineName, setInlineName] = useState("");
+  const [inlineMuscle, setInlineMuscle] = useState("");
+  const [inlineEquipment, setInlineEquipment] = useState("");
+  const [inlineSaving, setInlineSaving] = useState(false);
+  const [inlineError, setInlineError] = useState("");
+
   // Edit state
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
@@ -94,8 +102,8 @@ export default function WorkoutsPanel() {
 
   useEffect(() => { loadPlans(); }, []);
 
-  function loadExerciseLib() {
-    if (exerciseLib.length > 0) return;
+  function loadExerciseLib(forceRefresh = false) {
+    if (exerciseLib.length > 0 && !forceRefresh) return;
     setLibLoading(true);
     fetch("/api/workouts/exercises")
       .then((r) => r.json())
@@ -119,8 +127,45 @@ export default function WorkoutsPanel() {
       sets: 3, reps: "8-12", restS: 90,
     }]);
     setShowPicker(false);
+    setShowInlineCreate(false);
     setPickerSearch("");
     setPickerMuscle(null);
+  }
+
+  async function createInlineExercise() {
+    if (!inlineName.trim()) return;
+    // Check for duplicates (case-insensitive)
+    const nameNorm = inlineName.trim().toLowerCase();
+    const dup = exerciseLib.find((e) => e.name.toLowerCase() === nameNorm);
+    if (dup) { setInlineError("An exercise with this name already exists"); return; }
+    setInlineSaving(true);
+    setInlineError("");
+    try {
+      const res = await fetch("/api/workouts/exercises", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: inlineName.trim(),
+          primaryMuscle: inlineMuscle || null,
+          equipment: inlineEquipment || null,
+          trackingType: "reps_weight",
+          weightIncrement: 2.5,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const newEx = await res.json();
+      // Add to library cache
+      setExerciseLib((prev) => [...prev, newEx]);
+      // Auto-select the new exercise
+      addExercise({ id: newEx.id, name: newEx.name, primaryMuscle: newEx.primaryMuscle, equipment: newEx.equipment });
+      // Reset inline form
+      setInlineName(""); setInlineMuscle(""); setInlineEquipment("");
+      setShowInlineCreate(false);
+    } catch {
+      setInlineError("Failed to create exercise");
+    } finally {
+      setInlineSaving(false);
+    }
   }
 
   function removeExercise(exerciseId: number) {
@@ -169,6 +214,7 @@ export default function WorkoutsPanel() {
       setNewDays([]);
       setSelectedExercises([]);
       setShowNewForm(false);
+      window.dispatchEvent(new Event("workouts-data-changed"));
     }
     setSaving(false);
   }
@@ -202,6 +248,7 @@ export default function WorkoutsPanel() {
     );
     setEditingId(null);
     setEditSaving(false);
+    window.dispatchEvent(new Event("workouts-data-changed"));
   }
 
   async function deleteWorkout(id: number) {
@@ -209,6 +256,7 @@ export default function WorkoutsPanel() {
     setPlans((prev) => prev.filter((p) => p.id !== id));
     setDeleteConfirm(null);
     if (editingId === id) setEditingId(null);
+    window.dispatchEvent(new Event("workouts-data-changed"));
   }
 
   function toggleChip(arr: string[], val: string, setter: (v: string[]) => void) {
@@ -273,7 +321,7 @@ export default function WorkoutsPanel() {
                     style={{
                       padding: "5px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
                       border: `1px solid ${newMuscles.includes(m) ? "var(--violet)" : "var(--line)"}`,
-                      background: newMuscles.includes(m) ? "rgba(179,136,255,0.15)" : "transparent",
+                      background: newMuscles.includes(m) ? "rgba(124,77,255,0.15)" : "transparent",
                       color: newMuscles.includes(m) ? "var(--violet)" : "var(--ink-3)",
                       transition: "all 0.12s",
                     }}
@@ -295,7 +343,7 @@ export default function WorkoutsPanel() {
                     style={{
                       width: 48, height: 40, borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
                       border: `1px solid ${newDays.includes(d) ? "var(--cyan)" : "var(--line)"}`,
-                      background: newDays.includes(d) ? "rgba(126,231,255,0.12)" : "transparent",
+                      background: newDays.includes(d) ? "rgba(100,255,218,0.12)" : "transparent",
                       color: newDays.includes(d) ? "var(--cyan)" : "var(--ink-3)",
                       transition: "all 0.12s",
                     }}
@@ -436,7 +484,7 @@ export default function WorkoutsPanel() {
                       ))}
                     </select>
                     <button
-                      onClick={() => { setShowPicker(false); setPickerSearch(""); setPickerMuscle(null); }}
+                      onClick={() => { setShowPicker(false); setShowInlineCreate(false); setPickerSearch(""); setPickerMuscle(null); }}
                       style={{
                         padding: "6px 10px", borderRadius: 6, fontSize: 11,
                         background: "transparent", border: "1px solid var(--line)",
@@ -446,11 +494,102 @@ export default function WorkoutsPanel() {
                       Close
                     </button>
                   </div>
+
+                  {/* Create new exercise option (always shown at top) */}
+                  {!showInlineCreate ? (
+                    <button
+                      onClick={() => setShowInlineCreate(true)}
+                      style={{
+                        display: "flex", width: "100%", alignItems: "center", gap: 8,
+                        padding: "10px 12px", background: "rgba(100,255,218,0.04)", border: "none",
+                        borderBottom: "1px solid var(--line)", cursor: "pointer", textAlign: "left",
+                        color: "var(--cyan)", fontSize: 12, fontWeight: 500,
+                      }}
+                    >
+                      + Create new exercise
+                    </button>
+                  ) : (
+                    <div style={{ padding: "12px", borderBottom: "1px solid var(--line)", background: "rgba(100,255,218,0.04)" }}>
+                      <div style={{ fontSize: 11, color: "var(--cyan)", fontWeight: 600, marginBottom: 8, letterSpacing: "0.04em" }}>
+                        NEW EXERCISE
+                      </div>
+                      <input
+                        autoFocus
+                        value={inlineName}
+                        onChange={(e) => { setInlineName(e.target.value); setInlineError(""); }}
+                        placeholder="Exercise name"
+                        style={{
+                          display: "block", width: "100%", marginBottom: 8,
+                          padding: "8px 10px", borderRadius: 6, fontSize: 12,
+                          background: "var(--bg-input)", border: "1px solid var(--line)",
+                          color: "var(--ink)", outline: "none", boxSizing: "border-box" as const,
+                        }}
+                      />
+                      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                        <select
+                          value={inlineMuscle}
+                          onChange={(e) => setInlineMuscle(e.target.value)}
+                          style={{
+                            flex: 1, padding: "8px 10px", borderRadius: 6, fontSize: 11,
+                            background: "var(--bg-input)", border: "1px solid var(--line)",
+                            color: "var(--ink-3)", outline: "none",
+                          }}
+                        >
+                          <option value="">Primary muscle...</option>
+                          {ALL_MUSCLES.map((m) => (
+                            <option key={m} value={m}>{MUSCLE_LABELS[m]}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={inlineEquipment}
+                          onChange={(e) => setInlineEquipment(e.target.value)}
+                          style={{
+                            flex: 1, padding: "8px 10px", borderRadius: 6, fontSize: 11,
+                            background: "var(--bg-input)", border: "1px solid var(--line)",
+                            color: "var(--ink-3)", outline: "none",
+                          }}
+                        >
+                          <option value="">Equipment...</option>
+                          {["barbell", "dumbbell", "cable", "machine", "bodyweight", "kettlebell", "band", "other"].map((eq) => (
+                            <option key={eq} value={eq}>{eq.charAt(0).toUpperCase() + eq.slice(1)}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {inlineError && (
+                        <div style={{ fontSize: 11, color: "var(--neg)", marginBottom: 8 }}>{inlineError}</div>
+                      )}
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={createInlineExercise}
+                          disabled={inlineSaving || !inlineName.trim()}
+                          style={{
+                            padding: "6px 14px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            background: inlineName.trim() ? "var(--grad)" : "rgba(255,255,255,0.04)",
+                            color: inlineName.trim() ? "#0A0A14" : "var(--ink-4)", border: "none",
+                          }}
+                        >
+                          {inlineSaving ? "Creating..." : "Create and add"}
+                        </button>
+                        <button
+                          onClick={() => { setShowInlineCreate(false); setInlineName(""); setInlineMuscle(""); setInlineEquipment(""); setInlineError(""); }}
+                          style={{
+                            padding: "6px 10px", borderRadius: 6, fontSize: 11,
+                            background: "transparent", border: "1px solid var(--line)", color: "var(--ink-4)", cursor: "pointer",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div style={{ maxHeight: 240, overflowY: "auto" }}>
                     {libLoading ? (
                       <div style={{ padding: 16, color: "var(--ink-4)", fontSize: 12 }}>Loading...</div>
                     ) : filteredLib.length === 0 ? (
-                      <div style={{ padding: 16, color: "var(--ink-4)", fontSize: 12 }}>No exercises found</div>
+                      <div style={{ padding: 16, color: "var(--ink-4)", fontSize: 12 }}>
+                        {exerciseLib.length === 0 ? "No exercises in your library yet. Create one above." : "No exercises match your search."}
+                      </div>
                     ) : (
                       filteredLib.map((ex) => (
                         <button
@@ -495,7 +634,11 @@ export default function WorkoutsPanel() {
 
       {/* ── Workout list ──────────────────────────────────────────────── */}
       {loading ? (
-        <div style={{ color: "var(--ink-4)", fontSize: 13 }}>-</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {[1, 2].map((i) => (
+            <div key={i} className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+          ))}
+        </div>
       ) : loadError ? (
         <div className="cc-card" style={{ padding: "32px 24px", textAlign: "center" }}>
           <div style={{ color: "var(--neg)", fontSize: 13, marginBottom: 12 }}>Failed to load workouts.</div>
@@ -519,7 +662,7 @@ export default function WorkoutsPanel() {
             style={{
               padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600,
               background: "var(--grad)", color: "#0A0A14", border: "none", cursor: "pointer",
-              boxShadow: "0 0 24px rgba(179,136,255,0.30)",
+              boxShadow: "0 0 24px rgba(124,77,255,0.30)",
             }}
           >
             + Create your first workout
@@ -549,7 +692,7 @@ export default function WorkoutsPanel() {
                           {plan.targetMuscles.map((m) => (
                             <span key={m} style={{
                               fontSize: 10, padding: "2px 7px", borderRadius: 4,
-                              background: "rgba(179,136,255,0.10)", color: "var(--violet)",
+                              background: "rgba(124,77,255,0.10)", color: "var(--violet)",
                               fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
                             }}>
                               {MUSCLE_LABELS[m] ?? m}
@@ -568,7 +711,7 @@ export default function WorkoutsPanel() {
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <Link href={`/workouts/templates/${plan.id}`} style={{
                         fontSize: 11, color: "var(--cyan)", textDecoration: "none", padding: "5px 10px",
-                        borderRadius: 6, border: "1px solid rgba(126,231,255,0.20)",
+                        borderRadius: 6, border: "1px solid rgba(100,255,218,0.20)",
                       }}>
                         Exercises →
                       </Link>
@@ -610,7 +753,7 @@ export default function WorkoutsPanel() {
                             style={{
                               padding: "4px 9px", borderRadius: 5, fontSize: 10.5, cursor: "pointer",
                               border: `1px solid ${editMuscles.includes(m) ? "var(--violet)" : "var(--line)"}`,
-                              background: editMuscles.includes(m) ? "rgba(179,136,255,0.15)" : "transparent",
+                              background: editMuscles.includes(m) ? "rgba(124,77,255,0.15)" : "transparent",
                               color: editMuscles.includes(m) ? "var(--violet)" : "var(--ink-3)",
                             }}
                           >
@@ -631,7 +774,7 @@ export default function WorkoutsPanel() {
                             style={{
                               width: 44, height: 36, borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: "pointer",
                               border: `1px solid ${editDays.includes(d) ? "var(--cyan)" : "var(--line)"}`,
-                              background: editDays.includes(d) ? "rgba(126,231,255,0.12)" : "transparent",
+                              background: editDays.includes(d) ? "rgba(100,255,218,0.12)" : "transparent",
                               color: editDays.includes(d) ? "var(--cyan)" : "var(--ink-3)",
                             }}
                           >

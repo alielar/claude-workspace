@@ -25,8 +25,8 @@ function moodCellStyle(score: number): React.CSSProperties {
   if (score === 1) return { background: "rgba(255,138,138,0.20)", borderColor: "rgba(255,138,138,0.30)" };
   if (score === 2) return { background: "rgba(255,193,92,0.18)",  borderColor: "rgba(255,193,92,0.30)"  };
   if (score === 3) return { background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.10)" };
-  if (score === 4) return { background: "linear-gradient(135deg, rgba(179,136,255,0.30), rgba(126,231,255,0.10))", borderColor: "rgba(179,136,255,0.30)" };
-  if (score === 5) return { background: "linear-gradient(135deg, rgba(179,136,255,0.55), rgba(126,231,255,0.25))", borderColor: "rgba(179,136,255,0.50)", boxShadow: "0 0 8px rgba(179,136,255,0.20)" };
+  if (score === 4) return { background: "linear-gradient(135deg, rgba(124,77,255,0.30), rgba(100,255,218,0.10))", borderColor: "rgba(124,77,255,0.30)" };
+  if (score === 5) return { background: "linear-gradient(135deg, rgba(124,77,255,0.55), rgba(100,255,218,0.25))", borderColor: "rgba(124,77,255,0.50)", boxShadow: "0 0 8px rgba(124,77,255,0.20)" };
   return {};
 }
 
@@ -120,7 +120,7 @@ export default function MoodPage() {
           {/* Today's mood card */}
           <div className="cc-card" style={{
             padding: 32, marginBottom: 14,
-            background: "radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.12), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.08), transparent 60%), var(--bg-card)",
+            background: "radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.12), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.08), transparent 60%), var(--bg-card)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
               <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
@@ -147,10 +147,10 @@ export default function MoodPage() {
                     cursor: "pointer", transition: "all 200ms var(--easeOut)",
                     background:
                       todayScore === score
-                        ? "linear-gradient(160deg, rgba(179,136,255,0.18), rgba(126,231,255,0.10))"
+                        ? "linear-gradient(160deg, rgba(124,77,255,0.18), rgba(100,255,218,0.10))"
                         : "rgba(255,255,255,0.012)",
-                    borderColor: todayScore === score ? "rgba(179,136,255,0.40)" : "var(--line)",
-                    boxShadow: todayScore === score ? "0 0 24px rgba(179,136,255,0.25), inset 0 0 16px rgba(179,136,255,0.06)" : "none",
+                    borderColor: todayScore === score ? "rgba(124,77,255,0.40)" : "var(--line)",
+                    boxShadow: todayScore === score ? "0 0 24px rgba(124,77,255,0.25), inset 0 0 16px rgba(124,77,255,0.06)" : "none",
                     transform: todayScore === score ? "translateY(-2px)" : "none",
                   }}
                 >
@@ -201,13 +201,13 @@ export default function MoodPage() {
                   title={`${cell.date}: ${cell.score ? MOODS[cell.score - 1].name : "-"}`}
                   style={{
                     aspectRatio: "1/1",
-                    border: `1px solid ${cell.score ? "rgba(179,136,255,0.30)" : "var(--line)"}`,
+                    border: `1px solid ${cell.score ? "rgba(124,77,255,0.30)" : "var(--line)"}`,
                     borderRadius: 5,
                     background: cell.score ? "rgba(255,255,255,0.015)" : "rgba(255,255,255,0.015)",
                     position: "relative",
                     cursor: "pointer",
                     transition: "transform 100ms",
-                    outline: cell.isToday ? "1px solid rgba(126,231,255,0.60)" : "none",
+                    outline: cell.isToday ? "1px solid rgba(100,255,218,0.60)" : "none",
                     outlineOffset: 1,
                     ...( cell.score ? moodCellStyle(cell.score) : {} ),
                   }}

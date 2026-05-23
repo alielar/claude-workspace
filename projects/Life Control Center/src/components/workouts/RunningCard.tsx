@@ -89,7 +89,7 @@ export default function RunningCard() {
         </div>
         <div className="cc-card-body">
           {/* Progress bar */}
-          <div style={{ padding: "14px 16px", border: "1px solid rgba(126,231,255,0.20)", borderRadius: 12, background: "radial-gradient(60% 80% at 100% 0%, rgba(126,231,255,0.10), transparent 60%), rgba(255,255,255,0.018)" }}>
+          <div style={{ padding: "14px 16px", border: "1px solid rgba(100,255,218,0.20)", borderRadius: 12, background: "radial-gradient(60% 80% at 100% 0%, rgba(100,255,218,0.10), transparent 60%), rgba(255,255,255,0.018)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
               <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--cyan)", fontWeight: 600 }}>
                 Furthest non-stop
@@ -140,7 +140,7 @@ export default function RunningCard() {
             onClick={() => setShowModal(true)}
             style={{
               marginTop: 14, width: "100%", padding: "10px 0", borderRadius: 8,
-              border: "1px solid rgba(126,231,255,0.30)", background: "rgba(126,231,255,0.06)",
+              border: "1px solid rgba(100,255,218,0.30)", background: "rgba(100,255,218,0.06)",
               color: "var(--cyan)", fontSize: 13, fontWeight: 500, cursor: "pointer",
               letterSpacing: "0.02em",
             }}

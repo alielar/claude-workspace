@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { ensureMigrate } from "@/lib/ensureMigrate";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,7 @@ const TIME_SECTIONS: { key: TimeOfDay; label: string; color: string }[] = [
 
 const ITEM_COLORS = [
   { id: "violet", hex: "#7C5CFF" },
-  { id: "cyan",   hex: "#7EE7FF" },
+  { id: "cyan",   hex: "#64FFDA" },
   { id: "green",  hex: "#6FD49A" },
   { id: "amber",  hex: "#F59E0B" },
   { id: "red",    hex: "#FF8A8A" },
@@ -362,7 +363,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
                         style={{
                           padding: "9px 14px", borderRadius: 10, textAlign: "left",
                           border: `1px solid ${autoSource === opt.id ? "var(--cyan)" : "var(--line)"}`,
-                          background: autoSource === opt.id ? "rgba(126,231,255,0.08)" : "rgba(255,255,255,0.02)",
+                          background: autoSource === opt.id ? "rgba(100,255,218,0.08)" : "rgba(255,255,255,0.02)",
                           color: autoSource === opt.id ? "var(--cyan)" : "var(--ink-3)",
                           fontSize: 13, cursor: isExistingAuto ? "default" : "pointer",
                           display: "flex", alignItems: "center", gap: 10,
@@ -496,13 +497,13 @@ function CkRow({ item, onToggle, onEdit }: {
           borderRadius: isVirtualWorkout ? 99 : 6,
           border: `1.5px solid ${
             done ? "transparent"
-            : isVirtualWorkout ? "rgba(126,231,255,0.30)"
+            : isVirtualWorkout ? "rgba(100,255,218,0.30)"
             : isAutoTracked ? `${accent}60`
             : "var(--line-hi)"
           }`,
           borderStyle: isVirtualWorkout ? "dashed" : "solid",
           background: done
-            ? isVirtualWorkout ? "rgba(126,231,255,0.20)" : accent + "33"
+            ? isVirtualWorkout ? "rgba(100,255,218,0.20)" : accent + "33"
             : "transparent",
           boxShadow: done && !isVirtualWorkout ? `0 0 10px ${accent}66` : "none",
           flexShrink: 0,
@@ -541,8 +542,8 @@ function CkRow({ item, onToggle, onEdit }: {
               fontFamily: "var(--f-mono)", fontSize: 8.5, letterSpacing: "0.18em",
               color: isVirtualWorkout ? "var(--cyan)" : accent,
               padding: "2px 6px", borderRadius: 99,
-              background: isVirtualWorkout ? "rgba(126,231,255,0.10)" : `${accent}18`,
-              border: `1px solid ${isVirtualWorkout ? "rgba(126,231,255,0.25)" : `${accent}40`}`,
+              background: isVirtualWorkout ? "rgba(100,255,218,0.10)" : `${accent}18`,
+              border: `1px solid ${isVirtualWorkout ? "rgba(100,255,218,0.25)" : `${accent}40`}`,
               textTransform: "uppercase", flexShrink: 0,
             }}>
               {autoLabel}
@@ -593,11 +594,11 @@ function MonthlyHeatmap({ monthlyPct, todayStr }: { monthlyPct: { date: string; 
 
   function pctToStyle(pct: number, isToday: boolean) {
     const bg = pct === 100
-      ? "rgba(179,136,255,0.65)"
+      ? "rgba(124,77,255,0.65)"
       : pct >= 50
-      ? "rgba(179,136,255,0.35)"
+      ? "rgba(124,77,255,0.35)"
       : pct > 0
-      ? "rgba(179,136,255,0.15)"
+      ? "rgba(124,77,255,0.15)"
       : "rgba(255,255,255,0.02)";
 
     return {
@@ -605,15 +606,15 @@ function MonthlyHeatmap({ monthlyPct, todayStr }: { monthlyPct: { date: string; 
       borderRadius: 3,
       background: bg,
       border: isToday
-        ? "1px solid rgba(126,231,255,0.55)"
+        ? "1px solid rgba(100,255,218,0.55)"
         : pct === 100
-        ? "1px solid rgba(179,136,255,0.40)"
+        ? "1px solid rgba(124,77,255,0.40)"
         : "1px solid transparent",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontSize: 8,
       color: pct > 0 ? "var(--ink-2)" : "var(--ink-5)",
       fontFamily: "var(--f-mono)",
-      boxShadow: pct === 100 ? "0 0 6px rgba(179,136,255,0.30)" : "none",
+      boxShadow: pct === 100 ? "0 0 6px rgba(124,77,255,0.30)" : "none",
     };
   }
 
@@ -687,7 +688,7 @@ export default function ChecklistPage() {
 
   useEffect(() => {
     (async () => {
-      await fetch("/api/admin/migrate", { method: "POST" });
+      ensureMigrate();
       await Promise.all([load(), loadSuggestions()]);
     })();
   }, [load, loadSuggestions]);
@@ -800,8 +801,8 @@ export default function ChecklistPage() {
           <div className="cc-card" style={{
             marginBottom: 14, padding: "28px 32px",
             background: `
-              radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.14), transparent 60%),
-              radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.10), transparent 60%),
+              radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.14), transparent 60%),
+              radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.10), transparent 60%),
               var(--bg-card)`,
           }}>
             <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8 }}>
@@ -812,7 +813,7 @@ export default function ChecklistPage() {
               <div style={{
                 fontSize: 88, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
                 background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
-                filter: allDone ? "drop-shadow(0 0 28px rgba(179,136,255,0.55))" : "drop-shadow(0 0 24px rgba(179,136,255,0.20))",
+                filter: allDone ? "drop-shadow(0 0 28px rgba(124,77,255,0.55))" : "drop-shadow(0 0 24px rgba(124,77,255,0.20))",
                 transition: "filter 0.6s ease",
                 animation: allDone ? "celebPulse 2.4s ease-in-out infinite" : "none",
               }}>
@@ -840,7 +841,7 @@ export default function ChecklistPage() {
             <div style={{ height: 6, background: "rgba(255,255,255,0.04)", borderRadius: 99, marginTop: 18, overflow: "hidden" }}>
               <div style={{
                 height: "100%", width: `${pct}%`, background: "var(--grad)", borderRadius: 99,
-                boxShadow: pct > 0 ? "0 0 14px rgba(179,136,255,0.40)" : "none",
+                boxShadow: pct > 0 ? "0 0 14px rgba(124,77,255,0.40)" : "none",
                 transition: "width 0.5s var(--easeOut)",
               }} />
             </div>
@@ -920,11 +921,11 @@ export default function ChecklistPage() {
                         return (
                           <div key={i} style={{
                             aspectRatio: "1/1", borderRadius: 4,
-                            border: `1px solid ${done ? `${accent}60` : isToday ? "rgba(126,231,255,0.20)" : "var(--line)"}`,
+                            border: `1px solid ${done ? `${accent}60` : isToday ? "rgba(100,255,218,0.20)" : "var(--line)"}`,
                             borderStyle: (!done && !isToday) ? "dashed" : "solid",
                             background: done ? `${accent}33` : "transparent",
                             boxShadow: done ? `inset 0 0 8px ${accent}33` : "none",
-                            outline: isToday ? "1px dashed rgba(126,231,255,0.40)" : "none",
+                            outline: isToday ? "1px dashed rgba(100,255,218,0.40)" : "none",
                             outlineOffset: 1,
                           }} />
                         );
@@ -1000,7 +1001,7 @@ export default function ChecklistPage() {
                       <div key={s.id} style={{
                         padding: "12px 14px", borderRadius: 10,
                         border: "1px solid var(--line)",
-                        background: "rgba(179,136,255,0.04)",
+                        background: "rgba(124,77,255,0.04)",
                       }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
                           {s.emoji && <span style={{ fontSize: 18, flexShrink: 0 }}>{s.emoji}</span>}
@@ -1016,11 +1017,11 @@ export default function ChecklistPage() {
                             onClick={() => handleSuggestion(s.id, "accept")}
                             style={{
                               flex: 1, padding: "7px 10px", borderRadius: 8, fontSize: 11.5, fontWeight: 500,
-                              background: "rgba(179,136,255,0.14)", border: "1px solid rgba(179,136,255,0.35)",
+                              background: "rgba(124,77,255,0.14)", border: "1px solid rgba(124,77,255,0.35)",
                               color: "var(--violet)", cursor: "pointer", transition: "all 0.15s",
                             }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(179,136,255,0.22)"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(179,136,255,0.14)"; }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(124,77,255,0.22)"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(124,77,255,0.14)"; }}
                           >
                             Add this
                           </button>
@@ -1072,8 +1073,8 @@ export default function ChecklistPage() {
       <style>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes celebPulse {
-          0%, 100% { filter: drop-shadow(0 0 24px rgba(179,136,255,0.40)); }
-          50% { filter: drop-shadow(0 0 40px rgba(179,136,255,0.70)) drop-shadow(0 0 80px rgba(126,231,255,0.30)); }
+          0%, 100% { filter: drop-shadow(0 0 24px rgba(124,77,255,0.40)); }
+          50% { filter: drop-shadow(0 0 40px rgba(124,77,255,0.70)) drop-shadow(0 0 80px rgba(100,255,218,0.30)); }
         }
       `}</style>
     </div>

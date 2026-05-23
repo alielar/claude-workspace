@@ -10,7 +10,7 @@ export default function NotFound() {
       <div style={{
         fontSize: 80, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
         background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text",
-        color: "transparent", filter: "drop-shadow(0 0 24px rgba(179,136,255,0.20))",
+        color: "transparent", filter: "drop-shadow(0 0 24px rgba(124,77,255,0.20))",
       }}>
         404
       </div>
@@ -23,7 +23,7 @@ export default function NotFound() {
           marginTop: 8, padding: "10px 20px", borderRadius: 8,
           background: "var(--grad)", color: "#0A0A14",
           fontSize: 13, fontWeight: 600, textDecoration: "none",
-          boxShadow: "0 0 16px rgba(179,136,255,0.25)",
+          boxShadow: "0 0 16px rgba(124,77,255,0.25)",
         }}
       >
         Back to Dashboard

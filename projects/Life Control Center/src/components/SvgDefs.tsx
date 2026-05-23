@@ -20,26 +20,26 @@ export function SvgDefs() {
       <defs>
         {/* Horizontal stroke gradient: violet → cyan */}
         <linearGradient id="ccGradStroke" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#B388FF" />
-          <stop offset="100%" stopColor="#7EE7FF" />
+          <stop offset="0%"   stopColor="#7C4DFF" />
+          <stop offset="100%" stopColor="#64FFDA" />
         </linearGradient>
 
         {/* Vertical fill gradient: violet → transparent */}
         <linearGradient id="ccGradFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#B388FF" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#B388FF" stopOpacity="0" />
+          <stop offset="0%"   stopColor="#7C4DFF" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#7C4DFF" stopOpacity="0" />
         </linearGradient>
 
         {/* Vertical fill gradient: cyan → transparent */}
         <linearGradient id="ccGradFillCyan" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#7EE7FF" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#7EE7FF" stopOpacity="0" />
+          <stop offset="0%"   stopColor="#64FFDA" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#64FFDA" stopOpacity="0" />
         </linearGradient>
 
         {/* Diagonal ring gradient: violet → cyan */}
         <linearGradient id="ccRingGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stopColor="#B388FF" />
-          <stop offset="100%" stopColor="#7EE7FF" />
+          <stop offset="0%"   stopColor="#7C4DFF" />
+          <stop offset="100%" stopColor="#64FFDA" />
         </linearGradient>
       </defs>
     </svg>

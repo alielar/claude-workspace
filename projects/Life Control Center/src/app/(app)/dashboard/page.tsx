@@ -108,15 +108,15 @@ function calcStreak(logs: { startedAt: Date | null }[], today: string): number {
 /** Heatmap cell bg/border for a session type */
 function heatStyle(name: string | null, isToday: boolean): React.CSSProperties {
   if (name === "Legs")
-    return { background: "linear-gradient(135deg,rgba(179,136,255,0.45),rgba(126,231,255,0.18))", borderColor: "rgba(179,136,255,0.50)" };
+    return { background: "linear-gradient(135deg,rgba(124,77,255,0.45),rgba(100,255,218,0.18))", borderColor: "rgba(124,77,255,0.50)" };
   if (name === "Pull")
-    return { background: "linear-gradient(135deg,rgba(126,231,255,0.35),rgba(179,136,255,0.12))", borderColor: "rgba(126,231,255,0.40)" };
+    return { background: "linear-gradient(135deg,rgba(100,255,218,0.35),rgba(124,77,255,0.12))", borderColor: "rgba(100,255,218,0.40)" };
   if (name === "Push")
-    return { background: "linear-gradient(135deg,rgba(179,136,255,0.22),rgba(179,136,255,0.06))", borderColor: "rgba(179,136,255,0.30)" };
+    return { background: "linear-gradient(135deg,rgba(124,77,255,0.22),rgba(124,77,255,0.06))", borderColor: "rgba(124,77,255,0.30)" };
   if (name)
-    return { background: "linear-gradient(135deg,rgba(126,231,255,0.18),rgba(126,231,255,0.04))", borderColor: "rgba(126,231,255,0.28)" };
+    return { background: "linear-gradient(135deg,rgba(100,255,218,0.18),rgba(100,255,218,0.04))", borderColor: "rgba(100,255,218,0.28)" };
   if (isToday)
-    return { background: "rgba(255,255,255,0.012)", borderColor: "rgba(126,231,255,0.50)", borderStyle: "dashed" };
+    return { background: "rgba(255,255,255,0.012)", borderColor: "rgba(100,255,218,0.50)", borderStyle: "dashed" };
   return { background: "rgba(255,255,255,0.012)", borderColor: "var(--line)" };
 }
 
@@ -249,8 +249,8 @@ export default async function DashboardPage() {
     <div className="cc-card" style={{
       padding: small ? "20px 22px" : "28px 32px",
       height: "100%", display: "flex", flexDirection: "column", gap: small ? 16 : 20,
-      background: `radial-gradient(60% 80% at 0% 0%, rgba(179,136,255,0.13), transparent 60%),
-                   radial-gradient(50% 80% at 100% 100%, rgba(126,231,255,0.08), transparent 60%),
+      background: `radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.13), transparent 60%),
+                   radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.08), transparent 60%),
                    var(--bg-card)`,
       overflow: "hidden",
     }}>
@@ -262,7 +262,7 @@ export default async function DashboardPage() {
       {small ? (
         /* Compact version (afternoon/evening) */
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div className="tabular-nums" style={{ fontSize: 72, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.9, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 18px rgba(179,136,255,0.18))" }}>
+          <div className="tabular-nums" style={{ fontSize: 72, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.9, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 18px rgba(124,77,255,0.18))" }}>
             {streak}<sup style={{ fontSize: 22, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)", verticalAlign: "top", position: "relative", top: 16, marginLeft: 4, background: "none" }}>d</sup>
           </div>
           <div>
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "end" }}>
             <div>
-              <div className="tabular-nums" style={{ fontSize: 120, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.85, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 22px rgba(179,136,255,0.20))" }}>
+              <div className="tabular-nums" style={{ fontSize: 120, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.85, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 22px rgba(124,77,255,0.20))" }}>
                 {streak}
                 <sup style={{ fontSize: 28, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)", verticalAlign: "top", position: "relative", top: 22, marginLeft: 6, background: "none" }}>d</sup>
               </div>
@@ -291,12 +291,12 @@ export default async function DashboardPage() {
               <svg viewBox="0 0 220 64" preserveAspectRatio="none" style={{ height: 72, width: "100%", display: "block" }}>
                 <defs>
                   <linearGradient id="sk-stroke" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#B388FF" />
-                    <stop offset="100%" stopColor="#7EE7FF" />
+                    <stop offset="0%" stopColor="#7C4DFF" />
+                    <stop offset="100%" stopColor="#64FFDA" />
                   </linearGradient>
                   <linearGradient id="sk-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(179,136,255,0.16)" />
-                    <stop offset="100%" stopColor="rgba(179,136,255,0)" />
+                    <stop offset="0%" stopColor="rgba(124,77,255,0.16)" />
+                    <stop offset="100%" stopColor="rgba(124,77,255,0)" />
                   </linearGradient>
                 </defs>
                 <path fill="url(#sk-fill)" d={spark.area} />
@@ -316,7 +316,7 @@ export default async function DashboardPage() {
               { label: "30-day",    value: activity.filter(Boolean).length, unit: "workouts" },
             ].map((s) => (
               <div key={s.label} style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(179,136,255,0.25),transparent)" }} />
+                <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(124,77,255,0.25),transparent)" }} />
                 <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 6 }}>{s.label}</div>
                 <div className="tabular-nums" style={{ fontSize: 26, fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1 }}>
                   {s.value} <span style={{ fontSize: 12, color: "var(--ink-3)" }}>{s.unit}</span>
@@ -424,9 +424,9 @@ export default async function DashboardPage() {
       {/* Compact legend */}
       <div style={{ display: "flex", gap: 12, marginTop: 10, fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
         {[
-          { label: "Legs", bg: "linear-gradient(135deg,rgba(179,136,255,0.45),rgba(126,231,255,0.18))" },
-          { label: "Pull", bg: "linear-gradient(135deg,rgba(126,231,255,0.35),rgba(179,136,255,0.12))" },
-          { label: "Push", bg: "linear-gradient(135deg,rgba(179,136,255,0.22),rgba(179,136,255,0.06))" },
+          { label: "Legs", bg: "linear-gradient(135deg,rgba(124,77,255,0.45),rgba(100,255,218,0.18))" },
+          { label: "Pull", bg: "linear-gradient(135deg,rgba(100,255,218,0.35),rgba(124,77,255,0.12))" },
+          { label: "Push", bg: "linear-gradient(135deg,rgba(124,77,255,0.22),rgba(124,77,255,0.06))" },
         ].map((l) => (
           <span key={l.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <i style={{ display: "inline-block", width: 8, height: 8, borderRadius: 3, background: l.bg }} />
@@ -464,8 +464,8 @@ export default async function DashboardPage() {
               <svg width="56" height="56" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
                 <defs>
                   <linearGradient id="db-ring" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#B388FF" />
-                    <stop offset="100%" stopColor="#7EE7FF" />
+                    <stop offset="0%" stopColor="#7C4DFF" />
+                    <stop offset="100%" stopColor="#64FFDA" />
                   </linearGradient>
                 </defs>
                 <circle fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" cx="40" cy="40" r="32" />
@@ -474,7 +474,7 @@ export default async function DashboardPage() {
                   strokeDasharray={ringC}
                   strokeDashoffset={ringOffset}
                   transform="rotate(-90 40 40)"
-                  style={{ filter: "drop-shadow(0 0 5px rgba(179,136,255,0.40))" }}
+                  style={{ filter: "drop-shadow(0 0 5px rgba(124,77,255,0.40))" }}
                 />
               </svg>
               <div>
