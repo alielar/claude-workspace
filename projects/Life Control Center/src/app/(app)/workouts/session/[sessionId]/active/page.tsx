@@ -23,6 +23,8 @@ interface WorkoutExercise {
   equipment: string | null;
   weightIncrement: number;
   trackingType: TrackingType;
+  videoUrl: string | null;
+  videoType: string | null;
   sortOrder: number;
   setConfig: SetConfig[];
 }
@@ -94,10 +96,15 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
   const urgent = remaining <= 10;
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
-    }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Rest timer: ${min} minutes ${sec} seconds remaining`}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
+        display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
+      }}
+    >
       <div className="cc-card" style={{ width: "min(300px, 100vw - 32px)", padding: "36px 32px", textAlign: "center" }}>
         <div style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.14em", marginBottom: 20 }}>
           REST TIMER
@@ -505,6 +512,7 @@ interface ExerciseBlockProps {
 
 function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoSet }: ExerciseBlockProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const currentPr = prMap[exercise.exerciseId] ?? 0;
   const mySets = loggedSets.filter((s) => s.exerciseId === exercise.exerciseId);
   const totalSets = exercise.setConfig.length;
@@ -516,6 +524,8 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
       {/* Exercise header — clickable to collapse */}
       <button
         onClick={() => setCollapsed((c) => !c)}
+        aria-expanded={!collapsed}
+        aria-label={`${exercise.name}: ${doneSets} of ${totalSets} sets done`}
         style={{
           width: "100%", background: "none", border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -535,6 +545,18 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {exercise.videoUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowVideo(true); }}
+              aria-label={`Watch ${exercise.name} demo video`}
+              style={{
+                width: 32, height: 32, borderRadius: 8, border: "1px solid var(--line)",
+                background: "rgba(100,255,218,0.06)", color: "var(--cyan)",
+                fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >▶</button>
+          )}
           <span style={{
             fontSize: 11, fontFamily: "var(--f-mono)",
             color: allDone ? "var(--pos)" : doneSets > 0 ? "var(--violet)" : "var(--ink-4)",
@@ -574,6 +596,52 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
               />
             );
           })}
+        </div>
+      )}
+
+      {/* Video modal */}
+      {showVideo && exercise.videoUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${exercise.name} demo video`}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 150,
+            padding: 16,
+          }}
+          onClick={() => setShowVideo(false)}
+        >
+          <div
+            className="cc-card"
+            style={{ width: "min(560px, 100vw - 32px)", overflow: "hidden" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="cc-card-head">
+              <div className="title">{exercise.name}</div>
+              <button
+                onClick={() => setShowVideo(false)}
+                style={{ background: "none", border: "none", color: "var(--ink-4)", cursor: "pointer", fontSize: 20, lineHeight: 1 }}
+              >×</button>
+            </div>
+            <div style={{ padding: 0 }}>
+              {exercise.videoType === "youtube" ? (
+                <iframe
+                  src={exercise.videoUrl}
+                  style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  src={exercise.videoUrl}
+                  controls
+                  autoPlay
+                  style={{ width: "100%", display: "block" }}
+                />
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -617,11 +685,16 @@ function SessionSummary({
   const suggestionEntries = Object.entries(suggestions);
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300,
-      padding: "0 16px",
-    }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Session complete"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+        display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300,
+        padding: "0 16px",
+      }}
+    >
       <div className="cc-card" style={{ width: "min(440px, 100vw - 32px)", maxHeight: "88vh", overflow: "auto" }}>
         <div className="cc-card-head">
           <div className="title">Session complete 🎉</div>
@@ -941,10 +1014,15 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
 
       {/* Discard confirmation dialog */}
       {discardConfirm && (
-        <div style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
-        }}>
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Discard session confirmation"
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
+          }}
+        >
           <div className="cc-card" style={{ width: 340, padding: "32px 28px", textAlign: "center" }}>
             <div style={{ fontSize: 16, fontWeight: 600, color: "var(--ink)", marginBottom: 8 }}>
               Discard this session?

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 
 const AnalyticsPanel = lazy(() => import("./AnalyticsPanel"));
@@ -19,11 +19,14 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
   const [open, setOpen] = useState<DrawerType>(null);
   // Track which panels have been opened so we can keep them mounted (cached)
   const [mounted, setMounted] = useState<Set<Exclude<DrawerType, null>>>(new Set());
+  const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   function openDrawer(key: Exclude<DrawerType, null>) {
     setMounted((prev) => new Set(prev).add(key));
     setOpen(key);
+    // Scroll drawer to top on next frame (after render)
+    requestAnimationFrame(() => drawerRef.current?.scrollTo(0, 0));
   }
 
   // Listen for external open requests (e.g. empty state CTA)
@@ -108,7 +111,7 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(null); }}
         >
-          <div style={{
+          <div ref={drawerRef} className="cc-drawer-panel" style={{
             position: "absolute", right: 0, top: 0, bottom: 0,
             width: "100%", maxWidth: 1100,
             background: "var(--bg)", overflowY: "auto",

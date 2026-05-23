@@ -69,6 +69,8 @@ export async function GET(
     equipment: string | null;
     weightIncrement: number;
     trackingType: string;
+    videoUrl: string | null;
+    videoType: string | null;
     sortOrder: number;
     setConfig: Array<{ type: string; repMin: number; repMax: number; restS: number }>;
   }[] = [];
@@ -83,6 +85,8 @@ export async function GET(
         equipment: exerciseDb.equipment,
         weightIncrement: exerciseDb.weightIncrement,
         trackingType: exerciseDb.trackingType,
+        videoUrl: exerciseDb.videoUrl,
+        videoType: exerciseDb.videoType,
         sortOrder: planExercises.sortOrder,
         setConfig: planExercises.setConfig,
       })

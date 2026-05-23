@@ -452,7 +452,7 @@ body::after {
   bottom: 0; left: 0; right: 0;
   z-index: 40;
   height: 60px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: space-around;
   padding: 0 var(--s-1);
@@ -496,6 +496,10 @@ body::after {
   color: var(--ink-3);
   white-space: nowrap;
   transition: color 0.15s;
+}
+
+@media (max-width: 767px) {
+  .cc-mobile-nav { display: flex; }
 }
 
 /* ─── Bottom sheet ───────────────────────────────────────────────────────── */
@@ -1170,4 +1174,8 @@ body::after {
   .analytics-stat-grid { grid-template-columns: 1fr !important; }
   /* Session summary stats → stack */
   .session-summary-grid { grid-template-columns: 1fr !important; }
+  /* Workout drawers → full-width on mobile */
+  .cc-drawer-panel { max-width: 100% !important; }
+  /* Ensure touch targets are at least 44px */
+  .cc-btn, .cc-mobile-tab, button { min-height: 44px; }
 }

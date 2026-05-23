@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { CommandPalette } from "@/components/CommandPalette";
 import { QuickCapture, QuickCaptureFAB } from "@/components/QuickCapture";
 
@@ -47,6 +48,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Vertical icon sidebar — desktop only, always collapsed */}
       <Sidebar />
+
+      {/* Fixed bottom tab bar — mobile only */}
+      <MobileNav />
 
       {/* Main content — pushed right on desktop by sidebar width via .app-main CSS */}
       <main className="app-main" id="main-content">
