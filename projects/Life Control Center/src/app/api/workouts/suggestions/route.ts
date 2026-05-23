@@ -80,7 +80,6 @@ export async function GET(req: NextRequest) {
         setType: (s.setType ?? "standard") as "standard" | "drop" | "warmup",
         weightKg: s.weightKg,
         repsLogged: s.reps,
-        rirLogged: s.rir,
         repRangeMax: config[idx]?.repMax ?? null,
       }));
 

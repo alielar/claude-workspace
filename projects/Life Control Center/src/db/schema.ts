@@ -435,9 +435,11 @@ export const workoutPlans = sqliteTable("workout_plans", {
   programId: integer("program_id")
     .notNull()
     .references(() => programs.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),           // "Push", "Pull", "Legs", "Push-Up SESH"
+  name: text("name").notNull(),           // "Push", "Pull", "Legs", etc.
   type: text("type").notNull().default("strength"), // "strength" | "skill" | "cardio"
   sortOrder: integer("sort_order").notNull().default(0),
+  assignedDays: text("assigned_days"), // JSON array: ["mon","thu"] or null
+  targetMuscles: text("target_muscles"), // JSON array: ["chest","triceps"] or null
 });
 
 /** Master exercise library — one row per unique movement */
@@ -474,7 +476,7 @@ export const planExercises = sqliteTable("plan_exercises", {
     .notNull()
     .references(() => exerciseDb.id, { onDelete: "cascade" }),
   sortOrder: integer("sort_order").notNull().default(0),
-  // JSON array: [{type, repMin, repMax, rir, restS}]
+  // JSON array: [{type, repMin, repMax, restS}]
   setConfig: text("set_config").notNull().default("[]"),
 });
 
@@ -486,7 +488,8 @@ export const gymSessions = sqliteTable("gym_sessions", {
     .references(() => users.id, { onDelete: "cascade" }),
   planId: integer("plan_id").references(() => workoutPlans.id),
   programId: integer("program_id").references(() => programs.id),
-  workoutName: text("workout_name").notNull(), // "Beta (Push)"
+  workoutName: text("workout_name").notNull(),
+  originalTemplateName: text("original_template_name"), // backup if template deleted
   date: text("date").notNull(),               // "YYYY-MM-DD"
   durationSeconds: integer("duration_seconds"),
   notes: text("notes"),

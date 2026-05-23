@@ -7,7 +7,6 @@ interface SetConfig {
   type: "standard" | "warmup" | "drop" | "failure";
   repMin: number;
   repMax: number;
-  rir?: number;
   restS: number;
 }
 
@@ -194,12 +193,12 @@ export default function PlanEditorPage({ params }: { params: Promise<{ planId: s
                         }}
                       >
                         {s.type === "warmup" ? "WU" : s.type === "drop" ? "DROP" : s.type === "failure" ? "FAIL" : ""}
-                        {s.repMin}–{s.repMax} {s.rir != null ? `RIR${s.rir}` : ""} {s.restS}s
+                        {s.repMin}–{s.repMax} {s.restS}s
                       </span>
                     ))}
                     <span
                       onClick={() => {
-                        const newSet: SetConfig = { type: "standard", repMin: 8, repMax: 12, rir: 2, restS: 60 };
+                        const newSet: SetConfig = { type: "standard", repMin: 8, repMax: 12, restS: 60 };
                         saveSetConfig(ex.id, [...ex.setConfig, newSet]);
                       }}
                       style={{
@@ -362,13 +361,6 @@ function SetEditor({
           Rep Max
           <input type="number" value={s.repMax} onChange={(e) => updateField("repMax", parseInt(e.target.value))}
             style={{ display: "block", marginTop: 4, width: 64, background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6, padding: "6px 10px", color: "var(--ink)", fontSize: 12 }}
-          />
-        </label>
-        <label style={{ fontSize: 11, color: "var(--ink-3)" }}>
-          RIR
-          <input type="number" value={s.rir ?? ""} onChange={(e) => updateField("rir", parseInt(e.target.value))}
-            placeholder="—" min={0} max={4}
-            style={{ display: "block", marginTop: 4, width: 52, background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6, padding: "6px 10px", color: "var(--ink)", fontSize: 12 }}
           />
         </label>
         <label style={{ fontSize: 11, color: "var(--ink-3)" }}>

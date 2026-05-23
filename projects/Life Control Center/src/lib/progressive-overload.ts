@@ -1,18 +1,15 @@
 /**
  * Progressive Overload Engine
  *
- * Rules (RIR-based, MacroFactor-style simplified):
+ * Rules (rep-range based):
  *
- * 1. Hit top of rep range on ALL working sets AND avg RIR logged ≤ 1
- *    → Suggest +1kg (dumbbells) or +2.5kg (cable) next session
+ * 1. Hit top of rep range on ALL working sets
+ *    → Suggest weight increase next session
  *
- * 2. Hit top of rep range but avg RIR > 1
- *    → Maintain weight — note "push harder next time"
- *
- * 3. Did NOT hit top of rep range
+ * 2. Did NOT hit top of rep range on all sets
  *    → Maintain weight — note "aim for the top of your rep range"
  *
- * 4. Max dumbbell cap: 20kg — flag when at or above
+ * 3. Max dumbbell cap: 20kg — flag when at or above
  *
  * Warm-up sets are excluded from calculations.
  */
@@ -21,7 +18,6 @@ export type SetLogSummary = {
   setType: "standard" | "drop" | "warmup";
   weightKg: number | null;
   repsLogged: number | null;
-  rirLogged: number | null;
   repRangeMax: number | null;
 };
 
@@ -68,15 +64,6 @@ export function computeProgressionSuggestion(
     (s) => s.repRangeMax !== null && s.repsLogged! >= s.repRangeMax
   );
 
-  // Average RIR (ignore null values)
-  const rirValues = workingSets
-    .map((s) => s.rirLogged)
-    .filter((r): r is number => r !== null);
-  const avgRir =
-    rirValues.length > 0
-      ? rirValues.reduce((a, b) => a + b, 0) / rirValues.length
-      : null;
-
   // Current weight from last working set
   const currentWeight =
     workingSets[workingSets.length - 1]?.weightKg ?? null;
@@ -88,7 +75,7 @@ export function computeProgressionSuggestion(
     suggestedWeight !== null && !isCable(exerciseName) && suggestedWeight > MAX_DUMBBELL_KG;
 
   // Decision logic
-  if (allHitTop && avgRir !== null && avgRir <= 1) {
+  if (allHitTop) {
     if (capReached) {
       return {
         action: "maintain",
@@ -101,15 +88,6 @@ export function computeProgressionSuggestion(
       action: "increase",
       suggestedWeightKg: suggestedWeight,
       message: `Great session! Increase to ${suggestedWeight}kg next time.`,
-      capReached: false,
-    };
-  }
-
-  if (allHitTop && (avgRir === null || avgRir > 1)) {
-    return {
-      action: "maintain",
-      suggestedWeightKg: currentWeight,
-      message: `Hit the rep range but left reps in reserve. Push harder next session before adding weight.`,
       capReached: false,
     };
   }

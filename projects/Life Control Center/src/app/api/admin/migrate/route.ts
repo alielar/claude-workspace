@@ -181,6 +181,24 @@ export async function POST() {
 
     // ── exercise_db: tracking type column ────────────────────────────────────
     `ALTER TABLE exercise_db ADD COLUMN tracking_type TEXT NOT NULL DEFAULT 'reps_weight'`,
+
+    // ── Workouts v3: template day-of-week assignment ─────────────────────────
+    `ALTER TABLE workout_plans ADD COLUMN assigned_days TEXT`,
+    `ALTER TABLE workout_plans ADD COLUMN target_muscles TEXT`,
+
+    // ── Workouts v3: preserve template name on historical sessions ──────────
+    `ALTER TABLE gym_sessions ADD COLUMN original_template_name TEXT`,
+
+    // ── Workouts v3: copy template names to gym_sessions before cleanup ─────
+    `UPDATE gym_sessions SET original_template_name = workout_name WHERE original_template_name IS NULL`,
+
+    // ── Workouts v3: disconnect historical sessions from templates ───────────
+    `UPDATE gym_sessions SET plan_id = NULL, program_id = NULL WHERE plan_id IS NOT NULL`,
+
+    // ── Workouts v3: delete imported templates (user creates from scratch) ───
+    `DELETE FROM plan_exercises`,
+    `DELETE FROM workout_plans`,
+    `DELETE FROM programs`,
   ];
 
   const results: string[] = [];

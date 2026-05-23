@@ -4,7 +4,7 @@
  * Returns logged sets for a specific exercise across all gym sessions,
  * ordered by date. Used to render per-exercise progress charts.
  *
- * Returns: [{ date, bestWeightKg, repsLogged, rirLogged, estimated1rm }]
+ * Returns: [{ date, bestWeightKg, repsLogged, estimated1rm }]
  * One entry per session date — best set (highest Epley 1RM) is kept.
  */
 
@@ -32,7 +32,6 @@ export async function GET(req: NextRequest) {
       setType: gymSets.setType,
       weightKg: gymSets.weightKg,
       reps: gymSets.reps,
-      rir: gymSets.rir,
       setNumber: gymSets.setNumber,
     })
     .from(gymSets)
@@ -49,7 +48,7 @@ export async function GET(req: NextRequest) {
   // Group by session date — keep only working sets, pick best set per session
   const byDate = new Map<
     string,
-    { date: string; bestWeightKg: number; repsLogged: number; rirLogged: number | null; estimated1rm: number }
+    { date: string; bestWeightKg: number; repsLogged: number; estimated1rm: number }
   >();
 
   for (const row of rows) {
@@ -61,7 +60,6 @@ export async function GET(req: NextRequest) {
         date: row.date,
         bestWeightKg: row.weightKg,
         repsLogged: row.reps,
-        rirLogged: row.rir,
         estimated1rm: e1rm,
       });
     }

@@ -75,6 +75,8 @@ export async function PATCH(
   if (body.name !== undefined) update.name = body.name;
   if (body.type !== undefined) update.type = body.type;
   if (body.sortOrder !== undefined) update.sortOrder = body.sortOrder;
+  if (body.assignedDays !== undefined) update.assignedDays = body.assignedDays?.length ? JSON.stringify(body.assignedDays) : null;
+  if (body.targetMuscles !== undefined) update.targetMuscles = body.targetMuscles?.length ? JSON.stringify(body.targetMuscles) : null;
 
   await db.update(workoutPlans).set(update).where(eq(workoutPlans.id, planId));
   return NextResponse.json({ ok: true });

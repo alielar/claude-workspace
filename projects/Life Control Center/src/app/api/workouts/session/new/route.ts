@@ -34,14 +34,12 @@ export async function POST(req: NextRequest) {
 
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-  // Use just the plan name (e.g. "Push", "Pull", "Legs") — no program prefix
-  const workoutName = plan.name;
-
   const ins = await db.insert(gymSessions).values({
     userId,
     planId: plan.id,
     programId: plan.programId,
-    workoutName,
+    workoutName: plan.name,
+    originalTemplateName: plan.name,
     date: todayMadrid(),
   });
 

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     startedAt,
     finishedAt,
     notes,
-    exerciseLogs, // [{ exerciseId, sets: [{ setNumber, setType, weightKg, repsLogged, durationSeconds, rirLogged, restSeconds }] }]
+    exerciseLogs, // [{ exerciseId, sets: [{ setNumber, setType, weightKg, repsLogged, durationSeconds, restSeconds }] }]
   } = body;
 
   // 1. Create the workout log
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       weightKg: s.weightKg,
       repsLogged: s.repsLogged,
       durationSeconds: s.durationSeconds,
-      rirLogged: s.rirLogged,
+      rirLogged: null, // RIR no longer tracked
       restSeconds: s.restSeconds,
       completedAt: new Date(),
     }))

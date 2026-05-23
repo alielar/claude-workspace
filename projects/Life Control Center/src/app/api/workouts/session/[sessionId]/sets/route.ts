@@ -9,7 +9,6 @@
  *   setType: "standard" | "warmup" | "drop" | "failure";
  *   weightKg?: number;
  *   reps?: number;
- *   rir?: number;
  *   durationSeconds?: number;
  * }
  *
@@ -45,7 +44,7 @@ export async function POST(
   }
 
   const body = await req.json();
-  const { exerciseId, exerciseName, setNumber, setType, weightKg, reps, rir, durationSeconds } = body;
+  const { exerciseId, exerciseName, setNumber, setType, weightKg, reps, durationSeconds } = body;
 
   if (!exerciseName || setNumber === undefined) {
     return NextResponse.json({ error: "exerciseName and setNumber required" }, { status: 400 });
@@ -59,7 +58,7 @@ export async function POST(
     setType: setType ?? "standard",
     weightKg: weightKg ?? null,
     reps: reps ?? null,
-    rir: rir ?? null,
+    rir: null, // RIR no longer tracked; column kept for historical data
     durationSeconds: durationSeconds ?? null,
   });
 

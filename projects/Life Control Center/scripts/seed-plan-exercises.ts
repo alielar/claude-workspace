@@ -25,9 +25,9 @@ function defaultSetConfig(planType: string, exerciseName: string): string {
   );
   const restS = isLegs ? 120 : 60;
   return JSON.stringify([
-    { type: "standard", repMin: 8, repMax: 12, rir: 2, restS },
-    { type: "standard", repMin: 8, repMax: 12, rir: 1, restS },
-    { type: "standard", repMin: 8, repMax: 12, rir: 0, restS },
+    { type: "standard", repMin: 8, repMax: 12, restS },
+    { type: "standard", repMin: 8, repMax: 12, restS },
+    { type: "standard", repMin: 8, repMax: 12, restS },
   ]);
 }
 

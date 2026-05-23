@@ -69,7 +69,7 @@ export async function GET(
     weightIncrement: number;
     trackingType: string;
     sortOrder: number;
-    setConfig: Array<{ type: string; repMin: number; repMax: number; rir: number; restS: number }>;
+    setConfig: Array<{ type: string; repMin: number; repMax: number; restS: number }>;
   }[] = [];
 
   if (gymSession.planId) {
@@ -106,8 +106,8 @@ export async function GET(
     .orderBy(gymSets.setNumber);
 
   // Prefill: for each template exercise, find the last session where it was logged
-  // Return: { exerciseId -> [{ setNumber, weightKg, reps, rir, setType }] }
-  const prefillMap: Record<number, Array<{ setNumber: number; weightKg: number | null; reps: number | null; rir: number | null; setType: string }>> = {};
+  // Return: { exerciseId -> [{ setNumber, weightKg, reps, setType }] }
+  const prefillMap: Record<number, Array<{ setNumber: number; weightKg: number | null; reps: number | null; setType: string }>> = {};
 
   for (const ex of templateExercises) {
     // Find the most recent session (other than this one) that has this exercise
@@ -116,7 +116,6 @@ export async function GET(
         setNumber: gymSets.setNumber,
         weightKg: gymSets.weightKg,
         reps: gymSets.reps,
-        rir: gymSets.rir,
         setType: gymSets.setType,
         sessionId: gymSets.sessionId,
         createdAt: gymSets.createdAt,
