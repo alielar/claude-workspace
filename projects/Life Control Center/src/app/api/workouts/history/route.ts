@@ -30,7 +30,19 @@ export async function GET(req: NextRequest) {
   if (from) conditions.push(gte(gymSessions.date, from));
   if (to) conditions.push(lte(gymSessions.date, to));
 
-  const sessions = await db
+  // Auto-cleanup: delete abandoned sessions (0 sets, older than 24h)
+  await db
+    .delete(gymSessions)
+    .where(
+      and(
+        eq(gymSessions.userId, session.user.id),
+        sql`${gymSessions.id} NOT IN (SELECT DISTINCT session_id FROM gym_sets)`,
+        sql`${gymSessions.createdAt} < datetime('now', '-24 hours')`
+      )
+    );
+
+  // Only return sessions that have at least 1 set (JOIN ensures this)
+  const sessionsWithSets = await db
     .select({
       id: gymSessions.id,
       workoutName: gymSessions.workoutName,
@@ -38,28 +50,22 @@ export async function GET(req: NextRequest) {
       durationSeconds: gymSessions.durationSeconds,
       notes: gymSessions.notes,
       createdAt: gymSessions.createdAt,
+      setCount: sql<number>`count(${gymSets.id})`.as("set_count"),
+      totalVolume: sql<number>`sum(coalesce(${gymSets.weightKg}, 0) * coalesce(${gymSets.reps}, 0))`.as("total_volume"),
     })
     .from(gymSessions)
+    .innerJoin(gymSets, eq(gymSets.sessionId, gymSessions.id))
     .where(and(...conditions))
+    .groupBy(gymSessions.id)
     .orderBy(desc(gymSessions.date))
     .limit(limit)
     .offset(offset);
 
-  if (sessions.length === 0) return NextResponse.json([]);
+  if (sessionsWithSets.length === 0) return NextResponse.json([]);
 
-  // Aggregate set counts and volume per session
+  const sessions = sessionsWithSets;
+  const aggMap = new Map(sessions.map((s) => [s.id, { setCount: s.setCount, totalVolume: s.totalVolume }]));
   const sessionIds = sessions.map((s) => s.id);
-  const aggRows = await db
-    .select({
-      sessionId: gymSets.sessionId,
-      setCount: sql<number>`count(*)`.as("set_count"),
-      totalVolume: sql<number>`sum(coalesce(weight_kg, 0) * coalesce(reps, 0))`.as("total_volume"),
-    })
-    .from(gymSets)
-    .where(sql`${gymSets.sessionId} in (${sql.join(sessionIds.map((id) => sql`${id}`), sql`,`)})`)
-    .groupBy(gymSets.sessionId);
-
-  const aggMap = new Map(aggRows.map((r) => [r.sessionId, r]));
 
   // If ?detail=true, include per-exercise set data
   const detail = req.nextUrl.searchParams.get("detail") === "true";

@@ -507,7 +507,7 @@ export default function WordbankPage() {
                   style={{
                     flexShrink: 0, width: 26, height: 26,
                     border: "1px solid var(--line-hi)", borderRadius: 8,
-                    background: addingSug === s.word ? "var(--grad)" : "rgba(255,255,255,0.03)",
+                    background: addingSug === s.word ? "#E8E8F0" : "rgba(255,255,255,0.03)",
                     cursor: addingSug === s.word ? "default" : "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     color: addingSug === s.word ? "transparent" : "var(--ink-3)",

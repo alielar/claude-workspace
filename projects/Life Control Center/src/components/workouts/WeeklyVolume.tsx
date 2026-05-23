@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { format, parseISO } from "date-fns";
 
 const MUSCLE_LABELS: Record<string, string> = {
@@ -11,7 +11,8 @@ const MUSCLE_LABELS: Record<string, string> = {
   abs: "Abs", obliques: "Obliques", serratus: "Serratus",
 };
 
-const TARGET_SETS = 10; // Default MEV target per muscle group per week
+const TARGET_SETS = 10;
+const PAGE_SIZE = 5;
 
 interface WeeklyData {
   weekStart: string;
@@ -22,6 +23,8 @@ interface WeeklyData {
 export default function WeeklyVolume() {
   const [data, setData] = useState<WeeklyData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     fetch("/api/workouts/weekly-volume")
@@ -47,12 +50,22 @@ export default function WeeklyVolume() {
 
   if (!data || Object.keys(data.volume).length === 0) return null;
 
-  // Sort muscles by volume descending, show top 5
-  const sorted = Object.entries(data.volume)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  const sorted = Object.entries(data.volume).sort((a, b) => b[1] - a[1]);
+  const totalSets = sorted.reduce((a, b) => a + b[1], 0);
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const visible = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  const totalSets = Object.values(data.volume).reduce((a, b) => a + b, 0);
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0 && page < totalPages - 1) setPage(p => p + 1);
+      if (dx > 0 && page > 0) setPage(p => p - 1);
+    }
+  }
 
   return (
     <div className="cc-card" style={{ marginBottom: 14 }}>
@@ -62,7 +75,11 @@ export default function WeeklyVolume() {
           {format(parseISO(data.weekStart), "MMM d")} - {format(parseISO(data.weekEnd), "MMM d")}
         </div>
       </div>
-      <div className="cc-card-body">
+      <div
+        className="cc-card-body"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Total sets hero */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 16 }}>
           <span style={{ fontSize: 32, fontWeight: 200, fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
@@ -73,7 +90,7 @@ export default function WeeklyVolume() {
 
         {/* Muscle bars */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {sorted.map(([muscle, sets]) => {
+          {visible.map(([muscle, sets]) => {
             const pct = Math.min(100, (sets / TARGET_SETS) * 100);
             const isOver = sets >= TARGET_SETS;
             return (
@@ -92,7 +109,7 @@ export default function WeeklyVolume() {
                 <div style={{ height: 4, background: "var(--line)", borderRadius: 99, overflow: "hidden" }}>
                   <div style={{
                     height: "100%", width: `${pct}%`, borderRadius: 99,
-                    background: isOver ? "var(--pos)" : "var(--grad)",
+                    background: isOver ? "var(--pos)" : "var(--violet)",
                     transition: "width 0.4s",
                   }} />
                 </div>
@@ -101,10 +118,21 @@ export default function WeeklyVolume() {
           })}
         </div>
 
-        {/* Remaining muscles count */}
-        {Object.keys(data.volume).length > 5 && (
-          <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 12, textAlign: "center" }}>
-            +{Object.keys(data.volume).length - 5} more muscle groups
+        {/* Pagination dots */}
+        {totalPages > 1 && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14 }}>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                style={{
+                  width: i === page ? 16 : 6, height: 6, borderRadius: 99,
+                  background: i === page ? "var(--violet)" : "var(--ink-5)",
+                  border: "none", cursor: "pointer", padding: 0,
+                  transition: "all 0.2s",
+                }}
+              />
+            ))}
           </div>
         )}
       </div>

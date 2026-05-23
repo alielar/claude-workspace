@@ -207,7 +207,7 @@ function NumberPad({
         </div>
         <button onClick={handleDone} style={{
           width: "100%", padding: "16px 0", borderRadius: 12,
-          background: "var(--grad)", color: "#0A0A14",
+          background: "#E8E8F0", color: "#06060B",
           fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
         }}>
           Done
@@ -688,7 +688,7 @@ function SessionSummary({
 
           <button onClick={onClose} style={{
             width: "100%", padding: "13px 0", borderRadius: 10,
-            background: "var(--grad)", color: "#0A0A14",
+            background: "#E8E8F0", color: "#06060B",
             fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", letterSpacing: "-0.01em",
           }}>
             Done
@@ -854,7 +854,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
             {doneSets > 0 ? (
               <button onClick={handleFinish} disabled={finishing} style={{
                 padding: "10px 20px", borderRadius: 10,
-                background: "var(--grad)", border: "none", color: "#0A0A14",
+                background: "#E8E8F0", border: "none", color: "#06060B",
                 fontSize: 14, fontWeight: 700, cursor: finishing ? "wait" : "pointer", letterSpacing: "-0.01em",
               }}>
                 {finishing ? "Saving…" : "Finish"}

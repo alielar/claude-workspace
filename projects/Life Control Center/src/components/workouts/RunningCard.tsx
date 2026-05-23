@@ -192,7 +192,7 @@ export default function RunningCard() {
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                   <button type="button" className="cc-btn" onClick={() => setShowModal(false)}>Cancel</button>
                   <button type="submit" disabled={saving}
-                    style={{ opacity: saving ? 0.5 : 1, padding: "8px 18px", borderRadius: 8, background: "var(--grad)", color: "#0A0A14", fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer" }}>
+                    style={{ opacity: saving ? 0.5 : 1, padding: "8px 18px", borderRadius: 8, background: "#E8E8F0", color: "#06060B", fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer" }}>
                     {saving ? "Saving…" : "Save"}
                   </button>
                 </div>

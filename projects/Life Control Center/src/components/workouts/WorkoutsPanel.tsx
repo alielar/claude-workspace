@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -91,6 +90,19 @@ export default function WorkoutsPanel() {
   const [editDays, setEditDays] = useState<string[]>([]);
   const [editSaving, setEditSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+
+  // Edit exercises state
+  interface EditPlanExercise {
+    id: number; // plan_exercises.id
+    exerciseId: number;
+    name: string;
+    primaryMuscle: string | null;
+    sortOrder: number;
+    setConfig: { type: string; repMin: number; repMax: number; restS?: number }[];
+  }
+  const [editExercises, setEditExercises] = useState<EditPlanExercise[]>([]);
+  const [editExLoading, setEditExLoading] = useState(false);
+  const [showEditPicker, setShowEditPicker] = useState(false);
 
   function loadPlans() {
     setLoadError(false);
@@ -225,11 +237,29 @@ export default function WorkoutsPanel() {
     setEditMuscles([...plan.targetMuscles]);
     setEditDays([...plan.assignedDays]);
     setDeleteConfirm(null);
+    setShowEditPicker(false);
+    // Load plan exercises
+    setEditExLoading(true);
+    fetch(`/api/workouts/plans/${plan.id}/exercises`)
+      .then(r => r.json())
+      .then((data: { id: number; exerciseId: number; name: string; primaryMuscle: string | null; sortOrder: number; setConfig: { type: string; repMin: number; repMax: number; restS?: number }[] }[]) => {
+        setEditExercises(data.map(e => ({
+          id: e.id,
+          exerciseId: e.exerciseId,
+          name: e.name,
+          primaryMuscle: e.primaryMuscle,
+          sortOrder: e.sortOrder,
+          setConfig: e.setConfig,
+        })));
+        setEditExLoading(false);
+      })
+      .catch(() => setEditExLoading(false));
   }
 
   async function saveEdit() {
     if (!editingId || !editName.trim()) return;
     setEditSaving(true);
+    // Save plan details
     await fetch(`/api/workouts/plans/${editingId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -239,10 +269,21 @@ export default function WorkoutsPanel() {
         assignedDays: editDays,
       }),
     });
+    // Save exercise sort orders
+    for (let i = 0; i < editExercises.length; i++) {
+      const ex = editExercises[i];
+      if (ex.sortOrder !== i) {
+        await fetch(`/api/workouts/plan-exercises/${ex.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: i }),
+        });
+      }
+    }
     setPlans((prev) =>
       prev.map((p) =>
         p.id === editingId
-          ? { ...p, name: editName.trim(), targetMuscles: editMuscles, assignedDays: editDays }
+          ? { ...p, name: editName.trim(), targetMuscles: editMuscles, assignedDays: editDays, exerciseCount: editExercises.length }
           : p
       )
     );
@@ -257,6 +298,54 @@ export default function WorkoutsPanel() {
     setDeleteConfirm(null);
     if (editingId === id) setEditingId(null);
     window.dispatchEvent(new Event("workouts-data-changed"));
+  }
+
+  function moveExercise(idx: number, dir: -1 | 1) {
+    setEditExercises(prev => {
+      const next = [...prev];
+      const target = idx + dir;
+      if (target < 0 || target >= next.length) return prev;
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  }
+
+  async function removeEditExercise(peId: number) {
+    await fetch(`/api/workouts/plan-exercises/${peId}`, { method: "DELETE" });
+    setEditExercises(prev => prev.filter(e => e.id !== peId));
+  }
+
+  async function addEditExercise(ex: LibExercise) {
+    if (!editingId) return;
+    const res = await fetch(`/api/workouts/plans/${editingId}/exercises`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        exerciseId: ex.id,
+        sortOrder: editExercises.length,
+        setConfig: [
+          { type: "standard", repMin: 8, repMax: 12 },
+          { type: "standard", repMin: 8, repMax: 12 },
+          { type: "standard", repMin: 8, repMax: 12 },
+        ],
+      }),
+    });
+    if (res.ok) {
+      const row = await res.json();
+      setEditExercises(prev => [...prev, {
+        id: row.id,
+        exerciseId: ex.id,
+        name: ex.name,
+        primaryMuscle: ex.primaryMuscle,
+        sortOrder: prev.length,
+        setConfig: [
+          { type: "standard", repMin: 8, repMax: 12 },
+          { type: "standard", repMin: 8, repMax: 12 },
+          { type: "standard", repMin: 8, repMax: 12 },
+        ],
+      }]);
+    }
+    setShowEditPicker(false);
   }
 
   function toggleChip(arr: string[], val: string, setter: (v: string[]) => void) {
@@ -564,8 +653,8 @@ export default function WorkoutsPanel() {
                           disabled={inlineSaving || !inlineName.trim()}
                           style={{
                             padding: "6px 14px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                            background: inlineName.trim() ? "var(--grad)" : "rgba(255,255,255,0.04)",
-                            color: inlineName.trim() ? "#0A0A14" : "var(--ink-4)", border: "none",
+                            background: inlineName.trim() ? "#E8E8F0" : "rgba(255,255,255,0.04)",
+                            color: inlineName.trim() ? "#06060B" : "var(--ink-4)", border: "none",
                           }}
                         >
                           {inlineSaving ? "Creating..." : "Create and add"}
@@ -621,8 +710,8 @@ export default function WorkoutsPanel() {
                 disabled={saving || !newName.trim() || selectedExercises.length === 0}
                 style={{
                   padding: "8px 20px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  background: newName.trim() && selectedExercises.length > 0 ? "var(--grad)" : "rgba(255,255,255,0.04)",
-                  color: newName.trim() && selectedExercises.length > 0 ? "#0A0A14" : "var(--ink-4)", border: "none",
+                  background: newName.trim() && selectedExercises.length > 0 ? "#E8E8F0" : "rgba(255,255,255,0.04)",
+                  color: newName.trim() && selectedExercises.length > 0 ? "#06060B" : "var(--ink-4)", border: "none",
                 }}
               >
                 {saving ? "Creating…" : `Create workout (${selectedExercises.length} ex)`}
@@ -661,8 +750,7 @@ export default function WorkoutsPanel() {
             onClick={() => setShowNewForm(true)}
             style={{
               padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600,
-              background: "var(--grad)", color: "#0A0A14", border: "none", cursor: "pointer",
-              boxShadow: "0 0 24px rgba(124,77,255,0.30)",
+              background: "#E8E8F0", color: "#06060B", border: "none", cursor: "pointer",
             }}
           >
             + Create your first workout
@@ -708,23 +796,15 @@ export default function WorkoutsPanel() {
                       )}
                     </div>
 
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <Link href={`/workouts/templates/${plan.id}`} style={{
-                        fontSize: 11, color: "var(--cyan)", textDecoration: "none", padding: "5px 10px",
-                        borderRadius: 6, border: "1px solid rgba(100,255,218,0.20)",
-                      }}>
-                        Exercises →
-                      </Link>
-                      <button
-                        onClick={() => startEdit(plan)}
-                        style={{
-                          fontSize: 11, color: "var(--ink-3)", background: "none", border: "1px solid var(--line)",
-                          borderRadius: 6, padding: "5px 10px", cursor: "pointer",
-                        }}
-                      >
-                        Edit
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => startEdit(plan)}
+                      style={{
+                        fontSize: 11, color: "var(--ink-3)", background: "none", border: "1px solid var(--line)",
+                        borderRadius: 6, padding: "5px 10px", cursor: "pointer",
+                      }}
+                    >
+                      Edit
+                    </button>
                   </div>
                 ) : (
                   /* ── Edit view ──────────────────────────────────────── */
@@ -784,6 +864,150 @@ export default function WorkoutsPanel() {
                       </div>
                     </div>
 
+                    {/* ── Exercises in this workout ───────────────── */}
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <div style={{ fontSize: 11, color: "var(--ink-3)" }}>Exercises</div>
+                        <button
+                          onClick={() => { setShowEditPicker(true); loadExerciseLib(); }}
+                          style={{
+                            padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                            border: "1px solid var(--line)", background: "transparent", color: "var(--cyan)",
+                          }}
+                        >
+                          + Add
+                        </button>
+                      </div>
+
+                      {editExLoading ? (
+                        <div style={{ color: "var(--ink-4)", fontSize: 12 }}>Loading exercises...</div>
+                      ) : editExercises.length === 0 ? (
+                        <div style={{ padding: "14px", textAlign: "center", border: "1px dashed var(--line)", borderRadius: 8, color: "var(--ink-4)", fontSize: 12 }}>
+                          No exercises added
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          {editExercises.map((ex, i) => (
+                            <div key={ex.id} style={{
+                              display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
+                              border: "1px solid var(--line)", borderRadius: 8, background: "rgba(255,255,255,0.018)",
+                            }}>
+                              <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-4)", fontSize: 10, minWidth: 20 }}>
+                                {String(i + 1).padStart(2, "0")}
+                              </span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 12.5, color: "var(--ink)" }}>{ex.name}</div>
+                                <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+                                  {ex.setConfig.length} sets \u00b7 {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
+                                </div>
+                              </div>
+                              <div style={{ display: "flex", gap: 2 }}>
+                                <button
+                                  onClick={() => moveExercise(i, -1)}
+                                  disabled={i === 0}
+                                  aria-label={`Move ${ex.name} up`}
+                                  style={{
+                                    width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
+                                    background: "transparent", color: i === 0 ? "var(--ink-5)" : "var(--ink-3)",
+                                    cursor: i === 0 ? "default" : "pointer", fontSize: 12,
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                  }}
+                                >
+                                  \u2191
+                                </button>
+                                <button
+                                  onClick={() => moveExercise(i, 1)}
+                                  disabled={i === editExercises.length - 1}
+                                  aria-label={`Move ${ex.name} down`}
+                                  style={{
+                                    width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
+                                    background: "transparent", color: i === editExercises.length - 1 ? "var(--ink-5)" : "var(--ink-3)",
+                                    cursor: i === editExercises.length - 1 ? "default" : "pointer", fontSize: 12,
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                  }}
+                                >
+                                  \u2193
+                                </button>
+                                <button
+                                  onClick={() => removeEditExercise(ex.id)}
+                                  aria-label={`Remove ${ex.name}`}
+                                  style={{
+                                    width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
+                                    background: "transparent", color: "var(--neg)", cursor: "pointer", fontSize: 14,
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                  }}
+                                >
+                                  \u00d7
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Inline exercise picker for edit mode */}
+                      {showEditPicker && (
+                        <div style={{
+                          marginTop: 8, border: "1px solid var(--line)", borderRadius: 10,
+                          background: "var(--bg-card)", overflow: "hidden",
+                        }}>
+                          <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--line)", display: "flex", gap: 8 }}>
+                            <input
+                              autoFocus
+                              value={pickerSearch}
+                              onChange={(e) => setPickerSearch(e.target.value)}
+                              placeholder="Search exercises..."
+                              style={{
+                                flex: 1, padding: "6px 10px", borderRadius: 6, fontSize: 12,
+                                background: "var(--bg-input)", border: "1px solid var(--line)",
+                                color: "var(--ink)", outline: "none",
+                              }}
+                            />
+                            <button
+                              onClick={() => { setShowEditPicker(false); setPickerSearch(""); }}
+                              style={{
+                                padding: "6px 10px", borderRadius: 6, fontSize: 11,
+                                background: "transparent", border: "1px solid var(--line)",
+                                color: "var(--ink-4)", cursor: "pointer",
+                              }}
+                            >
+                              Close
+                            </button>
+                          </div>
+                          <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                            {libLoading ? (
+                              <div style={{ padding: 12, color: "var(--ink-4)", fontSize: 12 }}>Loading...</div>
+                            ) : (
+                              exerciseLib
+                                .filter(e => {
+                                  if (editExercises.some(ex => ex.exerciseId === e.id)) return false;
+                                  if (pickerSearch && !e.name.toLowerCase().includes(pickerSearch.toLowerCase())) return false;
+                                  return true;
+                                })
+                                .slice(0, 20)
+                                .map(ex => (
+                                  <button
+                                    key={ex.id}
+                                    onClick={() => addEditExercise(ex)}
+                                    style={{
+                                      display: "flex", width: "100%", justifyContent: "space-between",
+                                      padding: "8px 12px", background: "transparent", border: "none",
+                                      borderBottom: "1px solid var(--line)", cursor: "pointer",
+                                      textAlign: "left", color: "var(--ink)", fontSize: 12,
+                                    }}
+                                  >
+                                    <span>{ex.name}</span>
+                                    <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+                                      {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
+                                    </span>
+                                  </button>
+                                ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Actions */}
                     <div style={{ display: "flex", gap: 8, justifyContent: "space-between" }}>
                       <div>
@@ -818,7 +1042,7 @@ export default function WorkoutsPanel() {
                           disabled={editSaving || !editName.trim()}
                           style={{
                             padding: "6px 16px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                            background: "var(--grad)", color: "#0A0A14", border: "none",
+                            background: "#E8E8F0", color: "#06060B", border: "none",
                           }}
                         >
                           {editSaving ? "Saving…" : "Save"}

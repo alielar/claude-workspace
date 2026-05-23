@@ -67,7 +67,7 @@ function SelectionPopup({ text, position, onAddToBank, onDismiss }: {
         onClick={() => { onAddToBank(text); onDismiss(); }}
         style={{
           fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
-          color: "#0A0A14", background: "var(--grad)",
+          color: "#06060B", background: "#E8E8F0",
           border: "none", borderRadius: 7, padding: "5px 10px",
           cursor: "pointer", flexShrink: 0,
         }}

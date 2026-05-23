@@ -632,6 +632,162 @@ function ConsistencyHeatmapSection({
   );
 }
 
+// ── Section 6: Session History ───────────────────────────────────────────────
+
+interface HistorySession {
+  id: number;
+  sessionName: string;
+  workoutName: string;
+  date: string;
+  durationSeconds: number | null;
+  setCount: number;
+  totalVolume: number;
+  sets?: Array<{ exerciseName: string; setNumber: number; weightKg: number | null; reps: number | null; setType: string }>;
+}
+
+function formatVolume(v: number): string {
+  if (v >= 1000) return `${(v / 1000).toFixed(1)}t`;
+  return `${v}kg`;
+}
+
+function groupByExercise(sets: HistorySession["sets"]) {
+  if (!sets) return [];
+  const map = new Map<string, typeof sets>();
+  for (const s of sets) {
+    if (!map.has(s.exerciseName)) map.set(s.exerciseName, []);
+    map.get(s.exerciseName)!.push(s);
+  }
+  return Array.from(map.entries());
+}
+
+function SessionHistorySection() {
+  const [sessions, setSessions] = useState<HistorySession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/workouts/history?limit=100&detail=true")
+      .then((r) => r.json())
+      .then((data) => { setSessions(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const visible = showAll ? sessions : sessions.slice(0, 10);
+
+  // Group by month
+  const groups: { month: string; sessions: HistorySession[] }[] = [];
+  for (const s of visible) {
+    const month = s.date.slice(0, 7);
+    const last = groups[groups.length - 1];
+    if (last && last.month === month) {
+      last.sessions.push(s);
+    } else {
+      groups.push({ month, sessions: [s] });
+    }
+  }
+
+  return (
+    <div className="cc-card" style={{ marginBottom: 14 }}>
+      <div className="cc-card-head">
+        <div className="title">Session History</div>
+        {sessions.length > 10 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            style={{ background: "none", border: "none", fontSize: 10, color: "var(--cyan)", cursor: "pointer", letterSpacing: "0.04em" }}
+          >
+            {showAll ? "Show less" : `View all ${sessions.length}`} \u2192
+          </button>
+        )}
+      </div>
+      <div style={{ padding: 0 }}>
+        {loading ? (
+          <div className="cc-card-body">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="skeleton" style={{ height: 48, borderRadius: 8, marginBottom: 8 }} />
+            ))}
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="cc-card-body" style={{ color: "var(--ink-4)", fontSize: 13 }}>
+            No sessions yet.
+          </div>
+        ) : (
+          groups.map(({ month, sessions: monthSessions }) => (
+            <div key={month}>
+              <div style={{
+                fontSize: 10, fontWeight: 600, letterSpacing: "0.12em",
+                textTransform: "uppercase" as const, color: "var(--ink-4)", padding: "10px 16px 4px",
+                fontFamily: "var(--f-mono)",
+              }}>
+                {format(parseISO(`${month}-01`), "MMMM yyyy")}
+                <span style={{ marginLeft: 8, color: "var(--ink-5)" }}>{monthSessions.length} sessions</span>
+              </div>
+              {monthSessions.map((s, i) => (
+                <div key={s.id}>
+                  <button
+                    onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
+                    style={{
+                      display: "grid", gridTemplateColumns: "1fr auto",
+                      alignItems: "center", padding: "10px 16px", width: "100%",
+                      background: "transparent", border: "none", cursor: "pointer",
+                      textAlign: "left",
+                      borderBottom: (expandedId !== s.id && i < monthSessions.length - 1) ? "1px solid var(--line)" : "none",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)" }}>{s.sessionName}</div>
+                      <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
+                        {format(parseISO(s.date), "EEE, MMM d")}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                      <span style={{ fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{s.setCount} sets</span>
+                      <span style={{ fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{formatVolume(s.totalVolume)}</span>
+                      <span style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{formatDuration(s.durationSeconds)}</span>
+                      <span style={{
+                        fontSize: 14, color: "var(--ink-4)", transition: "transform 0.15s",
+                        transform: expandedId === s.id ? "rotate(180deg)" : "rotate(0deg)",
+                      }}>
+                        \u2193
+                      </span>
+                    </div>
+                  </button>
+                  {expandedId === s.id && s.sets && (
+                    <div style={{
+                      padding: "0 16px 14px",
+                      borderBottom: i < monthSessions.length - 1 ? "1px solid var(--line)" : "none",
+                    }}>
+                      {groupByExercise(s.sets).map(([name, sets]) => (
+                        <div key={name} style={{ marginBottom: 10 }}>
+                          <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-2)", marginBottom: 4 }}>{name}</div>
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
+                            {sets.map((set) => (
+                              <span
+                                key={`${set.exerciseName}-${set.setNumber}`}
+                                style={{
+                                  fontSize: 10, fontFamily: "var(--f-mono)", padding: "2px 8px",
+                                  borderRadius: 4, background: "rgba(255,255,255,0.03)",
+                                  border: "1px solid var(--line)", color: "var(--ink-3)",
+                                }}
+                              >
+                                {set.weightKg ?? "-"}kg x {set.reps ?? "-"}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Panel ────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsPanel() {
@@ -686,6 +842,7 @@ export default function AnalyticsPanel() {
 
       {data && (
         <>
+          <SessionHistorySection />
           <MuscleVolumeSection    data={data.muscleVolume} />
           <WeeklyTrendSection     data={data.weeklyTrend} />
           <ExerciseProgressionSection exercises={data.exercises} />

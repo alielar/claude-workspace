@@ -1,9 +1,10 @@
 /**
  * POST /api/workouts/seed-history
- * Seeds March 16 → May 31 2026 with gym sessions (5/week, Mon–Fri).
+ * Seeds March 16 → April 30 2026 with gym sessions (5–6/week, Mon–Fri or Mon–Sat).
  * Uses the user's existing exercise_db and workout plans.
  * Progressive weights: +1.25 kg per exercise encounter.
  * Skips dates that already have sessions.
+ * Also cleans up any abandoned sessions (0 sets, older than 24h).
  */
 
 import { NextResponse } from "next/server";
@@ -12,14 +13,24 @@ import { db } from "@/db";
 import { gymSessions, gymSets, exerciseDb, programs, workoutPlans, planExercises } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
-// Build weekday dates (Mon–Fri) between two YYYY-MM-DD strings inclusive
-function weekdays(start: string, end: string): string[] {
+// Build training dates between two YYYY-MM-DD strings inclusive
+// Varies between 5 and 6 sessions per week to match real training
+function trainingDates(start: string, end: string): string[] {
   const dates: string[] = [];
   const d = new Date(start + "T12:00:00Z");
   const endD = new Date(end + "T12:00:00Z");
+
   while (d <= endD) {
     const dow = d.getUTCDay(); // 0=Sun..6=Sat
+    // Get ISO week number to vary pattern
+    const jan1 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNum = Math.ceil((((d.getTime() - jan1.getTime()) / 86400000) + jan1.getUTCDay() + 1) / 7);
+
     if (dow >= 1 && dow <= 5) {
+      // Mon-Fri: always train
+      dates.push(d.toISOString().slice(0, 10));
+    } else if (dow === 6 && weekNum % 3 !== 0) {
+      // Saturday: train 2 out of every 3 weeks (gives ~5.3 sessions/week average)
       dates.push(d.toISOString().slice(0, 10));
     }
     d.setUTCDate(d.getUTCDate() + 1);
@@ -75,8 +86,19 @@ export async function POST() {
   }
   const userId = session.user.id;
 
-  // All weekdays Mar 16 → May 31
-  const allDates = weekdays("2026-03-16", "2026-05-31");
+  // Clean up abandoned sessions (0 sets, older than 24h)
+  await db
+    .delete(gymSessions)
+    .where(
+      and(
+        eq(gymSessions.userId, userId),
+        sql`${gymSessions.id} NOT IN (SELECT DISTINCT session_id FROM gym_sets)`,
+        sql`${gymSessions.createdAt} < datetime('now', '-24 hours')`
+      )
+    );
+
+  // Training dates Mar 16 → Apr 30 (5-6 sessions/week)
+  const allDates = trainingDates("2026-03-16", "2026-04-30");
 
   // Find dates that already have sessions
   const existingRows = await db
@@ -86,7 +108,7 @@ export async function POST() {
       and(
         eq(gymSessions.userId, userId),
         sql`${gymSessions.date} >= '2026-03-16'`,
-        sql`${gymSessions.date} <= '2026-05-31'`
+        sql`${gymSessions.date} <= '2026-04-30'`
       )
     );
   const existingDates = new Set(existingRows.map((r) => r.date));
@@ -143,8 +165,8 @@ export async function POST() {
     const exercises = planExMap.get(plan.id) ?? [];
     if (exercises.length === 0) continue;
 
-    // Vary duration: 35–65 min
-    const durationSeconds = (35 + Math.floor(Math.random() * 30)) * 60;
+    // Vary duration: 40–65 min
+    const durationSeconds = (40 + Math.floor(Math.random() * 25)) * 60;
 
     const [newSession] = await db
       .insert(gymSessions)
@@ -211,7 +233,7 @@ export async function POST() {
   }
 
   return NextResponse.json({
-    message: `Seeded ${sessionsCreated} sessions from March 16 to May 31, 2026`,
+    message: `Seeded ${sessionsCreated} sessions from March 16 to April 30, 2026`,
     count: sessionsCreated,
   });
 }

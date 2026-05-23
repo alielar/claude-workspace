@@ -21,9 +21,8 @@ export default function NotFound() {
         href="/dashboard"
         style={{
           marginTop: 8, padding: "10px 20px", borderRadius: 8,
-          background: "var(--grad)", color: "#0A0A14",
+          background: "#E8E8F0", color: "#06060B",
           fontSize: 13, fontWeight: 600, textDecoration: "none",
-          boxShadow: "0 0 16px rgba(124,77,255,0.25)",
         }}
       >
         Back to Dashboard
