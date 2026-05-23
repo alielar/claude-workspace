@@ -117,7 +117,7 @@ export default function SleepPage() {
         <div>
           <h1>Sleep<span className="grad-text">.</span></h1>
           <div className="sub">
-            Manual log · weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
+            Manual log · weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "-"}</b>
             {" "}· debt <b style={{ color: weekDebt > 0 ? "var(--warn)" : "var(--pos)" }}>
               {weekDebt > 0 ? `-${fmtHours(weekDebt)}` : "0h"}
             </b> · target {TARGET_HOURS}h
@@ -256,7 +256,7 @@ export default function SleepPage() {
           <div className="cc-card" style={{ padding: 24, marginBottom: 14 }}>
             <div className="cc-card-head">
               <div className="title">This week · hours slept</div>
-              <div className="tail">avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b> · target {TARGET_HOURS}h</div>
+              <div className="tail">avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "-"}</b> · target {TARGET_HOURS}h</div>
             </div>
 
             {/* Bars */}
@@ -333,7 +333,7 @@ export default function SleepPage() {
             <div className="cc-card-head">
               <div className="title">Quality · 30 days</div>
               <div className="tail">avg <b style={{ color: "var(--ink)" }}>
-                {entries.length > 0 ? (entries.slice(0, 30).reduce((s, e) => s + e.quality, 0) / Math.min(entries.length, 30)).toFixed(1) : "—"}
+                {entries.length > 0 ? (entries.slice(0, 30).reduce((s, e) => s + e.quality, 0) / Math.min(entries.length, 30)).toFixed(1) : "-"}
               </b></div>
             </div>
             <svg viewBox="0 0 600 110" preserveAspectRatio="none" style={{ width: "100%", height: 110, display: "block" }}>

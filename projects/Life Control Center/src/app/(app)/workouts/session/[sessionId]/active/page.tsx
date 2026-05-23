@@ -15,7 +15,7 @@ interface SetConfig {
 
 type TrackingType = "reps_weight" | "reps_only" | "time_weight" | "time_only" | "distance";
 
-interface TemplateExercise {
+interface WorkoutExercise {
   planExerciseId: number;
   exerciseId: number;
   name: string;
@@ -53,7 +53,7 @@ interface SessionData {
     durationSeconds: number | null;
     planId: number | null;
   };
-  exercises: TemplateExercise[];
+  exercises: WorkoutExercise[];
   loggedSets: LoggedSet[];
   prefillMap: Record<number, PrefillSet[]>;
   prMap: Record<number, number>;
@@ -128,27 +128,86 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
   );
 }
 
-// ─── Number stepper ───────────────────────────────────────────────────────────
+// ─── Number Pad (bottom sheet) ────────────────────────────────────────────────
+
+function NumberPad({
+  value, onChange, onClose, label, unit, allowDecimal = true,
+}: {
+  value: string; onChange: (v: string) => void; onClose: () => void;
+  label: string; unit?: string; allowDecimal?: boolean;
+}) {
+  const [input, setInput] = useState(value || "");
+
+  function handleKey(key: string) {
+    if (key === "back") setInput((v) => v.slice(0, -1));
+    else if (key === ".") { if (allowDecimal) setInput((v) => v.includes(".") ? v : v + "."); }
+    else setInput((v) => v + key);
+  }
+
+  function handleDone() { onChange(input); onClose(); }
+
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", allowDecimal ? "." : "", "0", "back"];
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 250, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div style={{ flex: 1, background: "rgba(0,0,0,0.5)" }} onClick={onClose} />
+      <div style={{
+        background: "var(--bg-card)", borderTop: "1px solid var(--line)",
+        borderRadius: "20px 20px 0 0", padding: "20px 16px 28px",
+      }}>
+        {/* Display */}
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.14em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+            {label}
+          </div>
+          <div style={{ fontSize: 42, fontFamily: "var(--f-mono)", fontWeight: 300, color: "var(--ink)", minHeight: 50 }}>
+            {input || "0"}
+            {unit && <span style={{ fontSize: 18, color: "var(--ink-4)", marginLeft: 4 }}>{unit}</span>}
+          </div>
+        </div>
+        {/* Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {keys.map((k, i) => (
+            <button
+              key={i}
+              onClick={() => k && handleKey(k)}
+              style={{
+                height: 56, borderRadius: 12, border: "1px solid var(--line)",
+                background: k === "back" ? "rgba(255,100,100,0.08)" : "rgba(255,255,255,0.04)",
+                color: k === "back" ? "var(--neg)" : "var(--ink)",
+                fontSize: k === "back" ? 20 : 22, fontFamily: "var(--f-mono)", fontWeight: 400,
+                cursor: k ? "pointer" : "default", opacity: k ? 1 : 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {k === "back" ? "⌫" : k}
+            </button>
+          ))}
+        </div>
+        <button onClick={handleDone} style={{
+          width: "100%", padding: "16px 0", borderRadius: 12,
+          background: "var(--grad)", color: "#0A0A14",
+          fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+        }}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Number stepper (mobile-optimized) ────────────────────────────────────────
 
 function Stepper({
-  label,
-  value,
-  onChange,
-  step = 1,
-  min = 0,
-  unit = "",
-  disabled = false,
-  hint,
+  label, value, onChange, step = 1, min = 0, unit = "", disabled = false, hint,
+  allowDecimal = true,
 }: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  step?: number;
-  min?: number;
-  unit?: string;
-  disabled?: boolean;
-  hint?: string;
+  label: string; value: string; onChange: (v: string) => void;
+  step?: number; min?: number; unit?: string; disabled?: boolean; hint?: string;
+  allowDecimal?: boolean;
 }) {
+  const [showPad, setShowPad] = useState(false);
+
   function nudge(delta: number) {
     const cur = parseFloat(value) || 0;
     const next = Math.max(min, Math.round((cur + delta * step) * 100) / 100);
@@ -156,52 +215,58 @@ function Stepper({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-      <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: "var(--ink-4)", fontWeight: 500 }}>
-        {label}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button
-          onClick={() => nudge(-1)}
-          disabled={disabled}
-          style={{
-            width: 40, height: 40, borderRadius: 8, border: "1px solid var(--line)",
-            background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
-            cursor: disabled ? "default" : "pointer", fontSize: 18, flexShrink: 0,
-            opacity: disabled ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >−</button>
-        <div style={{ textAlign: "center", minWidth: 64 }}>
-          <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
+    <>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: "var(--ink-4)", fontWeight: 500 }}>
+          {label}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            onClick={() => nudge(-1)}
             disabled={disabled}
             style={{
-              width: "100%", background: disabled ? "transparent" : "var(--bg-input)",
-              border: `1px solid ${disabled ? "transparent" : "var(--line)"}`,
-              borderRadius: 8, padding: "8px 4px", color: disabled ? "var(--ink-3)" : "var(--ink)",
-              fontSize: 20, fontFamily: "var(--f-mono)", fontWeight: 400,
-              textAlign: "center", outline: "none",
+              width: 48, height: 48, borderRadius: 10, border: "1px solid var(--line)",
+              background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
+              cursor: disabled ? "default" : "pointer", fontSize: 22, flexShrink: 0,
+              opacity: disabled ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center",
             }}
-          />
-          {unit && <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 2, letterSpacing: "0.06em" }}>{unit}</div>}
+          >−</button>
+          <button
+            onClick={() => !disabled && setShowPad(true)}
+            disabled={disabled}
+            style={{
+              minWidth: 80, padding: "8px 12px", borderRadius: 10,
+              background: disabled ? "transparent" : "var(--bg-input)",
+              border: `1px solid ${disabled ? "transparent" : "var(--line)"}`,
+              cursor: disabled ? "default" : "pointer", textAlign: "center",
+            }}
+          >
+            <div style={{
+              fontSize: 24, fontFamily: "var(--f-mono)", fontWeight: 400,
+              color: disabled ? "var(--ink-3)" : "var(--ink)",
+            }}>
+              {value || "0"}
+            </div>
+            {unit && <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 2, letterSpacing: "0.06em" }}>{unit}</div>}
+          </button>
+          <button
+            onClick={() => nudge(1)}
+            disabled={disabled}
+            style={{
+              width: 48, height: 48, borderRadius: 10, border: "1px solid var(--line)",
+              background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
+              cursor: disabled ? "default" : "pointer", fontSize: 22, flexShrink: 0,
+              opacity: disabled ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >+</button>
         </div>
-        <button
-          onClick={() => nudge(1)}
-          disabled={disabled}
-          style={{
-            width: 40, height: 40, borderRadius: 8, border: "1px solid var(--line)",
-            background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
-            cursor: disabled ? "default" : "pointer", fontSize: 18, flexShrink: 0,
-            opacity: disabled ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >+</button>
+        {hint && <div style={{ fontSize: 10, color: "var(--ink-5)", letterSpacing: "0.04em" }}>{hint}</div>}
       </div>
-      {hint && (
-        <div style={{ fontSize: 10, color: "var(--ink-5)", letterSpacing: "0.04em" }}>{hint}</div>
+      {showPad && (
+        <NumberPad value={value} onChange={onChange} onClose={() => setShowPad(false)}
+          label={label} unit={unit} allowDecimal={allowDecimal} />
       )}
-    </div>
+    </>
   );
 }
 
@@ -243,7 +308,7 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
       setReps(prefill?.reps?.toString() ?? initialReps);
     }
     prevLogged.current = logged;
-  }, [logged]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [logged, prefill?.weightKg, prefill?.reps, initialWeight, initialReps]);
 
   const isDone = !!logged;
 
@@ -321,12 +386,19 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
         </div>
       </div>
 
-      {/* Last session hint */}
+      {/* Last session hint with progression indicator */}
       {prefill && !isDone && (
-        <div style={{ fontSize: 11, color: "var(--ink-5)", marginBottom: 14, letterSpacing: "0.02em" }}>
-          Last session: <span style={{ color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-            {prefill.weightKg ?? "—"}kg × {prefill.reps ?? "—"} reps
+        <div style={{ fontSize: 11, color: "var(--ink-5)", marginBottom: 14, letterSpacing: "0.02em", display: "flex", alignItems: "center", gap: 8 }}>
+          <span>
+            Last: <span style={{ color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+              {prefill.weightKg ?? "-"}kg × {prefill.reps ?? "-"}
+            </span>
           </span>
+          {w > (prefill.weightKg ?? 0) && (
+            <span style={{ fontSize: 10, fontFamily: "var(--f-mono)", color: "var(--pos)", fontWeight: 600 }}>
+              +{(w - (prefill.weightKg ?? 0)).toFixed(1)}kg
+            </span>
+          )}
         </div>
       )}
 
@@ -340,21 +412,23 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
         {needsWeight && (
           <Stepper label="Weight" value={weight} onChange={setWeight}
             step={weightIncrement} unit="kg" disabled={isDone}
-            hint={prefill?.weightKg ? `last: ${prefill.weightKg}kg` : undefined} />
+            hint={prefill?.weightKg ? `last: ${prefill.weightKg}kg` : undefined}
+            allowDecimal />
         )}
         {needsDuration && (
           <Stepper label="Duration" value={duration} onChange={setDuration}
             step={5} unit="sec" disabled={isDone} min={0}
-            hint="seconds" />
+            hint="seconds" allowDecimal={false} />
         )}
         {needsDist && (
           <Stepper label="Distance" value={duration} onChange={setDuration}
-            step={0.1} unit="km" disabled={isDone} min={0} />
+            step={0.1} unit="km" disabled={isDone} min={0}
+            allowDecimal />
         )}
         {needsReps && (
           <Stepper label="Reps" value={reps} onChange={setReps}
             step={1} unit="reps" disabled={isDone}
-            hint={`${config.repMin}–${config.repMax}`} />
+            hint={`${config.repMin}–${config.repMax}`} allowDecimal={false} />
         )}
       </div>
 
@@ -363,9 +437,9 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
         <button
           onClick={onUndo}
           style={{
-            width: "100%", padding: "10px 0", borderRadius: 8,
+            width: "100%", padding: "14px 0", borderRadius: 10,
             background: "rgba(255,255,255,0.04)", border: "1px solid var(--line)",
-            color: "var(--ink-4)", fontSize: 12, fontFamily: "var(--f-mono)", cursor: "pointer",
+            color: "var(--ink-4)", fontSize: 13, fontFamily: "var(--f-mono)", cursor: "pointer",
             letterSpacing: "0.06em",
           }}
         >
@@ -375,13 +449,14 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
         <button
           onClick={handleLog}
           style={{
-            width: "100%", padding: "12px 0", borderRadius: 8,
-            background: "var(--violet)", border: "none",
-            color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer",
+            width: "100%", padding: "16px 0", borderRadius: 10,
+            background: isPr ? "linear-gradient(135deg, var(--warn), #FF8800)" : "var(--violet)", border: "none",
+            color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer",
             letterSpacing: "0.01em",
+            boxShadow: isPr ? "0 0 20px rgba(255,193,92,0.30)" : "none",
           }}
         >
-          ✓ Log set {setIndex + 1}
+          {isPr ? "⚡ Log PR set " : "✓ Log set "}{setIndex + 1}
         </button>
       )}
     </div>
@@ -391,7 +466,7 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
 // ─── Exercise block ───────────────────────────────────────────────────────────
 
 interface ExerciseBlockProps {
-  exercise: TemplateExercise;
+  exercise: WorkoutExercise;
   loggedSets: LoggedSet[];
   prefill: PrefillSet[];
   prMap: Record<number, number>;
@@ -724,56 +799,65 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
   const progressPct = totalConfigSets > 0 ? (doneSets / totalConfigSets) * 100 : 0;
 
   return (
-    <div style={{ padding: "20px 24px 100px", maxWidth: 720, margin: "0 auto" }}>
+    <div style={{ maxWidth: 720, margin: "0 auto" }}>
 
-      {/* ── Top bar ──────────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
-            {data.session.workoutName}<span className="grad-text">.</span>
-          </h1>
-          <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 4, fontFamily: "var(--f-mono)" }}>
-            {data.session.date}
+      {/* ── Sticky top bar ───────────────────────────────────────────────── */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "var(--bg)", padding: "16px 24px 0",
+        borderBottom: "1px solid var(--line)",
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
+              {data.session.workoutName}<span className="grad-text">.</span>
+            </h1>
+            <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
+              {data.session.date}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid var(--line)",
+              fontFamily: "var(--f-mono)", fontSize: 18, fontWeight: 500,
+              color: elapsed > 5400 ? "var(--warn)" : "var(--ink-2)",
+            }}>
+              {elapsedMin}:{elapsedSec.toString().padStart(2, "0")}
+            </div>
+            <button onClick={handleFinish} disabled={finishing} style={{
+              padding: "10px 20px", borderRadius: 10,
+              background: doneSets > 0 ? "var(--grad)" : "rgba(255,255,255,0.06)",
+              border: "none", color: doneSets > 0 ? "#0A0A14" : "var(--ink-3)",
+              fontSize: 14, fontWeight: 700, cursor: finishing ? "wait" : "pointer", letterSpacing: "-0.01em",
+            }}>
+              {finishing ? "Saving…" : "Finish"}
+            </button>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            padding: "6px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid var(--line)",
-            fontFamily: "var(--f-mono)", fontSize: 18, fontWeight: 500,
-            color: elapsed > 5400 ? "var(--warn)" : "var(--ink-2)",
-          }}>
-            {elapsedMin}:{elapsedSec.toString().padStart(2, "0")}
+        {/* Progress bar in sticky header */}
+        <div style={{ paddingBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <span style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+              {doneSets} / {totalConfigSets} sets
+            </span>
+            <span style={{ fontSize: 11, color: "var(--ink-4)" }}>
+              {Math.round(progressPct)}%
+            </span>
           </div>
-          <button onClick={handleFinish} disabled={finishing} style={{
-            padding: "8px 18px", borderRadius: 8,
-            background: doneSets > 0 ? "var(--grad)" : "rgba(255,255,255,0.06)",
-            border: "none", color: doneSets > 0 ? "#0A0A14" : "var(--ink-3)",
-            fontSize: 13, fontWeight: 600, cursor: finishing ? "wait" : "pointer", letterSpacing: "-0.01em",
-          }}>
-            {finishing ? "Saving…" : "Finish"}
-          </button>
+          <div style={{ height: 4, background: "var(--line)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", width: `${progressPct}%`,
+              background: progressPct === 100 ? "var(--pos)" : "var(--grad)",
+              borderRadius: 99, transition: "width 0.3s, background 0.3s",
+            }} />
+          </div>
         </div>
       </div>
 
-      {/* ── Progress ──────────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <span style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-            {doneSets} / {totalConfigSets} sets
-          </span>
-          <span style={{ fontSize: 11, color: "var(--ink-4)" }}>
-            {Math.round(progressPct)}%
-          </span>
-        </div>
-        <div style={{ height: 6, background: "var(--line)", borderRadius: 99, overflow: "hidden" }}>
-          <div style={{
-            height: "100%", width: `${progressPct}%`,
-            background: progressPct === 100 ? "var(--pos)" : "var(--grad)",
-            borderRadius: 99, transition: "width 0.3s, background 0.3s",
-          }} />
-        </div>
-      </div>
+      {/* ── Scrollable content ───────────────────────────────────────────── */}
+      <div style={{ padding: "20px 24px 100px" }}>
 
       {/* ── Exercise blocks ───────────────────────────────────────────────── */}
       {data.exercises.map((ex) => (
@@ -793,28 +877,29 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <div style={{ marginTop: 32, display: "flex", gap: 10, justifyContent: "center" }}>
-        <Link href="/workouts" className="cc-btn" style={{ fontSize: 12 }}>
+        <Link href="/workouts" className="cc-btn" style={{ fontSize: 13, padding: "10px 16px" }}>
           ← Back
         </Link>
         {!abandonConfirm ? (
-          <button onClick={() => setAbandonConfirm(true)} className="cc-btn" style={{ fontSize: 12, color: "var(--neg)" }}>
+          <button onClick={() => setAbandonConfirm(true)} className="cc-btn" style={{ fontSize: 13, color: "var(--neg)", padding: "10px 16px" }}>
             Abandon session
           </button>
         ) : (
           <>
-            <button onClick={() => setAbandonConfirm(false)} className="cc-btn" style={{ fontSize: 12 }}>
+            <button onClick={() => setAbandonConfirm(false)} className="cc-btn" style={{ fontSize: 13, padding: "10px 16px" }}>
               Cancel
             </button>
             <button onClick={handleAbandon} style={{
-              padding: "7px 14px", borderRadius: 8, border: "1px solid var(--neg)",
+              padding: "10px 16px", borderRadius: 10, border: "1px solid var(--neg)",
               background: "rgba(255,100,100,0.08)", color: "var(--neg)",
-              fontSize: 12, cursor: "pointer",
+              fontSize: 13, cursor: "pointer",
             }}>
               Yes, abandon
             </button>
           </>
         )}
       </div>
+      </div>{/* end scrollable content */}
 
       {/* Overlays */}
       {restTimer && (

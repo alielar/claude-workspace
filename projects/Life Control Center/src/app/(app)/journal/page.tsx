@@ -27,7 +27,7 @@ const QUESTIONS: [string, string, string] = [
 ];
 
 const PLACEHOLDERS: [string, string, string] = [
-  "Tap to start writing — autosaves every pause.",
+  "Tap to start writing. Autosaves every pause.",
   "Be honest. No one's watching.",
   "One sentence is enough.",
 ];

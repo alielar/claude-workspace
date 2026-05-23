@@ -102,7 +102,7 @@ export default function RunningCard() {
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 6 }}>
               <span style={{ fontSize: 30, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)" }}>
-                {loading ? "—" : maxDistance > 0 ? maxDistance.toFixed(2) : "—"}
+                {loading ? "-" : maxDistance > 0 ? maxDistance.toFixed(2) : "-"}
               </span>
               <span style={{ color: "var(--ink-3)", fontSize: 14 }}> / {GOAL_KM}.0 km</span>
             </div>
@@ -123,7 +123,7 @@ export default function RunningCard() {
               <div style={{ padding: "0 12px", borderRight: "1px solid var(--line)" }}>
                 <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--ink-3)" }}>Avg pace</div>
                 <div style={{ fontSize: 18, fontWeight: 300, fontFamily: "var(--f-mono)", marginTop: 4 }}>
-                  {avgPace ? formatPaceSec(avgPace) : "—"} <span style={{ fontSize: 11, color: "var(--ink-3)" }}>/km</span>
+                  {avgPace ? formatPaceSec(avgPace) : "-"} <span style={{ fontSize: 11, color: "var(--ink-3)" }}>/km</span>
                 </div>
               </div>
               <div style={{ paddingLeft: 12 }}>

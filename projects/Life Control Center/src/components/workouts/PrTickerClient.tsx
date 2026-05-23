@@ -171,7 +171,7 @@ export default function PrTickerClient({ initialPrs }: { initialPrs: PR[] }) {
                         {pr.bestReps != null ? ` × ${pr.bestReps}` : ""}
                       </td>
                       <td style={{ padding: "10px 12px 10px 0", fontSize: 13, color: "var(--warn)", textAlign: "right", fontFamily: "var(--f-mono)" }}>
-                        {pr.estimated1rm != null ? `${Math.round(pr.estimated1rm)}kg` : "—"}
+                        {pr.estimated1rm != null ? `${Math.round(pr.estimated1rm)}kg` : "-"}
                       </td>
                       <td style={{ padding: "10px 0", fontSize: 11, color: "var(--ink-4)", textAlign: "right" }}>
                         {pr.achievedAt}

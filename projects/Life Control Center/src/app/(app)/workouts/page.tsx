@@ -1,20 +1,23 @@
 "use server";
 /**
  * /workouts — main overview page
- * Handles both: empty state (no templates) and populated state (templates exist).
+ * Handles both: empty state (no workouts) and populated state (workouts exist).
  */
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
   programs, workoutPlans, planExercises, exerciseDb,
-  gymSessions, exercisePrs,
+  gymSessions, gymSets, exercisePrs,
 } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import Link from "next/link";
-import { format, startOfWeek, addDays, differenceInDays } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import RunningCard from "@/components/workouts/RunningCard";
 import PrTickerClient from "@/components/workouts/PrTickerClient";
+import MonthCalendar from "@/components/workouts/MonthCalendar";
+import WorkoutDrawers from "@/components/workouts/WorkoutDrawers";
+import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -191,23 +194,72 @@ export default async function WorkoutsPage() {
     } catch { return ""; }
   }
 
-  // ── Week strip data (still needed for calendar later) ─────────────────────
-  const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-  const weekEnd = format(addDays(startOfWeek(now, { weekStartsOn: 1 }), 6), "yyyy-MM-dd");
-  const weekSessions = await db
-    .select({ id: gymSessions.id, date: gymSessions.date, workoutName: gymSessions.workoutName })
+  // ── Month calendar data ────────────────────────────────────────────────────
+  const monthStart = `${today.slice(0, 7)}-01`;
+  const lastDayOfMonth = new Date(parseInt(today.slice(0, 4)), parseInt(today.slice(5, 7)), 0).getDate();
+  const monthEnd = `${today.slice(0, 7)}-${String(lastDayOfMonth).padStart(2, "0")}`;
+
+  const monthSessions = await db
+    .select({
+      id: gymSessions.id,
+      date: gymSessions.date,
+      workoutName: gymSessions.workoutName,
+      durationSeconds: gymSessions.durationSeconds,
+    })
     .from(gymSessions)
     .where(
       and(
         eq(gymSessions.userId, userId),
-        sql`${gymSessions.date} >= ${weekStart}`,
-        sql`${gymSessions.date} <= ${weekEnd}`
+        sql`${gymSessions.date} >= ${monthStart}`,
+        sql`${gymSessions.date} <= ${monthEnd}`
       )
     );
 
+  // Aggregate set counts + volume for month sessions
+  const monthSessionIds = monthSessions.map((s) => s.id);
+  const monthAgg = monthSessionIds.length > 0
+    ? await db
+        .select({
+          sessionId: gymSets.sessionId,
+          setCount: sql<number>`count(*)`.as("set_count"),
+          totalVolume: sql<number>`sum(coalesce(weight_kg, 0) * coalesce(reps, 0))`.as("total_volume"),
+        })
+        .from(gymSets)
+        .where(sql`${gymSets.sessionId} in (${sql.join(monthSessionIds.map((id) => sql`${id}`), sql`,`)})`)
+        .groupBy(gymSets.sessionId)
+    : [];
+
+  const monthAggMap = new Map(monthAgg.map((r) => [r.sessionId, r]));
+
+  const calendarSessions = monthSessions.map((s) => {
+    const agg = monthAggMap.get(s.id);
+    return {
+      id: s.id,
+      date: s.date,
+      sessionName: s.workoutName,
+      workoutName: s.workoutName,
+      durationSeconds: s.durationSeconds,
+      setCount: agg?.setCount ?? 0,
+      totalVolume: Math.round(agg?.totalVolume ?? 0),
+    };
+  });
+
+  // Collect all assigned days across all plans
+  const allAssignedDays: string[] = [];
+  for (const p of plans) {
+    if (p.assignedDays) {
+      try {
+        const days: string[] = JSON.parse(p.assignedDays);
+        for (const d of days) {
+          if (!allAssignedDays.includes(d)) allAssignedDays.push(d);
+        }
+      } catch { /* ignore */ }
+    }
+  }
+
   const weekNum = format(now, "w");
 
-  const hasTemplates = plans.length > 0;
+  const hasWorkouts = plans.length > 0;
 
   // ══════════════════════════════════════════════════════════════════════════
   // RENDER
@@ -221,33 +273,13 @@ export default async function WorkoutsPage() {
         <div>
           <h1>Workouts<span className="grad-text">.</span></h1>
           <div className="sub">
-            {hasTemplates
+            {hasWorkouts
               ? `${plans.map((p) => p.name).join(" · ")} · Week ${weekNum} · ${ytdCount} sessions YTD`
               : `Week ${weekNum} · ${ytdCount} sessions YTD`
             }
           </div>
         </div>
-        <div style={{ display: "flex", gap: 6, alignSelf: "flex-end", paddingBottom: 2 }}>
-          {[
-            { href: "/workouts/analytics", label: "Analytics" },
-            { href: "/workouts/templates", label: "Templates" },
-            { href: "/workouts/exercises", label: "Exercises" },
-          ].map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              style={{
-                padding: "5px 12px", borderRadius: 7, fontSize: 12,
-                color: "var(--ink-4)", border: "1px solid var(--line)",
-                background: "transparent", letterSpacing: "0.02em",
-                transition: "color 0.15s, border-color 0.15s",
-                textDecoration: "none",
-              }}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        <WorkoutDrawers mode="hidden" />
       </div>
 
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
@@ -258,7 +290,7 @@ export default async function WorkoutsPage() {
 
         {/* LEFT */}
         <div>
-          {hasTemplates && upNextPlan ? (
+          {hasWorkouts && upNextPlan ? (
             <>
               {/* ── Up Next hero card ────────────────────────────────────── */}
               <div className="cc-card" style={{
@@ -347,7 +379,7 @@ export default async function WorkoutsPage() {
                       <span><strong style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "var(--f-mono)", marginRight: 4 }}>{exCountMap.get(upNextPlan.id) ?? 0}</strong>exercises</span>
                     </div>
                     <Link href={`/workouts/templates/${upNextPlan.id}`} style={{ fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em" }}>
-                      Edit template →
+                      Edit workout →
                     </Link>
                   </div>
                 </div>
@@ -356,8 +388,8 @@ export default async function WorkoutsPage() {
               {/* ── All Sessions grid ─────────────────────────────────────── */}
               <div className="cc-card">
                 <div className="cc-card-head">
-                  <div className="title">All Templates</div>
-                  <div className="tail">{plans.length} templates</div>
+                  <div className="title">All Workouts</div>
+                  <div className="tail">{plans.length} workouts</div>
                 </div>
                 <div className="cc-card-body">
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
@@ -410,7 +442,7 @@ export default async function WorkoutsPage() {
               </div>
             </>
           ) : (
-            /* ── EMPTY STATE — no templates ──────────────────────────────── */
+            /* ── EMPTY STATE — no workouts ──────────────────────────────── */
             <div className="cc-card" style={{ padding: 0, overflow: "hidden" }}>
               <div style={{
                 padding: "48px 40px", textAlign: "center",
@@ -426,22 +458,22 @@ export default async function WorkoutsPage() {
                   Build your program
                 </div>
                 <p style={{ color: "var(--ink-3)", fontSize: 14, lineHeight: 1.6, maxWidth: 420, margin: "0 auto 28px" }}>
-                  Create your own templates — Push, Pull, Legs, or whatever splits you want.
+                  Create your workouts: Push, Pull, Legs, or whatever splits you want.
                   Assign days, pick exercises, and start logging.
                 </p>
-                <Link
-                  href="/workouts/templates"
+                <OpenDrawerButton
+                  drawer="workouts"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
                     padding: "14px 28px", borderRadius: 10,
                     background: "var(--grad)", color: "#0A0A14",
                     fontSize: 15, fontWeight: 600, letterSpacing: "-0.005em",
                     boxShadow: "0 0 24px rgba(179,136,255,0.30), inset 0 1px 0 rgba(255,255,255,0.40)",
-                    textDecoration: "none",
+                    border: "none", cursor: "pointer",
                   }}
                 >
-                  + Create your first template
-                </Link>
+                  + Create your first workout
+                </OpenDrawerButton>
 
                 {/* Historical session count */}
                 {ytdCount > 0 && (
@@ -452,39 +484,21 @@ export default async function WorkoutsPage() {
               </div>
             </div>
           )}
+
+          {/* ── Section cards ────────────────────────────────────────── */}
+          <WorkoutDrawers mode="cards" />
         </div>
 
         {/* RIGHT */}
         <div>
-          {/* Week summary — simple stat card */}
-          <div className="cc-card" style={{ marginBottom: 14 }}>
-            <div className="cc-card-head">
-              <div className="title">Week {weekNum}</div>
-              <div className="tail">{weekSessions.length} sessions</div>
-            </div>
-            <div className="cc-card-body">
-              {weekSessions.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {weekSessions.map((s) => (
-                    <div key={s.id} style={{
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                      padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)",
-                      border: "1px solid var(--line)",
-                    }}>
-                      <span style={{ fontSize: 13, color: "var(--ink)" }}>{s.workoutName}</span>
-                      <span style={{ fontSize: 10.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                        {format(new Date(s.date), "EEE")}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ fontSize: 12, color: "var(--ink-4)", textAlign: "center", padding: "16px 0" }}>
-                  No sessions this week yet
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Month calendar */}
+          <MonthCalendar
+            initialSessions={calendarSessions}
+            assignedDays={allAssignedDays}
+            today={today}
+            upNextPlanId={upNextPlan?.id ?? null}
+            monthSessionCount={calendarSessions.length}
+          />
 
           {/* Running card */}
           <RunningCard />

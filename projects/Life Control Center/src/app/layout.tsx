@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Control Center",
-  description: "Ali's personal life OS — workouts, news, books, checklist, words.",
+  description: "Ali's personal life OS. Workouts, news, books, checklist, words.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

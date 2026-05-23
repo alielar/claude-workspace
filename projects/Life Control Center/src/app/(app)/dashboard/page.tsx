@@ -415,7 +415,7 @@ export default async function DashboardPage() {
                 {label.slice(0, 3)}
               </span>
               <span style={{ fontSize: 8.5, color: name ? "var(--ink-3)" : "var(--ink-5)", fontFamily: "var(--f-mono)" }}>
-                {name ? name.slice(0, 4).toUpperCase() : "—"}
+                {name ? name.slice(0, 4).toUpperCase() : "-"}
               </span>
             </div>
           );

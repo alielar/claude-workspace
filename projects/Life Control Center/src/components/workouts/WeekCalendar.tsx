@@ -25,7 +25,7 @@ interface SessionSummary {
 }
 
 function formatDuration(s: number | null): string {
-  if (!s) return "—";
+  if (!s) return "-";
   const m = Math.floor(s / 60);
   const h = Math.floor(m / 60);
   const mins = m % 60;
@@ -167,7 +167,7 @@ export default function WeekCalendar({
                         : "var(--ink-4)",
                     }}
                   >
-                    {day.sessionName ? "🏋" : day.isToday ? "▶" : day.isRest ? "—" : "·"}
+                    {day.sessionName ? "🏋" : day.isToday ? "▶" : day.isRest ? "-" : "·"}
                   </div>
                   <div
                     style={{
@@ -181,7 +181,7 @@ export default function WeekCalendar({
                         : "var(--ink-4)",
                     }}
                   >
-                    {day.isToday ? "Start" : day.sessionName ?? (day.isRest ? "Rest" : "—")}
+                    {day.isToday ? "Start" : day.sessionName ?? (day.isRest ? "Rest" : "-")}
                   </div>
                 </div>
               );
@@ -275,7 +275,7 @@ export default function WeekCalendar({
                   <div style={{ fontSize: 22, fontWeight: 300, fontFamily: "var(--f-mono)", marginTop: 6, color: "var(--ink)" }}>
                     {modalSession.totalVolume > 0
                       ? `${(modalSession.totalVolume / 1000).toFixed(1)}k`
-                      : "—"}
+                      : "-"}
                     {modalSession.totalVolume > 0 && (
                       <span style={{ fontSize: 12, color: "var(--ink-3)" }}> kg</span>
                     )}

@@ -85,7 +85,7 @@ export default function MoodPage() {
 
   // Stats
   const scored    = entries.slice(0, 30);
-  const avgScore  = scored.length > 0 ? (scored.reduce((s, e) => s + e.score, 0) / scored.length).toFixed(1) : "—";
+  const avgScore  = scored.length > 0 ? (scored.reduce((s, e) => s + e.score, 0) / scored.length).toFixed(1) : "-";
   const streak    = (() => {
     let s = 0;
     for (let i = 0; i < 30; i++) {
@@ -198,7 +198,7 @@ export default function MoodPage() {
               {last30.slice(-35).map((cell, i) => (
                 <div
                   key={i}
-                  title={`${cell.date}: ${cell.score ? MOODS[cell.score - 1].name : "—"}`}
+                  title={`${cell.date}: ${cell.score ? MOODS[cell.score - 1].name : "-"}`}
                   style={{
                     aspectRatio: "1/1",
                     border: `1px solid ${cell.score ? "rgba(179,136,255,0.30)" : "var(--line)"}`,

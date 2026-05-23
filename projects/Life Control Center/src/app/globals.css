@@ -726,11 +726,15 @@ body::after {
 }
 
 /* ─── Gradient text ──────────────────────────────────────────────────────── */
-.cc-grad-text {
+.cc-grad-text,
+.grad-text {
   background: var(--grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  padding-bottom: 0.1em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* ─── Section label ──────────────────────────────────────────────────────── */

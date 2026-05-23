@@ -5,13 +5,15 @@
  * Query params:
  *   ?limit=N   (default 50)
  *   ?offset=N  (default 0)
+ *   ?from=YYYY-MM-DD  (inclusive, filter by date)
+ *   ?to=YYYY-MM-DD    (inclusive, filter by date)
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { gymSessions, gymSets } from "@/db/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and, gte, lte } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -21,6 +23,12 @@ export async function GET(req: NextRequest) {
 
   const limit = Number(req.nextUrl.searchParams.get("limit") ?? "50");
   const offset = Number(req.nextUrl.searchParams.get("offset") ?? "0");
+  const from = req.nextUrl.searchParams.get("from");
+  const to = req.nextUrl.searchParams.get("to");
+
+  const conditions = [eq(gymSessions.userId, session.user.id)];
+  if (from) conditions.push(gte(gymSessions.date, from));
+  if (to) conditions.push(lte(gymSessions.date, to));
 
   const sessions = await db
     .select({
@@ -32,7 +40,7 @@ export async function GET(req: NextRequest) {
       createdAt: gymSessions.createdAt,
     })
     .from(gymSessions)
-    .where(eq(gymSessions.userId, session.user.id))
+    .where(and(...conditions))
     .orderBy(desc(gymSessions.date))
     .limit(limit)
     .offset(offset);

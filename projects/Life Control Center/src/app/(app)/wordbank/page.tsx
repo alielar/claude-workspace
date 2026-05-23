@@ -479,7 +479,7 @@ export default function WordbankPage() {
             )}
             {!sugLoading && suggestions.length === 0 && (
               <div style={{ padding: "12px 0", fontSize: 12, color: "var(--ink-4)" }}>
-                No suggestions — generate today&apos;s brief or add a book to Library.
+                No suggestions yet. Generate today&apos;s brief or add a book to Library.
               </div>
             )}
             {!sugLoading && suggestions.map((s, i) => (
@@ -553,7 +553,7 @@ export default function WordbankPage() {
                 </div>
               )}
               {dueWords.length === 0 && (
-                <div style={{ padding: "12px 0", fontSize: 12, color: "var(--ink-4)" }}>No words due — check back tomorrow.</div>
+                <div style={{ padding: "12px 0", fontSize: 12, color: "var(--ink-4)" }}>No words due. Check back tomorrow.</div>
               )}
             </div>
           </div>
@@ -570,7 +570,7 @@ export default function WordbankPage() {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
-            <div style={{ fontSize: 12, color: "var(--ink-3)", marginBottom: 18 }}>Paste a word — Claude auto-generates definition + example.</div>
+            <div style={{ fontSize: 12, color: "var(--ink-3)", marginBottom: 18 }}>Paste a word. Claude auto-generates definition + example.</div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ display: "block", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, marginBottom: 6 }}>Word</label>
               <input

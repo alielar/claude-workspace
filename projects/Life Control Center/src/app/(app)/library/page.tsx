@@ -335,7 +335,7 @@ export default async function LibraryPage() {
               <div style={{ paddingRight: 12, borderRight: "1px solid var(--line)" }}>
                 <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)" }}>This month</div>
                 <div style={{ fontSize: 22, marginTop: 4, fontWeight: 300, letterSpacing: "-0.02em" }}>
-                  {thisMonthMinutes > 0 ? fmtDuration(thisMonthMinutes) : "—"}
+                  {thisMonthMinutes > 0 ? fmtDuration(thisMonthMinutes) : "-"}
                 </div>
                 <div style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
                   {thisMonthSessions.length} session{thisMonthSessions.length !== 1 ? "s" : ""}
@@ -354,7 +354,7 @@ export default async function LibraryPage() {
             <div style={{ height: 1, background: "var(--line)", margin: "14px 0" }} />
             <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 8 }}>Recent sessions</div>
             {recentSessions.length === 0 ? (
-              <div style={{ fontSize: 12, color: "var(--ink-4)", padding: "8px 0" }}>No sessions yet — open a book to start reading.</div>
+              <div style={{ fontSize: 12, color: "var(--ink-4)", padding: "8px 0" }}>No sessions yet. Open a book to start reading.</div>
             ) : (
               recentSessions.slice(0, 5).map((s, i, arr) => {
                 const d = new Date(s.startedAt);

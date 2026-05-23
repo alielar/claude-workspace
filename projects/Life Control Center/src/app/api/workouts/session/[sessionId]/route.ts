@@ -59,8 +59,8 @@ export async function GET(
     .where(eq(gymSessions.id, sessionId))
     .limit(1);
 
-  // Plan exercises (template) — if plan exists
-  let templateExercises: {
+  // Plan exercises (workout) — if plan exists
+  let workoutExercises: {
     planExerciseId: number;
     exerciseId: number;
     name: string;
@@ -90,7 +90,7 @@ export async function GET(
       .where(eq(planExercises.planId, gymSession.planId))
       .orderBy(planExercises.sortOrder);
 
-    templateExercises = rows.map((r) => ({
+    workoutExercises = rows.map((r) => ({
       ...r,
       setConfig: (() => {
         try { return JSON.parse(r.setConfig); } catch { return []; }
@@ -105,11 +105,11 @@ export async function GET(
     .where(eq(gymSets.sessionId, sessionId))
     .orderBy(gymSets.setNumber);
 
-  // Prefill: for each template exercise, find the last session where it was logged
+  // Prefill: for each workout exercise, find the last session where it was logged
   // Return: { exerciseId -> [{ setNumber, weightKg, reps, setType }] }
   const prefillMap: Record<number, Array<{ setNumber: number; weightKg: number | null; reps: number | null; setType: string }>> = {};
 
-  for (const ex of templateExercises) {
+  for (const ex of workoutExercises) {
     // Find the most recent session (other than this one) that has this exercise
     const lastSets = await db
       .select({
@@ -152,7 +152,7 @@ export async function GET(
   }
 
   // PRs for exercises in this session (for real-time PR detection in UI)
-  const exerciseIds = templateExercises.map((e) => e.exerciseId);
+  const exerciseIds = workoutExercises.map((e) => e.exerciseId);
   const prRows = exerciseIds.length > 0
     ? await db
         .select({ exerciseId: exercisePrs.exerciseId, estimated1rm: exercisePrs.estimated1rm })
@@ -167,7 +167,7 @@ export async function GET(
 
   return NextResponse.json({
     session: meta,
-    exercises: templateExercises,
+    exercises: workoutExercises,
     loggedSets,
     prefillMap,
     prMap,

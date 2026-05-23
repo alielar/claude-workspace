@@ -257,7 +257,7 @@ export function QuickCapture({ open, initialTab = "word", onClose }: QuickCaptur
                     className="text-center text-xs mt-2"
                     style={{ color: status === "ok" ? "var(--pos)" : "var(--neg)" }}
                   >
-                    {status === "ok" ? "Saved!" : "Failed — try again"}
+                    {status === "ok" ? "Saved!" : "Failed, try again"}
                   </motion.p>
                 )}
               </AnimatePresence>

@@ -116,7 +116,7 @@ export const workoutPrograms = sqliteTable("workout_programs", {
 });
 
 /**
- * A session template (e.g. "Push", "Pull", "Legs").
+ * A workout definition (e.g. "Push", "Pull", "Legs").
  * Not to be confused with workout_logs which are actual performed sessions.
  */
 export const workoutSessions = sqliteTable("workout_sessions", {
@@ -131,7 +131,7 @@ export const workoutSessions = sqliteTable("workout_sessions", {
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
-/** An exercise slot within a session template */
+/** An exercise slot within a workout definition */
 export const exercises = sqliteTable("exercises", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   sessionId: integer("session_id")
@@ -429,7 +429,7 @@ export const programs = sqliteTable("programs", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Workout day templates within a program (Push / Pull / Legs / Push-Up SESH) */
+/** Workout days within a program (Push / Pull / Legs / Push-Up SESH) */
 export const workoutPlans = sqliteTable("workout_plans", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   programId: integer("program_id")
@@ -466,7 +466,7 @@ export const exerciseDb = sqliteTable("exercise_db", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Exercise slots in a workout plan template, with set prescriptions */
+/** Exercise slots in a workout plan, with set prescriptions */
 export const planExercises = sqliteTable("plan_exercises", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   planId: integer("plan_id")
@@ -489,7 +489,7 @@ export const gymSessions = sqliteTable("gym_sessions", {
   planId: integer("plan_id").references(() => workoutPlans.id),
   programId: integer("program_id").references(() => programs.id),
   workoutName: text("workout_name").notNull(),
-  originalTemplateName: text("original_template_name"), // backup if template deleted
+  originalTemplateName: text("original_template_name"), // backup if workout deleted
   date: text("date").notNull(),               // "YYYY-MM-DD"
   durationSeconds: integer("duration_seconds"),
   notes: text("notes"),

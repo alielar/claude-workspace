@@ -42,7 +42,7 @@ const MUSCLE_LABELS: Record<string, string> = {
   lats: "Lats", upper_back: "Upper Back", upper_traps: "Traps",
   quads: "Quads", hamstrings: "Hams", glutes: "Glutes",
   calves: "Calves", abs: "Abs", obliques: "Obliques",
-  forearms: "Forearms", serratus: "Serratus", unknown: "—",
+  forearms: "Forearms", serratus: "Serratus", unknown: "-",
 };
 
 const SET_TYPE_COLORS: Record<string, string> = {
@@ -127,11 +127,11 @@ export default function PlanEditorPage({ params }: { params: Promise<{ planId: s
       {/* Page title */}
       <div className="cc-pagetitle" style={{ marginBottom: 26 }}>
         <div>
-          <h1>{plan?.name ?? "—"}<span className="grad-text">.</span></h1>
-          <div className="sub">Template editor · {exercises.length} exercises</div>
+          <h1>{plan?.name ?? "-"}<span className="grad-text">.</span></h1>
+          <div className="sub">Workout editor · {exercises.length} exercises</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/workouts/templates" className="cc-btn">← Templates</Link>
+          <Link href="/workouts" className="cc-btn">← Workouts</Link>
           <button className="cc-btn cc-btn-primary" onClick={openPicker}>+ Add exercise</button>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function PlanEditorPage({ params }: { params: Promise<{ planId: s
       <div className="cc-card">
         <div className="cc-card-head">
           <div className="title">Exercises</div>
-          <div className="tail">{exercises.length} in this template</div>
+          <div className="tail">{exercises.length} in this workout</div>
         </div>
         <div style={{ padding: "4px 0" }}>
           {exercises.length === 0 && (

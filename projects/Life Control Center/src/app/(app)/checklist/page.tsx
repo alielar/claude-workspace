@@ -816,7 +816,7 @@ export default function ChecklistPage() {
                 transition: "filter 0.6s ease",
                 animation: allDone ? "celebPulse 2.4s ease-in-out infinite" : "none",
               }}>
-                {loading ? "—" : pct}<span style={{ fontSize: 24, WebkitTextFillColor: "var(--ink-3)" }}>%</span>
+                {loading ? "-" : pct}<span style={{ fontSize: 24, WebkitTextFillColor: "var(--ink-3)" }}>%</span>
               </div>
               <div style={{ textAlign: "right" }}>
                 {allDone && (
@@ -948,7 +948,7 @@ export default function ChecklistPage() {
                 <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
                   <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today</div>
                   <div className="num grad-text" style={{ fontSize: 26, fontWeight: 300, letterSpacing: "-0.03em", marginTop: 4 }}>
-                    {loading ? "—" : pct}<span style={{ fontSize: 13, WebkitTextFillColor: "var(--ink-4)", color: "var(--ink-4)" }}>%</span>
+                    {loading ? "-" : pct}<span style={{ fontSize: 13, WebkitTextFillColor: "var(--ink-4)", color: "var(--ink-4)" }}>%</span>
                   </div>
                 </div>
                 <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
@@ -967,13 +967,13 @@ export default function ChecklistPage() {
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 3 }}>30-day avg</div>
                   <div className="num" style={{ fontSize: 16, fontWeight: 500, color: thirtyDayAvg >= 70 ? "var(--pos)" : thirtyDayAvg >= 40 ? "var(--warn)" : "var(--neg)" }}>
-                    {loading ? "—" : `${thirtyDayAvg}%`}
+                    {loading ? "-" : `${thirtyDayAvg}%`}
                   </div>
                 </div>
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 3 }}>Best streak</div>
                   <div className="num" style={{ fontSize: 16, fontWeight: 500, color: "var(--ink-2)" }}>
-                    {loading ? "—" : `${bestStreak30}d`}
+                    {loading ? "-" : `${bestStreak30}d`}
                   </div>
                 </div>
                 <div style={{ textAlign: "center" }}>

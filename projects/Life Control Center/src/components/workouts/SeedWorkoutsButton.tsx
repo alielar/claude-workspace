@@ -23,7 +23,7 @@ export default function SeedWorkoutsButton() {
       setTimeout(() => router.refresh(), 800);
     } catch {
       setStatus("idle");
-      alert("Failed to seed workouts — check the console.");
+      alert("Failed to seed workouts. Check the console.");
     }
   }
 

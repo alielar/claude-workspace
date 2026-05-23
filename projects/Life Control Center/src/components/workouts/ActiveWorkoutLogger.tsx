@@ -143,7 +143,7 @@ function RirPicker({ value, onChange }: { value: number | null; onChange: (v: nu
             minHeight: "unset",
           }}
         >
-          {v === null ? "—" : v}
+          {v === null ? "-" : v}
         </button>
       ))}
     </div>

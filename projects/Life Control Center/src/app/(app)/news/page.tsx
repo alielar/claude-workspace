@@ -422,7 +422,7 @@ export default function NewsPage() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <span style={{ fontSize: 12, color: "var(--ink-2)" }}>
-            Today&apos;s brief is fresh — generated at {genTime}. Refresh anyway?
+            Today&apos;s brief is fresh, generated at {genTime}. Refresh anyway?
           </span>
           <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             <button

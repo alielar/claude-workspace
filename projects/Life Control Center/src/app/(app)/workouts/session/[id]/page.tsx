@@ -79,7 +79,7 @@ export default function SessionPage() {
           display: "flex", alignItems: "center", gap: 8,
         }}>
           <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", display: "inline-block" }} />
-          Suggestions from last session loaded — see weight hints in each exercise
+          Suggestions from last session loaded. See weight hints in each exercise
         </div>
       )}
 
