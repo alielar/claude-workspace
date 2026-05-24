@@ -7,6 +7,10 @@
     {
       "path": "/api/checklist/suggestions/cron",
       "schedule": "0 19 * * 0"
+    },
+    {
+      "path": "/api/workouts/coach-cron",
+      "schedule": "0 7 * * 1"
     }
   ]
 }

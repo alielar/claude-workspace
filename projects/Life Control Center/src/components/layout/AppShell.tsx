@@ -14,7 +14,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
-import { HamburgerMenu } from "@/components/layout/HamburgerMenu";
 import { CommandPalette } from "@/components/CommandPalette";
 import { QuickCapture, QuickCaptureFAB } from "@/components/QuickCapture";
 
@@ -22,7 +21,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [captureTab, setCaptureTab]   = useState<"word" | "mood" | "journal" | "checklist">("word");
-  const [hamburgerOpen, setHamburgerOpen] = useState(false);
 
   // ⌘K / Ctrl+K — keyboard-only discovery, no visible hint in chrome
   useEffect(() => {
@@ -47,13 +45,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <a href="#main-content" className="skip-to-content">
         Skip to main content
       </a>
-
-      {/* Mobile hamburger menu — top-left, hidden on desktop */}
-      <HamburgerMenu
-        open={hamburgerOpen}
-        onOpen={() => setHamburgerOpen(true)}
-        onClose={() => setHamburgerOpen(false)}
-      />
 
       {/* Vertical icon sidebar — desktop only, always collapsed */}
       <Sidebar />

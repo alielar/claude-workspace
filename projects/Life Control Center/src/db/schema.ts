@@ -589,6 +589,19 @@ export const weeklyReviews = sqliteTable("weekly_reviews", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+/** Weekly AI coach card for the workouts module — one per user per week */
+export const workoutCoach = sqliteTable("workout_coach", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  weekStart: text("week_start").notNull(), // YYYY-MM-DD of Monday
+  content: text("content").notNull(),      // AI-generated markdown/plain text
+  generatedAt: integer("generated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
 /** One completion record per item per user per day (ISO "YYYY-MM-DD") */
 export const checklistCompletions = sqliteTable("checklist_completions", {
   id: integer("id").primaryKey({ autoIncrement: true }),

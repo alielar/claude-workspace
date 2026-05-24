@@ -19,6 +19,7 @@ import WeeklyVolume from "@/components/workouts/WeeklyVolume";
 import UpNextCard from "@/components/workouts/UpNextCard";
 import InfoTiles from "@/components/workouts/InfoTiles";
 import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
+import CoachCard from "@/components/workouts/CoachCard";
 
 export const dynamic = "force-dynamic";
 
@@ -327,6 +328,7 @@ export default async function WorkoutsPage() {
       <div className="workout-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
         <div>
           <WeeklyVolume />
+          <CoachCard />
           <RunningCard />
         </div>
         <div>

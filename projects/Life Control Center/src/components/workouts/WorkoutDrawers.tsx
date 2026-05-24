@@ -25,7 +25,8 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
   function openDrawer(key: Exclude<DrawerType, null>) {
     setMounted((prev) => new Set(prev).add(key));
     setOpen(key);
-    // Scroll drawer to top after render settles
+    // Scroll page + drawer to top
+    window.scrollTo({ top: 0, behavior: "instant" });
     setTimeout(() => drawerRef.current?.scrollTo({ top: 0, behavior: "instant" }), 50);
   }
 

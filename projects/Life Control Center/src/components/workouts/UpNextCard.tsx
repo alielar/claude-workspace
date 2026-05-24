@@ -69,6 +69,7 @@ function findNextPlan(plans: Plan[], todayDow: string, skip: Set<number>): Plan 
 
 export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCardProps) {
   const [skippedIds, setSkippedIds] = useState<Set<number>>(new Set());
+  const [musclesExpanded, setMusclesExpanded] = useState(false);
 
   const currentPlan = skippedIds.size === 0
     ? plans.find(p => p.id === initialPlanId) ?? plans[0]
@@ -112,7 +113,21 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
               {muscles.length > 0 && (
                 <>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--ink-4)" }} />
-                  <span>{muscles.map(m => MUSCLE_LABELS[m] ?? m).join(" · ")}</span>
+                  <span>
+                    {(musclesExpanded ? muscles : muscles.slice(0, 2)).map(m => MUSCLE_LABELS[m] ?? m).join(" · ")}
+                    {muscles.length > 2 && !musclesExpanded && (
+                      <button
+                        onClick={() => setMusclesExpanded(true)}
+                        style={{
+                          marginLeft: 6, background: "none", border: "none",
+                          color: "var(--violet)", fontSize: 12, cursor: "pointer",
+                          padding: 0, fontWeight: 500,
+                        }}
+                      >
+                        +{muscles.length - 2} more
+                      </button>
+                    )}
+                  </span>
                 </>
               )}
               {days.length > 0 && (

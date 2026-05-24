@@ -199,6 +199,15 @@ export async function POST() {
     `DELETE FROM plan_exercises`,
     `DELETE FROM workout_plans`,
     `DELETE FROM programs`,
+
+    // ── Workout AI Coach (weekly card) ───────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS workout_coach (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      week_start TEXT NOT NULL,
+      content TEXT NOT NULL,
+      generated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
   ];
 
   const results: string[] = [];

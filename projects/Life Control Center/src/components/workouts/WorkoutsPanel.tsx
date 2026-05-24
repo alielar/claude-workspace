@@ -85,6 +85,7 @@ export default function WorkoutsPanel() {
 
   // Edit state
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [editName, setEditName] = useState("");
   const [editMuscles, setEditMuscles] = useState<string[]>([]);
   const [editDays, setEditDays] = useState<string[]>([]);
@@ -233,6 +234,7 @@ export default function WorkoutsPanel() {
 
   function startEdit(plan: Plan) {
     setEditingId(plan.id);
+    setEditingPlan(plan);
     setEditName(plan.name);
     setEditMuscles([...plan.targetMuscles]);
     setEditDays([...plan.assignedDays]);
@@ -288,6 +290,7 @@ export default function WorkoutsPanel() {
       )
     );
     setEditingId(null);
+    setEditingPlan(null);
     setEditSaving(false);
     window.dispatchEvent(new Event("workouts-data-changed"));
   }
@@ -749,8 +752,206 @@ export default function WorkoutsPanel() {
         </div>
       )}
 
-      {/* ── Workout list ──────────────────────────────────────────────── */}
-      {loading ? (
+      {/* ── Edit panel — full-panel overlay when editing ──────────────────── */}
+      {editingId !== null && (
+        <div>
+          {/* Back header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <button
+              onClick={() => { setEditingId(null); setEditingPlan(null); setDeleteConfirm(null); }}
+              style={{ background: "none", border: "1px solid var(--line)", borderRadius: 8, padding: "6px 12px", color: "var(--ink-3)", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}
+            >
+              ← Back
+            </button>
+            <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: "-0.01em" }}>Edit workout</span>
+          </div>
+
+          {/* Name */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 6 }}>Title</div>
+            <input
+              autoFocus
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              style={{
+                width: "100%", background: "var(--bg-input)", border: "1px solid var(--line)",
+                borderRadius: 8, padding: "10px 14px", color: "var(--ink)", fontSize: 15,
+                fontWeight: 500, outline: "none", boxSizing: "border-box" as const,
+              }}
+            />
+          </div>
+
+          {/* Target muscles */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 8 }}>Target muscles</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {ALL_MUSCLES.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => toggleChip(editMuscles, m, setEditMuscles)}
+                  style={{
+                    padding: "5px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                    border: `1px solid ${editMuscles.includes(m) ? "var(--violet)" : "var(--line)"}`,
+                    background: editMuscles.includes(m) ? "rgba(124,77,255,0.15)" : "transparent",
+                    color: editMuscles.includes(m) ? "var(--violet)" : "var(--ink-3)",
+                  }}
+                >
+                  {MUSCLE_LABELS[m]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Days */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 8 }}>Days of week</div>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" as const }}>
+              {DAYS.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => toggleChip(editDays, d, setEditDays)}
+                  style={{
+                    width: 48, height: 40, borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
+                    border: `1px solid ${editDays.includes(d) ? "var(--cyan)" : "var(--line)"}`,
+                    background: editDays.includes(d) ? "rgba(100,255,218,0.12)" : "transparent",
+                    color: editDays.includes(d) ? "var(--cyan)" : "var(--ink-3)",
+                  }}
+                >
+                  {DAY_LABELS[d]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Exercises */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "var(--ink-3)" }}>Exercises</div>
+              <button
+                onClick={() => { setShowEditPicker(true); loadExerciseLib(); }}
+                style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer", border: "1px solid var(--line)", background: "transparent", color: "var(--cyan)" }}
+              >
+                + Add
+              </button>
+            </div>
+
+            {editExLoading ? (
+              <div style={{ color: "var(--ink-4)", fontSize: 12 }}>Loading exercises...</div>
+            ) : editExercises.length === 0 ? (
+              <div style={{ padding: "14px", textAlign: "center", border: "1px dashed var(--line)", borderRadius: 8, color: "var(--ink-4)", fontSize: 12 }}>
+                No exercises added
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {editExercises.map((ex, i) => (
+                  <div key={ex.id} style={{ padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.018)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-4)", fontSize: 10, minWidth: 20 }}>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12.5, color: "var(--ink)" }}>{ex.name}</div>
+                        <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+                          {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 2 }}>
+                        <button onClick={() => moveExercise(i, -1)} disabled={i === 0} aria-label={`Move ${ex.name} up`}
+                          style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)", background: "transparent", color: i === 0 ? "var(--ink-5)" : "var(--ink-3)", cursor: i === 0 ? "default" : "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+                        <button onClick={() => moveExercise(i, 1)} disabled={i === editExercises.length - 1} aria-label={`Move ${ex.name} down`}
+                          style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)", background: "transparent", color: i === editExercises.length - 1 ? "var(--ink-5)" : "var(--ink-3)", cursor: i === editExercises.length - 1 ? "default" : "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>↓</button>
+                        <button onClick={() => removeEditExercise(ex.id)} aria-label={`Remove ${ex.name}`}
+                          style={{ width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)", background: "transparent", color: "var(--neg)", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 12, marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--line)", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 10, color: "var(--ink-4)", minWidth: 28 }}>Sets</span>
+                        <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--line)", borderRadius: 6, overflow: "hidden" }}>
+                          <button onClick={() => updateSetCount(i, Math.max(1, ex.setConfig.length - 1))}
+                            style={{ width: 28, height: 28, background: "transparent", border: "none", borderRight: "1px solid var(--line)", color: "var(--ink-3)", cursor: "pointer", fontSize: 14 }}>−</button>
+                          <span style={{ width: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)", color: "var(--ink)" }}>{ex.setConfig.length}</span>
+                          <button onClick={() => updateSetCount(i, Math.min(10, ex.setConfig.length + 1))}
+                            style={{ width: 28, height: 28, background: "transparent", border: "none", borderLeft: "1px solid var(--line)", color: "var(--ink-3)", cursor: "pointer", fontSize: 14 }}>+</button>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 10, color: "var(--ink-4)", minWidth: 28 }}>Reps</span>
+                        <input type="number" value={ex.setConfig[0]?.repMin ?? 8}
+                          onChange={(e) => { const v = parseInt(e.target.value) || 1; updateRepRange(i, v, Math.max(v, ex.setConfig[0]?.repMax ?? v)); }}
+                          style={{ width: 40, height: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)", background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6, color: "var(--ink)", outline: "none" }} />
+                        <span style={{ fontSize: 10, color: "var(--ink-4)" }}>–</span>
+                        <input type="number" value={ex.setConfig[0]?.repMax ?? 12}
+                          onChange={(e) => { const v = parseInt(e.target.value) || 1; updateRepRange(i, Math.min(ex.setConfig[0]?.repMin ?? v, v), v); }}
+                          style={{ width: 40, height: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)", background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6, color: "var(--ink)", outline: "none" }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Exercise picker for edit mode */}
+            {showEditPicker && (
+              <div style={{ marginTop: 8, border: "1px solid var(--line)", borderRadius: 10, background: "var(--bg-card)", overflow: "hidden" }}>
+                <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--line)", display: "flex", gap: 8 }}>
+                  <input autoFocus value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder="Search exercises..."
+                    style={{ flex: 1, padding: "6px 10px", borderRadius: 6, fontSize: 12, background: "var(--bg-input)", border: "1px solid var(--line)", color: "var(--ink)", outline: "none" }} />
+                  <button onClick={() => { setShowEditPicker(false); setPickerSearch(""); }}
+                    style={{ padding: "6px 10px", borderRadius: 6, fontSize: 11, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-4)", cursor: "pointer" }}>Close</button>
+                </div>
+                <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                  {libLoading ? (
+                    <div style={{ padding: 12, color: "var(--ink-4)", fontSize: 12 }}>Loading...</div>
+                  ) : (
+                    exerciseLib.filter(e => {
+                      if (editExercises.some(ex => ex.exerciseId === e.id)) return false;
+                      if (pickerSearch && !e.name.toLowerCase().includes(pickerSearch.toLowerCase())) return false;
+                      return true;
+                    }).slice(0, 20).map(ex => (
+                      <button key={ex.id} onClick={() => addEditExercise(ex)}
+                        style={{ display: "flex", width: "100%", justifyContent: "space-between", padding: "8px 12px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", cursor: "pointer", textAlign: "left", color: "var(--ink)", fontSize: 12 }}>
+                        <span>{ex.name}</span>
+                        <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom actions */}
+          <div style={{ display: "flex", gap: 8, justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid var(--line)" }}>
+            <div>
+              {deleteConfirm === editingId ? (
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button onClick={() => deleteWorkout(editingId)} style={{ padding: "8px 16px", borderRadius: 8, fontSize: 12, cursor: "pointer", background: "rgba(255,80,80,0.12)", border: "1px solid var(--neg)", color: "var(--neg)" }}>
+                    Yes, delete
+                  </button>
+                  <button onClick={() => setDeleteConfirm(null)} style={{ padding: "8px 16px", borderRadius: 8, fontSize: 12, cursor: "pointer", background: "transparent", border: "1px solid var(--line)", color: "var(--ink-3)" }}>
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setDeleteConfirm(editingId)} style={{ padding: "8px 16px", borderRadius: 8, fontSize: 12, cursor: "pointer", background: "transparent", border: "1px solid var(--line)", color: "var(--neg)" }}>
+                  Delete workout
+                </button>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { setEditingId(null); setEditingPlan(null); }} className="cc-btn" style={{ fontSize: 12 }}>Cancel</button>
+              <button onClick={saveEdit} disabled={editSaving || !editName.trim()} className="cc-btn-primary"
+                style={{ padding: "8px 20px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                {editSaving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Workout list — hidden when editing ────────────────────────────── */}
+      {editingId === null && (loading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[1, 2].map((i) => (
             <div key={i} className="skeleton" style={{ height: 72, borderRadius: 12 }} />
@@ -762,7 +963,6 @@ export default function WorkoutsPanel() {
           <button onClick={loadPlans} className="cc-btn" style={{ fontSize: 12 }}>Retry</button>
         </div>
       ) : plans.length === 0 && !showNewForm ? (
-        /* Empty state */
         <div className="cc-card" style={{ padding: "48px 40px", textAlign: "center" }}>
           <div style={{
             fontSize: 36, fontWeight: 200, letterSpacing: "-0.03em",
@@ -774,374 +974,49 @@ export default function WorkoutsPanel() {
           <p style={{ color: "var(--ink-3)", fontSize: 13, marginBottom: 20 }}>
             Create your first workout to get started.
           </p>
-          <button
-            onClick={() => setShowNewForm(true)}
-            className="cc-btn-primary"
-            style={{
-              padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer",
-            }}
-          >
+          <button onClick={() => setShowNewForm(true)} className="cc-btn-primary"
+            style={{ padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
             + Create your first workout
           </button>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {plans.map((plan) => {
-            const isEditing = editingId === plan.id;
-
-            return (
-              <div key={plan.id} className="cc-card" style={{ overflow: "hidden" }}>
-
-                {/* ── Normal view ──────────────────────────────────────── */}
-                {!isEditing ? (
-                  <div style={{ padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: "-0.01em" }}>{plan.name}</span>
-                        <span style={{ fontSize: 10, fontFamily: "var(--f-mono)", color: "var(--ink-4)", letterSpacing: "0.06em" }}>
-                          {plan.exerciseCount} exercises
+          {plans.map((plan) => (
+            <div key={plan.id} className="cc-card" style={{ overflow: "hidden" }}>
+              <div style={{ padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: "-0.01em" }}>{plan.name}</span>
+                    <span style={{ fontSize: 10, fontFamily: "var(--f-mono)", color: "var(--ink-4)", letterSpacing: "0.06em" }}>
+                      {plan.exerciseCount} exercises
+                    </span>
+                  </div>
+                  {plan.targetMuscles.length > 0 && (
+                    <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" as const }}>
+                      {plan.targetMuscles.map((m) => (
+                        <span key={m} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: "rgba(124,77,255,0.10)", color: "var(--violet)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+                          {MUSCLE_LABELS[m] ?? m}
                         </span>
-                      </div>
-                      {/* Muscles */}
-                      {plan.targetMuscles.length > 0 && (
-                        <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" }}>
-                          {plan.targetMuscles.map((m) => (
-                            <span key={m} style={{
-                              fontSize: 10, padding: "2px 7px", borderRadius: 4,
-                              background: "rgba(124,77,255,0.10)", color: "var(--violet)",
-                              fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
-                            }}>
-                              {MUSCLE_LABELS[m] ?? m}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {/* Days */}
-                      {plan.assignedDays.length > 0 && (
-                        <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 6, fontFamily: "var(--f-mono)" }}>
-                          {plan.assignedDays.map((d) => DAY_LABELS[d] ?? d).join(", ")}
-                        </div>
-                      )}
+                      ))}
                     </div>
-
-                    <button
-                      onClick={() => startEdit(plan)}
-                      style={{
-                        fontSize: 11, color: "var(--ink-3)", background: "none", border: "1px solid var(--line)",
-                        borderRadius: 6, padding: "5px 10px", cursor: "pointer",
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </div>
-                ) : (
-                  /* ── Edit view ──────────────────────────────────────── */
-                  <div style={{ padding: "18px 20px" }}>
-                    {/* Name */}
-                    <input
-                      autoFocus
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      style={{
-                        width: "100%", marginBottom: 14,
-                        background: "var(--bg-input)", border: "1px solid var(--line)",
-                        borderRadius: 8, padding: "10px 14px", color: "var(--ink)", fontSize: 16,
-                        fontWeight: 500, outline: "none",
-                      }}
-                    />
-
-                    {/* Target muscles */}
-                    <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 6 }}>Target muscles</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                        {ALL_MUSCLES.map((m) => (
-                          <button
-                            key={m}
-                            onClick={() => toggleChip(editMuscles, m, setEditMuscles)}
-                            style={{
-                              padding: "4px 9px", borderRadius: 5, fontSize: 10.5, cursor: "pointer",
-                              border: `1px solid ${editMuscles.includes(m) ? "var(--violet)" : "var(--line)"}`,
-                              background: editMuscles.includes(m) ? "rgba(124,77,255,0.15)" : "transparent",
-                              color: editMuscles.includes(m) ? "var(--violet)" : "var(--ink-3)",
-                            }}
-                          >
-                            {MUSCLE_LABELS[m]}
-                          </button>
-                        ))}
-                      </div>
+                  )}
+                  {plan.assignedDays.length > 0 && (
+                    <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 6, fontFamily: "var(--f-mono)" }}>
+                      {plan.assignedDays.map((d) => DAY_LABELS[d] ?? d).join(", ")}
                     </div>
-
-                    {/* Days */}
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 6 }}>Days</div>
-                      <div style={{ display: "flex", gap: 5 }}>
-                        {DAYS.map((d) => (
-                          <button
-                            key={d}
-                            onClick={() => toggleChip(editDays, d, setEditDays)}
-                            style={{
-                              width: 44, height: 36, borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: "pointer",
-                              border: `1px solid ${editDays.includes(d) ? "var(--cyan)" : "var(--line)"}`,
-                              background: editDays.includes(d) ? "rgba(100,255,218,0.12)" : "transparent",
-                              color: editDays.includes(d) ? "var(--cyan)" : "var(--ink-3)",
-                            }}
-                          >
-                            {DAY_LABELS[d]}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* ── Exercises in this workout ───────────────── */}
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <div style={{ fontSize: 11, color: "var(--ink-3)" }}>Exercises</div>
-                        <button
-                          onClick={() => { setShowEditPicker(true); loadExerciseLib(); }}
-                          style={{
-                            padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
-                            border: "1px solid var(--line)", background: "transparent", color: "var(--cyan)",
-                          }}
-                        >
-                          + Add
-                        </button>
-                      </div>
-
-                      {editExLoading ? (
-                        <div style={{ color: "var(--ink-4)", fontSize: 12 }}>Loading exercises...</div>
-                      ) : editExercises.length === 0 ? (
-                        <div style={{ padding: "14px", textAlign: "center", border: "1px dashed var(--line)", borderRadius: 8, color: "var(--ink-4)", fontSize: 12 }}>
-                          No exercises added
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                          {editExercises.map((ex, i) => (
-                            <div key={ex.id} style={{
-                              padding: "10px 12px",
-                              border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.018)",
-                            }}>
-                              {/* Top row: number, name, reorder/remove */}
-                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-4)", fontSize: 10, minWidth: 20 }}>
-                                  {String(i + 1).padStart(2, "0")}
-                                </span>
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 12.5, color: "var(--ink)" }}>{ex.name}</div>
-                                  <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                                    {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
-                                  </div>
-                                </div>
-                                <div style={{ display: "flex", gap: 2 }}>
-                                  <button
-                                    onClick={() => moveExercise(i, -1)}
-                                    disabled={i === 0}
-                                    aria-label={`Move ${ex.name} up`}
-                                    style={{
-                                      width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
-                                      background: "transparent", color: i === 0 ? "var(--ink-5)" : "var(--ink-3)",
-                                      cursor: i === 0 ? "default" : "pointer", fontSize: 12,
-                                      display: "flex", alignItems: "center", justifyContent: "center",
-                                    }}
-                                  >
-                                    ↑
-                                  </button>
-                                  <button
-                                    onClick={() => moveExercise(i, 1)}
-                                    disabled={i === editExercises.length - 1}
-                                    aria-label={`Move ${ex.name} down`}
-                                    style={{
-                                      width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
-                                      background: "transparent", color: i === editExercises.length - 1 ? "var(--ink-5)" : "var(--ink-3)",
-                                      cursor: i === editExercises.length - 1 ? "default" : "pointer", fontSize: 12,
-                                      display: "flex", alignItems: "center", justifyContent: "center",
-                                    }}
-                                  >
-                                    ↓
-                                  </button>
-                                  <button
-                                    onClick={() => removeEditExercise(ex.id)}
-                                    aria-label={`Remove ${ex.name}`}
-                                    style={{
-                                      width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
-                                      background: "transparent", color: "var(--neg)", cursor: "pointer", fontSize: 14,
-                                      display: "flex", alignItems: "center", justifyContent: "center",
-                                    }}
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              </div>
-                              {/* Bottom row: sets + rep range controls */}
-                              <div style={{ display: "flex", gap: 12, marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--line)", alignItems: "center" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                  <span style={{ fontSize: 10, color: "var(--ink-4)", minWidth: 28 }}>Sets</span>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 0, border: "1px solid var(--line)", borderRadius: 6, overflow: "hidden" }}>
-                                    <button
-                                      onClick={() => updateSetCount(i, Math.max(1, ex.setConfig.length - 1))}
-                                      style={{ width: 28, height: 28, background: "transparent", border: "none", borderRight: "1px solid var(--line)", color: "var(--ink-3)", cursor: "pointer", fontSize: 14 }}
-                                    >
-                                      −
-                                    </button>
-                                    <span style={{ width: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-                                      {ex.setConfig.length}
-                                    </span>
-                                    <button
-                                      onClick={() => updateSetCount(i, Math.min(10, ex.setConfig.length + 1))}
-                                      style={{ width: 28, height: 28, background: "transparent", border: "none", borderLeft: "1px solid var(--line)", color: "var(--ink-3)", cursor: "pointer", fontSize: 14 }}
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                  <span style={{ fontSize: 10, color: "var(--ink-4)", minWidth: 28 }}>Reps</span>
-                                  <input
-                                    type="number"
-                                    value={ex.setConfig[0]?.repMin ?? 8}
-                                    onChange={(e) => {
-                                      const v = parseInt(e.target.value) || 1;
-                                      const max = ex.setConfig[0]?.repMax ?? v;
-                                      updateRepRange(i, v, Math.max(v, max));
-                                    }}
-                                    style={{
-                                      width: 40, height: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)",
-                                      background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6,
-                                      color: "var(--ink)", outline: "none",
-                                    }}
-                                  />
-                                  <span style={{ fontSize: 10, color: "var(--ink-4)" }}>–</span>
-                                  <input
-                                    type="number"
-                                    value={ex.setConfig[0]?.repMax ?? 12}
-                                    onChange={(e) => {
-                                      const v = parseInt(e.target.value) || 1;
-                                      const min = ex.setConfig[0]?.repMin ?? v;
-                                      updateRepRange(i, Math.min(min, v), v);
-                                    }}
-                                    style={{
-                                      width: 40, height: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)",
-                                      background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6,
-                                      color: "var(--ink)", outline: "none",
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Inline exercise picker for edit mode */}
-                      {showEditPicker && (
-                        <div style={{
-                          marginTop: 8, border: "1px solid var(--line)", borderRadius: 10,
-                          background: "var(--bg-card)", overflow: "hidden",
-                        }}>
-                          <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--line)", display: "flex", gap: 8 }}>
-                            <input
-                              autoFocus
-                              value={pickerSearch}
-                              onChange={(e) => setPickerSearch(e.target.value)}
-                              placeholder="Search exercises..."
-                              style={{
-                                flex: 1, padding: "6px 10px", borderRadius: 6, fontSize: 12,
-                                background: "var(--bg-input)", border: "1px solid var(--line)",
-                                color: "var(--ink)", outline: "none",
-                              }}
-                            />
-                            <button
-                              onClick={() => { setShowEditPicker(false); setPickerSearch(""); }}
-                              style={{
-                                padding: "6px 10px", borderRadius: 6, fontSize: 11,
-                                background: "transparent", border: "1px solid var(--line)",
-                                color: "var(--ink-4)", cursor: "pointer",
-                              }}
-                            >
-                              Close
-                            </button>
-                          </div>
-                          <div style={{ maxHeight: 200, overflowY: "auto" }}>
-                            {libLoading ? (
-                              <div style={{ padding: 12, color: "var(--ink-4)", fontSize: 12 }}>Loading...</div>
-                            ) : (
-                              exerciseLib
-                                .filter(e => {
-                                  if (editExercises.some(ex => ex.exerciseId === e.id)) return false;
-                                  if (pickerSearch && !e.name.toLowerCase().includes(pickerSearch.toLowerCase())) return false;
-                                  return true;
-                                })
-                                .slice(0, 20)
-                                .map(ex => (
-                                  <button
-                                    key={ex.id}
-                                    onClick={() => addEditExercise(ex)}
-                                    style={{
-                                      display: "flex", width: "100%", justifyContent: "space-between",
-                                      padding: "8px 12px", background: "transparent", border: "none",
-                                      borderBottom: "1px solid var(--line)", cursor: "pointer",
-                                      textAlign: "left", color: "var(--ink)", fontSize: 12,
-                                    }}
-                                  >
-                                    <span>{ex.name}</span>
-                                    <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                                      {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
-                                    </span>
-                                  </button>
-                                ))
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div style={{ display: "flex", gap: 8, justifyContent: "space-between" }}>
-                      <div>
-                        {deleteConfirm === plan.id ? (
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <button onClick={() => deleteWorkout(plan.id)} style={{
-                              padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer",
-                              background: "rgba(255,80,80,0.12)", border: "1px solid var(--neg)", color: "var(--neg)",
-                            }}>
-                              Yes, delete
-                            </button>
-                            <button onClick={() => setDeleteConfirm(null)} style={{
-                              padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer",
-                              background: "transparent", border: "1px solid var(--line)", color: "var(--ink-3)",
-                            }}>
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <button onClick={() => setDeleteConfirm(plan.id)} style={{
-                            padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer",
-                            background: "transparent", border: "1px solid var(--line)", color: "var(--neg)",
-                          }}>
-                            Delete workout
-                          </button>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={() => setEditingId(null)} className="cc-btn" style={{ fontSize: 11 }}>Cancel</button>
-                        <button
-                          onClick={saveEdit}
-                          disabled={editSaving || !editName.trim()}
-                          className="cc-btn-primary"
-                          style={{
-                            padding: "6px 16px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                          }}
-                        >
-                          {editSaving ? "Saving…" : "Save"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
+                <button
+                  onClick={() => startEdit(plan)}
+                  style={{ fontSize: 11, color: "var(--ink-3)", background: "none", border: "1px solid var(--line)", borderRadius: 6, padding: "5px 10px", cursor: "pointer" }}
+                >
+                  Edit
+                </button>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
-      )}
+      ))}
     </div>
   );
 }
