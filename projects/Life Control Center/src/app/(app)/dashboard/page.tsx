@@ -23,7 +23,7 @@ import {
   newsBriefs, books, readingProgress,
   checklistItems, checklistCompletions,
 } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import Link from "next/link";
 import { format, subDays, startOfWeek } from "date-fns";
 import { ChecklistCard } from "@/components/dashboard/ChecklistCard";
@@ -155,12 +155,20 @@ export default async function DashboardPage() {
   const period    = getPeriod(madridH);
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
+  // ── Run pending migrations (safe to re-run) ────────────────────────────────
+  try {
+    await db.run(sql.raw(`ALTER TABLE books ADD COLUMN started_at INTEGER`));
+  } catch { /* column already exists */ }
+  try {
+    await db.run(sql.raw(`ALTER TABLE books ADD COLUMN finished_at INTEGER`));
+  } catch { /* column already exists */ }
+
   // ── Parallel data fetches ──────────────────────────────────────────────────
   const [
     allSessions,
     recentLogs,
     [brief],
-    [currentBook],
+    currentBookResult,
     checkItems,
     todayCompletions,
   ] = await Promise.all([
@@ -181,7 +189,8 @@ export default async function DashboardPage() {
 
     db.select().from(books)
       .where(and(eq(books.userId, userId), eq(books.status, "reading")))
-      .limit(1),
+      .limit(1)
+      .catch(() => [] as (typeof books.$inferSelect)[]),
 
     db.select().from(checklistItems)
       .where(and(eq(checklistItems.userId, userId), eq(checklistItems.active, true)))
@@ -190,6 +199,8 @@ export default async function DashboardPage() {
     db.select({ itemId: checklistCompletions.itemId }).from(checklistCompletions)
       .where(and(eq(checklistCompletions.userId, userId), eq(checklistCompletions.date, today))),
   ]);
+
+  const [currentBook] = currentBookResult;
 
   // ── Reading progress ───────────────────────────────────────────────────────
   let readPct = 0, currentPage = 0;
