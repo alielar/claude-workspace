@@ -1,6 +1,6 @@
 # Life Control Center — Product Improvement Plan
 
-**Overall Progress:** `0%` (0 / 19 tasks complete)
+**Overall Progress:** `89%` (17 / 19 tasks complete)
 
 ## TLDR
 
