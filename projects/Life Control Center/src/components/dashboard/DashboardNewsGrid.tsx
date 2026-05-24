@@ -3,10 +3,13 @@
 /**
  * Dashboard News Grid — 4-column layout matching the /news page.
  * Renders all 20 stories grouped by category with expandable cards.
- * Auto-generates today's brief if none exists.
+ *
+ * Self-contained: fetches its own data from /api/news/generate.
+ * If no brief exists for today, auto-generates one and shows a loading skeleton.
+ * NEVER returns null — always renders a visible section.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 type Story = {
@@ -103,68 +106,202 @@ function StoryCard({ story, accentColor }: { story: Story; accentColor: string }
   );
 }
 
-export function DashboardNewsGrid({ stories: initialStories }: { stories: Story[] }) {
-  const [stories, setStories] = useState<Story[]>(initialStories);
-  const [generating, setGenerating] = useState(false);
+// ─── Skeleton placeholder (matches project rules: no spinners, use skeletons) ──
 
-  const generate = useCallback(async () => {
-    setGenerating(true);
+function SkeletonGrid() {
+  return (
+    <div className="news-grid">
+      {COLUMNS.map(col => (
+        <div key={col.id} className="cc-card" style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{
+            padding: "12px 16px", borderBottom: "1px solid var(--line)",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: col.color, boxShadow: `0 0 6px ${col.color}`, opacity: 0.5,
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+              textTransform: "uppercase", color: col.color, opacity: 0.5,
+            }}>
+              {col.label}
+            </span>
+          </div>
+          <div style={{ padding: "0 16px" }}>
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} style={{ padding: "14px 0", borderBottom: "1px solid var(--line)" }}>
+                <div style={{
+                  height: 12, borderRadius: 4,
+                  background: "rgba(255,255,255,0.04)",
+                  width: `${60 + (i * 7) % 30}%`,
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }} />
+                <div style={{
+                  height: 9, borderRadius: 3, marginTop: 8,
+                  background: "rgba(255,255,255,0.025)",
+                  width: "35%",
+                  animation: "pulse 1.5s ease-in-out 0.2s infinite",
+                }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
+type Phase = "loading" | "generating" | "ready" | "error";
+
+export function DashboardNewsGrid({ stories: initialStories }: { stories: Story[] }) {
+  // Use a ref to persist stories across re-renders/remounts via closure
+  const storiesRef = useRef<Story[]>(initialStories);
+  const [stories, setStories] = useState<Story[]>(initialStories);
+  const [phase, setPhase] = useState<Phase>(initialStories.length > 0 ? "ready" : "loading");
+  const attempted = useRef(false);
+
+  // Keep ref in sync
+  useEffect(() => {
+    if (stories.length > 0) storiesRef.current = stories;
+  }, [stories]);
+
+  // Sync server-passed stories (when parent re-renders with fresh data)
+  useEffect(() => {
+    if (initialStories.length > 0) {
+      setStories(initialStories);
+      setPhase("ready");
+    }
+  }, [initialStories]);
+
+  // Self-contained fetch: check cache, then generate if needed
+  useEffect(() => {
+    // Already have stories (from server or previous fetch)
+    if (initialStories.length > 0) return;
+    // Already attempted this mount
+    if (attempted.current) return;
+    attempted.current = true;
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        // Step 1: check for cached brief (fast, ~100ms)
+        const cached = await fetch("/api/news/generate");
+        if (cancelled) return;
+
+        if (cached.ok) {
+          const data = await cached.json();
+          if (data?.stories?.length) {
+            setStories(data.stories);
+            setPhase("ready");
+            return;
+          }
+        }
+
+        // Step 2: no cached brief — generate one
+        setPhase("generating");
+        const gen = await fetch("/api/news/generate", { method: "POST" });
+        if (cancelled) return;
+
+        if (gen.ok) {
+          const brief = await gen.json();
+          if (brief?.stories?.length) {
+            setStories(brief.stories);
+            setPhase("ready");
+            return;
+          }
+        }
+
+        // Generation returned empty or non-OK
+        setPhase("error");
+      } catch {
+        if (!cancelled) setPhase("error");
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [initialStories]);
+
+  async function retry() {
+    setPhase("generating");
     try {
       const res = await fetch("/api/news/generate", { method: "POST" });
       if (res.ok) {
         const brief = await res.json();
-        if (brief?.stories?.length) setStories(brief.stories);
-      }
-    } catch { /* */ }
-    setGenerating(false);
-  }, []);
-
-  // Auto-generate if no stories were passed from the server
-  useEffect(() => {
-    if (initialStories.length > 0) return;
-    // Check if cached brief exists first (fast)
-    fetch("/api/news/generate")
-      .then(r => r.json())
-      .then(data => {
-        if (data?.stories?.length) {
-          setStories(data.stories);
-        } else {
-          // No cached brief — generate one
-          generate();
+        if (brief?.stories?.length) {
+          setStories(brief.stories);
+          setPhase("ready");
+          return;
         }
-      })
-      .catch(() => generate());
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+      }
+      setPhase("error");
+    } catch {
+      setPhase("error");
+    }
+  }
 
-  // Update stories if parent re-renders with new data
-  useEffect(() => {
-    if (initialStories.length > 0) setStories(initialStories);
-  }, [initialStories]);
+  // ── Header (always visible) ──────────────────────────────────────────────
+  const header = (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      marginBottom: 14,
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        fontSize: 10.5, fontWeight: 500, letterSpacing: "0.18em",
+        textTransform: "uppercase", color: "var(--ink-3)",
+      }}>
+        <span style={{
+          width: 5, height: 5, borderRadius: "50%",
+          background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", flexShrink: 0,
+        }} />
+        Daily Brief
+      </div>
+      <Link href="/news" style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", letterSpacing: "0.04em", opacity: 0.8 }}>
+        See all →
+      </Link>
+    </div>
+  );
 
-  if (stories.length === 0 && !generating) return null;
-
-  if (generating) {
+  // ── Loading / generating state ───────────────────────────────────────────
+  if (phase === "loading" || phase === "generating") {
     return (
       <div style={{ marginTop: 14 }}>
-        <div className="cc-card" style={{ padding: "32px 24px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            <span style={{
-              display: "inline-block", width: 14, height: 14,
-              border: "2px solid var(--ink-4)", borderTopColor: "var(--cyan)",
-              borderRadius: "50%", animation: "spin 0.7s linear infinite",
-            }} />
-            <span style={{ fontSize: 13, color: "var(--ink-2)" }}>
-              Generating today&apos;s news brief...
-            </span>
-          </div>
-          <p style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 8 }}>
-            Searching the web for the latest stories. This takes about 30 seconds.
+        {header}
+        {phase === "generating" && (
+          <p style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 10 }}>
+            Generating today&apos;s brief — searching the web for the latest stories…
           </p>
+        )}
+        <SkeletonGrid />
+        <style>{gridStyles}</style>
+      </div>
+    );
+  }
+
+  // ── Error state ──────────────────────────────────────────────────────────
+  if (phase === "error") {
+    return (
+      <div style={{ marginTop: 14 }}>
+        {header}
+        <div className="cc-card" style={{ padding: "24px 20px", textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "var(--ink-3)", margin: "0 0 12px" }}>
+            Could not load today&apos;s brief.
+          </p>
+          <button onClick={retry} className="cc-btn cc-btn-primary" style={{ fontSize: 12, padding: "8px 18px" }}>
+            Try again
+          </button>
         </div>
       </div>
     );
   }
 
+  // ── Ready state — render stories ─────────────────────────────────────────
   const columns = COLUMNS.map(col => ({
     ...col,
     stories: stories.filter(s => col.categories.includes(s.category)),
@@ -172,28 +309,7 @@ export function DashboardNewsGrid({ stories: initialStories }: { stories: Story[
 
   return (
     <div style={{ marginTop: 14 }}>
-      {/* Section header */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        marginBottom: 14,
-      }}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 8,
-          fontSize: 10.5, fontWeight: 500, letterSpacing: "0.18em",
-          textTransform: "uppercase", color: "var(--ink-3)",
-        }}>
-          <span style={{
-            width: 5, height: 5, borderRadius: "50%",
-            background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", flexShrink: 0,
-          }} />
-          Daily Brief
-        </div>
-        <Link href="/news" style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", letterSpacing: "0.04em", opacity: 0.8 }}>
-          See all →
-        </Link>
-      </div>
-
-      {/* 4-column grid */}
+      {header}
       <div className="news-grid">
         {columns.map(col => (
           <div key={col.id} className="cc-card" style={{ padding: 0, overflow: "hidden" }}>
@@ -233,20 +349,25 @@ export function DashboardNewsGrid({ stories: initialStories }: { stories: Story[
           </div>
         ))}
       </div>
-
-      <style>{`
-        .news-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
-        }
-        @media (max-width: 1024px) {
-          .news-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-          .news-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
+      <style>{gridStyles}</style>
     </div>
   );
 }
+
+const gridStyles = `
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 1024px) {
+    .news-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .news-grid { grid-template-columns: 1fr; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+`;

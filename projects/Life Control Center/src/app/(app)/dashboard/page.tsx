@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
-  workoutSessions, workoutPrograms, workoutLogs,
+  gymSessions,
   newsBriefs, books, readingProgress,
   checklistItems, checklistCompletions,
 } from "@/db/schema";
@@ -68,10 +68,11 @@ function greeting(period: Period): string {
 }
 
 /** Build boolean activity array for last N days (for sparkline) */
-function activityDays(logs: { startedAt: Date | null }[], days: number, now: Date): boolean[] {
+function activityDays(sessions: { date: string }[], days: number, now: Date): boolean[] {
+  const dateSet = new Set(sessions.map(s => s.date));
   return Array.from({ length: days }, (_, i) => {
     const d = format(subDays(now, days - 1 - i), "yyyy-MM-dd");
-    return logs.some((l) => l.startedAt && format(new Date(l.startedAt), "yyyy-MM-dd") === d);
+    return dateSet.has(d);
   });
 }
 
@@ -86,12 +87,9 @@ function sparkline(activity: boolean[], W = 220, H = 64): { line: string; area: 
   return { line: d, area: d + ` L${W},${H} L0,${H} Z`, lastY: pts.at(-1)?.y ?? H / 2 };
 }
 
-/** Workout streak from sorted desc logs */
-function calcStreak(logs: { startedAt: Date | null }[], today: string): number {
-  const days = [...new Set(logs
-    .filter((l) => l.startedAt)
-    .map((l) => format(new Date(l.startedAt!), "yyyy-MM-dd"))
-  )].sort().reverse();
+/** Workout streak from sorted desc sessions */
+function calcStreak(sessions: { date: string }[], today: string): number {
+  const days = [...new Set(sessions.map(s => s.date))].sort().reverse();
   if (days.length === 0) return 0;
   let check = today;
   // If today not logged, allow starting from yesterday
@@ -154,7 +152,6 @@ export default async function DashboardPage() {
   const today     = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now);
   const madridH   = madridHour();
   const period    = getPeriod(madridH);
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
   // ── Run pending migrations (safe to re-run) ────────────────────────────────
   try {
@@ -166,22 +163,20 @@ export default async function DashboardPage() {
 
   // ── Parallel data fetches ──────────────────────────────────────────────────
   const [
-    allSessions,
-    recentLogs,
+    recentSessions,
     [brief],
     currentBookResult,
     checkItems,
     todayCompletions,
   ] = await Promise.all([
-    db.select().from(workoutSessions)
-      .innerJoin(workoutPrograms, eq(workoutSessions.programId, workoutPrograms.id))
-      .where(eq(workoutPrograms.userId, userId))
-      .orderBy(workoutSessions.sortOrder),
-
-    db.select({ startedAt: workoutLogs.startedAt, sessionId: workoutLogs.sessionId })
-      .from(workoutLogs)
-      .where(eq(workoutLogs.userId, userId))
-      .orderBy(desc(workoutLogs.startedAt))
+    db.select({
+        id: gymSessions.id,
+        date: gymSessions.date,
+        workoutName: gymSessions.workoutName,
+      })
+      .from(gymSessions)
+      .where(eq(gymSessions.userId, userId))
+      .orderBy(desc(gymSessions.date))
       .limit(60),
 
     db.select().from(newsBriefs)
@@ -216,21 +211,21 @@ export default async function DashboardPage() {
   const ringOffset = ringC - (readPct / 100) * ringC;
 
   // ── Streak ─────────────────────────────────────────────────────────────────
-  const streak   = calcStreak(recentLogs, today);
-  const weekCount = recentLogs.filter((l) => l.startedAt && new Date(l.startedAt) >= weekStart).length;
+  const streak   = calcStreak(recentSessions, today);
+  const weekStartDate = startOfWeek(now, { weekStartsOn: 1 });
+  const weekStartStr = format(weekStartDate, "yyyy-MM-dd");
+  const weekCount = recentSessions.filter(s => s.date >= weekStartStr).length;
 
   // ── Sparkline ──────────────────────────────────────────────────────────────
-  const activity = activityDays(recentLogs, 30, now);
+  const activity = activityDays(recentSessions, 30, now);
   const spark    = sparkline(activity);
 
   // ── 7-day heatmap ──────────────────────────────────────────────────────────
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d   = subDays(now, 6 - i);
     const key = format(d, "yyyy-MM-dd");
-    const log = recentLogs.find((l) => l.startedAt && format(new Date(l.startedAt), "yyyy-MM-dd") === key);
-    const name = log
-      ? allSessions.find((s) => s.workout_sessions.id === log.sessionId)?.workout_sessions.name ?? null
-      : null;
+    const session = recentSessions.find(s => s.date === key);
+    const name = session?.workoutName ?? null;
     return { label: format(d, "EEE").toUpperCase(), dayNum: parseInt(format(d, "d")), name, isToday: key === today };
   });
 
