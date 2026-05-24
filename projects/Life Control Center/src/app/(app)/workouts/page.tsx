@@ -1,4 +1,3 @@
-"use server";
 /**
  * /workouts — main overview page
  * Dense single-page layout: PR ticker, Up Next, Info tiles, This Week, Calendar, Running.
@@ -16,10 +15,12 @@ import RunningCard from "@/components/workouts/RunningCard";
 import PrTickerClient from "@/components/workouts/PrTickerClient";
 import MonthCalendar from "@/components/workouts/MonthCalendar";
 import WorkoutDrawers from "@/components/workouts/WorkoutDrawers";
-import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
 import WeeklyVolume from "@/components/workouts/WeeklyVolume";
 import UpNextCard from "@/components/workouts/UpNextCard";
 import InfoTiles from "@/components/workouts/InfoTiles";
+import AutoSeed from "@/components/workouts/AutoSeed";
+
+export const dynamic = "force-dynamic";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -34,48 +35,41 @@ export default async function WorkoutsPage() {
     new Date(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now)).getDay()
   ] ?? "mon";
 
-  // ── Active program ────────────────────────────────────────────────────────
-  const [activeProgram] = await db
-    .select()
-    .from(programs)
-    .where(and(eq(programs.userId, userId), eq(programs.isActive, true)))
-    .limit(1);
-
-  // ── Plans (if any) ────────────────────────────────────────────────────────
+  // ── Plans — find ALL workout plans belonging to user (via program join) ──
   type PlanRow = {
     id: number; programId: number; name: string; type: string; sortOrder: number;
     assignedDays: string | null; targetMuscles: string | null;
   };
   let plans: PlanRow[] = [];
-  if (activeProgram) {
-    try {
-      plans = (await db
-        .select({
-          id: workoutPlans.id,
-          programId: workoutPlans.programId,
-          name: workoutPlans.name,
-          type: workoutPlans.type,
-          sortOrder: workoutPlans.sortOrder,
-          assignedDays: workoutPlans.assignedDays,
-          targetMuscles: workoutPlans.targetMuscles,
-        })
-        .from(workoutPlans)
-        .where(eq(workoutPlans.programId, activeProgram.id))
-        .orderBy(workoutPlans.sortOrder));
-    } catch {
-      const fallback = await db
-        .select({
-          id: workoutPlans.id,
-          programId: workoutPlans.programId,
-          name: workoutPlans.name,
-          type: workoutPlans.type,
-          sortOrder: workoutPlans.sortOrder,
-        })
-        .from(workoutPlans)
-        .where(eq(workoutPlans.programId, activeProgram.id))
-        .orderBy(workoutPlans.sortOrder);
-      plans = fallback.map((p) => ({ ...p, assignedDays: null, targetMuscles: null }));
-    }
+  try {
+    plans = await db
+      .select({
+        id: workoutPlans.id,
+        programId: workoutPlans.programId,
+        name: workoutPlans.name,
+        type: workoutPlans.type,
+        sortOrder: workoutPlans.sortOrder,
+        assignedDays: workoutPlans.assignedDays,
+        targetMuscles: workoutPlans.targetMuscles,
+      })
+      .from(workoutPlans)
+      .innerJoin(programs, eq(workoutPlans.programId, programs.id))
+      .where(eq(programs.userId, userId))
+      .orderBy(workoutPlans.sortOrder);
+  } catch {
+    const fallback = await db
+      .select({
+        id: workoutPlans.id,
+        programId: workoutPlans.programId,
+        name: workoutPlans.name,
+        type: workoutPlans.type,
+        sortOrder: workoutPlans.sortOrder,
+      })
+      .from(workoutPlans)
+      .innerJoin(programs, eq(workoutPlans.programId, programs.id))
+      .where(eq(programs.userId, userId))
+      .orderBy(workoutPlans.sortOrder);
+    plans = fallback.map((p) => ({ ...p, assignedDays: null, targetMuscles: null }));
   }
 
   // ── PRs ────────────────────────────────────────────────────────────────────
@@ -270,8 +264,8 @@ export default async function WorkoutsPage() {
           <h1>Workouts<span className="grad-text">.</span></h1>
           <div className="sub">
             {hasWorkouts
-              ? `${plans.map((p) => p.name).join(" \u00b7 ")} \u00b7 Week ${weekNum} \u00b7 ${ytdCount} sessions YTD`
-              : `Week ${weekNum} \u00b7 ${ytdCount} sessions YTD`
+              ? `${plans.map((p) => p.name).join(" · ")} · Week ${weekNum} · ${ytdCount} sessions YTD`
+              : `Week ${weekNum} · ${ytdCount} sessions YTD`
             }
           </div>
         </div>
@@ -280,74 +274,36 @@ export default async function WorkoutsPage() {
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
       {prs.length > 0 && <PrTickerClient initialPrs={prs} />}
 
+      {/* ── Up Next hero (or empty state if no workouts) ─────────────────── */}
       {hasWorkouts && upNextPlan ? (
-        <>
-          {/* ── Up Next hero ────────────────────────────────────────────── */}
-          <UpNextCard
-            plans={upNextPlans}
-            initialPlanId={upNextPlan.id}
-            todayDow={todayDow}
-          />
-
-          {/* ── Info tiles (Workouts / Exercises / Analytics) ───────────── */}
-          <InfoTiles plans={infoTilePlans} exerciseCount={totalExerciseCount} />
-
-          {/* ── Bottom row: This Week + Calendar + Running ──────────────── */}
-          <div className="workout-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
-            <div>
-              <WeeklyVolume />
-              <RunningCard />
-            </div>
-            <div>
-              <MonthCalendar
-                initialSessions={calendarSessions}
-                assignedDays={allAssignedDays}
-                today={today}
-                upNextPlanId={upNextPlan.id}
-                monthSessionCount={calendarSessions.length}
-              />
-            </div>
-          </div>
-        </>
+        <UpNextCard
+          plans={upNextPlans}
+          initialPlanId={upNextPlan.id}
+          todayDow={todayDow}
+        />
       ) : (
-        /* ── EMPTY STATE — no workouts ──────────────────────────────── */
-        <div className="cc-card" style={{ padding: 0, overflow: "visible" }}>
-          <div style={{
-            padding: "48px 40px", textAlign: "center",
-            background: `
-              radial-gradient(50% 60% at 50% 0%, rgba(124,77,255,0.08), transparent 70%),
-              var(--bg-card)`,
-          }}>
-            <div className="cc-grad-text" style={{
-              fontSize: 48, fontWeight: 200, letterSpacing: "-0.04em",
-            }}>
-              Build your program
-            </div>
-            <p style={{ color: "var(--ink-3)", fontSize: 14, lineHeight: 1.6, maxWidth: 420, margin: "0 auto 28px" }}>
-              Create your workouts: Push, Pull, Legs, or whatever splits you want.
-              Assign days, pick exercises, and start logging.
-            </p>
-            <OpenDrawerButton
-              drawer="workouts"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "14px 28px", borderRadius: 10,
-                background: "#E8E8F0", color: "#06060B",
-                fontSize: 15, fontWeight: 600, letterSpacing: "-0.005em",
-                border: "none", cursor: "pointer",
-              }}
-            >
-              + Create your first workout
-            </OpenDrawerButton>
-
-            {ytdCount > 0 && (
-              <div style={{ marginTop: 24, fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em" }}>
-                {ytdCount} sessions logged \u00b7 your history and PRs are preserved
-              </div>
-            )}
-          </div>
-        </div>
+        <AutoSeed />
       )}
+
+      {/* ── Info tiles (Workouts / Exercises / Analytics) — always visible ── */}
+      <InfoTiles plans={infoTilePlans} exerciseCount={totalExerciseCount} />
+
+      {/* ── Bottom row: This Week + Calendar + Running — always visible ───── */}
+      <div className="workout-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+        <div>
+          <WeeklyVolume />
+          <RunningCard />
+        </div>
+        <div>
+          <MonthCalendar
+            initialSessions={calendarSessions}
+            assignedDays={allAssignedDays}
+            today={today}
+            upNextPlanId={upNextPlan?.id ?? null}
+            monthSessionCount={calendarSessions.length}
+          />
+        </div>
+      </div>
 
       {drawerComponent}
     </div>
