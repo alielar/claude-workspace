@@ -6,6 +6,8 @@
  * Generates today's brief for every user. Idempotent — safe to call multiple times.
  */
 
+export const maxDuration = 60;
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { users, newsBriefs } from "@/db/schema";

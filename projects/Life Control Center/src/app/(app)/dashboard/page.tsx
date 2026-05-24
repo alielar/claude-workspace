@@ -28,7 +28,6 @@ import Link from "next/link";
 import { format, subDays, startOfWeek } from "date-fns";
 import { ChecklistCard } from "@/components/dashboard/ChecklistCard";
 import { DashboardNewsGrid } from "@/components/dashboard/DashboardNewsGrid";
-import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -152,7 +151,7 @@ export default async function DashboardPage() {
   const userId  = session!.user.id;
 
   const now       = new Date();
-  const today     = format(now, "yyyy-MM-dd");
+  const today     = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now);
   const madridH   = madridHour();
   const period    = getPeriod(madridH);
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -235,7 +234,7 @@ export default async function DashboardPage() {
     return { label: format(d, "EEE").toUpperCase(), dayNum: parseInt(format(d, "d")), name, isToday: key === today };
   });
 
-  // ── News (auto-generate if missing) ─────────────────────────────────────
+  // ── News ───────────────────────────────────────────────────────────────────
   let stories: Story[] = [];
   let topStories: Story[] = [];
   if (brief) {
@@ -243,14 +242,8 @@ export default async function DashboardPage() {
       stories = JSON.parse(brief.content as string).stories ?? [];
       topStories = stories.slice(0, 3);
     } catch { /* */ }
-  } else {
-    // No brief for today — generate one automatically
-    try {
-      const generated = await ensureTodaysBrief(userId);
-      stories = generated.stories ?? [];
-      topStories = stories.slice(0, 3);
-    } catch { /* generation failed — show empty state */ }
   }
+  // If no brief exists, DashboardNewsGrid auto-generates client-side
 
   // ── Checklist ──────────────────────────────────────────────────────────────
   const completedIds  = new Set(todayCompletions.map((c) => c.itemId));

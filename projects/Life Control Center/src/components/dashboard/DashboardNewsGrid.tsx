@@ -3,9 +3,10 @@
 /**
  * Dashboard News Grid — 4-column layout matching the /news page.
  * Renders all 20 stories grouped by category with expandable cards.
+ * Auto-generates today's brief if none exists.
  */
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 type Story = {
@@ -102,8 +103,67 @@ function StoryCard({ story, accentColor }: { story: Story; accentColor: string }
   );
 }
 
-export function DashboardNewsGrid({ stories }: { stories: Story[] }) {
-  if (stories.length === 0) return null;
+export function DashboardNewsGrid({ stories: initialStories }: { stories: Story[] }) {
+  const [stories, setStories] = useState<Story[]>(initialStories);
+  const [generating, setGenerating] = useState(false);
+
+  const generate = useCallback(async () => {
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/news/generate", { method: "POST" });
+      if (res.ok) {
+        const brief = await res.json();
+        if (brief?.stories?.length) setStories(brief.stories);
+      }
+    } catch { /* */ }
+    setGenerating(false);
+  }, []);
+
+  // Auto-generate if no stories were passed from the server
+  useEffect(() => {
+    if (initialStories.length > 0) return;
+    // Check if cached brief exists first (fast)
+    fetch("/api/news/generate")
+      .then(r => r.json())
+      .then(data => {
+        if (data?.stories?.length) {
+          setStories(data.stories);
+        } else {
+          // No cached brief — generate one
+          generate();
+        }
+      })
+      .catch(() => generate());
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update stories if parent re-renders with new data
+  useEffect(() => {
+    if (initialStories.length > 0) setStories(initialStories);
+  }, [initialStories]);
+
+  if (stories.length === 0 && !generating) return null;
+
+  if (generating) {
+    return (
+      <div style={{ marginTop: 14 }}>
+        <div className="cc-card" style={{ padding: "32px 24px", textAlign: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <span style={{
+              display: "inline-block", width: 14, height: 14,
+              border: "2px solid var(--ink-4)", borderTopColor: "var(--cyan)",
+              borderRadius: "50%", animation: "spin 0.7s linear infinite",
+            }} />
+            <span style={{ fontSize: 13, color: "var(--ink-2)" }}>
+              Generating today&apos;s news brief...
+            </span>
+          </div>
+          <p style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 8 }}>
+            Searching the web for the latest stories. This takes about 30 seconds.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const columns = COLUMNS.map(col => ({
     ...col,
