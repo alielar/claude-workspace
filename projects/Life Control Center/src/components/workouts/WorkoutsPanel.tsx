@@ -679,8 +679,9 @@ export default function WorkoutsPanel() {
                           disabled={inlineSaving || !inlineName.trim()}
                           style={{
                             padding: "6px 14px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                            background: inlineName.trim() ? "#E8E8F0" : "rgba(255,255,255,0.04)",
-                            color: inlineName.trim() ? "#06060B" : "var(--ink-4)", border: "none",
+                            background: inlineName.trim() ? "rgba(124,77,255,0.15)" : "rgba(255,255,255,0.04)",
+                            border: inlineName.trim() ? "1px solid rgba(124,77,255,0.4)" : "1px solid transparent",
+                            color: inlineName.trim() ? "#E8E8F0" : "var(--ink-4)",
                           }}
                         >
                           {inlineSaving ? "Creating..." : "Create and add"}
@@ -736,8 +737,9 @@ export default function WorkoutsPanel() {
                 disabled={saving || !newName.trim() || selectedExercises.length === 0}
                 style={{
                   padding: "8px 20px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  background: newName.trim() && selectedExercises.length > 0 ? "#E8E8F0" : "rgba(255,255,255,0.04)",
-                  color: newName.trim() && selectedExercises.length > 0 ? "#06060B" : "var(--ink-4)", border: "none",
+                  background: newName.trim() && selectedExercises.length > 0 ? "rgba(124,77,255,0.15)" : "rgba(255,255,255,0.04)",
+                  border: newName.trim() && selectedExercises.length > 0 ? "1px solid rgba(124,77,255,0.4)" : "1px solid transparent",
+                  color: newName.trim() && selectedExercises.length > 0 ? "#E8E8F0" : "var(--ink-4)",
                 }}
               >
                 {saving ? "Creating…" : `Create workout (${selectedExercises.length} ex)`}
@@ -774,9 +776,9 @@ export default function WorkoutsPanel() {
           </p>
           <button
             onClick={() => setShowNewForm(true)}
+            className="cc-btn-primary"
             style={{
-              padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600,
-              background: "#E8E8F0", color: "#06060B", border: "none", cursor: "pointer",
+              padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer",
             }}
           >
             + Create your first workout
@@ -1124,9 +1126,9 @@ export default function WorkoutsPanel() {
                         <button
                           onClick={saveEdit}
                           disabled={editSaving || !editName.trim()}
+                          className="cc-btn-primary"
                           style={{
                             padding: "6px 16px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                            background: "#E8E8F0", color: "#06060B", border: "none",
                           }}
                         >
                           {editSaving ? "Saving…" : "Save"}

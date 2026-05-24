@@ -506,8 +506,9 @@ export default function WordbankPage() {
                   disabled={addingSug === s.word}
                   style={{
                     flexShrink: 0, width: 26, height: 26,
-                    border: "1px solid var(--line-hi)", borderRadius: 8,
-                    background: addingSug === s.word ? "#E8E8F0" : "rgba(255,255,255,0.03)",
+                    border: addingSug === s.word ? "1px solid rgba(124,77,255,0.5)" : "1px solid var(--line-hi)",
+                    borderRadius: 8,
+                    background: addingSug === s.word ? "rgba(124,77,255,0.30)" : "rgba(255,255,255,0.03)",
                     cursor: addingSug === s.word ? "default" : "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     color: addingSug === s.word ? "transparent" : "var(--ink-3)",
@@ -516,7 +517,7 @@ export default function WordbankPage() {
                   title="Add to word bank"
                 >
                   {addingSug === s.word ? (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0A0A14" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#E8E8F0" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                   ) : (
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   )}

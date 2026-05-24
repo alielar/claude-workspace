@@ -5,7 +5,8 @@
  * Plans must already exist — this just backfills session history.
  *
  * Date range: March 16 → May 23, 2026
- * Frequency: Exactly 5 sessions per week, random day distribution
+ * Frequency: Exactly 5 sessions per week, varied distribution
+ * Constraint: no 4+ consecutive training days, no weekend-only clustering
  * Rotation: Push / Pull / Legs / Push / Pull cycling
  * Idempotent: skips dates that already have sessions
  */
@@ -19,54 +20,129 @@ import {
 } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
-// ── Generate exactly 5 random training days per week ────────────────────────
+// ── Generate exactly 5 training days per week with natural variation ─────────
+// Rules: no 4+ consecutive days, varied across Mon-Sun, deterministic per week
 
 function trainingDates(start: string, end: string): string[] {
   const dates: string[] = [];
-  const d = new Date(start + "T12:00:00Z");
-  const endD = new Date(end + "T12:00:00Z");
+  const startD = new Date(start + "T12:00:00Z");
+  const endD   = new Date(end   + "T12:00:00Z");
 
-  // Collect all days grouped by ISO week
+  // Collect days grouped by Mon-Sun ISO week
   const weeks: string[][] = [];
   let currentWeek: string[] = [];
-  let lastWeekKey = "";
+  let lastWeekMon = "";
 
-  const iter = new Date(d);
+  const iter = new Date(startD);
   while (iter <= endD) {
-    // ISO week key: year + week number
-    const dayOfYear = Math.floor((iter.getTime() - new Date(Date.UTC(iter.getUTCFullYear(), 0, 1)).getTime()) / 86400000);
-    const weekKey = `${iter.getUTCFullYear()}-${Math.ceil((dayOfYear + new Date(Date.UTC(iter.getUTCFullYear(), 0, 1)).getUTCDay() + 1) / 7)}`;
+    // Get Monday of current week
+    const dow = iter.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const daysFromMon = (dow + 6) % 7;
+    const monDate = new Date(iter);
+    monDate.setUTCDate(monDate.getUTCDate() - daysFromMon);
+    const monKey = monDate.toISOString().slice(0, 10);
 
-    if (weekKey !== lastWeekKey && currentWeek.length > 0) {
+    if (monKey !== lastWeekMon && currentWeek.length > 0) {
       weeks.push(currentWeek);
       currentWeek = [];
     }
-    lastWeekKey = weekKey;
+    lastWeekMon = monKey;
     currentWeek.push(iter.toISOString().slice(0, 10));
     iter.setUTCDate(iter.getUTCDate() + 1);
   }
   if (currentWeek.length > 0) weeks.push(currentWeek);
 
-  // Seeded random: pick exactly 5 days from each week (or all if fewer than 5 days in partial week)
-  // Use a deterministic shuffle based on the week index for reproducibility
   for (let wi = 0; wi < weeks.length; wi++) {
     const week = weeks[wi];
     const count = Math.min(5, week.length);
+    if (count === 0) continue;
 
-    // Fisher-Yates with seeded pseudo-random (deterministic per week)
-    const shuffled = [...week];
-    let seed = wi * 7919 + 42;
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-      const j = seed % (i + 1);
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    const picked = shuffled.slice(0, count).sort();
+    // Pick 5 days with good spread: try preferred patterns first
+    const picked = pickSpreadDays(week, count, wi);
     dates.push(...picked);
   }
 
   return dates;
+}
+
+/**
+ * Pick `count` days from `available` with natural spread.
+ * Tries a few predefined good patterns (Mon/Tue/Thu/Fri/Sat, etc.)
+ * then falls back to a seeded shuffle if the week is partial.
+ */
+function pickSpreadDays(available: string[], count: number, weekIdx: number): string[] {
+  if (available.length <= count) return [...available].sort();
+
+  // Map available days to weekday indices (0=Mon through 6=Sun)
+  const dayIndices = available.map((d) => {
+    const dow = new Date(d + "T12:00:00Z").getUTCDay();
+    return (dow + 6) % 7; // 0=Mon, 6=Sun
+  });
+
+  // Good 5-day patterns (indices relative to Mon=0, Sun=6)
+  const PATTERNS_5 = [
+    [0, 1, 3, 4, 6], // Mon Tue Thu Fri Sun
+    [0, 2, 3, 5, 6], // Mon Wed Thu Sat Sun
+    [1, 2, 4, 5, 6], // Tue Wed Fri Sat Sun
+    [0, 1, 3, 5, 6], // Mon Tue Thu Sat Sun
+    [0, 2, 4, 5, 6], // Mon Wed Fri Sat Sun
+    [1, 3, 4, 5, 6], // Tue Thu Fri Sat Sun
+    [0, 1, 2, 4, 6], // Mon Tue Wed Fri Sun
+    [0, 2, 3, 4, 6], // Mon Wed Thu Fri Sun
+  ];
+
+  // Try each pattern (rotate by weekIdx for variety)
+  const patternToTry = PATTERNS_5[(weekIdx * 3) % PATTERNS_5.length];
+
+  // Find available days that match the pattern
+  const chosen: string[] = [];
+  for (const targetDow of patternToTry) {
+    const idx = dayIndices.indexOf(targetDow);
+    if (idx !== -1) chosen.push(available[idx]);
+  }
+
+  if (chosen.length === count) return chosen.sort();
+
+  // Pattern didn't fit perfectly — fall back to seeded selection avoiding 4+ consecutive
+  return seedSelect(available, count, weekIdx);
+}
+
+function seedSelect(available: string[], count: number, seed: number): string[] {
+  // Seeded Fisher-Yates
+  const shuffled = [...available];
+  let s = seed * 7919 + 42;
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const candidates = shuffled.slice(0, count).sort();
+
+  // Check for 4+ consecutive and retry once with a different seed if found
+  if (hasLongConsecutiveRun(candidates, 4)) {
+    const alt = shuffled.slice(count).slice(0, 2);
+    const mixed = [...candidates.slice(0, count - 1), ...alt].slice(0, count).sort();
+    return hasLongConsecutiveRun(mixed, 4) ? candidates : mixed;
+  }
+  return candidates;
+}
+
+function hasLongConsecutiveRun(sortedDates: string[], maxAllowed: number): boolean {
+  if (sortedDates.length < maxAllowed) return false;
+  let consecutive = 1;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const prev = new Date(sortedDates[i - 1] + "T12:00:00Z");
+    const curr = new Date(sortedDates[i]     + "T12:00:00Z");
+    const diffDays = Math.round((curr.getTime() - prev.getTime()) / 86400000);
+    if (diffDays === 1) {
+      consecutive++;
+      if (consecutive >= maxAllowed) return true;
+    } else {
+      consecutive = 1;
+    }
+  }
+  return false;
 }
 
 // Base weights for exercises (kg)
@@ -96,6 +172,15 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+
+  // ── Clean up orphaned sessions (0 sets, older than 2 hours) ──────────────
+  await db.delete(gymSessions).where(
+    and(
+      eq(gymSessions.userId, userId),
+      sql`${gymSessions.id} NOT IN (SELECT DISTINCT session_id FROM gym_sets WHERE session_id IS NOT NULL)`,
+      sql`${gymSessions.createdAt} < datetime('now', '-2 hours')`
+    )
+  ).catch(() => {});
 
   // ── Require existing program + plans ──────────────────────────────────────
   const [prog] = await db

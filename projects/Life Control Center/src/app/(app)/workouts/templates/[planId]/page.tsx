@@ -426,7 +426,7 @@ function SetEditor({
           <button onClick={onClose} style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 6, padding: "6px 12px", color: "var(--ink-3)", fontSize: 12, cursor: "pointer" }}>
             Cancel
           </button>
-          <button onClick={() => onSave(local)} style={{ background: "#E8E8F0", borderRadius: 6, padding: "6px 14px", color: "#06060B", fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none" }}>
+          <button onClick={() => onSave(local)} className="cc-btn-primary" style={{ borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Save
           </button>
         </div>

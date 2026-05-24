@@ -300,12 +300,12 @@ export default async function WorkoutsPage() {
             </p>
             <OpenDrawerButton
               drawer="workouts"
+              className="cc-btn-primary"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "14px 28px", borderRadius: 10,
-                background: "#E8E8F0", color: "#06060B",
                 fontSize: 15, fontWeight: 600, letterSpacing: "-0.005em",
-                border: "none", cursor: "pointer",
+                cursor: "pointer",
               }}
             >
               + Create your first workout

@@ -36,12 +36,21 @@ Ali's personal life dashboard — a single-user Next.js web app on Vercel. Modul
 .cc-card           — card container (dark bg, border, radius 16px)
 .cc-card-head      — card header (padding 14px 16px, flex, border-bottom) — MUST USE, content must not sit flush
 .cc-card-body      — card body (padding 14px 16px)
-.cc-btn            — base button
-.cc-btn-primary    — violet gradient button
+.cc-btn            — base button (ghost/outline style)
+.cc-btn-primary    — primary button: rgba(124,77,255,0.15) bg, rgba(124,77,255,0.4) border, #E8E8F0 text
+                     hover: rgba(124,77,255,0.25) bg + 0 0 20px rgba(124,77,255,0.25) glow
+                     active: scale(0.98). disabled: 40% opacity.
+                     REPLACES all former white #E8E8F0 / #06060B buttons app-wide.
 .cc-pagetitle      — page header (h1 + .sub subtitle)
 .grad-text         — gradient text via WebkitBackgroundClip
 .num               — large number display
 ```
+
+### Primary button rule
+
+**Every primary action button in the app uses `.cc-btn-primary`.** No more white (`#E8E8F0`) buttons.
+
+Keep unchanged: ghost/secondary buttons, Discard/red-tinted buttons, the floating `+` FAB (gradient orb).
 
 ---
 

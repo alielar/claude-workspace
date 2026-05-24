@@ -212,10 +212,9 @@ function NumberPad({
             </button>
           ))}
         </div>
-        <button onClick={handleDone} style={{
+        <button onClick={handleDone} className="cc-btn-primary" style={{
           width: "100%", padding: "16px 0", borderRadius: 12,
-          background: "#E8E8F0", color: "#06060B",
-          fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+          fontSize: 16, fontWeight: 700, cursor: "pointer",
         }}>
           Done
         </button>
@@ -759,10 +758,9 @@ function SessionSummary({
             </div>
           )}
 
-          <button onClick={onClose} style={{
+          <button onClick={onClose} className="cc-btn-primary" style={{
             width: "100%", padding: "13px 0", borderRadius: 10,
-            background: "#E8E8F0", color: "#06060B",
-            fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", letterSpacing: "-0.01em",
+            fontWeight: 700, fontSize: 15, cursor: "pointer", letterSpacing: "-0.01em",
           }}>
             Done
           </button>
@@ -925,9 +923,8 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
               {elapsedMin}:{elapsedSec.toString().padStart(2, "0")}
             </div>
             {doneSets > 0 ? (
-              <button onClick={handleFinish} disabled={finishing} style={{
+              <button onClick={handleFinish} disabled={finishing} className="cc-btn-primary" style={{
                 padding: "10px 20px", borderRadius: 10,
-                background: "#E8E8F0", border: "none", color: "#06060B",
                 fontSize: 14, fontWeight: 700, cursor: finishing ? "wait" : "pointer", letterSpacing: "-0.01em",
               }}>
                 {finishing ? "Saving…" : "Finish"}

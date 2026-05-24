@@ -132,10 +132,10 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
           <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
             <Link
               href={`/workouts/session/new?planId=${currentPlan.id}`}
+              className="cc-btn-primary"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 10,
                 padding: "14px 22px", borderRadius: 10,
-                background: "#E8E8F0", color: "#06060B",
                 fontSize: 14, fontWeight: 600, letterSpacing: "-0.005em",
                 textDecoration: "none",
               }}

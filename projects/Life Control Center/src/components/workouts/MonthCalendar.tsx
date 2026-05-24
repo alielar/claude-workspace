@@ -15,6 +15,13 @@ interface MonthSession {
   totalVolume: number;
 }
 
+interface RunLog {
+  id: number;
+  date: string;
+  distanceKm: number;
+  durationSeconds: number;
+}
+
 interface MonthCalendarProps {
   /** Sessions for the initial month (from server) */
   initialSessions: MonthSession[];
@@ -69,9 +76,22 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
   const [year, setYear] = useState(todayDate.getFullYear());
   const [month, setMonth] = useState(todayDate.getMonth());
   const [sessions, setSessions] = useState<MonthSession[]>(initialSessions);
+  const [runDates, setRunDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
 
   const [fetchError, setFetchError] = useState(false);
+
+  // Load run logs once on mount — we only need the dates
+  useEffect(() => {
+    fetch("/api/workouts/run-logs")
+      .then((r) => r.json())
+      .then((data: RunLog[]) => {
+        if (Array.isArray(data)) {
+          setRunDates(new Set(data.map((r) => r.date)));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Session detail drawer
   const [selectedSession, setSelectedSession] = useState<MonthSession | null>(null);
@@ -223,6 +243,8 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
             const dow = getDow(cell.dateStr);
             const isPlanned = assignedDays.includes(dow);
             const hasSession = !!session;
+            const hasRun = runDates.has(cell.dateStr);
+            const hasActivity = hasSession || hasRun;
 
             return (
               <button
@@ -238,11 +260,13 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
                   width: "100%", aspectRatio: "1", borderRadius: 8,
                   border: isToday
                     ? "2px solid var(--violet)"
-                    : hasSession
+                    : hasActivity
                     ? "1px solid rgba(124,77,255,0.30)"
                     : "1px solid transparent",
                   background: hasSession
                     ? "linear-gradient(135deg, rgba(124,77,255,0.18), rgba(100,255,218,0.10))"
+                    : hasRun
+                    ? "linear-gradient(135deg, rgba(100,255,218,0.14), rgba(100,255,218,0.06))"
                     : isToday
                     ? "rgba(124,77,255,0.08)"
                     : isFuture && isPlanned
@@ -258,19 +282,29 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
                 {/* Day number */}
                 <span style={{
                   fontSize: 11, fontWeight: isToday ? 600 : 400,
-                  color: hasSession ? "var(--ink)" : isToday ? "var(--violet)" : isPast ? "var(--ink-4)" : "var(--ink-3)",
+                  color: hasActivity ? "var(--ink)" : isToday ? "var(--violet)" : isPast ? "var(--ink-4)" : "var(--ink-3)",
                   fontFamily: "var(--f-mono)", lineHeight: 1,
                 }}>
                   {cell.day}
                 </span>
-                {/* Tick */}
+                {/* Gym session tick (purple) */}
                 {hasSession && (
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none" style={{ flexShrink: 0 }}>
                     <path d="M1 4L3.5 6.5L9 1" stroke="var(--pos)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
+                {/* Run tick (cyan) — only if no gym session on same day */}
+                {hasRun && !hasSession && (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" style={{ flexShrink: 0 }}>
+                    <path d="M1 4L3.5 6.5L9 1" stroke="var(--cyan)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+                {/* Both gym + run indicator */}
+                {hasSession && hasRun && (
+                  <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--cyan)", flexShrink: 0 }} />
+                )}
                 {/* Planned future dot */}
-                {isFuture && isPlanned && !hasSession && (
+                {isFuture && isPlanned && !hasActivity && (
                   <span style={{
                     width: 4, height: 4, borderRadius: "50%",
                     border: "1px dotted var(--ink-4)", flexShrink: 0,

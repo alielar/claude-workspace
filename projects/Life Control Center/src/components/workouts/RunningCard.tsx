@@ -138,11 +138,10 @@ export default function RunningCard() {
           {/* Log run button */}
           <button
             onClick={() => setShowModal(true)}
+            className="cc-btn-primary"
             style={{
               marginTop: 14, width: "100%", padding: "10px 0", borderRadius: 8,
-              border: "none", background: "#E8E8F0",
-              color: "#06060B", fontSize: 13, fontWeight: 600, cursor: "pointer",
-              letterSpacing: "0.02em",
+              fontSize: 13, fontWeight: 600, cursor: "pointer", letterSpacing: "0.02em",
             }}
           >
             + Log run
@@ -191,8 +190,8 @@ export default function RunningCard() {
                   style={{ background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6, color: "var(--ink)", padding: "7px 10px", fontSize: 13 }} />
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                   <button type="button" className="cc-btn" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" disabled={saving}
-                    style={{ opacity: saving ? 0.5 : 1, padding: "8px 18px", borderRadius: 8, background: "#E8E8F0", color: "#06060B", fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer" }}>
+                  <button type="submit" disabled={saving} className="cc-btn-primary"
+                    style={{ padding: "8px 18px", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                     {saving ? "Saving…" : "Save"}
                   </button>
                 </div>

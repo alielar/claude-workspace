@@ -19,9 +19,9 @@ export default function NotFound() {
       </p>
       <Link
         href="/dashboard"
+        className="cc-btn-primary"
         style={{
           marginTop: 8, padding: "10px 20px", borderRadius: 8,
-          background: "#E8E8F0", color: "#06060B",
           fontSize: 13, fontWeight: 600, textDecoration: "none",
         }}
       >

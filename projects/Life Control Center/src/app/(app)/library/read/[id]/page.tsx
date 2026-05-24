@@ -65,10 +65,10 @@ function SelectionPopup({ text, position, onAddToBank, onDismiss }: {
       </span>
       <button
         onClick={() => { onAddToBank(text); onDismiss(); }}
+        className="cc-btn-primary"
         style={{
           fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
-          color: "#06060B", background: "#E8E8F0",
-          border: "none", borderRadius: 7, padding: "5px 10px",
+          borderRadius: 7, padding: "5px 10px",
           cursor: "pointer", flexShrink: 0,
         }}
       >
