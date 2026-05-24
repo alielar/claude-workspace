@@ -696,7 +696,7 @@ function SessionHistorySection() {
             onClick={() => setShowAll(!showAll)}
             style={{ background: "none", border: "none", fontSize: 10, color: "var(--cyan)", cursor: "pointer", letterSpacing: "0.04em" }}
           >
-            {showAll ? "Show less" : `View all ${sessions.length}`} \u2192
+            {showAll ? "Show less" : `View all ${sessions.length}`} →
           </button>
         )}
       </div>
@@ -748,7 +748,7 @@ function SessionHistorySection() {
                         fontSize: 14, color: "var(--ink-4)", transition: "transform 0.15s",
                         transform: expandedId === s.id ? "rotate(180deg)" : "rotate(0deg)",
                       }}>
-                        \u2193
+                        ↓
                       </span>
                     </div>
                   </button>

@@ -223,7 +223,6 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
             const dow = getDow(cell.dateStr);
             const isPlanned = assignedDays.includes(dow);
             const hasSession = !!session;
-            const isMissed = isPast && isPlanned && !hasSession;
 
             return (
               <button
@@ -241,13 +240,9 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
                     ? "2px solid var(--violet)"
                     : hasSession
                     ? "1px solid rgba(124,77,255,0.30)"
-                    : isMissed
-                    ? "1px solid rgba(255,80,80,0.20)"
                     : "1px solid transparent",
                   background: hasSession
                     ? "linear-gradient(135deg, rgba(124,77,255,0.18), rgba(100,255,218,0.10))"
-                    : isMissed
-                    ? "rgba(255,80,80,0.05)"
                     : isToday
                     ? "rgba(124,77,255,0.08)"
                     : isFuture && isPlanned
@@ -263,7 +258,7 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
                 {/* Day number */}
                 <span style={{
                   fontSize: 11, fontWeight: isToday ? 600 : 400,
-                  color: hasSession ? "var(--ink)" : isMissed ? "var(--neg)" : isToday ? "var(--violet)" : isPast ? "var(--ink-4)" : "var(--ink-3)",
+                  color: hasSession ? "var(--ink)" : isToday ? "var(--violet)" : isPast ? "var(--ink-4)" : "var(--ink-3)",
                   fontFamily: "var(--f-mono)", lineHeight: 1,
                 }}>
                   {cell.day}

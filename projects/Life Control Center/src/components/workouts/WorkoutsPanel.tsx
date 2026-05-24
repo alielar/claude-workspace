@@ -315,6 +315,32 @@ export default function WorkoutsPanel() {
     setEditExercises(prev => prev.filter(e => e.id !== peId));
   }
 
+  function updateSetCount(exIdx: number, count: number) {
+    setEditExercises(prev => {
+      const next = [...prev];
+      const ex = { ...next[exIdx] };
+      const current = ex.setConfig;
+      if (count > current.length) {
+        const template = current[current.length - 1] ?? { type: "working", repMin: 8, repMax: 12, restS: 90 };
+        ex.setConfig = [...current, ...Array.from({ length: count - current.length }, () => ({ ...template }))];
+      } else {
+        ex.setConfig = current.slice(0, count);
+      }
+      next[exIdx] = ex;
+      return next;
+    });
+  }
+
+  function updateRepRange(exIdx: number, repMin: number, repMax: number) {
+    setEditExercises(prev => {
+      const next = [...prev];
+      const ex = { ...next[exIdx] };
+      ex.setConfig = ex.setConfig.map(s => ({ ...s, repMin, repMax }));
+      next[exIdx] = ex;
+      return next;
+    });
+  }
+
   async function addEditExercise(ex: LibExercise) {
     if (!editingId) return;
     const res = await fetch(`/api/workouts/plans/${editingId}/exercises`, {
@@ -886,59 +912,117 @@ export default function WorkoutsPanel() {
                           No exercises added
                         </div>
                       ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                           {editExercises.map((ex, i) => (
                             <div key={ex.id} style={{
-                              display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                              border: "1px solid var(--line)", borderRadius: 8, background: "rgba(255,255,255,0.018)",
+                              padding: "10px 12px",
+                              border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.018)",
                             }}>
-                              <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-4)", fontSize: 10, minWidth: 20 }}>
-                                {String(i + 1).padStart(2, "0")}
-                              </span>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 12.5, color: "var(--ink)" }}>{ex.name}</div>
-                                <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                                  {ex.setConfig.length} sets \u00b7 {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
+                              {/* Top row: number, name, reorder/remove */}
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-4)", fontSize: 10, minWidth: 20 }}>
+                                  {String(i + 1).padStart(2, "0")}
+                                </span>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 12.5, color: "var(--ink)" }}>{ex.name}</div>
+                                  <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+                                    {MUSCLE_LABELS[ex.primaryMuscle ?? ""] ?? ""}
+                                  </div>
+                                </div>
+                                <div style={{ display: "flex", gap: 2 }}>
+                                  <button
+                                    onClick={() => moveExercise(i, -1)}
+                                    disabled={i === 0}
+                                    aria-label={`Move ${ex.name} up`}
+                                    style={{
+                                      width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
+                                      background: "transparent", color: i === 0 ? "var(--ink-5)" : "var(--ink-3)",
+                                      cursor: i === 0 ? "default" : "pointer", fontSize: 12,
+                                      display: "flex", alignItems: "center", justifyContent: "center",
+                                    }}
+                                  >
+                                    ↑
+                                  </button>
+                                  <button
+                                    onClick={() => moveExercise(i, 1)}
+                                    disabled={i === editExercises.length - 1}
+                                    aria-label={`Move ${ex.name} down`}
+                                    style={{
+                                      width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
+                                      background: "transparent", color: i === editExercises.length - 1 ? "var(--ink-5)" : "var(--ink-3)",
+                                      cursor: i === editExercises.length - 1 ? "default" : "pointer", fontSize: 12,
+                                      display: "flex", alignItems: "center", justifyContent: "center",
+                                    }}
+                                  >
+                                    ↓
+                                  </button>
+                                  <button
+                                    onClick={() => removeEditExercise(ex.id)}
+                                    aria-label={`Remove ${ex.name}`}
+                                    style={{
+                                      width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
+                                      background: "transparent", color: "var(--neg)", cursor: "pointer", fontSize: 14,
+                                      display: "flex", alignItems: "center", justifyContent: "center",
+                                    }}
+                                  >
+                                    ×
+                                  </button>
                                 </div>
                               </div>
-                              <div style={{ display: "flex", gap: 2 }}>
-                                <button
-                                  onClick={() => moveExercise(i, -1)}
-                                  disabled={i === 0}
-                                  aria-label={`Move ${ex.name} up`}
-                                  style={{
-                                    width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
-                                    background: "transparent", color: i === 0 ? "var(--ink-5)" : "var(--ink-3)",
-                                    cursor: i === 0 ? "default" : "pointer", fontSize: 12,
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                  }}
-                                >
-                                  \u2191
-                                </button>
-                                <button
-                                  onClick={() => moveExercise(i, 1)}
-                                  disabled={i === editExercises.length - 1}
-                                  aria-label={`Move ${ex.name} down`}
-                                  style={{
-                                    width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
-                                    background: "transparent", color: i === editExercises.length - 1 ? "var(--ink-5)" : "var(--ink-3)",
-                                    cursor: i === editExercises.length - 1 ? "default" : "pointer", fontSize: 12,
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                  }}
-                                >
-                                  \u2193
-                                </button>
-                                <button
-                                  onClick={() => removeEditExercise(ex.id)}
-                                  aria-label={`Remove ${ex.name}`}
-                                  style={{
-                                    width: 24, height: 24, borderRadius: 4, border: "1px solid var(--line)",
-                                    background: "transparent", color: "var(--neg)", cursor: "pointer", fontSize: 14,
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                  }}
-                                >
-                                  \u00d7
-                                </button>
+                              {/* Bottom row: sets + rep range controls */}
+                              <div style={{ display: "flex", gap: 12, marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--line)", alignItems: "center" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <span style={{ fontSize: 10, color: "var(--ink-4)", minWidth: 28 }}>Sets</span>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 0, border: "1px solid var(--line)", borderRadius: 6, overflow: "hidden" }}>
+                                    <button
+                                      onClick={() => updateSetCount(i, Math.max(1, ex.setConfig.length - 1))}
+                                      style={{ width: 28, height: 28, background: "transparent", border: "none", borderRight: "1px solid var(--line)", color: "var(--ink-3)", cursor: "pointer", fontSize: 14 }}
+                                    >
+                                      −
+                                    </button>
+                                    <span style={{ width: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
+                                      {ex.setConfig.length}
+                                    </span>
+                                    <button
+                                      onClick={() => updateSetCount(i, Math.min(10, ex.setConfig.length + 1))}
+                                      style={{ width: 28, height: 28, background: "transparent", border: "none", borderLeft: "1px solid var(--line)", color: "var(--ink-3)", cursor: "pointer", fontSize: 14 }}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <span style={{ fontSize: 10, color: "var(--ink-4)", minWidth: 28 }}>Reps</span>
+                                  <input
+                                    type="number"
+                                    value={ex.setConfig[0]?.repMin ?? 8}
+                                    onChange={(e) => {
+                                      const v = parseInt(e.target.value) || 1;
+                                      const max = ex.setConfig[0]?.repMax ?? v;
+                                      updateRepRange(i, v, Math.max(v, max));
+                                    }}
+                                    style={{
+                                      width: 40, height: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)",
+                                      background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6,
+                                      color: "var(--ink)", outline: "none",
+                                    }}
+                                  />
+                                  <span style={{ fontSize: 10, color: "var(--ink-4)" }}>–</span>
+                                  <input
+                                    type="number"
+                                    value={ex.setConfig[0]?.repMax ?? 12}
+                                    onChange={(e) => {
+                                      const v = parseInt(e.target.value) || 1;
+                                      const min = ex.setConfig[0]?.repMin ?? v;
+                                      updateRepRange(i, Math.min(min, v), v);
+                                    }}
+                                    style={{
+                                      width: 40, height: 28, textAlign: "center", fontSize: 12, fontFamily: "var(--f-mono)",
+                                      background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 6,
+                                      color: "var(--ink)", outline: "none",
+                                    }}
+                                  />
+                                </div>
                               </div>
                             </div>
                           ))}

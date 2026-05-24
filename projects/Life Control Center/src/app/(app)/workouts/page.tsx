@@ -18,7 +18,7 @@ import WorkoutDrawers from "@/components/workouts/WorkoutDrawers";
 import WeeklyVolume from "@/components/workouts/WeeklyVolume";
 import UpNextCard from "@/components/workouts/UpNextCard";
 import InfoTiles from "@/components/workouts/InfoTiles";
-import AutoSeed from "@/components/workouts/AutoSeed";
+import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
 
 export const dynamic = "force-dynamic";
 
@@ -282,7 +282,42 @@ export default async function WorkoutsPage() {
           todayDow={todayDow}
         />
       ) : (
-        <AutoSeed />
+        <div className="cc-card" style={{ padding: 0, overflow: "visible" }}>
+          <div style={{
+            padding: "48px 40px", textAlign: "center",
+            background: `
+              radial-gradient(50% 60% at 50% 0%, rgba(124,77,255,0.08), transparent 70%),
+              var(--bg-card)`,
+          }}>
+            <div className="cc-grad-text" style={{
+              fontSize: 48, fontWeight: 200, letterSpacing: "-0.04em",
+            }}>
+              Build your program
+            </div>
+            <p style={{ color: "var(--ink-3)", fontSize: 14, lineHeight: 1.6, maxWidth: 420, margin: "0 auto 28px" }}>
+              Create your workouts: Push, Pull, Legs, or whatever splits you want.
+              Assign days, pick exercises, and start logging.
+            </p>
+            <OpenDrawerButton
+              drawer="workouts"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "14px 28px", borderRadius: 10,
+                background: "#E8E8F0", color: "#06060B",
+                fontSize: 15, fontWeight: 600, letterSpacing: "-0.005em",
+                border: "none", cursor: "pointer",
+              }}
+            >
+              + Create your first workout
+            </OpenDrawerButton>
+
+            {ytdCount > 0 && (
+              <div style={{ marginTop: 24, fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em" }}>
+                {ytdCount} sessions logged — your history and PRs are preserved
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── Info tiles (Workouts / Exercises / Analytics) — always visible ── */}

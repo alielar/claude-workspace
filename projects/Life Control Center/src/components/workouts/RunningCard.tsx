@@ -140,8 +140,8 @@ export default function RunningCard() {
             onClick={() => setShowModal(true)}
             style={{
               marginTop: 14, width: "100%", padding: "10px 0", borderRadius: 8,
-              border: "1px solid rgba(100,255,218,0.30)", background: "rgba(100,255,218,0.06)",
-              color: "var(--cyan)", fontSize: 13, fontWeight: 500, cursor: "pointer",
+              border: "none", background: "#E8E8F0",
+              color: "#06060B", fontSize: 13, fontWeight: 600, cursor: "pointer",
               letterSpacing: "0.02em",
             }}
           >

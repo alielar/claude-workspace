@@ -25,14 +25,12 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
   function openDrawer(key: Exclude<DrawerType, null>) {
     setMounted((prev) => new Set(prev).add(key));
     setOpen(key);
-    // Scroll drawer to top on next frame (after render)
-    requestAnimationFrame(() => drawerRef.current?.scrollTo(0, 0));
+    // Scroll drawer to top after render settles
+    setTimeout(() => drawerRef.current?.scrollTo({ top: 0, behavior: "instant" }), 50);
   }
 
-  // Listen for external open requests (e.g. empty state CTA)
-  // Only register on non-hidden instances to prevent double-drawer bug
+  // Listen for external open requests (e.g. empty state CTA, InfoTiles)
   useEffect(() => {
-    if (mode === "hidden") return;
     function handler(e: Event) {
       const detail = (e as CustomEvent).detail;
       if (detail && DRAWER_TITLES[detail as Exclude<DrawerType, null>]) {

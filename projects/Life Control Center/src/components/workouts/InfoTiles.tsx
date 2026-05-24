@@ -113,7 +113,7 @@ export default function InfoTiles({ plans, exerciseCount }: Props) {
             ))}
           </div>
           <div style={{ marginTop: "auto", paddingTop: 16, fontSize: 10, color: "var(--cyan)", letterSpacing: "0.04em" }}>
-            Manage \u2192
+            Manage →
           </div>
         </div>
       </button>
@@ -143,7 +143,7 @@ export default function InfoTiles({ plans, exerciseCount }: Props) {
             <div style={{ fontSize: 12, color: "var(--ink-4)" }}>Loading...</div>
           )}
           <div style={{ marginTop: "auto", paddingTop: 16, fontSize: 10, color: "var(--cyan)", letterSpacing: "0.04em" }}>
-            Manage \u2192
+            Manage →
           </div>
         </div>
       </button>
@@ -184,7 +184,7 @@ export default function InfoTiles({ plans, exerciseCount }: Props) {
             </div>
           )}
           <div style={{ marginTop: "auto", paddingTop: 12, fontSize: 10, color: "var(--cyan)", letterSpacing: "0.04em" }}>
-            Manage \u2192
+            Manage →
           </div>
         </div>
       </button>

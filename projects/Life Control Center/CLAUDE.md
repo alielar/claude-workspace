@@ -85,7 +85,7 @@ src/
 | Module | Backend | Notes |
 |--------|---------|-------|
 | Dashboard | DB | Server component, time-aware layout, 5 data-wired cards |
-| Workouts | DB | PPL program, live logger, rest timer, PRs (Epley 1RM), run log. Auto-seeds via `/api/workouts/seed-history` |
+| Workouts | DB | User-created workouts saved to Turso. No auto-generation. Live logger, rest timer, PRs (Epley 1RM), run log. Seed script (`/api/workouts/seed-history`) populates historical sessions only and is idempotent. |
 | News Brief | DB | 4-column grid, cron at 06:00 UTC, 30-day retention |
 | Checklist | DB | Drawer with emoji/color, auto-tracked items, streaks |
 | Word Bank | DB | SRS flashcards, fill-in-the-blank, multi-language |

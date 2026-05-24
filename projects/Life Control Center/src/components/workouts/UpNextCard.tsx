@@ -97,7 +97,7 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, letterSpacing: "0.20em", textTransform: "uppercase" as const, color: "var(--ink-3)", marginBottom: 12 }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)", flexShrink: 0 }} />
-              {isToday ? `Today \u00b7 ${currentPlan.name}` : `Next \u00b7 ${currentPlan.name}`}
+              {isToday ? `Today · ${currentPlan.name}` : `Next · ${currentPlan.name}`}
             </div>
             <div className="workout-hero-title" style={{
               fontSize: 64, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 0.9,
@@ -112,7 +112,7 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
               {muscles.length > 0 && (
                 <>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--ink-4)" }} />
-                  <span>{muscles.map(m => MUSCLE_LABELS[m] ?? m).join(" \u00b7 ")}</span>
+                  <span>{muscles.map(m => MUSCLE_LABELS[m] ?? m).join(" · ")}</span>
                 </>
               )}
               {days.length > 0 && (
@@ -150,7 +150,7 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
                 color: "var(--ink-4)", cursor: "pointer", letterSpacing: "0.02em",
               }}
             >
-              Skip \u00b7 next workout
+              Skip · next workout
             </button>
           </div>
         </div>

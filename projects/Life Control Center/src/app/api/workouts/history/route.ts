@@ -30,17 +30,6 @@ export async function GET(req: NextRequest) {
   if (from) conditions.push(gte(gymSessions.date, from));
   if (to) conditions.push(lte(gymSessions.date, to));
 
-  // Auto-cleanup: delete abandoned sessions (0 sets, older than 24h)
-  await db
-    .delete(gymSessions)
-    .where(
-      and(
-        eq(gymSessions.userId, session.user.id),
-        sql`${gymSessions.id} NOT IN (SELECT DISTINCT session_id FROM gym_sets)`,
-        sql`${gymSessions.createdAt} < datetime('now', '-24 hours')`
-      )
-    );
-
   // Only return sessions that have at least 1 set (JOIN ensures this)
   const sessionsWithSets = await db
     .select({
