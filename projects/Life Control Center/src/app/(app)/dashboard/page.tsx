@@ -28,6 +28,7 @@ import Link from "next/link";
 import { format, subDays, startOfWeek } from "date-fns";
 import { ChecklistCard } from "@/components/dashboard/ChecklistCard";
 import { DashboardNewsGrid } from "@/components/dashboard/DashboardNewsGrid";
+import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -234,7 +235,7 @@ export default async function DashboardPage() {
     return { label: format(d, "EEE").toUpperCase(), dayNum: parseInt(format(d, "d")), name, isToday: key === today };
   });
 
-  // ── News ───────────────────────────────────────────────────────────────────
+  // ── News (auto-generate if missing) ─────────────────────────────────────
   let stories: Story[] = [];
   let topStories: Story[] = [];
   if (brief) {
@@ -242,6 +243,13 @@ export default async function DashboardPage() {
       stories = JSON.parse(brief.content as string).stories ?? [];
       topStories = stories.slice(0, 3);
     } catch { /* */ }
+  } else {
+    // No brief for today — generate one automatically
+    try {
+      const generated = await ensureTodaysBrief(userId);
+      stories = generated.stories ?? [];
+      topStories = stories.slice(0, 3);
+    } catch { /* generation failed — show empty state */ }
   }
 
   // ── Checklist ──────────────────────────────────────────────────────────────

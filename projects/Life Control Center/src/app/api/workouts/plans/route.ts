@@ -13,14 +13,24 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Get or find active program
-  const [prog] = await db
+  // Get active program (fallback to any program if isActive flag didn't persist)
+  let [prog] = await db
     .select({ id: programs.id })
     .from(programs)
     .where(and(eq(programs.userId, session.user.id), eq(programs.isActive, true)))
     .limit(1);
 
-  if (!prog) return NextResponse.json([]);
+  if (!prog) {
+    // Fallback: grab any program for the user and mark it active
+    const [anyProg] = await db
+      .select({ id: programs.id })
+      .from(programs)
+      .where(eq(programs.userId, session.user.id))
+      .limit(1);
+    if (!anyProg) return NextResponse.json([]);
+    await db.update(programs).set({ isActive: true }).where(eq(programs.id, anyProg.id));
+    prog = anyProg;
+  }
 
   const plans = await db
     .select()
@@ -68,6 +78,8 @@ export async function POST(req: NextRequest) {
       .values({ userId, name: "My Program", isActive: true })
       .returning();
     prog = { id: newProg.id };
+    // Ensure isActive is set (libSQL boolean workaround)
+    await db.update(programs).set({ isActive: true }).where(eq(programs.id, newProg.id));
   }
 
   // Count existing plans for sort order
