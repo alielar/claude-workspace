@@ -453,6 +453,21 @@ function StreakBadge({ count, accentHex }: { count: number; accentHex: string })
 
 // ─── Check row ────────────────────────────────────────────────────────────────
 
+/** Split a notes string into text segments and URL segments for inline rendering. */
+function parseNotesWithLinks(text: string): Array<{ type: "text" | "url"; value: string }> {
+  const urlRe = /https?:\/\/[^\s]+/g;
+  const parts: Array<{ type: "text" | "url"; value: string }> = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = urlRe.exec(text)) !== null) {
+    if (match.index > last) parts.push({ type: "text", value: text.slice(last, match.index) });
+    parts.push({ type: "url", value: match[0] });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push({ type: "text", value: text.slice(last) });
+  return parts;
+}
+
 function CkRow({ item, onToggle, onEdit }: {
   item: Item;
   onToggle: (id: number) => void;
@@ -468,7 +483,11 @@ function CkRow({ item, onToggle, onEdit }: {
     ? "AUTO"
     : AUTO_SOURCE_OPTIONS.find((o) => o.id === item.autoSource)?.label.toUpperCase() ?? "AUTO";
 
-  const truncatedNotes = item.notes
+  // Parse notes: URLs become clickable links; text is truncated if no URL present
+  const noteParts = item.notes ? parseNotesWithLinks(item.notes) : null;
+  const hasUrl    = noteParts?.some((p) => p.type === "url") ?? false;
+  // Plain-text truncation only when there are no URLs (URLs must show in full)
+  const truncatedNotes = !hasUrl && item.notes
     ? item.notes.length > 60 ? item.notes.slice(0, 60) + "…" : item.notes
     : null;
 
@@ -550,7 +569,28 @@ function CkRow({ item, onToggle, onEdit }: {
             </span>
           )}
         </div>
-        {truncatedNotes && (
+        {/* Notes: plain text truncated, or inline-linked when a URL is detected */}
+        {hasUrl && noteParts && (
+          <div style={{ fontSize: 11.5, color: "var(--ink-4)", marginTop: 3, lineHeight: 1.6 }}>
+            {noteParts.map((part, i) =>
+              part.type === "url" ? (
+                <a
+                  key={i}
+                  href={part.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ color: "var(--cyan)", textDecoration: "none", wordBreak: "break-all" }}
+                >
+                  {part.value}
+                </a>
+              ) : (
+                <span key={i} style={{ fontStyle: "italic" }}>{part.value}</span>
+              )
+            )}
+          </div>
+        )}
+        {!hasUrl && truncatedNotes && (
           <div style={{ fontSize: 11.5, color: "var(--ink-4)", fontStyle: "italic", marginTop: 3, lineHeight: 1.4 }}>
             {truncatedNotes}
           </div>

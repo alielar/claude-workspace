@@ -334,8 +334,8 @@ export default async function DashboardPage() {
     <div className="cc-card" style={{ padding: 22, height: "100%" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: collapsed ? 0 : 14 }}>
         <div style={HTITLE}><span style={DOT} />Daily Brief</div>
-        <Link href="/news" style={{ fontSize: 11, color: "var(--ink-3)", textDecoration: "none", letterSpacing: "0.04em" }}>
-          {stories.length > 0 ? format(now, "HH:mm") : "generate"}
+        <Link href="/news" style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", letterSpacing: "0.04em", opacity: 0.8 }}>
+          See all →
         </Link>
       </div>
 
@@ -377,8 +377,8 @@ export default async function DashboardPage() {
               </Link>
             );
           })}
-          <Link href="/news" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--ink-3)", textDecoration: "none", paddingTop: 12 }}>
-            Read full brief →
+          <Link href="/news" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--cyan)", textDecoration: "none", paddingTop: 12, opacity: 0.8 }}>
+            See all 20 stories →
           </Link>
         </div>
       ) : (

@@ -208,6 +208,12 @@ export async function POST() {
       content TEXT NOT NULL,
       generated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
+
+    // ── Library: reading period tracking (additive — safe to re-run) ─────────
+    // Records when a user actually started/finished each book.
+    // Replaces the old monthly-target system for the year progress bar.
+    `ALTER TABLE books ADD COLUMN started_at INTEGER`,
+    `ALTER TABLE books ADD COLUMN finished_at INTEGER`,
   ];
 
   const results: string[] = [];

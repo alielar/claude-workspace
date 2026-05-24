@@ -276,6 +276,9 @@ export const books = sqliteTable("books", {
   // Path/key to uploaded PDF in storage
   pdfKey: text("pdf_key"),
   sortOrder: integer("sort_order").notNull().default(0),
+  // Reading period — set when user clicks Start / Finish
+  startedAt: integer("started_at", { mode: "timestamp_ms" }),
+  finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

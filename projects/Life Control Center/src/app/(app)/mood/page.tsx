@@ -104,12 +104,7 @@ export default function MoodPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
         <div>
           <h1>Mood<span className="grad-text">.</span></h1>
-          <div className="sub">5-second daily log · {streak}-day streak · monthly avg {avgScore} / 5</div>
-        </div>
-        <div className="cc-tabs">
-          <button className="cc-tab cur">Month</button>
-          <button className="cc-tab">90 days</button>
-          <button className="cc-tab">All time</button>
+          <div className="sub">5-second daily log · {streak}-day streak · avg {avgScore} / 5</div>
         </div>
       </div>
 
@@ -180,11 +175,12 @@ export default function MoodPage() {
           </div>
 
           {/* 30-day heatmap */}
-          <div className="cc-card" style={{ padding: 24 }}>
+          <div className="cc-card">
             <div className="cc-card-head">
               <div className="title">30-day mood map</div>
               <div className="tail">1=low · 5=great</div>
             </div>
+            <div className="cc-card-body">
 
             {/* Day-of-week headers */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 4 }}>
@@ -232,6 +228,7 @@ export default function MoodPage() {
                 <span style={{ marginLeft: 4 }}>Low → High</span>
               </div>
             </div>
+            </div>{/* /cc-card-body */}
           </div>
         </div>
 

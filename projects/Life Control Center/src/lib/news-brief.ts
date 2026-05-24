@@ -93,13 +93,15 @@ Return exactly 20 stories in this order: 5 football, then 5 geopolitics, then 5 
 
 /** Generate a daily news brief using Claude with live web search */
 export async function generateNewsBrief(date: string): Promise<NewsBrief> {
-  const message = await client.messages.create({
+  // Web search is a beta feature — must use client.beta.messages.create() with the
+  // matching beta header, otherwise the tool is silently ignored and returns no stories.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const message = await (client.beta.messages as any).create({
     model: "claude-sonnet-4-6",
     max_tokens: 8192,
     system: SYSTEM_PROMPT,
-    // Built-in web search tool (Anthropic beta, available on claude-sonnet-4-6+)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tools: [{ type: "web_search_20250305", name: "web_search" } as any],
+    betas: ["web-search-2025-03-05"],
+    tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [
       {
         role: "user",
@@ -109,10 +111,11 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
   });
 
   // Extract text from the final assistant message (after tool use rounds)
-  const textBlocks = message.content.filter(
-    (b): b is Anthropic.TextBlock => b.type === "text"
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const textBlocks = (message.content as any[]).filter(
+    (b) => b.type === "text"
   );
-  const raw = textBlocks.map((b) => b.text).join("\n");
+  const raw = textBlocks.map((b: { text: string }) => b.text).join("\n");
 
   // Find the JSON object in the response
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
