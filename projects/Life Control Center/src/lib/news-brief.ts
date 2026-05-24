@@ -1,29 +1,27 @@
 /**
- * News Brief Generator — real web search via Claude's web_search tool.
+ * News Brief Generator — free RSS-based approach.
  *
- * Uses claude-sonnet-4-6 with the web_search_20250305 built-in tool.
- * Claude searches the web autonomously and returns structured JSON with
- * 5 stories per category across 5 topic pillars.
+ * Fetches headlines from curated RSS feeds across 4 topic pillars,
+ * filtered by Ali's interests. Zero API cost.
  *
- * Categories:  football · geopolitics · business · tech · ai
+ * Categories:  football · geopolitics · business · tech/ai
  *
- * Each story:  headline · summary (2–3 sentences) · whyItMatters · source URL
+ * Topics of interest:
+ *   Football: KACM, Morocco / Atlas Lions, FRMF, World Cup 2026, Champions League, European leagues
+ *   Geopolitics: Morocco news, MENA, world affairs
+ *   Business: markets, companies, economics
+ *   Tech & AI: product launches, AI research, industry shifts
  */
-
-import Anthropic from "@anthropic-ai/sdk";
 
 export type NewsCategory = "football" | "geopolitics" | "business" | "tech" | "ai";
 
 export type NewsStory = {
   headline: string;
-  /** 3-4 sentence factual summary: who/what/where/when. No opinion or implications. */
   summary: string;
-  /** 2-3 factual bullet points: key facts, numbers, quotes. Empty array if none. */
   keyPoints: string[];
   category: NewsCategory | "other";
-  /** Optional source URL from web search */
   source?: string;
-  /** @deprecated Kept for backward compat with briefs generated before 2026-05-19 */
+  /** @deprecated Kept for backward compat */
   whyItMatters?: string;
 };
 
@@ -33,111 +31,199 @@ export type NewsBrief = {
   generatedAt: string;
 };
 
-const client = new Anthropic();
+// ─── RSS Feed Sources ────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a news curator for a personal dashboard.
-Search the web to find today's most significant real news stories.
-Be unbiased — facts only, no editorial opinion. No clickbait.`;
+type FeedConfig = {
+  url: string;
+  category: NewsCategory;
+  /** Keywords to boost relevance (optional — if empty, all items are included) */
+  keywords?: string[];
+};
 
-function buildUserPrompt(date: string): string {
-  // World Cup 2026 runs June 11 – July 19, 2026
-  const d = new Date(date + "T12:00:00Z");
-  const wc2026Start = new Date("2026-06-11T00:00:00Z");
-  const wc2026End   = new Date("2026-07-19T23:59:59Z");
-  const inWorldCup  = d >= wc2026Start && d <= wc2026End;
-  const wcRule = inWorldCup
-    ? "\n⚽ WORLD CUP 2026 IS ACTIVE — include all 5 football stories focused on FIFA World Cup 2026 (results, standout moments, key team updates).\n"
-    : "";
+const FEEDS: FeedConfig[] = [
+  // Football
+  { url: "https://www.goal.com/feeds/en/news", category: "football" },
+  { url: "https://www.football-espana.net/feed", category: "football" },
+  { url: "https://onefootball.com/en/feeds/rss", category: "football" },
+  { url: "https://www.marca.com/en/rss/football.xml", category: "football" },
+  { url: "https://moroccoworldnews.com/category/sports/feed", category: "football" },
 
-  return `Today is ${date}. Search the web and return exactly 20 news stories organized into 4 groups of 5:
+  // Geopolitics
+  { url: "https://moroccoworldnews.com/feed", category: "geopolitics", keywords: ["morocco", "rabat", "casablanca", "fes", "marrakech", "king mohammed", "atlas", "sahara", "mena"] },
+  { url: "https://feeds.bbci.co.uk/news/world/rss.xml", category: "geopolitics" },
+  { url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", category: "geopolitics" },
+  { url: "https://www.aljazeera.com/xml/rss/all.xml", category: "geopolitics" },
 
-**Group 1 — Football (5 stories, category: "football")**
-KACM (Kawkab Athletic Club Marrakech), Morocco national team (Atlas Lions), World Cup 2026, Champions League, top European leagues
-${wcRule}
-**Group 2 — Geopolitics (5 stories, category: "geopolitics")**
-REQUIRED: AT LEAST 1 of these 5 stories must cover Morocco-specific political or geopolitical news — government decisions, foreign policy, regional affairs, diplomatic moves, Moroccan-MENA relations.
-Preferred sources for Morocco news: hespress.com, moroccoworldnews.com, le360.ma, yabiladi.com, africanews.com
-FALLBACK: If no significant Morocco political news exists today, include a MENA-region story that involves or significantly affects Morocco.
-Remaining 4 stories: major international events, conflicts, diplomacy, elections from anywhere in the world.
+  // Business
+  { url: "https://feeds.bbci.co.uk/news/business/rss.xml", category: "business" },
+  { url: "https://www.cnbc.com/id/100003114/device/rss/rss.html", category: "business" },
+  { url: "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", category: "business" },
 
-**Group 3 — Business (5 stories, category: "business")**
-Markets, major company news, economic indicators, mergers, earnings
+  // Tech & AI
+  { url: "https://feeds.arstechnica.com/arstechnica/index", category: "tech" },
+  { url: "https://www.theverge.com/rss/index.xml", category: "tech" },
+  { url: "https://techcrunch.com/feed/", category: "tech" },
+  { url: "https://feeds.bbci.co.uk/news/technology/rss.xml", category: "tech" },
+];
 
-**Group 4 — Tech & AI (5 stories total, mix of category: "tech" and "ai" freely)**
-Tech: product launches, industry shifts, regulation
-AI: research breakthroughs, product releases, policy, safety
+// Keywords that boost a story for Ali's specific interests
+const INTEREST_KEYWORDS: Record<NewsCategory, string[]> = {
+  football: ["morocco", "atlas lions", "kacm", "kawkab", "frmf", "world cup", "champions league", "real madrid", "barcelona", "premier league", "ligue 1", "botola"],
+  geopolitics: ["morocco", "rabat", "sahara", "mena", "africa", "middle east", "israel", "palestine", "ukraine", "nato", "eu", "trump", "election"],
+  business: ["markets", "stock", "earnings", "gdp", "recession", "startup", "ipo", "acquisition", "apple", "google", "amazon", "tesla"],
+  tech: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "apple", "google", "chip", "semiconductor", "robot"],
+  ai: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "machine learning", "deepmind", "model"],
+};
 
-Rules:
-- Return exactly 5 stories per group (20 total)
-- Within each group, rank stories #1–5 by significance
-- Facts only, no editorial opinion, no clickbait headlines
-- Prefer stories with verifiable sources
+// ─── RSS Parsing ─────────────────────────────────────────────────────────────
 
-For each story return:
-- "headline": concise news headline (≤ 12 words)
-- "summary": 3–4 sentences covering the WHAT of the story — who, what, where, when, key facts. No opinion, no implications, no "why this matters". Pure factual content as if summarizing a Reuters dispatch.
-- "keyPoints": array of 2–3 short strings with the most important facts, numbers, or direct quotes from the story. Use an empty array [] if no discrete factual nuggets stand out.
-- "category": one of [football, geopolitics, business, tech, ai]
-- "source": source URL if available
-
-Return ONLY a JSON object in this exact shape — no markdown fences, no extra text:
-{
-  "stories": [
-    { "headline": "...", "summary": "...", "keyPoints": ["...", "..."], "category": "...", "source": "..." },
-    ...
-  ]
+interface RSSItem {
+  title: string;
+  description: string;
+  link: string;
+  pubDate: string;
 }
 
-Return exactly 20 stories in this order: 5 football, then 5 geopolitics, then 5 business, then 5 tech/AI.`;
+/** Minimal XML tag extractor — no dependency needed */
+function extractTag(xml: string, tag: string): string {
+  const re = new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>|<${tag}[^>]*>([\\s\\S]*?)</${tag}>`);
+  const m = xml.match(re);
+  return (m?.[1] ?? m?.[2] ?? "").trim();
 }
 
-/** Generate a daily news brief using Claude with live web search */
+function parseRSSItems(xml: string): RSSItem[] {
+  const items: RSSItem[] = [];
+  // Match both <item> (RSS 2.0) and <entry> (Atom)
+  const itemRegex = /<item[\s>][\s\S]*?<\/item>|<entry[\s>][\s\S]*?<\/entry>/g;
+  let match;
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const block = match[0];
+    const title = extractTag(block, "title");
+    // RSS uses <description>, Atom uses <summary> or <content>
+    const description = extractTag(block, "description") || extractTag(block, "summary") || extractTag(block, "content");
+    // RSS uses <link>, Atom uses <link href="..."/>
+    let link = extractTag(block, "link");
+    if (!link) {
+      const hrefMatch = block.match(/<link[^>]+href=["']([^"']+)["']/);
+      if (hrefMatch) link = hrefMatch[1];
+    }
+    const pubDate = extractTag(block, "pubDate") || extractTag(block, "published") || extractTag(block, "updated");
+    if (title) {
+      items.push({ title: stripHtml(title), description: stripHtml(description).slice(0, 400), link, pubDate });
+    }
+  }
+  return items;
+}
+
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&apos;/g, "'").replace(/\s+/g, " ").trim();
+}
+
+// ─── Feed Fetching ───────────────────────────────────────────────────────────
+
+async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; category: NewsCategory }> {
+  try {
+    const res = await fetch(feed.url, {
+      headers: { "User-Agent": "LifeControlCenter/1.0 (personal dashboard)" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return { stories: [], category: feed.category };
+    const xml = await res.text();
+    const items = parseRSSItems(xml);
+
+    const stories: NewsStory[] = items.slice(0, 15).map((item) => ({
+      headline: item.title.length > 80 ? item.title.slice(0, 77) + "…" : item.title,
+      summary: item.description || item.title,
+      keyPoints: [],
+      category: feed.category,
+      source: item.link,
+    }));
+
+    return { stories, category: feed.category };
+  } catch {
+    return { stories: [], category: feed.category };
+  }
+}
+
+/** Score a story based on keyword relevance */
+function relevanceScore(story: NewsStory): number {
+  const text = `${story.headline} ${story.summary}`.toLowerCase();
+  const keywords = INTEREST_KEYWORDS[story.category as NewsCategory] ?? [];
+  let score = 0;
+  for (const kw of keywords) {
+    if (text.includes(kw.toLowerCase())) score += 1;
+  }
+  return score;
+}
+
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+/** Generate a daily news brief from RSS feeds — zero API cost */
 export async function generateNewsBrief(date: string): Promise<NewsBrief> {
-  // Web search is a beta feature — must use client.beta.messages.create() with the
-  // matching beta header, otherwise the tool is silently ignored and returns no stories.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const message = await (client.beta.messages as any).create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 8192,
-    system: SYSTEM_PROMPT,
-    betas: ["web-search-2025-03-05"],
-    tools: [{ type: "web_search_20250305", name: "web_search" }],
-    messages: [
-      {
-        role: "user",
-        content: buildUserPrompt(date),
-      },
-    ],
-  });
+  // Fetch all feeds in parallel
+  const results = await Promise.all(FEEDS.map(fetchFeed));
 
-  // Extract text from the final assistant message (after tool use rounds)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const textBlocks = (message.content as any[]).filter(
-    (b) => b.type === "text"
-  );
-  const raw = textBlocks.map((b: { text: string }) => b.text).join("\n");
+  // Group stories by category
+  const byCategory: Record<string, NewsStory[]> = {
+    football: [],
+    geopolitics: [],
+    business: [],
+    tech: [],
+    ai: [],
+  };
 
-  // Find the JSON object in the response
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    console.error("Claude news response (no JSON found):", raw.slice(0, 500));
-    // Fallback: return empty brief rather than crash
-    return { date, stories: [], generatedAt: new Date().toISOString() };
+  for (const { stories, category } of results) {
+    byCategory[category].push(...stories);
   }
 
-  let parsed: { stories: NewsStory[] };
-  try {
-    parsed = JSON.parse(jsonMatch[0]);
-  } catch {
-    return { date, stories: [], generatedAt: new Date().toISOString() };
+  // Promote tech stories that strongly match AI keywords to "ai" category
+  const techStories = byCategory.tech;
+  const aiStrongKeywords = ["artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "machine learning", "deepmind", "chatbot", "generative ai", "large language model", "neural network"];
+  byCategory.tech = [];
+  for (const story of techStories) {
+    const text = `${story.headline} ${story.summary}`.toLowerCase();
+    // Require at least one strong AI keyword (not just "ai" which is too broad)
+    const isAI = aiStrongKeywords.some((kw) => text.includes(kw))
+      || (text.includes(" ai ") && (text.includes("model") || text.includes("train") || text.includes("agent") || text.includes("safety")));
+    if (isAI) {
+      byCategory.ai.push({ ...story, category: "ai" });
+    } else {
+      byCategory.tech.push(story);
+    }
+  }
+
+  // Deduplicate by headline similarity within each category
+  for (const cat of Object.keys(byCategory)) {
+    const seen = new Set<string>();
+    byCategory[cat] = byCategory[cat].filter((s) => {
+      const key = s.headline.toLowerCase().slice(0, 40);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // Sort each category by relevance, take top 5
+  // If AI category is short, fill from tech overflow (and vice versa)
+  for (const cat of Object.keys(byCategory)) {
+    byCategory[cat].sort((a, b) => relevanceScore(b) - relevanceScore(a));
+  }
+  if (byCategory.ai.length < 5 && byCategory.tech.length > 5) {
+    const extra = byCategory.tech.splice(5, 5 - byCategory.ai.length);
+    byCategory.ai.push(...extra.map((s) => ({ ...s, category: "ai" as const })));
+  } else if (byCategory.tech.length < 5 && byCategory.ai.length > 5) {
+    const extra = byCategory.ai.splice(5, 5 - byCategory.tech.length);
+    byCategory.tech.push(...extra.map((s) => ({ ...s, category: "tech" as const })));
+  }
+
+  const selected: NewsStory[] = [];
+  for (const cat of ["football", "geopolitics", "business", "tech", "ai"]) {
+    selected.push(...byCategory[cat].slice(0, 5));
   }
 
   return {
     date,
-    stories: (parsed.stories ?? []).map((s: NewsStory) => ({
-      ...s,
-      keyPoints: Array.isArray(s.keyPoints) ? s.keyPoints : [],
-    })),
+    stories: selected,
     generatedAt: new Date().toISOString(),
   };
 }
@@ -172,10 +258,6 @@ export function formatBriefAsEmail(brief: NewsBrief): string {
       </div>
       <h2 style="color:#f1f5f9;font-size:15px;font-weight:600;margin:0 0 8px 0;line-height:1.4">${s.headline}</h2>
       <p style="color:#94a3b8;font-size:13px;margin:0 0 10px 0;line-height:1.6">${s.summary}</p>
-      <div style="background:#111118;border-radius:8px;padding:10px 12px">
-        <span style="color:#7C5CFF;font-size:12px;font-weight:600">Why it matters: </span>
-        <span style="color:#94a3b8;font-size:13px">${s.whyItMatters}</span>
-      </div>
       ${s.source ? `<div style="margin-top:8px"><a href="${s.source}" style="color:#475569;font-size:11px">${s.source}</a></div>` : ""}
     </div>`;
     })
@@ -191,7 +273,7 @@ export function formatBriefAsEmail(brief: NewsBrief): string {
       <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0">
         ${new Date(brief.date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
       </h1>
-      <p style="color:#475569;font-size:13px;margin:4px 0 0 0">${brief.stories.length} stories · Live web search · No opinion</p>
+      <p style="color:#475569;font-size:13px;margin:4px 0 0 0">${brief.stories.length} stories · RSS feeds · No opinion</p>
     </div>
     ${storiesHtml}
     <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
