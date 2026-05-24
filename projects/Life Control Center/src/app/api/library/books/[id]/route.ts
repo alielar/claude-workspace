@@ -27,9 +27,13 @@ export async function PATCH(
   if (isNaN(bookId)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json();
-  const { status } = body as { status: string };
+  const { status, pdfKey } = body as { status?: string; pdfKey?: string };
 
-  if (!["reading", "finished", "not_started"].includes(status)) {
+  if (!status && !pdfKey) {
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+  }
+
+  if (status && !["reading", "finished", "not_started"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
@@ -39,17 +43,28 @@ export async function PATCH(
 
   const now = new Date();
 
-  const updates: Partial<typeof books.$inferInsert> = { status };
-  if (status === "reading" && !book.startedAt) {
-    updates.startedAt = now;
+  const updates: Partial<typeof books.$inferInsert> = {};
+  if (status) {
+    updates.status = status;
+    if (status === "reading" && !book.startedAt) {
+      updates.startedAt = now;
+    }
+    if (status === "finished") {
+      updates.finishedAt = now;
+      if (!book.startedAt) updates.startedAt = now;
+    }
+    if (status === "not_started") {
+      updates.startedAt = null;
+      updates.finishedAt = null;
+    }
   }
-  if (status === "finished") {
-    updates.finishedAt = now;
-    if (!book.startedAt) updates.startedAt = now;
-  }
-  if (status === "not_started") {
-    updates.startedAt = null;
-    updates.finishedAt = null;
+  if (pdfKey) {
+    updates.pdfKey = pdfKey;
+    // Auto-set status to reading when a PDF is uploaded
+    if (!status && book.status === "not_started") {
+      updates.status = "reading";
+      if (!book.startedAt) updates.startedAt = now;
+    }
   }
 
   const [updated] = await db

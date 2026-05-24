@@ -27,6 +27,7 @@ import { eq, desc, and, sql } from "drizzle-orm";
 import Link from "next/link";
 import { format, subDays, startOfWeek } from "date-fns";
 import { ChecklistCard } from "@/components/dashboard/ChecklistCard";
+import { DashboardNewsGrid } from "@/components/dashboard/DashboardNewsGrid";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -235,8 +236,12 @@ export default async function DashboardPage() {
 
   // ── News ───────────────────────────────────────────────────────────────────
   let stories: Story[] = [];
+  let topStories: Story[] = [];
   if (brief) {
-    try { stories = (JSON.parse(brief.content as string).stories ?? []).slice(0, 3); } catch { /* */ }
+    try {
+      stories = JSON.parse(brief.content as string).stories ?? [];
+      topStories = stories.slice(0, 3);
+    } catch { /* */ }
   }
 
   // ── Checklist ──────────────────────────────────────────────────────────────
@@ -354,21 +359,21 @@ export default async function DashboardPage() {
         /* Afternoon: collapsed to single link */
         <Link href="/news" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none", padding: "14px 0" }}>
           <div style={{ fontSize: 13.5, color: "var(--ink-2)" }}>
-            {stories.length > 0 ? "Today's brief is ready" : "No brief generated yet"}
+            {topStories.length > 0 ? "Today's brief is ready" : "No brief generated yet"}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--cyan)" }}>
             Read now
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </Link>
-      ) : stories.length > 0 ? (
+      ) : topStories.length > 0 ? (
         /* Morning: top 3 headlines */
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-          {stories.map((s, i) => {
+          {topStories.map((s, i) => {
             const cat   = (s.category ?? "").toLowerCase();
             const color = CAT_COLOR[cat] ?? "var(--ink-3)";
             return (
-              <Link key={i} href="/news" style={{ textDecoration: "none", display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: i < stories.length - 1 ? "1px solid var(--line)" : "none" }}>
+              <Link key={i} href="/news" style={{ textDecoration: "none", display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: i < topStories.length - 1 ? "1px solid var(--line)" : "none" }}>
                 {/* Rank */}
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.04em", paddingTop: 2, flexShrink: 0, minWidth: 18 }}>
                   {String(i + 1).padStart(2, "0")}
@@ -631,6 +636,9 @@ export default async function DashboardPage() {
         )}
 
       </div>
+
+      {/* ── Full News Grid (all 20 stories) ─────────────────────────────────── */}
+      <DashboardNewsGrid stories={stories} />
     </div>
   );
 }

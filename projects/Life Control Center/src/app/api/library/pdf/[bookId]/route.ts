@@ -1,7 +1,10 @@
 /**
  * GET /api/library/pdf/[bookId]
  * Returns the raw PDF bytes for the given book.
- * Used by the react-pdf reader to stream the file.
+ *
+ * Supports two storage modes:
+ * - Vercel Blob (pdfKey starts with "https://") → redirects to blob URL
+ * - Legacy inline (pdfKey starts with "inline:") → serves from pdf_blobs table
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -29,10 +32,16 @@ export async function GET(
     .where(and(eq(books.id, bookId), eq(books.userId, session.user.id)))
     .limit(1);
 
-  if (!book) {
+  if (!book || !book.pdfKey) {
     return new NextResponse("Not found", { status: 404 });
   }
 
+  // Vercel Blob: redirect to the public URL
+  if (book.pdfKey.startsWith("https://")) {
+    return NextResponse.redirect(book.pdfKey);
+  }
+
+  // Legacy: serve from pdf_blobs table
   const [blob] = await db
     .select()
     .from(pdfBlobs)

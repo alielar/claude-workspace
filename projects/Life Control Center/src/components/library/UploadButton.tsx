@@ -2,13 +2,14 @@
 
 /**
  * PDF upload button for a specific book.
- * Shows upload progress, file-size warning, and error state.
- * Calls onDone() after a successful upload so the parent can refetch.
+ * Uploads directly from browser to Vercel Blob (no server size limits).
+ * Then updates the book record with the blob URL.
  */
 
 import { useState } from "react";
+import { upload } from "@vercel/blob/client";
 
-const MAX_MB = 30; // Warn above this size; Turso can handle up to ~50 MB per row
+const MAX_MB = 500;
 
 export default function UploadButton({
   bookId,
@@ -24,7 +25,6 @@ export default function UploadButton({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Warn about very large files before uploading
     const mb = file.size / 1024 / 1024;
     if (mb > MAX_MB) {
       setErrorMsg(`File is ${mb.toFixed(0)} MB. Max ${MAX_MB} MB.`);
@@ -36,14 +36,22 @@ export default function UploadButton({
     setErrorMsg("");
 
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("bookId", String(bookId));
+      // Upload directly from browser to Vercel Blob
+      const blob = await upload(`books/${bookId}/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/library/upload",
+      });
 
-      const res = await fetch("/api/library/upload", { method: "POST", body: form });
+      // Update book record with the blob URL
+      const res = await fetch(`/api/library/books/${bookId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pdfKey: blob.url }),
+      });
+
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error ?? "Upload failed");
+        throw new Error(json.error ?? "Failed to save");
       }
 
       setState("idle");
@@ -53,7 +61,6 @@ export default function UploadButton({
       setState("error");
     }
 
-    // Reset input so the same file can be re-selected after an error
     e.target.value = "";
   }
 
@@ -76,7 +83,6 @@ export default function UploadButton({
         title="Upload PDF for this book"
       >
         {uploading ? (
-          // Minimal spinner using CSS animation
           <span style={{
             display: "inline-block",
             width: 11,
@@ -103,7 +109,7 @@ export default function UploadButton({
         />
       </label>
       {state === "error" && (
-        <div style={{ fontSize: 10.5, color: "var(--neg)", maxWidth: 160, textAlign: "right", lineHeight: 1.4 }}>
+        <div style={{ fontSize: 10.5, color: "var(--neg)", maxWidth: 200, textAlign: "right", lineHeight: 1.4 }}>
           {errorMsg}
         </div>
       )}
