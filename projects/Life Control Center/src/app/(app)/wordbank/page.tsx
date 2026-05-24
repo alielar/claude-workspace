@@ -65,14 +65,14 @@ function FlashCard({ word, mode, onGrade, progress, total }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 14, border: "1px solid var(--line)", borderRadius: 18, background: "rgba(255,255,255,0.012)", position: "relative", overflow: "hidden", minHeight: 480 }}>
       {/* Ambient glow */}
-      <div style={{ position: "absolute", inset: "-40%", background: "radial-gradient(40% 50% at 30% 40%, rgba(124,77,255,0.10), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(100,255,218,0.08), transparent 60%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: "-40%", background: "radial-gradient(40% 50% at 30% 40%, rgba(124,77,255,0.08), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(100,255,218,0.06), transparent 60%)", pointerEvents: "none" }} />
 
       {/* Card */}
       <div style={{
         position: "relative", width: "100%", maxWidth: 580, padding: "42px 48px",
         background: "linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85))",
         border: "1px solid var(--line-hi)", borderRadius: 18,
-        boxShadow: "0 30px 70px rgba(0,0,0,0.50), 0 0 60px rgba(124,77,255,0.10), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "0 30px 70px rgba(0,0,0,0.45), 0 0 50px rgba(124,77,255,0.08), inset 0 1px 0 rgba(255,255,255,0.05)",
         backdropFilter: "blur(20px)",
       }}>
         {/* Top labels */}
@@ -147,11 +147,12 @@ function FlashCard({ word, mode, onGrade, progress, total }: {
           ]).map((btn) => (
             <button
               key={btn.key}
+              className="wb-grade-btn"
               onClick={() => onGrade(word.id, btn.key)}
-              style={{ padding: "14px 16px", borderRadius: 12, border: `1px solid ${btn.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", transition: "all 100ms", position: "relative" }}
+              style={{ padding: "14px 16px", borderRadius: 12, border: `1px solid ${btn.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", transition: "all 0.15s var(--easeOut)", position: "relative" }}
             >
               <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.005em", color: btn.color }}>{btn.label}</div>
-              <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 3, fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>{btn.interval}</div>
+              <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 3, fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>{btn.interval}</div>
             </button>
           ))}
         </div>
@@ -360,11 +361,12 @@ export default function WordbankPage() {
                 {(["all", "en", "fr", "darija"] as const).map((lang) => (
                   <button
                     key={lang}
+                    className="wb-lang-chip"
                     onClick={() => setLangFilter(lang)}
                     style={{
                       padding: "6px 12px", border: "1px solid var(--line)", borderRadius: 99, fontSize: 11,
-                      color: langFilter === lang ? "var(--ink)" : "var(--ink-3)",
-                      letterSpacing: "0.02em", cursor: "pointer", transition: "all 100ms",
+                      color: langFilter === lang ? "var(--ink)" : "var(--ink-4)",
+                      letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.15s var(--easeOut)",
                       background: langFilter === lang ? "rgba(124,77,255,0.10)" : "transparent",
                       borderColor: langFilter === lang ? "rgba(124,77,255,0.30)" : "var(--line)",
                     }}
@@ -393,7 +395,7 @@ export default function WordbankPage() {
                 </thead>
                 <tbody>
                   {filtered.map((w) => (
-                    <tr key={w.id} style={{ transition: "background 80ms" }}>
+                    <tr key={w.id} className="wb-table-row" style={{ transition: "background 0.12s var(--easeOut)" }}>
                       <td style={{ padding: "11px 12px", fontSize: 13, borderBottom: "1px solid var(--line)", color: "var(--ink)", fontWeight: 500 }}>{w.word}</td>
                       <td style={{ padding: "11px 12px", borderBottom: "1px solid var(--line)" }}>
                         <span style={{ fontFamily: "var(--f-mono)", fontSize: 9.5, letterSpacing: "0.14em", textTransform: "uppercase", color: LANG_COLORS[w.language] }}>
@@ -421,40 +423,42 @@ export default function WordbankPage() {
             <div className="cc-card-head"><div className="title">Stats</div><div className="tail">SRS health</div></div>
 
             {/* Due today stat */}
-            <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)", marginBottom: 8 }}>
-              <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Due today</div>
-              <div className="grad-text" style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.02em", marginTop: 4, fontFamily: "var(--f-mono)" }}>
-                {dueWords.length} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>words</span>
+            <div className="cc-card-body" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+              <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Due today</div>
+              <div className="grad-text" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.02em", marginTop: 6, fontFamily: "var(--f-mono)" }}>
+                {dueWords.length} <span style={{ color: "var(--ink-4)", fontSize: 13 }}>words</span>
               </div>
-              <div style={{ fontSize: 10.5, color: "var(--pos)", letterSpacing: "0.04em", marginTop: 3, fontFamily: "var(--f-mono)" }}>
+              <div style={{ fontSize: 10.5, color: "var(--pos)", letterSpacing: "0.04em", marginTop: 4, fontFamily: "var(--f-mono)" }}>
                 {cardIndex} done · {Math.max(0, dueWords.length - cardIndex)} remain
               </div>
             </div>
 
             {/* Total stat */}
-            <div style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)", marginBottom: 8 }}>
-              <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Total in bank</div>
-              <div style={{ fontSize: 22, fontWeight: 400, letterSpacing: "-0.02em", marginTop: 4, fontFamily: "var(--f-mono)" }}>{allWords.length}</div>
-              <div style={{ fontSize: 10.5, color: "var(--ink-3)", letterSpacing: "0.04em", marginTop: 3, fontFamily: "var(--f-mono)" }}>across 3 languages</div>
+            <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+              <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Total in bank</div>
+              <div style={{ fontSize: 20, fontWeight: 400, letterSpacing: "-0.02em", marginTop: 6, fontFamily: "var(--f-mono)" }}>{allWords.length}</div>
+              <div style={{ fontSize: 10.5, color: "var(--ink-4)", letterSpacing: "0.04em", marginTop: 4, fontFamily: "var(--f-mono)" }}>across 3 languages</div>
             </div>
 
             {/* Language mix bar */}
-            <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, marginBottom: 2 }}>Language mix</div>
-              <div style={{ display: "flex", gap: 4, height: 6, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.04)", marginTop: 8 }}>
+            <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+              <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 8 }}>Language mix</div>
+              <div style={{ display: "flex", gap: 3, height: 5, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.04)" }}>
                 {allWords.length > 0 && (
                   <>
-                    <span style={{ display: "block", height: "100%", background: "#64FFDA", flex: langCounts.en }} />
-                    <span style={{ display: "block", height: "100%", background: "#7C4DFF", flex: langCounts.fr }} />
-                    <span style={{ display: "block", height: "100%", background: "#FFC15C", flex: langCounts.darija }} />
+                    <span style={{ display: "block", height: "100%", background: "#64FFDA", flex: langCounts.en, transition: "flex 0.3s var(--easeOut)" }} />
+                    <span style={{ display: "block", height: "100%", background: "#7C4DFF", flex: langCounts.fr, transition: "flex 0.3s var(--easeOut)" }} />
+                    <span style={{ display: "block", height: "100%", background: "#FFC15C", flex: langCounts.darija, transition: "flex 0.3s var(--easeOut)" }} />
                   </>
                 )}
               </div>
-              <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 10.5, color: "var(--ink-3)", letterSpacing: "0.02em", fontFamily: "var(--f-mono)" }}>
-                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#64FFDA", marginRight: 5, verticalAlign: "middle" }} />EN {langCounts.en}</span>
-                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#7C4DFF", marginRight: 5, verticalAlign: "middle" }} />FR {langCounts.fr}</span>
-                <span><span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "99px", background: "#FFC15C", marginRight: 5, verticalAlign: "middle" }} />DA {langCounts.darija}</span>
+              <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 10.5, color: "var(--ink-4)", letterSpacing: "0.02em", fontFamily: "var(--f-mono)" }}>
+                <span><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "99px", background: "#64FFDA", marginRight: 5, verticalAlign: "middle" }} />EN {langCounts.en}</span>
+                <span><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "99px", background: "#7C4DFF", marginRight: 5, verticalAlign: "middle" }} />FR {langCounts.fr}</span>
+                <span><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "99px", background: "#FFC15C", marginRight: 5, verticalAlign: "middle" }} />DA {langCounts.darija}</span>
               </div>
+            </div>
             </div>
           </div>
 
@@ -475,18 +479,19 @@ export default function WordbankPage() {
               </div>
             </div>
             {sugLoading && (
-              <div style={{ padding: "12px 0", fontSize: 12, color: "var(--ink-4)" }}>Scanning news + library…</div>
+              <div className="cc-card-body" style={{ fontSize: 12, color: "var(--ink-5)" }}>Scanning news + library…</div>
             )}
             {!sugLoading && suggestions.length === 0 && (
-              <div style={{ padding: "12px 0", fontSize: 12, color: "var(--ink-4)" }}>
+              <div className="cc-card-body" style={{ fontSize: 12, color: "var(--ink-5)" }}>
                 No suggestions yet. Generate today&apos;s brief or add a book to Library.
               </div>
             )}
             {!sugLoading && suggestions.map((s, i) => (
-              <div key={s.word} style={{
+              <div key={s.word} className="wb-sug-row" style={{
                 display: "flex", alignItems: "center", gap: 10,
-                padding: "9px 0",
+                padding: "9px 16px",
                 borderBottom: i < suggestions.length - 1 ? "1px solid var(--line)" : "none",
+                transition: "background 0.12s var(--easeOut)",
               }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -563,6 +568,11 @@ export default function WordbankPage() {
 
       <style>{`
         @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+        .wb-grade-btn:hover { background: rgba(255,255,255,0.04) !important; transform: translateY(-1px); }
+        .wb-grade-btn:active { transform: scale(0.97); }
+        .wb-table-row:hover td { background: rgba(255,255,255,0.02); }
+        .wb-lang-chip:hover { border-color: var(--line-hi) !important; color: var(--ink-2) !important; }
+        .wb-sug-row:hover { background: rgba(255,255,255,0.02); }
         @media (max-width: 768px) { .wb-grid { grid-template-columns: 1fr !important; } }
       `}</style>
     </div>

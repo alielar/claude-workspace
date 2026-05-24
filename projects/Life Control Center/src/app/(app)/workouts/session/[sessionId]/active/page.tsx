@@ -117,18 +117,18 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
       aria-modal="true"
       aria-label={`Rest timer: ${min} minutes ${sec} seconds remaining`}
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.80)",
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)",
         display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
       }}
     >
-      <div className="cc-card" style={{ width: "min(300px, 100vw - 32px)", padding: "36px 32px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.14em", marginBottom: 20 }}>
+      <div className="cc-card" style={{ width: "min(300px, 100vw - 32px)", padding: "32px 28px", textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", letterSpacing: "0.16em", marginBottom: 22 }}>
           REST TIMER
         </div>
         <div style={{
-          fontSize: 72, fontWeight: 200, fontFamily: "var(--f-mono)", lineHeight: 1,
+          fontSize: 68, fontWeight: 200, fontFamily: "var(--f-mono)", lineHeight: 1,
           color: urgent ? "var(--warn)" : "var(--ink)",
-          transition: "color 0.3s",
+          transition: "color 0.3s var(--easeOut)",
         }}>
           {min}:{sec.toString().padStart(2, "0")}
         </div>
@@ -136,13 +136,13 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
           <div style={{
             height: "100%", width: `${pct}%`,
             background: urgent ? "var(--warn)" : "var(--violet)",
-            borderRadius: 99, transition: "width 1s linear, background 0.3s",
+            borderRadius: 99, transition: "width 1s linear, background 0.3s var(--easeOut)",
           }} />
         </div>
         <button
           onClick={() => onDoneRef.current()}
           className="cc-btn"
-          style={{ marginTop: 24, width: "100%", padding: "10px 0" }}
+          style={{ marginTop: 24, width: "100%", padding: "10px 0", letterSpacing: "0.04em" }}
         >
           Skip rest →
         </button>
@@ -213,15 +213,17 @@ function NumberPad({
           {keys.map((k, i) => (
             <button
               key={i}
+              className="numpad-key"
               onClick={() => k && handleKey(k)}
               aria-label={k === "back" ? "Delete last digit" : k === "." ? "Decimal point" : k || undefined}
               style={{
                 height: 56, minWidth: 56, borderRadius: 12, border: "1px solid var(--line)",
-                background: k === "back" ? "rgba(255,100,100,0.08)" : "rgba(255,255,255,0.04)",
+                background: k === "back" ? "rgba(255,100,100,0.06)" : "rgba(255,255,255,0.03)",
                 color: k === "back" ? "var(--neg)" : "var(--ink)",
                 fontSize: k === "back" ? 20 : 22, fontFamily: "var(--f-mono)", fontWeight: 400,
                 cursor: k ? "pointer" : "default", opacity: k ? 1 : 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "background 0.12s var(--easeOut), transform 0.1s var(--easeOut)",
               }}
             >
               {k === "back" ? "⌫" : k}
@@ -380,9 +382,9 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
 
   return (
     <div style={{
-      borderRadius: 12, border: `1px solid ${isDone ? "rgba(111,212,154,0.30)" : "var(--line)"}`,
-      background: isDone ? "rgba(111,212,154,0.04)" : "rgba(255,255,255,0.015)",
-      padding: "16px 20px", marginBottom: 10, transition: "all 0.2s",
+      borderRadius: 12, border: `1px solid ${isDone ? "rgba(111,212,154,0.25)" : "var(--line)"}`,
+      background: isDone ? "rgba(111,212,154,0.03)" : "rgba(255,255,255,0.015)",
+      padding: "16px 20px", marginBottom: 10, transition: "all 0.2s var(--easeOut)",
     }}>
       {/* Set header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -485,11 +487,12 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
       {isDone ? (
         <button
           onClick={onUndo}
+          className="set-undo-btn"
           style={{
-            width: "100%", padding: "14px 0", borderRadius: 10,
-            background: "rgba(255,255,255,0.04)", border: "1px solid var(--line)",
-            color: "var(--ink-4)", fontSize: 13, fontFamily: "var(--f-mono)", cursor: "pointer",
-            letterSpacing: "0.06em",
+            width: "100%", padding: "12px 0", borderRadius: 10,
+            background: "rgba(255,255,255,0.03)", border: "1px solid var(--line)",
+            color: "var(--ink-4)", fontSize: 12, fontFamily: "var(--f-mono)", cursor: "pointer",
+            letterSpacing: "0.06em", transition: "background 0.15s var(--easeOut), color 0.15s var(--easeOut)",
           }}
         >
           undo set
@@ -497,12 +500,14 @@ function SetCard({ setIndex, config, prefill, logged, currentPr1rm, weightIncrem
       ) : (
         <button
           onClick={handleLog}
+          className="set-log-btn"
           style={{
-            width: "100%", padding: "16px 0", borderRadius: 10,
+            width: "100%", padding: "14px 0", borderRadius: 10,
             background: isPr ? "linear-gradient(135deg, var(--warn), #FF8800)" : "var(--violet)", border: "none",
-            color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer",
+            color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer",
             letterSpacing: "0.01em",
-            boxShadow: isPr ? "0 0 20px rgba(255,193,92,0.30)" : "none",
+            boxShadow: isPr ? "0 0 18px rgba(255,193,92,0.25)" : "0 0 12px rgba(124,77,255,0.20)",
+            transition: "transform 0.1s var(--easeOut), box-shadow 0.15s var(--easeOut)",
           }}
         >
           {isPr ? "⚡ Log PR set " : "✓ Log set "}{setIndex + 1}
@@ -589,7 +594,7 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
         <div style={{ padding: "14px 16px" }}>
           {/* PR context */}
           {currentPr > 0 && (
-            <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 14, padding: "8px 12px", background: "rgba(124,77,255,0.06)", borderRadius: 8, borderLeft: "2px solid var(--violet)" }}>
+            <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 14, padding: "8px 12px", background: "rgba(124,77,255,0.05)", borderRadius: 8, border: "1px solid rgba(124,77,255,0.12)" }}>
               Current PR: <span style={{ color: "var(--violet)", fontFamily: "var(--f-mono)" }}>est. {currentPr.toFixed(1)} kg 1RM</span>
             </div>
           )}
@@ -756,7 +761,7 @@ function SessionSummary({
                   <div key={name} style={{
                     display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px",
                     background: "rgba(255,255,255,0.025)", borderRadius: 8,
-                    borderLeft: `2px solid ${SUGGESTION_COLOR[s.action] ?? "var(--line)"}`,
+                    border: `1px solid ${(SUGGESTION_COLOR[s.action] ?? "var(--line)") + "33"}`,
                   }}>
                     <span style={{
                       fontSize: 9, fontFamily: "var(--f-mono)", fontWeight: 700,
@@ -1017,16 +1022,18 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
             return (
               <button
                 key={ex.exerciseId}
+                className="jump-pill"
                 onClick={() => {
                   document.getElementById(`ex-${ex.exerciseId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
                 style={{
-                  flexShrink: 0, padding: "4px 10px", borderRadius: 6,
+                  flexShrink: 0, padding: "5px 10px", borderRadius: 6,
                   fontSize: 11, fontFamily: "var(--f-mono)", letterSpacing: "0.02em",
-                  border: `1px solid ${isDone ? "rgba(111,212,154,0.30)" : "var(--line)"}`,
-                  background: isDone ? "rgba(111,212,154,0.08)" : "rgba(255,255,255,0.04)",
-                  color: isDone ? "var(--pos)" : "var(--ink-2)",
+                  border: `1px solid ${isDone ? "rgba(111,212,154,0.25)" : "var(--line)"}`,
+                  background: isDone ? "rgba(111,212,154,0.06)" : "rgba(255,255,255,0.03)",
+                  color: isDone ? "var(--pos)" : "var(--ink-3)",
                   cursor: "pointer", whiteSpace: "nowrap",
+                  transition: "background 0.15s var(--easeOut), border-color 0.15s var(--easeOut)",
                 }}
               >
                 {isDone ? "✓ " : ""}{ex.name.length > 12 ? ex.name.slice(0, 12) + "…" : ex.name}
@@ -1137,6 +1144,10 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       )}
 
       <style>{`
+        .numpad-key:active { transform: scale(0.95); background: rgba(255,255,255,0.06) !important; }
+        .set-log-btn:active { transform: scale(0.97); }
+        .set-undo-btn:hover { background: rgba(255,255,255,0.05) !important; color: var(--ink-3) !important; }
+        .jump-pill:hover { background: rgba(255,255,255,0.06) !important; border-color: var(--line-hi) !important; }
         @media (max-width: 480px) {
           .active-session-header { flex-wrap: wrap; gap: 8px; }
           .active-session-header > div:last-child { width: 100%; justify-content: flex-end; }

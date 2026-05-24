@@ -214,24 +214,26 @@ export default function MoodPage() {
               {MOODS.map(({ score, emoji, name }) => (
                 <button
                   key={score}
+                  className="mood-scale-btn"
                   onClick={() => saveEntry(score)}
+                  aria-label={`${name}, ${score} of 5`}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                    padding: "24px 8px", border: "1px solid var(--line)", borderRadius: 14,
-                    cursor: "pointer", transition: "all 200ms var(--easeOut)",
+                    padding: "22px 8px", border: "1px solid var(--line)", borderRadius: 14,
+                    cursor: "pointer", transition: "all 0.2s var(--easeOut)",
                     background:
                       todayScore === score
-                        ? "linear-gradient(160deg, rgba(124,77,255,0.18), rgba(100,255,218,0.10))"
+                        ? "linear-gradient(160deg, rgba(124,77,255,0.15), rgba(100,255,218,0.08))"
                         : "rgba(255,255,255,0.012)",
                     borderColor: todayScore === score ? "rgba(124,77,255,0.40)" : "var(--line)",
-                    boxShadow: todayScore === score ? "0 0 24px rgba(124,77,255,0.25), inset 0 0 16px rgba(124,77,255,0.06)" : "none",
+                    boxShadow: todayScore === score ? "0 0 20px rgba(124,77,255,0.20), inset 0 0 12px rgba(124,77,255,0.05)" : "none",
                     transform: todayScore === score ? "translateY(-2px)" : "none",
                   }}
                 >
-                  <div style={{ fontSize: 42, lineHeight: 1, filter: todayScore === score ? "grayscale(0) opacity(1)" : "grayscale(50%) opacity(.7)", transform: todayScore === score ? "scale(1.1)" : "scale(1)", transition: "all 200ms" }}>
+                  <div style={{ fontSize: 40, lineHeight: 1, filter: todayScore === score ? "grayscale(0) opacity(1)" : "grayscale(50%) opacity(.65)", transform: todayScore === score ? "scale(1.08)" : "scale(1)", transition: "all 0.2s var(--easeOut)" }}>
                     {emoji}
                   </div>
-                  <div style={{ fontSize: 11, color: todayScore === score ? "var(--ink)" : "var(--ink-3)", letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500, fontFamily: "var(--f-mono)" }}>
+                  <div style={{ fontSize: 10.5, color: todayScore === score ? "var(--ink)" : "var(--ink-4)", letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500, fontFamily: "var(--f-mono)" }}>
                     {name}
                   </div>
                 </button>
@@ -241,18 +243,20 @@ export default function MoodPage() {
             {/* Collapsible note field */}
             <div style={{ marginTop: 24 }}>
               <button
+                className="mood-note-toggle"
                 onClick={() => setNoteOpen(!noteOpen)}
                 style={{
-                  background: "none", border: "none", cursor: "pointer", padding: 0,
-                  fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)",
+                  background: "none", border: "none", cursor: "pointer", padding: "4px 0",
+                  fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-4)",
                   fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
+                  transition: "color 0.15s var(--easeOut)",
                 }}
               >
-                <span style={{ transform: noteOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 150ms", display: "inline-block" }}>▸</span>
+                <span style={{ transform: noteOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s var(--easeOut)", display: "inline-block" }}>▸</span>
                 Add a note
               </button>
               {noteOpen && (
-                <div style={{ marginTop: 10, padding: "16px 18px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)" }}>
+                <div style={{ marginTop: 10, padding: "14px 16px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)", transition: "border-color 0.15s var(--easeOut)" }}>
                   <textarea
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
@@ -281,23 +285,24 @@ export default function MoodPage() {
               {last30.slice(-35).map((cell, i) => (
                 <div
                   key={i}
+                  className="mood-heat-cell"
                   title={`${cell.date}: ${cell.score ? MOODS[cell.score - 1].name : "-"}`}
                   style={{
                     aspectRatio: "1/1",
-                    border: `1px solid ${cell.score ? "rgba(124,77,255,0.30)" : "var(--line)"}`,
-                    borderRadius: 5,
+                    border: `1px solid ${cell.score ? "rgba(124,77,255,0.25)" : "var(--line)"}`,
+                    borderRadius: 6,
                     background: "rgba(255,255,255,0.015)",
                     position: "relative",
-                    cursor: "pointer",
-                    transition: "transform 100ms",
-                    outline: cell.isToday ? "1px solid rgba(100,255,218,0.60)" : "none",
+                    cursor: "default",
+                    transition: "transform 0.15s var(--easeOut), border-color 0.15s var(--easeOut)",
+                    outline: cell.isToday ? "1.5px solid rgba(100,255,218,0.50)" : "none",
                     outlineOffset: 1,
                     ...( cell.score ? moodCellStyle(cell.score) : {} ),
                   }}
                 >
-                  <div style={{ position: "absolute", top: 3, left: 5, fontSize: 8.5, color: "var(--ink-3)", fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>{cell.dayNum}</div>
+                  <div style={{ position: "absolute", top: 3, left: 5, fontSize: 8.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>{cell.dayNum}</div>
                   {cell.score && (
-                    <div style={{ position: "absolute", bottom: 3, right: 4, fontSize: 11, lineHeight: 1, filter: "grayscale(40%)" }}>
+                    <div style={{ position: "absolute", bottom: 3, right: 4, fontSize: 11, lineHeight: 1, filter: "grayscale(35%)" }}>
                       {MOODS[cell.score - 1].emoji}
                     </div>
                   )}
@@ -322,17 +327,17 @@ export default function MoodPage() {
           {/* Stats */}
           <div className="cc-card" style={{ marginBottom: 14 }}>
             <div className="cc-card-head"><div className="title">Monthly stats</div><div className="tail">{monthNames[now.getMonth()]}</div></div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "14px 16px" }}>
               {[
                 { label: "Avg score", value: avgScore, unit: "/5", color: "var(--grad)" },
                 { label: "Streak",    value: streak,   unit: "d",   color: "var(--grad)" },
                 { label: "Entries",   value: scored.length, unit: "", color: undefined },
                 { label: "Best day",  value: entries.filter(e => e.score === 5).length, unit: "×5", color: undefined },
               ].map((stat) => (
-                <div key={stat.label} style={{ padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
-                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>{stat.label}</div>
-                  <div className={stat.color ? "grad-text" : undefined} style={{ fontSize: 30, fontWeight: 200, letterSpacing: "-0.03em", lineHeight: 1, marginTop: 4 }}>
-                    {stat.value}<span style={{ fontSize: 14, color: "var(--ink-3)", WebkitTextFillColor: "var(--ink-3)" }}>{stat.unit}</span>
+                <div key={stat.label} style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
+                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>{stat.label}</div>
+                  <div className={stat.color ? "grad-text" : undefined} style={{ fontSize: 28, fontWeight: 200, letterSpacing: "-0.03em", lineHeight: 1, marginTop: 6 }}>
+                    {stat.value}<span style={{ fontSize: 13, color: "var(--ink-4)", WebkitTextFillColor: "var(--ink-4)" }}>{stat.unit}</span>
                   </div>
                 </div>
               ))}
@@ -342,27 +347,36 @@ export default function MoodPage() {
           {/* Recent history */}
           <div className="cc-card">
             <div className="cc-card-head"><div className="title">Recent entries</div><div className="tail">last 14</div></div>
+            <div className="cc-card-body" style={{ padding: entries.length === 0 ? "16px" : 0 }}>
             {entries.length === 0 && (
-              <div style={{ padding: "16px 0", fontSize: 12, color: "var(--ink-4)", textAlign: "center" }}>Log your first mood above.</div>
+              <div style={{ fontSize: 12, color: "var(--ink-5)", textAlign: "center" }}>Log your first mood above.</div>
             )}
             {entries.slice(0, 14).map((entry, i, arr) => (
-              <div key={entry.date} style={{
+              <div key={entry.date} className="mood-history-row" style={{
                 display: "grid", gridTemplateColumns: "60px 32px 1fr auto", gap: 12, alignItems: "center",
                 padding: "10px 16px", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none", fontSize: 12.5,
+                transition: "background 0.15s var(--easeOut)",
               }}>
-                <div style={{ fontFamily: "var(--f-mono)", color: "var(--ink-3)", fontSize: 11, letterSpacing: "0.04em" }}>
+                <div style={{ fontFamily: "var(--f-mono)", color: "var(--ink-4)", fontSize: 11, letterSpacing: "0.04em" }}>
                   {entry.date.slice(5).replace("-","/")}
                 </div>
                 <div style={{ fontSize: 20, lineHeight: 1 }}>{MOODS[entry.score - 1].emoji}</div>
-                <div style={{ color: "var(--ink-2)", lineHeight: 1.4, fontSize: 12 }}>{entry.note || MOODS[entry.score - 1].name}</div>
-                <div style={{ fontFamily: "var(--f-mono)", fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.04em" }}>{entry.score}/5</div>
+                <div style={{ color: "var(--ink-2)", lineHeight: 1.4, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.note || MOODS[entry.score - 1].name}</div>
+                <div style={{ fontFamily: "var(--f-mono)", fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em" }}>{entry.score}/5</div>
               </div>
             ))}
+            </div>
           </div>
         </div>
       </div>
 
       <style>{`
+        .mood-scale-btn:hover { border-color: var(--line-hi) !important; background: rgba(255,255,255,0.03) !important; }
+        .mood-scale-btn:active { transform: scale(0.97) !important; }
+        .mood-scale-btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+        .mood-note-toggle:hover { color: var(--ink-2) !important; }
+        .mood-heat-cell:hover { transform: scale(1.08); border-color: var(--line-hi) !important; }
+        .mood-history-row:hover { background: rgba(255,255,255,0.02); }
         @media (max-width: 768px) {
           .mood-grid { grid-template-columns: 1fr !important; }
         }

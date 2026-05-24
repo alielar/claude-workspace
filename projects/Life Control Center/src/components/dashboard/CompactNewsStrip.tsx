@@ -58,11 +58,11 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
 
   if (generating || (stories.length === 0 && !attempted.current)) {
     return (
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="news-strip-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         {CATS.map(cat => (
-          <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, minWidth: 140 }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: cat.color, opacity: 0.4, flexShrink: 0 }} />
-            <div className="cc-skeleton" style={{ height: 12, borderRadius: 4, width: "80%" }} />
+          <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: cat.color, opacity: 0.35, flexShrink: 0 }} />
+            <div className="cc-skeleton" style={{ height: 12, borderRadius: 4, width: "85%" }} />
           </div>
         ))}
       </div>
@@ -71,7 +71,7 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
 
   if (stories.length === 0) {
     return (
-      <div style={{ fontSize: 12, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+      <div style={{ fontSize: 12, color: "var(--ink-5)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
         Your daily brief generates at 8 AM ·{" "}
         <Link href="/news" style={{ color: "var(--cyan)", textDecoration: "none" }}>See news →</Link>
       </div>
@@ -80,12 +80,19 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <div className="news-strip-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+      <div className="news-strip-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         {headlines.map(h => (
-          <Link key={h.id} href="/news" style={{ textDecoration: "none", display: "flex", alignItems: "flex-start", gap: 6, minWidth: 0 }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: h.color, boxShadow: `0 0 4px ${h.color}`, flexShrink: 0, marginTop: 4 }} />
+          <Link key={h.id} href="/news" className="news-strip-item" style={{
+            textDecoration: "none", display: "flex", alignItems: "flex-start", gap: 7, minWidth: 0,
+            padding: "6px 8px", borderRadius: 8, margin: "-6px -8px",
+            transition: "background 0.15s var(--easeOut)",
+          }}>
             <span style={{
-              fontSize: 12, color: "var(--ink-2)", lineHeight: 1.35, letterSpacing: "-0.005em",
+              width: 5, height: 5, borderRadius: "50%", background: h.color,
+              boxShadow: `0 0 6px ${h.color}40`, flexShrink: 0, marginTop: 5,
+            }} />
+            <span style={{
+              fontSize: 12, color: "var(--ink-2)", lineHeight: 1.4, letterSpacing: "-0.005em",
               overflow: "hidden", textOverflow: "ellipsis",
               display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
             }}>
@@ -95,6 +102,7 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
         ))}
       </div>
       <style>{`
+        .news-strip-item:hover { background: rgba(255,255,255,0.03); }
         @media (max-width: 768px) {
           .news-strip-grid { grid-template-columns: 1fr 1fr !important; }
         }

@@ -44,8 +44,8 @@ export function MoodQuickLog({ initialScore }: { initialScore: number | null }) 
   }, [score]);
 
   return (
-    <div className="cc-card" style={{ padding: "16px 20px", height: "100%" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <div className="cc-card" style={{ padding: "18px 20px", height: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{
           display: "flex", alignItems: "center", gap: 8,
           fontSize: 10.5, fontWeight: 500, letterSpacing: "0.18em",
@@ -64,19 +64,22 @@ export function MoodQuickLog({ initialScore }: { initialScore: number | null }) 
         {MOODS.map(({ score: s, emoji }) => (
           <button
             key={s}
+            className="mood-btn"
             onClick={() => !saving && save(s)}
+            disabled={saving}
+            aria-label={`Mood ${s} of 5`}
             style={{
               flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 28, lineHeight: 1, padding: "10px 0",
+              fontSize: 26, lineHeight: 1, padding: "10px 0",
               border: `1px solid ${score === s ? "rgba(124,77,255,0.40)" : "var(--line)"}`,
-              borderRadius: 10, cursor: "pointer",
+              borderRadius: 10, cursor: saving ? "wait" : "pointer",
               background: score === s
-                ? "linear-gradient(160deg, rgba(124,77,255,0.18), rgba(100,255,218,0.10))"
+                ? "linear-gradient(160deg, rgba(124,77,255,0.15), rgba(100,255,218,0.08))"
                 : "rgba(255,255,255,0.012)",
-              boxShadow: score === s ? "0 0 14px rgba(124,77,255,0.20)" : "none",
-              filter: score && score !== s ? "grayscale(60%) opacity(0.6)" : "none",
-              transform: score === s ? "scale(1.08)" : "scale(1)",
-              transition: "all 150ms var(--easeOut)",
+              boxShadow: score === s ? "0 0 14px rgba(124,77,255,0.18)" : "none",
+              filter: score && score !== s ? "grayscale(60%) opacity(0.55)" : "none",
+              transform: score === s ? "scale(1.06)" : "scale(1)",
+              transition: "all 0.18s var(--easeOut)",
             }}
           >
             {emoji}
@@ -84,10 +87,15 @@ export function MoodQuickLog({ initialScore }: { initialScore: number | null }) 
         ))}
       </div>
       {!score && (
-        <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 8, textAlign: "center" }}>
+        <div style={{ fontSize: 11, color: "var(--ink-5)", marginTop: 10, textAlign: "center", letterSpacing: "0.02em" }}>
           How are you feeling?
         </div>
       )}
+      <style>{`
+        .mood-btn:hover:not(:disabled) { border-color: var(--line-hi) !important; background: rgba(255,255,255,0.03) !important; }
+        .mood-btn:active:not(:disabled) { transform: scale(0.96) !important; }
+        .mood-btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      `}</style>
     </div>
   );
 }

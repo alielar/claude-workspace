@@ -183,26 +183,26 @@ export default function SleepPage() {
 
           {/* Log hero card */}
           <div className="cc-card" style={{
-            padding: "28px 30px", marginBottom: 14,
-            background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.10), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.08), transparent 60%), var(--bg-card)",
+            padding: "26px 28px", marginBottom: 14,
+            background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.08), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.06), transparent 60%), var(--bg-card)",
           }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "99px", background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)", display: "inline-block" }} />
+            <div style={{ fontSize: 10.5, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
+              <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)", display: "inline-block" }} />
               Log last night
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: 6 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: 8 }}>
               <div>
                 <div style={{
-                  fontSize: 80, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
+                  fontSize: 72, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
                   background: "linear-gradient(100deg, #64FFDA 0%, #7C4DFF 100%)",
                   WebkitBackgroundClip: "text", color: "transparent",
-                  filter: "drop-shadow(0 0 20px rgba(100,255,218,0.18))",
+                  filter: "drop-shadow(0 0 18px rgba(100,255,218,0.15))",
                 }}>
-                  {Math.floor(todayHours)}<span style={{ fontSize: 36 }}>h</span>
-                  {todayHours % 1 !== 0 && <span style={{ fontSize: 36 }}>{" "}{Math.round((todayHours % 1) * 60)}m</span>}
+                  {Math.floor(todayHours)}<span style={{ fontSize: 34 }}>h</span>
+                  {todayHours % 1 !== 0 && <span style={{ fontSize: 34 }}>{" "}{Math.round((todayHours % 1) * 60)}m</span>}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: "var(--ink-4)", marginTop: 8, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
                   vs {TARGET_HOURS}h target · {todayHours >= TARGET_HOURS ? "+" : ""}{fmtHours(Math.abs(todayHours - TARGET_HOURS))}
                 </div>
               </div>
@@ -226,8 +226,8 @@ export default function SleepPage() {
                 { label: "Bedtime", value: bedtime, set: setBedtime, accent: "var(--cyan)", sub: "tap to edit" },
                 { label: "Wake",    value: wake,    set: setWake,    accent: "var(--warn)", sub: "alarm time"  },
               ].map(({ label, value, set, accent, sub }) => (
-                <div key={label} style={{ padding: "14px 16px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)" }}>
-                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                <div key={label} className="sleep-time-input" style={{ padding: "14px 16px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)", transition: "border-color 0.15s var(--easeOut)" }}>
+                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--f-mono)" }}>
                     <span style={{ width: 5, height: 5, borderRadius: "99px", background: accent, display: "inline-block" }} />
                     {label}
                   </div>
@@ -235,18 +235,18 @@ export default function SleepPage() {
                     type="time"
                     value={value}
                     onChange={(e) => { set(e.target.value); setSaved(false); }}
-                    style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1, marginTop: 6, fontFamily: "var(--f-mono)", background: "transparent", border: 0, color: "var(--ink)", outline: "none", width: "100%" }}
+                    style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1, marginTop: 8, fontFamily: "var(--f-mono)", background: "transparent", border: 0, color: "var(--ink)", outline: "none", width: "100%" }}
                   />
-                  <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 4, letterSpacing: "0.04em" }}>{sub}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--ink-5)", marginTop: 6, letterSpacing: "0.04em", fontFamily: "var(--f-mono)" }}>{sub}</div>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginTop: 14, padding: 18, border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)" }}>
+            <div style={{ marginTop: 14, padding: "16px 18px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-                <span style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Quality</span>
-                <div style={{ fontSize: 24, fontWeight: 300, letterSpacing: "-0.02em", fontFamily: "var(--f-mono)" }}>
-                  {quality}<span style={{ color: "var(--ink-3)", fontSize: 14 }}> / 10</span>
+                <span style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Quality</span>
+                <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: "-0.02em", fontFamily: "var(--f-mono)" }}>
+                  {quality}<span style={{ color: "var(--ink-4)", fontSize: 13 }}> / 10</span>
                 </div>
               </div>
               <div style={{ position: "relative", paddingBottom: 22 }}>
@@ -265,15 +265,15 @@ export default function SleepPage() {
               </div>
             </div>
 
-            <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               {saved
-                ? <div style={{ fontSize: 11, color: "var(--pos)", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--f-mono)" }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "99px", background: "var(--pos)", boxShadow: "0 0 5px var(--pos)", display: "inline-block" }} />
+                ? <div style={{ fontSize: 10, color: "var(--pos)", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--f-mono)" }}>
+                    <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--pos)", boxShadow: "0 0 4px var(--pos)", display: "inline-block" }} />
                     SAVED
                   </div>
-                : <div style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>Unsaved changes</div>
+                : <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", letterSpacing: "0.06em" }}>Unsaved changes</div>
               }
-              <button className="cc-btn cc-btn-primary" onClick={saveEntry}>Save log</button>
+              <button className="cc-btn cc-btn-primary" onClick={saveEntry} style={{ letterSpacing: "0.04em" }}>Save log</button>
             </div>
           </div>
 
@@ -337,27 +337,27 @@ export default function SleepPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
           <div className="cc-card" style={{
-            ...(weekDebt > 0 ? { borderColor: "rgba(255,193,92,0.20)" } : {}),
+            ...(weekDebt > 0 ? { borderColor: "rgba(255,193,92,0.15)" } : {}),
           }}>
             <div className="cc-card-head">
               <div className="title">Sleep debt</div>
               <div className="tail">7-day</div>
             </div>
-            <div style={{ padding: "14px 16px" }}>
+            <div className="cc-card-body">
               <div style={{
-                fontSize: 36, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
+                fontSize: 34, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
                 fontFamily: "var(--f-mono)", color: weekDebt > 0 ? "var(--warn)" : "var(--pos)",
               }}>
                 {weekDebt > 0 ? "-" : "+"}{fmtHours(Math.abs(weekDebt))}
-                <span style={{ color: "var(--ink-3)", fontSize: 16 }}> hr</span>
+                <span style={{ color: "var(--ink-4)", fontSize: 15 }}> hr</span>
               </div>
-              <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 6, fontFamily: "var(--f-mono)" }}>
+              <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 8, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
                 vs {TARGET_HOURS * 7}h target this week
               </div>
               {weekDebt > 0 && (
-                <div style={{ marginTop: 14, padding: "12px 14px", border: "1px solid rgba(255,193,92,0.20)", borderRadius: 8, background: "rgba(255,193,92,0.04)" }}>
-                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--warn)", fontWeight: 600, marginBottom: 4 }}>Tip</div>
-                  <div style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5 }}>
+                <div style={{ marginTop: 14, padding: "10px 14px", border: "1px solid rgba(255,193,92,0.15)", borderRadius: 8, background: "rgba(255,193,92,0.03)" }}>
+                  <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--warn)", fontWeight: 600, marginBottom: 4, fontFamily: "var(--f-mono)" }}>Tip</div>
+                  <div style={{ fontSize: 12, color: "var(--ink-3)", lineHeight: 1.5 }}>
                     Consistent sleep schedule matters more than catching up on weekends.
                   </div>
                 </div>
@@ -369,19 +369,19 @@ export default function SleepPage() {
             <div className="cc-card-head">
               <div className="title">Quality · 30 days</div>
             </div>
-            <div style={{ padding: "14px 16px" }}>
+            <div className="cc-card-body">
               {qualAvg ? (
                 <>
                   <div style={{
-                    fontSize: 44, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
+                    fontSize: 40, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
                     background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
                   }}>
-                    {qualAvg}<span style={{ fontSize: 20, WebkitTextFillColor: "var(--ink-3)" }}> / 10</span>
+                    {qualAvg}<span style={{ fontSize: 18, WebkitTextFillColor: "var(--ink-4)" }}> / 10</span>
                   </div>
-                  <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 6, fontFamily: "var(--f-mono)" }}>average quality rating</div>
+                  <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 8, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>average quality rating</div>
                 </>
               ) : (
-                <div style={{ fontSize: 12, color: "var(--ink-4)" }}>Log your first night to see quality stats.</div>
+                <div style={{ fontSize: 12, color: "var(--ink-5)" }}>Log your first night to see quality stats.</div>
               )}
             </div>
           </div>
@@ -392,19 +392,21 @@ export default function SleepPage() {
                 <div className="title">Recent</div>
                 <div className="tail">last 7</div>
               </div>
-              <div style={{ padding: "0 16px 14px" }}>
+              <div className="cc-card-body" style={{ paddingTop: 0 }}>
                 {entries.slice(0, 7).map((e, i, arr) => (
-                  <div key={e.date} style={{
+                  <div key={e.date} className="sleep-history-row" style={{
                     display: "grid", gridTemplateColumns: "52px 1fr auto", gap: 10, alignItems: "center",
-                    padding: "9px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none",
+                    padding: "9px 4px", margin: "0 -4px", borderRadius: 6,
+                    borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none",
+                    transition: "background 0.15s var(--easeOut)",
                   }}>
-                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--ink-3)", letterSpacing: "0.04em" }}>
+                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--ink-4)", letterSpacing: "0.04em" }}>
                       {e.date.slice(5).replace("-","/")}
                     </div>
                     <div style={{ fontSize: 12.5, color: "var(--ink)", fontFamily: "var(--f-mono)" }}>
                       {fmtHours(e.hours)}
                     </div>
-                    <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+                    <div style={{ fontSize: 10.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
                       q{e.quality}
                     </div>
                   </div>
@@ -420,9 +422,15 @@ export default function SleepPage() {
           -webkit-appearance: none;
           width: 18px; height: 18px; border-radius: 99px;
           background: #0A0A14; border: 2px solid var(--cyan);
-          box-shadow: 0 0 12px rgba(100,255,218,0.50);
+          box-shadow: 0 0 10px rgba(100,255,218,0.40);
           cursor: pointer;
+          transition: box-shadow 0.15s var(--easeOut);
         }
+        input[type=range]::-webkit-slider-thumb:hover {
+          box-shadow: 0 0 16px rgba(100,255,218,0.60);
+        }
+        .sleep-time-input:focus-within { border-color: var(--line-hi) !important; }
+        .sleep-history-row:hover { background: rgba(255,255,255,0.02); }
         @media (max-width: 768px) {
           .sleep-grid { grid-template-columns: 1fr !important; }
         }

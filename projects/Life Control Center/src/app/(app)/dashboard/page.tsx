@@ -328,20 +328,20 @@ export default async function DashboardPage() {
   return (
     <div className="page-enter">
       {/* ── Row 1: Greeting + News Strip ─────────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-          <h2 style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.025em", margin: 0, lineHeight: 1.05 }}>
+      <div style={{ marginBottom: 22 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
+          <h2 style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.025em", margin: 0, lineHeight: 1.1 }}>
             {greeting(madridH)},{" "}
             <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontWeight: 400 }}>
               Ali
             </span>
-            <span style={{ color: "var(--ink-3)" }}>.</span>
+            <span style={{ color: "var(--ink-4)" }}>.</span>
           </h2>
-          <Link href="/news" style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", letterSpacing: "0.04em", flexShrink: 0 }}>
+          <Link href="/news" className="dash-news-link" style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", letterSpacing: "0.04em", flexShrink: 0 }}>
             See all news →
           </Link>
         </div>
-        <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginBottom: 14 }}>
+        <div style={{ fontSize: 12.5, color: "var(--ink-4)", marginBottom: 16, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
           {format(now, "EEEE, MMMM d, yyyy")}
         </div>
         <CompactNewsStrip stories={stories} />
@@ -353,25 +353,25 @@ export default async function DashboardPage() {
         {/* Streak card (checklist-based, with 7-day workout dots) */}
         <div className="cc-card" style={{
           padding: "20px 22px", display: "flex", flexDirection: "column", gap: 14,
-          background: `radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.13), transparent 60%),
-                       radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.08), transparent 60%),
+          background: `radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.10), transparent 60%),
+                       radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.06), transparent 60%),
                        var(--bg-card)`,
         }}>
           <div style={HTITLE}>
             <span style={{ ...DOT, background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)" }} />
             Streak
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
             <div className="tabular-nums" style={{
-              fontSize: 72, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.9,
+              fontSize: 68, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.9,
               background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
-              filter: "drop-shadow(0 0 18px rgba(124,77,255,0.18))",
+              filter: "drop-shadow(0 0 18px rgba(124,77,255,0.15))",
             }}>
               {streak}
             </div>
-            <span style={{ fontSize: 18, color: "var(--ink-3)", fontWeight: 300 }}>days</span>
+            <span style={{ fontSize: 16, color: "var(--ink-4)", fontWeight: 300, letterSpacing: "-0.01em" }}>days</span>
           </div>
-          <div style={{ fontSize: 11.5, color: "var(--ink-3)", lineHeight: 1.4 }}>
+          <div style={{ fontSize: 11.5, color: "var(--ink-4)", lineHeight: 1.45 }}>
             {streak === 0
               ? "Complete today's checklist to start your streak"
               : streak >= 7 ? "Keep the streak going!" : "Building the habit."}
@@ -379,18 +379,18 @@ export default async function DashboardPage() {
 
           {/* 7-day workout dots */}
           <div>
-            <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 6, fontFamily: "var(--f-mono)" }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-5)", marginBottom: 8, fontFamily: "var(--f-mono)" }}>
               Workouts · 7d
             </div>
             <div style={{ display: "flex", gap: 6 }}>
               {weekDays.map((d, i) => (
-                <div key={i} title={d.name ?? "Rest"} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                  <div style={{
+                <div key={i} title={d.name ?? "Rest"} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                  <div className="dash-heat-dot" style={{
                     width: 22, height: 22, borderRadius: 6,
-                    border: d.isToday && !d.name ? "1px dashed rgba(100,255,218,0.40)" : "1px solid transparent",
+                    border: d.isToday && !d.name ? "1px dashed rgba(100,255,218,0.35)" : "1px solid transparent",
                     ...heatDotStyle(d.name),
                   }} />
-                  <span style={{ fontSize: 8, color: d.isToday ? "var(--cyan)" : "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{d.label}</span>
+                  <span style={{ fontSize: 8, color: d.isToday ? "var(--cyan)" : "var(--ink-5)", fontFamily: "var(--f-mono)", fontWeight: d.isToday ? 600 : 400 }}>{d.label}</span>
                 </div>
               ))}
             </div>
@@ -401,13 +401,13 @@ export default async function DashboardPage() {
         <ChecklistCard items={checkItemsSerial} completedIds={completedIds} total={checkTotal} />
 
         {/* Next Workout (enriched) */}
-        <div className="cc-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div className="cc-card" style={{ padding: "18px 20px", display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={HTITLE}><span style={DOT} />Next Workout</div>
             {upcomingPlan && (
               <span style={{
                 fontSize: 9.5, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
-                color: upcomingPlan.dayLabel === "Today" ? "var(--cyan)" : "var(--ink-3)",
+                color: upcomingPlan.dayLabel === "Today" ? "var(--cyan)" : "var(--ink-4)",
                 fontFamily: "var(--f-mono)",
               }}>
                 {upcomingPlan.dayLabel}
@@ -418,7 +418,7 @@ export default async function DashboardPage() {
           {upcomingPlan ? (
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{
-                fontSize: 18, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.2,
+                fontSize: 17, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.25,
                 background: upcomingPlan.dayLabel === "Today" ? "var(--grad)" : "none",
                 WebkitBackgroundClip: upcomingPlan.dayLabel === "Today" ? "text" : undefined,
                 backgroundClip: upcomingPlan.dayLabel === "Today" ? "text" : undefined,
@@ -429,12 +429,12 @@ export default async function DashboardPage() {
 
               {/* Muscle tags */}
               {upcomingPlan.muscles.length > 0 && (
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 8 }}>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 10 }}>
                   {upcomingPlan.muscles.slice(0, 4).map(m => (
                     <span key={m} style={{
-                      fontSize: 9.5, padding: "2px 7px", borderRadius: 5,
-                      background: "rgba(124,77,255,0.10)", border: "1px solid rgba(124,77,255,0.20)",
-                      color: "var(--ink-2)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
+                      fontSize: 9.5, padding: "2px 8px", borderRadius: 5,
+                      background: "rgba(124,77,255,0.08)", border: "1px solid rgba(124,77,255,0.18)",
+                      color: "var(--ink-3)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
                     }}>
                       {MUSCLE_EMOJI[m] ?? "🏋️"} {m.replace("_", " ")}
                     </span>
@@ -444,10 +444,10 @@ export default async function DashboardPage() {
 
               {/* Exercise list */}
               {upcomingExercises.length > 0 && (
-                <div style={{ marginTop: 10, flex: 1 }}>
+                <div style={{ marginTop: 12, flex: 1 }}>
                   {upcomingExercises.slice(0, 5).map((ex, i) => (
                     <div key={i} style={{
-                      fontSize: 12, color: "var(--ink-2)", padding: "4px 0",
+                      fontSize: 12, color: "var(--ink-2)", padding: "5px 0",
                       borderBottom: i < Math.min(upcomingExercises.length, 5) - 1 ? "1px solid var(--line)" : "none",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                     }}>
@@ -455,7 +455,7 @@ export default async function DashboardPage() {
                       {(() => {
                         const lift = lastSessionLifts.find(l => l.name === ex.name);
                         return lift ? (
-                          <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", flexShrink: 0, marginLeft: 8 }}>
+                          <span style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", flexShrink: 0, marginLeft: 8 }}>
                             {lift.weight}kg × {lift.reps}
                           </span>
                         ) : null;
@@ -463,7 +463,7 @@ export default async function DashboardPage() {
                     </div>
                   ))}
                   {upcomingExercises.length > 5 && (
-                    <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 4, fontFamily: "var(--f-mono)" }}>
+                    <div style={{ fontSize: 10, color: "var(--ink-5)", marginTop: 6, fontFamily: "var(--f-mono)" }}>
                       +{upcomingExercises.length - 5} more
                     </div>
                   )}
@@ -472,8 +472,8 @@ export default async function DashboardPage() {
 
               {/* Start session button */}
               {upcomingPlan.dayLabel === "Today" && (
-                <Link href={`/workouts/session/new?planId=${upcomingPlan.id}`} style={{ textDecoration: "none", marginTop: 12 }}>
-                  <button className="cc-btn cc-btn-primary" style={{ width: "100%", padding: "10px 0", fontSize: 12 }}>
+                <Link href={`/workouts/session/new?planId=${upcomingPlan.id}`} style={{ textDecoration: "none", marginTop: 14 }}>
+                  <button className="cc-btn cc-btn-primary" style={{ width: "100%", padding: "10px 0", fontSize: 12, letterSpacing: "0.04em" }}>
                     Start session
                   </button>
                 </Link>
@@ -481,9 +481,9 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 4 }}>
+              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>
                 {plansWithDays.length === 0 ? (
-                  <Link href="/workouts" style={{ color: "var(--cyan)", textDecoration: "none" }}>
+                  <Link href="/workouts" className="dash-empty-link" style={{ color: "var(--cyan)", textDecoration: "none" }}>
                     Set up your first workout →
                   </Link>
                 ) : "All done this week!"}
@@ -501,30 +501,30 @@ export default async function DashboardPage() {
 
         {/* Sleep score */}
         <Link href="/sleep" style={{ textDecoration: "none", display: "block" }}>
-          <div className="cc-card cc-card-hover" style={{ padding: "16px 20px", height: "100%" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div className="cc-card cc-card-hover" style={{ padding: "18px 20px", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <div style={HTITLE}><span style={{ ...DOT, background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)" }} />Sleep</div>
             </div>
             {sleepData ? (
               <div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                   <div className="tabular-nums" style={{
-                    fontSize: 36, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
+                    fontSize: 34, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
                     background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
                   }}>
                     {fmtSleepHours(sleepData.hours)}
                   </div>
-                  <span style={{ fontSize: 12, color: sleepData.hours >= 8 ? "var(--pos)" : "var(--warn)", fontFamily: "var(--f-mono)" }}>
+                  <span style={{ fontSize: 11, color: sleepData.hours >= 8 ? "var(--pos)" : "var(--warn)", fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
                     {sleepData.hours >= 8 ? "on target" : `${fmtSleepHours(8 - sleepData.hours)} short`}
                   </span>
                 </div>
-                <div style={{ display: "flex", gap: 16, marginTop: 10, fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+                <div style={{ display: "flex", gap: 16, marginTop: 12, fontSize: 10.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
                   <span>{sleepData.bedtime} → {sleepData.wake}</span>
                   <span>q{sleepData.quality}/10</span>
                 </div>
               </div>
             ) : (
-              <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
+              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>
                 Log last night's sleep →
               </div>
             )}
@@ -533,10 +533,12 @@ export default async function DashboardPage() {
 
         {/* Reading */}
         <Link href={currentBook ? `/library/read/${currentBook.id}` : "/library"} style={{ display: "block", textDecoration: "none" }}>
-          <div className="cc-card cc-card-hover" style={{ padding: "16px 20px", height: "100%" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div className="cc-card cc-card-hover" style={{ padding: "18px 20px", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <div style={HTITLE}><span style={DOT} />Reading</div>
-              {currentBook && <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{readPct}%</span>}
+              {currentBook && (
+                <span style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{readPct}%</span>
+              )}
             </div>
             {currentBook ? (
               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -547,28 +549,28 @@ export default async function DashboardPage() {
                       <stop offset="100%" stopColor="#64FFDA" />
                     </linearGradient>
                   </defs>
-                  <circle fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" cx="40" cy="40" r="32" />
-                  <circle fill="none" stroke="url(#db-ring)" strokeWidth="6" strokeLinecap="round"
+                  <circle fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="5" cx="40" cy="40" r="32" />
+                  <circle fill="none" stroke="url(#db-ring)" strokeWidth="5" strokeLinecap="round"
                     cx="40" cy="40" r="32"
                     strokeDasharray={ringC}
                     strokeDashoffset={ringOffset}
                     transform="rotate(-90 40 40)"
-                    style={{ filter: "drop-shadow(0 0 5px rgba(124,77,255,0.40))" }}
+                    style={{ filter: "drop-shadow(0 0 6px rgba(124,77,255,0.35))", transition: "stroke-dashoffset 0.4s var(--easeOut)" }}
                   />
                 </svg>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink)" }}>
                     {currentBook.title}
                   </div>
-                  <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>{currentBook.author}</div>
-                  <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginTop: 3 }}>
+                  <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 3 }}>{currentBook.author}</div>
+                  <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", marginTop: 4, letterSpacing: "0.02em" }}>
                     p.{currentPage} / {currentBook.totalPages ?? "?"}
                   </div>
                 </div>
               </div>
             ) : (
-              <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
-                <span>Add a book to start reading →</span>
+              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>
+                Add a book to start reading →
               </div>
             )}
           </div>
@@ -576,6 +578,12 @@ export default async function DashboardPage() {
       </div>
 
       <style>{`
+        .dash-news-link { transition: opacity 0.15s var(--easeOut); }
+        .dash-news-link:hover { opacity: 0.8; }
+        .dash-empty-link { transition: opacity 0.15s var(--easeOut); }
+        .dash-empty-link:hover { opacity: 0.8; }
+        .dash-heat-dot { transition: transform 0.15s var(--easeOut); }
+        .dash-heat-dot:hover { transform: scale(1.15); }
         @media (max-width: 900px) {
           .dash-row2 { grid-template-columns: 1fr !important; }
           .dash-row3 { grid-template-columns: 1fr !important; }
