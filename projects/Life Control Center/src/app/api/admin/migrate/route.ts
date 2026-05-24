@@ -192,13 +192,12 @@ export async function POST() {
     // ── Workouts v3: copy template names to gym_sessions before cleanup ─────
     `UPDATE gym_sessions SET original_template_name = workout_name WHERE original_template_name IS NULL`,
 
-    // ── Workouts v3: disconnect historical sessions from templates ───────────
-    `UPDATE gym_sessions SET plan_id = NULL, program_id = NULL WHERE plan_id IS NOT NULL`,
-
-    // ── Workouts v3: delete imported templates (user creates from scratch) ───
-    `DELETE FROM plan_exercises`,
-    `DELETE FROM workout_plans`,
-    `DELETE FROM programs`,
+    // ── Workouts v3: one-time cleanup (already executed, kept as comment) ────
+    // These ran once to clear imported templates. DO NOT re-run — they wipe user data.
+    // `UPDATE gym_sessions SET plan_id = NULL, program_id = NULL WHERE plan_id IS NOT NULL`,
+    // `DELETE FROM plan_exercises`,
+    // `DELETE FROM workout_plans`,
+    // `DELETE FROM programs`,
 
     // ── Workout AI Coach (weekly card) ───────────────────────────────────────
     `CREATE TABLE IF NOT EXISTS workout_coach (

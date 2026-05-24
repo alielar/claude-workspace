@@ -11,7 +11,7 @@
  * The year bar shows when each book was actually started/finished.
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import UploadButton from "@/components/library/UploadButton";
 
@@ -172,14 +172,6 @@ export default function LibraryPage() {
   const currentMonth = now.getMonth(); // 0-indexed
   const finished     = books.filter((b) => b.status === "finished").length;
   const reading      = books.filter((b) => b.status === "reading").length;
-
-  // Run migration on first load to ensure new columns exist
-  const migratedRef = useRef(false);
-  useEffect(() => {
-    if (migratedRef.current) return;
-    migratedRef.current = true;
-    fetch("/api/admin/migrate", { method: "POST" }).catch(() => {});
-  }, []);
 
   const loadBooks = useCallback(async () => {
     const res = await fetch("/api/library/books").catch(() => null);
