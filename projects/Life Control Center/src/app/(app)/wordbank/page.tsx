@@ -2,7 +2,7 @@
 
 /**
  * /wordbank — Vocabulary with spaced repetition. V2 Ambient Futurism design.
- * Layout: 1fr / 360px — left: flashcard or table; right: stats sidebar + session queue.
+ * Layout: 1fr / 360px — left: flashcard or table; right: stats sidebar.
  * Tabs: Review (N due) | All Words (N total)
  */
 
@@ -298,7 +298,7 @@ export default function WordbankPage() {
       </div>
 
       {/* 1fr / 360px layout */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14 }}>
+      <div className="wb-grid" style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14 }}>
 
         {/* ── LEFT ─────────────────────────────────────────────────── */}
         <div>
@@ -415,7 +415,7 @@ export default function WordbankPage() {
           )}
         </div>
 
-        {/* ── RIGHT: Stats + Queue ──────────────────────────────────── */}
+        {/* ── RIGHT: Stats + Suggestions ───────────────────────────── */}
         <div>
           <div className="cc-card" style={{ marginBottom: 14 }}>
             <div className="cc-card-head"><div className="title">Stats</div><div className="tail">SRS health</div></div>
@@ -526,38 +526,6 @@ export default function WordbankPage() {
             ))}
           </div>
 
-          {/* Session queue */}
-          <div className="cc-card">
-            <div className="cc-card-head"><div className="title">Session queue</div><div className="tail">next up</div></div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {dueWords.slice(0, 8).map((w, i) => (
-                <div key={w.id} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "8px 0", borderBottom: i < Math.min(dueWords.length, 8) - 1 ? "1px solid var(--line)" : "none", fontSize: 12.5,
-                  background: i === cardIndex ? "linear-gradient(90deg, rgba(124,77,255,0.10), transparent)" : "transparent",
-                  margin: i === cardIndex ? "0 -8px" : "0",
-                  borderRadius: i === cardIndex ? 6 : 0,
-                }}>
-                  <span>
-                    <span style={{ color: i === cardIndex ? "var(--violet)" : "var(--ink)", fontWeight: i === cardIndex ? 500 : 400 }}>{w.word}</span>
-                    <span style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginLeft: 6 }}>{LANG_LABELS[w.language]}</span>
-                  </span>
-                  <span style={{ fontSize: 10.5, color: i === cardIndex ? "var(--cyan)" : "var(--ink-3)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
-                    {i < cardIndex ? "done" : i === cardIndex ? "▸ NOW" : `+${i - cardIndex}`}
-                  </span>
-                </div>
-              ))}
-              {dueWords.length > 8 && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, fontSize: 11, color: "var(--ink-4)" }}>
-                  <span>+{dueWords.length - 8} more queued</span>
-                  <span style={{ fontSize: 10.5, fontFamily: "var(--f-mono)" }}>end</span>
-                </div>
-              )}
-              {dueWords.length === 0 && (
-                <div style={{ padding: "12px 0", fontSize: 12, color: "var(--ink-4)" }}>No words due. Check back tomorrow.</div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -593,7 +561,10 @@ export default function WordbankPage() {
         </div>
       )}
 
-      <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+        @media (max-width: 768px) { .wb-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
     </div>
   );
 }

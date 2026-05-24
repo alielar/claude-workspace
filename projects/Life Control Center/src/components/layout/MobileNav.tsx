@@ -11,7 +11,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreHorizontal } from "lucide-react";
+import { X, MoreHorizontal, Settings } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import { NAV_PRIMARY, NAV_MORE } from "@/lib/navigation";
 
@@ -114,6 +114,29 @@ export function MobileNav() {
                     </Link>
                   );
                 })}
+
+                {/* Settings */}
+                <Link
+                  href="/settings"
+                  onClick={() => setMoreOpen(false)}
+                  className="flex flex-col items-center gap-2 py-3 rounded-2xl transition-colors"
+                  style={{
+                    background: pathname === "/settings" ? "#7C4DFF18" : "var(--bg-card)",
+                    border: `1px solid ${pathname === "/settings" ? "#7C4DFF40" : "var(--border)"}`,
+                  }}
+                >
+                  <Settings
+                    size={22}
+                    strokeWidth={1.8}
+                    style={{ color: pathname === "/settings" ? "#7C4DFF" : "var(--ink-2)" }}
+                  />
+                  <span
+                    className="text-[11px] font-medium"
+                    style={{ color: pathname === "/settings" ? "#7C4DFF" : "var(--ink-2)" }}
+                  >
+                    Settings
+                  </span>
+                </Link>
               </div>
             </motion.div>
           </>

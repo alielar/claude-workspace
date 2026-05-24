@@ -85,7 +85,23 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
   onDoneRef.current = onDone;
 
   useEffect(() => {
-    if (remaining <= 0) { onDoneRef.current(); return; }
+    if (remaining <= 0) {
+      // Vibrate + audio ping on timer end
+      try { navigator?.vibrate?.([200, 100, 200]); } catch {}
+      try {
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        gain.gain.value = 0.3;
+        osc.start();
+        setTimeout(() => { osc.stop(); ctx.close(); }, 200);
+      } catch {}
+      onDoneRef.current();
+      return;
+    }
     const t = setTimeout(() => setRemaining((r) => r - 1), 1000);
     return () => clearTimeout(t);
   }, [remaining]);
@@ -507,9 +523,10 @@ interface ExerciseBlockProps {
     setType: string; weightKg: number | null; reps: number | null; durationSeconds?: number | null;
   }, restS: number) => void;
   onUndoSet: (setId: number) => void;
+  id?: string;
 }
 
-function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoSet }: ExerciseBlockProps) {
+function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoSet, id }: ExerciseBlockProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const currentPr = prMap[exercise.exerciseId] ?? 0;
@@ -519,7 +536,7 @@ function ExerciseBlock({ exercise, loggedSets, prefill, prMap, onLogSet, onUndoS
   const allDone = doneSets >= totalSets && doneSets > 0;
 
   return (
-    <div className="cc-card" style={{ marginBottom: 14 }}>
+    <div id={id} className="cc-card" style={{ marginBottom: 14, scrollMarginTop: 140 }}>
       {/* Exercise header — clickable to collapse */}
       <button
         onClick={() => setCollapsed((c) => !c)}
@@ -785,6 +802,14 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
   const [finishing, setFinishing] = useState(false);
   const [abandonConfirm, setAbandonConfirm] = useState(false);
   const [discardConfirm, setDiscardConfirm] = useState(false);
+  const [logError, setLogError] = useState<string | null>(null);
+
+  // Auto-clear log error after 3 seconds
+  useEffect(() => {
+    if (!logError) return;
+    const t = setTimeout(() => setLogError(null), 3000);
+    return () => clearTimeout(t);
+  }, [logError]);
 
   // Elapsed timer
   const startTimeRef = useRef<number>(Date.now());
@@ -826,7 +851,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ exerciseId, exerciseName, setNumber, ...setData }),
     });
-    if (!res.ok) return; // silently skip — don't optimistically add if save failed
+    if (!res.ok) { setLogError("Failed to save set — tap to retry"); return; }
     const json = await res.json();
     if (json.setId) {
       setLoggedSets((prev) => [...prev, {
@@ -904,7 +929,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
         background: "var(--bg)", padding: "16px 24px 0",
         borderBottom: "1px solid var(--line)",
       }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+        <div className="active-session-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
               {data.session.workoutName}<span className="grad-text">.</span>
@@ -964,6 +989,53 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
         </div>
       </div>
 
+      {/* ── Log error toast ─────────────────────────────────────────────── */}
+      {logError && (
+        <div style={{
+          position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 100,
+          padding: "10px 20px", borderRadius: 10,
+          background: "rgba(255,100,100,0.15)", border: "1px solid var(--neg)",
+          color: "var(--neg)", fontSize: 12, fontWeight: 600,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+        }}>
+          {logError}
+        </div>
+      )}
+
+      {/* ── Exercise jump nav strip ──────────────────────────────────────── */}
+      {data.exercises.length > 3 && (
+        <div style={{
+          position: "sticky", top: 120, zIndex: 40,
+          padding: "8px 24px", background: "var(--bg)",
+          display: "flex", gap: 6, overflowX: "auto",
+          borderBottom: "1px solid var(--line)",
+        }}>
+          {data.exercises.map((ex) => {
+            const exDone = loggedSets.filter(s => s.exerciseId === ex.exerciseId).length;
+            const exTotal = ex.setConfig.length;
+            const isDone = exDone >= exTotal;
+            return (
+              <button
+                key={ex.exerciseId}
+                onClick={() => {
+                  document.getElementById(`ex-${ex.exerciseId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                style={{
+                  flexShrink: 0, padding: "4px 10px", borderRadius: 6,
+                  fontSize: 11, fontFamily: "var(--f-mono)", letterSpacing: "0.02em",
+                  border: `1px solid ${isDone ? "rgba(111,212,154,0.30)" : "var(--line)"}`,
+                  background: isDone ? "rgba(111,212,154,0.08)" : "rgba(255,255,255,0.04)",
+                  color: isDone ? "var(--pos)" : "var(--ink-2)",
+                  cursor: "pointer", whiteSpace: "nowrap",
+                }}
+              >
+                {isDone ? "✓ " : ""}{ex.name.length > 12 ? ex.name.slice(0, 12) + "…" : ex.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* ── Scrollable content ───────────────────────────────────────────── */}
       <div style={{ padding: "20px 24px 100px" }}>
 
@@ -971,6 +1043,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       {data.exercises.map((ex) => (
         <ExerciseBlock
           key={ex.exerciseId}
+          id={`ex-${ex.exerciseId}`}
           exercise={ex}
           loggedSets={loggedSets.filter((s) => s.exerciseId === ex.exerciseId)}
           prefill={data.prefillMap[ex.exerciseId] ?? []}
@@ -1062,6 +1135,13 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
           onClose={() => { setShowSummary(false); router.push("/workouts"); }}
         />
       )}
+
+      <style>{`
+        @media (max-width: 480px) {
+          .active-session-header { flex-wrap: wrap; gap: 8px; }
+          .active-session-header > div:last-child { width: 100%; justify-content: flex-end; }
+        }
+      `}</style>
     </div>
   );
 }

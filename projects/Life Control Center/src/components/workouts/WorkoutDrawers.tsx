@@ -3,14 +3,12 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 
-const AnalyticsPanel = lazy(() => import("./AnalyticsPanel"));
 const WorkoutsPanel = lazy(() => import("./WorkoutsPanel"));
 const ExercisesPanel = lazy(() => import("./ExercisesPanel"));
 
-type DrawerType = "analytics" | "workouts" | "exercises" | null;
+type DrawerType = "workouts" | "exercises" | null;
 
 const DRAWER_TITLES: Record<Exclude<DrawerType, null>, string> = {
-  analytics: "Analytics",
   workouts: "Workouts",
   exercises: "Exercises",
 };
@@ -50,7 +48,6 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
   }, [router]);
 
   const items: { key: Exclude<DrawerType, null>; label: string; desc: string }[] = [
-    { key: "analytics", label: "Analytics", desc: "Volume, trends, PRs" },
     { key: "workouts", label: "Workouts", desc: "Create and edit workouts" },
     { key: "exercises", label: "Exercises", desc: "Your exercise library" },
   ];
@@ -142,7 +139,6 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
                 Loading {DRAWER_TITLES[open]}...
               </div>
             }>
-              {mounted.has("analytics") && <div style={{ display: open === "analytics" ? "block" : "none" }}><AnalyticsPanel /></div>}
               {mounted.has("workouts") && <div style={{ display: open === "workouts" ? "block" : "none" }}><WorkoutsPanel /></div>}
               {mounted.has("exercises") && <div style={{ display: open === "exercises" ? "block" : "none" }}><ExercisesPanel /></div>}
             </Suspense>

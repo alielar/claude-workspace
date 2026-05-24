@@ -592,6 +592,41 @@ export const weeklyReviews = sqliteTable("weekly_reviews", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+// ─── Mood ─────────────────────────────────────────────────────────────────────
+
+/** Daily mood entries — one per user per day */
+export const moodEntries = sqliteTable("mood_entries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(), // "YYYY-MM-DD" Europe/Madrid
+  score: integer("score").notNull(), // 1–5
+  note: text("note").notNull().default(""),
+  time: text("time").notNull().default(""), // "HH:MM"
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+// ─── Sleep ────────────────────────────────────────────────────────────────────
+
+/** Daily sleep entries — one per user per day */
+export const sleepEntries = sqliteTable("sleep_entries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(), // "YYYY-MM-DD" Europe/Madrid
+  bedtime: text("bedtime").notNull(), // "HH:MM"
+  wake: text("wake").notNull(), // "HH:MM"
+  hours: real("hours").notNull(), // decimal hours
+  quality: integer("quality").notNull(), // 1–10
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
 /** Weekly AI coach card for the workouts module — one per user per week */
 export const workoutCoach = sqliteTable("workout_coach", {
   id: integer("id").primaryKey({ autoIncrement: true }),

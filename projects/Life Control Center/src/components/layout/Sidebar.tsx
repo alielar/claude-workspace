@@ -9,7 +9,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import { NAV } from "@/lib/navigation";
 
@@ -37,20 +36,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Settings pinned to bottom */}
-      <div className="cc-sidebar-foot">
-        <Link
-          href="/settings"
-          className={`cc-sidebar-link${pathname === "/settings" ? " active" : ""}`}
-          aria-label="Settings"
-        >
-          <span className="cc-sidebar-icon">
-            <Settings size={18} strokeWidth={1.6} />
-          </span>
-          <span className="cc-sidebar-label">Settings</span>
-        </Link>
-      </div>
     </aside>
   );
 }

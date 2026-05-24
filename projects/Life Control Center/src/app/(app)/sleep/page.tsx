@@ -3,22 +3,26 @@
 /**
  * /sleep — Manual sleep tracker.
  * Layout: 1fr / 300px — left: log hero + time pickers + quality + weekly bars; right: stats + debt.
- * Persisted in localStorage until a backend is added.
+ * Persisted in database via /api/sleep.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type SleepEntry = {
-  date: string;    // YYYY-MM-DD (wake-up day)
-  bedtime: string; // "HH:MM"
-  wake: string;    // "HH:MM"
-  hours: number;   // decimal hours
-  quality: number; // 1–10
+  date: string;
+  bedtime: string;
+  wake: string;
+  hours: number;
+  quality: number;
 };
 
 const TARGET_HOURS = 8;
+
+function todayMadrid(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+}
 
 function calcHours(bed: string, wake: string): number {
   const [bh, bm] = bed.split(":").map(Number);
@@ -42,31 +46,76 @@ export default function SleepPage() {
   const [wake,    setWake]    = useState("07:00");
   const [quality, setQuality] = useState(7);
   const [saved,   setSaved]   = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const now     = new Date();
-  const today   = now.toISOString().split("T")[0];
+  const today   = todayMadrid();
   const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  // Load from localStorage
-  useEffect(() => {
+  // Migrate localStorage → API (one-time)
+  const migrateLocalStorage = useCallback(async () => {
     try {
       const raw = localStorage.getItem("cc_sleep_entries");
-      if (raw) {
-        const parsed: SleepEntry[] = JSON.parse(raw);
-        setEntries(parsed);
-        const e = parsed.find((e) => e.date === today);
-        if (e) { setBedtime(e.bedtime); setWake(e.wake); setQuality(e.quality); setSaved(true); }
+      if (!raw) return;
+      const parsed: SleepEntry[] = JSON.parse(raw);
+      if (parsed.length === 0) return;
+      for (const entry of parsed) {
+        await fetch("/api/sleep", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(entry),
+        });
       }
+      localStorage.removeItem("cc_sleep_entries");
     } catch { /* ignore */ }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  function saveEntry() {
+  // Load entries from API
+  const loadEntries = useCallback(async () => {
+    try {
+      const res = await fetch("/api/sleep");
+      if (!res.ok) return;
+      const rows = await res.json();
+      const mapped: SleepEntry[] = rows.map((r: Record<string, unknown>) => ({
+        date: r.date as string,
+        bedtime: r.bedtime as string,
+        wake: r.wake as string,
+        hours: r.hours as number,
+        quality: r.quality as number,
+      }));
+      setEntries(mapped);
+      const e = mapped.find((e) => e.date === today);
+      if (e) { setBedtime(e.bedtime); setWake(e.wake); setQuality(e.quality); setSaved(true); }
+    } catch { /* ignore */ }
+    setLoading(false);
+  }, [today]);
+
+  useEffect(() => {
+    (async () => {
+      await migrateLocalStorage();
+      await loadEntries();
+    })();
+  }, [migrateLocalStorage, loadEntries]);
+
+  async function saveEntry() {
     const hours = calcHours(bedtime, wake);
     const entry: SleepEntry = { date: today, bedtime, wake, hours, quality };
+    const prevEntries = entries;
     const updated = [...entries.filter((e) => e.date !== today), entry].sort((a, b) => b.date.localeCompare(a.date));
     setEntries(updated);
-    localStorage.setItem("cc_sleep_entries", JSON.stringify(updated));
     setSaved(true);
+
+    try {
+      const res = await fetch("/api/sleep", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setEntries(prevEntries);
+      setSaved(false);
+    }
   }
 
   // Last 7 days for bar chart
@@ -92,10 +141,22 @@ export default function SleepPage() {
   const todayHours  = calcHours(bedtime, wake);
   const maxH = 10;
 
-  // Quality average from entries
   const qualAvg = entries.length > 0
     ? (entries.slice(0, 30).reduce((s, e) => s + e.quality, 0) / Math.min(entries.length, 30)).toFixed(1)
     : null;
+
+  if (loading) {
+    return (
+      <div style={{ padding: "0 0 40px" }}>
+        <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+          <div><h1>Sleep<span className="grad-text">.</span></h1><div className="sub">Loading...</div></div>
+        </div>
+        <div className="cc-card" style={{ padding: 32 }}>
+          <div className="cc-skeleton" style={{ height: 300, borderRadius: 12 }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "0 0 40px" }}>
@@ -115,7 +176,7 @@ export default function SleepPage() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 14 }}>
+      <div className="sleep-grid" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 14 }}>
 
         {/* ── LEFT ──────────────────────────────────────────────────────── */}
         <div>
@@ -125,13 +186,11 @@ export default function SleepPage() {
             padding: "28px 30px", marginBottom: 14,
             background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.10), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.08), transparent 60%), var(--bg-card)",
           }}>
-            {/* Label */}
             <div style={{ fontSize: 11, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
               <span style={{ width: 6, height: 6, borderRadius: "99px", background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)", display: "inline-block" }} />
               Log last night
             </div>
 
-            {/* Big hours display */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: 6 }}>
               <div>
                 <div style={{
@@ -162,7 +221,6 @@ export default function SleepPage() {
               </div>
             </div>
 
-            {/* Time pickers */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 22, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
               {[
                 { label: "Bedtime", value: bedtime, set: setBedtime, accent: "var(--cyan)", sub: "tap to edit" },
@@ -184,7 +242,6 @@ export default function SleepPage() {
               ))}
             </div>
 
-            {/* Quality slider */}
             <div style={{ marginTop: 14, padding: 18, border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
                 <span style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Quality</span>
@@ -208,7 +265,6 @@ export default function SleepPage() {
               </div>
             </div>
 
-            {/* Save */}
             <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               {saved
                 ? <div style={{ fontSize: 11, color: "var(--pos)", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--f-mono)" }}>
@@ -229,7 +285,6 @@ export default function SleepPage() {
             </div>
             <div style={{ padding: "24px 18px 18px" }}>
               <div style={{ height: 180, display: "flex", alignItems: "flex-end", gap: 12, position: "relative", borderBottom: "1px solid var(--line)" }}>
-                {/* 8h target line */}
                 <div style={{
                   position: "absolute", left: 0, right: 0, bottom: `${(TARGET_HOURS / maxH) * 100}%`,
                   borderTop: "1px dashed rgba(100,255,218,0.35)",
@@ -266,7 +321,6 @@ export default function SleepPage() {
                 })}
               </div>
 
-              {/* Day labels */}
               <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
                 {last7.map((day) => (
                   <div key={day.date} style={{ flex: 1, textAlign: "center" }}>
@@ -282,7 +336,6 @@ export default function SleepPage() {
         {/* ── RIGHT ─────────────────────────────────────────────────────── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-          {/* Sleep debt card */}
           <div className="cc-card" style={{
             ...(weekDebt > 0 ? { borderColor: "rgba(255,193,92,0.20)" } : {}),
           }}>
@@ -312,7 +365,6 @@ export default function SleepPage() {
             </div>
           </div>
 
-          {/* Quality summary */}
           <div className="cc-card">
             <div className="cc-card-head">
               <div className="title">Quality · 30 days</div>
@@ -334,7 +386,6 @@ export default function SleepPage() {
             </div>
           </div>
 
-          {/* Recent entries */}
           {entries.length > 0 && (
             <div className="cc-card">
               <div className="cc-card-head">
@@ -364,7 +415,6 @@ export default function SleepPage() {
         </div>
       </div>
 
-      {/* Range slider thumb style */}
       <style>{`
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
@@ -373,7 +423,9 @@ export default function SleepPage() {
           box-shadow: 0 0 12px rgba(100,255,218,0.50);
           cursor: pointer;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+          .sleep-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );

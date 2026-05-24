@@ -213,6 +213,31 @@ export async function POST() {
     // Replaces the old monthly-target system for the year progress bar.
     `ALTER TABLE books ADD COLUMN started_at INTEGER`,
     `ALTER TABLE books ADD COLUMN finished_at INTEGER`,
+
+    // ── Mood entries ────────────────────────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS mood_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      note TEXT NOT NULL DEFAULT '',
+      time TEXT NOT NULL DEFAULT '',
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_mood_entry ON mood_entries(user_id, date)`,
+
+    // ── Sleep entries ───────────────────────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS sleep_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      bedtime TEXT NOT NULL,
+      wake TEXT NOT NULL,
+      hours REAL NOT NULL,
+      quality INTEGER NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_sleep_entry ON sleep_entries(user_id, date)`,
   ];
 
   const results: string[] = [];

@@ -1,17 +1,11 @@
 /**
- * /dashboard — Morning hub. V2 Ambient Futurism.
+ * /dashboard — Life Control Center hub. V3 one-viewport layout.
  *
- * Time-aware layout (Europe/Madrid):
- *   Morning   05-12: Streak hero (large) | News top 3 · Checklist below
- *   Afternoon 12-18: Checklist primary | Streak + News collapsed
- *   Evening   18-00: Checklist primary | Streak smaller | Reading
- *   Night     00-05: Minimal — streak + reading + tomorrow preview
+ * Row 1: Greeting + compact 4-headline news strip
+ * Row 2: Global streak (checklist-based) | Checklist | Next Workout (enriched)
+ * Row 3: Mood quick-log + Sleep score | Reading
  *
- * 5 data-wired cards: Streak hero, News brief top 3, Checklist (interactive),
- * Compact 7-day heatmap, Reading current book.
- *
- * Force dynamic: page queries live DB (including checklist schema that may
- * change after migrations), so we can't prerender at build time.
+ * All time periods use the same layout — simpler, denser, everything visible.
  */
 
 export const dynamic = "force-dynamic";
@@ -19,104 +13,93 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
-  gymSessions, programs, workoutPlans,
+  gymSessions, programs, workoutPlans, planExercises, exerciseDb,
   newsBriefs, books, readingProgress,
   checklistItems, checklistCompletions,
+  moodEntries, sleepEntries, gymSets,
 } from "@/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import Link from "next/link";
-import { format, subDays, startOfWeek } from "date-fns";
+import { format, subDays } from "date-fns";
 import { ChecklistCard } from "@/components/dashboard/ChecklistCard";
-import { DashboardNewsGrid } from "@/components/dashboard/DashboardNewsGrid";
+import { CompactNewsStrip } from "@/components/dashboard/CompactNewsStrip";
+import { MoodQuickLog } from "@/components/dashboard/MoodQuickLog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type Period = "morning" | "afternoon" | "evening" | "night";
 
 type Story = {
   headline: string;
   summary?: string;
   category: string;
   source?: string;
-  keyPoints?: string[];
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Current hour in Europe/Madrid (handles DST automatically) */
 function madridHour(): number {
   const s = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Madrid",
-    hour: "numeric",
-    hour12: false,
+    timeZone: "Europe/Madrid", hour: "numeric", hour12: false,
   }).format(new Date());
   return parseInt(s, 10);
 }
 
-function getPeriod(hour: number): Period {
-  if (hour >= 5  && hour < 12) return "morning";
-  if (hour >= 12 && hour < 18) return "afternoon";
-  if (hour >= 18)               return "evening";
-  return "night";
-}
-
-function greeting(period: Period): string {
-  if (period === "morning")   return "Good morning";
-  if (period === "afternoon") return "Good afternoon";
-  if (period === "evening")   return "Good evening";
+function greeting(h: number): string {
+  if (h >= 5 && h < 12) return "Good morning";
+  if (h >= 12 && h < 18) return "Good afternoon";
+  if (h >= 18) return "Good evening";
   return "Late night";
 }
 
-/** Build boolean activity array for last N days (for sparkline) */
-function activityDays(sessions: { date: string }[], days: number, now: Date): boolean[] {
-  const dateSet = new Set(sessions.map(s => s.date));
-  return Array.from({ length: days }, (_, i) => {
-    const d = format(subDays(now, days - 1 - i), "yyyy-MM-dd");
-    return dateSet.has(d);
-  });
-}
+/** Checklist-based streak: a day counts if ≥80% items completed */
+function calcChecklistStreak(
+  completions: { date: string; itemId: number }[],
+  totalItems: number,
+  today: string
+): number {
+  if (totalItems === 0) return 0;
+  const threshold = Math.ceil(totalItems * 0.8);
 
-/** SVG sparkline paths from boolean activity array */
-function sparkline(activity: boolean[], W = 220, H = 64): { line: string; area: string; lastY: number } {
-  const n = activity.length;
-  const pts = activity.map((on, i) => ({
-    x: (i / Math.max(n - 1, 1)) * W,
-    y: on ? 8 + (1 - i / n) * 16 : 44 + (i % 3) * 3,
-  }));
-  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  return { line: d, area: d + ` L${W},${H} L0,${H} Z`, lastY: pts.at(-1)?.y ?? H / 2 };
-}
-
-/** Workout streak from sorted desc sessions */
-function calcStreak(sessions: { date: string }[], today: string): number {
-  const days = [...new Set(sessions.map(s => s.date))].sort().reverse();
-  if (days.length === 0) return 0;
-  let check = today;
-  // If today not logged, allow starting from yesterday
-  if (!days.includes(check)) check = format(subDays(new Date(today + "T12:00:00"), 1), "yyyy-MM-dd");
-  let count = 0;
-  for (const d of days) {
-    if (d === check) {
-      count++;
-      check = format(subDays(new Date(check + "T12:00:00"), 1), "yyyy-MM-dd");
-    } else if (d < check) break;
+  // Count completions per day
+  const byDate = new Map<string, number>();
+  for (const c of completions) {
+    byDate.set(c.date, (byDate.get(c.date) ?? 0) + 1);
   }
-  return count;
+
+  let streak = 0;
+  const now = new Date(today + "T12:00:00");
+
+  for (let i = 0; i < 60; i++) {
+    const d = format(subDays(now, i), "yyyy-MM-dd");
+    const count = byDate.get(d) ?? 0;
+    if (count >= threshold) {
+      streak++;
+    } else if (i === 0) {
+      // Today not yet complete is ok, continue checking yesterday
+      continue;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function fmtSleepHours(h: number): string {
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return `${hh}h${mm > 0 ? ` ${mm}m` : ""}`;
 }
 
 /** Heatmap cell bg/border for a session type */
-function heatStyle(name: string | null, isToday: boolean): React.CSSProperties {
+function heatDotStyle(name: string | null): React.CSSProperties {
   if (name === "Legs")
-    return { background: "linear-gradient(135deg,rgba(124,77,255,0.45),rgba(100,255,218,0.18))", borderColor: "rgba(124,77,255,0.50)" };
+    return { background: "linear-gradient(135deg,rgba(124,77,255,0.6),rgba(100,255,218,0.3))" };
   if (name === "Pull")
-    return { background: "linear-gradient(135deg,rgba(100,255,218,0.35),rgba(124,77,255,0.12))", borderColor: "rgba(100,255,218,0.40)" };
+    return { background: "linear-gradient(135deg,rgba(100,255,218,0.5),rgba(124,77,255,0.2))" };
   if (name === "Push")
-    return { background: "linear-gradient(135deg,rgba(124,77,255,0.22),rgba(124,77,255,0.06))", borderColor: "rgba(124,77,255,0.30)" };
+    return { background: "linear-gradient(135deg,rgba(124,77,255,0.35),rgba(124,77,255,0.1))" };
   if (name)
-    return { background: "linear-gradient(135deg,rgba(100,255,218,0.18),rgba(100,255,218,0.04))", borderColor: "rgba(100,255,218,0.28)" };
-  if (isToday)
-    return { background: "rgba(255,255,255,0.012)", borderColor: "rgba(100,255,218,0.50)", borderStyle: "dashed" };
-  return { background: "rgba(255,255,255,0.012)", borderColor: "var(--line)" };
+    return { background: "linear-gradient(135deg,rgba(100,255,218,0.3),rgba(100,255,218,0.1))" };
+  return { background: "rgba(255,255,255,0.06)" };
 }
 
 // Shared head-title style
@@ -137,18 +120,9 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId  = session!.user.id;
 
-  const now       = new Date();
-  const today     = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now);
-  const madridH   = madridHour();
-  const period    = getPeriod(madridH);
-
-  // ── Run pending migrations (safe to re-run) ────────────────────────────────
-  try {
-    await db.run(sql.raw(`ALTER TABLE books ADD COLUMN started_at INTEGER`));
-  } catch { /* column already exists */ }
-  try {
-    await db.run(sql.raw(`ALTER TABLE books ADD COLUMN finished_at INTEGER`));
-  } catch { /* column already exists */ }
+  const now   = new Date();
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now);
+  const madridH = madridHour();
 
   // ── Parallel data fetches ──────────────────────────────────────────────────
   const [
@@ -157,20 +131,19 @@ export default async function DashboardPage() {
     [brief],
     currentBookResult,
     checkItems,
+    recentCompletions,
     todayCompletions,
+    todayMood,
+    lastSleep,
   ] = await Promise.all([
-    db.select({
-        id: gymSessions.id,
-        date: gymSessions.date,
-        workoutName: gymSessions.workoutName,
-      })
+    db.select({ id: gymSessions.id, date: gymSessions.date, workoutName: gymSessions.workoutName, planId: gymSessions.planId })
       .from(gymSessions)
       .where(eq(gymSessions.userId, userId))
       .orderBy(desc(gymSessions.date))
       .limit(60),
 
-    // Fetch workout plans with assigned days for "Next Workout" card
     db.select({
+        planId: workoutPlans.id,
         planName: workoutPlans.name,
         assignedDays: workoutPlans.assignedDays,
         targetMuscles: workoutPlans.targetMuscles,
@@ -179,7 +152,7 @@ export default async function DashboardPage() {
       .innerJoin(programs, eq(workoutPlans.programId, programs.id))
       .where(and(eq(programs.userId, userId), eq(programs.isActive, true)))
       .orderBy(workoutPlans.sortOrder)
-      .catch(() => [] as { planName: string; assignedDays: string | null; targetMuscles: string | null }[]),
+      .catch(() => [] as { planId: number; planName: string; assignedDays: string | null; targetMuscles: string | null }[]),
 
     db.select().from(newsBriefs)
       .where(and(eq(newsBriefs.userId, userId), eq(newsBriefs.date, today)))
@@ -194,8 +167,28 @@ export default async function DashboardPage() {
       .where(and(eq(checklistItems.userId, userId), eq(checklistItems.active, true)))
       .orderBy(checklistItems.sortOrder),
 
+    // Last 60 days of completions for streak calc
+    db.select({ date: checklistCompletions.date, itemId: checklistCompletions.itemId })
+      .from(checklistCompletions)
+      .where(and(
+        eq(checklistCompletions.userId, userId),
+        sql`${checklistCompletions.date} >= ${format(subDays(now, 60), "yyyy-MM-dd")}`
+      )),
+
     db.select({ itemId: checklistCompletions.itemId }).from(checklistCompletions)
       .where(and(eq(checklistCompletions.userId, userId), eq(checklistCompletions.date, today))),
+
+    db.select({ score: moodEntries.score }).from(moodEntries)
+      .where(and(eq(moodEntries.userId, userId), eq(moodEntries.date, today)))
+      .limit(1)
+      .catch(() => [] as { score: number }[]),
+
+    db.select({ hours: sleepEntries.hours, quality: sleepEntries.quality, bedtime: sleepEntries.bedtime, wake: sleepEntries.wake })
+      .from(sleepEntries)
+      .where(eq(sleepEntries.userId, userId))
+      .orderBy(desc(sleepEntries.date))
+      .limit(1)
+      .catch(() => [] as { hours: number; quality: number; bedtime: string; wake: string }[]),
   ]);
 
   const [currentBook] = currentBookResult;
@@ -209,173 +202,119 @@ export default async function DashboardPage() {
     readPct = currentBook.totalPages
       ? Math.round((currentPage / currentBook.totalPages) * 100) : 0;
   }
-  const ringC = 201; // 2π × 32
+  const ringC = 201;
   const ringOffset = ringC - (readPct / 100) * ringC;
 
-  // ── Streak ─────────────────────────────────────────────────────────────────
-  const streak   = calcStreak(recentSessions, today);
-  const weekStartDate = startOfWeek(now, { weekStartsOn: 1 });
-  const weekStartStr = format(weekStartDate, "yyyy-MM-dd");
-  const weekCount = recentSessions.filter(s => s.date >= weekStartStr).length;
+  // ── Streak (checklist-based) ──────────────────────────────────────────────
+  const streak = calcChecklistStreak(recentCompletions, checkItems.length, today);
 
-  // ── Sparkline ──────────────────────────────────────────────────────────────
-  const activity = activityDays(recentSessions, 30, now);
-  const spark    = sparkline(activity);
-
-  // ── 7-day heatmap ──────────────────────────────────────────────────────────
+  // ── 7-day heatmap dots ────────────────────────────────────────────────────
   const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d   = subDays(now, 6 - i);
+    const d = subDays(now, 6 - i);
     const key = format(d, "yyyy-MM-dd");
-    const session = recentSessions.find(s => s.date === key);
-    const name = session?.workoutName ?? null;
-    return { label: format(d, "EEE").toUpperCase(), dayNum: parseInt(format(d, "d")), name, isToday: key === today };
+    const s = recentSessions.find(s => s.date === key);
+    return { label: format(d, "EEE").slice(0, 2).toUpperCase(), name: s?.workoutName ?? null, isToday: key === today };
   });
 
-  // ── Next Workout ────────────────────────────────────────────────────────────
+  // ── Next Workout (enriched) ────────────────────────────────────────────────
   const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
   const DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const todayDow = new Date(today + "T12:00:00").getDay(); // 0=Sun
+  const todayDow = new Date(today + "T12:00:00").getDay();
   const todayKey = DAY_KEYS[todayDow];
 
-  // Parse plans with assigned days
   const plansWithDays = scheduledPlans
     .filter(p => p.assignedDays)
     .map(p => ({
+      id: p.planId,
       name: p.planName,
       days: JSON.parse(p.assignedDays!) as string[],
       muscles: p.targetMuscles ? JSON.parse(p.targetMuscles) as string[] : [],
     }));
 
-  // Find today's workout and next upcoming
   const todaysWorkout = plansWithDays.find(p => p.days.includes(todayKey));
   const alreadyDoneToday = recentSessions.some(s => s.date === today);
 
-  let nextWorkout: { name: string; muscles: string[]; dayLabel: string } | null = null;
-  if (!todaysWorkout || alreadyDoneToday) {
-    // Look ahead up to 7 days for the next scheduled workout
+  let upcomingPlan: { id: number; name: string; muscles: string[]; dayLabel: string } | null = null;
+  if (todaysWorkout && !alreadyDoneToday) {
+    upcomingPlan = { ...todaysWorkout, dayLabel: "Today" };
+  } else {
     for (let offset = 1; offset <= 7; offset++) {
       const futureDow = (todayDow + offset) % 7;
       const futureKey = DAY_KEYS[futureDow];
       const plan = plansWithDays.find(p => p.days.includes(futureKey));
       if (plan) {
-        const label = offset === 1 ? "Tomorrow" : DAY_FULL[futureDow];
-        nextWorkout = { name: plan.name, muscles: plan.muscles, dayLabel: label };
+        upcomingPlan = { ...plan, dayLabel: offset === 1 ? "Tomorrow" : DAY_FULL[futureDow] };
         break;
       }
+    }
+  }
+
+  // Fetch exercises for the upcoming workout plan
+  let upcomingExercises: { name: string }[] = [];
+  let lastSessionLifts: { name: string; weight: number; reps: number }[] = [];
+  if (upcomingPlan) {
+    const [exRows, lastSession] = await Promise.all([
+      db.select({ name: exerciseDb.name })
+        .from(planExercises)
+        .innerJoin(exerciseDb, eq(planExercises.exerciseId, exerciseDb.id))
+        .where(eq(planExercises.planId, upcomingPlan.id))
+        .orderBy(planExercises.sortOrder)
+        .catch(() => [] as { name: string }[]),
+      // Find the most recent session with same planId
+      db.select({ id: gymSessions.id })
+        .from(gymSessions)
+        .where(and(eq(gymSessions.userId, userId), eq(gymSessions.planId, upcomingPlan.id)))
+        .orderBy(desc(gymSessions.date))
+        .limit(1)
+        .catch(() => [] as { id: number }[]),
+    ]);
+    upcomingExercises = exRows;
+
+    if (lastSession.length > 0) {
+      const sets = await db.select({
+          name: gymSets.exerciseName,
+          weight: gymSets.weightKg,
+          reps: gymSets.reps,
+        })
+        .from(gymSets)
+        .where(eq(gymSets.sessionId, lastSession[0].id))
+        .orderBy(gymSets.setNumber)
+        .catch(() => [] as { name: string; weight: number | null; reps: number | null }[]);
+
+      // Get best set per exercise (highest weight)
+      const bestByExercise = new Map<string, { weight: number; reps: number }>();
+      for (const s of sets) {
+        if (s.weight && s.reps) {
+          const existing = bestByExercise.get(s.name);
+          if (!existing || s.weight > existing.weight) {
+            bestByExercise.set(s.name, { weight: s.weight, reps: s.reps });
+          }
+        }
+      }
+      lastSessionLifts = Array.from(bestByExercise.entries()).slice(0, 4).map(([name, v]) => ({
+        name, weight: v.weight, reps: v.reps,
+      }));
     }
   }
 
   // ── News ───────────────────────────────────────────────────────────────────
   let stories: Story[] = [];
   if (brief) {
-    try {
-      stories = JSON.parse(brief.content as string).stories ?? [];
-    } catch { /* */ }
+    try { stories = JSON.parse(brief.content as string).stories ?? []; } catch { /* */ }
   }
-  // If no brief exists, DashboardNewsGrid auto-generates client-side
 
   // ── Checklist ──────────────────────────────────────────────────────────────
-  const completedIds  = new Set(todayCompletions.map((c) => c.itemId));
-  const checkDone     = completedIds.size;
-  const checkTotal    = checkItems.length;
-  const checkPct      = checkTotal > 0 ? Math.round((checkDone / checkTotal) * 100) : 0;
+  const completedIds = new Set(todayCompletions.map((c) => c.itemId));
+  const checkTotal   = checkItems.length;
 
-  // Items for the client component (serializable)
   const checkItemsSerial = checkItems.map((i) => ({
-    id: i.id,
-    title: i.title,
-    emoji: i.emoji,
-    source: "manual" as const,
+    id: i.id, title: i.title, emoji: i.emoji, source: "manual" as const,
   }));
 
-  // ── Cards ─────────────────────────────────────────────────────────────────
+  // ── Mood/Sleep ─────────────────────────────────────────────────────────────
+  const moodScore = todayMood.length > 0 ? todayMood[0].score : null;
+  const sleepData = lastSleep.length > 0 ? lastSleep[0] : null;
 
-  // ─ Streak Hero ─
-  const StreakHero = ({ small }: { small?: boolean }) => (
-    <div className="cc-card" style={{
-      padding: small ? "20px 22px" : "28px 32px",
-      height: "100%", display: "flex", flexDirection: "column", gap: small ? 16 : 20,
-      background: `radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.13), transparent 60%),
-                   radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.08), transparent 60%),
-                   var(--bg-card)`,
-      overflow: "hidden",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, fontWeight: 500, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)" }}>
-        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)", flexShrink: 0 }} />
-        Streak · current
-      </div>
-
-      {small ? (
-        /* Compact version (afternoon/evening) */
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div className="tabular-nums" style={{ fontSize: 72, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.9, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 18px rgba(124,77,255,0.18))" }}>
-            {streak}<sup style={{ fontSize: 22, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)", verticalAlign: "top", position: "relative", top: 16, marginLeft: 4, background: "none" }}>d</sup>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5 }}>
-              {streak >= 7 ? "Keep the streak!" : streak > 0 ? "Build the habit." : "Start today."}
-            </div>
-            <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 4, fontFamily: "var(--f-mono)" }}>
-              {weekCount} sessions this week
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* Full version (morning) */
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "end" }}>
-            <div>
-              <div className="tabular-nums" style={{ fontSize: 120, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.85, background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 22px rgba(124,77,255,0.20))" }}>
-                {streak}
-                <sup style={{ fontSize: 28, WebkitTextFillColor: "var(--ink-3)", color: "var(--ink-3)", verticalAlign: "top", position: "relative", top: 22, marginLeft: 6, background: "none" }}>d</sup>
-              </div>
-              <div style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 12, lineHeight: 1.55 }}>
-                {streak >= 7 ? <><strong style={{ color: "var(--ink)" }}>On a roll!</strong> Keep going.</> : streak > 0 ? <>Keep building the habit.</> : <>Start your streak today.</>}
-              </div>
-            </div>
-            <div>
-              <svg viewBox="0 0 220 64" preserveAspectRatio="none" style={{ height: 72, width: "100%", display: "block" }}>
-                <defs>
-                  <linearGradient id="sk-stroke" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#7C4DFF" />
-                    <stop offset="100%" stopColor="#64FFDA" />
-                  </linearGradient>
-                  <linearGradient id="sk-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(124,77,255,0.16)" />
-                    <stop offset="100%" stopColor="rgba(124,77,255,0)" />
-                  </linearGradient>
-                </defs>
-                <path fill="url(#sk-fill)" d={spark.area} />
-                <path fill="none" stroke="url(#sk-stroke)" strokeWidth={1.5} d={spark.line} />
-                <circle cx="220" cy={spark.lastY} r="3" fill="var(--cyan)" style={{ filter: "drop-shadow(0 0 4px var(--cyan))" }} />
-              </svg>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--ink-4)", letterSpacing: "0.08em", marginTop: 5, fontFamily: "var(--f-mono)" }}>
-                <span>30D AGO</span><span>TODAY</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 2 quick stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              { label: "This week", value: weekCount, unit: "sessions" },
-              { label: "30-day",    value: activity.filter(Boolean).length, unit: "workouts" },
-            ].map((s) => (
-              <div key={s.label} style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(124,77,255,0.25),transparent)" }} />
-                <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 6 }}>{s.label}</div>
-                <div className="tabular-nums" style={{ fontSize: 26, fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1 }}>
-                  {s.value} <span style={{ fontSize: 12, color: "var(--ink-3)" }}>{s.unit}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-
-  // ─ Next Workout Card ─
   const MUSCLE_EMOJI: Record<string, string> = {
     chest: "🫁", lats: "🔙", upper_back: "🔙", traps: "🔙",
     front_delts: "💪", side_delts: "💪", rear_delts: "💪",
@@ -384,42 +323,116 @@ export default async function DashboardPage() {
     abs: "🎯", obliques: "🎯",
   };
 
-  const NextWorkoutCard = () => {
-    const upcoming = todaysWorkout && !alreadyDoneToday
-      ? { name: todaysWorkout.name, muscles: todaysWorkout.muscles, dayLabel: "Today" }
-      : nextWorkout;
+  // ── Render ─────────────────────────────────────────────────────────────────
 
-    return (
-      <Link href="/workouts" style={{ display: "block", height: "100%", textDecoration: "none" }}>
-        <div className="cc-card cc-card-hover" style={{ padding: "16px 20px", height: "100%" }}>
+  return (
+    <div className="page-enter">
+      {/* ── Row 1: Greeting + News Strip ─────────────────────────────────── */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
+          <h2 style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.025em", margin: 0, lineHeight: 1.05 }}>
+            {greeting(madridH)},{" "}
+            <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontWeight: 400 }}>
+              Ali
+            </span>
+            <span style={{ color: "var(--ink-3)" }}>.</span>
+          </h2>
+          <Link href="/news" style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", letterSpacing: "0.04em", flexShrink: 0 }}>
+            See all news →
+          </Link>
+        </div>
+        <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginBottom: 14 }}>
+          {format(now, "EEEE, MMMM d, yyyy")}
+        </div>
+        <CompactNewsStrip stories={stories} />
+      </div>
+
+      {/* ── Row 2: Streak | Checklist | Next Workout ─────────────────────── */}
+      <div className="dash-row2" style={{ display: "grid", gridTemplateColumns: "240px 1fr 300px", gap: 14, marginBottom: 14 }}>
+
+        {/* Streak card (checklist-based, with 7-day workout dots) */}
+        <div className="cc-card" style={{
+          padding: "20px 22px", display: "flex", flexDirection: "column", gap: 14,
+          background: `radial-gradient(60% 80% at 0% 0%, rgba(124,77,255,0.13), transparent 60%),
+                       radial-gradient(50% 80% at 100% 100%, rgba(100,255,218,0.08), transparent 60%),
+                       var(--bg-card)`,
+        }}>
+          <div style={HTITLE}>
+            <span style={{ ...DOT, background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)" }} />
+            Streak
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <div className="tabular-nums" style={{
+              fontSize: 72, fontWeight: 200, letterSpacing: "-0.06em", lineHeight: 0.9,
+              background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+              filter: "drop-shadow(0 0 18px rgba(124,77,255,0.18))",
+            }}>
+              {streak}
+            </div>
+            <span style={{ fontSize: 18, color: "var(--ink-3)", fontWeight: 300 }}>days</span>
+          </div>
+          <div style={{ fontSize: 11.5, color: "var(--ink-3)", lineHeight: 1.4 }}>
+            {streak === 0
+              ? "Complete today's checklist to start your streak"
+              : streak >= 7 ? "Keep the streak going!" : "Building the habit."}
+          </div>
+
+          {/* 7-day workout dots */}
+          <div>
+            <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-4)", marginBottom: 6, fontFamily: "var(--f-mono)" }}>
+              Workouts · 7d
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {weekDays.map((d, i) => (
+                <div key={i} title={d.name ?? "Rest"} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6,
+                    border: d.isToday && !d.name ? "1px dashed rgba(100,255,218,0.40)" : "1px solid transparent",
+                    ...heatDotStyle(d.name),
+                  }} />
+                  <span style={{ fontSize: 8, color: d.isToday ? "var(--cyan)" : "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{d.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Checklist */}
+        <ChecklistCard items={checkItemsSerial} completedIds={completedIds} total={checkTotal} />
+
+        {/* Next Workout (enriched) */}
+        <div className="cc-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div style={HTITLE}><span style={DOT} />Next Workout</div>
-            {upcoming && (
+            {upcomingPlan && (
               <span style={{
                 fontSize: 9.5, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
-                color: upcoming.dayLabel === "Today" ? "var(--cyan)" : "var(--ink-3)",
+                color: upcomingPlan.dayLabel === "Today" ? "var(--cyan)" : "var(--ink-3)",
                 fontFamily: "var(--f-mono)",
               }}>
-                {upcoming.dayLabel}
+                {upcomingPlan.dayLabel}
               </span>
             )}
           </div>
-          {upcoming ? (
-            <div>
+
+          {upcomingPlan ? (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{
                 fontSize: 18, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.2,
-                background: upcoming.dayLabel === "Today" ? "var(--grad)" : "none",
-                WebkitBackgroundClip: upcoming.dayLabel === "Today" ? "text" : undefined,
-                backgroundClip: upcoming.dayLabel === "Today" ? "text" : undefined,
-                color: upcoming.dayLabel === "Today" ? "transparent" : "var(--ink)",
+                background: upcomingPlan.dayLabel === "Today" ? "var(--grad)" : "none",
+                WebkitBackgroundClip: upcomingPlan.dayLabel === "Today" ? "text" : undefined,
+                backgroundClip: upcomingPlan.dayLabel === "Today" ? "text" : undefined,
+                color: upcomingPlan.dayLabel === "Today" ? "transparent" : "var(--ink)",
               }}>
-                {upcoming.name}
+                {upcomingPlan.name}
               </div>
-              {upcoming.muscles.length > 0 && (
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-                  {upcoming.muscles.slice(0, 4).map(m => (
+
+              {/* Muscle tags */}
+              {upcomingPlan.muscles.length > 0 && (
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 8 }}>
+                  {upcomingPlan.muscles.slice(0, 4).map(m => (
                     <span key={m} style={{
-                      fontSize: 10, padding: "3px 8px", borderRadius: 6,
+                      fontSize: 9.5, padding: "2px 7px", borderRadius: 5,
                       background: "rgba(124,77,255,0.10)", border: "1px solid rgba(124,77,255,0.20)",
                       color: "var(--ink-2)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
                     }}>
@@ -428,236 +441,146 @@ export default async function DashboardPage() {
                   ))}
                 </div>
               )}
+
+              {/* Exercise list */}
+              {upcomingExercises.length > 0 && (
+                <div style={{ marginTop: 10, flex: 1 }}>
+                  {upcomingExercises.slice(0, 5).map((ex, i) => (
+                    <div key={i} style={{
+                      fontSize: 12, color: "var(--ink-2)", padding: "4px 0",
+                      borderBottom: i < Math.min(upcomingExercises.length, 5) - 1 ? "1px solid var(--line)" : "none",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                    }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ex.name}</span>
+                      {(() => {
+                        const lift = lastSessionLifts.find(l => l.name === ex.name);
+                        return lift ? (
+                          <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", flexShrink: 0, marginLeft: 8 }}>
+                            {lift.weight}kg × {lift.reps}
+                          </span>
+                        ) : null;
+                      })()}
+                    </div>
+                  ))}
+                  {upcomingExercises.length > 5 && (
+                    <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 4, fontFamily: "var(--f-mono)" }}>
+                      +{upcomingExercises.length - 5} more
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Start session button */}
+              {upcomingPlan.dayLabel === "Today" && (
+                <Link href={`/workouts/session/new?planId=${upcomingPlan.id}`} style={{ textDecoration: "none", marginTop: 12 }}>
+                  <button className="cc-btn cc-btn-primary" style={{ width: "100%", padding: "10px 0", fontSize: 12 }}>
+                    Start session
+                  </button>
+                </Link>
+              )}
             </div>
           ) : (
-            <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 4 }}>
-              {plansWithDays.length === 0 ? "No workouts scheduled" : "All done this week!"}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 4 }}>
+                {plansWithDays.length === 0 ? (
+                  <Link href="/workouts" style={{ color: "var(--cyan)", textDecoration: "none" }}>
+                    Set up your first workout →
+                  </Link>
+                ) : "All done this week!"}
+              </div>
             </div>
           )}
         </div>
-      </Link>
-    );
-  };
+      </div>
 
-  // ─ Compact Heatmap ─
-  const HeatmapCard = () => (
-    <div className="cc-card" style={{ padding: "16px 20px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={HTITLE}><span style={DOT} />Last 7 Days</div>
-        <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{weekDays.filter((d) => d.name).length} sessions</span>
-      </div>
-      {/* 7 cells in a row, ~40px height */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
-        {weekDays.map(({ label, dayNum, name, isToday }) => {
-          const cs = heatStyle(name, isToday);
-          return (
-            <div key={dayNum} style={{
-              height: 44, borderRadius: 8,
-              border: `1px ${cs.borderStyle ?? "solid"} ${cs.borderColor ?? "var(--line)"}`,
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
-              ...cs,
-            }}>
-              <span style={{ fontSize: 9, letterSpacing: "0.06em", fontFamily: "var(--f-mono)", color: name ? "var(--ink-2)" : isToday ? "var(--cyan)" : "var(--ink-4)", fontWeight: 600 }}>
-                {label.slice(0, 3)}
-              </span>
-              <span style={{ fontSize: 8.5, color: name ? "var(--ink-3)" : "var(--ink-5)", fontFamily: "var(--f-mono)" }}>
-                {name ? name.slice(0, 4).toUpperCase() : "-"}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      {/* Compact legend */}
-      <div style={{ display: "flex", gap: 12, marginTop: 10, fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-        {[
-          { label: "Legs", bg: "linear-gradient(135deg,rgba(124,77,255,0.45),rgba(100,255,218,0.18))" },
-          { label: "Pull", bg: "linear-gradient(135deg,rgba(100,255,218,0.35),rgba(124,77,255,0.12))" },
-          { label: "Push", bg: "linear-gradient(135deg,rgba(124,77,255,0.22),rgba(124,77,255,0.06))" },
-        ].map((l) => (
-          <span key={l.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <i style={{ display: "inline-block", width: 8, height: 8, borderRadius: 3, background: l.bg }} />
-            {l.label}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+      {/* ── Row 3: Mood + Sleep | Reading ────────────────────────────────── */}
+      <div className="dash-row3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
 
-  // ─ Reading Card ─
-  const ReadingCard = () => (
-    <Link href={currentBook ? `/library/read/${currentBook.id}` : "/library"} style={{ display: "block", height: "100%", textDecoration: "none" }}>
-      <div className="cc-card cc-card-hover" style={{ padding: 22, height: "100%" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <div style={HTITLE}><span style={DOT} />Reading · Current</div>
-          {currentBook && <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{readPct}%</span>}
-        </div>
-        {currentBook ? (
-          <>
-            <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-              {/* Book spine */}
-              <div style={{ width: 42, height: 60, borderRadius: 3, background: "linear-gradient(160deg,#3A2E22,#1A1714)", border: "1px solid var(--line-hi)", flexShrink: 0, position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", left: 5, top: 0, bottom: 0, width: 1, background: "rgba(255,255,255,0.10)" }} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {currentBook.title}
-                </div>
-                <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 3 }}>{currentBook.author}</div>
-              </div>
+        {/* Mood quick-log */}
+        <MoodQuickLog initialScore={moodScore} />
+
+        {/* Sleep score */}
+        <Link href="/sleep" style={{ textDecoration: "none", display: "block" }}>
+          <div className="cc-card cc-card-hover" style={{ padding: "16px 20px", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={HTITLE}><span style={{ ...DOT, background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)" }} />Sleep</div>
             </div>
-            {/* Progress ring + stats */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
-              <svg width="56" height="56" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
-                <defs>
-                  <linearGradient id="db-ring" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#7C4DFF" />
-                    <stop offset="100%" stopColor="#64FFDA" />
-                  </linearGradient>
-                </defs>
-                <circle fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" cx="40" cy="40" r="32" />
-                <circle fill="none" stroke="url(#db-ring)" strokeWidth="6" strokeLinecap="round"
-                  cx="40" cy="40" r="32"
-                  strokeDasharray={ringC}
-                  strokeDashoffset={ringOffset}
-                  transform="rotate(-90 40 40)"
-                  style={{ filter: "drop-shadow(0 0 5px rgba(124,77,255,0.40))" }}
-                />
-              </svg>
+            {sleepData ? (
               <div>
-                <div className="tabular-nums" style={{ fontSize: 22, fontWeight: 300, letterSpacing: "-0.02em", background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
-                  {readPct}%
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <div className="tabular-nums" style={{
+                    fontSize: 36, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
+                    background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+                  }}>
+                    {fmtSleepHours(sleepData.hours)}
+                  </div>
+                  <span style={{ fontSize: 12, color: sleepData.hours >= 8 ? "var(--pos)" : "var(--warn)", fontFamily: "var(--f-mono)" }}>
+                    {sleepData.hours >= 8 ? "on target" : `${fmtSleepHours(8 - sleepData.hours)} short`}
+                  </span>
                 </div>
-                <div style={{ fontSize: 10.5, color: "var(--ink-3)", letterSpacing: "0.04em", textTransform: "uppercase", fontFamily: "var(--f-mono)", marginTop: 2 }}>
-                  p.{currentPage} / {currentBook.totalPages ?? "?"}
+                <div style={{ display: "flex", gap: 16, marginTop: 10, fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+                  <span>{sleepData.bedtime} → {sleepData.wake}</span>
+                  <span>q{sleepData.quality}/10</span>
                 </div>
               </div>
-            </div>
-          </>
-        ) : (
-          <p style={{ fontSize: 13, color: "var(--ink-3)", margin: "12px 0 0" }}>
-            No book in progress → Choose one
-          </p>
-        )}
-      </div>
-    </Link>
-  );
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                Log last night's sleep →
+              </div>
+            )}
+          </div>
+        </Link>
 
-  // ─ Night minimal card ─
-  const NightCard = () => (
-    <div className="cc-card" style={{ padding: "20px 24px", gridColumn: "span 12" }}>
-      <div style={{ fontSize: 13, color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", flexShrink: 0 }} />
-        It's late. Tomorrow:
-        <span style={{ color: "var(--ink-2)" }}>
-          {streak > 0 ? `${streak}d streak to maintain` : "Start your streak"}
-          {currentBook ? ` · continue ${currentBook.title}` : ""}
-          {checkTotal > 0 ? ` · ${checkTotal} checklist items` : ""}
-        </span>
-      </div>
-    </div>
-  );
-
-  // ─ Layout assembly ─────────────────────────────────────────────────────────
-
-  return (
-    <div className="page-enter">
-      {/* Greeting */}
-      <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.025em", margin: 0, lineHeight: 1.05 }}>
-          {greeting(period)},{" "}
-          <span style={{ background: "var(--grad)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontWeight: 400 }}>
-            Ali
-          </span>
-          <span style={{ color: "var(--ink-3)" }}>.</span>
-        </h2>
-        <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 6 }}>
-          {format(now, "EEEE, MMMM d, yyyy")}
-        </div>
-      </div>
-
-      {/* ── Grid ─────────────────────────────────────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gridAutoRows: "auto", gap: 14 }}>
-
-        {/* ── MORNING: Streak | Checklist + Next Workout | Heatmap + Reading ── */}
-        {period === "morning" && (
-          <>
-            <div style={{ gridColumn: "span 5", gridRow: "span 2" }}>
-              <StreakHero />
+        {/* Reading */}
+        <Link href={currentBook ? `/library/read/${currentBook.id}` : "/library"} style={{ display: "block", textDecoration: "none" }}>
+          <div className="cc-card cc-card-hover" style={{ padding: "16px 20px", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={HTITLE}><span style={DOT} />Reading</div>
+              {currentBook && <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{readPct}%</span>}
             </div>
-            <div style={{ gridColumn: "span 7" }}>
-              <ChecklistCard items={checkItemsSerial} completedIds={completedIds} total={checkTotal} />
-            </div>
-            <div style={{ gridColumn: "span 3" }}>
-              <NextWorkoutCard />
-            </div>
-            <div style={{ gridColumn: "span 4" }}>
-              <ReadingCard />
-            </div>
-            <div style={{ gridColumn: "span 12" }}>
-              <HeatmapCard />
-            </div>
-          </>
-        )}
-
-        {/* ── AFTERNOON: Checklist primary | Streak + Next Workout ────────── */}
-        {period === "afternoon" && (
-          <>
-            <div style={{ gridColumn: "span 4" }}>
-              <StreakHero small />
-            </div>
-            <div style={{ gridColumn: "span 4" }}>
-              <NextWorkoutCard />
-            </div>
-            <div style={{ gridColumn: "span 4" }}>
-              <ReadingCard />
-            </div>
-            <div style={{ gridColumn: "span 12" }}>
-              <ChecklistCard items={checkItemsSerial} completedIds={completedIds} total={checkTotal} />
-            </div>
-            <div style={{ gridColumn: "span 12" }}>
-              <HeatmapCard />
-            </div>
-          </>
-        )}
-
-        {/* ── EVENING: Checklist + Streak + Reading + Next Workout ────────── */}
-        {period === "evening" && (
-          <>
-            <div style={{ gridColumn: "span 7", gridRow: "span 2" }}>
-              <ChecklistCard items={checkItemsSerial} completedIds={completedIds} total={checkTotal} />
-            </div>
-            <div style={{ gridColumn: "span 5" }}>
-              <StreakHero small />
-            </div>
-            <div style={{ gridColumn: "span 5" }}>
-              <NextWorkoutCard />
-            </div>
-            <div style={{ gridColumn: "span 7" }}>
-              <ReadingCard />
-            </div>
-            <div style={{ gridColumn: "span 5" }}>
-              <HeatmapCard />
-            </div>
-          </>
-        )}
-
-        {/* ── NIGHT: Minimal view ──────────────────────────────────────────── */}
-        {period === "night" && (
-          <>
-            <NightCard />
-            <div style={{ gridColumn: "span 5" }}>
-              <StreakHero small />
-            </div>
-            <div style={{ gridColumn: "span 7" }}>
-              <ReadingCard />
-            </div>
-          </>
-        )}
-
+            {currentBook ? (
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <svg width="48" height="48" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
+                  <defs>
+                    <linearGradient id="db-ring" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#7C4DFF" />
+                      <stop offset="100%" stopColor="#64FFDA" />
+                    </linearGradient>
+                  </defs>
+                  <circle fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" cx="40" cy="40" r="32" />
+                  <circle fill="none" stroke="url(#db-ring)" strokeWidth="6" strokeLinecap="round"
+                    cx="40" cy="40" r="32"
+                    strokeDasharray={ringC}
+                    strokeDashoffset={ringOffset}
+                    transform="rotate(-90 40 40)"
+                    style={{ filter: "drop-shadow(0 0 5px rgba(124,77,255,0.40))" }}
+                  />
+                </svg>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {currentBook.title}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>{currentBook.author}</div>
+                  <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginTop: 3 }}>
+                    p.{currentPage} / {currentBook.totalPages ?? "?"}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                <span>Add a book to start reading →</span>
+              </div>
+            )}
+          </div>
+        </Link>
       </div>
 
-      {/* ── Full News Grid (all 20 stories) ─────────────────────────────────── */}
-      <DashboardNewsGrid stories={stories} />
+      <style>{`
+        @media (max-width: 900px) {
+          .dash-row2 { grid-template-columns: 1fr !important; }
+          .dash-row3 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

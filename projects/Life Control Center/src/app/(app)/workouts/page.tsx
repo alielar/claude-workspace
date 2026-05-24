@@ -161,13 +161,6 @@ export default async function WorkoutsPage() {
     if (s.planId && !lastDoneMap.has(s.planId)) lastDoneMap.set(s.planId, s.date);
   }
 
-  // ── Total exercise count ──────────────────────────────────────────────────
-  const [exCountRow] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(exerciseDb)
-    .where(eq(exerciseDb.userId, userId));
-  const totalExerciseCount = exCountRow?.count ?? 0;
-
   // ── Month calendar data ────────────────────────────────────────────────────
   const monthStart = `${today.slice(0, 7)}-01`;
   const lastDayOfMonth = new Date(parseInt(today.slice(0, 4)), parseInt(today.slice(5, 7)), 0).getDate();
@@ -260,7 +253,7 @@ export default async function WorkoutsPage() {
     <div className="page-enter" style={{ padding: "28px 32px 64px", maxWidth: 1500, margin: "0 auto" }}>
 
       {/* ── Page title ────────────────────────────────────────────────────── */}
-      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+      <div className="cc-pagetitle" style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <h1>Workouts<span className="grad-text">.</span></h1>
           <div className="sub">
@@ -270,6 +263,13 @@ export default async function WorkoutsPage() {
             }
           </div>
         </div>
+        <OpenDrawerButton
+          drawer="exercises"
+          className="cc-btn"
+          style={{ fontSize: 12, padding: "6px 14px" }}
+        >
+          Exercises
+        </OpenDrawerButton>
       </div>
 
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
@@ -322,7 +322,7 @@ export default async function WorkoutsPage() {
       )}
 
       {/* ── Info tiles (Workouts / Exercises / Analytics) — always visible ── */}
-      <InfoTiles plans={infoTilePlans} exerciseCount={totalExerciseCount} />
+      <InfoTiles plans={infoTilePlans} />
 
       {/* ── Bottom row: This Week + Calendar + Running — always visible ───── */}
       <div className="workout-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
