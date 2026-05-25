@@ -21,6 +21,7 @@ import UpNextCard from "@/components/workouts/UpNextCard";
 import InfoTiles from "@/components/workouts/InfoTiles";
 import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
 import CoachCard from "@/components/workouts/CoachCard";
+import ResumeSessionBanner from "@/components/workouts/ResumeSessionBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -298,33 +299,11 @@ export default async function WorkoutsPage() {
 
       {/* ── Resume in-progress session banner ───────────────────────────── */}
       {activeSession && (
-        <div className="cc-card" style={{
-          marginBottom: 14, padding: "20px 24px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "linear-gradient(135deg, rgba(124,77,255,0.12), rgba(100,255,218,0.06)), var(--bg-card)",
-          border: "1px solid rgba(124,77,255,0.30)",
-        }}>
-          <div>
-            <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: "var(--cyan)", fontFamily: "var(--f-mono)", marginBottom: 4 }}>
-              Session in progress
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>
-              {activeSession.workoutName} · {activeSession.date}
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-            <Link
-              href={`/workouts/session/${activeSession.id}/active`}
-              className="cc-btn-primary"
-              style={{
-                display: "inline-flex", padding: "10px 20px", borderRadius: 8,
-                fontSize: 13, fontWeight: 700, textDecoration: "none",
-              }}
-            >
-              Resume
-            </Link>
-          </div>
-        </div>
+        <ResumeSessionBanner
+          sessionId={activeSession.id}
+          workoutName={activeSession.workoutName}
+          date={activeSession.date}
+        />
       )}
 
       {/* ── Up Next hero (or empty state if no workouts) ─────────────────── */}

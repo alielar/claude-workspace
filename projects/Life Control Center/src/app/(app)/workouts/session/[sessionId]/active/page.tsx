@@ -251,11 +251,11 @@ function NumberPad({
 
 function Stepper({
   label, value, onChange, step = 1, min = 0, unit = "", disabled = false, hint,
-  allowDecimal = true,
+  allowDecimal = true, hintColor,
 }: {
   label: string; value: string; onChange: (v: string) => void;
   step?: number; min?: number; unit?: string; disabled?: boolean; hint?: string;
-  allowDecimal?: boolean;
+  allowDecimal?: boolean; hintColor?: string;
 }) {
   const [showPad, setShowPad] = useState(false);
 
@@ -317,7 +317,7 @@ function Stepper({
             }}
           >+</button>
         </div>
-        {hint && <div style={{ fontSize: 10, color: "var(--ink-5)", letterSpacing: "0.04em" }}>{hint}</div>}
+        {hint && <div style={{ fontSize: 10, color: hintColor ?? "var(--ink-5)", letterSpacing: "0.04em", fontFamily: hintColor ? "var(--f-mono)" : undefined, fontWeight: hintColor ? 600 : undefined }}>{hint}</div>}
       </div>
       {showPad && (
         <NumberPad value={value} onChange={onChange} onClose={() => setShowPad(false)}
@@ -612,7 +612,9 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
       }}>
         {needsWeight && (
           <Stepper label="Weight" value={weight} onChange={setWeight}
-            step={exercise.weightIncrement || 2.5} unit="kg" disabled={isDone} allowDecimal />
+            step={exercise.weightIncrement || 2.5} unit="kg" disabled={isDone} allowDecimal
+            hint={!isDone && prefill && w > (prefill.weightKg ?? 0) ? `+${(w - (prefill.weightKg ?? 0)).toFixed(1)}kg ↑` : undefined}
+            hintColor={!isDone && prefill && w > (prefill.weightKg ?? 0) ? "var(--pos)" : undefined} />
         )}
         {needsDuration && (
           <Stepper label="Duration" value={duration} onChange={setDuration}
@@ -628,16 +630,6 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
             hint={`${config.repMin}–${config.repMax}`} allowDecimal={false} />
         )}
       </div>
-
-      {/* Progression indicator */}
-      {prefill && !isDone && w > (prefill.weightKg ?? 0) && (
-        <div style={{
-          fontSize: 12, fontFamily: "var(--f-mono)", color: "var(--pos)", fontWeight: 600,
-          marginBottom: 16,
-        }}>
-          +{(w - (prefill.weightKg ?? 0)).toFixed(1)}kg from last session
-        </div>
-      )}
 
       {/* Action button */}
       {isDone ? (
