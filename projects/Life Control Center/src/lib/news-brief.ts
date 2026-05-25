@@ -13,13 +13,13 @@
  *   Tech & AI: product launches, AI research, industry shifts
  */
 
-export type NewsCategory = "football" | "geopolitics" | "business" | "tech" | "ai";
+export type NewsCategory = "football" | "geopolitics" | "business" | "tech";
 
 export type NewsStory = {
   headline: string;
   summary: string;
   keyPoints: string[];
-  category: NewsCategory | "other";
+  category: NewsCategory | "ai" | "other";
   source?: string;
   /** @deprecated Kept for backward compat */
   whyItMatters?: string;
@@ -41,25 +41,26 @@ type FeedConfig = {
 };
 
 const FEEDS: FeedConfig[] = [
-  // Football
+  // Football — Morocco, World Cup 2026, Champions League, European leagues
   { url: "https://www.goal.com/feeds/en/news", category: "football" },
   { url: "https://www.football-espana.net/feed", category: "football" },
-  { url: "https://onefootball.com/en/feeds/rss", category: "football" },
   { url: "https://www.marca.com/en/rss/football.xml", category: "football" },
   { url: "https://moroccoworldnews.com/category/sports/feed", category: "football" },
+  { url: "https://www.fifa.com/rss/index.xml", category: "football", keywords: ["world cup", "2026", "morocco", "fifa"] },
 
-  // Geopolitics
-  { url: "https://moroccoworldnews.com/feed", category: "geopolitics", keywords: ["morocco", "rabat", "casablanca", "fes", "marrakech", "king mohammed", "atlas", "sahara", "mena"] },
+  // Geopolitics — Morocco politics, MENA, world affairs
+  { url: "https://moroccoworldnews.com/feed", category: "geopolitics", keywords: ["morocco", "rabat", "casablanca", "fes", "marrakech", "king mohammed", "atlas", "sahara", "mena", "government", "parliament", "minister"] },
+  { url: "https://feeds.bbci.co.uk/news/world/africa/rss.xml", category: "geopolitics" },
   { url: "https://feeds.bbci.co.uk/news/world/rss.xml", category: "geopolitics" },
   { url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", category: "geopolitics" },
   { url: "https://www.aljazeera.com/xml/rss/all.xml", category: "geopolitics" },
 
-  // Business
+  // Business — markets, companies, economics
   { url: "https://feeds.bbci.co.uk/news/business/rss.xml", category: "business" },
   { url: "https://www.cnbc.com/id/100003114/device/rss/rss.html", category: "business" },
   { url: "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", category: "business" },
 
-  // Tech & AI
+  // Tech & AI — product launches, AI research, industry shifts
   { url: "https://feeds.arstechnica.com/arstechnica/index", category: "tech" },
   { url: "https://www.theverge.com/rss/index.xml", category: "tech" },
   { url: "https://techcrunch.com/feed/", category: "tech" },
@@ -68,11 +69,10 @@ const FEEDS: FeedConfig[] = [
 
 // Keywords that boost a story for Ali's specific interests
 const INTEREST_KEYWORDS: Record<NewsCategory, string[]> = {
-  football: ["morocco", "atlas lions", "kacm", "kawkab", "frmf", "world cup", "champions league", "real madrid", "barcelona", "premier league", "ligue 1", "botola"],
-  geopolitics: ["morocco", "rabat", "sahara", "mena", "africa", "middle east", "israel", "palestine", "ukraine", "nato", "eu", "trump", "election"],
+  football: ["morocco", "atlas lions", "kacm", "kawkab", "frmf", "world cup", "2026", "champions league", "real madrid", "barcelona", "premier league", "ligue 1", "botola", "regragui", "hakimi", "achraf", "en-nesyri", "mazraoui", "amrabat", "fifa", "caf"],
+  geopolitics: ["morocco", "rabat", "sahara", "mena", "africa", "middle east", "israel", "palestine", "ukraine", "nato", "eu", "trump", "election", "casablanca", "fes", "marrakech", "king mohammed"],
   business: ["markets", "stock", "earnings", "gdp", "recession", "startup", "ipo", "acquisition", "apple", "google", "amazon", "tesla"],
-  tech: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "apple", "google", "chip", "semiconductor", "robot"],
-  ai: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "machine learning", "deepmind", "model"],
+  tech: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "apple", "google", "chip", "semiconductor", "robot", "machine learning", "deepmind", "chatbot", "agent"],
 };
 
 // ─── RSS Parsing ─────────────────────────────────────────────────────────────
@@ -163,33 +163,16 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
   // Fetch all feeds in parallel
   const results = await Promise.all(FEEDS.map(fetchFeed));
 
-  // Group stories by category
+  // Group stories by the 4 display categories
   const byCategory: Record<string, NewsStory[]> = {
     football: [],
     geopolitics: [],
     business: [],
     tech: [],
-    ai: [],
   };
 
   for (const { stories, category } of results) {
     byCategory[category].push(...stories);
-  }
-
-  // Promote tech stories that strongly match AI keywords to "ai" category
-  const techStories = byCategory.tech;
-  const aiStrongKeywords = ["artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "machine learning", "deepmind", "chatbot", "generative ai", "large language model", "neural network"];
-  byCategory.tech = [];
-  for (const story of techStories) {
-    const text = `${story.headline} ${story.summary}`.toLowerCase();
-    // Require at least one strong AI keyword (not just "ai" which is too broad)
-    const isAI = aiStrongKeywords.some((kw) => text.includes(kw))
-      || (text.includes(" ai ") && (text.includes("model") || text.includes("train") || text.includes("agent") || text.includes("safety")));
-    if (isAI) {
-      byCategory.ai.push({ ...story, category: "ai" });
-    } else {
-      byCategory.tech.push(story);
-    }
   }
 
   // Deduplicate by headline similarity within each category
@@ -203,21 +186,13 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
     });
   }
 
-  // Sort each category by relevance, take top 5
-  // If AI category is short, fill from tech overflow (and vice versa)
+  // Sort each category by relevance, take top 5 → 20 total
   for (const cat of Object.keys(byCategory)) {
     byCategory[cat].sort((a, b) => relevanceScore(b) - relevanceScore(a));
   }
-  if (byCategory.ai.length < 5 && byCategory.tech.length > 5) {
-    const extra = byCategory.tech.splice(5, 5 - byCategory.ai.length);
-    byCategory.ai.push(...extra.map((s) => ({ ...s, category: "ai" as const })));
-  } else if (byCategory.tech.length < 5 && byCategory.ai.length > 5) {
-    const extra = byCategory.ai.splice(5, 5 - byCategory.tech.length);
-    byCategory.tech.push(...extra.map((s) => ({ ...s, category: "tech" as const })));
-  }
 
   const selected: NewsStory[] = [];
-  for (const cat of ["football", "geopolitics", "business", "tech", "ai"]) {
+  for (const cat of ["football", "geopolitics", "business", "tech"]) {
     selected.push(...byCategory[cat].slice(0, 5));
   }
 
@@ -235,15 +210,13 @@ export function formatBriefAsEmail(brief: NewsBrief): string {
     geopolitics: "#F87171",
     business:    "#34D399",
     tech:        "#22D3EE",
-    ai:          "#A78BFA",
     other:       "#94A3B8",
   };
   const CAT_LABELS: Record<string, string> = {
     football:    "⚽ Football",
     geopolitics: "🌍 Geopolitics",
     business:    "📈 Business",
-    tech:        "💻 Tech",
-    ai:          "🤖 AI",
+    tech:        "💻 Tech & AI",
     other:       "📰 News",
   };
 
