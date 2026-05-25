@@ -308,7 +308,8 @@ export default async function DashboardPage() {
   const checkTotal   = checkItems.length;
 
   const checkItemsSerial = checkItems.map((i) => ({
-    id: i.id, title: i.title, emoji: i.emoji, source: "manual" as const,
+    id: i.id, title: i.title, emoji: i.emoji, notes: i.notes ?? null,
+    source: (i.autoSource ?? "manual") as "manual" | "workout",
   }));
 
   // ── Mood/Sleep ─────────────────────────────────────────────────────────────

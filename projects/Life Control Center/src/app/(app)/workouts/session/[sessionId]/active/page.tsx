@@ -193,7 +193,7 @@ function NumberPad({
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 250, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div style={{ flex: 1, background: "rgba(0,0,0,0.5)" }} onClick={onClose} />
+      <div style={{ flex: 1, background: "rgba(0,0,0,0.75)" }} onClick={onClose} />
       <div
         ref={padRef}
         role="dialog"
@@ -201,7 +201,7 @@ function NumberPad({
         aria-label={`Enter ${label}`}
         tabIndex={-1}
         style={{
-          background: "var(--bg-card)", borderTop: "1px solid var(--line)",
+          background: "var(--bg)", borderTop: "1px solid var(--line)",
           borderRadius: "20px 20px 0 0", padding: "20px 16px 28px",
           outline: "none",
         }}
@@ -1283,6 +1283,12 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       )}
 
       <style>{`
+        /* Hide shell chrome during active session */
+        .settings-gear, .cc-mobile-nav, .cc-sidebar, .cc-fab { display: none !important; }
+        .app-main { padding-left: 0 !important; }
+        .app-content { padding: 0 !important; }
+        /* Prevent body scroll */
+        html, body { overflow: hidden !important; height: 100dvh !important; }
         .numpad-key:active { transform: scale(0.95); background: rgba(255,255,255,0.06) !important; }
         .set-log-btn:active { transform: scale(0.97); }
         .set-undo-btn:hover { background: rgba(255,255,255,0.05) !important; color: var(--ink-3) !important; }

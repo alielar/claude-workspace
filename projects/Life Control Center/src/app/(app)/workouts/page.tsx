@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { format } from "date-fns";
+import Link from "next/link";
 import RunningCard from "@/components/workouts/RunningCard";
 import PrTickerClient from "@/components/workouts/PrTickerClient";
 import MonthCalendar from "@/components/workouts/MonthCalendar";
@@ -98,16 +99,36 @@ export default async function WorkoutsPage() {
     .where(and(eq(gymSessions.userId, userId), sql`${gymSessions.date} >= ${format(now, "yyyy")}-01-01`));
   const ytdCount = sessionYTD[0]?.count ?? 0;
 
+  // ── Check for unfinished (in-progress) sessions ───────────────────────────
+  const [activeSession] = await db
+    .select({ id: gymSessions.id, workoutName: gymSessions.workoutName, date: gymSessions.date })
+    .from(gymSessions)
+    .where(and(
+      eq(gymSessions.userId, userId),
+      sql`${gymSessions.durationSeconds} IS NULL`,
+    ))
+    .orderBy(desc(gymSessions.createdAt))
+    .limit(1);
+
+  // ── Check if today's workout already done ─────────────────────────────────
+  const todaySessions = await db
+    .select({ planId: gymSessions.planId })
+    .from(gymSessions)
+    .where(and(eq(gymSessions.userId, userId), eq(gymSessions.date, today)));
+  const doneTodayPlanIds = new Set(todaySessions.map(s => s.planId).filter(Boolean));
+
   // ── Determine "Up Next" from day-of-week assignments ──────────────────────
   const DOW_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const todayIdx = DOW_ORDER.indexOf(todayDow);
   let upNextPlan: PlanRow | null = null;
 
-  // Check today first, then upcoming days
+  // Check today first, then upcoming days — skip plans already done today
   for (let offset = 0; offset < 7 && !upNextPlan; offset++) {
     const dow = DOW_ORDER[(todayIdx + offset) % 7];
     for (const p of plans) {
       if (!p.assignedDays) continue;
+      // Skip if this plan was already completed today and we're checking today
+      if (offset === 0 && doneTodayPlanIds.has(p.id)) continue;
       try {
         const days: string[] = JSON.parse(p.assignedDays);
         if (days.includes(dow)) { upNextPlan = p; break; }
@@ -274,6 +295,37 @@ export default async function WorkoutsPage() {
 
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
       {prs.length > 0 && <PrTickerClient initialPrs={prs} />}
+
+      {/* ── Resume in-progress session banner ───────────────────────────── */}
+      {activeSession && (
+        <div className="cc-card" style={{
+          marginBottom: 14, padding: "20px 24px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "linear-gradient(135deg, rgba(124,77,255,0.12), rgba(100,255,218,0.06)), var(--bg-card)",
+          border: "1px solid rgba(124,77,255,0.30)",
+        }}>
+          <div>
+            <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: "var(--cyan)", fontFamily: "var(--f-mono)", marginBottom: 4 }}>
+              Session in progress
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>
+              {activeSession.workoutName} · {activeSession.date}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <Link
+              href={`/workouts/session/${activeSession.id}/active`}
+              className="cc-btn-primary"
+              style={{
+                display: "inline-flex", padding: "10px 20px", borderRadius: 8,
+                fontSize: 13, fontWeight: 700, textDecoration: "none",
+              }}
+            >
+              Resume
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* ── Up Next hero (or empty state if no workouts) ─────────────────── */}
       {hasWorkouts && upNextPlan ? (

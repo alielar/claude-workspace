@@ -14,6 +14,7 @@ type Item = {
   id: number;
   title: string;
   emoji: string | null;
+  notes?: string | null;
   source?: "manual" | "workout";
 };
 
@@ -144,17 +145,35 @@ export function ChecklistCard({ items, completedIds: initialCompleted, total }: 
                     </svg>
                   )}
                 </span>
-                {/* Label */}
-                <span style={{
-                  fontSize: 13, color: isDone ? "var(--ink-4)" : "var(--ink)",
-                  textDecoration: isDone ? "line-through" : "none",
-                  textDecorationColor: "var(--ink-5)",
-                  textDecorationThickness: "1px",
-                  transition: "color 0.2s var(--easeOut)",
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                }}>
-                  {item.emoji ? `${item.emoji} ` : ""}{item.title}
-                </span>
+                {/* Label + notes */}
+                <div style={{ overflow: "hidden", minWidth: 0 }}>
+                  <span style={{
+                    fontSize: 13, color: isDone ? "var(--ink-4)" : "var(--ink)",
+                    textDecoration: isDone ? "line-through" : "none",
+                    textDecorationColor: "var(--ink-5)",
+                    textDecorationThickness: "1px",
+                    transition: "color 0.2s var(--easeOut)",
+                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                    display: "block",
+                  }}>
+                    {item.emoji ? `${item.emoji} ` : ""}{item.title}
+                  </span>
+                  {item.notes && (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        fontSize: 11, color: "var(--ink-4)", lineHeight: 1.4, marginTop: 2,
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: item.notes.replace(
+                          /(https?:\/\/[^\s]+)/g,
+                          '<a href="$1" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none">$1</a>'
+                        ),
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             );
           })
