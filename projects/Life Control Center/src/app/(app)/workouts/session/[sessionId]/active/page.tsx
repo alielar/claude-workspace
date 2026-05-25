@@ -276,10 +276,11 @@ function Stepper({
             onClick={() => nudge(-1)}
             disabled={disabled}
             aria-label={`Decrease ${label}`}
+            className="stepper-btn"
             style={{
-              width: 52, height: 52, borderRadius: 12, border: "1px solid var(--line)",
-              background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
-              cursor: disabled ? "default" : "pointer", fontSize: 24, flexShrink: 0,
+              width: 50, height: 50, borderRadius: 12, border: "1.5px solid var(--line-hi)",
+              background: disabled ? "transparent" : "rgba(255,255,255,0.05)", color: "var(--ink)",
+              cursor: disabled ? "default" : "pointer", fontSize: 24, fontWeight: 300, flexShrink: 0,
               opacity: disabled ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >−</button>
@@ -289,27 +290,29 @@ function Stepper({
             aria-label={`Edit ${label} value`}
             style={{
               minWidth: 90, padding: "10px 14px", borderRadius: 12,
-              background: disabled ? "transparent" : "var(--bg-input)",
-              border: `1px solid ${disabled ? "transparent" : "var(--line)"}`,
+              background: disabled ? "transparent" : "rgba(255,255,255,0.06)",
+              border: `1.5px solid ${disabled ? "transparent" : "rgba(124,77,255,0.30)"}`,
               cursor: disabled ? "default" : "pointer", textAlign: "center",
+              boxShadow: disabled ? "none" : "0 0 8px rgba(124,77,255,0.08)",
             }}
           >
             <div style={{
-              fontSize: 28, fontFamily: "var(--f-mono)", fontWeight: 400,
-              color: disabled ? "var(--ink-3)" : "var(--ink)",
+              fontSize: 28, fontFamily: "var(--f-mono)", fontWeight: 500,
+              color: disabled ? "var(--ink-3)" : "#fff",
             }}>
               {value || "0"}
             </div>
-            {unit && <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 2, letterSpacing: "0.06em" }}>{unit}</div>}
+            {unit && <div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 2, letterSpacing: "0.06em" }}>{unit}</div>}
           </button>
           <button
             onClick={() => nudge(1)}
             disabled={disabled}
             aria-label={`Increase ${label}`}
+            className="stepper-btn"
             style={{
-              width: 52, height: 52, borderRadius: 12, border: "1px solid var(--line)",
-              background: disabled ? "transparent" : "var(--bg-input)", color: "var(--ink-2)",
-              cursor: disabled ? "default" : "pointer", fontSize: 24, flexShrink: 0,
+              width: 50, height: 50, borderRadius: 12, border: "1.5px solid var(--line-hi)",
+              background: disabled ? "transparent" : "rgba(255,255,255,0.05)", color: "var(--ink)",
+              cursor: disabled ? "default" : "pointer", fontSize: 24, fontWeight: 300, flexShrink: 0,
               opacity: disabled ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >+</button>
@@ -522,22 +525,23 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
       padding: "0 16px", flex: 1, justifyContent: "center", minHeight: 0,
     }}>
       {/* Exercise name */}
-      <div style={{ textAlign: "center", marginBottom: 8 }}>
+      <div style={{ textAlign: "center", marginBottom: 6 }}>
         <div style={{
-          fontSize: 20, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em",
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          maxWidth: "85vw",
+          fontSize: 18, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em",
+          lineHeight: 1.25, maxWidth: "85vw",
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          overflow: "hidden",
         }}>
           {exercise.name}
         </div>
-        <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 4 }}>
+        <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 3 }}>
           {[exercise.primaryMuscle, exercise.equipment].filter(Boolean).join(" · ")}
         </div>
       </div>
 
       {/* Set badge */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 24,
+        display: "flex", alignItems: "center", gap: 10, marginBottom: 16,
       }}>
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 6,
@@ -580,15 +584,15 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
       {/* PR context */}
       {currentPr > 0 && (
         <div style={{
-          fontSize: 11, color: "var(--ink-4)", marginBottom: 16, padding: "6px 14px",
-          background: "rgba(124,77,255,0.05)", borderRadius: 8, border: "1px solid rgba(124,77,255,0.12)",
+          fontSize: 10, color: "var(--ink-4)", marginBottom: 10, padding: "4px 12px",
+          background: "rgba(124,77,255,0.05)", borderRadius: 6, border: "1px solid rgba(124,77,255,0.12)",
         }}>
           PR: <span style={{ color: "var(--violet)", fontFamily: "var(--f-mono)" }}>est. {currentPr.toFixed(1)} kg 1RM</span>
         </div>
       )}
 
       {/* Target + last session hint */}
-      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
         <span style={{ fontSize: 11, color: "var(--ink-5)", fontFamily: "var(--f-mono)" }}>
           Target: {config.repMin}–{config.repMax} reps
         </span>
@@ -603,12 +607,12 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
 
       {/* Steppers */}
       <div style={{
-        display: "flex", gap: 24, justifyContent: "center", marginBottom: 28,
+        display: "flex", gap: 20, justifyContent: "center", marginBottom: 20,
         flexWrap: "wrap",
       }}>
         {needsWeight && (
           <Stepper label="Weight" value={weight} onChange={setWeight}
-            step={exercise.weightIncrement} unit="kg" disabled={isDone} allowDecimal />
+            step={exercise.weightIncrement || 2.5} unit="kg" disabled={isDone} allowDecimal />
         )}
         {needsDuration && (
           <Stepper label="Duration" value={duration} onChange={setDuration}
@@ -669,6 +673,124 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
   );
 }
 
+// ─── Reorder Modal ───────────────────────────────────────────────────────────
+
+function ReorderModal({
+  exercises,
+  order,
+  onReorder,
+  onClose,
+}: {
+  exercises: WorkoutExercise[];
+  order: number[];
+  onReorder: (newOrder: number[]) => void;
+  onClose: () => void;
+}) {
+  const [localOrder, setLocalOrder] = useState(order);
+
+  function moveUp(idx: number) {
+    if (idx === 0) return;
+    setLocalOrder((prev) => {
+      const next = [...prev];
+      [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      return next;
+    });
+  }
+
+  function moveDown(idx: number) {
+    if (idx >= localOrder.length - 1) return;
+    setLocalOrder((prev) => {
+      const next = [...prev];
+      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      return next;
+    });
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Reorder exercises"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)",
+        display: "flex", alignItems: "center", justifyContent: "center", zIndex: 250,
+        padding: "0 16px",
+      }}
+    >
+      <div className="cc-card" style={{ width: "min(380px, 100vw - 32px)", maxHeight: "80vh", overflow: "auto" }}>
+        <div className="cc-card-head">
+          <div className="title">Reorder exercises</div>
+        </div>
+        <div className="cc-card-body" style={{ padding: "12px 16px" }}>
+          {localOrder.map((exIdx, pos) => {
+            const ex = exercises[exIdx];
+            return (
+              <div
+                key={ex.exerciseId}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "10px 8px",
+                  borderBottom: pos < localOrder.length - 1 ? "1px solid var(--line)" : "none",
+                }}
+              >
+                <span style={{
+                  width: 22, height: 22, borderRadius: 6,
+                  background: "rgba(124,77,255,0.10)", border: "1px solid rgba(124,77,255,0.25)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontFamily: "var(--f-mono)", color: "var(--violet)", fontWeight: 600, flexShrink: 0,
+                }}>
+                  {pos + 1}
+                </span>
+                <span style={{ flex: 1, fontSize: 13, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {ex.name}
+                </span>
+                <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                  <button
+                    onClick={() => moveUp(pos)}
+                    disabled={pos === 0}
+                    style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: pos === 0 ? "transparent" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${pos === 0 ? "transparent" : "var(--line)"}`,
+                      color: pos === 0 ? "var(--ink-5)" : "var(--ink-2)",
+                      fontSize: 16, cursor: pos === 0 ? "default" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >↑</button>
+                  <button
+                    onClick={() => moveDown(pos)}
+                    disabled={pos >= localOrder.length - 1}
+                    style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: pos >= localOrder.length - 1 ? "transparent" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${pos >= localOrder.length - 1 ? "transparent" : "var(--line)"}`,
+                      color: pos >= localOrder.length - 1 ? "var(--ink-5)" : "var(--ink-2)",
+                      fontSize: 16, cursor: pos >= localOrder.length - 1 ? "default" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >↓</button>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+            <button onClick={onClose} className="cc-btn" style={{ flex: 1, padding: "10px 0", fontSize: 13 }}>
+              Cancel
+            </button>
+            <button
+              onClick={() => { onReorder(localOrder); onClose(); }}
+              className="cc-btn-primary"
+              style={{ flex: 1, padding: "10px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function ActiveSessionPage({ params }: { params: Promise<{ sessionId: string }> }) {
@@ -682,10 +804,11 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
   const [restTimer, setRestTimer] = useState<{ seconds: number } | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [finishing, setFinishing] = useState(false);
-  const [abandonConfirm, setAbandonConfirm] = useState(false);
   const [discardConfirm, setDiscardConfirm] = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
   const [viewIndex, setViewIndex] = useState(0); // which flat set we're viewing
+  const [exerciseOrder, setExerciseOrder] = useState<number[]>([]); // exercise reorder
+  const [showReorder, setShowReorder] = useState(false);
 
   useEffect(() => {
     if (!logError) return;
@@ -713,6 +836,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
         const d: SessionData = await r.json();
         setData(d);
         setLoggedSets(d.loggedSets ?? []);
+        setExerciseOrder(d.exercises.map((_, i) => i));
         // Start at first unlogged set
         const allSets = d.exercises.flatMap((ex) =>
           ex.setConfig.map((_, si) => ({ exerciseId: ex.exerciseId, setIndex: si }))
@@ -729,21 +853,22 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
     })();
   }, [sid]);
 
-  // Flatten all sets into a linear sequence
+  // Flatten all sets into a linear sequence (respecting exercise reorder)
   const allSets: FlatSet[] = useMemo(() => {
-    if (!data) return [];
+    if (!data || exerciseOrder.length === 0) return [];
     let idx = 0;
-    return data.exercises.flatMap((ex, ei) =>
+    const orderedExercises = exerciseOrder.map((oi) => ({ ex: data.exercises[oi], originalIndex: oi }));
+    return orderedExercises.flatMap(({ ex, originalIndex }) =>
       ex.setConfig.map((cfg, si) => ({
         globalIndex: idx++,
-        exerciseIndex: ei,
+        exerciseIndex: originalIndex,
         setIndex: si,
         exercise: ex,
         config: cfg,
         prefill: (data.prefillMap[ex.exerciseId] ?? [])[si] ?? null,
       }))
     );
-  }, [data]);
+  }, [data, exerciseOrder]);
 
   // Find first unlogged set index
   const firstUnloggedIdx = useMemo(() => {
@@ -853,11 +978,12 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
     ? loggedSets.find((l) => l.exerciseId === currentFlat.exercise.exerciseId && l.setNumber === currentFlat.setIndex + 1) ?? null
     : null;
 
-  // Build exercise-level progress for the dot navigator
-  const exerciseProgress = data.exercises.map((ex) => {
+  // Build exercise-level progress for the dot navigator (respecting order)
+  const exerciseProgress = exerciseOrder.map((oi) => {
+    const ex = data.exercises[oi];
     const sets = ex.setConfig.length;
     const done = loggedSets.filter((l) => l.exerciseId === ex.exerciseId).length;
-    return { name: ex.name, exerciseId: ex.exerciseId, sets, done, allDone: done >= sets };
+    return { name: ex.name, exerciseId: ex.exerciseId, sets, done, allDone: done >= sets, originalIndex: oi };
   });
 
   return (
@@ -869,11 +995,11 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
 
       {/* ── Sticky top bar ───────────────────────────────────────────────── */}
       <div style={{
-        padding: "14px 16px 0", flexShrink: 0,
+        padding: "12px 16px 0", flexShrink: 0,
         borderBottom: "1px solid var(--line)",
         background: "var(--bg)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <div style={{ minWidth: 0 }}>
             <h1 style={{ fontSize: 17, fontWeight: 700, margin: 0, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {data.session.workoutName}<span className="grad-text">.</span>
@@ -910,7 +1036,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
         </div>
 
         {/* Progress bar */}
-        <div style={{ paddingBottom: 10 }}>
+        <div style={{ paddingBottom: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
             <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
               {doneSets} / {totalConfigSets} sets
@@ -931,15 +1057,25 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
 
       {/* ── Exercise dot navigator ─────────────────────────────────────── */}
       <div style={{
-        padding: "10px 16px", flexShrink: 0,
-        display: "flex", gap: 4, overflowX: "auto",
+        padding: "8px 16px", flexShrink: 0,
+        display: "flex", gap: 4, overflowX: "auto", alignItems: "center",
         borderBottom: "1px solid var(--line)",
         background: "var(--bg)",
       }}>
-        {exerciseProgress.map((ep, ei) => {
-          // Find the first flat set index for this exercise
-          const firstIdx = allSets.findIndex((s) => s.exerciseIndex === ei);
-          const isActive = currentFlat?.exerciseIndex === ei;
+        <button
+          onClick={() => setShowReorder(true)}
+          title="Reorder exercises"
+          style={{
+            width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+            background: "rgba(255,255,255,0.04)", border: "1px solid var(--line)",
+            color: "var(--ink-4)", fontSize: 13, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginRight: 4,
+          }}
+        >⇅</button>
+        {exerciseProgress.map((ep) => {
+          const firstIdx = allSets.findIndex((s) => s.exerciseIndex === ep.originalIndex);
+          const isActive = currentFlat?.exerciseIndex === ep.originalIndex;
           return (
             <button
               key={ep.exerciseId}
@@ -955,7 +1091,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
                 transition: "all 0.15s var(--easeOut)",
               }}
             >
-              {ep.allDone ? "✓ " : ""}{ep.name.length > 10 ? ep.name.slice(0, 10) + "…" : ep.name}
+              {ep.allDone ? "✓ " : ""}{ep.name.length > 12 ? ep.name.slice(0, 12) + "…" : ep.name}
               <span style={{ marginLeft: 4, opacity: 0.6 }}>{ep.done}/{ep.sets}</span>
             </button>
           );
@@ -965,7 +1101,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       {/* ── Main set view ──────────────────────────────────────────────── */}
       {currentFlat ? (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", overflow: "auto", padding: "16px 0" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden", padding: "8px 0" }}>
             <CurrentSetView
               flatSet={currentFlat}
               logged={currentLogged}
@@ -986,7 +1122,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
 
           {/* ── Bottom navigation ────────────────────────────────────────── */}
           <div style={{
-            padding: "12px 16px", flexShrink: 0,
+            padding: "10px 16px", flexShrink: 0,
             borderTop: "1px solid var(--line)",
             display: "flex", alignItems: "center", justifyContent: "space-between",
             background: "var(--bg)",
@@ -1054,30 +1190,8 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
             </button>
           </div>
 
-          {/* Abandon link */}
-          <div style={{ padding: "8px 16px 16px", textAlign: "center", flexShrink: 0 }}>
-            {!abandonConfirm ? (
-              <button onClick={() => setAbandonConfirm(true)} style={{
-                background: "none", border: "none", color: "var(--ink-5)", fontSize: 11,
-                cursor: "pointer", letterSpacing: "0.04em",
-              }}>
-                Abandon session
-              </button>
-            ) : (
-              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                <button onClick={() => setAbandonConfirm(false)} className="cc-btn" style={{ fontSize: 12, padding: "6px 14px" }}>
-                  Cancel
-                </button>
-                <button onClick={handleAbandon} style={{
-                  padding: "6px 14px", borderRadius: 8, border: "1px solid var(--neg)",
-                  background: "rgba(255,100,100,0.08)", color: "var(--neg)",
-                  fontSize: 12, cursor: "pointer",
-                }}>
-                  Yes, abandon
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Safe bottom spacing */}
+          <div style={{ height: "env(safe-area-inset-bottom, 8px)", flexShrink: 0 }} />
         </div>
       ) : (
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
@@ -1086,6 +1200,19 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
             <Link href="/workouts" className="cc-btn">← Back</Link>
           </div>
         </div>
+      )}
+
+      {/* ── Reorder modal ──────────────────────────────────────────────── */}
+      {showReorder && data && (
+        <ReorderModal
+          exercises={data.exercises}
+          order={exerciseOrder}
+          onReorder={(newOrder) => {
+            setExerciseOrder(newOrder);
+            setViewIndex(0); // Reset to first set of new order
+          }}
+          onClose={() => setShowReorder(false)}
+        />
       )}
 
       {/* ── Log error toast ─────────────────────────────────────────────── */}
@@ -1161,6 +1288,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
         .set-undo-btn:hover { background: rgba(255,255,255,0.05) !important; color: var(--ink-3) !important; }
         .ex-nav-pill:hover { background: rgba(255,255,255,0.06) !important; }
         .nav-arrow:hover:not(:disabled) { background: rgba(255,255,255,0.06) !important; border-color: var(--line-hi) !important; }
+        .stepper-btn:active:not(:disabled) { transform: scale(0.94); background: rgba(124,77,255,0.12) !important; }
       `}</style>
     </div>
   );
