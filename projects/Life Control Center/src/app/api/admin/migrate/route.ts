@@ -238,6 +238,19 @@ export async function POST() {
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_sleep_entry ON sleep_entries(user_id, date)`,
+
+    // ── Sleep entries — Apple Health columns ────────────────────────────────
+    `ALTER TABLE sleep_entries ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'`,
+    `ALTER TABLE sleep_entries ADD COLUMN stage_deep_minutes INTEGER`,
+    `ALTER TABLE sleep_entries ADD COLUMN stage_core_minutes INTEGER`,
+    `ALTER TABLE sleep_entries ADD COLUMN stage_rem_minutes INTEGER`,
+    `ALTER TABLE sleep_entries ADD COLUMN stage_awake_minutes INTEGER`,
+    `ALTER TABLE sleep_entries ADD COLUMN heart_rate_avg REAL`,
+    `ALTER TABLE sleep_entries ADD COLUMN heart_rate_min REAL`,
+    `ALTER TABLE sleep_entries ADD COLUMN heart_rate_max REAL`,
+    `ALTER TABLE sleep_entries ADD COLUMN respiratory_rate_avg REAL`,
+    `ALTER TABLE sleep_entries ADD COLUMN blood_oxygen_avg REAL`,
+    `ALTER TABLE sleep_entries ADD COLUMN raw_payload TEXT`,
   ];
 
   const results: string[] = [];

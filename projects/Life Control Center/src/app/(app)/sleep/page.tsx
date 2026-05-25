@@ -16,6 +16,16 @@ type SleepEntry = {
   wake: string;
   hours: number;
   quality: number;
+  source?: string;
+  stage_deep_minutes?: number | null;
+  stage_core_minutes?: number | null;
+  stage_rem_minutes?: number | null;
+  stage_awake_minutes?: number | null;
+  heart_rate_avg?: number | null;
+  heart_rate_min?: number | null;
+  heart_rate_max?: number | null;
+  respiratory_rate_avg?: number | null;
+  blood_oxygen_avg?: number | null;
 };
 
 const TARGET_HOURS = 8;
@@ -36,6 +46,138 @@ function fmtHours(h: number): string {
   const hh = Math.floor(h);
   const mm = Math.round((h - hh) * 60);
   return `${hh}h${mm > 0 ? ` ${mm}m` : ""}`;
+}
+
+// ─── Apple Health Card ───────────────────────────────────────────────────────
+
+const STAGE_COLORS = {
+  deep: "#7C4DFF",
+  core: "#4D9FFF",
+  rem:  "#64FFDA",
+  awake: "#FFB74D",
+} as const;
+
+function fmtMin(m: number): string {
+  const hh = Math.floor(m / 60);
+  const mm = m % 60;
+  return hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
+}
+
+function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
+  const hasAppleData = entry?.source === "apple_health";
+  const todayDate = todayMadrid();
+  const dateLabel = new Date(todayDate + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+  const glassStyle: React.CSSProperties = {
+    background: "rgba(22,22,38,0.55)",
+    backdropFilter: "blur(20px) saturate(140%)",
+    WebkitBackdropFilter: "blur(20px) saturate(140%)",
+    border: "1px solid rgba(180,180,240,0.08)",
+    borderRadius: 16,
+    marginBottom: 14,
+  };
+
+  if (!hasAppleData) {
+    return (
+      <div style={glassStyle}>
+        <div className="cc-card-head">
+          <div className="title">Apple Health</div>
+          <div className="tail">{dateLabel}</div>
+        </div>
+        <div className="cc-card-body" style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 16px" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(180,180,240,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+          <div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>No Apple Health data for tonight yet</div>
+            <div style={{ fontSize: 10.5, color: "var(--ink-5)", marginTop: 2, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>Syncs automatically at 10:00 AM via Shortcuts</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Build stages array from available data
+  const stages = [
+    { key: "deep",  label: "Deep",  minutes: entry.stage_deep_minutes,  color: STAGE_COLORS.deep },
+    { key: "core",  label: "Core",  minutes: entry.stage_core_minutes,  color: STAGE_COLORS.core },
+    { key: "rem",   label: "REM",   minutes: entry.stage_rem_minutes,   color: STAGE_COLORS.rem },
+    { key: "awake", label: "Awake", minutes: entry.stage_awake_minutes, color: STAGE_COLORS.awake },
+  ].filter((s) => s.minutes != null && s.minutes > 0) as { key: string; label: string; minutes: number; color: string }[];
+
+  const totalStageMin = stages.reduce((s, st) => s + st.minutes, 0);
+
+  return (
+    <div style={glassStyle}>
+      <div className="cc-card-head">
+        <div className="title">Apple Health · Last night</div>
+        <div className="tail">{dateLabel}</div>
+      </div>
+      <div className="cc-card-body">
+        {/* Sleep stages bar */}
+        {stages.length > 0 && (
+          <div style={{ marginBottom: 18 }}>
+            <div className="ah-stages-bar" style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", gap: 1.5 }}>
+              {stages.map((s) => (
+                <div key={s.key} style={{
+                  flex: s.minutes / totalStageMin,
+                  background: s.color,
+                  opacity: 0.75,
+                  borderRadius: 3,
+                  minWidth: 4,
+                }} />
+              ))}
+            </div>
+            <div className="ah-stages-legend" style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginTop: 10 }}>
+              {stages.map((s) => (
+                <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: 2, background: s.color, opacity: 0.75, display: "inline-block", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "var(--ink-3)", whiteSpace: "nowrap" }}>
+                    {s.label} · <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-2)" }}>{fmtMin(s.minutes)}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Vitals tiles */}
+        <div className="ah-vitals-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {/* Heart Rate */}
+          <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Heart rate</div>
+            <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
+              {entry.heart_rate_avg != null ? Math.round(entry.heart_rate_avg) : "—"}
+              <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>bpm</span>
+            </div>
+            {entry.heart_rate_min != null && entry.heart_rate_max != null && (
+              <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", marginTop: 2 }}>
+                {Math.round(entry.heart_rate_min)}–{Math.round(entry.heart_rate_max)}
+              </div>
+            )}
+          </div>
+
+          {/* Respiratory Rate */}
+          <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Resp. rate</div>
+            <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
+              {entry.respiratory_rate_avg != null ? entry.respiratory_rate_avg.toFixed(1) : "—"}
+              <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>br/m</span>
+            </div>
+          </div>
+
+          {/* Blood Oxygen */}
+          <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>SpO₂</div>
+            <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
+              {entry.blood_oxygen_avg != null ? entry.blood_oxygen_avg.toFixed(1) : "—"}
+              <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -70,10 +212,10 @@ export default function SleepPage() {
     } catch { /* ignore */ }
   }, []);
 
-  // Load entries from API
+  // Load entries from API (uses /api/sleep/logs to get all columns including Apple Health)
   const loadEntries = useCallback(async () => {
     try {
-      const res = await fetch("/api/sleep");
+      const res = await fetch("/api/sleep/logs");
       if (!res.ok) return;
       const rows = await res.json();
       const mapped: SleepEntry[] = rows.map((r: Record<string, unknown>) => ({
@@ -82,6 +224,16 @@ export default function SleepPage() {
         wake: r.wake as string,
         hours: r.hours as number,
         quality: r.quality as number,
+        source: (r.source as string) ?? "manual",
+        stage_deep_minutes: r.stageDeepMinutes as number | null ?? null,
+        stage_core_minutes: r.stageCoreMinutes as number | null ?? null,
+        stage_rem_minutes: r.stageRemMinutes as number | null ?? null,
+        stage_awake_minutes: r.stageAwakeMinutes as number | null ?? null,
+        heart_rate_avg: r.heartRateAvg as number | null ?? null,
+        heart_rate_min: r.heartRateMin as number | null ?? null,
+        heart_rate_max: r.heartRateMax as number | null ?? null,
+        respiratory_rate_avg: r.respiratoryRateAvg as number | null ?? null,
+        blood_oxygen_avg: r.bloodOxygenAvg as number | null ?? null,
       }));
       setEntries(mapped);
       const e = mapped.find((e) => e.date === today);
@@ -92,6 +244,8 @@ export default function SleepPage() {
 
   useEffect(() => {
     (async () => {
+      // Ensure new columns exist before loading
+      try { await fetch("/api/admin/migrate", { method: "POST" }); } catch { /* ignore */ }
       await migrateLocalStorage();
       await loadEntries();
     })();
@@ -277,6 +431,9 @@ export default function SleepPage() {
             </div>
           </div>
 
+          {/* Apple Health card */}
+          <AppleHealthCard entry={entries.find((e) => e.date === today) ?? null} />
+
           {/* Weekly bar chart */}
           <div className="cc-card" style={{ marginBottom: 14 }}>
             <div className="cc-card-head">
@@ -433,6 +590,7 @@ export default function SleepPage() {
         .sleep-history-row:hover { background: rgba(255,255,255,0.02); }
         @media (max-width: 768px) {
           .sleep-grid { grid-template-columns: 1fr !important; }
+          .ah-vitals-grid { grid-template-columns: 1fr 1fr !important; }
         }
       `}</style>
     </div>

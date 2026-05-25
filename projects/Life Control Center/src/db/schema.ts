@@ -622,6 +622,17 @@ export const sleepEntries = sqliteTable("sleep_entries", {
   wake: text("wake").notNull(), // "HH:MM"
   hours: real("hours").notNull(), // decimal hours
   quality: integer("quality").notNull(), // 1–10
+  source: text("source").notNull().default("manual"), // "manual" | "apple_health"
+  stageDeepMinutes: integer("stage_deep_minutes"),
+  stageCoreMinutes: integer("stage_core_minutes"),
+  stageRemMinutes: integer("stage_rem_minutes"),
+  stageAwakeMinutes: integer("stage_awake_minutes"),
+  heartRateAvg: real("heart_rate_avg"),
+  heartRateMin: real("heart_rate_min"),
+  heartRateMax: real("heart_rate_max"),
+  respiratoryRateAvg: real("respiratory_rate_avg"),
+  bloodOxygenAvg: real("blood_oxygen_avg"),
+  rawPayload: text("raw_payload"), // full JSON from Apple Shortcut
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

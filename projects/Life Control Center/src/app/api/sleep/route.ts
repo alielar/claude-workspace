@@ -43,13 +43,14 @@ export async function POST(req: NextRequest) {
   }
 
   await db.run(
-    sql`INSERT INTO sleep_entries (user_id, date, bedtime, wake, hours, quality)
-        VALUES (${session.user.id}, ${date}, ${bedtime}, ${wake}, ${hours}, ${quality})
+    sql`INSERT INTO sleep_entries (user_id, date, bedtime, wake, hours, quality, source)
+        VALUES (${session.user.id}, ${date}, ${bedtime}, ${wake}, ${hours}, ${quality}, 'manual')
         ON CONFLICT (user_id, date) DO UPDATE SET
           bedtime = ${bedtime},
           wake = ${wake},
           hours = ${hours},
-          quality = ${quality}`
+          quality = ${quality},
+          source = CASE WHEN sleep_entries.source = 'apple_health' THEN 'apple_health' ELSE 'manual' END`
   );
 
   return NextResponse.json({ ok: true });
