@@ -291,6 +291,8 @@ export const readingProgress = sqliteTable("reading_progress", {
     .references(() => books.id, { onDelete: "cascade" }),
   currentPage: integer("current_page").notNull().default(0),
   lastReadAt: integer("last_read_at", { mode: "timestamp_ms" }),
+  bookmarkText: text("bookmark_text"),
+  bookmarkPage: integer("bookmark_page"),
 });
 
 export const annotations = sqliteTable("annotations", {
@@ -322,6 +324,25 @@ export const readingSessions = sqliteTable("reading_sessions", {
   /** Europe/Madrid date YYYY-MM-DD — used for streak calculation */
   date: text("date").notNull(),
   startedAt: integer("started_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** Reading notes — things learned during reading, with SRS review */
+export const readingNotes = sqliteTable("reading_notes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  bookId: integer("book_id").references(() => books.id, { onDelete: "cascade" }),
+  sessionId: integer("session_id"),
+  pageNumber: integer("page_number"),
+  content: text("content").notNull(),
+  interval: integer("interval").notNull().default(0), // SRS step index 0–6
+  streak: integer("streak").notNull().default(0),
+  nextReviewDate: text("next_review_date").notNull(),
+  masteryStatus: text("mastery_status").notNull().default("new"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
 });

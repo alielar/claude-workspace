@@ -251,6 +251,25 @@ export async function POST() {
     `ALTER TABLE sleep_entries ADD COLUMN respiratory_rate_avg REAL`,
     `ALTER TABLE sleep_entries ADD COLUMN blood_oxygen_avg REAL`,
     `ALTER TABLE sleep_entries ADD COLUMN raw_payload TEXT`,
+
+    // ── Reading progress — bookmark columns ─────────────────────────────────
+    `ALTER TABLE reading_progress ADD COLUMN bookmark_text TEXT`,
+    `ALTER TABLE reading_progress ADD COLUMN bookmark_page INTEGER`,
+
+    // ── Reading notes table ─────────────────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS reading_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+      session_id INTEGER REFERENCES reading_sessions(id) ON DELETE SET NULL,
+      page_number INTEGER,
+      content TEXT NOT NULL,
+      interval INTEGER NOT NULL DEFAULT 0,
+      streak INTEGER NOT NULL DEFAULT 0,
+      next_review_date TEXT NOT NULL,
+      mastery_status TEXT NOT NULL DEFAULT 'new',
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
   ];
 
   const results: string[] = [];

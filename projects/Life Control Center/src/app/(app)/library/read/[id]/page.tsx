@@ -32,10 +32,11 @@ type WordResult = { word: string; definition: string; etymology?: string; exampl
 
 // ─── Text-selection popup ────────────────────────────────────────────────────
 
-function SelectionPopup({ text, position, onAddToBank, onDismiss }: {
+function SelectionPopup({ text, position, onAddToBank, onBookmark, onDismiss }: {
   text: string;
   position: { x: number; y: number };
   onAddToBank: (word: string) => void;
+  onBookmark: (text: string) => void;
   onDismiss: () => void;
 }) {
   return (
@@ -54,25 +55,33 @@ function SelectionPopup({ text, position, onAddToBank, onDismiss }: {
         backdropFilter: "blur(20px)",
         display: "flex",
         alignItems: "center",
-        gap: 10,
+        gap: 8,
         animation: "fadeInUp 0.12s ease",
         whiteSpace: "nowrap",
       }}
-      onMouseDown={(e) => e.preventDefault()} // prevent selection loss
+      onMouseDown={(e) => e.preventDefault()}
     >
-      <span style={{ fontSize: 12, color: "var(--ink-2)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis" }}>
+      <span style={{ fontSize: 12, color: "var(--ink-2)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
         &ldquo;{text}&rdquo;
       </span>
       <button
         onClick={() => { onAddToBank(text); onDismiss(); }}
         className="cc-btn-primary"
-        style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
-          borderRadius: 7, padding: "5px 10px",
-          cursor: "pointer", flexShrink: 0,
-        }}
+        style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", borderRadius: 7, padding: "5px 10px", cursor: "pointer", flexShrink: 0 }}
       >
         + Word Bank
+      </button>
+      <button
+        onClick={() => { onBookmark(text); onDismiss(); }}
+        style={{
+          fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
+          borderRadius: 7, padding: "5px 10px", cursor: "pointer", flexShrink: 0,
+          background: "rgba(255,183,77,0.15)", border: "1px solid rgba(255,183,77,0.35)", color: "#FFB74D",
+        }}
+        title="Mark where you stopped"
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 3, verticalAlign: "middle" }}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Stop here
       </button>
       <button
         onClick={onDismiss}
@@ -88,18 +97,48 @@ function SelectionPopup({ text, position, onAddToBank, onDismiss }: {
 
 // ─── Highlights panel ─────────────────────────────────────────────────────────
 
-function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, onClose }: {
+type ReadingNote = { id: number; content: string; pageNumber: number | null; createdAt: string };
+
+function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPage, onClose }: {
   annotations: Annotation[];
   onGoToPage: (p: number) => void;
   onDelete: (id: number) => void;
   bookId: number;
+  currentPage: number;
   onClose: () => void;
 }) {
-  const [tab, setTab]         = useState<"highlights" | "lookup">("highlights");
+  const [tab, setTab]         = useState<"highlights" | "lookup" | "notes">("highlights");
   const [query, setQuery]     = useState("");
   const [result, setResult]   = useState<WordResult | null>(null);
   const [lookLoading, setLL]  = useState(false);
   const [saved, setSaved]     = useState(false);
+
+  // Notes state
+  const [notes, setNotes]       = useState<ReadingNote[]>([]);
+  const [noteText, setNoteText] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/library/notes?bookId=${bookId}`).then((r) => r.json()).then(setNotes).catch(() => {});
+  }, [bookId]);
+
+  const saveNote = async () => {
+    if (!noteText.trim()) return;
+    setNoteSaving(true);
+    try {
+      const res = await fetch("/api/library/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId, pageNumber: currentPage, content: noteText.trim() }),
+      });
+      if (res.ok) {
+        const note = await res.json();
+        setNotes((prev) => [note, ...prev]);
+        setNoteText("");
+      }
+    } catch { /* ignore */ }
+    setNoteSaving(false);
+  };
 
   const lookup = async () => {
     if (!query.trim()) return;
@@ -148,20 +187,24 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, onClose }:
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 14 }}>
-        {(["highlights","lookup"] as const).map((t) => (
+      <div style={{ display: "flex", gap: 4, marginBottom: 14, flexWrap: "wrap" }}>
+        {([
+          { key: "highlights" as const, label: `Highlights ${annotations.length}` },
+          { key: "notes" as const, label: `Notes ${notes.length}` },
+          { key: "lookup" as const, label: "Word Lookup" },
+        ]).map(({ key, label }) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={key}
+            onClick={() => setTab(key)}
             style={{
               padding: "4px 10px", fontSize: 10.5, border: "1px solid var(--line)", borderRadius: 99,
-              color: tab === t ? "var(--violet)" : "var(--ink-3)",
-              background: tab === t ? "rgba(124,77,255,0.10)" : "transparent",
-              borderColor: tab === t ? "rgba(124,77,255,0.30)" : "var(--line)",
-              cursor: "pointer", textTransform: "capitalize", letterSpacing: "0.04em",
+              color: tab === key ? "var(--violet)" : "var(--ink-3)",
+              background: tab === key ? "rgba(124,77,255,0.10)" : "transparent",
+              borderColor: tab === key ? "rgba(124,77,255,0.30)" : "var(--line)",
+              cursor: "pointer", letterSpacing: "0.04em",
             }}
           >
-            {t === "highlights" ? `Highlights ${annotations.length}` : "Word Lookup"}
+            {label}
           </button>
         ))}
       </div>
@@ -193,6 +236,50 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, onClose }:
               <button onClick={() => onGoToPage(a.pageNumber)} style={{ fontSize: 10.5, color: "var(--violet)", marginTop: 6, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                 Go to page
               </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Notes */}
+      {tab === "notes" && (
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+          {/* New note input */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 6 }}>
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="What did you learn? Jot it down..."
+              rows={3}
+              style={{
+                width: "100%", padding: "10px 12px", fontSize: 12.5, lineHeight: 1.5,
+                background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 10,
+                color: "var(--ink)", resize: "vertical", fontFamily: "inherit",
+              }}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveNote(); }}
+            />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)" }}>p.{currentPage} · ⌘Enter to save</span>
+              <button className="cc-btn cc-btn-primary" onClick={saveNote} disabled={noteSaving || !noteText.trim()} style={{ padding: "5px 12px", fontSize: 11 }}>
+                {noteSaving ? "Saving…" : "Save note"}
+              </button>
+            </div>
+          </div>
+
+          {notes.length === 0 && (
+            <div style={{ padding: "24px 0", textAlign: "center", color: "var(--ink-4)", fontSize: 12 }}>
+              No notes yet. Write down what you&apos;re learning — it&apos;ll come back for review later.
+            </div>
+          )}
+
+          {notes.map((n) => (
+            <div key={n.id} style={{ padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
+              {n.pageNumber && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: "var(--cyan)", letterSpacing: "0.06em" }}>p. {n.pageNumber}</span>
+                </div>
+              )}
+              <div style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.55 }}>{n.content}</div>
             </div>
           ))}
         </div>
@@ -254,6 +341,29 @@ export default function ReadPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cw, setCw] = useState(700);
 
+  // Zoom (persisted per book)
+  const [zoom, setZoom] = useState(1.0);
+  useEffect(() => {
+    const saved = localStorage.getItem(`reader-zoom-${bookId}`);
+    if (saved) setZoom(parseFloat(saved));
+  }, [bookId]);
+  const changeZoom = (delta: number) => {
+    setZoom((z) => {
+      const next = Math.round(Math.max(0.5, Math.min(2.0, z + delta)) * 10) / 10;
+      localStorage.setItem(`reader-zoom-${bookId}`, String(next));
+      return next;
+    });
+  };
+
+  // Night mode (persisted globally)
+  const [nightMode, setNightMode] = useState(false);
+  useEffect(() => {
+    setNightMode(localStorage.getItem("reader-night-mode") === "true");
+  }, []);
+  const toggleNight = () => {
+    setNightMode((v) => { localStorage.setItem("reader-night-mode", String(!v)); return !v; });
+  };
+
   // Session tracking
   const sessionStartRef  = useRef<Date>(new Date());
   const sessionStartPage = useRef<number>(1);
@@ -263,6 +373,9 @@ export default function ReadPage() {
   // Text selection popup
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
   const [addedWords, setAddedWords] = useState<Set<string>>(new Set());
+
+  // Bookmark — marks exact position where user stopped reading
+  const [bookmark, setBookmark] = useState<{ text: string; page: number } | null>(null);
 
   // Container width
   useEffect(() => {
@@ -288,6 +401,9 @@ export default function ReadPage() {
       const p = data.currentPage ?? 1;
       setPage(p);
       sessionStartPage.current = p;
+      if (data.bookmarkText && data.bookmarkPage) {
+        setBookmark({ text: data.bookmarkText, page: data.bookmarkPage });
+      }
     });
     fetch(`/api/library/annotations?bookId=${bookId}`).then((r) => r.json()).then(setAnnot);
   }, [bookId]);
@@ -334,12 +450,32 @@ export default function ReadPage() {
   }, []);
 
   // Add selected word to word bank
+  const [wordToast, setWordToast] = useState<{ text: string; ok: boolean } | null>(null);
   const addToWordBank = async (word: string) => {
     setAddedWords((prev) => new Set([...prev, word]));
-    await fetch("/api/wordbank", {
+    try {
+      const res = await fetch("/api/wordbank", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word, bookId }),
+      });
+      if (!res.ok) throw new Error();
+      setWordToast({ text: `"${word}" saved`, ok: true });
+    } catch {
+      setAddedWords((prev) => { const next = new Set(prev); next.delete(word); return next; });
+      setWordToast({ text: `Failed to save "${word}"`, ok: false });
+    }
+    setTimeout(() => setWordToast(null), 2500);
+  };
+
+  // Save bookmark position
+  const saveBookmark = (text: string) => {
+    const bm = { text: text.slice(0, 120), page: currentPage };
+    setBookmark(bm);
+    fetch("/api/library/progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ word, bookId }),
+      body: JSON.stringify({ bookId, currentPage, bookmarkText: bm.text, bookmarkPage: bm.page }),
     });
   };
 
@@ -362,10 +498,13 @@ export default function ReadPage() {
     savePage(clamped);
   };
 
-  // Keyboard navigation
+  // Keyboard navigation + zoom shortcuts
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // Zoom: Cmd/Ctrl + / -
+      if ((e.metaKey || e.ctrlKey) && (e.key === "=" || e.key === "+")) { e.preventDefault(); changeZoom(0.1); return; }
+      if ((e.metaKey || e.ctrlKey) && e.key === "-") { e.preventDefault(); changeZoom(-0.1); return; }
       if (e.key === "ArrowRight" || e.key === "ArrowDown") goToPage(currentPage + 1);
       if (e.key === "ArrowLeft"  || e.key === "ArrowUp")  goToPage(currentPage - 1);
     };
@@ -389,7 +528,7 @@ export default function ReadPage() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "linear-gradient(180deg, #08080F, #04040A)", overflow: "hidden" }}>
 
       {/* ── Top bar ───────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid var(--line)", background: "rgba(10,10,20,0.55)", backdropFilter: "blur(12px)", zIndex: 5, flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", borderBottom: "1px solid var(--line)", background: "rgba(10,10,20,0.55)", backdropFilter: "blur(12px)", zIndex: 5, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button className="cc-btn cc-btn-icon" onClick={handleBack}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -402,7 +541,31 @@ export default function ReadPage() {
             p. <b style={{ color: "var(--ink)" }}>{currentPage}</b> / {numPages || "?"}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {/* Zoom controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2, marginRight: 4 }}>
+            <button className="cc-btn cc-btn-icon" onClick={() => changeZoom(-0.1)} disabled={zoom <= 0.5} title="Zoom out" style={{ width: 28, height: 28, padding: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: "var(--ink-3)", minWidth: 32, textAlign: "center", letterSpacing: "0.04em" }}>{Math.round(zoom * 100)}%</span>
+            <button className="cc-btn cc-btn-icon" onClick={() => changeZoom(0.1)} disabled={zoom >= 2.0} title="Zoom in" style={{ width: 28, height: 28, padding: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+          {/* Night mode */}
+          <button
+            className="cc-btn cc-btn-icon"
+            onClick={toggleNight}
+            style={{ background: nightMode ? "rgba(255,183,77,0.12)" : undefined, borderColor: nightMode ? "rgba(255,183,77,0.30)" : undefined, width: 30, height: 30, padding: 0 }}
+            title="Night reading filter"
+          >
+            {nightMode ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            )}
+          </button>
+          {/* Highlights panel */}
           <button
             className="cc-btn cc-btn-icon"
             onClick={() => setPanel((v) => !v)}
@@ -428,8 +591,25 @@ export default function ReadPage() {
         {/* PDF area */}
         <div
           ref={containerRef}
-          style={{ position: "relative", overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "32px 36px", background: "linear-gradient(180deg, #0A0A14, #060609)" }}
+          style={{ position: "relative", overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "16px 20px", background: "linear-gradient(180deg, #0A0A14, #060609)", minHeight: 0 }}
         >
+          {/* Bookmark banner — shows when on the bookmarked page */}
+          {bookmark && bookmark.page === currentPage && (
+            <div style={{
+              position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", zIndex: 10,
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "6px 14px", borderRadius: 99,
+              background: "rgba(255,183,77,0.12)", border: "1px solid rgba(255,183,77,0.30)",
+              backdropFilter: "blur(12px)",
+              animation: "fadeInUp 0.2s ease",
+            }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="#FFB74D" stroke="#FFB74D" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <span style={{ fontSize: 11, color: "#FFB74D", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                You stopped here: &ldquo;{bookmark.text.slice(0, 50)}{bookmark.text.length > 50 ? "…" : ""}&rdquo;
+              </span>
+            </div>
+          )}
+
           <Document
             file={`/api/library/pdf/${bookId}`}
             onLoadSuccess={({ numPages: n }) => setNumPages(n)}
@@ -438,7 +618,7 @@ export default function ReadPage() {
           >
             <Page
               pageNumber={currentPage}
-              width={Math.min(cw - 72, 560)}
+              width={Math.min(cw - 40, 560) * zoom}
               renderTextLayer
               renderAnnotationLayer
             />
@@ -452,13 +632,14 @@ export default function ReadPage() {
             onGoToPage={goToPage}
             onDelete={deleteAnnot}
             bookId={bookId}
+            currentPage={currentPage}
             onClose={() => setPanel(false)}
           />
         )}
       </div>
 
       {/* ── Bottom bar ───────────────────────────────────────────── */}
-      <div style={{ padding: "12px 20px", borderTop: "1px solid var(--line)", background: "rgba(10,10,20,0.65)", backdropFilter: "blur(20px)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, zIndex: 5 }}>
+      <div style={{ padding: "8px 16px", borderTop: "1px solid var(--line)", background: "rgba(10,10,20,0.65)", backdropFilter: "blur(20px)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, zIndex: 5 }}>
         {/* Page nav */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button className="cc-btn cc-btn-icon" onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1}>
@@ -475,12 +656,37 @@ export default function ReadPage() {
           </button>
         </div>
 
+        {/* Bookmark indicator */}
+        {bookmark && (
+          <button
+            onClick={() => goToPage(bookmark.page)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "4px 10px", borderRadius: 8,
+              background: bookmark.page === currentPage ? "rgba(255,183,77,0.12)" : "rgba(255,183,77,0.06)",
+              border: "1px solid rgba(255,183,77,0.25)",
+              cursor: "pointer", transition: "all 0.15s",
+            }}
+            title={`Bookmarked: "${bookmark.text}"`}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#FFB74D" stroke="#FFB74D" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span style={{ fontSize: 10, color: "#FFB74D", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+              p.{bookmark.page}
+            </span>
+          </button>
+        )}
+
         {/* Session info */}
         <div style={{ fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--pos)", boxShadow: "0 0 5px var(--pos)", display: "inline-block" }} />
           Session {sessionMin > 0 ? `${sessionMin}m` : "< 1m"} · auto-saved
           {addedWords.size > 0 && (
             <span style={{ color: "var(--violet)", marginLeft: 4 }}>· {addedWords.size} word{addedWords.size > 1 ? "s" : ""} added</span>
+          )}
+          {wordToast && (
+            <span style={{ color: wordToast.ok ? "var(--pos)" : "var(--neg)", marginLeft: 4, animation: "fadeInUp 0.15s ease" }}>
+              · {wordToast.text}
+            </span>
           )}
         </div>
 
@@ -490,12 +696,25 @@ export default function ReadPage() {
         </div>
       </div>
 
+      {/* Night reading filter overlay */}
+      {nightMode && (
+        <div style={{
+          position: "fixed", inset: 0,
+          background: "rgba(40, 20, 0, 0.35)",
+          mixBlendMode: "multiply",
+          pointerEvents: "none",
+          zIndex: 100,
+          transition: "opacity 0.3s ease",
+        }} />
+      )}
+
       {/* Text selection popup */}
       {selection && (
         <SelectionPopup
           text={selection.text}
           position={{ x: selection.x, y: selection.y }}
           onAddToBank={addToWordBank}
+          onBookmark={saveBookmark}
           onDismiss={() => setSelection(null)}
         />
       )}

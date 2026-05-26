@@ -25,6 +25,22 @@ type Word = {
   interval: number;
 };
 
+type ReadingNote = {
+  id: number;
+  content: string;
+  bookTitle: string | null;
+  pageNumber: number | null;
+  masteryStatus: string;
+  nextReviewDate: string;
+  streak: number;
+  interval: number;
+};
+
+/** A unified review item — either a word or a reading note */
+type ReviewItem =
+  | { type: "word"; data: Word }
+  | { type: "note"; data: ReadingNote };
+
 type CardMode = "flashcard" | "fillblank";
 type ReviewPhase = "question" | "answer";
 
@@ -170,6 +186,87 @@ function FlashCard({ word, mode, onGrade, progress, total }: {
   );
 }
 
+// ─── Reading note review card ────────────────────────────────────────────────
+
+function NoteCard({ note, onGrade, progress, total }: {
+  note: ReadingNote;
+  onGrade: (id: number, btn: "again" | "good" | "easy") => void;
+  progress: number;
+  total: number;
+}) {
+  const [phase, setPhase] = useState<"question" | "answer">("question");
+
+  useEffect(() => { setPhase("question"); }, [note.id]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 14, border: "1px solid var(--line)", borderRadius: 18, background: "rgba(255,255,255,0.012)", position: "relative", overflow: "hidden", minHeight: 480 }}>
+      <div style={{ position: "absolute", inset: "-40%", background: "radial-gradient(40% 50% at 30% 40%, rgba(255,183,77,0.06), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(100,255,218,0.05), transparent 60%)", pointerEvents: "none" }} />
+
+      <div style={{
+        position: "relative", width: "100%", maxWidth: 580, padding: "42px 48px",
+        background: "linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85))",
+        border: "1px solid var(--line-hi)", borderRadius: 18,
+        boxShadow: "0 30px 70px rgba(0,0,0,0.45), 0 0 50px rgba(255,183,77,0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
+        backdropFilter: "blur(20px)",
+      }}>
+        {/* Badge */}
+        <div style={{ position: "absolute", top: 20, left: 24, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--warn)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Reading note
+        </div>
+        <div style={{ position: "absolute", top: 20, right: 24, fontSize: 10.5, letterSpacing: "0.06em", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+          CARD {progress} / {total} · SEEN {note.streak}×
+        </div>
+
+        {/* Source info */}
+        {note.bookTitle && (
+          <div style={{ marginTop: 24, marginBottom: 12, fontSize: 11, color: "var(--ink-4)", fontStyle: "italic" }}>
+            From &ldquo;{note.bookTitle}&rdquo;{note.pageNumber ? ` · p.${note.pageNumber}` : ""}
+          </div>
+        )}
+
+        {/* Note content */}
+        <div style={{ fontSize: 17, lineHeight: 1.6, color: "var(--ink)", letterSpacing: "-0.005em", marginTop: note.bookTitle ? 0 : 32 }}>
+          {note.content}
+        </div>
+
+        {/* Prompt */}
+        {phase === "question" && (
+          <div style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid var(--line)", textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: "var(--ink-3)", fontStyle: "italic" }}>Do you remember this?</div>
+          </div>
+        )}
+      </div>
+
+      {phase === "question" && (
+        <button className="cc-btn" onClick={() => setPhase("answer")} style={{ marginTop: 20, padding: "12px 32px" }}>
+          I remember
+        </button>
+      )}
+
+      {phase === "answer" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, width: "100%", maxWidth: 580, marginTop: 20 }}>
+          {([
+            { key: "again" as const, label: "Forgot", interval: "< 10 min", border: "rgba(255,138,138,0.25)", color: "var(--neg)" },
+            { key: "good"  as const, label: "Remembered", interval: "3 days", border: "rgba(100,255,218,0.25)", color: "var(--cyan)" },
+            { key: "easy"  as const, label: "Easy", interval: "7 days", border: "rgba(111,212,154,0.25)", color: "var(--pos)" },
+          ]).map((btn) => (
+            <button
+              key={btn.key}
+              className="wb-grade-btn"
+              onClick={() => onGrade(note.id, btn.key)}
+              style={{ padding: "14px 16px", borderRadius: 12, border: `1px solid ${btn.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", transition: "all 0.15s var(--easeOut)" }}
+            >
+              <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.005em", color: btn.color }}>{btn.label}</div>
+              <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 3, fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>{btn.interval}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function WordbankPage() {
@@ -186,15 +283,24 @@ export default function WordbankPage() {
   const [addLoading, setAddLoading]     = useState(false);
   const [suggestions, setSuggestions]   = useState<Suggestion[]>([]);
   const [sugLoading, setSugLoading]     = useState(false);
-  const [addingSug, setAddingSug]       = useState<string | null>(null); // word being quick-added
+  const [addingSug, setAddingSug]       = useState<string | null>(null);
+  const [dueNotes, setDueNotes]        = useState<ReadingNote[]>([]);
+
+  // Build unified review queue: words first, then reading notes
+  const reviewQueue: ReviewItem[] = [
+    ...dueWords.map((w): ReviewItem => ({ type: "word", data: w })),
+    ...dueNotes.map((n): ReviewItem => ({ type: "note", data: n })),
+  ];
 
   const load = async () => {
-    const [allRes, dueRes] = await Promise.all([
+    const [allRes, dueRes, notesRes] = await Promise.all([
       fetch("/api/wordbank").catch(() => null),
-      fetch("/api/wordbank/due").catch(() => null),
+      fetch("/api/wordbank?due=true").catch(() => null),
+      fetch("/api/library/notes?due=true").catch(() => null),
     ]);
     if (allRes?.ok) setAllWords(await allRes.json());
     if (dueRes?.ok) setDueWords(await dueRes.json());
+    if (notesRes?.ok) setDueNotes(await notesRes.json());
     setLoading(false);
   };
 
@@ -207,18 +313,20 @@ export default function WordbankPage() {
 
   useEffect(() => { load(); loadSuggestions(); }, []);
 
-  // Alternate flashcard / fillblank
+  // Alternate flashcard / fillblank for words
   const currentMode: CardMode = cardIndex % 2 === 0 ? "flashcard" : "fillblank";
-  const currentCard = dueWords[cardIndex];
+  const currentItem = reviewQueue[cardIndex] ?? null;
 
   const handleGrade = async (id: number, btn: "again" | "good" | "easy") => {
-    await fetch("/api/wordbank/grade", {
+    const item = reviewQueue[cardIndex];
+    const endpoint = item?.type === "note" ? "/api/library/notes/review" : "/api/wordbank/review";
+    const bodyKey = item?.type === "note" ? "noteId" : "wordId";
+    await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wordId: id, button: btn }),
+      body: JSON.stringify({ [bodyKey]: id, button: btn }),
     });
-    if (cardIndex + 1 >= dueWords.length) {
-      // Session done — reload
+    if (cardIndex + 1 >= reviewQueue.length) {
       await load();
       setCardIndex(0);
     } else {
@@ -285,7 +393,7 @@ export default function WordbankPage() {
           {/* Tabs */}
           <div className="cc-tabs">
             <button className={`cc-tab${tab === "review" ? " cur" : ""}`} onClick={() => setTab("review")}>
-              Review<span className="count">{dueWords.length}</span>
+              Review<span className="count">{reviewQueue.length}</span>
             </button>
             <button className={`cc-tab${tab === "all" ? " cur" : ""}`} onClick={() => setTab("all")}>
               All Words<span className="count">{allWords.length}</span>
@@ -310,13 +418,13 @@ export default function WordbankPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.015)", marginBottom: 14 }}>
                 <span style={{ fontSize: 10.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>Today&apos;s session</span>
                 <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{ height: "100%", background: "var(--grad)", boxShadow: "0 0 8px rgba(124,77,255,0.40)", width: dueWords.length > 0 ? `${Math.round((cardIndex / dueWords.length) * 100)}%` : "0%" }} />
+                  <div style={{ height: "100%", background: "var(--grad)", boxShadow: "0 0 8px rgba(124,77,255,0.40)", width: reviewQueue.length > 0 ? `${Math.round((cardIndex / reviewQueue.length) * 100)}%` : "0%" }} />
                 </div>
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--ink)", letterSpacing: "0.04em" }}>
-                  {cardIndex} / {dueWords.length}
+                  {cardIndex} / {reviewQueue.length}
                 </span>
                 <span style={{ fontSize: 11, color: "var(--ink-3)" }}>
-                  · ~{Math.max(0, Math.ceil((dueWords.length - cardIndex) * 0.25))} min left
+                  · ~{Math.max(0, Math.ceil((reviewQueue.length - cardIndex) * 0.25))} min left
                 </span>
               </div>
 
@@ -324,20 +432,29 @@ export default function WordbankPage() {
                 <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ink-4)", fontSize: 13 }}>Loading…</div>
               )}
 
-              {!loading && dueWords.length === 0 && (
+              {!loading && reviewQueue.length === 0 && (
                 <div className="cc-card" style={{ padding: "48px 32px", textAlign: "center" }}>
-                  <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 8 }}>All caught up! No words due today.</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Add new words or come back tomorrow.</div>
+                  <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 8 }}>All caught up! No words or notes due today.</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Add new words, take reading notes, or come back tomorrow.</div>
                 </div>
               )}
 
-              {!loading && currentCard && (
+              {!loading && currentItem?.type === "word" && (
                 <FlashCard
-                  word={currentCard}
+                  word={currentItem.data}
                   mode={currentMode}
                   onGrade={handleGrade}
                   progress={cardIndex + 1}
-                  total={dueWords.length}
+                  total={reviewQueue.length}
+                />
+              )}
+
+              {!loading && currentItem?.type === "note" && (
+                <NoteCard
+                  note={currentItem.data}
+                  onGrade={handleGrade}
+                  progress={cardIndex + 1}
+                  total={reviewQueue.length}
                 />
               )}
             </>
@@ -427,10 +544,11 @@ export default function WordbankPage() {
             <div style={{ padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)" }}>
               <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Due today</div>
               <div className="grad-text" style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.02em", marginTop: 6, fontFamily: "var(--f-mono)" }}>
-                {dueWords.length} <span style={{ color: "var(--ink-4)", fontSize: 13 }}>words</span>
+                {reviewQueue.length} <span style={{ color: "var(--ink-4)", fontSize: 13 }}>items</span>
               </div>
               <div style={{ fontSize: 10.5, color: "var(--pos)", letterSpacing: "0.04em", marginTop: 4, fontFamily: "var(--f-mono)" }}>
-                {cardIndex} done · {Math.max(0, dueWords.length - cardIndex)} remain
+                {cardIndex} done · {Math.max(0, reviewQueue.length - cardIndex)} remain
+                {dueNotes.length > 0 && <span style={{ color: "var(--warn)" }}> · {dueNotes.length} notes</span>}
               </div>
             </div>
 

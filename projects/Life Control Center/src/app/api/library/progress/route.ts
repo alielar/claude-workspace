@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { bookId, currentPage } = await req.json();
+  const { bookId, currentPage, bookmarkText, bookmarkPage } = await req.json();
 
   // Verify ownership
   const [book] = await db
@@ -36,16 +36,23 @@ export async function POST(req: NextRequest) {
     .where(eq(readingProgress.bookId, bookId))
     .limit(1);
 
+  // Build the update payload — only include bookmark fields when provided
+  const updatePayload: Record<string, unknown> = { currentPage, lastReadAt: new Date() };
+  if (bookmarkText !== undefined) updatePayload.bookmarkText = bookmarkText;
+  if (bookmarkPage !== undefined) updatePayload.bookmarkPage = bookmarkPage;
+
   if (existing) {
     await db
       .update(readingProgress)
-      .set({ currentPage, lastReadAt: new Date() })
+      .set(updatePayload)
       .where(eq(readingProgress.bookId, bookId));
   } else {
     await db.insert(readingProgress).values({
       bookId,
       currentPage,
       lastReadAt: new Date(),
+      ...(bookmarkText !== undefined && { bookmarkText }),
+      ...(bookmarkPage !== undefined && { bookmarkPage }),
     });
   }
 

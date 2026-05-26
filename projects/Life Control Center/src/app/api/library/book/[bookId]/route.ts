@@ -40,5 +40,7 @@ export async function GET(
   return NextResponse.json({
     book,
     currentPage: progress?.currentPage ?? 1,
+    bookmarkText: progress?.bookmarkText ?? null,
+    bookmarkPage: progress?.bookmarkPage ?? null,
   });
 }
