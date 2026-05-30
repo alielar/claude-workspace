@@ -41,12 +41,15 @@ type FeedConfig = {
 };
 
 const FEEDS: FeedConfig[] = [
-  // Football — Morocco, World Cup 2026, Champions League, European leagues
+  // Football — Morocco national team, World Cup 2026, Champions League, European leagues
   { url: "https://www.goal.com/feeds/en/news", category: "football" },
   { url: "https://www.football-espana.net/feed", category: "football" },
   { url: "https://www.marca.com/en/rss/football.xml", category: "football" },
   { url: "https://moroccoworldnews.com/category/sports/feed", category: "football" },
-  { url: "https://www.fifa.com/rss/index.xml", category: "football", keywords: ["world cup", "2026", "morocco", "fifa"] },
+  { url: "https://www.fifa.com/rss/index.xml", category: "football", keywords: ["world cup", "2026", "morocco", "fifa", "atlas lions"] },
+  // Morocco-focused football sources
+  { url: "https://www.reuters.com/sports/soccer/rss", category: "football", keywords: ["morocco", "atlas lions", "hakimi", "regragui", "world cup 2026", "africa cup"] },
+  { url: "https://www.skysports.com/rss/12040", category: "football" },
 
   // Geopolitics — Morocco politics, MENA, world affairs
   { url: "https://moroccoworldnews.com/feed", category: "geopolitics", keywords: ["morocco", "rabat", "casablanca", "fes", "marrakech", "king mohammed", "atlas", "sahara", "mena", "government", "parliament", "minister"] },
@@ -69,7 +72,7 @@ const FEEDS: FeedConfig[] = [
 
 // Keywords that boost a story for Ali's specific interests
 const INTEREST_KEYWORDS: Record<NewsCategory, string[]> = {
-  football: ["morocco", "atlas lions", "kacm", "kawkab", "frmf", "world cup", "2026", "champions league", "real madrid", "barcelona", "premier league", "ligue 1", "botola", "regragui", "hakimi", "achraf", "en-nesyri", "mazraoui", "amrabat", "fifa", "caf"],
+  football: ["morocco", "atlas lions", "moroccan", "kacm", "kawkab", "frmf", "world cup", "2026", "champions league", "real madrid", "barcelona", "premier league", "ligue 1", "botola", "regragui", "hakimi", "achraf", "en-nesyri", "mazraoui", "amrabat", "ziyech", "ounahi", "diaz", "brahim", "aguerd", "bounou", "el kaabi", "fifa", "caf", "africa cup", "afcon", "nations cup", "psg", "man city", "arsenal"],
   geopolitics: ["morocco", "rabat", "sahara", "mena", "africa", "middle east", "israel", "palestine", "ukraine", "nato", "eu", "trump", "election", "casablanca", "fes", "marrakech", "king mohammed"],
   business: ["markets", "stock", "earnings", "gdp", "recession", "startup", "ipo", "acquisition", "apple", "google", "amazon", "tesla"],
   tech: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "apple", "google", "chip", "semiconductor", "robot", "machine learning", "deepmind", "chatbot", "agent"],

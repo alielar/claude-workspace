@@ -11,9 +11,9 @@ import { db } from "@/db";
 import {
   checklistItems,
   checklistCompletions,
-  workoutLogs,
-  workoutSessions,
-  workoutPrograms,
+  gymSessions,
+  workoutPlans,
+  programs,
 } from "@/db/schema";
 import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
@@ -150,7 +150,7 @@ export async function GET() {
   const today = todayMadrid();
   const lookback = format(subDays(new Date(today + "T12:00:00"), 90), "yyyy-MM-dd");
 
-  const [items, allCompletions, recentLogs, allSessions] = await Promise.all([
+  const [items, allCompletions, recentGymSessions] = await Promise.all([
     db
       .select()
       .from(checklistItems)
@@ -163,38 +163,27 @@ export async function GET() {
       .where(and(eq(checklistCompletions.userId, userId), gte(checklistCompletions.date, lookback))),
 
     db
-      .select()
-      .from(workoutLogs)
-      .where(eq(workoutLogs.userId, userId))
-      .orderBy(desc(workoutLogs.startedAt))
+      .select({
+        id: gymSessions.id,
+        workoutName: gymSessions.workoutName,
+        date: gymSessions.date,
+        durationSeconds: gymSessions.durationSeconds,
+      })
+      .from(gymSessions)
+      .where(eq(gymSessions.userId, userId))
+      .orderBy(desc(gymSessions.date))
       .limit(30),
-
-    db
-      .select()
-      .from(workoutSessions)
-      .innerJoin(workoutPrograms, eq(workoutSessions.programId, workoutPrograms.id))
-      .where(eq(workoutPrograms.userId, userId))
-      .orderBy(workoutSessions.sortOrder),
   ]);
 
-  // ── Derive next workout name ──
-  const lastLog = recentLogs[0] ?? null;
-  const lastSessionName = lastLog
-    ? allSessions.find((s) => s.workout_sessions.id === lastLog.sessionId)?.workout_sessions.name
-    : null;
+  // ── Derive next workout name from actual gym sessions ──
+  const lastGymSession = recentGymSessions.find(s => s.durationSeconds !== null) ?? null;
+  const lastSessionName = lastGymSession?.workoutName ?? null;
   const lastIdx = lastSessionName ? ROTATION.lastIndexOf(lastSessionName) : -1;
   const nextSessionName = ROTATION[(lastIdx + 1) % ROTATION.length];
 
-  const workoutToday = recentLogs.some(
-    (l) => format(new Date(l.startedAt!), "yyyy-MM-dd") === today
-  );
-  const nextDoneToday =
-    workoutToday &&
-    recentLogs.some((l) => {
-      const name = allSessions.find((s) => s.workout_sessions.id === l.sessionId)
-        ?.workout_sessions.name;
-      return name === nextSessionName && format(new Date(l.startedAt!), "yyyy-MM-dd") === today;
-    });
+  // Check if any workout was done today (finished sessions only)
+  const todayFinished = recentGymSessions.filter(s => s.date === today && s.durationSeconds !== null);
+  const nextDoneToday = todayFinished.some(s => s.workoutName === nextSessionName);
 
   // ── last 7 dates ──
   const last7Dates = getLastNDates(today, 7);
@@ -233,18 +222,21 @@ export async function GET() {
     today
   );
 
-  // ── Virtual workout item ──
+  // ── Virtual workout item — shows whether any workout was done today ──
+  const anyWorkoutDoneToday = todayFinished.length > 0;
   const workoutItem =
-    allSessions.length > 0
+    recentGymSessions.length > 0
       ? {
           id: -1,
-          title: nextSessionName + " workout",
+          title: anyWorkoutDoneToday
+            ? todayFinished[0].workoutName + " workout"
+            : nextSessionName + " workout",
           emoji: "🏋️",
           sortOrder: -1,
           timeOfDay: "anytime" as const,
-          completedToday: nextDoneToday,
+          completedToday: anyWorkoutDoneToday,
           streak: 0,
-          last7: last7Dates.map(() => false),
+          last7: last7Dates.map((d) => recentGymSessions.some(s => s.date === d && s.durationSeconds !== null)),
           source: "workout" as const,
           autoSource: null,
           color: "cyan",

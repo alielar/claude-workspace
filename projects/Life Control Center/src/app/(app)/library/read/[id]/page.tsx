@@ -99,13 +99,15 @@ function SelectionPopup({ text, position, onAddToBank, onBookmark, onDismiss }: 
 
 type ReadingNote = { id: number; content: string; pageNumber: number | null; createdAt: string };
 
-function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPage, onClose }: {
+function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPage, onClose, notes, setNotes }: {
   annotations: Annotation[];
   onGoToPage: (p: number) => void;
   onDelete: (id: number) => void;
   bookId: number;
   currentPage: number;
   onClose: () => void;
+  notes: ReadingNote[];
+  setNotes: React.Dispatch<React.SetStateAction<ReadingNote[]>>;
 }) {
   const [tab, setTab]         = useState<"highlights" | "lookup" | "notes">("highlights");
   const [query, setQuery]     = useState("");
@@ -114,13 +116,8 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
   const [saved, setSaved]     = useState(false);
 
   // Notes state
-  const [notes, setNotes]       = useState<ReadingNote[]>([]);
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
-
-  useEffect(() => {
-    fetch(`/api/library/notes?bookId=${bookId}`).then((r) => r.json()).then(setNotes).catch(() => {});
-  }, [bookId]);
 
   const saveNote = async () => {
     if (!noteText.trim()) return;
@@ -138,6 +135,16 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
       }
     } catch { /* ignore */ }
     setNoteSaving(false);
+  };
+
+  const deleteNote = async (noteId: number) => {
+    setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    try {
+      await fetch(`/api/library/notes?id=${noteId}`, { method: "DELETE" });
+    } catch {
+      // Rollback on failure — refetch
+      fetch(`/api/library/notes?bookId=${bookId}`).then((r) => r.json()).then(setNotes).catch(() => {});
+    }
   };
 
   const lookup = async () => {
@@ -274,11 +281,14 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
 
           {notes.map((n) => (
             <div key={n.id} style={{ padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
-              {n.pageNumber && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: "var(--cyan)", letterSpacing: "0.06em" }}>p. {n.pageNumber}</span>
-                </div>
-              )}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: "var(--cyan)", letterSpacing: "0.06em" }}>
+                  {n.pageNumber ? `p. ${n.pageNumber}` : "—"}
+                </span>
+                <button onClick={() => deleteNote(n.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-4)", display: "flex", padding: 2 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
               <div style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.55 }}>{n.content}</div>
             </div>
           ))}
@@ -376,6 +386,17 @@ export default function ReadPage() {
 
   // Bookmark — marks exact position where user stopped reading
   const [bookmark, setBookmark] = useState<{ text: string; page: number } | null>(null);
+
+  // Notes state (lifted to parent so modal can access)
+  const [notes, setNotes] = useState<ReadingNote[]>([]);
+  useEffect(() => {
+    fetch(`/api/library/notes?bookId=${bookId}`).then((r) => r.json()).then(setNotes).catch(() => {});
+  }, [bookId]);
+
+  // Session-end notes modal
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endNoteText, setEndNoteText] = useState("");
+  const [endNoteSaving, setEndNoteSaving] = useState(false);
 
   // Container width
   useEffect(() => {
@@ -518,6 +539,31 @@ export default function ReadPage() {
   };
 
   const handleBack = () => {
+    const minutes = sessionMinRef.current;
+    if (minutes >= 1) {
+      // Show session-end modal to capture notes
+      setShowEndModal(true);
+    } else {
+      router.back();
+    }
+  };
+
+  const finishSession = async (withNote?: boolean) => {
+    if (withNote && endNoteText.trim()) {
+      setEndNoteSaving(true);
+      try {
+        const res = await fetch("/api/library/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookId, pageNumber: currentPage, content: endNoteText.trim() }),
+        });
+        if (res.ok) {
+          const note = await res.json();
+          setNotes((prev) => [note, ...prev]);
+        }
+      } catch { /* ignore */ }
+      setEndNoteSaving(false);
+    }
     saveSession();
     router.back();
   };
@@ -634,6 +680,8 @@ export default function ReadPage() {
             bookId={bookId}
             currentPage={currentPage}
             onClose={() => setPanel(false)}
+            notes={notes}
+            setNotes={setNotes}
           />
         )}
       </div>
@@ -706,6 +754,134 @@ export default function ReadPage() {
           zIndex: 100,
           transition: "opacity 0.3s ease",
         }} />
+      )}
+
+      {/* Floating notes button — quick access when panel is closed */}
+      {!panelOpen && (
+        <button
+          onClick={() => { setPanel(true); }}
+          title="Session notes"
+          style={{
+            position: "fixed", bottom: 70, right: 24, zIndex: 30,
+            width: 44, height: 44, borderRadius: 12,
+            background: "rgba(124,77,255,0.18)", border: "1px solid rgba(124,77,255,0.35)",
+            color: "#E8E8F0", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.4), 0 0 16px rgba(124,77,255,0.15)",
+            backdropFilter: "blur(12px)",
+            transition: "all 0.15s",
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          {notes.length > 0 && (
+            <span style={{
+              position: "absolute", top: -4, right: -4,
+              width: 18, height: 18, borderRadius: "50%",
+              background: "var(--violet)", color: "#fff",
+              fontSize: 10, fontWeight: 700,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 0 6px var(--violet)",
+            }}>{notes.length}</span>
+          )}
+        </button>
+      )}
+
+      {/* Session-end notes modal */}
+      {showEndModal && (
+        <>
+          <div
+            onClick={() => { setShowEndModal(false); finishSession(); }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 200, backdropFilter: "blur(4px)" }}
+          />
+          <div style={{
+            position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 201,
+            width: "min(480px, 90vw)", background: "#0d0d16", border: "1px solid var(--line-hi)",
+            borderRadius: 16, padding: "28px 28px 20px", boxShadow: "0 16px 64px rgba(0,0,0,0.6), 0 0 32px rgba(124,77,255,0.1)",
+          }}>
+            {/* Session summary */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: "rgba(124,77,255,0.15)", border: "1px solid rgba(124,77,255,0.3)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>Session complete</div>
+                <div style={{ fontSize: 12, color: "var(--ink-3)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+                  {sessionMin}m · p.{sessionStartPage.current}–{currentPage} · {book?.title}
+                </div>
+              </div>
+            </div>
+
+            {/* Note input */}
+            <div style={{ marginBottom: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-2)", letterSpacing: "0.02em", marginBottom: 8, display: "block" }}>
+                What did you learn or find interesting?
+              </label>
+              <textarea
+                value={endNoteText}
+                onChange={(e) => setEndNoteText(e.target.value)}
+                placeholder="Key ideas, quotes, things to remember..."
+                rows={4}
+                autoFocus
+                style={{
+                  width: "100%", padding: "12px 14px", fontSize: 13, lineHeight: 1.55,
+                  background: "var(--bg-input)", border: "1px solid var(--line-hi)", borderRadius: 10,
+                  color: "var(--ink)", resize: "vertical", fontFamily: "inherit",
+                }}
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) finishSession(true); }}
+              />
+              <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", marginTop: 4 }}>
+                This note will appear in your Word Bank for spaced-repetition review · ⌘Enter to save & close
+              </div>
+            </div>
+
+            {/* Existing notes from this session */}
+            {notes.length > 0 && (
+              <div style={{ marginTop: 12, marginBottom: 12 }}>
+                <div style={{ fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
+                  Notes from this book ({notes.length})
+                </div>
+                <div style={{ maxHeight: 120, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
+                  {notes.slice(0, 5).map((n) => (
+                    <div key={n.id} style={{ fontSize: 11.5, color: "var(--ink-3)", padding: "6px 10px", background: "rgba(255,255,255,0.02)", borderRadius: 6, lineHeight: 1.4 }}>
+                      {n.pageNumber && <span style={{ fontFamily: "var(--f-mono)", fontSize: 9.5, color: "var(--cyan)", marginRight: 6 }}>p.{n.pageNumber}</span>}
+                      {n.content.length > 100 ? n.content.slice(0, 100) + "…" : n.content}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+              <button
+                onClick={() => finishSession()}
+                style={{
+                  padding: "9px 18px", borderRadius: 8, fontSize: 12,
+                  background: "transparent", border: "1px solid var(--line)",
+                  color: "var(--ink-3)", cursor: "pointer",
+                }}
+              >
+                Skip
+              </button>
+              <button
+                className="cc-btn-primary"
+                onClick={() => finishSession(true)}
+                disabled={endNoteSaving || !endNoteText.trim()}
+                style={{ padding: "9px 20px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+              >
+                {endNoteSaving ? "Saving…" : "Save note & close"}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Text selection popup */}

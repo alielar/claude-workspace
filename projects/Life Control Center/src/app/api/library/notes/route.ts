@@ -12,7 +12,6 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { readingNotes, books } from "@/db/schema";
 import { eq, and, lte, desc } from "drizzle-orm";
-import { format } from "date-fns";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -89,4 +88,23 @@ export async function POST(req: NextRequest) {
     .returning();
 
   return NextResponse.json(note);
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const noteId = Number(url.searchParams.get("id"));
+  if (!noteId) {
+    return NextResponse.json({ error: "id required" }, { status: 400 });
+  }
+
+  await db
+    .delete(readingNotes)
+    .where(and(eq(readingNotes.id, noteId), eq(readingNotes.userId, session.user.id)));
+
+  return NextResponse.json({ ok: true });
 }

@@ -32,7 +32,7 @@ const COLUMNS = [
 
 // ─── Story card ───────────────────────────────────────────────────────────────
 
-function StoryCard({ story, accentColor }: { story: NewsStory; accentColor: string }) {
+function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColor: string; index: number }) {
   const [open, setOpen] = useState(false);
 
   let hostname = "";
@@ -43,22 +43,25 @@ function StoryCard({ story, accentColor }: { story: NewsStory; accentColor: stri
   // Prefer new `summary` field; fall back to deprecated `whyItMatters` for old rows
   const summaryText = story.summary || story.whyItMatters || "";
   const keyPoints: string[] = Array.isArray(story.keyPoints) ? story.keyPoints : [];
+  const isTopStory = index === 0;
 
   return (
     <div
       onClick={() => setOpen((v) => !v)}
       style={{
-        padding: "12px 0",
+        padding: isTopStory ? "14px 0" : "11px 0",
         borderBottom: "1px solid var(--line)",
         cursor: "pointer",
+        transition: "background 0.1s",
       }}
     >
       {/* Headline row */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
         <div style={{
-          fontSize: 13,
-          lineHeight: 1.42,
-          letterSpacing: "-0.008em",
+          fontSize: isTopStory ? 14.5 : 13,
+          lineHeight: 1.45,
+          letterSpacing: "-0.01em",
+          fontWeight: isTopStory ? 600 : 400,
           color: "var(--ink)",
           flex: 1,
         } as React.CSSProperties}>
@@ -78,20 +81,32 @@ function StoryCard({ story, accentColor }: { story: NewsStory; accentColor: stri
         </svg>
       </div>
 
-      {/* Source domain */}
-      {hostname && (
-        <div style={{
-          fontSize: 10, color: "var(--ink-4)",
-          fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
-          textTransform: "uppercase", marginTop: 5,
-        }}>
-          {hostname}
-        </div>
-      )}
+      {/* Source domain + summary preview */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
+        {hostname && (
+          <span style={{
+            fontSize: 9.5, color: accentColor,
+            fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
+            textTransform: "uppercase",
+            padding: "1px 5px", borderRadius: 3,
+            background: `${accentColor}12`, border: `1px solid ${accentColor}25`,
+          }}>
+            {hostname}
+          </span>
+        )}
+        {!open && summaryText && (
+          <span style={{
+            fontSize: 11, color: "var(--ink-4)", flex: 1,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {summaryText.slice(0, 80)}{summaryText.length > 80 ? "…" : ""}
+          </span>
+        )}
+      </div>
 
       {/* Expanded: Summary + key points + source */}
       {open && (
-        <div style={{ marginTop: 10 }}>
+        <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
           {summaryText && (
             <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--ink-2)", margin: "0 0 10px 0" }}>
               {summaryText}
@@ -110,9 +125,9 @@ function StoryCard({ story, accentColor }: { story: NewsStory; accentColor: stri
             <a
               href={story.source} target="_blank" rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              style={{ fontSize: 11, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5 }}
+              style={{ fontSize: 11, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 500 }}
             >
-              Read source
+              Read full article
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                 <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
@@ -514,7 +529,7 @@ export default function NewsPage() {
                   </div>
                 ) : (
                   col.stories.map((s, i) => (
-                    <StoryCard key={i} story={s} accentColor={col.color} />
+                    <StoryCard key={i} story={s} accentColor={col.color} index={i} />
                   ))
                 )}
               </div>
@@ -529,7 +544,7 @@ export default function NewsPage() {
           marginTop: 20, color: "var(--ink-4)", fontSize: 11,
           letterSpacing: "0.04em", display: "flex", justifyContent: "space-between",
         }}>
-          <span>Live web search · No editorial opinion</span>
+          <span>RSS feeds · Updated daily · No editorial opinion</span>
           <span style={{ fontFamily: "var(--f-mono)", letterSpacing: "0.06em" }}>
             {now.getFullYear()}.{String(now.getMonth()+1).padStart(2,"0")}.{String(now.getDate()).padStart(2,"0")}
           </span>

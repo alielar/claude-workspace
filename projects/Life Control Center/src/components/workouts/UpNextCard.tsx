@@ -68,22 +68,19 @@ function findNextPlan(plans: Plan[], todayDow: string, skip: Set<number>): Plan 
 }
 
 export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCardProps) {
-  const [skippedIds, setSkippedIds] = useState<Set<number>>(new Set());
+  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
   const [musclesExpanded, setMusclesExpanded] = useState(false);
 
-  const currentPlan = skippedIds.size === 0
-    ? plans.find(p => p.id === initialPlanId) ?? plans[0]
-    : findNextPlan(plans, todayDow, skippedIds);
+  const currentPlan = selectedPlanId
+    ? plans.find(p => p.id === selectedPlanId) ?? plans.find(p => p.id === initialPlanId) ?? plans[0]
+    : plans.find(p => p.id === initialPlanId) ?? plans[0];
 
   if (!currentPlan) return null;
 
   const days = parseDays(currentPlan.assignedDays);
   const muscles = parseMuscles(currentPlan.targetMuscles);
   const isToday = days.includes(todayDow);
-
-  function handleSkip() {
-    setSkippedIds(prev => new Set(prev).add(currentPlan!.id));
-  }
 
   return (
     <div className="cc-card" style={{
@@ -144,7 +141,7 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
               )}
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, position: "relative" }}>
             <Link
               href={`/workouts/session/new?planId=${currentPlan.id}`}
               className="cc-btn-primary"
@@ -158,15 +155,62 @@ export default function UpNextCard({ plans, initialPlanId, todayDow }: UpNextCar
               Start session
             </Link>
             <button
-              onClick={handleSkip}
+              onClick={() => setShowPicker((v) => !v)}
               style={{
                 padding: "8px 16px", borderRadius: 8, fontSize: 11,
-                background: "transparent", border: "1px solid var(--line)",
-                color: "var(--ink-4)", cursor: "pointer", letterSpacing: "0.02em",
+                background: showPicker ? "rgba(124,77,255,0.08)" : "transparent",
+                border: `1px solid ${showPicker ? "rgba(124,77,255,0.3)" : "var(--line)"}`,
+                color: showPicker ? "var(--violet)" : "var(--ink-4)",
+                cursor: "pointer", letterSpacing: "0.02em",
+                display: "flex", alignItems: "center", gap: 6, justifyContent: "center",
               }}
             >
-              Skip · next workout
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+              Switch workout
             </button>
+
+            {/* Workout picker dropdown */}
+            {showPicker && (
+              <div style={{
+                position: "absolute", top: "100%", right: 0, marginTop: 4,
+                width: 240, background: "rgba(12,12,22,0.97)", border: "1px solid var(--line-hi)",
+                borderRadius: 12, padding: "6px", zIndex: 30,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(124,77,255,0.08)",
+                backdropFilter: "blur(20px)",
+              }}>
+                {plans.map(p => {
+                  const pDays = parseDays(p.assignedDays);
+                  const isCurrent = p.id === currentPlan.id;
+                  const scheduledToday = pDays.includes(todayDow);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => { setSelectedPlanId(p.id); setShowPicker(false); }}
+                      style={{
+                        width: "100%", padding: "10px 12px", borderRadius: 8,
+                        background: isCurrent ? "rgba(124,77,255,0.12)" : "transparent",
+                        border: "none", cursor: "pointer", textAlign: "left",
+                        display: "flex", flexDirection: "column", gap: 2,
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                      onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: isCurrent ? "var(--violet)" : "var(--ink)" }}>{p.name}</span>
+                        {scheduledToday && (
+                          <span style={{ fontSize: 9, padding: "1px 5px", borderRadius: 4, background: "rgba(100,255,218,0.12)", color: "var(--cyan)", fontWeight: 600, letterSpacing: "0.06em" }}>TODAY</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+                        {p.exerciseCount} ex · {pDays.length > 0 ? pDays.map(d => DAY_LABELS[d] ?? d).join(", ") : "unscheduled"}
+                        {p.lastDone ? ` · ${daysAgo(p.lastDone)}` : ""}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
