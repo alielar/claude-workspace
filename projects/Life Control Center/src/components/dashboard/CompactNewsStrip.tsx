@@ -92,9 +92,7 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
               boxShadow: `0 0 6px ${h.color}40`, flexShrink: 0, marginTop: 5,
             }} />
             <span style={{
-              fontSize: 12, color: "var(--ink-2)", lineHeight: 1.4, letterSpacing: "-0.005em",
-              overflow: "hidden", textOverflow: "ellipsis",
-              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+              fontSize: 12, fontWeight: 600, color: "var(--ink-2)", lineHeight: 1.4, letterSpacing: "-0.005em",
             }}>
               {h.headline ?? "—"}
             </span>

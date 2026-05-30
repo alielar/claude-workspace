@@ -286,21 +286,18 @@ export default function WordbankPage() {
   const [addingSug, setAddingSug]       = useState<string | null>(null);
   const [dueNotes, setDueNotes]        = useState<ReadingNote[]>([]);
 
-  // Build unified review queue: words first, then reading notes
+  // Review queue: words only (reading notes now live in Knowledge Bank)
   const reviewQueue: ReviewItem[] = [
     ...dueWords.map((w): ReviewItem => ({ type: "word", data: w })),
-    ...dueNotes.map((n): ReviewItem => ({ type: "note", data: n })),
   ];
 
   const load = async () => {
-    const [allRes, dueRes, notesRes] = await Promise.all([
+    const [allRes, dueRes] = await Promise.all([
       fetch("/api/wordbank").catch(() => null),
       fetch("/api/wordbank?due=true").catch(() => null),
-      fetch("/api/library/notes?due=true").catch(() => null),
     ]);
     if (allRes?.ok) setAllWords(await allRes.json());
     if (dueRes?.ok) setDueWords(await dueRes.json());
-    if (notesRes?.ok) setDueNotes(await notesRes.json());
     setLoading(false);
   };
 
@@ -435,7 +432,7 @@ export default function WordbankPage() {
               {!loading && reviewQueue.length === 0 && (
                 <div className="cc-card" style={{ padding: "48px 32px", textAlign: "center" }}>
                   <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 8 }}>All caught up! No words or notes due today.</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Add new words, take reading notes, or come back tomorrow.</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Add new words or come back tomorrow.</div>
                 </div>
               )}
 
@@ -548,7 +545,6 @@ export default function WordbankPage() {
               </div>
               <div style={{ fontSize: 10.5, color: "var(--pos)", letterSpacing: "0.04em", marginTop: 4, fontFamily: "var(--f-mono)" }}>
                 {cardIndex} done · {Math.max(0, reviewQueue.length - cardIndex)} remain
-                {dueNotes.length > 0 && <span style={{ color: "var(--warn)" }}> · {dueNotes.length} notes</span>}
               </div>
             </div>
 

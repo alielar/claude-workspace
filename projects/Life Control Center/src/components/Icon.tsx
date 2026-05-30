@@ -12,6 +12,7 @@ import {
   Book, Volume2, X, ArrowRight, ArrowUp, ArrowDown,
   History, Timer, ZoomIn, ZoomOut, FileText, Crosshair,
   Settings, LogOut, MoreHorizontal, Star, Bell,
+  Lightbulb,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,6 +54,7 @@ const ICONS: Record<string, LucideIcon> = {
   book:      Book,
   volume:    Volume2,
   notes:     FileText,
+  knowledge: Lightbulb,
   focus:     Crosshair,
 
   // Misc

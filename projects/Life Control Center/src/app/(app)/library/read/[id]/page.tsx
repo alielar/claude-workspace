@@ -275,7 +275,7 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
 
           {notes.length === 0 && (
             <div style={{ padding: "24px 0", textAlign: "center", color: "var(--ink-4)", fontSize: 12 }}>
-              No notes yet. Write down what you&apos;re learning — it&apos;ll come back for review later.
+              No notes yet. Write down what you&apos;re learning — they&apos;ll be saved to your Knowledge Bank.
             </div>
           )}
 
@@ -838,7 +838,7 @@ export default function ReadPage() {
                 onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) finishSession(true); }}
               />
               <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", marginTop: 4 }}>
-                This note will appear in your Word Bank for spaced-repetition review · ⌘Enter to save & close
+                Saved to your Knowledge Bank for reference · ⌘Enter to save & close
               </div>
             </div>
 

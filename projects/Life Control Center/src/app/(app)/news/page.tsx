@@ -61,7 +61,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
           fontSize: isTopStory ? 14.5 : 13,
           lineHeight: 1.45,
           letterSpacing: "-0.01em",
-          fontWeight: isTopStory ? 600 : 400,
+          fontWeight: 600,
           color: "var(--ink)",
           flex: 1,
         } as React.CSSProperties}>
@@ -99,7 +99,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
             fontSize: 11, color: "var(--ink-4)", flex: 1,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
-            {summaryText.slice(0, 80)}{summaryText.length > 80 ? "…" : ""}
+            {summaryText.slice(0, 120)}{summaryText.length > 120 ? "…" : ""}
           </span>
         )}
       </div>

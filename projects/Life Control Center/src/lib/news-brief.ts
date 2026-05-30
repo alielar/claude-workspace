@@ -112,14 +112,32 @@ function parseRSSItems(xml: string): RSSItem[] {
     }
     const pubDate = extractTag(block, "pubDate") || extractTag(block, "published") || extractTag(block, "updated");
     if (title) {
-      items.push({ title: stripHtml(title), description: stripHtml(description).slice(0, 400), link, pubDate });
+      items.push({ title: stripHtml(title), description: stripHtml(description).slice(0, 600), link, pubDate });
     }
   }
   return items;
 }
 
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&apos;/g, "'").replace(/\s+/g, " ").trim();
+  return s
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#8211;/g, "–")
+    .replace(/&#8212;/g, "—")
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8220;/g, "\u201C")
+    .replace(/&#8221;/g, "\u201D")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&[a-zA-Z]+;/g, "") // strip any remaining named entities
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // ─── Feed Fetching ───────────────────────────────────────────────────────────
@@ -135,7 +153,7 @@ async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; cate
     const items = parseRSSItems(xml);
 
     const stories: NewsStory[] = items.slice(0, 15).map((item) => ({
-      headline: item.title.length > 80 ? item.title.slice(0, 77) + "…" : item.title,
+      headline: item.title,
       summary: item.description || item.title,
       keyPoints: [],
       category: feed.category,

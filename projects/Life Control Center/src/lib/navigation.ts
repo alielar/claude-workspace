@@ -16,6 +16,7 @@ export const NAV: NavItem[] = [
   // News removed from sidebar — accessible via "See all" link on the dashboard
   { href: "/checklist", label: "Checklist", icon: "checklist", color: "#6FD49A" },
   { href: "/wordbank",  label: "Words",     icon: "words",     color: "#7C4DFF" },
+  { href: "/knowledge", label: "Knowledge", icon: "knowledge", color: "#FFC15C" },
   { href: "/library",   label: "Library",   icon: "library",   color: "#64FFDA" },
   { href: "/mood",      label: "Mood",      icon: "mood",      color: "#FFC15C" },
   { href: "/sleep",     label: "Sleep",     icon: "sleep",     color: "#818CF8" },
