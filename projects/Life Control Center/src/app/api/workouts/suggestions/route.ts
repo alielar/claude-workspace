@@ -76,12 +76,21 @@ export async function GET(req: NextRequest) {
 
     const exSets = sets
       .filter((s) => s.exerciseId === ex.exerciseId)
-      .map((s, idx) => ({
-        setType: (s.setType ?? "standard") as "standard" | "drop" | "warmup",
-        weightKg: s.weightKg,
-        repsLogged: s.reps,
-        repRangeMax: config[idx]?.repMax ?? null,
-      }));
+      .sort((a, b) => a.setNumber - b.setNumber)
+      .map((s) => {
+        // Match config by setNumber (1-based), falling back to type-based matching
+        const cfgByNumber = config[s.setNumber - 1];
+        const cfgByType = cfgByNumber?.type === (s.setType ?? "standard")
+          ? cfgByNumber
+          : config.find((c) => c.type === (s.setType ?? "standard"));
+        const cfg = cfgByNumber ?? cfgByType;
+        return {
+          setType: (s.setType ?? "standard") as "standard" | "drop" | "warmup",
+          weightKg: s.weightKg,
+          repsLogged: s.reps,
+          repRangeMax: cfg?.repMax ?? null,
+        };
+      });
 
     if (exSets.length > 0) {
       suggestions[ex.exerciseName] = computeProgressionSuggestion(ex.exerciseName, exSets);

@@ -66,8 +66,11 @@ Add these actions in order. To add an action, tap **"Add Action"** or the search
 | `heart_rate_max` | Number | Maximum of Heart Rate results |
 | `respiratory_rate_avg` | Number | Average of Respiratory Rate results |
 | `blood_oxygen_avg` | Number | Average of Blood Oxygen results |
+| `sleep_score` | Number | Sleep score (0–100) from Apple Health, if available |
 
 > **Tip:** For sleep stages (deep, core, REM, awake), Apple Health exposes these as separate Sleep Analysis categories. If your watch tracks them, you can add additional "Find Health Samples" actions filtered by each stage type and include `stage_deep_minutes`, `stage_core_minutes`, `stage_rem_minutes`, and `stage_awake_minutes` in the JSON body.
+>
+> **Sleep Score:** Apple Watch (watchOS 11+) writes a daily sleep score to Apple Health. In Shortcuts, use "Find Health Samples" with Type: **Apple Sleeping Wrist Temperature** or search for "Sleep Score" if available. Alternatively, open the Health app → Browse → Sleep → Sleep Score to confirm your watch tracks it, then add it as a numeric field.
 
 ### Action 6 (Optional) — Show confirmation
 

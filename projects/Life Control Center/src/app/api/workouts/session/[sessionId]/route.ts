@@ -114,45 +114,38 @@ export async function GET(
   const prefillMap: Record<number, Array<{ setNumber: number; weightKg: number | null; reps: number | null; setType: string }>> = {};
 
   if (workoutExercises.length > 0) {
-    const allPrefillSets = await db
-      .select({
-        exerciseId: gymSets.exerciseId,
-        setNumber: gymSets.setNumber,
-        weightKg: gymSets.weightKg,
-        reps: gymSets.reps,
-        setType: gymSets.setType,
-        sessionId: gymSets.sessionId,
-        createdAt: gymSets.createdAt,
-      })
-      .from(gymSets)
-      .innerJoin(gymSessions, eq(gymSets.sessionId, gymSessions.id))
-      .where(eq(gymSessions.userId, session.user.id!))
-      .orderBy(desc(gymSets.createdAt));
-
-    // Group by exerciseId → sessionId → sets
-    const byExerciseSession = new Map<number, Map<number, typeof allPrefillSets>>();
     const exerciseIdSet = new Set(workoutExercises.map((e) => e.exerciseId));
 
-    for (const s of allPrefillSets) {
-      if (!s.exerciseId || !exerciseIdSet.has(s.exerciseId)) continue;
-      if (s.sessionId === sessionId) continue;
-      if (!byExerciseSession.has(s.exerciseId)) byExerciseSession.set(s.exerciseId, new Map());
-      const sessMap = byExerciseSession.get(s.exerciseId)!;
-      if (!sessMap.has(s.sessionId)) sessMap.set(s.sessionId, []);
-      sessMap.get(s.sessionId)!.push(s);
-    }
+    // For each exercise, find sets from the most recent OTHER completed session
+    for (const exId of exerciseIdSet) {
+      // Find the most recent completed session (not current) that logged this exercise
+      const recentSets = await db
+        .select({
+          setNumber: gymSets.setNumber,
+          weightKg: gymSets.weightKg,
+          reps: gymSets.reps,
+          setType: gymSets.setType,
+          sessionId: gymSets.sessionId,
+        })
+        .from(gymSets)
+        .innerJoin(gymSessions, eq(gymSets.sessionId, gymSessions.id))
+        .where(
+          and(
+            eq(gymSessions.userId, session.user.id!),
+            eq(gymSets.exerciseId, exId),
+          )
+        )
+        .orderBy(desc(gymSessions.date), gymSets.setNumber)
+        .limit(30);
 
-    for (const [exId, sessMap] of byExerciseSession) {
-      // Pick session with highest createdAt
-      let bestSessId = -1;
-      let bestTime = 0;
-      for (const [sessId, sets] of sessMap) {
-        const t = sets[0]?.createdAt?.getTime() ?? 0;
-        if (t > bestTime) { bestTime = t; bestSessId = sessId; }
-      }
-      if (bestSessId !== -1) {
-        prefillMap[exId] = sessMap.get(bestSessId)!.sort((a, b) => a.setNumber - b.setNumber);
-      }
+      // Find the most recent session that isn't the current one
+      const otherSets = recentSets.filter((s) => s.sessionId !== sessionId);
+      if (otherSets.length === 0) continue;
+
+      const bestSessId = otherSets[0].sessionId;
+      prefillMap[exId] = otherSets
+        .filter((s) => s.sessionId === bestSessId)
+        .sort((a, b) => a.setNumber - b.setNumber);
     }
   }
 
