@@ -18,8 +18,19 @@ import {
 import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
 
-function todayMadrid(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+/**
+ * "Today" for checklist purposes — if it's before 4 AM in Madrid,
+ * we treat it as still being the previous day so late-night check-offs
+ * count toward yesterday's list.
+ */
+function checklistToday(): string {
+  const now = new Date();
+  const madridHour = parseInt(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "numeric", hour12: false }).format(now)
+  );
+  const offset = madridHour < 4 ? -1 : 0;
+  const adjusted = new Date(now.getTime() + offset * 86400000);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(adjusted);
 }
 
 function calcStreak(dates: string[], today: string): number {
@@ -147,7 +158,7 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
-  const today = todayMadrid();
+  const today = checklistToday();
   const lookback = format(subDays(new Date(today + "T12:00:00"), 90), "yyyy-MM-dd");
 
   const [items, allCompletions, recentGymSessions] = await Promise.all([

@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
   const heart_rate_max = toNum(body.heart_rate_max);
   const respiratory_rate_avg = toNum(body.respiratory_rate_avg);
   const blood_oxygen_avg = toNum(body.blood_oxygen_avg);
+  const sleep_score = toNum(body.sleep_score);
 
   // date is required — accept YYYY-MM-DD or other formats
   if (!date) {
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
             user_id, date, bedtime, wake, hours, quality, source,
             stage_deep_minutes, stage_core_minutes, stage_rem_minutes, stage_awake_minutes,
             heart_rate_avg, heart_rate_min, heart_rate_max,
-            respiratory_rate_avg, blood_oxygen_avg, raw_payload
+            respiratory_rate_avg, blood_oxygen_avg, sleep_score, raw_payload
           ) VALUES (
             ${userId}, ${normalizedDate}, ${bed}, ${wake}, ${h}, ${5}, ${"apple_health"},
             ${stage_deep_minutes}, ${stage_core_minutes},
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
             ${heart_rate_avg}, ${heart_rate_min},
             ${heart_rate_max},
             ${respiratory_rate_avg}, ${blood_oxygen_avg},
-            ${raw}
+            ${sleep_score}, ${raw}
           )
           ON CONFLICT (user_id, date) DO UPDATE SET
             bedtime = ${bed},
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
             heart_rate_max = ${heart_rate_max},
             respiratory_rate_avg = ${respiratory_rate_avg},
             blood_oxygen_avg = ${blood_oxygen_avg},
+            sleep_score = ${sleep_score},
             raw_payload = ${raw}`
     );
   } catch (err) {

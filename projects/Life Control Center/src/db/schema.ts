@@ -653,6 +653,7 @@ export const sleepEntries = sqliteTable("sleep_entries", {
   heartRateMax: real("heart_rate_max"),
   respiratoryRateAvg: real("respiratory_rate_avg"),
   bloodOxygenAvg: real("blood_oxygen_avg"),
+  sleepScore: integer("sleep_score"), // 0–100, from Apple Health
   rawPayload: text("raw_payload"), // full JSON from Apple Shortcut
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()

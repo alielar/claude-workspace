@@ -16,6 +16,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",
     "@auth/drizzle-adapter": "^1.11.2",
+    "@google/generative-ai": "^0.24.1",
     "@libsql/client": "^0.17.3",
     "@vercel/blob": "^2.3.3",
     "clsx": "^2.1.1",

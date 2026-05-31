@@ -12,8 +12,19 @@ import { db } from "@/db";
 import { checklistCompletions } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
-function todayMadrid(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+/**
+ * "Today" for checklist purposes — if it's before 4 AM in Madrid,
+ * we treat it as still being the previous day so late-night check-offs
+ * count toward yesterday's list.
+ */
+function checklistToday(): string {
+  const now = new Date();
+  const madridHour = parseInt(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "numeric", hour12: false }).format(now)
+  );
+  const offset = madridHour < 4 ? -1 : 0;
+  const adjusted = new Date(now.getTime() + offset * 86400000);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(adjusted);
 }
 
 export async function POST(req: Request) {
@@ -26,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "itemId required" }, { status: 400 });
   }
 
-  const today = todayMadrid();
+  const today = checklistToday();
 
   // Check if already completed
   const [existing] = await db.select()

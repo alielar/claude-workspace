@@ -119,23 +119,39 @@ function parseRSSItems(xml: string): RSSItem[] {
 }
 
 function stripHtml(s: string): string {
-  return s
-    .replace(/<[^>]*>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&#8211;/g, "–")
-    .replace(/&#8212;/g, "—")
-    .replace(/&#8216;/g, "'")
-    .replace(/&#8217;/g, "'")
-    .replace(/&#8220;/g, "\u201C")
-    .replace(/&#8221;/g, "\u201D")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/&[a-zA-Z]+;/g, "") // strip any remaining named entities
+  let out = s
+    .replace(/<[^>]*>/g, "");
+
+  // Decode entities in multiple passes to handle double-encoding (e.g. &amp;#8217;)
+  for (let i = 0; i < 3; i++) {
+    const prev = out;
+    out = out
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&apos;/g, "'")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&ndash;/g, "–")
+      .replace(/&mdash;/g, "—")
+      .replace(/&lsquo;/g, "\u2018")
+      .replace(/&rsquo;/g, "\u2019")
+      .replace(/&ldquo;/g, "\u201C")
+      .replace(/&rdquo;/g, "\u201D")
+      .replace(/&hellip;/g, "\u2026")
+      .replace(/&trade;/g, "\u2122")
+      .replace(/&copy;/g, "\u00A9")
+      .replace(/&reg;/g, "\u00AE")
+      .replace(/&eacute;/g, "\u00E9")
+      .replace(/&egrave;/g, "\u00E8")
+      .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    if (out === prev) break; // no more entities to decode
+  }
+
+  return out
+    .replace(/&[a-zA-Z]+;/g, "") // strip any remaining unknown named entities
     .replace(/\s+/g, " ")
     .trim();
 }

@@ -291,10 +291,14 @@ export default function NewsPage() {
   const [viewingBrief, setViewingBrief]   = useState<NewsBrief | null>(null);
   const [viewingLoading, setViewingLoading] = useState(false);
 
-  const generate = useCallback(async () => {
+  const generate = useCallback(async (force = false) => {
     setGenerating(true);
     setConfirmRefresh(false);
-    const res = await fetch("/api/news/generate", { method: "POST" }).catch(() => null);
+    const res = await fetch("/api/news/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ force }),
+    }).catch(() => null);
     if (res?.ok) {
       const data = await res.json();
       if (data) setBrief(data);
@@ -353,12 +357,12 @@ export default function NewsPage() {
   }
 
   function handleRefreshClick() {
-    if (!brief) { generate(); return; }
+    if (!brief) { generate(true); return; }
     const ageMs = Date.now() - new Date(brief.generatedAt).getTime();
     if (ageMs < 3600000) {
       setConfirmRefresh(true);
     } else {
-      generate();
+      generate(true);
     }
   }
 
@@ -448,7 +452,7 @@ export default function NewsPage() {
             </button>
             <button
               className="cc-btn cc-btn-primary"
-              onClick={generate}
+              onClick={() => generate(true)}
               style={{ fontSize: 11, padding: "4px 12px" }}
             >
               Refresh

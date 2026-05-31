@@ -696,7 +696,13 @@ export default function ChecklistPage() {
   const [weeklyReview, setWeeklyReview] = useState<string | null>(null);
   const [loadingSug, setLoadingSug]     = useState(true);
 
-  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+  // Grace period: before 4 AM Madrid, treat it as still yesterday
+  const _now = new Date();
+  const _madridHour = parseInt(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "numeric", hour12: false }).format(_now)
+  );
+  const _adjusted = _madridHour < 4 ? new Date(_now.getTime() - 86400000) : _now;
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(_adjusted);
 
   const load = useCallback(async () => {
     try {

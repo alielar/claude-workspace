@@ -26,6 +26,7 @@ type SleepEntry = {
   heart_rate_max?: number | null;
   respiratory_rate_avg?: number | null;
   blood_oxygen_avg?: number | null;
+  sleep_score?: number | null;
 };
 
 const TARGET_HOURS = 8;
@@ -114,6 +115,21 @@ function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
         <div className="tail">{dateLabel}</div>
       </div>
       <div className="cc-card-body">
+        {/* Sleep score */}
+        {entry.sleep_score != null && (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, padding: "12px 14px", border: "1px solid rgba(124,77,255,0.12)", borderRadius: 10, background: "rgba(124,77,255,0.04)" }}>
+            <div style={{ fontSize: 36, fontWeight: 200, letterSpacing: "-0.04em", fontFamily: "var(--f-mono)", color: "var(--ink)", lineHeight: 1 }}>
+              {entry.sleep_score}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Sleep Score</div>
+              <div style={{ fontSize: 11, color: entry.sleep_score >= 80 ? "var(--pos)" : entry.sleep_score >= 60 ? "var(--ink-3)" : "var(--warn)", marginTop: 2 }}>
+                {entry.sleep_score >= 85 ? "Excellent" : entry.sleep_score >= 70 ? "Good" : entry.sleep_score >= 55 ? "Fair" : "Poor"}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Sleep stages bar */}
         {stages.length > 0 && (
           <div style={{ marginBottom: 18 }}>
@@ -234,6 +250,7 @@ export default function SleepPage() {
         heart_rate_max: r.heartRateMax as number | null ?? null,
         respiratory_rate_avg: r.respiratoryRateAvg as number | null ?? null,
         blood_oxygen_avg: r.bloodOxygenAvg as number | null ?? null,
+        sleep_score: r.sleepScore as number | null ?? null,
       }));
       setEntries(mapped);
       const e = mapped.find((e) => e.date === today);

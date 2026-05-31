@@ -10,6 +10,7 @@ import { newsBriefs, userSettings } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { generateNewsBrief, type NewsBrief } from "@/lib/news-brief";
 import { todayInTz } from "@/lib/utils";
+import { enhanceStoriesWithAI } from "@/lib/news/summarize";
 
 export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
   const [settings] = await db
@@ -28,8 +29,9 @@ export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
 
   if (existing) return JSON.parse(existing.content) as NewsBrief;
 
-  // Generate and save
+  // Generate, enhance with AI summaries, and save
   const brief = await generateNewsBrief(today);
+  await enhanceStoriesWithAI(brief.stories);
 
   await db.insert(newsBriefs).values({
     userId,

@@ -13,13 +13,24 @@ import { eq, and } from "drizzle-orm";
 import { todayInTz } from "@/lib/utils";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
+    // Support force-refresh: delete today's cached brief first
+    let force = false;
+    try { const body = await req.json(); force = body?.force === true; } catch { /* no body */ }
+
+    if (force) {
+      const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, session.user.id));
+      const tz = settings?.timezone ?? "Europe/Madrid";
+      const today = todayInTz(tz);
+      await db.delete(newsBriefs).where(and(eq(newsBriefs.userId, session.user.id), eq(newsBriefs.date, today)));
+    }
+
     const brief = await ensureTodaysBrief(session.user.id);
     return NextResponse.json(brief);
   } catch (err) {

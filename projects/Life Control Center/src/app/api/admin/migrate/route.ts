@@ -251,6 +251,7 @@ export async function POST() {
     `ALTER TABLE sleep_entries ADD COLUMN respiratory_rate_avg REAL`,
     `ALTER TABLE sleep_entries ADD COLUMN blood_oxygen_avg REAL`,
     `ALTER TABLE sleep_entries ADD COLUMN raw_payload TEXT`,
+    `ALTER TABLE sleep_entries ADD COLUMN sleep_score INTEGER`,
 
     // ── Reading progress — bookmark columns ─────────────────────────────────
     `ALTER TABLE reading_progress ADD COLUMN bookmark_text TEXT`,
