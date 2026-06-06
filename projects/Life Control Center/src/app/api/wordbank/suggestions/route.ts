@@ -15,9 +15,30 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { wordBankEntries, newsBriefs, books, readingProgress } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import Anthropic from "@anthropic-ai/sdk";
+/** Try Gemini first (free), fall back to Anthropic Haiku */
+async function generateAIText(prompt: string): Promise<string> {
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      if (text) return text;
+    } catch {
+      // Fall through to Anthropic
+    }
+  }
 
-const client = new Anthropic();
+  const Anthropic = (await import("@anthropic-ai/sdk")).default;
+  const client = new Anthropic();
+  const message = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 512,
+    messages: [{ role: "user", content: prompt }],
+  });
+  return message.content[0].type === "text" ? message.content[0].text : "";
+}
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -78,12 +99,9 @@ export async function GET() {
     ? `\nAlready in word bank (DO NOT suggest these): ${existingWords.map((e) => e.word).slice(0, 50).join(", ")}`
     : "";
 
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    messages: [{
-      role: "user",
-      content: `Given this context, suggest 6 interesting words or short phrases worth learning (English, French, or Moroccan Darija).
+  let raw: string;
+  try {
+    raw = await generateAIText(`Given this context, suggest 6 interesting words or short phrases worth learning (English, French, or Moroccan Darija).
 Prefer uncommon vocabulary, domain-specific terms, or expressive phrases.${alreadyHave}
 
 ${context}
@@ -92,11 +110,11 @@ Return ONLY a JSON array with exactly this shape — no markdown:
 [
   { "word": "...", "source": "news" | "library", "context": "short quote or reason why this word is interesting (≤12 words)" },
   ...
-]`,
-    }],
-  });
-
-  const raw = message.content[0].type === "text" ? message.content[0].text : "[]";
+]`);
+  } catch (err) {
+    console.error("[wordbank/suggestions] AI failed:", err);
+    return NextResponse.json([]);
+  }
   const jsonMatch = raw.match(/\[[\s\S]*\]/);
   if (!jsonMatch) return NextResponse.json([]);
 

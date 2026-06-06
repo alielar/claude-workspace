@@ -10,7 +10,7 @@
 
 Ali's personal life dashboard — a single-user Next.js web app on Vercel. Modules: dashboard, workouts, news, checklist, word bank, library, mood, sleep, journal, finance, settings.
 
-**Stack:** Next.js (App Router, latest — see AGENTS.md), Drizzle ORM + Turso (libSQL/SQLite), NextAuth v5 (Google OAuth), Anthropic API (`claude-sonnet-4-6`), Vercel hosting + cron. **No Tailwind** — all styles are inline or via `globals.css` CSS custom properties.
+**Stack:** Next.js (App Router, latest — see AGENTS.md), Drizzle ORM + Turso (libSQL/SQLite), NextAuth v5 (Google OAuth), Anthropic API (`claude-haiku-4-5-20251001`), Vercel hosting + cron. **No Tailwind** — all styles are inline or via `globals.css` CSS custom properties.
 
 ---
 
@@ -75,7 +75,7 @@ Keep unchanged: ghost/secondary buttons, Discard/red-tinted buttons, the floatin
   ```
 
 ### AI
-- `@anthropic-ai/sdk`, model `claude-sonnet-4-6`. Limit to 1 call/user/day max. Cache in DB.
+- `@anthropic-ai/sdk`, model `claude-haiku-4-5-20251001`. Limit to 1 call/user/day max. Cache in DB.
 
 ### File Structure
 ```

@@ -16,9 +16,7 @@ import { db } from "@/db";
 import { wordBankEntries } from "@/db/schema";
 import { eq, and, lte, like, or } from "drizzle-orm";
 import { format } from "date-fns";
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic();
+// Anthropic client lazily imported (Gemini free tier is tried first)
 
 /** "Today" in Europe/Madrid timezone as YYYY-MM-DD */
 function todayMadrid(): string {
@@ -61,6 +59,45 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(words);
 }
 
+const WORD_PROMPT = (word: string) => `Analyze the word or phrase: "${word}"
+
+Return a JSON object with exactly these fields:
+{
+  "word": "the word exactly as given",
+  "definition": "clear, concise definition (1-2 sentences)",
+  "partOfSpeech": "noun | verb | adjective | adverb | phrase | idiom | expression",
+  "exampleSentence": "a natural example sentence using this word/phrase",
+  "language": "en | fr | darija"
+}
+
+Detect language: "en" for English, "fr" for French, "darija" for Moroccan Arabic/Darija.
+Return only the JSON object, no markdown or other text.`;
+
+/** Try Gemini first (free), fall back to Anthropic Haiku */
+async function generateWordDefinition(word: string): Promise<string> {
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const result = await model.generateContent(WORD_PROMPT(word));
+      const text = result.response.text().trim();
+      if (text) return text;
+    } catch {
+      // Fall through to Anthropic
+    }
+  }
+
+  const Anthropic = (await import("@anthropic-ai/sdk")).default;
+  const client = new Anthropic();
+  const message = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 512,
+    messages: [{ role: "user", content: WORD_PROMPT(word) }],
+  });
+  return message.content[0].type === "text" ? message.content[0].text : "";
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -73,34 +110,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "word required" }, { status: 400 });
   }
 
-  // Ask Claude to generate definition, part of speech, example, and detect language
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    messages: [
-      {
-        role: "user",
-        content: `Analyze the word or phrase: "${word.trim()}"
+  let raw: string;
+  try {
+    raw = await generateWordDefinition(word.trim());
+  } catch (err) {
+    console.error("[wordbank] AI generation failed:", err);
+    return NextResponse.json({ error: "AI generation failed", detail: String(err) }, { status: 502 });
+  }
 
-Return a JSON object with exactly these fields:
-{
-  "word": "the word exactly as given",
-  "definition": "clear, concise definition (1-2 sentences)",
-  "partOfSpeech": "noun | verb | adjective | adverb | phrase | idiom | expression",
-  "exampleSentence": "a natural example sentence using this word/phrase",
-  "language": "en | fr | darija"
-}
-
-Detect language: "en" for English, "fr" for French, "darija" for Moroccan Arabic/Darija.
-Return only the JSON object, no markdown or other text.`,
-      },
-    ],
-  });
-
-  const raw = message.content[0].type === "text" ? message.content[0].text : "";
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    return NextResponse.json({ error: "Failed to parse Claude response" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to parse AI response", raw }, { status: 500 });
   }
 
   let generated: {
@@ -114,30 +134,34 @@ Return only the JSON object, no markdown or other text.`,
   try {
     generated = JSON.parse(jsonMatch[0]);
   } catch {
-    return NextResponse.json({ error: "Invalid JSON from Claude" }, { status: 500 });
+    return NextResponse.json({ error: "Invalid JSON from AI", raw }, { status: 500 });
   }
 
-  // New words are due today (step 0 = same day)
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = todayMadrid();
 
-  const [entry] = await db
-    .insert(wordBankEntries)
-    .values({
-      userId,
-      word: generated.word ?? word.trim(),
-      definition: generated.definition,
-      partOfSpeech: generated.partOfSpeech ?? null,
-      exampleSentence: generated.exampleSentence ?? null,
-      language: ["en", "fr", "darija"].includes(generated.language)
-        ? generated.language
-        : "en",
-      bookId: bookId ?? null,
-      interval: 0,       // step index 0 = "new"
-      streak: 0,
-      nextReviewDate: today,
-      masteryStatus: "new",
-    })
-    .returning();
+  try {
+    const [entry] = await db
+      .insert(wordBankEntries)
+      .values({
+        userId,
+        word: generated.word ?? word.trim(),
+        definition: generated.definition ?? "No definition available",
+        partOfSpeech: generated.partOfSpeech ?? null,
+        exampleSentence: generated.exampleSentence ?? null,
+        language: ["en", "fr", "darija"].includes(generated.language)
+          ? generated.language
+          : "en",
+        bookId: bookId ?? null,
+        interval: 0,
+        streak: 0,
+        nextReviewDate: today,
+        masteryStatus: "new",
+      })
+      .returning();
 
-  return NextResponse.json(entry, { status: 201 });
+    return NextResponse.json(entry, { status: 201 });
+  } catch (err) {
+    console.error("[wordbank] DB insert failed:", err);
+    return NextResponse.json({ error: "Failed to save word", detail: String(err) }, { status: 500 });
+  }
 }

@@ -480,13 +480,17 @@ export default function ReadPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ word, bookId }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(err.error ?? err.detail ?? `HTTP ${res.status}`);
+      }
       setWordToast({ text: `"${word}" saved`, ok: true });
-    } catch {
+    } catch (err) {
       setAddedWords((prev) => { const next = new Set(prev); next.delete(word); return next; });
-      setWordToast({ text: `Failed to save "${word}"`, ok: false });
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setWordToast({ text: `Failed: ${msg}`, ok: false });
     }
-    setTimeout(() => setWordToast(null), 2500);
+    setTimeout(() => setWordToast(null), 4000);
   };
 
   // Save bookmark position

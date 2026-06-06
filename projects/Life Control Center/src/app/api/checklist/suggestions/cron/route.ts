@@ -15,7 +15,6 @@ import {
   weeklyReviews,
 } from "@/db/schema";
 import { eq, and, gte } from "drizzle-orm";
-import Anthropic from "@anthropic-ai/sdk";
 import { format, subDays } from "date-fns";
 
 function todayMadrid(): string {
@@ -28,7 +27,33 @@ function currentSunday(): string {
   return format(subDays(now, dow), "yyyy-MM-dd");
 }
 
-const client = new Anthropic();
+/** Try Gemini first (free), fall back to Anthropic Haiku */
+async function generateAIText(prompt: string, system?: string): Promise<string> {
+  const fullPrompt = system ? `${system}\n\n${prompt}` : prompt;
+
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const result = await model.generateContent(fullPrompt);
+      const text = result.response.text().trim();
+      if (text) return text;
+    } catch {
+      // Fall through to Anthropic
+    }
+  }
+
+  const Anthropic = (await import("@anthropic-ai/sdk")).default;
+  const client = new Anthropic();
+  const message = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 800,
+    ...(system ? { system } : {}),
+    messages: [{ role: "user", content: prompt }],
+  });
+  return (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
+}
 
 async function generateForUser(userId: string): Promise<void> {
   const today = todayMadrid();
@@ -84,21 +109,10 @@ async function generateForUser(userId: string): Promise<void> {
     )
     .join("\n");
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 800,
-    system:
-      "You are a personal habit coach. Analyze checklist data and respond with JSON only — no markdown, no extra text.",
-    messages: [
-      {
-        role: "user",
-        content: `Current habits:\n${itemsList}\n\nLast 30 days completion log:\n${statsLines}\n\nRespond with this exact JSON:\n{\n  "suggestions": [\n    { "title": "...", "rationale": "...", "emoji": "..." },\n    { "title": "...", "rationale": "...", "emoji": "..." }\n  ],\n  "patternObservation": "2-3 sentences about patterns in their completion data."\n}\n\nRules:\n- Suggest 2-3 NEW habits not already tracked\n- Keep each rationale to 1-2 sentences\n- Pattern observation: factual and specific to their actual data`,
-      },
-    ],
-  });
-
-  const text =
-    response.content[0].type === "text" ? response.content[0].text.trim() : "";
+  const text = await generateAIText(
+    `Current habits:\n${itemsList}\n\nLast 30 days completion log:\n${statsLines}\n\nRespond with this exact JSON:\n{\n  "suggestions": [\n    { "title": "...", "rationale": "...", "emoji": "..." },\n    { "title": "...", "rationale": "...", "emoji": "..." }\n  ],\n  "patternObservation": "2-3 sentences about patterns in their completion data."\n}\n\nRules:\n- Suggest 2-3 NEW habits not already tracked\n- Keep each rationale to 1-2 sentences\n- Pattern observation: factual and specific to their actual data`,
+    "You are a personal habit coach. Analyze checklist data and respond with JSON only — no markdown, no extra text."
+  );
 
   let parsed: {
     suggestions: { title: string; rationale: string; emoji: string }[];
