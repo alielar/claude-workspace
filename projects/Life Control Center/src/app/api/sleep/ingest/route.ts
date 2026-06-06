@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { sleepEntries } from "@/db/schema";
+import { sql, eq, desc } from "drizzle-orm";
 import { getUserId } from "@/lib/user";
 
 /** Coerce value to number or null (Apple Shortcuts sometimes sends strings) */
@@ -23,19 +24,48 @@ function toStr(v: unknown): string | null {
  * GET /api/sleep/ingest — health check for debugging shortcut connectivity.
  */
 export async function GET() {
-  return NextResponse.json({ ok: true, endpoint: "sleep-ingest", timestamp: new Date().toISOString() });
+  // Show the most recent apple_health entries so you can verify the shortcut is working
+  try {
+    const rows = await db
+      .select({
+        date: sleepEntries.date,
+        bedtime: sleepEntries.bedtime,
+        wake: sleepEntries.wake,
+        hours: sleepEntries.hours,
+        source: sleepEntries.source,
+        sleepScore: sleepEntries.sleepScore,
+        createdAt: sleepEntries.createdAt,
+      })
+      .from(sleepEntries)
+      .where(eq(sleepEntries.source, "apple_health"))
+      .orderBy(desc(sleepEntries.createdAt))
+      .limit(3);
+    return NextResponse.json({
+      ok: true,
+      endpoint: "sleep-ingest",
+      timestamp: new Date().toISOString(),
+      recentAppleHealthEntries: rows,
+    });
+  } catch {
+    return NextResponse.json({ ok: true, endpoint: "sleep-ingest", timestamp: new Date().toISOString() });
+  }
 }
 
 export async function POST(req: NextRequest) {
+  console.log("[sleep-ingest] Received POST request");
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
+    console.error("[sleep-ingest] Invalid JSON body");
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  console.log("[sleep-ingest] Payload:", JSON.stringify(body));
+
   const userId = await getUserId();
   if (!userId) {
+    console.error("[sleep-ingest] No user found");
     return NextResponse.json({ error: "No user found" }, { status: 500 });
   }
 
@@ -124,8 +154,10 @@ export async function POST(req: NextRequest) {
             raw_payload = ${raw}`
     );
   } catch (err) {
+    console.error("[sleep-ingest] DB write failed:", err);
     return NextResponse.json({ error: "DB write failed", detail: String(err), payload: body }, { status: 500 });
   }
 
+  console.log(`[sleep-ingest] Success: date=${normalizedDate}, hours=${h}, source=apple_health`);
   return NextResponse.json({ success: true, date: normalizedDate, hours: h });
 }

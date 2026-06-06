@@ -64,8 +64,11 @@ function fmtMin(m: number): string {
   return hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
 }
 
-function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
-  const hasAppleData = entry?.source === "apple_health";
+function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; yesterdayEntry?: SleepEntry | null }) {
+  // Check today first, fall back to yesterday (the shortcut might store sleep under last night's date)
+  const displayEntry = (entry?.source === "apple_health" ? entry : null)
+    ?? (yesterdayEntry?.source === "apple_health" ? yesterdayEntry : null);
+  const hasAppleData = displayEntry != null;
   const todayDate = todayMadrid();
   const dateLabel = new Date(todayDate + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
@@ -99,11 +102,12 @@ function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
   }
 
   // Build stages array from available data
+  const e = displayEntry!;
   const stages = [
-    { key: "deep",  label: "Deep",  minutes: entry.stage_deep_minutes,  color: STAGE_COLORS.deep },
-    { key: "core",  label: "Core",  minutes: entry.stage_core_minutes,  color: STAGE_COLORS.core },
-    { key: "rem",   label: "REM",   minutes: entry.stage_rem_minutes,   color: STAGE_COLORS.rem },
-    { key: "awake", label: "Awake", minutes: entry.stage_awake_minutes, color: STAGE_COLORS.awake },
+    { key: "deep",  label: "Deep",  minutes: e.stage_deep_minutes,  color: STAGE_COLORS.deep },
+    { key: "core",  label: "Core",  minutes: e.stage_core_minutes,  color: STAGE_COLORS.core },
+    { key: "rem",   label: "REM",   minutes: e.stage_rem_minutes,   color: STAGE_COLORS.rem },
+    { key: "awake", label: "Awake", minutes: e.stage_awake_minutes, color: STAGE_COLORS.awake },
   ].filter((s) => s.minutes != null && s.minutes > 0) as { key: string; label: string; minutes: number; color: string }[];
 
   const totalStageMin = stages.reduce((s, st) => s + st.minutes, 0);
@@ -116,15 +120,15 @@ function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
       </div>
       <div className="cc-card-body">
         {/* Sleep score */}
-        {entry.sleep_score != null && (
+        {e.sleep_score != null && (
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, padding: "12px 14px", border: "1px solid rgba(124,77,255,0.12)", borderRadius: 10, background: "rgba(124,77,255,0.04)" }}>
             <div style={{ fontSize: 36, fontWeight: 200, letterSpacing: "-0.04em", fontFamily: "var(--f-mono)", color: "var(--ink)", lineHeight: 1 }}>
-              {entry.sleep_score}
+              {e.sleep_score}
             </div>
             <div>
               <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Sleep Score</div>
-              <div style={{ fontSize: 11, color: entry.sleep_score >= 80 ? "var(--pos)" : entry.sleep_score >= 60 ? "var(--ink-3)" : "var(--warn)", marginTop: 2 }}>
-                {entry.sleep_score >= 85 ? "Excellent" : entry.sleep_score >= 70 ? "Good" : entry.sleep_score >= 55 ? "Fair" : "Poor"}
+              <div style={{ fontSize: 11, color: e.sleep_score >= 80 ? "var(--pos)" : e.sleep_score >= 60 ? "var(--ink-3)" : "var(--warn)", marginTop: 2 }}>
+                {e.sleep_score >= 85 ? "Excellent" : e.sleep_score >= 70 ? "Good" : e.sleep_score >= 55 ? "Fair" : "Poor"}
               </div>
             </div>
           </div>
@@ -163,12 +167,12 @@ function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Heart rate</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-              {entry.heart_rate_avg != null ? Math.round(entry.heart_rate_avg) : "—"}
+              {e.heart_rate_avg != null ? Math.round(e.heart_rate_avg) : "—"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>bpm</span>
             </div>
-            {entry.heart_rate_min != null && entry.heart_rate_max != null && (
+            {e.heart_rate_min != null && e.heart_rate_max != null && (
               <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", marginTop: 2 }}>
-                {Math.round(entry.heart_rate_min)}–{Math.round(entry.heart_rate_max)}
+                {Math.round(e.heart_rate_min)}–{Math.round(e.heart_rate_max)}
               </div>
             )}
           </div>
@@ -177,7 +181,7 @@ function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Resp. rate</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-              {entry.respiratory_rate_avg != null ? entry.respiratory_rate_avg.toFixed(1) : "—"}
+              {e.respiratory_rate_avg != null ? e.respiratory_rate_avg.toFixed(1) : "—"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>br/m</span>
             </div>
           </div>
@@ -186,7 +190,7 @@ function AppleHealthCard({ entry }: { entry: SleepEntry | null }) {
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>SpO₂</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-              {entry.blood_oxygen_avg != null ? entry.blood_oxygen_avg.toFixed(1) : "—"}
+              {e.blood_oxygen_avg != null ? e.blood_oxygen_avg.toFixed(1) : "—"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>%</span>
             </div>
           </div>
@@ -232,7 +236,10 @@ export default function SleepPage() {
   const loadEntries = useCallback(async () => {
     try {
       const res = await fetch("/api/sleep/logs");
-      if (!res.ok) return;
+      if (!res.ok) {
+        setLoading(false);
+        return;
+      }
       const rows = await res.json();
       const mapped: SleepEntry[] = rows.map((r: Record<string, unknown>) => ({
         date: r.date as string,
@@ -241,16 +248,16 @@ export default function SleepPage() {
         hours: r.hours as number,
         quality: r.quality as number,
         source: (r.source as string) ?? "manual",
-        stage_deep_minutes: r.stageDeepMinutes as number | null ?? null,
-        stage_core_minutes: r.stageCoreMinutes as number | null ?? null,
-        stage_rem_minutes: r.stageRemMinutes as number | null ?? null,
-        stage_awake_minutes: r.stageAwakeMinutes as number | null ?? null,
-        heart_rate_avg: r.heartRateAvg as number | null ?? null,
-        heart_rate_min: r.heartRateMin as number | null ?? null,
-        heart_rate_max: r.heartRateMax as number | null ?? null,
-        respiratory_rate_avg: r.respiratoryRateAvg as number | null ?? null,
-        blood_oxygen_avg: r.bloodOxygenAvg as number | null ?? null,
-        sleep_score: r.sleepScore as number | null ?? null,
+        stage_deep_minutes: (r.stageDeepMinutes as number | null) ?? null,
+        stage_core_minutes: (r.stageCoreMinutes as number | null) ?? null,
+        stage_rem_minutes: (r.stageRemMinutes as number | null) ?? null,
+        stage_awake_minutes: (r.stageAwakeMinutes as number | null) ?? null,
+        heart_rate_avg: (r.heartRateAvg as number | null) ?? null,
+        heart_rate_min: (r.heartRateMin as number | null) ?? null,
+        heart_rate_max: (r.heartRateMax as number | null) ?? null,
+        respiratory_rate_avg: (r.respiratoryRateAvg as number | null) ?? null,
+        blood_oxygen_avg: (r.bloodOxygenAvg as number | null) ?? null,
+        sleep_score: (r.sleepScore as number | null) ?? null,
       }));
       setEntries(mapped);
       const e = mapped.find((e) => e.date === today);
@@ -289,11 +296,12 @@ export default function SleepPage() {
     }
   }
 
-  // Last 7 days for bar chart
+  // Last 7 days for bar chart (use Madrid timezone to match stored dates)
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - (6 - i));
-    const dateStr = d.toISOString().split("T")[0];
+    // Use Madrid timezone for consistent date matching
+    const dateStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(d);
     const entry   = entries.find((e) => e.date === dateStr);
     return {
       date: dateStr,
@@ -449,7 +457,15 @@ export default function SleepPage() {
           </div>
 
           {/* Apple Health card */}
-          <AppleHealthCard entry={entries.find((e) => e.date === today) ?? null} />
+          <AppleHealthCard
+            entry={entries.find((e) => e.date === today) ?? null}
+            yesterdayEntry={(() => {
+              const y = new Date(now);
+              y.setDate(y.getDate() - 1);
+              const yStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(y);
+              return entries.find((e) => e.date === yStr) ?? null;
+            })()}
+          />
 
           {/* Weekly bar chart */}
           <div className="cc-card" style={{ marginBottom: 14 }}>
