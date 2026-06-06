@@ -158,6 +158,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "DB write failed", detail: String(err), payload: body }, { status: 500 });
   }
 
-  console.log(`[sleep-ingest] Success: date=${normalizedDate}, hours=${h}, source=apple_health`);
-  return NextResponse.json({ success: true, date: normalizedDate, hours: h });
+  console.log(`[sleep-ingest] Success: date=${normalizedDate}, bed=${bed}, wake=${wake}, hours=${h}`);
+  return NextResponse.json({ success: true, date: normalizedDate, bedtime: bed, wake, hours: h });
 }
