@@ -22,9 +22,8 @@ function weekStart(): string {
   return mon.toISOString().slice(0, 10);
 }
 
-/** Try Gemini first (free), fall back to Anthropic */
+/** Try Gemini first (free), fall back to Anthropic Haiku */
 async function generateAIText(prompt: string): Promise<string> {
-  // Try Gemini (free tier)
   if (process.env.GEMINI_API_KEY) {
     try {
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
@@ -33,20 +32,23 @@ async function generateAIText(prompt: string): Promise<string> {
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
       if (text) return text;
-    } catch {
-      // Fall through to Anthropic
+    } catch (err) {
+      console.error("[coach] Gemini failed:", err);
     }
   }
 
-  // Anthropic fallback
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 500,
-    messages: [{ role: "user", content: prompt }],
-  });
-  return (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
+  if (process.env.ANTHROPIC_API_KEY) {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic();
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 500,
+      messages: [{ role: "user", content: prompt }],
+    });
+    return (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
+  }
+
+  throw new Error("No AI provider available (both GEMINI_API_KEY and ANTHROPIC_API_KEY missing or failed)");
 }
 
 export async function generateCoachCard(userId: string) {

@@ -25,19 +25,23 @@ async function generateAIText(prompt: string): Promise<string> {
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
       if (text) return text;
-    } catch {
-      // Fall through to Anthropic
+    } catch (err) {
+      console.error("[wordbank/suggestions] Gemini failed:", err);
     }
   }
 
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    messages: [{ role: "user", content: prompt }],
-  });
-  return message.content[0].type === "text" ? message.content[0].text : "";
+  if (process.env.ANTHROPIC_API_KEY) {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic();
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 512,
+      messages: [{ role: "user", content: prompt }],
+    });
+    return message.content[0].type === "text" ? message.content[0].text : "";
+  }
+
+  throw new Error("No AI provider available");
 }
 
 function todayMadrid(): string {

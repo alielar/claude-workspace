@@ -75,6 +75,8 @@ Return only the JSON object, no markdown or other text.`;
 
 /** Try Gemini first (free), fall back to Anthropic Haiku */
 async function generateWordDefinition(word: string): Promise<string> {
+  const errors: string[] = [];
+
   if (process.env.GEMINI_API_KEY) {
     try {
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
@@ -83,19 +85,30 @@ async function generateWordDefinition(word: string): Promise<string> {
       const result = await model.generateContent(WORD_PROMPT(word));
       const text = result.response.text().trim();
       if (text) return text;
-    } catch {
-      // Fall through to Anthropic
+      errors.push("Gemini returned empty response");
+    } catch (err) {
+      errors.push(`Gemini: ${String(err)}`);
+      console.error("[wordbank] Gemini failed:", err);
     }
   }
 
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    messages: [{ role: "user", content: WORD_PROMPT(word) }],
-  });
-  return message.content[0].type === "text" ? message.content[0].text : "";
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const client = new Anthropic();
+      const message = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 512,
+        messages: [{ role: "user", content: WORD_PROMPT(word) }],
+      });
+      return message.content[0].type === "text" ? message.content[0].text : "";
+    } catch (err) {
+      errors.push(`Anthropic: ${String(err)}`);
+      console.error("[wordbank] Anthropic failed:", err);
+    }
+  }
+
+  throw new Error(`All AI providers failed: ${errors.join("; ")}`);
 }
 
 export async function POST(req: NextRequest) {

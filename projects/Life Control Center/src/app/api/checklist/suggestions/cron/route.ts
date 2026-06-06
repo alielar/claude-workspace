@@ -39,20 +39,24 @@ async function generateAIText(prompt: string, system?: string): Promise<string> 
       const result = await model.generateContent(fullPrompt);
       const text = result.response.text().trim();
       if (text) return text;
-    } catch {
-      // Fall through to Anthropic
+    } catch (err) {
+      console.error("[checklist-suggestions] Gemini failed:", err);
     }
   }
 
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 800,
-    ...(system ? { system } : {}),
-    messages: [{ role: "user", content: prompt }],
-  });
-  return (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
+  if (process.env.ANTHROPIC_API_KEY) {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic();
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      ...(system ? { system } : {}),
+      messages: [{ role: "user", content: prompt }],
+    });
+    return (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
+  }
+
+  throw new Error("No AI provider available");
 }
 
 async function generateForUser(userId: string): Promise<void> {
