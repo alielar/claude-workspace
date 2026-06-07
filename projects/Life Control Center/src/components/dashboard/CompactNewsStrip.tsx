@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Compact 4-headline news strip for the dashboard.
- * Shows one headline per category (Football, Geopolitics, Business, Tech/AI).
+ * Compact scrolling news ticker for the dashboard.
+ * Shows headlines from all categories scrolling right-to-left.
  * Auto-generates brief if none exists. Links to /news for full view.
  */
 
@@ -21,9 +21,20 @@ const CATS = [
   { id: "tech",        label: "Tech & AI",   color: "#64FFDA", match: ["tech", "ai"] },
 ];
 
+function catColor(category: string): string {
+  const cat = CATS.find(c => c.id === category || (c.match ?? [c.id]).includes(category));
+  return cat?.color ?? "var(--ink-4)";
+}
+
+function catLabel(category: string): string {
+  const cat = CATS.find(c => c.id === category || (c.match ?? [c.id]).includes(category));
+  return cat?.label ?? category;
+}
+
 export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
   const [stories, setStories] = useState<Story[]>(initial);
   const [generating, setGenerating] = useState(false);
+  const [paused, setPaused] = useState(false);
   const attempted = useRef(false);
 
   useEffect(() => {
@@ -49,20 +60,23 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
     })();
   }, [initial]);
 
-  // Pick first headline per category
-  const headlines = CATS.map(cat => {
+  // Pick top headlines — one per category, then fill with extras
+  const headlines: { headline: string; category: string; color: string; label: string }[] = [];
+  for (const cat of CATS) {
     const match = cat.match || [cat.id];
     const story = stories.find(s => match.includes(s.category));
-    return { ...cat, headline: story?.headline ?? null };
-  });
+    if (story) {
+      headlines.push({ headline: story.headline, category: story.category, color: cat.color, label: cat.label });
+    }
+  }
 
   if (generating || (stories.length === 0 && !attempted.current)) {
     return (
-      <div className="news-strip-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ height: 28, display: "flex", alignItems: "center", gap: 12 }}>
         {CATS.map(cat => (
           <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: cat.color, opacity: 0.35, flexShrink: 0 }} />
-            <div className="cc-skeleton" style={{ height: 12, borderRadius: 4, width: "85%" }} />
+            <div className="cc-skeleton" style={{ height: 12, borderRadius: 4, width: 120 }} />
           </div>
         ))}
       </div>
@@ -78,36 +92,72 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
     );
   }
 
+  // Build ticker items — duplicate for seamless loop
+  const tickerItems = headlines.length > 0 ? headlines : [{ headline: "No stories yet", category: "", color: "var(--ink-4)", label: "" }];
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <div className="news-strip-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-        {headlines.map(h => (
-          <Link key={h.id} href="/news" className="news-strip-item" style={{
-            textDecoration: "none", display: "flex", alignItems: "flex-start", gap: 7, minWidth: 0,
-            padding: "6px 8px", borderRadius: 8, margin: "-6px -8px",
-            transition: "background 0.15s var(--easeOut)",
-          }}>
-            <span style={{
-              width: 5, height: 5, borderRadius: "50%", background: h.color,
-              boxShadow: `0 0 6px ${h.color}40`, flexShrink: 0, marginTop: 5,
-            }} />
-            <span style={{
-              fontSize: 12, fontWeight: 600, color: "var(--ink-2)", lineHeight: 1.4, letterSpacing: "-0.005em",
-            }}>
-              {h.headline ?? "—"}
-            </span>
-          </Link>
-        ))}
+    <Link href="/news" style={{ textDecoration: "none", display: "block" }}>
+      <div
+        className="news-ticker-wrap"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        style={{
+          overflow: "hidden",
+          position: "relative",
+          height: 28,
+          display: "flex",
+          alignItems: "center",
+          maskImage: "linear-gradient(90deg, transparent, black 40px, black calc(100% - 40px), transparent)",
+          WebkitMaskImage: "linear-gradient(90deg, transparent, black 40px, black calc(100% - 40px), transparent)",
+        }}
+      >
+        <div
+          className="news-ticker-track"
+          style={{
+            display: "flex",
+            gap: 0,
+            whiteSpace: "nowrap",
+            animationPlayState: paused ? "paused" : "running",
+          }}
+        >
+          {/* Render twice for seamless loop */}
+          {[0, 1].map(copy => (
+            <div key={copy} style={{ display: "flex", gap: 0, flexShrink: 0 }}>
+              {tickerItems.map((item, i) => (
+                <span key={`${copy}-${i}`} style={{ display: "inline-flex", alignItems: "center", gap: 7, paddingRight: 32 }}>
+                  <span style={{
+                    width: 5, height: 5, borderRadius: "50%", background: item.color,
+                    boxShadow: `0 0 6px ${item.color}40`, flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase",
+                    color: item.color, fontFamily: "var(--f-mono)",
+                  }}>
+                    {item.label}
+                  </span>
+                  <span style={{
+                    fontSize: 12, fontWeight: 600, color: "var(--ink-2)", letterSpacing: "-0.005em",
+                  }}>
+                    {item.headline}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
       <style>{`
-        .news-strip-item:hover { background: rgba(255,255,255,0.03); }
-        @media (max-width: 768px) {
-          .news-strip-grid { grid-template-columns: 1fr 1fr !important; }
+        @keyframes ticker-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
-        @media (max-width: 480px) {
-          .news-strip-grid { grid-template-columns: 1fr !important; }
+        .news-ticker-track {
+          animation: ticker-scroll 35s linear infinite;
+        }
+        .news-ticker-wrap:hover .news-ticker-track {
+          animation-play-state: paused;
         }
       `}</style>
-    </div>
+    </Link>
   );
 }

@@ -33,6 +33,69 @@ type CoachNote = {
   generatedAt: number;
 };
 
+const SECTION_META: Record<string, { label: string; color: string }> = {
+  wins:  { label: "Wins",  color: "var(--pos)" },
+  focus: { label: "Focus", color: "var(--violet)" },
+  watch: { label: "Watch", color: "var(--warn)" },
+};
+
+function CoachNoteContent({ content }: { content: string }) {
+  // Try to parse structured sections (WINS / FOCUS / WATCH)
+  const sectionRegex = /\b(WINS|FOCUS|WATCH)\b/g;
+  const matches = [...content.matchAll(sectionRegex)];
+
+  if (matches.length >= 2) {
+    // Structured content — parse sections
+    const sections: { key: string; text: string }[] = [];
+    for (let i = 0; i < matches.length; i++) {
+      const start = (matches[i].index ?? 0) + matches[i][0].length;
+      const end = i + 1 < matches.length ? matches[i + 1].index : content.length;
+      const text = content.slice(start, end).replace(/^[\s:—\-]+/, "").trim();
+      if (text) {
+        sections.push({ key: matches[i][0].toLowerCase(), text });
+      }
+    }
+
+    return (
+      <div style={{
+        padding: "10px 12px", borderRadius: 10,
+        background: "rgba(124,77,255,0.04)",
+        border: "1px solid rgba(124,77,255,0.10)",
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+        {sections.map((s) => {
+          const meta = SECTION_META[s.key] ?? { label: s.key, color: "var(--ink-3)" };
+          return (
+            <div key={s.key}>
+              <div style={{
+                fontSize: 9.5, letterSpacing: "0.12em", textTransform: "uppercase",
+                color: meta.color, fontWeight: 700, marginBottom: 4, fontFamily: "var(--f-mono)",
+              }}>
+                {meta.label}
+              </div>
+              <div style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6 }}>
+                {s.text}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Fallback: unstructured content (old notes)
+  return (
+    <div style={{
+      fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6,
+      padding: "10px 12px", borderRadius: 10,
+      background: "rgba(124,77,255,0.04)",
+      border: "1px solid rgba(124,77,255,0.10)",
+    }}>
+      {content}
+    </div>
+  );
+}
+
 export default function CoachCard() {
   const [session, setSession] = useState<LastSession | null>(null);
   const [suggestions, setSuggestions] = useState<Record<string, Suggestion>>({});
@@ -155,14 +218,7 @@ export default function CoachCard() {
                 {generating ? "…" : "↻"}
               </button>
             </div>
-            <div style={{
-              fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6,
-              padding: "10px 12px", borderRadius: 10,
-              background: "rgba(124,77,255,0.04)",
-              border: "1px solid rgba(124,77,255,0.10)",
-            }}>
-              {coachNote.content}
-            </div>
+            <CoachNoteContent content={coachNote.content} />
           </div>
         ) : (
           <div style={{ marginBottom: entries.length > 0 ? 16 : 0 }}>

@@ -32,8 +32,17 @@ const COLUMNS = [
 
 // ─── Story card ───────────────────────────────────────────────────────────────
 
+type DeepDive = {
+  whatHappened: string;
+  whyItMatters: string;
+  context: string;
+  whatsNext: string;
+};
+
 function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColor: string; index: number }) {
   const [open, setOpen] = useState(false);
+  const [deepDive, setDeepDive] = useState<DeepDive | null>(null);
+  const [loadingDive, setLoadingDive] = useState(false);
 
   let hostname = "";
   if (story.source) {
@@ -44,6 +53,31 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
   const summaryText = story.summary || story.whyItMatters || "";
   const keyPoints: string[] = Array.isArray(story.keyPoints) ? story.keyPoints : [];
   const isTopStory = index === 0;
+
+  const handleDeepDive = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deepDive || loadingDive) return;
+    setLoadingDive(true);
+    try {
+      const res = await fetch("/api/news/deep-dive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ headline: story.headline, summary: summaryText, source: story.source }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDeepDive(data);
+      }
+    } catch { /* ignore */ }
+    setLoadingDive(false);
+  };
+
+  const DIVE_SECTIONS = [
+    { key: "whatHappened", label: "What happened", icon: "📰" },
+    { key: "whyItMatters", label: "Why it matters", icon: "💡" },
+    { key: "context", label: "Context", icon: "🔗" },
+    { key: "whatsNext", label: "What's next", icon: "👉" },
+  ] as const;
 
   return (
     <div
@@ -104,7 +138,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
         )}
       </div>
 
-      {/* Expanded: Summary + key points + source */}
+      {/* Expanded: Summary + key points + deep dive + source */}
       {open && (
         <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
           {summaryText && (
@@ -121,6 +155,54 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
               ))}
             </ul>
           )}
+
+          {/* Deep dive section */}
+          {!deepDive && !loadingDive && (
+            <button
+              onClick={handleDeepDive}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                fontSize: 11, fontWeight: 600, color: accentColor,
+                background: `${accentColor}10`, border: `1px solid ${accentColor}30`,
+                borderRadius: 6, padding: "5px 10px", cursor: "pointer",
+                marginBottom: 10, transition: "background 0.15s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = `${accentColor}20`)}
+              onMouseLeave={e => (e.currentTarget.style.background = `${accentColor}10`)}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+              </svg>
+              Deep dive
+            </button>
+          )}
+          {loadingDive && (
+            <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 12 }}>⟳</span>
+              Analyzing...
+            </div>
+          )}
+          {deepDive && (
+            <div style={{
+              marginBottom: 12, padding: "12px 14px", borderRadius: 10,
+              background: `${accentColor}06`, border: `1px solid ${accentColor}15`,
+              display: "flex", flexDirection: "column", gap: 10,
+            }}>
+              {DIVE_SECTIONS.map(({ key, label, icon }) => {
+                const text = deepDive[key];
+                if (!text) return null;
+                return (
+                  <div key={key}>
+                    <div style={{ fontSize: 9.5, letterSpacing: "0.12em", textTransform: "uppercase", color: accentColor, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)" }}>
+                      {icon} {label}
+                    </div>
+                    <div style={{ fontSize: 12, lineHeight: 1.55, color: "var(--ink-2)" }}>{text}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {story.source && (
             <a
               href={story.source} target="_blank" rel="noopener noreferrer"

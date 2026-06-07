@@ -177,21 +177,31 @@ export async function generateCoachCard(userId: string) {
     ? `\n\nProgressive overload analysis (last ${lastSession?.workoutName} session):\n${progressionNotes.join("\n")}`
     : "";
 
-  const prompt = `You are an experienced, no-BS personal coach writing a weekly training note. You speak directly and personally — like a coach who knows this athlete well.
+  const prompt = `You are an experienced personal coach writing a structured weekly training note. You speak directly and personally.
 
 Training data (last 4 weeks):
 - Sessions: ${sessionSummary}
 - Volume (top exercises, 2 weeks): ${volumeSummary}
 - Recent PRs: ${prSummary}${progressionBlock}
 
-Write a SHORT coaching note (4-6 sentences). Requirements:
-1. Reference SPECIFIC exercises, weights, and numbers from the data — never generic
-2. Call out one thing that's going well (be specific about which exercise or pattern)
-3. Give one concrete, actionable cue for the next session (e.g., "on your next Push day, try pausing at the bottom of your bench press for 2 seconds" — not vague)
-4. If any exercises show "INCREASE", celebrate the progression and mention the new weight
-5. End with energy — make it feel like a real coach talking, not a template
+Write a coaching note in this EXACT format (use these exact section headers):
 
-Tone: direct, personal, varied. Mix short punchy sentences with longer ones. Avoid starting with "Great" or "Solid" — vary your openers. No headers, no bullet points — flowing text only.`;
+WINS
+1-2 sentences about what's going well. Reference SPECIFIC exercises, weights, and numbers. If any exercises show "INCREASE", celebrate and mention the new weight.
+
+FOCUS
+1-2 sentences with ONE concrete, actionable cue for the next session. Be specific (e.g., "On your next Push day, pause at the bottom of your bench for 2 seconds to build control").
+
+WATCH
+1 sentence about something to keep an eye on (volume balance, recovery, form cue, etc.).
+
+Rules:
+- Use the exact headers: WINS, FOCUS, WATCH (all caps, each on its own line)
+- Put a blank line between each section
+- No dashes, no em dashes, no bullet points
+- Reference real exercises and numbers from the data
+- Direct and personal tone, like talking to the athlete face to face
+- Total: 5-8 sentences across all sections`;
 
   const content = await generateAIText(prompt);
   if (!content) throw new Error("AI returned empty response");

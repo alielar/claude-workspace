@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * /sleep — Manual sleep tracker.
- * Layout: 1fr / 300px — left: log hero + time pickers + quality + weekly bars; right: stats + debt.
- * Persisted in database via /api/sleep.
+ * /sleep — Apple Watch sleep tracker.
+ * Data syncs automatically from Apple Health via Shortcuts.
+ * Layout: 1fr / 300px — left: hero + Apple Health card + weekly bars; right: stats + debt.
  */
 
 import { useEffect, useState, useCallback } from "react";
@@ -35,14 +35,6 @@ function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
 }
 
-function calcHours(bed: string, wake: string): number {
-  const [bh, bm] = bed.split(":").map(Number);
-  const [wh, wm] = wake.split(":").map(Number);
-  let mins = (wh * 60 + wm) - (bh * 60 + bm);
-  if (mins < 0) mins += 1440;
-  return Math.round((mins / 60) * 10) / 10;
-}
-
 function fmtHours(h: number): string {
   const hh = Math.floor(h);
   const mm = Math.round((h - hh) * 60);
@@ -65,12 +57,9 @@ function fmtMin(m: number): string {
 }
 
 function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; yesterdayEntry?: SleepEntry | null }) {
-  // Check today first, fall back to yesterday (the shortcut might store sleep under last night's date)
   const displayEntry = (entry?.source === "apple_health" ? entry : null)
     ?? (yesterdayEntry?.source === "apple_health" ? yesterdayEntry : null);
   const hasAppleData = displayEntry != null;
-  const todayDate = todayMadrid();
-  const dateLabel = new Date(todayDate + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
   const glassStyle: React.CSSProperties = {
     background: "rgba(22,22,38,0.55)",
@@ -85,8 +74,7 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
     return (
       <div style={glassStyle}>
         <div className="cc-card-head">
-          <div className="title">Apple Health</div>
-          <div className="tail">{dateLabel}</div>
+          <div className="title"> Apple Health</div>
         </div>
         <div className="cc-card-body" style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 16px" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(180,180,240,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -94,14 +82,13 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
           </svg>
           <div>
             <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>No Apple Health data for tonight yet</div>
-            <div style={{ fontSize: 10.5, color: "var(--ink-5)", marginTop: 2, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>Syncs automatically at 10:00 AM via Shortcuts</div>
+            <div style={{ fontSize: 10.5, color: "var(--ink-5)", marginTop: 2, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>Syncs automatically at 9:30 AM via Shortcuts</div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Build stages array from available data
   const e = displayEntry!;
   const stages = [
     { key: "deep",  label: "Deep",  minutes: e.stage_deep_minutes,  color: STAGE_COLORS.deep },
@@ -115,8 +102,8 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
   return (
     <div style={glassStyle}>
       <div className="cc-card-head">
-        <div className="title">Apple Health · Last night</div>
-        <div className="tail">{dateLabel}</div>
+        <div className="title"> Apple Health</div>
+        <div className="tail">{e.date}</div>
       </div>
       <div className="cc-card-body">
         {/* Sleep score */}
@@ -137,7 +124,7 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
         {/* Sleep stages bar */}
         {stages.length > 0 && (
           <div style={{ marginBottom: 18 }}>
-            <div className="ah-stages-bar" style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", gap: 1.5 }}>
+            <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", gap: 1.5 }}>
               {stages.map((s) => (
                 <div key={s.key} style={{
                   flex: s.minutes / totalStageMin,
@@ -148,7 +135,7 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
                 }} />
               ))}
             </div>
-            <div className="ah-stages-legend" style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginTop: 10 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginTop: 10 }}>
               {stages.map((s) => (
                 <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ width: 7, height: 7, borderRadius: 2, background: s.color, opacity: 0.75, display: "inline-block", flexShrink: 0 }} />
@@ -163,7 +150,6 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
 
         {/* Vitals tiles */}
         <div className="ah-vitals-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          {/* Heart Rate */}
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Heart rate</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
@@ -176,8 +162,6 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
               </div>
             )}
           </div>
-
-          {/* Respiratory Rate */}
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Resp. rate</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
@@ -185,10 +169,8 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>br/m</span>
             </div>
           </div>
-
-          {/* Blood Oxygen */}
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>SpO₂</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>SpO2</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
               {e.blood_oxygen_avg != null ? e.blood_oxygen_avg.toFixed(1) : "—"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>%</span>
@@ -204,35 +186,12 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
 
 export default function SleepPage() {
   const [entries, setEntries] = useState<SleepEntry[]>([]);
-  const [bedtime, setBedtime] = useState("23:00");
-  const [wake,    setWake]    = useState("07:00");
-  const [quality, setQuality] = useState(7);
-  const [saved,   setSaved]   = useState(false);
   const [loading, setLoading] = useState(true);
 
   const now     = new Date();
   const today   = todayMadrid();
   const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  // Migrate localStorage → API (one-time)
-  const migrateLocalStorage = useCallback(async () => {
-    try {
-      const raw = localStorage.getItem("cc_sleep_entries");
-      if (!raw) return;
-      const parsed: SleepEntry[] = JSON.parse(raw);
-      if (parsed.length === 0) return;
-      for (const entry of parsed) {
-        await fetch("/api/sleep", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(entry),
-        });
-      }
-      localStorage.removeItem("cc_sleep_entries");
-    } catch { /* ignore */ }
-  }, []);
-
-  // Load entries from API (uses /api/sleep/logs to get all columns including Apple Health)
   const loadEntries = useCallback(async () => {
     try {
       const res = await fetch("/api/sleep/logs");
@@ -260,47 +219,21 @@ export default function SleepPage() {
         sleep_score: (r.sleepScore as number | null) ?? null,
       }));
       setEntries(mapped);
-      const e = mapped.find((e) => e.date === today);
-      if (e) { setBedtime(e.bedtime); setWake(e.wake); setQuality(e.quality); setSaved(true); }
     } catch { /* ignore */ }
     setLoading(false);
-  }, [today]);
+  }, []);
 
   useEffect(() => {
     (async () => {
-      // Ensure new columns exist before loading
       try { await fetch("/api/admin/migrate", { method: "POST" }); } catch { /* ignore */ }
-      await migrateLocalStorage();
       await loadEntries();
     })();
-  }, [migrateLocalStorage, loadEntries]);
+  }, [loadEntries]);
 
-  async function saveEntry() {
-    const hours = calcHours(bedtime, wake);
-    const entry: SleepEntry = { date: today, bedtime, wake, hours, quality };
-    const prevEntries = entries;
-    const updated = [...entries.filter((e) => e.date !== today), entry].sort((a, b) => b.date.localeCompare(a.date));
-    setEntries(updated);
-    setSaved(true);
-
-    try {
-      const res = await fetch("/api/sleep", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(entry),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setEntries(prevEntries);
-      setSaved(false);
-    }
-  }
-
-  // Last 7 days for bar chart (use Madrid timezone to match stored dates)
+  // Last 7 days for bar chart
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - (6 - i));
-    // Use Madrid timezone for consistent date matching
     const dateStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(d);
     const entry   = entries.find((e) => e.date === dateStr);
     return {
@@ -317,12 +250,19 @@ export default function SleepPage() {
     ? weekEntries.reduce((s, e) => s + (e.hours ?? 0), 0) / weekEntries.length
     : 0;
   const weekDebt    = weekEntries.reduce((s, e) => s + (TARGET_HOURS - (e.hours ?? TARGET_HOURS)), 0);
-  const todayHours  = calcHours(bedtime, wake);
   const maxH = 10;
 
-  const qualAvg = entries.length > 0
-    ? (entries.slice(0, 30).reduce((s, e) => s + e.quality, 0) / Math.min(entries.length, 30)).toFixed(1)
-    : null;
+  // Today's entry for hero
+  const todayEntry = entries.find(e => e.date === today);
+  const yesterdayDate = (() => {
+    const y = new Date(now);
+    y.setDate(y.getDate() - 1);
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(y);
+  })();
+  const yesterdayEntry = entries.find(e => e.date === yesterdayDate);
+  // Show the most recent apple_health entry as "last night"
+  const lastNight = (todayEntry?.source === "apple_health" ? todayEntry : null)
+    ?? (yesterdayEntry?.source === "apple_health" ? yesterdayEntry : null);
 
   if (loading) {
     return (
@@ -345,7 +285,7 @@ export default function SleepPage() {
         <div>
           <h1>Sleep<span className="grad-text">.</span></h1>
           <div className="sub">
-            Manual log · weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
+            Apple Watch sync · weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
             {weekDebt !== 0 && (
               <> · debt <b style={{ color: weekDebt > 0 ? "var(--warn)" : "var(--pos)" }}>
                 {weekDebt > 0 ? `-${fmtHours(weekDebt)}` : "0h"}
@@ -360,117 +300,69 @@ export default function SleepPage() {
         {/* ── LEFT ──────────────────────────────────────────────────────── */}
         <div>
 
-          {/* Log hero card */}
+          {/* Hero card — last night's sleep */}
           <div className="cc-card" style={{
             padding: "26px 28px", marginBottom: 14,
             background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.08), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.06), transparent 60%), var(--bg-card)",
           }}>
             <div style={{ fontSize: 10.5, letterSpacing: "0.20em", textTransform: "uppercase", color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
               <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--cyan)", boxShadow: "0 0 6px var(--cyan)", display: "inline-block" }} />
-              Log last night
+              Last night
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: 8 }}>
-              <div>
-                <div style={{
-                  fontSize: 72, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
-                  background: "linear-gradient(100deg, #64FFDA 0%, #7C4DFF 100%)",
-                  WebkitBackgroundClip: "text", color: "transparent",
-                  filter: "drop-shadow(0 0 18px rgba(100,255,218,0.15))",
-                }}>
-                  {Math.floor(todayHours)}<span style={{ fontSize: 34 }}>h</span>
-                  {todayHours % 1 !== 0 && <span style={{ fontSize: 34 }}>{" "}{Math.round((todayHours % 1) * 60)}m</span>}
+            {lastNight ? (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: 8 }}>
+                <div>
+                  <div style={{
+                    fontSize: 72, fontWeight: 200, letterSpacing: "-0.05em", lineHeight: 0.9,
+                    background: "linear-gradient(100deg, #64FFDA 0%, #7C4DFF 100%)",
+                    WebkitBackgroundClip: "text", color: "transparent",
+                    filter: "drop-shadow(0 0 18px rgba(100,255,218,0.15))",
+                  }}>
+                    {Math.floor(lastNight.hours)}<span style={{ fontSize: 34 }}>h</span>
+                    {lastNight.hours % 1 !== 0 && <span style={{ fontSize: 34 }}>{" "}{Math.round((lastNight.hours % 1) * 60)}m</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--ink-4)", marginTop: 8, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
+                    vs {TARGET_HOURS}h target · {lastNight.hours >= TARGET_HOURS ? "+" : ""}{fmtHours(Math.abs(lastNight.hours - TARGET_HOURS))}
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: "var(--ink-4)", marginTop: 8, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
-                  vs {TARGET_HOURS}h target · {todayHours >= TARGET_HOURS ? "+" : ""}{fmtHours(Math.abs(todayHours - TARGET_HOURS))}
-                </div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
-                  <b style={{ fontFamily: "var(--f-mono)" }}>{bedtime}</b>
-                  {" → "}
-                  <b style={{ fontFamily: "var(--f-mono)" }}>{wake}</b>
-                </div>
-                {saved && (
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
+                    <b style={{ fontFamily: "var(--f-mono)" }}>{lastNight.bedtime}</b>
+                    {" → "}
+                    <b style={{ fontFamily: "var(--f-mono)" }}>{lastNight.wake}</b>
+                  </div>
                   <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 5, justifyContent: "flex-end" }}>
                     <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--pos)", boxShadow: "0 0 4px var(--pos)", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "var(--pos)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>SAVED</span>
+                    <span style={{ fontSize: 10, color: "var(--pos)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>SYNCED</span>
                   </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 22, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
-              {[
-                { label: "Bedtime", value: bedtime, set: setBedtime, accent: "var(--cyan)", sub: "tap to edit" },
-                { label: "Wake",    value: wake,    set: setWake,    accent: "var(--warn)", sub: "alarm time"  },
-              ].map(({ label, value, set, accent, sub }) => (
-                <div key={label} className="sleep-time-input" style={{ padding: "14px 16px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)", transition: "border-color 0.15s var(--easeOut)" }}>
-                  <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--f-mono)" }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "99px", background: accent, display: "inline-block" }} />
-                    {label}
-                  </div>
-                  <input
-                    type="time"
-                    value={value}
-                    onChange={(e) => { set(e.target.value); setSaved(false); }}
-                    style={{ fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1, marginTop: 8, fontFamily: "var(--f-mono)", background: "transparent", border: 0, color: "var(--ink)", outline: "none", width: "100%" }}
-                  />
-                  <div style={{ fontSize: 10.5, color: "var(--ink-5)", marginTop: 6, letterSpacing: "0.04em", fontFamily: "var(--f-mono)" }}>{sub}</div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ marginTop: 14, padding: "16px 18px", border: "1px solid var(--line)", borderRadius: 12, background: "rgba(255,255,255,0.012)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-                <span style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)" }}>Quality</span>
-                <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: "-0.02em", fontFamily: "var(--f-mono)" }}>
-                  {quality}<span style={{ color: "var(--ink-4)", fontSize: 13 }}> / 10</span>
                 </div>
               </div>
-              <div style={{ position: "relative", paddingBottom: 22 }}>
-                <div style={{
-                  position: "absolute", top: 7, left: 0, right: 0, height: 4, borderRadius: 99,
-                  background: "linear-gradient(90deg, rgba(255,138,138,0.40) 0%, rgba(255,193,92,0.40) 30%, rgba(100,255,218,0.40) 60%, rgba(111,212,154,0.40) 100%)",
-                }} />
-                <input
-                  type="range" min={1} max={10} value={quality}
-                  onChange={(e) => { setQuality(Number(e.target.value)); setSaved(false); }}
-                  style={{ position: "relative", width: "100%", appearance: "none", background: "transparent", height: 18, cursor: "pointer", zIndex: 1 }}
-                />
-                <div style={{ display: "flex", justifyContent: "space-between", position: "absolute", bottom: 0, left: 0, right: 0, fontSize: 9, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
-                  <span>1</span><span>5</span><span>10</span>
+            ) : (
+              <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(180,180,240,0.25)" strokeWidth="1.5">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+                <div>
+                  <div style={{ fontSize: 14, color: "var(--ink-3)", fontWeight: 500 }}>No data yet for tonight</div>
+                  <div style={{ fontSize: 11, color: "var(--ink-5)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
+                    Wear your Apple Watch to bed — data syncs at 9:30 AM
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              {saved
-                ? <div style={{ fontSize: 10, color: "var(--pos)", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--f-mono)" }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--pos)", boxShadow: "0 0 4px var(--pos)", display: "inline-block" }} />
-                    SAVED
-                  </div>
-                : <div style={{ fontSize: 10, color: "var(--ink-5)", fontFamily: "var(--f-mono)", letterSpacing: "0.06em" }}>Unsaved changes</div>
-              }
-              <button className="cc-btn cc-btn-primary" onClick={saveEntry} style={{ letterSpacing: "0.04em" }}>Save log</button>
-            </div>
+            )}
           </div>
 
-          {/* Apple Health card */}
+          {/* Apple Health detailed card */}
           <AppleHealthCard
-            entry={entries.find((e) => e.date === today) ?? null}
-            yesterdayEntry={(() => {
-              const y = new Date(now);
-              y.setDate(y.getDate() - 1);
-              const yStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(y);
-              return entries.find((e) => e.date === yStr) ?? null;
-            })()}
+            entry={todayEntry ?? null}
+            yesterdayEntry={yesterdayEntry ?? null}
           />
 
           {/* Weekly bar chart */}
           <div className="cc-card" style={{ marginBottom: 14 }}>
             <div className="cc-card-head">
-              <div className="title">This week · hours slept</div>
+              <div className="title">This week</div>
               <div className="tail">avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b> · target {TARGET_HOURS}h</div>
             </div>
             <div style={{ padding: "24px 18px 18px" }}>
@@ -483,7 +375,7 @@ export default function SleepPage() {
                 </div>
 
                 {last7.map((day) => {
-                  const h     = day.hours ?? (day.isToday ? todayHours : 0);
+                  const h     = day.hours ?? 0;
                   const pct   = h > 0 ? Math.min((h / maxH) * 100, 100) : 3;
                   const isGood = h >= TARGET_HOURS;
                   const bg = day.isToday
@@ -555,27 +447,6 @@ export default function SleepPage() {
             </div>
           </div>
 
-          <div className="cc-card">
-            <div className="cc-card-head">
-              <div className="title">Quality · 30 days</div>
-            </div>
-            <div className="cc-card-body">
-              {qualAvg ? (
-                <>
-                  <div style={{
-                    fontSize: 40, fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1,
-                    background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
-                  }}>
-                    {qualAvg}<span style={{ fontSize: 18, WebkitTextFillColor: "var(--ink-4)" }}> / 10</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 8, fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>average quality rating</div>
-                </>
-              ) : (
-                <div style={{ fontSize: 12, color: "var(--ink-5)" }}>Log your first night to see quality stats.</div>
-              )}
-            </div>
-          </div>
-
           {entries.length > 0 && (
             <div className="cc-card">
               <div className="cc-card-head">
@@ -584,7 +455,7 @@ export default function SleepPage() {
               </div>
               <div className="cc-card-body" style={{ paddingTop: 0 }}>
                 {entries.slice(0, 7).map((e, i, arr) => (
-                  <div key={e.date} className="sleep-history-row" style={{
+                  <div key={e.date} style={{
                     display: "grid", gridTemplateColumns: "52px 1fr auto", gap: 10, alignItems: "center",
                     padding: "9px 4px", margin: "0 -4px", borderRadius: 6,
                     borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none",
@@ -597,7 +468,7 @@ export default function SleepPage() {
                       {fmtHours(e.hours)}
                     </div>
                     <div style={{ fontSize: 10.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                      q{e.quality}
+                      {e.bedtime} → {e.wake}
                     </div>
                   </div>
                 ))}
@@ -608,18 +479,6 @@ export default function SleepPage() {
       </div>
 
       <style>{`
-        input[type=range]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 18px; height: 18px; border-radius: 99px;
-          background: #0A0A14; border: 2px solid var(--cyan);
-          box-shadow: 0 0 10px rgba(100,255,218,0.40);
-          cursor: pointer;
-          transition: box-shadow 0.15s var(--easeOut);
-        }
-        input[type=range]::-webkit-slider-thumb:hover {
-          box-shadow: 0 0 16px rgba(100,255,218,0.60);
-        }
-        .sleep-time-input:focus-within { border-color: var(--line-hi) !important; }
         .sleep-history-row:hover { background: rgba(255,255,255,0.02); }
         @media (max-width: 768px) {
           .sleep-grid { grid-template-columns: 1fr !important; }
