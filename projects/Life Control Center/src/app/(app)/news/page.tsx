@@ -41,7 +41,8 @@ type DeepDive = {
 
 function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColor: string; index: number }) {
   const [open, setOpen] = useState(false);
-  const [deepDive, setDeepDive] = useState<DeepDive | null>(null);
+  // Use pre-generated deep dive if available, otherwise null
+  const [deepDive, setDeepDive] = useState<DeepDive | null>(story.deepDive ?? null);
   const [loadingDive, setLoadingDive] = useState(false);
 
   let hostname = "";
@@ -49,13 +50,12 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
     try { hostname = new URL(story.source).hostname.replace("www.", ""); } catch { /* noop */ }
   }
 
-  // Prefer new `summary` field; fall back to deprecated `whyItMatters` for old rows
-  const summaryText = story.summary || story.whyItMatters || "";
+  const summaryText = story.summary || "";
   const keyPoints: string[] = Array.isArray(story.keyPoints) ? story.keyPoints : [];
   const isTopStory = index === 0;
 
-  const handleDeepDive = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Fetch deep dive on-demand only if not pre-generated
+  const fetchDiveIfNeeded = async () => {
     if (deepDive || loadingDive) return;
     setLoadingDive(true);
     try {
@@ -72,6 +72,15 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
     setLoadingDive(false);
   };
 
+  // When expanded and no deep dive yet, fetch it automatically
+  const handleToggle = () => {
+    const willOpen = !open;
+    setOpen(willOpen);
+    if (willOpen && !deepDive && !loadingDive) {
+      fetchDiveIfNeeded();
+    }
+  };
+
   const DIVE_SECTIONS = [
     { key: "whatHappened", label: "What happened", icon: "📰" },
     { key: "whyItMatters", label: "Why it matters", icon: "💡" },
@@ -81,7 +90,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
 
   return (
     <div
-      onClick={() => setOpen((v) => !v)}
+      onClick={handleToggle}
       style={{
         padding: isTopStory ? "14px 0" : "11px 0",
         borderBottom: "1px solid var(--line)",
@@ -156,26 +165,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
             </ul>
           )}
 
-          {/* Deep dive section */}
-          {!deepDive && !loadingDive && (
-            <button
-              onClick={handleDeepDive}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                fontSize: 11, fontWeight: 600, color: accentColor,
-                background: `${accentColor}10`, border: `1px solid ${accentColor}30`,
-                borderRadius: 6, padding: "5px 10px", cursor: "pointer",
-                marginBottom: 10, transition: "background 0.15s",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = `${accentColor}20`)}
-              onMouseLeave={e => (e.currentTarget.style.background = `${accentColor}10`)}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-              </svg>
-              Deep dive
-            </button>
-          )}
+          {/* Deep dive analysis — pre-generated or fetched on expand */}
           {loadingDive && (
             <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 12 }}>⟳</span>

@@ -15,14 +15,20 @@
 
 export type NewsCategory = "football" | "geopolitics" | "business" | "tech";
 
+export type DeepDive = {
+  whatHappened: string;
+  whyItMatters: string;
+  context: string;
+  whatsNext: string;
+};
+
 export type NewsStory = {
   headline: string;
   summary: string;
   keyPoints: string[];
   category: NewsCategory | "ai" | "other";
   source?: string;
-  /** @deprecated Kept for backward compat */
-  whyItMatters?: string;
+  deepDive?: DeepDive;
 };
 
 export type NewsBrief = {

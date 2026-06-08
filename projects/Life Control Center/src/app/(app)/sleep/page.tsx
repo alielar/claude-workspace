@@ -252,6 +252,12 @@ export default function SleepPage() {
   const weekDebt    = weekEntries.reduce((s, e) => s + (TARGET_HOURS - (e.hours ?? TARGET_HOURS)), 0);
   const maxH = 10;
 
+  // Quick-log state
+  const [qlBedtime, setQlBedtime] = useState("23:00");
+  const [qlWake, setQlWake] = useState("07:00");
+  const [qlSaving, setQlSaving] = useState(false);
+  const [qlSaved, setQlSaved] = useState(false);
+
   // Today's entry for hero
   const todayEntry = entries.find(e => e.date === today);
   const yesterdayDate = (() => {
@@ -260,9 +266,25 @@ export default function SleepPage() {
     return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(y);
   })();
   const yesterdayEntry = entries.find(e => e.date === yesterdayDate);
-  // Show the most recent apple_health entry as "last night"
-  const lastNight = (todayEntry?.source === "apple_health" ? todayEntry : null)
-    ?? (yesterdayEntry?.source === "apple_health" ? yesterdayEntry : null);
+  // Show any entry for today or yesterday as "last night"
+  const lastNight = todayEntry ?? yesterdayEntry ?? null;
+
+  const handleQuickLog = async () => {
+    setQlSaving(true);
+    try {
+      const res = await fetch("/api/sleep/logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: today, bedtime: qlBedtime, wake: qlWake }),
+      });
+      if (res.ok) {
+        setQlSaved(true);
+        await loadEntries();
+        setTimeout(() => setQlSaved(false), 2000);
+      }
+    } catch { /* ignore */ }
+    setQlSaving(false);
+  };
 
   if (loading) {
     return (
@@ -285,7 +307,7 @@ export default function SleepPage() {
         <div>
           <h1>Sleep<span className="grad-text">.</span></h1>
           <div className="sub">
-            Apple Watch sync · weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
+            Weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
             {weekDebt !== 0 && (
               <> · debt <b style={{ color: weekDebt > 0 ? "var(--warn)" : "var(--pos)" }}>
                 {weekDebt > 0 ? `-${fmtHours(weekDebt)}` : "0h"}
@@ -334,20 +356,53 @@ export default function SleepPage() {
                   </div>
                   <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 5, justifyContent: "flex-end" }}>
                     <span style={{ width: 5, height: 5, borderRadius: "99px", background: "var(--pos)", boxShadow: "0 0 4px var(--pos)", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "var(--pos)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>SYNCED</span>
+                    <span style={{ fontSize: 10, color: "var(--pos)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+                      {lastNight.source === "apple_health" ? "SYNCED" : "LOGGED"}
+                    </span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(180,180,240,0.25)" strokeWidth="1.5">
-                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                </svg>
-                <div>
-                  <div style={{ fontSize: 14, color: "var(--ink-3)", fontWeight: 500 }}>No data yet for tonight</div>
-                  <div style={{ fontSize: 11, color: "var(--ink-5)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
-                    Wear your Apple Watch to bed — data syncs at 9:30 AM
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginBottom: 14 }}>
+                  No data yet. Quick log your sleep:
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <label style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Bed</label>
+                    <input
+                      type="time"
+                      value={qlBedtime}
+                      onChange={e => setQlBedtime(e.target.value)}
+                      style={{
+                        background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 8,
+                        padding: "8px 10px", fontSize: 14, fontFamily: "var(--f-mono)", color: "var(--ink)",
+                        width: 110,
+                      }}
+                    />
                   </div>
+                  <span style={{ color: "var(--ink-4)", fontSize: 14 }}>→</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <label style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Wake</label>
+                    <input
+                      type="time"
+                      value={qlWake}
+                      onChange={e => setQlWake(e.target.value)}
+                      style={{
+                        background: "var(--bg-input)", border: "1px solid var(--line)", borderRadius: 8,
+                        padding: "8px 10px", fontSize: 14, fontFamily: "var(--f-mono)", color: "var(--ink)",
+                        width: 110,
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={handleQuickLog}
+                    disabled={qlSaving}
+                    className="cc-btn-primary"
+                    style={{ padding: "8px 18px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: qlSaving ? "wait" : "pointer" }}
+                  >
+                    {qlSaved ? "Saved" : qlSaving ? "..." : "Log"}
+                  </button>
                 </div>
               </div>
             )}

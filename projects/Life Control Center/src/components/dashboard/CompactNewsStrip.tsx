@@ -11,6 +11,7 @@ import Link from "next/link";
 
 type Story = {
   headline: string;
+  summary?: string;
   category: string;
 };
 
@@ -60,13 +61,19 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
     })();
   }, [initial]);
 
-  // Pick top headlines — one per category, then fill with extras
-  const headlines: { headline: string; category: string; color: string; label: string }[] = [];
+  // Pick top headlines — one per category, include summary for context
+  const headlines: { headline: string; summary: string; category: string; color: string; label: string }[] = [];
   for (const cat of CATS) {
     const match = cat.match || [cat.id];
     const story = stories.find(s => match.includes(s.category));
     if (story) {
-      headlines.push({ headline: story.headline, category: story.category, color: cat.color, label: cat.label });
+      headlines.push({
+        headline: story.headline,
+        summary: story.summary ?? "",
+        category: story.category,
+        color: cat.color,
+        label: cat.label,
+      });
     }
   }
 
@@ -93,7 +100,7 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
   }
 
   // Build ticker items — duplicate for seamless loop
-  const tickerItems = headlines.length > 0 ? headlines : [{ headline: "No stories yet", category: "", color: "var(--ink-4)", label: "" }];
+  const tickerItems = headlines.length > 0 ? headlines : [{ headline: "No stories yet", summary: "", category: "", color: "var(--ink-4)", label: "" }];
 
   return (
     <Link href="/news" style={{ textDecoration: "none", display: "block" }}>
@@ -139,6 +146,11 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
                     fontSize: 12, fontWeight: 600, color: "var(--ink-2)", letterSpacing: "-0.005em",
                   }}>
                     {item.headline}
+                    {item.summary && (
+                      <span style={{ fontWeight: 400, color: "var(--ink-4)", marginLeft: 6 }}>
+                        — {item.summary.length > 100 ? item.summary.slice(0, 100) + "…" : item.summary}
+                      </span>
+                    )}
                   </span>
                 </span>
               ))}
@@ -152,7 +164,7 @@ export function CompactNewsStrip({ stories: initial }: { stories: Story[] }) {
           100% { transform: translateX(-50%); }
         }
         .news-ticker-track {
-          animation: ticker-scroll 35s linear infinite;
+          animation: ticker-scroll 55s linear infinite;
         }
         .news-ticker-wrap:hover .news-ticker-track {
           animation-play-state: paused;
