@@ -27,6 +27,8 @@ interface WorkoutExercise {
   videoType: string | null;
   sortOrder: number;
   setConfig: SetConfig[];
+  alternativeGroupId: string | null;
+  notes: string | null;
 }
 
 interface LoggedSet {
@@ -448,6 +450,113 @@ function SessionSummary({
   );
 }
 
+// ─── Swap Exercise Modal ─────────────────────────────────────────────────────
+
+interface AlternativeExercise {
+  id: number;
+  name: string;
+  primaryMuscle: string | null;
+  equipment: string | null;
+  trackingType: string;
+  weightIncrement: number;
+  videoUrl: string | null;
+  videoType: string | null;
+  alternativeGroupId: string | null;
+  notes: string | null;
+}
+
+function SwapExerciseModal({
+  currentExerciseId,
+  groupId,
+  onSwap,
+  onClose,
+}: {
+  currentExerciseId: number;
+  groupId: string;
+  onSwap: (alt: AlternativeExercise) => void;
+  onClose: () => void;
+}) {
+  const [alternatives, setAlternatives] = useState<AlternativeExercise[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/workouts/alternatives?groupId=${encodeURIComponent(groupId)}`)
+      .then((r) => r.json())
+      .then((data: AlternativeExercise[]) => {
+        setAlternatives(data.filter((a) => a.id !== currentExerciseId));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [groupId, currentExerciseId]);
+
+  const EQUIP_LABELS: Record<string, string> = {
+    dumbbell: "Dumbbell", barbell: "Barbell", cable: "Cable",
+    machine: "Machine", bodyweight: "Bodyweight", other: "Other",
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Swap exercise"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)",
+        display: "flex", alignItems: "center", justifyContent: "center", zIndex: 250,
+        padding: "0 16px",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="cc-card" style={{ width: "min(400px, 100vw - 32px)", maxHeight: "70vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="cc-card-head">
+          <div className="title">Swap exercise</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--ink-4)", cursor: "pointer", fontSize: 18 }}>×</button>
+        </div>
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {loading ? (
+            <div style={{ padding: "24px 16px", textAlign: "center", color: "var(--ink-4)", fontSize: 13 }}>Loading...</div>
+          ) : alternatives.length === 0 ? (
+            <div style={{ padding: "24px 16px", textAlign: "center", color: "var(--ink-4)", fontSize: 13 }}>No alternatives available</div>
+          ) : (
+            alternatives.map((alt) => (
+              <button
+                key={alt.id}
+                onClick={() => { onSwap(alt); onClose(); }}
+                style={{
+                  width: "100%", textAlign: "left", padding: "14px 16px",
+                  background: "transparent", border: "none", cursor: "pointer",
+                  borderBottom: "1px solid var(--line)",
+                  display: "flex", flexDirection: "column", gap: 4,
+                  transition: "background 0.1s",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: "var(--ink)" }}>{alt.name}</span>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{
+                    fontSize: 10, padding: "2px 6px", borderRadius: 4,
+                    background: "rgba(124,77,255,0.10)", color: "var(--violet)",
+                    fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
+                  }}>
+                    {EQUIP_LABELS[alt.equipment ?? ""] ?? alt.equipment}
+                  </span>
+                  {alt.notes && (
+                    <span style={{ fontSize: 11, color: "var(--ink-4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {alt.notes}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Current Set View ────────────────────────────────────────────────────────
 
 interface CurrentSetViewProps {
@@ -456,9 +565,11 @@ interface CurrentSetViewProps {
   prMap: Record<number, number>;
   onLog: (data: { setType: string; weightKg: number | null; reps: number | null; durationSeconds?: number | null }) => void;
   onUndo: () => void;
+  onSwapExercise: (exerciseIndex: number, alt: AlternativeExercise) => void;
 }
 
-function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetViewProps) {
+function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo, onSwapExercise }: CurrentSetViewProps) {
+  const [showSwap, setShowSwap] = useState(false);
   const { exercise, config, prefill, setIndex } = flatSet;
 
   const initialWeight   = logged?.weightKg?.toString()       ?? prefill?.weightKg?.toString() ?? "";
@@ -524,20 +635,58 @@ function CurrentSetView({ flatSet, logged, prMap, onLog, onUndo }: CurrentSetVie
       display: "flex", flexDirection: "column", alignItems: "center",
       padding: "0 16px", flex: 1, justifyContent: "center", minHeight: 0,
     }}>
-      {/* Exercise name */}
+      {/* Exercise name + swap button */}
       <div style={{ textAlign: "center", marginBottom: 6 }}>
-        <div style={{
-          fontSize: 18, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em",
-          lineHeight: 1.25, maxWidth: "85vw",
-          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}>
-          {exercise.name}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <div style={{
+            fontSize: 18, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.02em",
+            lineHeight: 1.25, maxWidth: "75vw",
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}>
+            {exercise.name}
+          </div>
+          {exercise.alternativeGroupId && (
+            <button
+              onClick={() => setShowSwap(true)}
+              title="Swap exercise"
+              style={{
+                width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                background: "rgba(124,77,255,0.08)", border: "1px solid rgba(124,77,255,0.25)",
+                color: "var(--violet)", fontSize: 14, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              ⇄
+            </button>
+          )}
         </div>
         <div style={{ fontSize: 10, color: "var(--ink-4)", marginTop: 3 }}>
           {[exercise.primaryMuscle, exercise.equipment].filter(Boolean).join(" · ")}
         </div>
       </div>
+
+      {/* Exercise notes / form cues */}
+      {exercise.notes && (
+        <div style={{
+          fontSize: 11, color: "var(--ink-3)", marginBottom: 8,
+          padding: "6px 12px", borderRadius: 8,
+          background: "rgba(124,77,255,0.04)", border: "1px solid rgba(124,77,255,0.10)",
+          maxWidth: "85vw", textAlign: "center", lineHeight: 1.4,
+        }}>
+          {exercise.notes}
+        </div>
+      )}
+
+      {/* Swap exercise modal */}
+      {showSwap && exercise.alternativeGroupId && (
+        <SwapExerciseModal
+          currentExerciseId={exercise.exerciseId}
+          groupId={exercise.alternativeGroupId}
+          onSwap={(alt) => onSwapExercise(flatSet.exerciseIndex, alt)}
+          onClose={() => setShowSwap(false)}
+        />
+      )}
 
       {/* Set badge */}
       <div style={{
@@ -933,6 +1082,30 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
     }
   }, [sid, elapsed]);
 
+  const handleSwapExercise = useCallback((exerciseIndex: number, alt: AlternativeExercise) => {
+    if (!data) return;
+    setData((prev) => {
+      if (!prev) return prev;
+      const newExercises = [...prev.exercises];
+      const original = newExercises[exerciseIndex];
+      newExercises[exerciseIndex] = {
+        ...original,
+        exerciseId: alt.id,
+        name: alt.name,
+        primaryMuscle: alt.primaryMuscle,
+        equipment: alt.equipment,
+        weightIncrement: alt.weightIncrement,
+        trackingType: alt.trackingType as TrackingType,
+        videoUrl: alt.videoUrl,
+        videoType: alt.videoType,
+        alternativeGroupId: alt.alternativeGroupId,
+        notes: alt.notes,
+        // Keep the same set config and plan exercise ID
+      };
+      return { ...prev, exercises: newExercises };
+    });
+  }, [data]);
+
   const handleAbandon = useCallback(async () => {
     const res = await fetch(`/api/workouts/session/${sid}`, { method: "DELETE" });
     if (res.ok) router.push("/workouts");
@@ -1099,7 +1272,6 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
               logged={currentLogged}
               prMap={data.prMap}
               onLog={(setData) => {
-                const myLogged = loggedSets.filter((s) => s.exerciseId === currentFlat.exercise.exerciseId);
                 handleLogSet(
                   currentFlat.exercise.exerciseId,
                   currentFlat.exercise.name,
@@ -1109,6 +1281,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
                 );
               }}
               onUndo={() => currentLogged && handleUndoSet(currentLogged.id)}
+              onSwapExercise={handleSwapExercise}
             />
           </div>
 

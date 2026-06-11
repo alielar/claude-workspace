@@ -257,6 +257,9 @@ export async function POST() {
     `ALTER TABLE reading_progress ADD COLUMN bookmark_text TEXT`,
     `ALTER TABLE reading_progress ADD COLUMN bookmark_page INTEGER`,
 
+    // ── Exercise DB: alternative group ID ─────────────────────────────────────
+    `ALTER TABLE exercise_db ADD COLUMN alternative_group_id TEXT`,
+
     // ── Reading notes table ─────────────────────────────────────────────────
     `CREATE TABLE IF NOT EXISTS reading_notes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

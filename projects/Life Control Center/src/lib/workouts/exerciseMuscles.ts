@@ -159,6 +159,103 @@ const map: Record<string, MuscleInfo> = {
     secondary: ["abs"],
     equipment: "bodyweight",
   },
+
+  // ── New exercises (4-Day Split) ────────────────────────────────────────────
+  "dumbbell front raise": {
+    primary: "front_delts",
+    secondary: ["side_delts"],
+    equipment: "dumbbell",
+  },
+  "dumbbell bent over row": {
+    primary: "upper_back",
+    secondary: ["lats", "biceps"],
+    equipment: "dumbbell",
+  },
+  "incline dumbbell curl": {
+    primary: "biceps",
+    secondary: ["forearms"],
+    equipment: "dumbbell",
+  },
+  "cable overhead tricep extension": {
+    primary: "triceps",
+    secondary: [],
+    equipment: "cable",
+  },
+  "preacher curl": {
+    primary: "biceps",
+    secondary: ["forearms"],
+    equipment: "dumbbell",
+  },
+  "cable lat pulldown": {
+    primary: "lats",
+    secondary: ["upper_back", "biceps"],
+    equipment: "cable",
+  },
+  "pull-up": {
+    primary: "lats",
+    secondary: ["upper_back", "biceps"],
+    equipment: "bodyweight",
+  },
+  "close grip barbell incline bench press": {
+    primary: "chest",
+    secondary: ["front_delts", "triceps"],
+    equipment: "barbell",
+  },
+  "incline barbell bench press": {
+    primary: "chest",
+    secondary: ["front_delts", "triceps"],
+    equipment: "barbell",
+  },
+  "machine shoulder press": {
+    primary: "front_delts",
+    secondary: ["side_delts", "triceps"],
+    equipment: "machine",
+  },
+  "barbell pendlay row": {
+    primary: "upper_back",
+    secondary: ["lats", "biceps"],
+    equipment: "barbell",
+  },
+  "bayesian cable curl": {
+    primary: "biceps",
+    secondary: ["forearms"],
+    equipment: "cable",
+  },
+  "dumbbell goblet squat": {
+    primary: "quads",
+    secondary: ["glutes", "upper_back"],
+    equipment: "dumbbell",
+  },
+  "dumbbell romanian deadlift": {
+    primary: "hamstrings",
+    secondary: ["glutes"],
+    equipment: "dumbbell",
+  },
+  "barbell romanian deadlift": {
+    primary: "hamstrings",
+    secondary: ["glutes"],
+    equipment: "barbell",
+  },
+  "barbell squat": {
+    primary: "quads",
+    secondary: ["glutes", "hamstrings"],
+    equipment: "barbell",
+  },
+  "single leg calf raise": {
+    primary: "calves",
+    secondary: [],
+    equipment: "bodyweight",
+  },
+  "dumbbell bulgarian split squat": {
+    primary: "quads",
+    secondary: ["glutes", "hamstrings"],
+    equipment: "dumbbell",
+  },
+  "dumbbell walking lunge": {
+    primary: "quads",
+    secondary: ["glutes", "hamstrings"],
+    equipment: "dumbbell",
+  },
 };
 
 export function getMuscleInfo(exerciseName: string): MuscleInfo {

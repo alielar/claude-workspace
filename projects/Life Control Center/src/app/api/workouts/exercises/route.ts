@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, primaryMuscle, secondaryMuscles, equipment, notes, weightIncrement, trackingType } = await req.json();
+  const { name, primaryMuscle, secondaryMuscles, equipment, notes, weightIncrement, trackingType, alternativeGroupId } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "name required" }, { status: 400 });
 
   const [exercise] = await db
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       notes: notes || null,
       weightIncrement: weightIncrement ?? 2.5,
       trackingType: trackingType ?? "reps_weight",
+      alternativeGroupId: alternativeGroupId || null,
     })
     .returning();
 

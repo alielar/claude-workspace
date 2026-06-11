@@ -485,6 +485,8 @@ export const exerciseDb = sqliteTable("exercise_db", {
   // How sets are tracked in the active session
   // "reps_weight" | "reps_only" | "time_weight" | "time_only" | "distance"
   trackingType: text("tracking_type").notNull().default("reps_weight"),
+  // Alternative group ID — exercises with the same group are interchangeable
+  alternativeGroupId: text("alternative_group_id"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

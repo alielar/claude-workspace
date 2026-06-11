@@ -53,8 +53,9 @@ export async function PATCH(
   if (body.notes            !== undefined) update.notes            = body.notes;
   if (body.weightIncrement  !== undefined) update.weightIncrement  = body.weightIncrement;
   if (body.trackingType     !== undefined) update.trackingType     = body.trackingType;
-  if (body.videoUrl         !== undefined) update.videoUrl         = body.videoUrl;
-  if (body.videoType        !== undefined) update.videoType        = body.videoType;
+  if (body.videoUrl              !== undefined) update.videoUrl              = body.videoUrl;
+  if (body.videoType             !== undefined) update.videoType             = body.videoType;
+  if (body.alternativeGroupId    !== undefined) update.alternativeGroupId    = body.alternativeGroupId;
 
   await db
     .update(exerciseDb)

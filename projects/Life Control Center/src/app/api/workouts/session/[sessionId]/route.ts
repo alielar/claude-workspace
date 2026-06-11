@@ -73,6 +73,8 @@ export async function GET(
     videoType: string | null;
     sortOrder: number;
     setConfig: Array<{ type: string; repMin: number; repMax: number; restS: number }>;
+    alternativeGroupId: string | null;
+    notes: string | null;
   }[] = [];
 
   if (gymSession.planId) {
@@ -89,6 +91,8 @@ export async function GET(
         videoType: exerciseDb.videoType,
         sortOrder: planExercises.sortOrder,
         setConfig: planExercises.setConfig,
+        alternativeGroupId: exerciseDb.alternativeGroupId,
+        notes: exerciseDb.notes,
       })
       .from(planExercises)
       .innerJoin(exerciseDb, eq(planExercises.exerciseId, exerciseDb.id))
