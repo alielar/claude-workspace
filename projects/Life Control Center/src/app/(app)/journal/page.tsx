@@ -55,7 +55,7 @@ function groupByMonth(entries: JournalEntry[]) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function JournalPage() {
+export default function JournalPage({ embedded = false }: { embedded?: boolean }) {
   const [entries,    setEntries]    = useState<JournalEntry[]>([]);
   const [answers,    setAnswers]    = useState<Answer>({ q1: "", q2: "", q3: "" });
   const [autoSaved,  setAutoSaved]  = useState(false);
@@ -127,14 +127,16 @@ export default function JournalPage() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&display=swap');`}</style>
 
       {/* Page title */}
-      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-        <div>
-          <h1>Journal<span className="grad-text">.</span></h1>
-          <div className="sub">
-            Three questions a night · {thisMonth.length} entries this month · {streak}-day streak
+      {!embedded && (
+        <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+          <div>
+            <h1>Journal<span className="grad-text">.</span></h1>
+            <div className="sub">
+              Three questions a night · {thisMonth.length} entries this month · {streak}-day streak
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Status banner — shows dynamic current-time and tonight's progress */}
       <div style={{

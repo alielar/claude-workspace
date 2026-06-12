@@ -37,7 +37,7 @@ function moodCellStyle(score: number): React.CSSProperties {
   return {};
 }
 
-export default function MoodPage() {
+export default function MoodPage({ embedded = false }: { embedded?: boolean }) {
   const [entries, setEntries] = useState<MoodEntry[]>([]);
   const [todayScore, setTodayScore] = useState<number | null>(null);
   const [note, setNote]             = useState("");
@@ -166,9 +166,11 @@ export default function MoodPage() {
   if (loading) {
     return (
       <div style={{ padding: "0 0 40px" }}>
-        <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-          <div><h1>Mood<span className="grad-text">.</span></h1><div className="sub">Loading...</div></div>
-        </div>
+        {!embedded && (
+          <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+            <div><h1>Mood<span className="grad-text">.</span></h1><div className="sub">Loading...</div></div>
+          </div>
+        )}
         <div className="cc-card" style={{ padding: 32 }}>
           <div className="cc-skeleton" style={{ height: 200, borderRadius: 12 }} />
         </div>
@@ -180,12 +182,14 @@ export default function MoodPage() {
     <div style={{ padding: "0 0 40px" }}>
 
       {/* Page title */}
-      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-        <div>
-          <h1>Mood<span className="grad-text">.</span></h1>
-          <div className="sub">5-second daily log · {streak}-day streak · avg {avgScore} / 5</div>
+      {!embedded && (
+        <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+          <div>
+            <h1>Mood<span className="grad-text">.</span></h1>
+            <div className="sub">5-second daily log · {streak}-day streak · avg {avgScore} / 5</div>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mood-grid" style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14 }}>
 

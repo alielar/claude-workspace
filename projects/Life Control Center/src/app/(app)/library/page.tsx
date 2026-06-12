@@ -160,7 +160,7 @@ function AddBookForm({ onAdded }: { onAdded: () => void }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function LibraryPage() {
+export default function LibraryPage({ embedded = false }: { embedded?: boolean }) {
   const [books,      setBooks]      = useState<Book[]>([]);
   const [habit,      setHabit]      = useState<HabitData | null>(null);
   const [loading,    setLoading]    = useState(true);
@@ -216,13 +216,15 @@ export default function LibraryPage() {
     <div style={{ padding: "0 0 40px" }}>
 
       {/* ── Page title ────────────────────────────────────────────────── */}
-      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-        <div>
-          <h1>Library<span className="grad-text">.</span></h1>
-          <div className="sub">
-            {books.length} book{books.length !== 1 ? "s" : ""} · {currentYear} reading journal
+      <div className="cc-pagetitle" style={{ marginBottom: 20, justifyContent: embedded ? "flex-end" : undefined }}>
+        {!embedded && (
+          <div>
+            <h1>Library<span className="grad-text">.</span></h1>
+            <div className="sub">
+              {books.length} book{books.length !== 1 ? "s" : ""} · {currentYear} reading journal
+            </div>
           </div>
-        </div>
+        )}
         <button
           className="cc-btn cc-btn-primary"
           style={{ fontSize: 12 }}

@@ -24,7 +24,7 @@ function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
 }
 
-export default function KnowledgeBankPage() {
+export default function KnowledgeBankPage({ embedded = false }: { embedded?: boolean }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -113,13 +113,15 @@ export default function KnowledgeBankPage() {
 
   return (
     <div style={{ padding: "0 0 40px" }}>
-      <div className="cc-pagetitle" style={{ marginBottom: 24 }}>
-        <div>
-          <h1>Knowledge <span className="grad-text">Bank</span>.</h1>
-          <div className="sub">
-            {notes.length} note{notes.length !== 1 ? "s" : ""} from your reading
+      <div className="cc-pagetitle" style={{ marginBottom: 24, justifyContent: embedded ? "flex-end" : undefined }}>
+        {!embedded && (
+          <div>
+            <h1>Knowledge <span className="grad-text">Bank</span>.</h1>
+            <div className="sub">
+              {notes.length} note{notes.length !== 1 ? "s" : ""} from your reading
+            </div>
           </div>
-        </div>
+        )}
         {dueNotes.length > 0 && (
           <button className="cc-btn cc-btn-primary" onClick={startDrill} style={{ fontSize: 13, padding: "10px 18px" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

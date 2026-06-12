@@ -819,6 +819,49 @@ body::after {
   letter-spacing: 0.01em;
 }
 
+/* ─── Section tabs (Mind / Wellbeing hubs) ───────────────────────────────── */
+.section-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.section-tab {
+  position: relative;
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 11px 18px 15px;
+  font-family: var(--f-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink-3);
+  transition: color 160ms var(--easeOut);
+}
+.section-tab:hover { color: var(--ink-2); }
+.section-tab.cur { color: var(--ink); }
+.section-tab::after {
+  content: "";
+  position: absolute;
+  left: 14px; right: 14px; bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent, var(--violet));
+  box-shadow: 0 0 10px var(--accent, var(--violet));
+  transform: scaleX(0);
+  opacity: 0;
+  transition: transform 220ms var(--easeOut), opacity 220ms var(--easeOut);
+}
+.section-tab.cur::after { transform: scaleX(1); opacity: 1; }
+
+@keyframes section-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section-panel { animation: section-fade 200ms var(--easeOut); }
+
 /* ─── Progress ───────────────────────────────────────────────────────────── */
 .cc-progress-track {
   height: 3px;

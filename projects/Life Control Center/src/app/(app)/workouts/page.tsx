@@ -20,7 +20,7 @@ import WeeklyVolume from "@/components/workouts/WeeklyVolume";
 import UpNextCard from "@/components/workouts/UpNextCard";
 import InfoTiles from "@/components/workouts/InfoTiles";
 import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
-import CoachCard from "@/components/workouts/CoachCard";
+import CoachTicker from "@/components/workouts/CoachTicker";
 import ResumeSessionBanner from "@/components/workouts/ResumeSessionBanner";
 import AutoSeedProgram from "@/components/workouts/AutoSeedProgram";
 
@@ -283,6 +283,9 @@ export default async function WorkoutsPage() {
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
       {prs.length > 0 && <PrTickerClient initialPrs={prs} />}
 
+      {/* ── Coach Notes ticker — rolling weekly insight + overload calls ──── */}
+      <CoachTicker />
+
       {/* ── Resume in-progress session banner ───────────────────────────── */}
       {activeSession && (
         <ResumeSessionBanner
@@ -327,7 +330,6 @@ export default async function WorkoutsPage() {
       <div className="workout-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
         <div>
           <WeeklyVolume />
-          <CoachCard />
           <RunningCard />
         </div>
         <div>

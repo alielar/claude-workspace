@@ -496,7 +496,7 @@ function DrillOverlay({ words, onClose, onComplete }: {
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
-export default function WordbankPage() {
+export default function WordbankPage({ embedded = false }: { embedded?: boolean }) {
   const [allWords, setAllWords]   = useState<Word[]>([]);
   const [dueWords, setDueWords]   = useState<Word[]>([]);
   const [loading, setLoading]     = useState(true);
@@ -609,11 +609,13 @@ export default function WordbankPage() {
     <div style={{ padding: "0 0 40px" }}>
 
       {/* Page title */}
-      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-        <div>
-          <h1>Word <span className="grad-text">Bank</span>.</h1>
-          <div className="sub">SRS spaced repetition · English · French · Darija · {allWords.length} words</div>
-        </div>
+      <div className="cc-pagetitle" style={{ marginBottom: 20, justifyContent: embedded ? "flex-end" : undefined }}>
+        {!embedded && (
+          <div>
+            <h1>Word <span className="grad-text">Bank</span>.</h1>
+            <div className="sub">SRS spaced repetition · English · French · Darija · {allWords.length} words</div>
+          </div>
+        )}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {/* Tabs */}
           <div className="cc-tabs">

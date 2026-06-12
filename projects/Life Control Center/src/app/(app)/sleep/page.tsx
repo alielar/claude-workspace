@@ -184,7 +184,7 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function SleepPage() {
+export default function SleepPage({ embedded = false }: { embedded?: boolean }) {
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -289,9 +289,11 @@ export default function SleepPage() {
   if (loading) {
     return (
       <div style={{ padding: "0 0 40px" }}>
-        <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-          <div><h1>Sleep<span className="grad-text">.</span></h1><div className="sub">Loading...</div></div>
-        </div>
+        {!embedded && (
+          <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+            <div><h1>Sleep<span className="grad-text">.</span></h1><div className="sub">Loading...</div></div>
+          </div>
+        )}
         <div className="cc-card" style={{ padding: 32 }}>
           <div className="cc-skeleton" style={{ height: 300, borderRadius: 12 }} />
         </div>
@@ -303,19 +305,21 @@ export default function SleepPage() {
     <div style={{ padding: "0 0 40px" }}>
 
       {/* Page title */}
-      <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
-        <div>
-          <h1>Sleep<span className="grad-text">.</span></h1>
-          <div className="sub">
-            Weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
-            {weekDebt !== 0 && (
-              <> · debt <b style={{ color: weekDebt > 0 ? "var(--warn)" : "var(--pos)" }}>
-                {weekDebt > 0 ? `-${fmtHours(weekDebt)}` : "0h"}
-              </b></>
-            )}
+      {!embedded && (
+        <div className="cc-pagetitle" style={{ marginBottom: 20 }}>
+          <div>
+            <h1>Sleep<span className="grad-text">.</span></h1>
+            <div className="sub">
+              Weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
+              {weekDebt !== 0 && (
+                <> · debt <b style={{ color: weekDebt > 0 ? "var(--warn)" : "var(--pos)" }}>
+                  {weekDebt > 0 ? `-${fmtHours(weekDebt)}` : "0h"}
+                </b></>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="sleep-grid" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 14 }}>
 
