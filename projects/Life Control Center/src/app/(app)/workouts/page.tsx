@@ -38,42 +38,25 @@ export default async function WorkoutsPage() {
     new Date(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now)).getDay()
   ] ?? "mon";
 
-  // ── Plans — find ALL workout plans belonging to user (via program join) ──
+  // ── Plans — find workout plans from the ACTIVE program only ─────────────
   type PlanRow = {
     id: number; programId: number; name: string; type: string; sortOrder: number;
     assignedDays: string | null; targetMuscles: string | null;
   };
-  let plans: PlanRow[] = [];
-  try {
-    plans = await db
-      .select({
-        id: workoutPlans.id,
-        programId: workoutPlans.programId,
-        name: workoutPlans.name,
-        type: workoutPlans.type,
-        sortOrder: workoutPlans.sortOrder,
-        assignedDays: workoutPlans.assignedDays,
-        targetMuscles: workoutPlans.targetMuscles,
-      })
-      .from(workoutPlans)
-      .innerJoin(programs, eq(workoutPlans.programId, programs.id))
-      .where(eq(programs.userId, userId))
-      .orderBy(workoutPlans.sortOrder);
-  } catch {
-    const fallback = await db
-      .select({
-        id: workoutPlans.id,
-        programId: workoutPlans.programId,
-        name: workoutPlans.name,
-        type: workoutPlans.type,
-        sortOrder: workoutPlans.sortOrder,
-      })
-      .from(workoutPlans)
-      .innerJoin(programs, eq(workoutPlans.programId, programs.id))
-      .where(eq(programs.userId, userId))
-      .orderBy(workoutPlans.sortOrder);
-    plans = fallback.map((p) => ({ ...p, assignedDays: null, targetMuscles: null }));
-  }
+  let plans: PlanRow[] = await db
+    .select({
+      id: workoutPlans.id,
+      programId: workoutPlans.programId,
+      name: workoutPlans.name,
+      type: workoutPlans.type,
+      sortOrder: workoutPlans.sortOrder,
+      assignedDays: workoutPlans.assignedDays,
+      targetMuscles: workoutPlans.targetMuscles,
+    })
+    .from(workoutPlans)
+    .innerJoin(programs, eq(workoutPlans.programId, programs.id))
+    .where(and(eq(programs.userId, userId), eq(programs.isActive, true)))
+    .orderBy(workoutPlans.sortOrder);
 
   // ── PRs ────────────────────────────────────────────────────────────────────
   const prs = await db
