@@ -12,7 +12,7 @@ import {
   Book, Volume2, X, ArrowRight, ArrowUp, ArrowDown,
   History, Timer, ZoomIn, ZoomOut, FileText, Crosshair,
   Settings, LogOut, MoreHorizontal, Star, Bell,
-  Lightbulb,
+  Lightbulb, Brain, HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,6 +28,8 @@ const ICONS: Record<string, LucideIcon> = {
   sleep:     Moon,
   finance:   Wallet,
   journal:   PenLine,
+  mind:      Brain,
+  wellbeing: HeartPulse,
 
   // Actions
   search:    Search,

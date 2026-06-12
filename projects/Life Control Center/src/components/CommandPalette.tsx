@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { Icon } from "@/components/Icon";
-import { NAV } from "@/lib/navigation";
+import { ALL_DESTINATIONS } from "@/lib/navigation";
 
 type PaletteItem = {
   id: string;
@@ -50,7 +50,7 @@ export function CommandPalette({ open, onClose, onQuickCapture }: CommandPalette
     { id: "qc-journal",   section: "Quick Capture", label: "Journal Entry",      icon: "journal",  color: "#FB923C", action: () => { onQuickCapture?.("journal");   onClose(); } },
     { id: "qc-checklist", section: "Quick Capture", label: "Add Checklist Item", icon: "checklist",color: "#6FD49A", action: () => { onQuickCapture?.("checklist"); onClose(); } },
     // Navigate
-    ...NAV.map((n) => ({
+    ...ALL_DESTINATIONS.map((n) => ({
       id: `nav-${n.href}`,
       section: "Navigate",
       label: n.label,

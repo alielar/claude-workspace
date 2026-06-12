@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MoreHorizontal, Settings } from "lucide-react";
 import { Icon } from "@/components/Icon";
-import { NAV_PRIMARY, NAV_MORE } from "@/lib/navigation";
+import { NAV_PRIMARY, NAV_MORE, isNavActive } from "@/lib/navigation";
 
 export function MobileNav() {
   const pathname  = usePathname();
@@ -23,8 +23,9 @@ export function MobileNav() {
     <>
       {/* ── Bottom tab bar ────────────────────────────── */}
       <nav className="cc-mobile-nav md:hidden" aria-label="Mobile navigation">
-        {NAV_PRIMARY.map(({ href, label, icon, color }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+        {NAV_PRIMARY.map((item) => {
+          const { href, label, icon, color } = item;
+          const active = isNavActive(item, pathname);
           return (
             <Link
               key={href}
@@ -86,8 +87,9 @@ export function MobileNav() {
 
               {/* Grid */}
               <div className="grid grid-cols-3 gap-3 p-4">
-                {NAV_MORE.map(({ href, label, icon, color }) => {
-                  const active = pathname === href || pathname.startsWith(href + "/");
+                {NAV_MORE.map((item) => {
+                  const { href, label, icon, color } = item;
+                  const active = isNavActive(item, pathname);
                   return (
                     <Link
                       key={href}

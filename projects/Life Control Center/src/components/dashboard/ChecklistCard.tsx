@@ -66,9 +66,28 @@ export function ChecklistCard({ items, completedIds: initialCompleted, total }: 
           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--violet)", boxShadow: "0 0 6px var(--violet)", flexShrink: 0 }} />
           Today · Checklist
         </div>
-        <Link href="/checklist" className="checklist-counter" style={{ fontSize: 11, color: "var(--ink-4)", textDecoration: "none", fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
-          {done} / {total}
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span className="tabular-nums" style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.02em" }}>
+            {done} / {total}
+          </span>
+          <Link
+            href="/checklist"
+            className="checklist-edit"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              fontSize: 11, color: "var(--ink-3)", textDecoration: "none",
+              padding: "4px 9px", borderRadius: 7,
+              border: "1px solid var(--line)", background: "rgba(255,255,255,0.02)",
+              transition: "color 0.15s var(--easeOut), border-color 0.15s var(--easeOut)",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            Edit
+          </Link>
+        </div>
       </div>
 
       {/* Progress hero */}
@@ -181,7 +200,7 @@ export function ChecklistCard({ items, completedIds: initialCompleted, total }: 
       </div>
       <style>{`
         .checklist-row:hover { background: rgba(255,255,255,0.02); }
-        .checklist-counter:hover { color: var(--ink-2) !important; }
+        .checklist-edit:hover { color: var(--ink) !important; border-color: var(--line-hi) !important; }
       `}</style>
     </div>
   );

@@ -10,7 +10,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
-import { NAV } from "@/lib/navigation";
+import { NAV, isNavActive } from "@/lib/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -19,8 +19,9 @@ export function Sidebar() {
     <aside className="cc-sidebar">
       {/* Module icons */}
       <nav className="cc-sidebar-nav" aria-label="Main navigation">
-        {NAV.map(({ href, label, icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+        {NAV.map((item) => {
+          const { href, label, icon } = item;
+          const active = isNavActive(item, pathname);
           return (
             <Link
               key={href}

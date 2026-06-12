@@ -16,7 +16,7 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { LogOut, Search, Settings } from "lucide-react";
 import { Icon } from "@/components/Icon";
-import { NAV } from "@/lib/navigation";
+import { NAV, isNavActive } from "@/lib/navigation";
 
 interface TopNavProps {
   onSearch?: () => void;
@@ -36,8 +36,9 @@ export function TopNav({ onSearch }: TopNavProps) {
 
       {/* ── Module tabs ── */}
       <nav className="cc-nav-tabs" aria-label="Main navigation">
-        {NAV.map(({ href, label, icon, color }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+        {NAV.map((item) => {
+          const { href, label, icon, color } = item;
+          const active = isNavActive(item, pathname);
           return (
             <Link
               key={href}
