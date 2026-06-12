@@ -231,7 +231,9 @@ export default async function WorkoutsPage() {
   }
 
   const weekNum = format(now, "w");
-  const hasWorkouts = plans.length > 0;
+  const expectedPlanNames = ["Push", "Pull", "Legs", "Upper"];
+  const hasCorrectProgram = plans.length === 4 && expectedPlanNames.every(n => plans.some(p => p.name === n));
+  const hasWorkouts = hasCorrectProgram;
 
   // ── Prepare UpNextCard plan data ──────────────────────────────────────────
   const upNextPlans = plans.map(p => ({

@@ -567,30 +567,50 @@ const UPPER_EXERCISES: PlanExerciseDef[] = [
 
 // ── Route Handler ────────────────────────────────────────────────────────────
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = session.user.id;
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get("force") === "true";
 
-  // Check idempotency
+  // Check idempotency (unless force re-seed)
   const [existing] = await db
     .select()
     .from(programs)
     .where(and(eq(programs.userId, userId), eq(programs.name, "4-Day Split")))
     .limit(1);
 
-  if (existing) {
-    // Ensure it's active
-    if (!existing.isActive) {
-      const allPrograms = await db.select().from(programs).where(eq(programs.userId, userId));
-      for (const p of allPrograms) {
-        await db.update(programs).set({ isActive: p.id === existing.id }).where(eq(programs.id, p.id));
+  if (existing && !force) {
+    // Verify the program has the correct 4 plans
+    const existingPlans = await db
+      .select({ name: workoutPlans.name })
+      .from(workoutPlans)
+      .where(eq(workoutPlans.programId, existing.id));
+    const expectedNames = ["Push", "Pull", "Legs", "Upper"];
+    const hasCorrectPlans = expectedNames.every(n => existingPlans.some(p => p.name === n))
+      && existingPlans.length === 4;
+
+    if (hasCorrectPlans) {
+      // Ensure it's active
+      if (!existing.isActive) {
+        const allPrograms = await db.select().from(programs).where(eq(programs.userId, userId));
+        for (const p of allPrograms) {
+          await db.update(programs).set({ isActive: p.id === existing.id }).where(eq(programs.id, p.id));
+        }
       }
+      return NextResponse.json({ success: true, message: "4-Day Split program already exists", programId: existing.id });
     }
-    return NextResponse.json({ success: true, message: "4-Day Split program already exists", programId: existing.id });
+    // Wrong plan structure — delete and re-create
+    await db.delete(programs).where(eq(programs.id, existing.id));
+  }
+
+  // If force, delete the old program (cascades to plans + plan_exercises)
+  if (existing && force) {
+    await db.delete(programs).where(eq(programs.id, existing.id));
   }
 
   // Deactivate all existing programs
