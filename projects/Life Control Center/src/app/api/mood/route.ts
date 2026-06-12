@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { moodEntries } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { sql } from "drizzle-orm";
+import { autoCheck } from "@/lib/checklist/autoCheck";
 
 /** GET /api/mood — list mood entries for the authenticated user */
 export async function GET() {
@@ -50,6 +51,8 @@ export async function POST(req: NextRequest) {
           note = ${note ?? ""},
           time = ${time ?? ""}`
   );
+
+  autoCheck(session.user.id, "mood").catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

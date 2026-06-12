@@ -94,15 +94,15 @@ src/
 | Module | Backend | Notes |
 |--------|---------|-------|
 | Dashboard | DB | Server component, time-aware layout, 5 data-wired cards |
-| Workouts | DB | User-created workouts saved to Turso. No auto-generation. Live logger, rest timer, PRs (Epley 1RM), run log. Seed script (`/api/workouts/seed-history`) populates historical sessions only and is idempotent. |
+| Workouts | DB | 4-Day Split (Push/Pull/Legs/Upper). Live logger, rest timer, PRs (Epley 1RM), exercise alternatives/swapping, run log. Seed: `/api/workouts/seed-program` (auto-runs on empty state). |
 | News Brief | DB | 4-column grid, cron at 06:00 UTC, 30-day retention |
-| Checklist | DB | Drawer with emoji/color, auto-tracked items, streaks |
-| Word Bank | DB | SRS flashcards, fill-in-the-blank, multi-language |
-| Library | DB | PDF reader, reading sessions, annotations, word lookup |
-| Mood | localStorage | Full UI, no backend yet |
-| Sleep | localStorage | Full UI, no backend yet |
+| Checklist | DB | Drawer with emoji/color, auto-tracked items (workout/reading/words/mood), streaks, AI suggestions, weekly reviews |
+| Word Bank | DB | SRS flashcards, fill-in-the-blank, multi-language, review drill |
+| Library | DB | PDF reader, reading sessions, annotations, word lookup, notes SRS drill |
+| Mood | DB | Heatmap, daily scores, auto-check wired to checklist |
+| Sleep | DB | Apple Health sync via ingest API, manual quick-log, sleep stages/scores |
 | Journal | localStorage | Full UI, no backend yet |
-| Finance | localStorage | Full UI, no backend yet |
+| Finance | — | Not implemented |
 | Settings | DB | Timezone and news preferences |
 
 ---

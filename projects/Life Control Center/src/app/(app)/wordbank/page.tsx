@@ -267,6 +267,233 @@ function NoteCard({ note, onGrade, progress, total }: {
   );
 }
 
+// ─── Drill overlay ────────────────────────────────────────────────────────────
+
+type DrillResult = { wordId: number; word: string; button: "again" | "good" | "easy" };
+
+function DrillOverlay({ words, onClose, onComplete }: {
+  words: Word[];
+  onClose: () => void;
+  onComplete: () => void;
+}) {
+  const [idx, setIdx]           = useState(0);
+  const [phase, setPhase]       = useState<"question" | "answer">("question");
+  const [results, setResults]   = useState<DrillResult[]>([]);
+  const [done, setDone]         = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const current = words[idx] ?? null;
+  const total = words.length;
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (done) return;
+      if (e.key === " " && phase === "question") { e.preventDefault(); setPhase("answer"); }
+      if (phase === "answer" && !submitting) {
+        if (e.key === "1") grade("again");
+        if (e.key === "2") grade("good");
+        if (e.key === "3") grade("easy");
+      }
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  });
+
+  const grade = async (btn: "again" | "good" | "easy") => {
+    if (!current || submitting) return;
+    setSubmitting(true);
+    await fetch("/api/wordbank/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ wordId: current.id, button: btn }),
+    }).catch(() => {});
+    const newResults = [...results, { wordId: current.id, word: current.word, button: btn }];
+    setResults(newResults);
+    setSubmitting(false);
+    if (idx + 1 >= total) {
+      setDone(true);
+    } else {
+      setIdx(idx + 1);
+      setPhase("question");
+    }
+  };
+
+  // Summary counts
+  const againCount = results.filter((r) => r.button === "again").length;
+  const goodCount  = results.filter((r) => r.button === "good").length;
+  const easyCount  = results.filter((r) => r.button === "easy").length;
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 100,
+      background: "var(--bg)",
+      display: "flex", flexDirection: "column",
+      overflow: "auto",
+    }}>
+      {/* Top bar */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "14px 24px", borderBottom: "1px solid var(--line)",
+        flexShrink: 0,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <button className="cc-btn" onClick={onClose} style={{ padding: "6px 14px", fontSize: 12 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back
+          </button>
+          <span style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)" }}>
+            Review Drill
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          {/* Progress */}
+          <div style={{ width: 180, height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", background: "var(--grad)",
+              boxShadow: "0 0 8px rgba(124,77,255,0.40)",
+              width: `${Math.round(((done ? total : idx) / total) * 100)}%`,
+              transition: "width 0.3s var(--easeOut)",
+            }} />
+          </div>
+          <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--ink-2)", letterSpacing: "0.04em" }}>
+            {done ? total : idx} / {total}
+          </span>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
+        {done ? (
+          /* ── Summary ── */
+          <div style={{ textAlign: "center", maxWidth: 480 }}>
+            <div style={{
+              fontSize: 48, fontWeight: 300, letterSpacing: "-0.03em",
+              background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent",
+              filter: "drop-shadow(0 0 24px rgba(124,77,255,0.20))",
+              marginBottom: 16,
+            }}>
+              Session complete
+            </div>
+            <div style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 32 }}>
+              You reviewed {total} word{total !== 1 ? "s" : ""}.
+            </div>
+
+            {/* Stats grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 32 }}>
+              {[
+                { label: "Again", count: againCount, color: "var(--neg)", border: "rgba(255,138,138,0.25)" },
+                { label: "Good", count: goodCount, color: "var(--cyan)", border: "rgba(100,255,218,0.25)" },
+                { label: "Easy", count: easyCount, color: "var(--pos)", border: "rgba(111,212,154,0.25)" },
+              ].map((s) => (
+                <div key={s.label} style={{
+                  padding: "16px 14px", border: `1px solid ${s.border}`, borderRadius: 12,
+                  background: "rgba(255,255,255,0.015)",
+                }}>
+                  <div style={{ fontSize: 28, fontWeight: 300, color: s.color, fontFamily: "var(--f-mono)" }}>{s.count}</div>
+                  <div style={{ fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 4 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <button className="cc-btn cc-btn-primary" onClick={() => { onComplete(); onClose(); }} style={{ padding: "12px 32px", fontSize: 14 }}>
+              Done
+            </button>
+          </div>
+        ) : current ? (
+          /* ── Card ── */
+          <div style={{ width: "100%", maxWidth: 640, display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {/* Card container */}
+            <div style={{
+              position: "relative", width: "100%", padding: "42px 48px",
+              background: "linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85))",
+              border: "1px solid var(--line-hi)", borderRadius: 18,
+              boxShadow: "0 30px 70px rgba(0,0,0,0.45), 0 0 50px rgba(124,77,255,0.08), inset 0 1px 0 rgba(255,255,255,0.05)",
+              backdropFilter: "blur(20px)",
+            }}>
+              {/* Ambient glow */}
+              <div style={{ position: "absolute", inset: "-40%", background: "radial-gradient(40% 50% at 30% 40%, rgba(124,77,255,0.08), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(100,255,218,0.06), transparent 60%)", pointerEvents: "none" }} />
+
+              {/* Top labels */}
+              {current.partOfSpeech && (
+                <div style={{ position: "absolute", top: 20, left: 24, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 500, fontStyle: "italic" }}>
+                  {current.partOfSpeech}
+                </div>
+              )}
+              <div style={{ position: "absolute", top: 20, right: 24, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: LANG_COLORS[current.language] ?? "var(--cyan)", fontWeight: 600, display: "flex", alignItems: "center", gap: 7 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "99px", background: LANG_COLORS[current.language], boxShadow: `0 0 6px ${LANG_COLORS[current.language]}`, display: "inline-block" }} />
+                {LANG_LABELS[current.language]}
+              </div>
+              <div style={{ position: "absolute", bottom: 16, right: 24, fontSize: 10.5, letterSpacing: "0.06em", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+                CARD {idx + 1} / {total} · SEEN {current.streak}×
+              </div>
+
+              {/* Word */}
+              <div style={{ position: "relative", fontSize: 64, fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1.2, textAlign: "center", background: "var(--grad)", WebkitBackgroundClip: "text", color: "transparent", filter: "drop-shadow(0 0 24px rgba(124,77,255,0.20))", marginTop: 24, paddingBottom: "0.15em" }}>
+                {current.word}
+              </div>
+
+              {/* Answer (definition + example) */}
+              {phase === "answer" && (
+                <div style={{ position: "relative", marginTop: 24, paddingTop: 24, borderTop: "1px solid var(--line)", textAlign: "center" }}>
+                  <div style={{ fontSize: 16, lineHeight: 1.55, color: "var(--ink)", letterSpacing: "-0.005em", maxWidth: "46ch", margin: "0 auto" }}>
+                    {current.definition}
+                  </div>
+                  {current.exampleSentence && (
+                    <div style={{ fontStyle: "italic", color: "var(--ink-2)", marginTop: 18, fontSize: 14, lineHeight: 1.55, maxWidth: "46ch", marginLeft: "auto", marginRight: "auto" }}>
+                      &ldquo;{current.exampleSentence}&rdquo;
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Reveal button */}
+            {phase === "question" && (
+              <>
+                <button className="cc-btn" onClick={() => setPhase("answer")} style={{ marginTop: 20, padding: "12px 32px" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  Reveal answer
+                </button>
+                <div style={{ marginTop: 14, fontSize: 11.5, color: "var(--ink-3)", letterSpacing: "0.04em", display: "flex", gap: 14, alignItems: "center" }}>
+                  <span style={{ fontFamily: "var(--f-mono)", padding: "3px 8px", border: "1px solid var(--line)", borderRadius: 5, fontSize: 10 }}>SPACE</span>
+                  to flip
+                </div>
+              </>
+            )}
+
+            {/* Grading buttons */}
+            {phase === "answer" && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, width: "100%", marginTop: 20 }}>
+                {([
+                  { key: "again" as const, label: "Again",  interval: "< 10 min", border: "rgba(255,138,138,0.25)", color: "var(--neg)",  shortcut: "1" },
+                  { key: "good"  as const, label: "Good",   interval: "3 days",   border: "rgba(100,255,218,0.25)", color: "var(--cyan)", shortcut: "2" },
+                  { key: "easy"  as const, label: "Easy",   interval: "7 days",   border: "rgba(111,212,154,0.25)", color: "var(--pos)",  shortcut: "3" },
+                ]).map((btn) => (
+                  <button
+                    key={btn.key}
+                    className="wb-grade-btn"
+                    onClick={() => grade(btn.key)}
+                    disabled={submitting}
+                    style={{ padding: "14px 16px", borderRadius: 12, border: `1px solid ${btn.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", transition: "all 0.15s var(--easeOut)", position: "relative" }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.005em", color: btn.color }}>{btn.label}</div>
+                    <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 3, fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
+                      {btn.interval}
+                      <span style={{ marginLeft: 8, padding: "2px 6px", border: "1px solid var(--line)", borderRadius: 4, fontSize: 9 }}>{btn.shortcut}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function WordbankPage() {
@@ -285,6 +512,7 @@ export default function WordbankPage() {
   const [sugLoading, setSugLoading]     = useState(false);
   const [addingSug, setAddingSug]       = useState<string | null>(null);
   const [dueNotes, setDueNotes]        = useState<ReadingNote[]>([]);
+  const [drillOpen, setDrillOpen]       = useState(false);
 
   // Review queue: words only (reading notes now live in Knowledge Bank)
   const reviewQueue: ReviewItem[] = [
@@ -396,6 +624,12 @@ export default function WordbankPage() {
               All Words<span className="count">{allWords.length}</span>
             </button>
           </div>
+          {dueWords.length > 0 && (
+            <button className="cc-btn cc-btn-primary" onClick={() => setDrillOpen(true)} style={{ fontSize: 13, padding: "10px 16px" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Review {dueWords.length} word{dueWords.length !== 1 ? "s" : ""}
+            </button>
+          )}
           <button className="cc-btn cc-btn-primary" onClick={() => setAddOpen(true)} style={{ fontSize: 13, padding: "10px 16px" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add word
@@ -647,6 +881,15 @@ export default function WordbankPage() {
 
         </div>
       </div>
+
+      {/* Drill overlay */}
+      {drillOpen && dueWords.length > 0 && (
+        <DrillOverlay
+          words={dueWords}
+          onClose={() => setDrillOpen(false)}
+          onComplete={() => { load(); setCardIndex(0); }}
+        />
+      )}
 
       {/* Add word modal */}
       {addOpen && (

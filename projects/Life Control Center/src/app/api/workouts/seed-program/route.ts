@@ -583,7 +583,14 @@ export async function POST() {
     .limit(1);
 
   if (existing) {
-    return NextResponse.json({ message: "4-Day Split program already exists", programId: existing.id });
+    // Ensure it's active
+    if (!existing.isActive) {
+      const allPrograms = await db.select().from(programs).where(eq(programs.userId, userId));
+      for (const p of allPrograms) {
+        await db.update(programs).set({ isActive: p.id === existing.id }).where(eq(programs.id, p.id));
+      }
+    }
+    return NextResponse.json({ success: true, message: "4-Day Split program already exists", programId: existing.id });
   }
 
   // Deactivate all existing programs

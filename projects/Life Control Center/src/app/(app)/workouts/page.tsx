@@ -22,6 +22,7 @@ import InfoTiles from "@/components/workouts/InfoTiles";
 import OpenDrawerButton from "@/components/workouts/OpenDrawerButton";
 import CoachCard from "@/components/workouts/CoachCard";
 import ResumeSessionBanner from "@/components/workouts/ResumeSessionBanner";
+import AutoSeedProgram from "@/components/workouts/AutoSeedProgram";
 
 export const dynamic = "force-dynamic";
 
@@ -307,30 +308,12 @@ export default async function WorkoutsPage() {
             <div className="cc-grad-text" style={{
               fontSize: 48, fontWeight: 200, letterSpacing: "-0.04em",
             }}>
-              Build your program
+              Setting up…
             </div>
             <p style={{ color: "var(--ink-3)", fontSize: 14, lineHeight: 1.6, maxWidth: 420, margin: "0 auto 28px" }}>
-              Create your workouts: Push, Pull, Legs, or whatever splits you want.
-              Assign days, pick exercises, and start logging.
+              Your 4-Day Split program is being activated. This page will refresh automatically.
             </p>
-            <OpenDrawerButton
-              drawer="workouts"
-              className="cc-btn-primary"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "14px 28px", borderRadius: 10,
-                fontSize: 15, fontWeight: 600, letterSpacing: "-0.005em",
-                cursor: "pointer",
-              }}
-            >
-              + Create your first workout
-            </OpenDrawerButton>
-
-            {ytdCount > 0 && (
-              <div style={{ marginTop: 24, fontSize: 11, color: "var(--ink-4)", letterSpacing: "0.04em" }}>
-                {ytdCount} sessions logged — your history and PRs are preserved
-              </div>
-            )}
+            <AutoSeedProgram />
           </div>
         </div>
       )}

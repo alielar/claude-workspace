@@ -12,6 +12,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ensureMigrate } from "@/lib/ensureMigrate";
+import WeeklyReviews from "@/components/checklist/WeeklyReviews";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1105,6 +1106,8 @@ export default function ChecklistPage() {
               )}
             </>
           )}
+
+          <WeeklyReviews />
         </div>
       </div>
 
