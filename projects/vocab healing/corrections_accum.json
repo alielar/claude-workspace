@@ -1,0 +1,290 @@
+[
+ {
+  "word_id": "10",
+  "language_code": "de",
+  "word": "address",
+  "old_translation": "Adresse",
+  "new_translation": "ansprechen",
+  "issue": "Example uses the verb sense (address/speak to the nation) but translation is the noun (postal address).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "10",
+  "language_code": "fr",
+  "word": "address",
+  "old_translation": "adresse",
+  "new_translation": "s'adresser à",
+  "issue": "Example uses the verb sense (address the nation) but translation is the noun (postal address).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "52",
+  "language_code": "de",
+  "word": "back",
+  "old_translation": "zurück",
+  "new_translation": "Rücken",
+  "issue": "Example uses the body-part noun (my back hurts) but translation is the adverb (backwards/return).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "52",
+  "language_code": "it",
+  "word": "back",
+  "old_translation": "Indietro",
+  "new_translation": "schiena",
+  "issue": "Example uses the body-part noun (my back hurts) but translation is the adverb (backwards/return).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "80",
+  "language_code": "it",
+  "word": "bike",
+  "old_translation": "moto",
+  "new_translation": "bici",
+  "issue": "Example is a bicycle (ride bike to school) but translation means motorbike.",
+  "confidence": "high"
+ },
+ {
+  "word_id": "81",
+  "language_code": "it",
+  "word": "bill",
+  "old_translation": "conto",
+  "new_translation": "bolletta",
+  "issue": "Example is a utility (electricity) bill = bolletta; conto means account/restaurant check.",
+  "confidence": "medium"
+ },
+ {
+  "word_id": "118",
+  "language_code": "de",
+  "word": "call",
+  "old_translation": "Anruf",
+  "new_translation": "anrufen",
+  "issue": "Example is the verb (call me) but translation is the noun (a call).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "118",
+  "language_code": "fr",
+  "word": "call",
+  "old_translation": "appel",
+  "new_translation": "appeler",
+  "issue": "Example is the verb (call me) but translation is the noun (a call).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "119",
+  "language_code": "it",
+  "word": "camera",
+  "old_translation": "telecamera",
+  "new_translation": "macchina fotografica",
+  "issue": "Example is a still/photo camera (capture scenery) but telecamera means video camera.",
+  "confidence": "medium"
+ },
+ {
+  "word_id": "122",
+  "language_code": "fr",
+  "word": "capital",
+  "old_translation": "capital",
+  "new_translation": "capitale",
+  "issue": "Example is the capital city sense; French capital (masc.) means financial capital, city is capitale.",
+  "confidence": "high"
+ },
+ {
+  "word_id": "133",
+  "language_code": "fr",
+  "word": "change",
+  "old_translation": "changement",
+  "new_translation": "changer",
+  "issue": "Example is the verb (change her hair color) but translation is the noun.",
+  "confidence": "high"
+ },
+ {
+  "word_id": "133",
+  "language_code": "it",
+  "word": "change",
+  "old_translation": "modifica",
+  "new_translation": "cambiare",
+  "issue": "Example is the verb (change her hair color) but translation is the noun (a modification).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "144",
+  "language_code": "it",
+  "word": "class",
+  "old_translation": "lezione",
+  "new_translation": "classe",
+  "issue": "Example is a class/group of students, but lezione means lesson.",
+  "confidence": "high"
+ },
+ {
+  "word_id": "146",
+  "language_code": "es",
+  "word": "clean",
+  "old_translation": "limpio",
+  "new_translation": "limpiar",
+  "issue": "Example is the verb (clean your room) but translation is the adjective (clean).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "146",
+  "language_code": "de",
+  "word": "clean",
+  "old_translation": "sauber",
+  "new_translation": "putzen",
+  "issue": "Example is the verb (clean your room) but translation is the adjective (clean).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "146",
+  "language_code": "it",
+  "word": "clean",
+  "old_translation": "pulito",
+  "new_translation": "pulire",
+  "issue": "Example is the verb (clean your room) but translation is the adjective (clean).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "147",
+  "language_code": "de",
+  "word": "climb",
+  "old_translation": "Aufstieg",
+  "new_translation": "klettern",
+  "issue": "Example is the verb (climb the tree) but translation is the noun (ascent).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "147",
+  "language_code": "it",
+  "word": "climb",
+  "old_translation": "scalata",
+  "new_translation": "arrampicarsi",
+  "issue": "Example is the verb (climb the tree) but translation is the noun (a climb).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "161",
+  "language_code": "es",
+  "word": "complete",
+  "old_translation": "completo",
+  "new_translation": "completar",
+  "issue": "Example is the verb (complete my homework) but translation is the adjective (complete).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "161",
+  "language_code": "de",
+  "word": "complete",
+  "old_translation": "vollständig",
+  "new_translation": "abschließen",
+  "issue": "Example is the verb (complete my homework) but translation is the adjective (complete).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "161",
+  "language_code": "fr",
+  "word": "complete",
+  "old_translation": "complet",
+  "new_translation": "compléter",
+  "issue": "Example is the verb (complete my homework) but translation is the adjective (complete).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "161",
+  "language_code": "it",
+  "word": "complete",
+  "old_translation": "compilare",
+  "new_translation": "completare",
+  "issue": "Example is complete homework; compilare means fill out (a form), completare is the right verb.",
+  "confidence": "medium"
+ },
+ {
+  "word_id": "166",
+  "language_code": "fr",
+  "word": "cooking",
+  "old_translation": "cuisson",
+  "new_translation": "cuisine",
+  "issue": "Example is cooking as an activity/hobby (la cuisine); cuisson means the cooking process/doneness.",
+  "confidence": "medium"
+ },
+ {
+  "word_id": "167",
+  "language_code": "es",
+  "word": "cool",
+  "old_translation": "Frío",
+  "new_translation": "fresco",
+  "issue": "Example is cool (mildly cold) water; frío means cold, fresco means cool.",
+  "confidence": "high"
+ },
+ {
+  "word_id": "169",
+  "language_code": "de",
+  "word": "cost",
+  "old_translation": "kosten",
+  "new_translation": "Kosten",
+  "issue": "Example is the noun (the cost was high) but translation is the lowercase verb form.",
+  "confidence": "medium"
+ },
+ {
+  "word_id": "180",
+  "language_code": "it",
+  "word": "cut",
+  "old_translation": "taglio",
+  "new_translation": "tagliare",
+  "issue": "Example is the verb (cut the paper) but translation is the noun (a cut).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "182",
+  "language_code": "fr",
+  "word": "dance",
+  "old_translation": "danse",
+  "new_translation": "danser",
+  "issue": "Example is the verb (love to dance) but translation is the noun (a dance).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "187",
+  "language_code": "es",
+  "word": "date",
+  "old_translation": "cita",
+  "new_translation": "fecha",
+  "issue": "Example is a calendar date for a meeting (fecha); cita means appointment/romantic date.",
+  "confidence": "medium"
+ },
+ {
+  "word_id": "196",
+  "language_code": "es",
+  "word": "design",
+  "old_translation": "diseño",
+  "new_translation": "diseñar",
+  "issue": "Example is the verb (design a dress) but translation is the noun (a design).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "196",
+  "language_code": "de",
+  "word": "design",
+  "old_translation": "Design",
+  "new_translation": "entwerfen",
+  "issue": "Example is the verb (design a dress) but translation is the noun (a design).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "196",
+  "language_code": "fr",
+  "word": "design",
+  "old_translation": "conception",
+  "new_translation": "concevoir",
+  "issue": "Example is the verb (design a dress) but translation is the noun (design/conception).",
+  "confidence": "high"
+ },
+ {
+  "word_id": "196",
+  "language_code": "it",
+  "word": "design",
+  "old_translation": "progetto",
+  "new_translation": "disegnare",
+  "issue": "Example is the verb (design a dress); progetto is a noun (project), disegnare is to design.",
+  "confidence": "high"
+ }
+]
