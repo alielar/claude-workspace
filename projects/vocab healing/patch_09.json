@@ -1,0 +1,103 @@
+[
+ {"id": "288", "word": "fish",
+  "definition": "Fish eaten as food.",
+  "example": "Many people enjoy eating baked fish for dinner.",
+  "translations": {"es": "pescado", "de": "Fisch", "fr": "poisson", "it": "pesce"},
+  "note": "This word appears twice in the list. Spanish has two words: 'pez' is the living animal and 'pescado' is fish on the plate. This entry is about eating fish, so Spanish is now 'pescado' and the other entry keeps the living animal."},
+
+ {"id": "365", "word": "home",
+  "definition": "The place where you live.",
+  "example": "I am going home after work today.",
+  "translations": {"es": "casa", "de": "Zuhause", "fr": "maison", "it": "casa"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. German was written in lower case as an old-fashioned word."},
+
+ {"id": "503", "word": "need",
+  "definition": "To have to have something because it is necessary.",
+  "example": "I need water to drink and stay alive.",
+  "translations": {"es": "necesitar", "de": "brauchen", "fr": "avoir besoin de", "it": "avere bisogno di"},
+  "note": "Same word appears three times in the list; all three now use the same wording."},
+
+ {"id": "510", "word": "next",
+  "definition": "Coming immediately after this one.",
+  "example": "The next train arrives in five minutes.",
+  "translations": {"es": "próximo", "de": "nächste", "fr": "prochain", "it": "prossimo"},
+  "note": "Same word appears three times in the list; all three now match. Italian capital letter removed and French changed from 'suivant' to 'prochain'."},
+
+ {"id": "511", "word": "next",
+  "definition": "Coming immediately after this one.",
+  "example": "The next train arrives in five minutes.",
+  "translations": {"es": "próximo", "de": "nächste", "fr": "prochain", "it": "prossimo"},
+  "note": "Same word appears three times in the list; all three now match. Italian capital letter removed and French changed from 'suivant' to 'prochain'."},
+
+ {"id": "722", "word": "stand",
+  "definition": "To be on your feet in an upright position.",
+  "example": "The children had to stand at the back of the hall.",
+  "translations": {"es": "estar de pie", "de": "stehen", "fr": "être debout", "it": "stare in piedi"},
+  "note": "Spanish 'pararse' means 'to get up' and is mainly Latin American, while the other three meant 'to be standing'. Changed to 'estar de pie' so all four match this entry, which is about being on your feet rather than rising."},
+
+ {"id": "967", "word": "beat",
+  "definition": "To hit something again and again.",
+  "example": "The drummer will beat the drum loudly.",
+  "translations": {"es": "golpear", "de": "schlagen", "fr": "battre", "it": "battere"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree."},
+
+ {"id": "1224", "word": "further",
+  "definition": "More; additional.",
+  "example": "I need further information about the project.",
+  "translations": {"es": "adicional", "de": "weiter", "fr": "supplémentaire", "it": "ulteriore"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. The example repeated itself and has been cleaned up."},
+
+ {"id": "1538", "word": "ride",
+  "definition": "To sit on and control a bike, horse, or animal as it moves.",
+  "example": "We can ride our bikes to the park.",
+  "translations": {"es": "montar", "de": "fahren", "fr": "monter", "it": "andare in bici"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. Italian capital letter removed."},
+
+ {"id": "1632", "word": "start",
+  "definition": "To begin doing something.",
+  "example": "Let's start our English lesson now and learn new words.",
+  "translations": {"es": "comenzar", "de": "anfangen", "fr": "commencer", "it": "iniziare"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. German 'starten' is used for engines and races, not for starting a lesson."},
+
+ {"id": "1656", "word": "sure",
+  "definition": "Feeling certain that something is true.",
+  "example": "I am sure about the answer to the question.",
+  "translations": {"es": "seguro", "de": "sicher", "fr": "sûr", "it": "sicuro"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. French 'bien sûr' means 'of course', and the Italian capital letter was removed."},
+
+ {"id": "1674", "word": "text",
+  "definition": "A piece of writing; written words.",
+  "example": "The teacher asked us to read the text on page ten.",
+  "translations": {"es": "texto", "de": "Text", "fr": "texte", "it": "testo"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. Italian 'messaggio' means a phone message, not a piece of writing."},
+
+ {"id": "1755", "word": "yet",
+  "definition": "Up to now; so far.",
+  "example": "She has not finished her homework yet.",
+  "translations": {"es": "todavía", "de": "noch", "fr": "encore", "it": "ancora"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. Italian capital letter removed."},
+
+ {"id": "2549", "word": "will",
+  "definition": "Used to talk about something that happens in the future.",
+  "example": "She will visit her grandma next week.",
+  "translations": {"es": "ir a", "de": "werden", "fr": "aller", "it": "futuro (-rà)"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. Spanish, French and Italian were all half-conjugated fragments."},
+
+ {"id": "2556", "word": "worry",
+  "definition": "To feel anxious about something.",
+  "example": "I worry about my exams tomorrow.",
+  "translations": {"es": "preocuparse", "de": "sich sorgen", "fr": "s'inquiéter", "it": "preoccuparsi"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. German was missing the small reflexive word the other three have."},
+
+ {"id": "3087", "word": "rate",
+  "definition": "The speed at which something happens, or how often it happens.",
+  "example": "The population is growing at a fast rate.",
+  "translations": {"es": "tasa", "de": "Rate", "fr": "taux", "it": "tasso"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. The old example used awkward English ('a high rate of speed')."},
+
+ {"id": "3389", "word": "run out of",
+  "definition": "To use up all of something.",
+  "example": "We will run out of milk soon.",
+  "translations": {"es": "quedarse sin", "de": "ausgehen", "fr": "manquer de", "it": "restare senza"},
+  "note": "Same word appears twice in the list; corrected the same way so the two entries agree. German was a past form and Italian 'esaurire' was the wrong side of the action."}
+]

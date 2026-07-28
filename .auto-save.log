@@ -6128,3 +6128,15 @@ To github.com:alielar/claude-workspace.git
  2 files changed, 4 insertions(+)
 To github.com:alielar/claude-workspace.git
    7a745b2..22a42a0  main -> main
+[main af9aeb3] auto-save: 2026-07-27 23:47
+ 10 files changed, 105149 insertions(+)
+ create mode 100644 projects/vocab healing/acc_corrections.json
+ create mode 100644 projects/vocab healing/acc_definitions.json
+ create mode 100644 projects/vocab healing/batch_apply.py
+ create mode 100644 projects/vocab healing/compact.txt
+ create mode 100644 projects/vocab healing/corrections_accum.json
+ create mode 100644 projects/vocab healing/final_assemble.py
+ create mode 100644 projects/vocab healing/vocabulary_changes_log.json
+ create mode 100644 projects/vocab healing/vocabulary_corrected.json
+To github.com:alielar/claude-workspace.git
+   6f3b104..af9aeb3  main -> main

@@ -1,0 +1,91 @@
+[
+ {"id": "3222", "word": "term",
+  "definition": "One of the periods a school year is divided into.",
+  "example": "The school term ends in June.",
+  "translations": {"es": "trimestre", "de": "Trimester", "fr": "trimestre", "it": "trimestre"},
+  "note": "Spanish gave a vague 'period' and German 'Semester' is used for universities, not schools. All four now say the same thing."},
+
+ {"id": "3231", "word": "track",
+  "definition": "The rails a train runs along.",
+  "example": "The train runs on the track.",
+  "translations": {"es": "vía", "de": "Schiene", "fr": "voie", "it": "binario"},
+  "note": "Italian was plural while the other three were singular. Made singular."},
+
+ {"id": "3238", "word": "trouble",
+  "definition": "Difficulty or problems.",
+  "example": "I am having trouble understanding this new lesson.",
+  "translations": {"es": "problema", "de": "Problem", "fr": "difficulté", "it": "difficoltà"},
+  "note": "Italian 'guaio' means being in a scrape or a mess, which is stronger than the definition. Changed to 'difficoltà'."},
+
+ {"id": "3257", "word": "venue",
+  "definition": "A place where an event is held.",
+  "example": "The band played at a new venue in the city centre.",
+  "translations": {"es": "salón de eventos", "de": "Veranstaltungsort", "fr": "lieu", "it": "sede"},
+  "note": "Italian 'locale' means a bar or club rather than any event place. Changed to 'sede'."},
+
+ {"id": "3269", "word": "way",
+  "definition": "A method of doing something.",
+  "example": "This is a good way to learn new vocabulary.",
+  "translations": {"es": "manera", "de": "Art", "fr": "façon", "it": "modo"},
+  "note": "Same word appears twice in the list with different German. Set to 'Art' so the two entries agree."},
+
+ {"id": "3276", "word": "whom",
+  "definition": "Used to refer to the person receiving an action.",
+  "example": "To whom did you give the book?",
+  "translations": {"es": "a quien", "de": "wem", "fr": "à qui", "it": "a chi"},
+  "note": "French was missing the little linking word that Spanish and Italian both have. Added."},
+
+ {"id": "3290", "word": "yet",
+  "definition": "Up to now; so far.",
+  "example": "She has not finished her homework yet.",
+  "translations": {"es": "todavía", "de": "noch", "fr": "encore", "it": "ancora"},
+  "note": "French 'pas encore' already contained the word 'not'. Removed so it matches the other three."},
+
+ {"id": "3292", "word": "run out of",
+  "definition": "To use up all of something.",
+  "example": "We will run out of milk soon.",
+  "translations": {"es": "quedarse sin", "de": "ausgehen", "fr": "manquer de", "it": "restare senza"},
+  "note": "Italian 'esaurire' is what you do to a supply, not what happens to you. Changed to 'restare senza', matching the Spanish."},
+
+ {"id": "3307", "word": "come in",
+  "definition": "To enter a place.",
+  "example": "Please come in and sit down.",
+  "translations": {"es": "entrar", "de": "reinkommen", "fr": "entrer", "it": "entrare"},
+  "note": "Italian 'accomodarsi' means 'take a seat', not 'come in'. Changed to 'entrare'."},
+
+ {"id": "3313", "word": "turn up",
+  "definition": "To be found or appear unexpectedly.",
+  "example": "My lost keys finally turned up in the sofa cushions.",
+  "translations": {"es": "aparecer", "de": "auftauchen", "fr": "apparaître", "it": "comparire"},
+  "note": "French 'réapparaître' means 'to appear again'. Changed to 'apparaître' so all four match."},
+
+ {"id": "3326", "word": "tearing up",
+  "definition": "Beginning to cry.",
+  "example": "Her eyes started tearing up during the sad film.",
+  "translations": {"es": "lagrimear", "de": "Tränen bekommen", "fr": "avoir les larmes aux yeux", "it": "commuoversi"},
+  "note": "French 'en larmes' described a state rather than the action. Changed to a phrase that means the eyes are filling with tears."},
+
+ {"id": "3343", "word": "break down",
+  "definition": "To stop working properly.",
+  "example": "The old car broke down on the way home.",
+  "translations": {"es": "averiarse", "de": "eine Panne haben", "fr": "tomber en panne", "it": "guastarsi"},
+  "note": "Spanish 'romperse' just means 'to break'. The word for a vehicle or machine failing is 'averiarse'."},
+
+ {"id": "3362", "word": "make up",
+  "definition": "To invent a story or excuse.",
+  "example": "He had to make up a reason for being late.",
+  "translations": {"es": "inventar", "de": "sich ausdenken", "fr": "inventer", "it": "inventare"},
+  "note": "German was missing the small reflexive word it needs. Added."},
+
+ {"id": "3375", "word": "make out",
+  "definition": "To see or hear something with difficulty.",
+  "example": "I can barely make out the words on this old sign.",
+  "translations": {"es": "distinguir", "de": "erkennen", "fr": "distinguer", "it": "distinguere"},
+  "note": "Spanish and Italian said 'to understand', which is a different idea. Both changed to 'to make out with difficulty', matching the definition."},
+
+ {"id": "3383", "word": "keep up",
+  "definition": "To move at the same speed as someone else.",
+  "example": "She walks quickly, so I must walk fast to keep up.",
+  "translations": {"es": "seguir el ritmo", "de": "mithalten", "fr": "suivre le rythme", "it": "tenersi al passo"},
+  "note": "French 'continuez' was a command form ('carry on'), which is not what the word means here. Spanish 'mantenerse' was too vague. Both changed to match the definition."}
+]

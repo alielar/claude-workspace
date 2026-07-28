@@ -1,0 +1,5018 @@
+[
+  {
+    "id": "2",
+    "word": "about",
+    "definition": "On the subject of; concerning.",
+    "example": "This book is about a brave knight and a dragon.",
+    "level": "Basic",
+    "translations": {
+      "es": "sobre",
+      "de": "über",
+      "fr": "sur",
+      "it": "su"
+    },
+    "_before": {
+      "definition": "On the subject of; concerning.",
+      "example": "This book is about a brave knight and a dragon.",
+      "translations": {
+        "es": "acerca de",
+        "de": "über",
+        "fr": "à propos",
+        "it": "di/del/della/dello"
+      }
+    },
+    "_note": "Cleaned the translations. Spanish 'acerca de' and French 'à propos' are stiff; the everyday word for a book about something is 'sobre' / 'sur'. Italian was a list of grammar forms, replaced with the single word 'su'."
+  },
+  {
+    "id": "3",
+    "word": "above",
+    "definition": "In or to a higher position than something else.",
+    "example": "The birds flew high above the tall trees.",
+    "level": "Basic",
+    "translations": {
+      "es": "por encima de",
+      "de": "über",
+      "fr": "au-dessus de",
+      "it": "sopra"
+    },
+    "_before": {
+      "definition": "In or to a higher position than something else.",
+      "example": "The birds flew high above the tall trees.",
+      "translations": {
+        "es": "por encima de",
+        "de": "über",
+        "fr": "au-dessus de",
+        "it": "sopra/su/sul/sulla/sullo"
+      }
+    },
+    "_note": "Italian was a list of grammar contractions (su/sul/sulla/sullo). Replaced with the single clean word 'sopra'."
+  },
+  {
+    "id": "10",
+    "word": "address",
+    "definition": "The details of where someone lives or where a building is, used for sending letters.",
+    "example": "Please write your name and address on the envelope.",
+    "level": "Basic",
+    "translations": {
+      "es": "dirección",
+      "de": "Adresse",
+      "fr": "adresse",
+      "it": "indirizzo"
+    },
+    "_before": {
+      "definition": "To speak formally to a person or group of people.",
+      "example": "The president will address the nation tonight.",
+      "translations": {
+        "es": "dirigirse a",
+        "de": "ansprechen",
+        "fr": "s'adresser à",
+        "it": "rivolgersi a"
+      }
+    },
+    "_note": "The whole word had been pushed onto a rare meaning ('the president will address the nation'). The first meaning of 'address' for any learner is where you live. Example, definition and all four translations rewritten around that."
+  },
+  {
+    "id": "122",
+    "word": "capital",
+    "definition": "The most important city of a country, where the government is based.",
+    "example": "Paris is the capital of France.",
+    "level": "Basic",
+    "translations": {
+      "es": "capital",
+      "de": "Hauptstadt",
+      "fr": "capitale",
+      "it": "capitale"
+    },
+    "_before": {
+      "definition": "The most important city of a country, where the government is based.",
+      "example": "Paris is the capital of France, and largest city in, France.",
+      "translations": {
+        "es": "capital",
+        "de": "Hauptstadt",
+        "fr": "capitale",
+        "it": "capitale"
+      }
+    },
+    "_note": "The example sentence was broken ('Paris is the capital of France, and largest city in, France.'). Rewritten as one clean sentence."
+  },
+  {
+    "id": "146",
+    "word": "clean",
+    "definition": "Not dirty; free from dirt and marks.",
+    "example": "Please keep your room clean and tidy.",
+    "level": "Basic",
+    "translations": {
+      "es": "limpio",
+      "de": "sauber",
+      "fr": "propre",
+      "it": "pulito"
+    },
+    "_before": {
+      "definition": "To remove dirt from something.",
+      "example": "Please clean your room, it is very dirty.",
+      "translations": {
+        "es": "limpiar",
+        "de": "putzen",
+        "fr": "nettoyer",
+        "it": "pulire"
+      }
+    },
+    "_note": "Had been turned into the action 'to clean'. The first meaning of 'clean' is the opposite of dirty, which is also what the original list intended. Switched back to the describing word."
+  },
+  {
+    "id": "166",
+    "word": "cooking",
+    "definition": "The activity of preparing and heating food to eat.",
+    "example": "She enjoys cooking delicious meals for her family every day.",
+    "level": "Basic",
+    "translations": {
+      "es": "cocinar",
+      "de": "Kochen",
+      "fr": "cuisiner",
+      "it": "cucinare"
+    },
+    "_before": {
+      "definition": "The activity of preparing and heating food to eat.",
+      "example": "She enjoys cooking delicious meals for her family every day.",
+      "translations": {
+        "es": "cocinando",
+        "de": "Kochen",
+        "fr": "cuisine",
+        "it": "cucinare"
+      }
+    },
+    "_note": "The four languages did not match each other: Spanish gave a half-finished form and French gave the word for a kitchen. All four now express the same idea, the act of cooking."
+  },
+  {
+    "id": "168",
+    "word": "correct",
+    "definition": "Right; with no mistakes.",
+    "example": "Your answer is correct, well done.",
+    "level": "Basic",
+    "translations": {
+      "es": "correcto",
+      "de": "richtig",
+      "fr": "correct",
+      "it": "corretto"
+    },
+    "_before": {
+      "definition": "To make right something that is wrong.",
+      "example": "Please correct the mistakes in my homework before I submit it.",
+      "translations": {
+        "es": "corregir",
+        "de": "korrigieren",
+        "fr": "corriger",
+        "it": "correggere"
+      }
+    },
+    "_note": "Had been turned into the action 'to correct someone's mistakes'. The first meaning of 'correct' is simply 'right', which is what the original list intended. Switched back."
+  },
+  {
+    "id": "217",
+    "word": "draw",
+    "definition": "To make a picture using a pen or pencil.",
+    "example": "She likes to draw animals with a pencil.",
+    "level": "Basic",
+    "translations": {
+      "es": "dibujar",
+      "de": "zeichnen",
+      "fr": "dessiner",
+      "it": "disegnare"
+    },
+    "_before": {
+      "definition": "To make a picture or shape using a pen or pencil.",
+      "example": "She likes to draw animals. Please draw the curtains open.",
+      "translations": {
+        "es": "dibujar",
+        "de": "zeichnen",
+        "fr": "dessiner",
+        "it": "disegnare"
+      }
+    },
+    "_note": "The example contained two unrelated sentences and a second, confusing meaning ('draw the curtains'). Reduced to one clear sentence."
+  },
+  {
+    "id": "241",
+    "word": "even",
+    "definition": "Used to stress that something is surprising or extreme.",
+    "example": "Even the youngest child understood the story.",
+    "level": "Basic",
+    "translations": {
+      "es": "incluso",
+      "de": "sogar",
+      "fr": "même",
+      "it": "perfino"
+    },
+    "_before": {
+      "definition": "Flat and level, with no bumps or holes.",
+      "example": "The road surface was even, with no bumps or holes.",
+      "translations": {
+        "es": "liso",
+        "de": "eben",
+        "fr": "plat",
+        "it": "uniforme/liscio/piano"
+      }
+    },
+    "_note": "Had been pushed onto the rare meaning 'flat, with no bumps'. By far the most common use of 'even' is for emphasis, and that is what the original French translation showed. Rebuilt around that meaning."
+  },
+  {
+    "id": "269",
+    "word": "fat",
+    "definition": "Having too much flesh on the body; not thin.",
+    "example": "The cat is very fat because it eats too much.",
+    "level": "Basic",
+    "translations": {
+      "es": "gordo",
+      "de": "dick",
+      "fr": "gros",
+      "it": "grasso"
+    },
+    "_before": {
+      "definition": "An oily substance in food and in the bodies of animals.",
+      "example": "Eating too much fat can be unhealthy for your body.",
+      "translations": {
+        "es": "grasa",
+        "de": "Fett",
+        "fr": "graisse",
+        "it": "grasso"
+      }
+    },
+    "_note": "Had been turned into the food substance (cooking fat). The first meaning of 'fat' is describing a person or animal, which is what the original German and French translations showed. Switched back."
+  },
+  {
+    "id": "284",
+    "word": "fine",
+    "definition": "Good, well, or acceptable.",
+    "example": "How are you today? I feel fine, thank you.",
+    "level": "Basic",
+    "translations": {
+      "es": "bien",
+      "de": "gut",
+      "fr": "bien",
+      "it": "bene"
+    },
+    "_before": {
+      "definition": "Good, well, or acceptable.",
+      "example": "The weather is fine today. I feel fine now.",
+      "translations": {
+        "es": "bien",
+        "de": "gut",
+        "fr": "bien",
+        "it": "Bene"
+      }
+    },
+    "_note": "The example was two separate sentences stuck together. Reduced to one natural exchange. Italian capital letter removed."
+  },
+  {
+    "id": "288",
+    "word": "fish",
+    "definition": "Fish eaten as food.",
+    "example": "Many people enjoy eating baked fish for dinner.",
+    "level": "Basic",
+    "translations": {
+      "es": "pescado",
+      "de": "Fisch",
+      "fr": "poisson",
+      "it": "pesce"
+    },
+    "_before": {
+      "definition": "An animal that lives in water and breathes through gills.",
+      "example": "Many people enjoy eating baked fish for dinner.",
+      "translations": {
+        "es": "pez",
+        "de": "Fisch",
+        "fr": "poisson",
+        "it": "pesce"
+      }
+    },
+    "_note": "This word appears twice in the list. Spanish has two words: 'pez' is the living animal and 'pescado' is fish on the plate. This entry is about eating fish, so Spanish is now 'pescado' and the other entry keeps the living animal."
+  },
+  {
+    "id": "290",
+    "word": "flat",
+    "definition": "A set of rooms for living in, usually on one floor of a building.",
+    "example": "They live in a small flat on the third floor.",
+    "level": "Basic",
+    "translations": {
+      "es": "apartamento",
+      "de": "Wohnung",
+      "fr": "appartement",
+      "it": "appartamento"
+    },
+    "_before": {
+      "definition": "A set of rooms for living in, usually on one floor of a building.",
+      "example": "They live in a small flat on the third floor.",
+      "translations": {
+        "es": "piso",
+        "de": "Wohnung",
+        "fr": "appartement",
+        "it": "appartamento"
+      }
+    },
+    "_note": "'Flat' appears twice in the list with two different Spanish words. Both now use 'apartamento', which is understood everywhere."
+  },
+  {
+    "id": "310",
+    "word": "from",
+    "definition": "Starting at a particular place, person, or time.",
+    "example": "The train arrived from London at six o'clock.",
+    "level": "Basic",
+    "translations": {
+      "es": "de",
+      "de": "von",
+      "fr": "de",
+      "it": "da"
+    },
+    "_before": {
+      "definition": "Starting at a particular place, person, or time.",
+      "example": "The train arrived from London at six o'clock.",
+      "translations": {
+        "es": "de",
+        "de": "von",
+        "fr": "depuis",
+        "it": "da"
+      }
+    },
+    "_note": "French 'depuis' means 'since' and is about time, not origin. The word for coming from a place is 'de'."
+  },
+  {
+    "id": "356",
+    "word": "her",
+    "definition": "Used to refer to a woman or girl already mentioned.",
+    "example": "I saw her at the park yesterday afternoon.",
+    "level": "Basic",
+    "translations": {
+      "es": "la",
+      "de": "sie",
+      "fr": "la",
+      "it": "la"
+    },
+    "_before": {
+      "definition": "Used to refer to a woman or girl already mentioned.",
+      "example": "I saw her at the park yesterday afternoon.",
+      "translations": {
+        "es": "a ella",
+        "de": "sie / ihr / ihre",
+        "fr": "la",
+        "it": "la"
+      }
+    },
+    "_note": "German was three alternatives separated by slashes and Spanish used a longer phrase. All four now give the single matching word."
+  },
+  {
+    "id": "364",
+    "word": "holiday",
+    "definition": "A period of time away from work or school, often spent travelling.",
+    "example": "We are going on holiday to Spain next summer.",
+    "level": "Basic",
+    "translations": {
+      "es": "vacaciones",
+      "de": "Urlaub",
+      "fr": "vacances",
+      "it": "vacanza"
+    },
+    "_before": {
+      "definition": "A special day when people do not work and often celebrate.",
+      "example": "We celebrated the holiday with a big family dinner.",
+      "translations": {
+        "es": "día festivo",
+        "de": "Feiertag",
+        "fr": "jour férié",
+        "it": "festa"
+      }
+    },
+    "_note": "All four languages had been changed to mean a public holiday because the old example was about a family dinner. The first meaning of 'holiday' is a break away from work. Example rewritten and all four translations restored."
+  },
+  {
+    "id": "365",
+    "word": "home",
+    "definition": "The place where you live.",
+    "example": "I am going home after work today.",
+    "level": "Basic",
+    "translations": {
+      "es": "casa",
+      "de": "Zuhause",
+      "fr": "maison",
+      "it": "casa"
+    },
+    "_before": {
+      "definition": "The place where a person lives.",
+      "example": "I am going home after work today.",
+      "translations": {
+        "es": "hogar",
+        "de": "heim",
+        "fr": "maison",
+        "it": "casa"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. German was written in lower case as an old-fashioned word."
+  },
+  {
+    "id": "404",
+    "word": "join",
+    "definition": "To become a member of a group, club, or organisation.",
+    "example": "She wants to join the football club at school.",
+    "level": "Basic",
+    "translations": {
+      "es": "unirse a",
+      "de": "beitreten",
+      "fr": "rejoindre",
+      "it": "unirsi a"
+    },
+    "_before": {
+      "definition": "To fasten or connect two or more things together.",
+      "example": "Please join the two pieces of wood with glue.",
+      "translations": {
+        "es": "unir",
+        "de": "verbinden",
+        "fr": "assembler",
+        "it": "unire"
+      }
+    },
+    "_note": "Had been pushed onto the meaning 'glue two pieces of wood together'. The first meaning of 'join' is joining a group, which is what three of the four original translations showed. Rebuilt around that."
+  },
+  {
+    "id": "409",
+    "word": "just",
+    "definition": "A very short time ago.",
+    "example": "I just finished my homework a moment ago.",
+    "level": "Basic",
+    "translations": {
+      "es": "recién",
+      "de": "gerade",
+      "fr": "juste",
+      "it": "appena"
+    },
+    "_before": {
+      "definition": "A very short time ago.",
+      "example": "I just finished my homework a moment ago.",
+      "translations": {
+        "es": "recién",
+        "de": "gerade",
+        "fr": "juste",
+        "it": "Appena"
+      }
+    },
+    "_note": "Italian capital letter removed."
+  },
+  {
+    "id": "419",
+    "word": "last",
+    "definition": "Coming after all the others; final or most recent.",
+    "example": "This is the last piece of cake.",
+    "level": "Basic",
+    "translations": {
+      "es": "último",
+      "de": "letzte",
+      "fr": "dernier",
+      "it": "ultimo"
+    },
+    "_before": {
+      "definition": "To continue for a period of time.",
+      "example": "The movie will last two hours.",
+      "translations": {
+        "es": "durar",
+        "de": "dauern",
+        "fr": "durer",
+        "it": "durare"
+      }
+    },
+    "_note": "Had been turned into 'to go on for a period of time' ('the film will last two hours'). The first meaning of 'last' is final or most recent, which is what the original German and French showed. Rebuilt around that."
+  },
+  {
+    "id": "425",
+    "word": "left",
+    "definition": "The side of the body that is opposite the right side.",
+    "example": "Turn left at the end of the road.",
+    "level": "Basic",
+    "translations": {
+      "es": "izquierda",
+      "de": "links",
+      "fr": "gauche",
+      "it": "sinistra"
+    },
+    "_before": {
+      "definition": "The side of the body that is toward the west when you face north.",
+      "example": "Turn left to head towards the church.",
+      "translations": {
+        "es": "izquierda",
+        "de": "links",
+        "fr": "gauche",
+        "it": "Sinistra"
+      }
+    },
+    "_note": "Italian capital letter removed, and the definition simplified so it pairs naturally with 'right'."
+  },
+  {
+    "id": "433",
+    "word": "light",
+    "definition": "The brightness that lets us see things.",
+    "example": "Please turn on the light, it is dark in here.",
+    "level": "Basic",
+    "translations": {
+      "es": "luz",
+      "de": "Licht",
+      "fr": "lumière",
+      "it": "luce"
+    },
+    "_before": {
+      "definition": "Not heavy; easy to lift or carry.",
+      "example": "She wore a light jacket because the weather was warm.",
+      "translations": {
+        "es": "ligero",
+        "de": "leicht",
+        "fr": "léger",
+        "it": "leggero"
+      }
+    },
+    "_note": "All four languages had been changed to mean 'not heavy'. Every original translation was the word for brightness, and that is the first meaning of 'light'. Fully restored."
+  },
+  {
+    "id": "459",
+    "word": "May",
+    "definition": "The fifth month of the year.",
+    "example": "My birthday is in May every year.",
+    "level": "Basic",
+    "translations": {
+      "es": "mayo",
+      "de": "Mai",
+      "fr": "mai",
+      "it": "maggio"
+    },
+    "_before": {
+      "definition": "The fifth month of the year.",
+      "example": "It may rain this afternoon, so take an umbrella.",
+      "translations": {
+        "es": "mayo",
+        "de": "Mai",
+        "fr": "mai",
+        "it": "Maggio"
+      }
+    },
+    "_note": "The definition and all four translations were the month, but the example was about the word 'may' meaning possibility. Example rewritten to match the month. Italian capital letter removed, as Italian months are written in lower case."
+  },
+  {
+    "id": "503",
+    "word": "need",
+    "definition": "To have to have something because it is necessary.",
+    "example": "I need water to drink and stay alive.",
+    "level": "Basic",
+    "translations": {
+      "es": "necesitar",
+      "de": "brauchen",
+      "fr": "avoir besoin de",
+      "it": "avere bisogno di"
+    },
+    "_before": {
+      "definition": "To require something because it is necessary.",
+      "example": "I need water to drink and stay alive.",
+      "translations": {
+        "es": "necesitar",
+        "de": "brauchen",
+        "fr": "avoir besoin de",
+        "it": "avere bisogno di"
+      }
+    },
+    "_note": "Same word appears three times in the list; all three now use the same wording."
+  },
+  {
+    "id": "508",
+    "word": "news",
+    "definition": "Reports of recent events shared on TV, radio, or online.",
+    "example": "The news reported a big storm coming our way.",
+    "level": "Basic",
+    "translations": {
+      "es": "noticias",
+      "de": "Nachrichten",
+      "fr": "informations",
+      "it": "notizie"
+    },
+    "_before": {
+      "definition": "Reports of recent events shared on TV, radio, or online.",
+      "example": "The news reported a big storm coming our way.",
+      "translations": {
+        "es": "noticias",
+        "de": "Nachrichten",
+        "fr": "informations",
+        "it": "notiziario"
+      }
+    },
+    "_note": "Italian 'notiziario' is the name of a news programme rather than the news itself. Changed to 'notizie'."
+  },
+  {
+    "id": "510",
+    "word": "next",
+    "definition": "Coming immediately after this one.",
+    "example": "The next train arrives in five minutes.",
+    "level": "Basic",
+    "translations": {
+      "es": "próximo",
+      "de": "nächste",
+      "fr": "prochain",
+      "it": "prossimo"
+    },
+    "_before": {
+      "definition": "Coming immediately after this one in time or order.",
+      "example": "The next train arrives in five minutes.",
+      "translations": {
+        "es": "próximo",
+        "de": "nächste",
+        "fr": "suivant",
+        "it": "Prossimo"
+      }
+    },
+    "_note": "Same word appears three times in the list; all three now match. Italian capital letter removed and French changed from 'suivant' to 'prochain'."
+  },
+  {
+    "id": "511",
+    "word": "next",
+    "definition": "Coming immediately after this one.",
+    "example": "The next train arrives in five minutes.",
+    "level": "Basic",
+    "translations": {
+      "es": "próximo",
+      "de": "nächste",
+      "fr": "prochain",
+      "it": "prossimo"
+    },
+    "_before": {
+      "definition": "Coming immediately after this one in time or order.",
+      "example": "The next train arrives in five minutes.",
+      "translations": {
+        "es": "próximo",
+        "de": "nächste",
+        "fr": "suivant",
+        "it": "Prossimo"
+      }
+    },
+    "_note": "Same word appears three times in the list; all three now match. Italian capital letter removed and French changed from 'suivant' to 'prochain'."
+  },
+  {
+    "id": "550",
+    "word": "out",
+    "definition": "Away from the inside of a place.",
+    "example": "She stepped out of the car quickly.",
+    "level": "Basic",
+    "translations": {
+      "es": "afuera",
+      "de": "aus",
+      "fr": "dehors",
+      "it": "fuori"
+    },
+    "_before": {
+      "definition": "Away from the inside of a place.",
+      "example": "She stepped out of the car quickly moving car.",
+      "translations": {
+        "es": "afuera",
+        "de": "aus",
+        "fr": "dehors",
+        "it": "fuori"
+      }
+    },
+    "_note": "The example was broken ('out of the car quickly moving car'). Rewritten as one clean sentence."
+  },
+  {
+    "id": "566",
+    "word": "past",
+    "definition": "The time before now.",
+    "example": "In the past, people travelled by horse.",
+    "level": "Basic",
+    "translations": {
+      "es": "pasado",
+      "de": "Vergangenheit",
+      "fr": "passé",
+      "it": "passato"
+    },
+    "_before": {
+      "definition": "The time before the present; already gone by.",
+      "example": "The past year was very exciting for me.",
+      "translations": {
+        "es": "pasado",
+        "de": "vergangen",
+        "fr": "passé",
+        "it": "passato"
+      }
+    },
+    "_note": "The definition described 'the past' as a thing but the translations had been switched to describing words, so they no longer matched. Set to the thing, which is the first meaning and which all four languages share."
+  },
+  {
+    "id": "592",
+    "word": "point",
+    "definition": "A single idea or opinion in a discussion.",
+    "example": "She made an important point during the meeting.",
+    "level": "Basic",
+    "translations": {
+      "es": "punto",
+      "de": "Punkt",
+      "fr": "point",
+      "it": "punto"
+    },
+    "_before": {
+      "definition": "The sharp or narrow end of something.",
+      "example": "The pen has a fine point for writing.",
+      "translations": {
+        "es": "punta",
+        "de": "Spitze",
+        "fr": "pointe",
+        "it": "punta"
+      }
+    },
+    "_note": "Had been pushed onto 'the sharp tip of a pen'. That is a rare use. The original translations were all the same simple word for a point or dot, so the entry now teaches the everyday meaning."
+  },
+  {
+    "id": "600",
+    "word": "post",
+    "definition": "The system for sending letters and parcels; the mail.",
+    "example": "I sent the letter by post yesterday.",
+    "level": "Basic",
+    "translations": {
+      "es": "correo",
+      "de": "Post",
+      "fr": "courrier",
+      "it": "posta"
+    },
+    "_before": {
+      "definition": "A strong upright pole fixed in the ground.",
+      "example": "We can attach the sign to this post.",
+      "translations": {
+        "es": "poste",
+        "de": "Pfosten",
+        "fr": "poteau",
+        "it": "palo"
+      }
+    },
+    "_note": "Had been pushed onto 'a wooden pole in the ground'. Every original translation was the word for mail, which is the first meaning of 'post'. Fully restored."
+  },
+  {
+    "id": "602",
+    "word": "pound",
+    "definition": "The unit of money used in the United Kingdom.",
+    "example": "The book costs ten pounds in the shop.",
+    "level": "Basic",
+    "translations": {
+      "es": "libra",
+      "de": "Pfund",
+      "fr": "livre",
+      "it": "sterlina"
+    },
+    "_before": {
+      "definition": "To hit something hard and repeatedly.",
+      "example": "He liked to pound the dough on the counter.",
+      "translations": {
+        "es": "golpear",
+        "de": "schlagen",
+        "fr": "marteler",
+        "it": "battere"
+      }
+    },
+    "_note": "Had been turned into the action 'to hit something hard'. Every original translation was the unit of pound, and money is the first thing a learner meets. Rebuilt around British money."
+  },
+  {
+    "id": "603",
+    "word": "practice",
+    "definition": "Regular activity done in order to improve a skill.",
+    "example": "With enough practice, you will speak English well.",
+    "level": "Basic",
+    "translations": {
+      "es": "práctica",
+      "de": "Übung",
+      "fr": "pratique",
+      "it": "pratica"
+    },
+    "_before": {
+      "definition": "To do an activity regularly to improve a skill.",
+      "example": "She needs to practice speaking English every day.",
+      "translations": {
+        "es": "practicar",
+        "de": "üben",
+        "fr": "pratiquer",
+        "it": "praticare"
+      }
+    },
+    "_note": "In British English 'practice' is the thing and 'practise' is the action, and the list has both as separate entries. Both had been made into the action, so they were identical. This one is now the thing."
+  },
+  {
+    "id": "642",
+    "word": "ride",
+    "definition": "To sit on and control a bike, horse, or animal as it moves.",
+    "example": "We can ride our bikes to the park.",
+    "level": "Basic",
+    "translations": {
+      "es": "montar",
+      "de": "fahren",
+      "fr": "monter",
+      "it": "andare in bici"
+    },
+    "_before": {
+      "definition": "To sit on and control a bike, horse, or vehicle as it moves.",
+      "example": "We can ride our bikes to the park.",
+      "translations": {
+        "es": "montar",
+        "de": "fahren",
+        "fr": "monter",
+        "it": "Andare in bici"
+      }
+    },
+    "_note": "Italian capital letter removed."
+  },
+  {
+    "id": "643",
+    "word": "right",
+    "definition": "The side of the body that is opposite the left side.",
+    "example": "Turn right at the traffic lights.",
+    "level": "Basic",
+    "translations": {
+      "es": "derecha",
+      "de": "rechts",
+      "fr": "droite",
+      "it": "destra"
+    },
+    "_before": {
+      "definition": "Fair and correct according to what is good.",
+      "example": "It is not right to steal candy from a baby.",
+      "translations": {
+        "es": "correcto",
+        "de": "richtig",
+        "fr": "correct",
+        "it": "giusto"
+      }
+    },
+    "_note": "Had been changed to mean 'morally good'. The list already teaches 'left' as a direction, and the original German and Italian were both the direction, so this now completes the pair. The 'correct' meaning is already covered by the word 'correct'."
+  },
+  {
+    "id": "678",
+    "word": "shop",
+    "definition": "A place where goods are sold.",
+    "example": "I need to go to the shop to buy some milk.",
+    "level": "Basic",
+    "translations": {
+      "es": "tienda",
+      "de": "Geschäft",
+      "fr": "magasin",
+      "it": "negozio"
+    },
+    "_before": {
+      "definition": "A place where goods are sold.",
+      "example": "I need to go to the shop to buy some milk.",
+      "translations": {
+        "es": "tienda",
+        "de": "Geschäft",
+        "fr": "boutique",
+        "it": "negozio"
+      }
+    },
+    "_note": "French 'boutique' means a small fashion shop. The everyday word for going to the shop is 'magasin'."
+  },
+  {
+    "id": "722",
+    "word": "stand",
+    "definition": "To be on your feet in an upright position.",
+    "example": "The children had to stand at the back of the hall.",
+    "level": "Basic",
+    "translations": {
+      "es": "estar de pie",
+      "de": "stehen",
+      "fr": "être debout",
+      "it": "stare in piedi"
+    },
+    "_before": {
+      "definition": "to be on your feet in an upright position",
+      "example": "Please stand when the queen enters the room.",
+      "translations": {
+        "es": "pararse",
+        "de": "stehen",
+        "fr": "être debout",
+        "it": "stare in piedi"
+      }
+    },
+    "_note": "Spanish 'pararse' means 'to get up' and is mainly Latin American, while the other three meant 'to be standing'. Changed to 'estar de pie' so all four match this entry, which is about being on your feet rather than rising."
+  },
+  {
+    "id": "724",
+    "word": "start",
+    "definition": "To begin doing something.",
+    "example": "Let's start our English lesson now and learn new words.",
+    "level": "Basic",
+    "translations": {
+      "es": "comenzar",
+      "de": "anfangen",
+      "fr": "commencer",
+      "it": "iniziare"
+    },
+    "_before": {
+      "definition": "to begin doing something",
+      "example": "Let's start our English lesson now and learn new words.",
+      "translations": {
+        "es": "comenzar",
+        "de": "starten",
+        "fr": "commencer",
+        "it": "iniziare"
+      }
+    },
+    "_note": "German 'starten' is used for engines and races. For starting a lesson the natural word is 'anfangen'."
+  },
+  {
+    "id": "743",
+    "word": "sure",
+    "definition": "Feeling certain that something is true.",
+    "example": "I am sure about the answer to the question.",
+    "level": "Basic",
+    "translations": {
+      "es": "seguro",
+      "de": "sicher",
+      "fr": "sûr",
+      "it": "sicuro"
+    },
+    "_before": {
+      "definition": "feeling certain that something is true",
+      "example": "I am sure about the answer to the question.",
+      "translations": {
+        "es": "seguro",
+        "de": "sicher",
+        "fr": "sûr",
+        "it": "Sicuro"
+      }
+    },
+    "_note": "Italian capital letter removed."
+  },
+  {
+    "id": "764",
+    "word": "text",
+    "definition": "A piece of writing; written words.",
+    "example": "The teacher asked us to read the text on page ten.",
+    "level": "Basic",
+    "translations": {
+      "es": "texto",
+      "de": "Text",
+      "fr": "texte",
+      "it": "testo"
+    },
+    "_before": {
+      "definition": "written words, often sent as a message",
+      "example": "She sent a text message to her friend.",
+      "translations": {
+        "es": "texto",
+        "de": "Text",
+        "fr": "texte",
+        "it": "testo"
+      }
+    },
+    "_note": "All four translations mean 'a piece of writing', but the example was about a phone message. Example rewritten so it matches."
+  },
+  {
+    "id": "826",
+    "word": "up",
+    "definition": "Toward a higher place or position.",
+    "example": "The balloon floated up into the blue sky.",
+    "level": "Basic",
+    "translations": {
+      "es": "arriba",
+      "de": "hoch",
+      "fr": "en haut",
+      "it": "in alto"
+    },
+    "_before": {
+      "definition": "toward a higher place or position",
+      "example": "Please pick up the pen. Time is up.",
+      "translations": {
+        "es": "arriba",
+        "de": "hoch",
+        "fr": "en haut",
+        "it": "in alto"
+      }
+    },
+    "_note": "The example was two unrelated sentences and the second one ('Time is up') used a completely different meaning. Replaced with one clear sentence."
+  },
+  {
+    "id": "838",
+    "word": "visitor",
+    "definition": "A person who comes to see a place or another person.",
+    "example": "The visitor enjoyed the beautiful exhibits at the museum.",
+    "level": "Basic",
+    "translations": {
+      "es": "visitante",
+      "de": "Besucher",
+      "fr": "visiteur",
+      "it": "visitatore"
+    },
+    "_before": {
+      "definition": "a person who comes to see a place or another person",
+      "example": "The visitor enjoyed the beautiful museum exhibits at the museum.",
+      "translations": {
+        "es": "visitante",
+        "de": "Besucher",
+        "fr": "visiteur",
+        "it": "visitatore"
+      }
+    },
+    "_note": "The example said 'museum' twice. Cleaned up."
+  },
+  {
+    "id": "849",
+    "word": "way",
+    "definition": "A method of doing something.",
+    "example": "This is a good way to learn new vocabulary.",
+    "level": "Basic",
+    "translations": {
+      "es": "manera",
+      "de": "Art",
+      "fr": "façon",
+      "it": "modo"
+    },
+    "_before": {
+      "definition": "a method of doing something",
+      "example": "This is a good way to learn new vocabulary.",
+      "translations": {
+        "es": "manera",
+        "de": "Weg",
+        "fr": "façon",
+        "it": "modo"
+      }
+    },
+    "_note": "German 'Weg' means a path or road, not a method, so it did not match the other three. Changed to 'Art'."
+  },
+  {
+    "id": "867",
+    "word": "will",
+    "definition": "Used to talk about something that happens in the future.",
+    "example": "She will visit her grandma next week.",
+    "level": "Basic",
+    "translations": {
+      "es": "ir a",
+      "de": "werden",
+      "fr": "aller",
+      "it": "futuro (-rà)"
+    },
+    "_before": {
+      "definition": "used to talk about something that happens in the future",
+      "example": "She will visit her grandma next week.",
+      "translations": {
+        "es": "ir a",
+        "de": "werden",
+        "fr": "(je) vais",
+        "it": "Volere"
+      }
+    },
+    "_note": "Italian said 'volere', which means 'to want' and is simply wrong here. Italian has no separate word for 'will', so the entry now shows that it is made with a future ending. French brackets removed."
+  },
+  {
+    "id": "880",
+    "word": "would",
+    "definition": "Used to say politely what you want, or to talk about something imagined.",
+    "example": "I would like a cup of tea, please.",
+    "level": "Basic",
+    "translations": {
+      "es": "-ría (condicional)",
+      "de": "würde",
+      "fr": "-rais (conditionnel)",
+      "it": "-rei (condizionale)"
+    },
+    "_before": {
+      "definition": "used to talk about something that happened regularly in the past",
+      "example": "I would often visit the park as a child.",
+      "translations": {
+        "es": "solía",
+        "de": "würde",
+        "fr": "avoir l'habitude de",
+        "it": "solevo"
+      }
+    },
+    "_note": "Had been built around a rare use ('as a child I would visit the park'). The first thing a learner meets is 'I would like'. German was the only translation that matched that, and now all four do."
+  },
+  {
+    "id": "922",
+    "word": "although",
+    "definition": "Used to introduce a fact that makes the main idea surprising.",
+    "example": "Although it was raining, we still went for a walk.",
+    "level": "Basic",
+    "translations": {
+      "es": "aunque",
+      "de": "obwohl",
+      "fr": "bien que",
+      "it": "sebbene"
+    },
+    "_before": {
+      "definition": "used to introduce a fact that makes the main idea surprising",
+      "example": "Although it was raining, we still went for a walk.",
+      "translations": {
+        "es": "aunque",
+        "de": "obwohl",
+        "fr": "bien que",
+        "it": "Sebbene"
+      }
+    },
+    "_note": "Italian capital letter removed."
+  },
+  {
+    "id": "933",
+    "word": "appear",
+    "definition": "To come into sight; to become possible to see.",
+    "example": "A rainbow appeared in the sky after the rain.",
+    "level": "Basic",
+    "translations": {
+      "es": "aparecer",
+      "de": "erscheinen",
+      "fr": "apparaître",
+      "it": "apparire"
+    },
+    "_before": {
+      "definition": "to seem to be a certain way",
+      "example": "She appears happy today.",
+      "translations": {
+        "es": "parecer",
+        "de": "scheinen",
+        "fr": "paraître",
+        "it": "sembrare"
+      }
+    },
+    "_note": "Had been changed to the weaker meaning 'to seem'. All three original translations were 'to come into view', which is the first meaning of 'appear'. Restored, with a matching example."
+  },
+  {
+    "id": "935",
+    "word": "apply",
+    "definition": "To make a formal request, for example for a job.",
+    "example": "She will apply for a new job next month.",
+    "level": "Basic",
+    "translations": {
+      "es": "solicitar",
+      "de": "sich bewerben",
+      "fr": "postuler",
+      "it": "fare domanda"
+    },
+    "_before": {
+      "definition": "to make a formal request, such as for a job",
+      "example": "She will apply for a new job next month.",
+      "translations": {
+        "es": "postular",
+        "de": "sich bewerben",
+        "fr": "postuler",
+        "it": "fare domanda a"
+      }
+    },
+    "_note": "Spanish 'postular' is mainly Latin American; 'solicitar' is understood everywhere. Italian shortened to the natural phrase."
+  },
+  {
+    "id": "954",
+    "word": "average",
+    "definition": "The result of adding numbers together and dividing by how many there are.",
+    "example": "The average of four and six is five.",
+    "level": "Basic",
+    "translations": {
+      "es": "promedio",
+      "de": "Durchschnitt",
+      "fr": "moyenne",
+      "it": "media"
+    },
+    "_before": {
+      "definition": "of the usual or typical kind; not special",
+      "example": "The average student studies every day.",
+      "translations": {
+        "es": "medio",
+        "de": "durchschnittlich",
+        "fr": "moyen",
+        "it": "medio"
+      }
+    },
+    "_note": "All four translations had been changed from the thing to a describing word, based on an awkward example ('the average student'). Every original translation was the thing, which is the first meaning. Fully restored."
+  },
+  {
+    "id": "961",
+    "word": "bar",
+    "definition": "A place where people go to buy and drink drinks.",
+    "example": "We met our friends at the bar for a drink.",
+    "level": "Basic",
+    "translations": {
+      "es": "bar",
+      "de": "Bar",
+      "fr": "bar",
+      "it": "bar"
+    },
+    "_before": {
+      "definition": "a long straight piece of metal or wood",
+      "example": "He lifted the heavy metal bar with difficulty.",
+      "translations": {
+        "es": "barra",
+        "de": "Stange",
+        "fr": "barre",
+        "it": "sbarra"
+      }
+    },
+    "_note": "Had been changed to 'a long piece of metal'. Three of the four original translations were the drinking place, which is what anyone thinks of first. Restored."
+  },
+  {
+    "id": "966",
+    "word": "bear",
+    "definition": "A large, strong wild animal with thick fur.",
+    "example": "A large brown bear walked slowly through the forest.",
+    "level": "Basic",
+    "translations": {
+      "es": "oso",
+      "de": "Bär",
+      "fr": "ours",
+      "it": "orso"
+    },
+    "_before": {
+      "definition": "to carry or support something heavy",
+      "example": "Please help me bear this heavy box to the next room.",
+      "translations": {
+        "es": "llevar",
+        "de": "tragen",
+        "fr": "porter",
+        "it": "portare / sostenere"
+      }
+    },
+    "_note": "Had been changed to the rare verb 'to bear a heavy load'. The first meaning of 'bear' is the animal, which is what the original French showed. Rebuilt around the animal."
+  },
+  {
+    "id": "967",
+    "word": "beat",
+    "definition": "To hit something again and again.",
+    "example": "The drummer will beat the drum loudly.",
+    "level": "Basic",
+    "translations": {
+      "es": "golpear",
+      "de": "schlagen",
+      "fr": "battre",
+      "it": "battere"
+    },
+    "_before": {
+      "definition": "to hit something many times",
+      "example": "The drummer will beat the drum loudly.",
+      "translations": {
+        "es": "golpear",
+        "de": "schlagen",
+        "fr": "battre",
+        "it": "colpire"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "993",
+    "word": "bottom",
+    "definition": "The lowest part of something.",
+    "example": "The ship sank to the bottom of the ocean.",
+    "level": "Basic",
+    "translations": {
+      "es": "fondo",
+      "de": "Boden",
+      "fr": "bas",
+      "it": "fondo"
+    },
+    "_before": {
+      "definition": "the lowest part of something",
+      "example": "The ship sank to the bottom of the ocean.",
+      "translations": {
+        "es": "fondo",
+        "de": "Boden",
+        "fr": "bas",
+        "it": "il fondo"
+      }
+    },
+    "_note": "Italian had an unnecessary 'the' in front of it."
+  },
+  {
+    "id": "1007",
+    "word": "care",
+    "definition": "To feel that someone or something is important to you.",
+    "example": "She cares deeply about her students' progress.",
+    "level": "Basic",
+    "translations": {
+      "es": "preocuparse por",
+      "de": "sich kümmern um",
+      "fr": "se soucier de",
+      "it": "preoccuparsi di"
+    },
+    "_before": {
+      "definition": "to feel that something is important to you",
+      "example": "She cares deeply about her students's students' progress.",
+      "translations": {
+        "es": "interesarse",
+        "de": "sorgen",
+        "fr": "se sentir concerné",
+        "it": "preoccuparsi"
+      }
+    },
+    "_note": "The example was broken ('her students's students' progress'). All four translations were different shapes; they now match each other."
+  },
+  {
+    "id": "1054",
+    "word": "competition",
+    "definition": "An event where people try to win by being the best.",
+    "example": "The athletic competition was very exciting for everyone involved.",
+    "level": "Basic",
+    "translations": {
+      "es": "competencia",
+      "de": "Wettbewerb",
+      "fr": "compétition",
+      "it": "competizione"
+    },
+    "_before": {
+      "definition": "an event where people try to win by being the best",
+      "example": "The athletic competition was very exciting for everyone involved teams.",
+      "translations": {
+        "es": "competencia",
+        "de": "Wettbewerb",
+        "fr": "compétition",
+        "it": "competizione"
+      }
+    },
+    "_note": "The example ended with stray words ('for everyone involved teams'). Cleaned up."
+  },
+  {
+    "id": "1069",
+    "word": "copy",
+    "definition": "To make something the same as another thing.",
+    "example": "Please copy the text into your notebook.",
+    "level": "Basic",
+    "translations": {
+      "es": "copiar",
+      "de": "kopieren",
+      "fr": "copier",
+      "it": "copiare"
+    },
+    "_before": {
+      "definition": "to make something the same as another thing",
+      "example": "Please copy the text into your notebook.",
+      "translations": {
+        "es": "Copiar",
+        "de": "kopieren",
+        "fr": "copier",
+        "it": "copiare"
+      }
+    },
+    "_note": "Spanish capital letter removed."
+  },
+  {
+    "id": "1111",
+    "word": "direct",
+    "definition": "Going straight from one place to another without stopping.",
+    "example": "We took a direct flight to Rome with no stops.",
+    "level": "Basic",
+    "translations": {
+      "es": "directo",
+      "de": "direkt",
+      "fr": "direct",
+      "it": "diretto"
+    },
+    "_before": {
+      "definition": "to show someone the way to a place",
+      "example": "Can you direct me to the nearest bus stop?",
+      "translations": {
+        "es": "dirigir",
+        "de": "weisen",
+        "fr": "diriger",
+        "it": "indicare / dirigere"
+      }
+    },
+    "_note": "Had been changed to a rare use ('can you direct me to the bus stop'). The first meaning of 'direct' is 'straight, without stops', which is what the original German showed. All four now match."
+  },
+  {
+    "id": "1124",
+    "word": "double",
+    "definition": "Twice as much or twice as many.",
+    "example": "He ordered a double portion of ice cream.",
+    "level": "Basic",
+    "translations": {
+      "es": "doble",
+      "de": "doppelt",
+      "fr": "double",
+      "it": "doppio"
+    },
+    "_before": {
+      "definition": "to make something twice as much or as many",
+      "example": "Please double the recipe for dinner tonight.",
+      "translations": {
+        "es": "duplicar",
+        "de": "verdoppeln",
+        "fr": "doubler",
+        "it": "raddoppiare"
+      }
+    },
+    "_note": "Had been turned into the action 'to double a recipe'. The first meaning of 'double' is 'twice as much', which is what the original German and French showed. Restored."
+  },
+  {
+    "id": "1131",
+    "word": "driving",
+    "definition": "The activity of controlling and steering a vehicle.",
+    "example": "She enjoys driving her car to new places on holiday.",
+    "level": "Basic",
+    "translations": {
+      "es": "conducir",
+      "de": "Fahren",
+      "fr": "conduire",
+      "it": "guidare"
+    },
+    "_before": {
+      "definition": "the activity of controlling and steering a vehicle",
+      "example": "She enjoys driving her car to new places on holidays.",
+      "translations": {
+        "es": "conducir",
+        "de": "Fahren",
+        "fr": "conduite",
+        "it": "guidare"
+      }
+    },
+    "_note": "French was the noun for driving while the others were the activity, so they did not match. Now all four express the same idea."
+  },
+  {
+    "id": "1132",
+    "word": "drop",
+    "definition": "To let something fall by accident.",
+    "example": "Please be careful, do not drop the plate.",
+    "level": "Basic",
+    "translations": {
+      "es": "dejar caer",
+      "de": "fallen lassen",
+      "fr": "faire tomber",
+      "it": "far cadere"
+    },
+    "_before": {
+      "definition": "to let something fall by accident",
+      "example": "Please, do not drop the plate.",
+      "translations": {
+        "es": "dejar caer",
+        "de": "fallen lassen",
+        "fr": "faire tomber",
+        "it": "fare cadere"
+      }
+    },
+    "_note": "Italian spelling corrected ('fare cadere' becomes 'far cadere'). Example tidied."
+  },
+  {
+    "id": "1134",
+    "word": "dry",
+    "definition": "Without any water or liquid; not wet.",
+    "example": "The towel is dry now, so you can use it.",
+    "level": "Basic",
+    "translations": {
+      "es": "seco",
+      "de": "trocken",
+      "fr": "sec",
+      "it": "asciutto"
+    },
+    "_before": {
+      "definition": "to become free of water or to remove water from something",
+      "example": "I hung the clothes outside to dry in the sun.",
+      "translations": {
+        "es": "secar",
+        "de": "trocknen",
+        "fr": "sécher",
+        "it": "asciugare"
+      }
+    },
+    "_note": "Had been turned into the action 'to dry something'. The first meaning of 'dry' is the opposite of wet, which is what the original German and French showed. Restored."
+  },
+  {
+    "id": "1154",
+    "word": "enter",
+    "definition": "To come or go into a place.",
+    "example": "Please enter the room quietly.",
+    "level": "Basic",
+    "translations": {
+      "es": "entrar",
+      "de": "betreten",
+      "fr": "entrer",
+      "it": "entrare"
+    },
+    "_before": {
+      "definition": "to come or go into a place",
+      "example": "Please enter the room quietly.",
+      "translations": {
+        "es": "ingresar",
+        "de": "betreten",
+        "fr": "entrer",
+        "it": "entrare"
+      }
+    },
+    "_note": "Spanish 'ingresar' is formal and used for hospitals and bank deposits. The everyday word is 'entrar'."
+  },
+  {
+    "id": "1186",
+    "word": "fat",
+    "definition": "Having too much flesh on the body; not thin.",
+    "example": "The cat is very fat because it eats too much.",
+    "level": "Basic",
+    "translations": {
+      "es": "gordo",
+      "de": "dick",
+      "fr": "gros",
+      "it": "grasso"
+    },
+    "_before": {
+      "definition": "the soft, oily substance in food and in bodies",
+      "example": "Eating too much fat can be unhealthy for your body.",
+      "translations": {
+        "es": "grasa",
+        "de": "Fett",
+        "fr": "graisse",
+        "it": "grasso"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "1194",
+    "word": "figure",
+    "definition": "A shape, especially the shape of a person.",
+    "example": "She drew a simple figure of a person on the paper.",
+    "level": "Basic",
+    "translations": {
+      "es": "figura",
+      "de": "Figur",
+      "fr": "figure",
+      "it": "figura"
+    },
+    "_before": {
+      "definition": "to think about a problem until you find the answer",
+      "example": "Can you figure out the answer to the math problem?",
+      "translations": {
+        "es": "resolver",
+        "de": "herausfinden",
+        "fr": "résoudre",
+        "it": "capire / trovare"
+      }
+    },
+    "_note": "The entry had been built around 'figure out', which is a two-word phrase, not the word 'figure' itself. Rebuilt around the real word, matching the original Spanish."
+  },
+  {
+    "id": "1202",
+    "word": "fish",
+    "definition": "An animal that lives in water and breathes through gills.",
+    "example": "The fish swam quickly in the clear blue water.",
+    "level": "Basic",
+    "translations": {
+      "es": "pez",
+      "de": "Fisch",
+      "fr": "poisson",
+      "it": "pesce"
+    },
+    "_before": {
+      "definition": "an animal that lives in water and breathes through gills",
+      "example": "Many people enjoy eating baked fish for dinner.",
+      "translations": {
+        "es": "pescado",
+        "de": "Fisch",
+        "fr": "poisson",
+        "it": "pesce"
+      }
+    },
+    "_note": "Spanish has two words: 'pez' is the living animal and 'pescado' is fish as food. The definition described the animal but the example and Spanish word were about food. Everything now describes the animal."
+  },
+  {
+    "id": "1204",
+    "word": "fit",
+    "definition": "To be the right size or shape for someone.",
+    "example": "These shoes fit me perfectly; they are very comfortable.",
+    "level": "Basic",
+    "translations": {
+      "es": "quedar bien",
+      "de": "passen",
+      "fr": "aller à",
+      "it": "andare bene"
+    },
+    "_before": {
+      "definition": "to be the right size or shape for someone or something",
+      "example": "These shoes fit me perfectly; they are very comfortable.",
+      "translations": {
+        "es": "entrar",
+        "de": "passen",
+        "fr": "rentrer / aller à",
+        "it": "andare bene"
+      }
+    },
+    "_note": "Spanish 'entrar' means to go in. For clothes fitting, the natural phrase is 'quedar bien'. French shortened to one clear option."
+  },
+  {
+    "id": "1210",
+    "word": "focus",
+    "definition": "To give all your attention to one thing.",
+    "example": "Please focus on your homework and not the TV.",
+    "level": "Basic",
+    "translations": {
+      "es": "concentrarse",
+      "de": "sich konzentrieren",
+      "fr": "se concentrer",
+      "it": "concentrarsi"
+    },
+    "_before": {
+      "definition": "to give all your attention to one thing",
+      "example": "Please focus on your homework and not the TV.",
+      "translations": {
+        "es": "concentrarse",
+        "de": "fokussieren",
+        "fr": "se concentrer",
+        "it": "concentrarsi su"
+      }
+    },
+    "_note": "German 'fokussieren' is technical and mostly used for cameras. Changed to the everyday word. Italian trailing word removed so all four match."
+  },
+  {
+    "id": "1224",
+    "word": "further",
+    "definition": "More; additional.",
+    "example": "I need further information about the project.",
+    "level": "Basic",
+    "translations": {
+      "es": "adicional",
+      "de": "weiter",
+      "fr": "supplémentaire",
+      "it": "ulteriore"
+    },
+    "_before": {
+      "definition": "more; additional",
+      "example": "I need further information about the project details of the new project development.",
+      "translations": {
+        "es": "más",
+        "de": "weiter",
+        "fr": "supplémentaire",
+        "it": "ulteriori"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. The example repeated itself and has been cleaned up."
+  },
+  {
+    "id": "1227",
+    "word": "gap",
+    "definition": "An empty space between two things.",
+    "example": "There is a gap between the two fence posts.",
+    "level": "Basic",
+    "translations": {
+      "es": "hueco",
+      "de": "Lücke",
+      "fr": "écart",
+      "it": "spazio"
+    },
+    "_before": {
+      "definition": "an empty space between two things",
+      "example": "There is a gap between the two fence posts.",
+      "translations": {
+        "es": "brecha",
+        "de": "Lücke",
+        "fr": "écart",
+        "it": "spazio"
+      }
+    },
+    "_note": "Spanish 'brecha' means a breach or a wide divide. For a physical space between two objects the word is 'hueco'."
+  },
+  {
+    "id": "1268",
+    "word": "home",
+    "definition": "The place where you live.",
+    "example": "I am going home after work today.",
+    "level": "Basic",
+    "translations": {
+      "es": "casa",
+      "de": "Zuhause",
+      "fr": "maison",
+      "it": "casa"
+    },
+    "_before": {
+      "definition": "the place where you live",
+      "example": "I am going home after work today.",
+      "translations": {
+        "es": "casa",
+        "de": "heim",
+        "fr": "maison",
+        "it": "casa"
+      }
+    },
+    "_note": "German was written in lower case as an old-fashioned word. The normal German word for home is 'Zuhause'."
+  },
+  {
+    "id": "1341",
+    "word": "lift",
+    "definition": "A machine that carries people up and down between the floors of a building.",
+    "example": "We took the lift to the fifth floor.",
+    "level": "Basic",
+    "translations": {
+      "es": "ascensor",
+      "de": "Aufzug",
+      "fr": "ascenseur",
+      "it": "ascensore"
+    },
+    "_before": {
+      "definition": "to raise something to a higher position",
+      "example": "She helped me lift the heavy box onto the shelf.",
+      "translations": {
+        "es": "levantar",
+        "de": "heben",
+        "fr": "soulever",
+        "it": "sollevare"
+      }
+    },
+    "_note": "Was defined as 'to raise something', which made it an exact copy of the entry for 'raise'. In British English the first meaning of 'lift' is the machine you ride between floors, so the entry now teaches that and the duplication disappears."
+  },
+  {
+    "id": "1358",
+    "word": "mail",
+    "definition": "To send a letter or parcel by post.",
+    "example": "I will mail the letter tomorrow afternoon.",
+    "level": "Basic",
+    "translations": {
+      "es": "enviar",
+      "de": "verschicken",
+      "fr": "envoyer",
+      "it": "spedire"
+    },
+    "_before": {
+      "definition": "to send a letter or package by post",
+      "example": "I will mail the letter tomorrow afternoon.",
+      "translations": {
+        "es": "enviar",
+        "de": "verschicken",
+        "fr": "envoyer",
+        "it": "spedire posta o email"
+      }
+    },
+    "_note": "Italian was a whole phrase ('spedire posta o email') instead of a single word. Shortened to 'spedire'."
+  },
+  {
+    "id": "1359",
+    "word": "major",
+    "definition": "Very large or very important.",
+    "example": "There is a major problem with the plan.",
+    "level": "Basic",
+    "translations": {
+      "es": "importante",
+      "de": "bedeutend",
+      "fr": "majeur",
+      "it": "importante"
+    },
+    "_before": {
+      "definition": "to choose as your main subject of study at university",
+      "example": "She decided to major in literature at university.",
+      "translations": {
+        "es": "especializarse",
+        "de": "sich spezialisieren",
+        "fr": "se spécialiser",
+        "it": "specializzarsi"
+      }
+    },
+    "_note": "Had been turned into the American university expression 'to major in a subject'. All three original translations were the describing word meaning 'important', which is the first meaning of 'major'. Restored."
+  },
+  {
+    "id": "1369",
+    "word": "matter",
+    "definition": "To be important.",
+    "example": "It does not matter if you are a little late.",
+    "level": "Basic",
+    "translations": {
+      "es": "importar",
+      "de": "wichtig sein",
+      "fr": "importer",
+      "it": "importare"
+    },
+    "_before": {
+      "definition": "the physical substance that everything is made of",
+      "example": "The book is made of matter.",
+      "translations": {
+        "es": "materia",
+        "de": "Materie",
+        "fr": "matière",
+        "it": "materia"
+      }
+    },
+    "_note": "The entry taught 'matter' as the physical substance of the universe, with the strange example 'The book is made of matter'. In everyday English 'matter' means 'to be important', as in 'it doesn't matter'. Completely rebuilt."
+  },
+  {
+    "id": "1377",
+    "word": "might",
+    "definition": "Used to say that something is possible but not certain.",
+    "example": "I might go to the park later if the weather is nice.",
+    "level": "Basic",
+    "translations": {
+      "es": "podría",
+      "de": "könnte",
+      "fr": "pourrait",
+      "it": "potrebbe"
+    },
+    "_before": {
+      "definition": "used to say that something is possible but not certain",
+      "example": "I might go to the park later if the weather is nice.",
+      "translations": {
+        "es": "quizás",
+        "de": "könnte",
+        "fr": "pourrait",
+        "it": "potrei"
+      }
+    },
+    "_note": "Spanish gave an adverb ('maybe') and Italian gave the 'I' form while the others gave the 'he/she' form. All four now match."
+  },
+  {
+    "id": "1397",
+    "word": "need",
+    "definition": "To have to have something because it is necessary.",
+    "example": "I need water to drink and stay alive.",
+    "level": "Basic",
+    "translations": {
+      "es": "necesitar",
+      "de": "brauchen",
+      "fr": "avoir besoin de",
+      "it": "avere bisogno di"
+    },
+    "_before": {
+      "definition": "to must have something because it is important",
+      "example": "I need water to drink and stay alive.",
+      "translations": {
+        "es": "necesitar",
+        "de": "brauchen",
+        "fr": "avoir besoin de",
+        "it": "avere bisogno di"
+      }
+    },
+    "_note": "The definition itself was not correct English ('to must have something'). Rewritten."
+  },
+  {
+    "id": "1422",
+    "word": "ourselves",
+    "definition": "Us and no one else.",
+    "example": "We painted the house ourselves.",
+    "level": "Basic",
+    "translations": {
+      "es": "nosotros mismos",
+      "de": "uns selbst",
+      "fr": "nous-mêmes",
+      "it": "noi stessi"
+    },
+    "_before": {
+      "definition": "us and no one else",
+      "example": "We painted the house ourselves.",
+      "translations": {
+        "es": "nosotros mismos",
+        "de": "selbst",
+        "fr": "nous-mêmes",
+        "it": "noi stesse"
+      }
+    },
+    "_note": "Italian was the women-only form ('noi stesse'); changed to the normal form. German was incomplete on its own."
+  },
+  {
+    "id": "1464",
+    "word": "pop",
+    "definition": "A style of modern popular music.",
+    "example": "She listens to pop music every day.",
+    "level": "Basic",
+    "translations": {
+      "es": "pop",
+      "de": "Pop",
+      "fr": "pop",
+      "it": "pop"
+    },
+    "_before": {
+      "definition": "to burst suddenly with a sharp sound",
+      "example": "The balloon might pop soon.",
+      "translations": {
+        "es": "reventar",
+        "de": "platzen",
+        "fr": "éclater",
+        "it": "scoppiare"
+      }
+    },
+    "_note": "Had been turned into the sound a balloon makes. Three of the four original translations were the music style, which is what everyone thinks of first. Restored."
+  },
+  {
+    "id": "1501",
+    "word": "race",
+    "definition": "A competition to see who is the fastest.",
+    "example": "He won the race and received a gold medal.",
+    "level": "Basic",
+    "translations": {
+      "es": "carrera",
+      "de": "Rennen",
+      "fr": "course",
+      "it": "gara"
+    },
+    "_before": {
+      "definition": "to compete to be the fastest",
+      "example": "The runners will race to the finish line.",
+      "translations": {
+        "es": "correr",
+        "de": "rennen",
+        "fr": "faire la course",
+        "it": "gareggiare"
+      }
+    },
+    "_note": "All three original translations were the event itself, and the model had changed them into the action of racing. The first meaning of 'race' is the event. Restored."
+  },
+  {
+    "id": "1504",
+    "word": "rate",
+    "definition": "The speed at which something happens, or how often it happens.",
+    "example": "The population is growing at a fast rate.",
+    "level": "Basic",
+    "translations": {
+      "es": "tasa",
+      "de": "Rate",
+      "fr": "taux",
+      "it": "tasso"
+    },
+    "_before": {
+      "definition": "how fast or how often something happens",
+      "example": "The car traveled at a high rate of speed.",
+      "translations": {
+        "es": "tasa",
+        "de": "Rate",
+        "fr": "taux",
+        "it": "ritmo"
+      }
+    },
+    "_note": "Italian 'ritmo' means rhythm and did not match the other three. Changed to 'tasso'. The example used awkward English ('a high rate of speed') and has been rewritten."
+  },
+  {
+    "id": "1538",
+    "word": "ride",
+    "definition": "To sit on and control a bike, horse, or animal as it moves.",
+    "example": "We can ride our bikes to the park.",
+    "level": "Basic",
+    "translations": {
+      "es": "montar",
+      "de": "fahren",
+      "fr": "monter",
+      "it": "andare in bici"
+    },
+    "_before": {
+      "definition": "to sit on and control a bike, horse, or vehicle",
+      "example": "We can ride our bikes to the park.",
+      "translations": {
+        "es": "montar",
+        "de": "fahren",
+        "fr": "monter",
+        "it": "Andare in bici"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. Italian capital letter removed."
+  },
+  {
+    "id": "1540",
+    "word": "rise",
+    "definition": "To move upward, especially the sun coming up in the morning.",
+    "example": "The sun will rise in the east every morning.",
+    "level": "Basic",
+    "translations": {
+      "es": "salir",
+      "de": "aufgehen",
+      "fr": "se lever",
+      "it": "sorgere"
+    },
+    "_before": {
+      "definition": "to move upward",
+      "example": "The sun will rise in the east every morning.",
+      "translations": {
+        "es": "salir",
+        "de": "aufgehen",
+        "fr": "se lever",
+        "it": "sorgere"
+      }
+    },
+    "_note": "All four translations are the special words used for the sun rising, but the definition just said 'to move upward', so they looked wrong. The definition now matches them."
+  },
+  {
+    "id": "1551",
+    "word": "sadly",
+    "definition": "In a way that shows sadness.",
+    "example": "She sadly walked away.",
+    "level": "Basic",
+    "translations": {
+      "es": "tristemente",
+      "de": "traurig",
+      "fr": "tristement",
+      "it": "tristemente"
+    },
+    "_before": {
+      "definition": "in a way that shows sadness",
+      "example": "She sadly walked away.",
+      "translations": {
+        "es": "tristemente",
+        "de": "traurig",
+        "fr": "malheureusement",
+        "it": "tristemente"
+      }
+    },
+    "_note": "French 'malheureusement' means 'unfortunately', which is a different idea. Changed to 'tristement' to match the other three."
+  },
+  {
+    "id": "1558",
+    "word": "save",
+    "definition": "To rescue someone or something from danger.",
+    "example": "The firefighter saved the child from the burning house.",
+    "level": "Basic",
+    "translations": {
+      "es": "salvar",
+      "de": "retten",
+      "fr": "sauver",
+      "it": "salvare"
+    },
+    "_before": {
+      "definition": "to keep a computer file so you can use it later",
+      "example": "Save the document frequently.",
+      "translations": {
+        "es": "guardar",
+        "de": "speichern",
+        "fr": "enregistrer",
+        "it": "salvare"
+      }
+    },
+    "_note": "The entry only taught the narrow computer meaning ('save the document'). The first meaning of 'save' is to rescue, which is what the original French and Italian showed. Rebuilt around that."
+  },
+  {
+    "id": "1563",
+    "word": "score",
+    "definition": "The number of points won in a game or test.",
+    "example": "His score improved after weeks of practice.",
+    "level": "Basic",
+    "translations": {
+      "es": "puntuación",
+      "de": "Punktzahl",
+      "fr": "score",
+      "it": "punteggio"
+    },
+    "_before": {
+      "definition": "the number of points won in a game or test",
+      "example": "His score improved.",
+      "translations": {
+        "es": "puntaje",
+        "de": "Punktzahl",
+        "fr": "score",
+        "it": "punteggio"
+      }
+    },
+    "_note": "Spanish 'puntaje' is mainly Latin American; 'puntuación' is understood everywhere."
+  },
+  {
+    "id": "1581",
+    "word": "shall",
+    "definition": "Used to ask about or suggest a future action.",
+    "example": "Shall we begin?",
+    "level": "Basic",
+    "translations": {
+      "es": "deber",
+      "de": "sollen",
+      "fr": "devoir",
+      "it": "dovere"
+    },
+    "_before": {
+      "definition": "used to ask about or suggest a future action",
+      "example": "Shall we begin?",
+      "translations": {
+        "es": "deber",
+        "de": "soll",
+        "fr": "devoir",
+        "it": "dovere"
+      }
+    },
+    "_note": "German gave a conjugated form while the other three gave the base form. Now all four match."
+  },
+  {
+    "id": "1594",
+    "word": "single",
+    "definition": "Only one; not more than one.",
+    "example": "There was a single apple left in the bowl.",
+    "level": "Basic",
+    "translations": {
+      "es": "único",
+      "de": "einzeln",
+      "fr": "seul",
+      "it": "singolo"
+    },
+    "_before": {
+      "definition": "only one; not more than one",
+      "example": "He bought a single ticket.",
+      "translations": {
+        "es": "sencillo",
+        "de": "einzel",
+        "fr": "simple",
+        "it": "singolo"
+      }
+    },
+    "_note": "German 'einzel' is only half a word. Spanish 'sencillo' means 'simple'. The example was about a one-way ticket, which is a different meaning, so it has been replaced with one that shows 'only one'."
+  },
+  {
+    "id": "1597",
+    "word": "size",
+    "definition": "How big or small something is.",
+    "example": "The size is too large.",
+    "level": "Basic",
+    "translations": {
+      "es": "tamaño",
+      "de": "Größe",
+      "fr": "taille",
+      "it": "dimensione"
+    },
+    "_before": {
+      "definition": "how big or small something is",
+      "example": "The size is too large.",
+      "translations": {
+        "es": "tamaño",
+        "de": "Größe",
+        "fr": "taille",
+        "it": "taglia"
+      }
+    },
+    "_note": "Italian 'taglia' only means clothing size. The general word is 'dimensione'."
+  },
+  {
+    "id": "1621",
+    "word": "speaker",
+    "definition": "A device that sound comes out of.",
+    "example": "The music sounded great through the new speakers.",
+    "level": "Basic",
+    "translations": {
+      "es": "altavoz",
+      "de": "Lautsprecher",
+      "fr": "haut-parleur",
+      "it": "altoparlante"
+    },
+    "_before": {
+      "definition": "a person who talks to an audience",
+      "example": "The speaker talked loudly.",
+      "translations": {
+        "es": "orador",
+        "de": "Redner",
+        "fr": "orateur",
+        "it": "oratore"
+      }
+    },
+    "_note": "Had been changed to 'a person talking to an audience'. Three of the four original translations were the audio device, which is the everyday object a learner meets first. Restored."
+  },
+  {
+    "id": "1630",
+    "word": "stamp",
+    "definition": "A small piece of paper you stick on a letter to send it by post.",
+    "example": "I need a stamp for the letter.",
+    "level": "Basic",
+    "translations": {
+      "es": "sello",
+      "de": "Briefmarke",
+      "fr": "timbre",
+      "it": "francobollo"
+    },
+    "_before": {
+      "definition": "a small paper you stick on a letter to send it by post",
+      "example": "I need a stamp for the letter.",
+      "translations": {
+        "es": "estampilla",
+        "de": "Briefmarke",
+        "fr": "timbre",
+        "it": "francobollo"
+      }
+    },
+    "_note": "Spanish 'estampilla' is mainly Latin American; 'sello' is understood everywhere."
+  },
+  {
+    "id": "1632",
+    "word": "start",
+    "definition": "To begin doing something.",
+    "example": "Let's start our English lesson now and learn new words.",
+    "level": "Basic",
+    "translations": {
+      "es": "comenzar",
+      "de": "anfangen",
+      "fr": "commencer",
+      "it": "iniziare"
+    },
+    "_before": {
+      "definition": "to begin doing something",
+      "example": "Let's start our English lesson now and learn new words.",
+      "translations": {
+        "es": "comenzar",
+        "de": "starten",
+        "fr": "commencer",
+        "it": "iniziare"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. German 'starten' is used for engines and races, not for starting a lesson."
+  },
+  {
+    "id": "1656",
+    "word": "sure",
+    "definition": "Feeling certain that something is true.",
+    "example": "I am sure about the answer to the question.",
+    "level": "Basic",
+    "translations": {
+      "es": "seguro",
+      "de": "sicher",
+      "fr": "sûr",
+      "it": "sicuro"
+    },
+    "_before": {
+      "definition": "having no doubt about something",
+      "example": "I am sure about the answer to the question.",
+      "translations": {
+        "es": "seguro",
+        "de": "sicher",
+        "fr": "bien sûr",
+        "it": "Sicuro"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. French 'bien sûr' means 'of course', and the Italian capital letter was removed."
+  },
+  {
+    "id": "1673",
+    "word": "term",
+    "definition": "A word or phrase used for one particular thing.",
+    "example": "'Photosynthesis' is a scientific term.",
+    "level": "Basic",
+    "translations": {
+      "es": "término",
+      "de": "Begriff",
+      "fr": "terme",
+      "it": "termine"
+    },
+    "_before": {
+      "definition": "one of the periods the school year is divided into",
+      "example": "The school term ends in June.",
+      "translations": {
+        "es": "período",
+        "de": "Trimester",
+        "fr": "trimestre",
+        "it": "trimestre"
+      }
+    },
+    "_note": "Had been changed to mean a part of the school year. The original German and French were both 'a word or expression', which is the first meaning of 'term'. All four now match."
+  },
+  {
+    "id": "1674",
+    "word": "text",
+    "definition": "A piece of writing; written words.",
+    "example": "The teacher asked us to read the text on page ten.",
+    "level": "Basic",
+    "translations": {
+      "es": "texto",
+      "de": "Text",
+      "fr": "texte",
+      "it": "testo"
+    },
+    "_before": {
+      "definition": "written words, often sent from a phone",
+      "example": "She sent a text message to her friend.",
+      "translations": {
+        "es": "texto",
+        "de": "Text",
+        "fr": "texte",
+        "it": "messaggio"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. Italian 'messaggio' means a phone message, not a piece of writing."
+  },
+  {
+    "id": "1679",
+    "word": "thinking",
+    "definition": "The act of using your mind to form ideas.",
+    "example": "Clear thinking helps you solve difficult problems.",
+    "level": "Basic",
+    "translations": {
+      "es": "pensamiento",
+      "de": "Denken",
+      "fr": "pensée",
+      "it": "pensiero"
+    },
+    "_before": {
+      "definition": "the act of using your mind to form ideas",
+      "example": "I'm thinking about lunch.",
+      "translations": {
+        "es": "pensando",
+        "de": "Denken",
+        "fr": "pensée",
+        "it": "pensiero"
+      }
+    },
+    "_note": "Spanish had been changed to a half-verb form while the other three stayed as the thing itself. Spanish restored, and the example now shows the thing rather than the action."
+  },
+  {
+    "id": "1701",
+    "word": "transport",
+    "definition": "The system of moving people or goods from one place to another.",
+    "example": "Buses and trains are the main forms of public transport.",
+    "level": "Basic",
+    "translations": {
+      "es": "transporte",
+      "de": "Transport",
+      "fr": "transport",
+      "it": "trasporto"
+    },
+    "_before": {
+      "definition": "to carry people or goods from one place to another",
+      "example": "Buses and trains transport many people every day.",
+      "translations": {
+        "es": "transportar",
+        "de": "transportieren",
+        "fr": "transporter",
+        "it": "trasportare"
+      }
+    },
+    "_note": "All three original translations were the thing itself and had been changed into the action. In British English the first meaning of 'transport' is the system, as in 'public transport'. Restored."
+  },
+  {
+    "id": "1707",
+    "word": "underground",
+    "definition": "A railway that runs in tunnels below a city.",
+    "example": "We took the underground to the city centre.",
+    "level": "Basic",
+    "translations": {
+      "es": "metro",
+      "de": "U-Bahn",
+      "fr": "métro",
+      "it": "metropolitana"
+    },
+    "_before": {
+      "definition": "a railway that runs in tunnels below a city",
+      "example": "We took the underground train.",
+      "translations": {
+        "es": "subterráneo",
+        "de": "U-Bahn",
+        "fr": "souterrain",
+        "it": "metropolitana"
+      }
+    },
+    "_note": "The definition described the city railway, but Spanish and French gave words meaning 'below the ground', which is a different idea. Both changed to the word for the railway so all four match."
+  },
+  {
+    "id": "1733",
+    "word": "web",
+    "definition": "The system of linked pages on the internet.",
+    "example": "You can find the answer on the web.",
+    "level": "Basic",
+    "translations": {
+      "es": "web",
+      "de": "Web",
+      "fr": "web",
+      "it": "web"
+    },
+    "_before": {
+      "definition": "a net a spider spins to catch insects",
+      "example": "A big web is on the tree.",
+      "translations": {
+        "es": "telaraña",
+        "de": "Spinnennetz",
+        "fr": "toile d'araignée",
+        "it": "ragnatela"
+      }
+    },
+    "_note": "Had been changed to mean a spider's web, with the awkward example 'A big web is on the tree'. Three of the four original translations were the internet, which is what 'web' means to anyone today. Restored."
+  },
+  {
+    "id": "1749",
+    "word": "working",
+    "definition": "Doing a job or making an effort.",
+    "example": "I am working now.",
+    "level": "Basic",
+    "translations": {
+      "es": "trabajando",
+      "de": "arbeitend",
+      "fr": "travaillant",
+      "it": "lavorando"
+    },
+    "_before": {
+      "definition": "doing a job or making an effort",
+      "example": "I am working now.",
+      "translations": {
+        "es": "trabajando",
+        "de": "Arbeiten",
+        "fr": "travailler",
+        "it": "lavorando"
+      }
+    },
+    "_note": "The four languages were in four different shapes. They now all use the same '-ing' form."
+  },
+  {
+    "id": "1751",
+    "word": "worry",
+    "definition": "To feel anxious about something.",
+    "example": "I worry about my exams tomorrow.",
+    "level": "Basic",
+    "translations": {
+      "es": "preocuparse",
+      "de": "sich sorgen",
+      "fr": "s'inquiéter",
+      "it": "preoccuparsi"
+    },
+    "_before": {
+      "definition": "to feel anxious about something",
+      "example": "I worry about my exams tomorrow.",
+      "translations": {
+        "es": "preocuparse",
+        "de": "sorgen",
+        "fr": "s'inquiéter",
+        "it": "preoccuparsi"
+      }
+    },
+    "_note": "German was missing the reflexive part that the other three all have."
+  },
+  {
+    "id": "1755",
+    "word": "yet",
+    "definition": "Up to now; so far.",
+    "example": "She has not finished her homework yet.",
+    "level": "Basic",
+    "translations": {
+      "es": "todavía",
+      "de": "noch",
+      "fr": "encore",
+      "it": "ancora"
+    },
+    "_before": {
+      "definition": "up to now; until this time",
+      "example": "She has not finished her homework yet.",
+      "translations": {
+        "es": "todavía",
+        "de": "noch",
+        "fr": "encore",
+        "it": "Ancora"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. Italian capital letter removed."
+  },
+  {
+    "id": "1756",
+    "word": "yours",
+    "definition": "Belonging to you.",
+    "example": "This book is yours.",
+    "level": "Basic",
+    "translations": {
+      "es": "tuyo",
+      "de": "deins",
+      "fr": "le tien",
+      "it": "il tuo"
+    },
+    "_before": {
+      "definition": "belonging to you",
+      "example": "This book is yours.",
+      "translations": {
+        "es": "tuyo",
+        "de": "deins",
+        "fr": "le vôtre",
+        "it": "il tuo"
+      }
+    },
+    "_note": "French gave the polite plural form while the other three gave the friendly singular. Changed to 'le tien' so they match."
+  },
+  {
+    "id": "1773",
+    "word": "aged",
+    "definition": "Very old.",
+    "example": "The aged man walked slowly with a stick.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "anciano",
+      "de": "alt",
+      "fr": "âgé",
+      "it": "anziano"
+    },
+    "_before": {
+      "definition": "made stronger in flavour by being kept for a long time",
+      "example": "The aged cheese had a strong, delicious flavor.",
+      "translations": {
+        "es": "curado",
+        "de": "gealtert",
+        "fr": "affiné",
+        "it": "stagionato"
+      }
+    },
+    "_note": "Had been narrowed to the special meaning used for cheese and wine. All three original translations simply meant 'old', which is the first meaning of 'aged'. Restored."
+  },
+  {
+    "id": "1802",
+    "word": "assist",
+    "definition": "To help someone.",
+    "example": "Could you assist me with these heavy bags, please?",
+    "level": "Intermediate",
+    "translations": {
+      "es": "ayudar",
+      "de": "helfen",
+      "fr": "aider",
+      "it": "aiutare"
+    },
+    "_before": {
+      "definition": "to help someone",
+      "example": "Could you assist me with these heavy bags, please?",
+      "translations": {
+        "es": "asistir",
+        "de": "helfen",
+        "fr": "aider",
+        "it": "assistere"
+      }
+    },
+    "_note": "Spanish 'asistir' and Italian 'assistere' are false friends: they mean 'to attend' or 'to be present at', not 'to help'. Both corrected."
+  },
+  {
+    "id": "1813",
+    "word": "bake",
+    "definition": "To cook food such as bread or cakes in an oven.",
+    "example": "She will bake a delicious cake for the party.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "hornear",
+      "de": "backen",
+      "fr": "cuire au four",
+      "it": "cuocere al forno"
+    },
+    "_before": {
+      "definition": "to cook food such as bread or cakes in an oven",
+      "example": "She will bake a delicious cake for the party.",
+      "translations": {
+        "es": "hornear",
+        "de": "backen",
+        "fr": "cuire",
+        "it": "cuocere al forno"
+      }
+    },
+    "_note": "French 'cuire' on its own just means 'to cook'. Adding 'au four' makes it baking, matching the Italian."
+  },
+  {
+    "id": "1838",
+    "word": "breath",
+    "definition": "The air you take into and let out of your lungs.",
+    "example": "Take a deep breath and relax your body.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "respiro",
+      "de": "Atem",
+      "fr": "souffle",
+      "it": "respiro"
+    },
+    "_before": {
+      "definition": "the air you take into and let out of your lungs",
+      "example": "Take a deep breath and relax your body will relax.",
+      "translations": {
+        "es": "respiro",
+        "de": "Atem",
+        "fr": "souffle",
+        "it": "respiro"
+      }
+    },
+    "_note": "The example was broken ('relax your body will relax'). Cleaned up."
+  },
+  {
+    "id": "1860",
+    "word": "champion",
+    "definition": "A person or team that wins a competition.",
+    "example": "She is the world champion in swimming.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "campeón",
+      "de": "Champion",
+      "fr": "champion",
+      "it": "campione"
+    },
+    "_before": {
+      "definition": "a person who strongly supports a cause",
+      "example": "She is a champion for children's rights and helps many people.",
+      "translations": {
+        "es": "defensora",
+        "de": "Verfechterin",
+        "fr": "défenseure",
+        "it": "paladina"
+      }
+    },
+    "_note": "Had been changed to mean someone who supports a cause, and all four translations were also switched to women-only forms. Every original translation was 'the winner', which is the first meaning of 'champion'. Fully restored."
+  },
+  {
+    "id": "1871",
+    "word": "clause",
+    "definition": "A separate part of a contract or legal document.",
+    "example": "The contract has a clause about late payment.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "cláusula",
+      "de": "Klausel",
+      "fr": "clause",
+      "it": "clausola"
+    },
+    "_before": {
+      "definition": "a group of words with a subject and a verb",
+      "example": "She writes stories, and he reads them aloud.",
+      "translations": {
+        "es": "cláusula",
+        "de": "Klausel",
+        "fr": "clause",
+        "it": "clausola"
+      }
+    },
+    "_note": "All four translations mean a part of a contract, but the definition described a grammar term and the example did not even contain the word 'clause'. Definition and example now match the translations."
+  },
+  {
+    "id": "1883",
+    "word": "coloured",
+    "definition": "Having a colour, or more than one colour.",
+    "example": "She drew the picture with bright coloured pencils.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "de colores",
+      "de": "farbig",
+      "fr": "coloré",
+      "it": "colorato"
+    },
+    "_before": {
+      "definition": "to add colour to something using pens or paint",
+      "example": "She coloured the picture with bright crayons.",
+      "translations": {
+        "es": "colorear",
+        "de": "anmalen",
+        "fr": "colorier",
+        "it": "colorare"
+      }
+    },
+    "_note": "The headword is a describing word but the entry taught it as the action 'to colour something in'. Everything now describes objects that have colour."
+  },
+  {
+    "id": "1904",
+    "word": "content",
+    "definition": "Happy and satisfied with what you have.",
+    "example": "She felt content with her warm tea and a good book.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "contento",
+      "de": "zufrieden",
+      "fr": "satisfait",
+      "it": "soddisfatto"
+    },
+    "_before": {
+      "definition": "happy and satisfied with what you have",
+      "example": "She felt content with her warm tea and good book.",
+      "translations": {
+        "es": "contento",
+        "de": "zufrieden",
+        "fr": "satisfaite",
+        "it": "soddisfatta"
+      }
+    },
+    "_note": "French and Italian were in the women-only form. Changed to the standard form, matching Spanish and German."
+  },
+  {
+    "id": "1906",
+    "word": "contrast",
+    "definition": "A clear difference between two things.",
+    "example": "There is a big contrast between the two paintings.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "contraste",
+      "de": "Kontrast",
+      "fr": "contraste",
+      "it": "contrasto"
+    },
+    "_before": {
+      "definition": "to look very different when placed next to something",
+      "example": "The black cat contrasts with the white snow.",
+      "translations": {
+        "es": "contrastar",
+        "de": "kontrastieren",
+        "fr": "contraster",
+        "it": "contrastare"
+      }
+    },
+    "_note": "All three original translations were the thing itself and had been changed into the action. 'A contrast' is the first meaning. Restored."
+  },
+  {
+    "id": "1917",
+    "word": "covered",
+    "definition": "Having something placed over the top.",
+    "example": "The baby was covered with a warm blanket.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "cubierto",
+      "de": "bedeckt",
+      "fr": "couvert",
+      "it": "coperto"
+    },
+    "_before": {
+      "definition": "having something placed over the top",
+      "example": "She covered the baby with a warm blanket.",
+      "translations": {
+        "es": "cubrir",
+        "de": "bedeckt",
+        "fr": "couvert",
+        "it": "coperto"
+      }
+    },
+    "_note": "Spanish gave the plain action word while the other three gave the describing form that matches the headword. Spanish corrected and the example changed so it describes rather than acts."
+  },
+  {
+    "id": "1930",
+    "word": "deal",
+    "definition": "An agreement, especially in business.",
+    "example": "The two companies made a deal to work together.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "trato",
+      "de": "Geschäft",
+      "fr": "affaire",
+      "it": "affare"
+    },
+    "_before": {
+      "definition": "to give out cards to players in a game",
+      "example": "Please deal the cards fairly to everyone now.",
+      "translations": {
+        "es": "repartir",
+        "de": "austeilen",
+        "fr": "distribuer",
+        "it": "distribuire"
+      }
+    },
+    "_note": "Had been narrowed to handing out playing cards. The first meaning of 'deal' is an agreement, which is what the original French showed. Rebuilt around that."
+  },
+  {
+    "id": "1947",
+    "word": "direct",
+    "definition": "Going straight from one place to another without stopping.",
+    "example": "We took a direct flight to Rome with no stops.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "directo",
+      "de": "direkt",
+      "fr": "direct",
+      "it": "diretto"
+    },
+    "_before": {
+      "definition": "to show someone the way to a place",
+      "example": "Can you direct me to the nearest bus stop?",
+      "translations": {
+        "es": "indicar",
+        "de": "weisen",
+        "fr": "indiquer",
+        "it": "indicare"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "1958",
+    "word": "double",
+    "definition": "Twice as much or twice as many.",
+    "example": "He ordered a double portion of ice cream.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "doble",
+      "de": "doppelt",
+      "fr": "double",
+      "it": "doppio"
+    },
+    "_before": {
+      "definition": "to make something twice as much",
+      "example": "Please double the recipe for dinner tonight.",
+      "translations": {
+        "es": "duplicar",
+        "de": "verdoppeln",
+        "fr": "doubler",
+        "it": "raddoppiare"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "1961",
+    "word": "drop",
+    "definition": "To let something fall by accident.",
+    "example": "Please be careful, do not drop the plate.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "dejar caer",
+      "de": "fallen lassen",
+      "fr": "laisser tomber",
+      "it": "far cadere"
+    },
+    "_before": {
+      "definition": "to let something fall by accident",
+      "example": "Please, do not drop the plate. I gave you.",
+      "translations": {
+        "es": "dejar caer",
+        "de": "fallen lassen",
+        "fr": "laisser tomber",
+        "it": "far cadere"
+      }
+    },
+    "_note": "The example was broken ('do not drop the plate. I gave you.'). Cleaned up and matched to the other 'drop' entry."
+  },
+  {
+    "id": "1972",
+    "word": "editor",
+    "definition": "A person who checks and corrects writing before it is published.",
+    "example": "The editor corrected mistakes in the newspaper article.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "editor",
+      "de": "Redakteur",
+      "fr": "rédacteur",
+      "it": "redattore"
+    },
+    "_before": {
+      "definition": "a person who checks and corrects writing before it is published",
+      "example": "The editor corrected mistakes in the newspaper article.",
+      "translations": {
+        "es": "editor",
+        "de": "Redakteur",
+        "fr": "rédacteur",
+        "it": "editore"
+      }
+    },
+    "_note": "Italian 'editore' means the publisher, the company that sells the book. The person who checks the writing is a 'redattore'."
+  },
+  {
+    "id": "1989",
+    "word": "engaged",
+    "definition": "Having agreed to marry someone.",
+    "example": "They got engaged and will marry next year.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "comprometido",
+      "de": "verlobt",
+      "fr": "fiancé",
+      "it": "fidanzato"
+    },
+    "_before": {
+      "definition": "busy taking part in something",
+      "example": "They were engaged in a lively discussion about the book.",
+      "translations": {
+        "es": "enfrascado",
+        "de": "beschäftigt",
+        "fr": "engagé",
+        "it": "impegnato"
+      }
+    },
+    "_note": "Had been changed to the vaguer meaning 'busy doing something'. The first meaning of 'engaged' is about to be married, which is what the original Spanish and French showed. Restored."
+  },
+  {
+    "id": "1995",
+    "word": "environmental",
+    "definition": "Relating to the natural world around us.",
+    "example": "We need to protect the environmental health of our planet.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "ambiental",
+      "de": "Umwelt-",
+      "fr": "environnemental",
+      "it": "ambientale"
+    },
+    "_before": {
+      "definition": "relating to the natural world around us",
+      "example": "We need to protect the environmental health of our planet.",
+      "translations": {
+        "es": "ambiental",
+        "de": "ökologisch",
+        "fr": "environnemental",
+        "it": "ambientale"
+      }
+    },
+    "_note": "German 'ökologisch' means ecological, which is narrower. The direct match is 'Umwelt-'."
+  },
+  {
+    "id": "2030",
+    "word": "fighting",
+    "definition": "Taking part in a physical or angry struggle.",
+    "example": "The two brothers were fighting over a toy car.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "peleando",
+      "de": "kämpfend",
+      "fr": "se disputant",
+      "it": "litigando"
+    },
+    "_before": {
+      "definition": "taking part in a physical or angry struggle",
+      "example": "The two brothers were fighting over a toy car toy.",
+      "translations": {
+        "es": "peleando",
+        "de": "kämpfen",
+        "fr": "se disputer",
+        "it": "litigare"
+      }
+    },
+    "_note": "The example had a stray word at the end ('a toy car toy'). Cleaned up. The four languages were in different shapes; they now all use the same '-ing' form."
+  },
+  {
+    "id": "2041",
+    "word": "folk",
+    "definition": "Traditional, in the style of the ordinary people of a country.",
+    "example": "The folk music tells stories of ancient times.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "folclórico",
+      "de": "volkstümlich",
+      "fr": "folklorique",
+      "it": "folcloristico"
+    },
+    "_before": {
+      "definition": "the traditional music or culture of ordinary people",
+      "example": "The folk music tells stories of ancient times.",
+      "translations": {
+        "es": "folclórico",
+        "de": "volkstümlich",
+        "fr": "folk",
+        "it": "folk"
+      }
+    },
+    "_note": "Spanish and German were describing words while French and Italian were the thing itself. All four now describe, matching 'folk music' in the example."
+  },
+  {
+    "id": "2057",
+    "word": "further",
+    "definition": "More; additional.",
+    "example": "I need further information about the project.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "adicional",
+      "de": "weiter",
+      "fr": "supplémentaire",
+      "it": "ulteriore"
+    },
+    "_before": {
+      "definition": "more; additional",
+      "example": "I need further information about the project details of the new project development.",
+      "translations": {
+        "es": "más",
+        "de": "weiter",
+        "fr": "supplémentaire",
+        "it": "ulteriori"
+      }
+    },
+    "_note": "The example repeated itself ('about the project details of the new project development'). Cleaned up. Spanish just said 'more'; changed to 'additional' so all four match. Italian was plural; made singular."
+  },
+  {
+    "id": "2077",
+    "word": "guard",
+    "definition": "To watch over something to keep it safe.",
+    "example": "The dog will guard the house all night long.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "vigilar",
+      "de": "bewachen",
+      "fr": "garder",
+      "it": "sorvegliare"
+    },
+    "_before": {
+      "definition": "to watch over something to keep it safe",
+      "example": "The dog will guard the house all night long.",
+      "translations": {
+        "es": "vigilar",
+        "de": "bewachen",
+        "fr": "garder",
+        "it": "proteggere"
+      }
+    },
+    "_note": "Italian 'proteggere' means 'to protect', which is a different idea. Changed to 'sorvegliare', the word for watching over something."
+  },
+  {
+    "id": "2134",
+    "word": "keen",
+    "definition": "Very eager and interested.",
+    "example": "She is a keen student and loves to learn.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "entusiasta",
+      "de": "begeistert",
+      "fr": "enthousiaste",
+      "it": "entusiasta"
+    },
+    "_before": {
+      "definition": "very eager and interested",
+      "example": "She is a keen student and loves to learn.",
+      "translations": {
+        "es": "entusiasta",
+        "de": "begeistert",
+        "fr": "désireux",
+        "it": "entusiasta"
+      }
+    },
+    "_note": "French 'désireux' means 'wanting something'. Changed to 'enthousiaste' so all four say the same thing."
+  },
+  {
+    "id": "2145",
+    "word": "latest",
+    "definition": "The most recent.",
+    "example": "Have you seen the latest news about the election?",
+    "level": "Intermediate",
+    "translations": {
+      "es": "más reciente",
+      "de": "neueste",
+      "fr": "le plus récent",
+      "it": "più recente"
+    },
+    "_before": {
+      "definition": "the most recent",
+      "example": "Have you seen the latest news about the election?",
+      "translations": {
+        "es": "más reciente",
+        "de": "neueste",
+        "fr": "dernier",
+        "it": "ultimo"
+      }
+    },
+    "_note": "French and Italian said 'last' while Spanish and German said 'most recent'. All four now say 'most recent', matching the definition."
+  },
+  {
+    "id": "2163",
+    "word": "living",
+    "definition": "Alive.",
+    "example": "All plants and animals are living organisms.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "viviente",
+      "de": "lebend",
+      "fr": "vivant",
+      "it": "vivente"
+    },
+    "_before": {
+      "definition": "alive",
+      "example": "All plants and animals are living organisms.",
+      "translations": {
+        "es": "viviente",
+        "de": "lebende",
+        "fr": "vivant",
+        "it": "vivente"
+      }
+    },
+    "_note": "German 'lebende' carried a grammar ending the other three did not have. Changed to the plain form 'lebend'."
+  },
+  {
+    "id": "2205",
+    "word": "necessarily",
+    "definition": "Certainly or unavoidably; most often used in the negative, 'not necessarily'.",
+    "example": "He does not necessarily agree with the new rules.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "necesariamente",
+      "de": "unbedingt",
+      "fr": "forcément",
+      "it": "necessariamente"
+    },
+    "_before": {
+      "definition": "in every case; always as a result",
+      "example": "He does not necessarily agree with the new rules.",
+      "translations": {
+        "es": "necesariamente",
+        "de": "unbedingt",
+        "fr": "forcément",
+        "it": "necessariamente"
+      }
+    },
+    "_note": "The definition said 'in every case; always', but the example was a negative sentence, so the two did not agree. Definition rewritten to match how the word is really used."
+  },
+  {
+    "id": "2206",
+    "word": "need",
+    "definition": "To have to have something because it is necessary.",
+    "example": "I need water to drink and stay alive.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "necesitar",
+      "de": "brauchen",
+      "fr": "avoir besoin de",
+      "it": "avere bisogno di"
+    },
+    "_before": {
+      "definition": "to require something because it is important",
+      "example": "I need water to drink and stay alive.",
+      "translations": {
+        "es": "necesitar",
+        "de": "brauchen",
+        "fr": "avoir besoin de",
+        "it": "avere bisogno di"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "2211",
+    "word": "next",
+    "definition": "Coming immediately after this one.",
+    "example": "The next train arrives in five minutes.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "próximo",
+      "de": "nächste",
+      "fr": "prochain",
+      "it": "prossimo"
+    },
+    "_before": {
+      "definition": "coming immediately after this one",
+      "example": "The next train arrives in five minutes.",
+      "translations": {
+        "es": "próximo",
+        "de": "nächste",
+        "fr": "prochain",
+        "it": "Prossimo"
+      }
+    },
+    "_note": "Italian capital letter removed."
+  },
+  {
+    "id": "2224",
+    "word": "old-fashioned",
+    "definition": "Belonging to an earlier time; no longer in style.",
+    "example": "She likes to wear old-fashioned clothes from the 1950s.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "anticuado",
+      "de": "altmodisch",
+      "fr": "démodé",
+      "it": "vecchio stile"
+    },
+    "_before": {
+      "definition": "belonging to an earlier time; no longer in style",
+      "example": "She likes to wear old-fashioned clothes from the 1950s.",
+      "translations": {
+        "es": "anticuado",
+        "de": "altmodisch",
+        "fr": "désuet",
+        "it": "vecchio stile"
+      }
+    },
+    "_note": "French 'désuet' is a bookish word meaning 'obsolete'. The everyday word for clothes that are out of style is 'démodé'."
+  },
+  {
+    "id": "2257",
+    "word": "planning",
+    "definition": "The act of deciding and arranging what to do.",
+    "example": "Careful planning made the trip run smoothly.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "planificación",
+      "de": "Planung",
+      "fr": "planification",
+      "it": "pianificazione"
+    },
+    "_before": {
+      "definition": "the act of deciding and arranging what to do",
+      "example": "We are planning a trip to the beach next month.",
+      "translations": {
+        "es": "planificar",
+        "de": "planen",
+        "fr": "planifier",
+        "it": "pianificare"
+      }
+    },
+    "_note": "The headword is the thing, and the definition describes the thing, but all four translations had been turned into the action. Restored to the thing, and the example now shows it as a thing."
+  },
+  {
+    "id": "2261",
+    "word": "plot",
+    "definition": "A secret plan to do something bad.",
+    "example": "The detective uncovered the plot to steal the diamonds.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "complot",
+      "de": "Komplott",
+      "fr": "complot",
+      "it": "complotto"
+    },
+    "_before": {
+      "definition": "a secret plan to do something bad",
+      "example": "The detective uncovered the plot to steal the diamonds.",
+      "translations": {
+        "es": "complot",
+        "de": "Komplott",
+        "fr": "complot",
+        "it": "trama"
+      }
+    },
+    "_note": "Italian 'trama' means the storyline of a book or film, which is a different meaning. Changed to 'complotto' so all four match the definition."
+  },
+  {
+    "id": "2266",
+    "word": "point",
+    "definition": "A single idea or opinion in a discussion.",
+    "example": "She made an important point during the meeting.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "punto",
+      "de": "Punkt",
+      "fr": "point",
+      "it": "punto"
+    },
+    "_before": {
+      "definition": "the sharp, thin end of something",
+      "example": "The pen has a fine point for writing.",
+      "translations": {
+        "es": "punta",
+        "de": "Spitze",
+        "fr": "pointe",
+        "it": "punta"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. Had been pushed onto 'the sharp tip of a pen', which is a rare use."
+  },
+  {
+    "id": "2275",
+    "word": "possibly",
+    "definition": "Perhaps; it may be true.",
+    "example": "She might possibly arrive late for the meeting today.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "posiblemente",
+      "de": "möglicherweise",
+      "fr": "peut-être",
+      "it": "forse"
+    },
+    "_before": {
+      "definition": "perhaps; it may be true",
+      "example": "She might possibly arrive late for the meeting today.",
+      "translations": {
+        "es": "posiblemente",
+        "de": "möglicherweise",
+        "fr": "peut-être",
+        "it": "possibilmente"
+      }
+    },
+    "_note": "Italian 'possibilmente' is a false friend: it means 'if possible', not 'perhaps'. Changed to 'forse'."
+  },
+  {
+    "id": "2289",
+    "word": "pretend",
+    "definition": "To act as if something is true when it is not.",
+    "example": "The children pretend to be superheroes playing in the park.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "fingir",
+      "de": "vorgeben",
+      "fr": "faire semblant",
+      "it": "fare finta"
+    },
+    "_before": {
+      "definition": "to act as if something is true when it is not",
+      "example": "The children pretend to be superheroes playing in the park.",
+      "translations": {
+        "es": "fingir",
+        "de": "vorgeben",
+        "fr": "prétendre",
+        "it": "fare finta"
+      }
+    },
+    "_note": "French 'prétendre' is a false friend: it means 'to claim', not 'to pretend'. Changed to 'faire semblant'."
+  },
+  {
+    "id": "2315",
+    "word": "qualification",
+    "definition": "An official proof of training or skill.",
+    "example": "She earned a qualification in web development from the local college.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "cualificación",
+      "de": "Qualifikation",
+      "fr": "qualification",
+      "it": "qualifica"
+    },
+    "_before": {
+      "definition": "an official proof of training or skill",
+      "example": "She earned a qualification in web development from the local college.",
+      "translations": {
+        "es": "cualificación",
+        "de": "Qualifikation",
+        "fr": "qualification",
+        "it": "qualificazione"
+      }
+    },
+    "_note": "Italian 'qualificazione' is the word used for getting through to the next round in sport. The word for a certificate or skill is 'qualifica'."
+  },
+  {
+    "id": "2341",
+    "word": "release",
+    "definition": "To make a product available to the public.",
+    "example": "The company will release a new product next month.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "lanzar",
+      "de": "veröffentlichen",
+      "fr": "lancer",
+      "it": "lanciare"
+    },
+    "_before": {
+      "definition": "to make a product available to the public",
+      "example": "The company will release a new product next month.",
+      "translations": {
+        "es": "lanzar",
+        "de": "veröffentlichen",
+        "fr": "lancer",
+        "it": "rilasciare"
+      }
+    },
+    "_note": "Italian 'rilasciare' is mostly used for issuing documents. 'Lanciare' matches the Spanish and French and fits launching a product."
+  },
+  {
+    "id": "2347",
+    "word": "remote",
+    "definition": "Far away from other places; hard to reach.",
+    "example": "They live in a remote village in the mountains.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "remoto",
+      "de": "abgelegen",
+      "fr": "reculé",
+      "it": "remoto"
+    },
+    "_before": {
+      "definition": "far away; done from a distance",
+      "example": "She works remotely from her home in the countryside.",
+      "translations": {
+        "es": "remoto",
+        "de": "fern",
+        "fr": "à distance",
+        "it": "remoto"
+      }
+    },
+    "_note": "The example did not even use the headword; it used 'remotely'. Rewritten. French 'à distance' meant 'from a distance', which is a different idea; changed so all four mean 'far away'."
+  },
+  {
+    "id": "2365",
+    "word": "rise",
+    "definition": "To move upward, especially the sun coming up in the morning.",
+    "example": "The sun will rise in the east every morning.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "salir",
+      "de": "aufgehen",
+      "fr": "se lever",
+      "it": "sorgere"
+    },
+    "_before": {
+      "definition": "to move upward",
+      "example": "The sun will rise in the east every morning.",
+      "translations": {
+        "es": "salir",
+        "de": "aufgehen",
+        "fr": "se lever",
+        "it": "sorgere"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "2371",
+    "word": "rough",
+    "definition": "Having an uneven surface; not smooth.",
+    "example": "The cat has a rough tongue.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "áspero",
+      "de": "rau",
+      "fr": "rugueux",
+      "it": "ruvido"
+    },
+    "_before": {
+      "definition": "having an uneven surface; not smooth",
+      "example": "The cat has a rough tongue.",
+      "translations": {
+        "es": "aspero",
+        "de": "rauh",
+        "fr": "rugueux",
+        "it": "ruvido"
+      }
+    },
+    "_note": "Spanish was missing its accent. German 'rauh' is the old spelling; the modern spelling is 'rau'."
+  },
+  {
+    "id": "2405",
+    "word": "shoot",
+    "definition": "To fire a gun or other weapon.",
+    "example": "The soldier was told not to shoot without an order.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "disparar",
+      "de": "schießen",
+      "fr": "tirer",
+      "it": "sparare"
+    },
+    "_before": {
+      "definition": "to grow upward quickly",
+      "example": "The plant will shoot up quickly in the warm weather.",
+      "translations": {
+        "es": "crecerá",
+        "de": "schießen",
+        "fr": "pousser",
+        "it": "spuntare"
+      }
+    },
+    "_note": "Had been pushed onto the rare meaning of a plant growing upward, and the Spanish was left as 'it will grow', a conjugated form rather than a word a learner can use. The first meaning of 'shoot' is to fire a weapon, which is what the original French showed. Rebuilt around that."
+  },
+  {
+    "id": "2427",
+    "word": "spending",
+    "definition": "The use of money to buy things.",
+    "example": "Her spending on books has gone up this year.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "gasto",
+      "de": "Ausgaben",
+      "fr": "dépenses",
+      "it": "spesa"
+    },
+    "_before": {
+      "definition": "using money to buy things",
+      "example": "She enjoys spending time and money on books.",
+      "translations": {
+        "es": "gastar",
+        "de": "ausgeben",
+        "fr": "dépenser",
+        "it": "spendere"
+      }
+    },
+    "_note": "The headword and definition describe a thing, but all four translations had been turned into the action. Restored to the thing, and the example now shows it as a thing."
+  },
+  {
+    "id": "2440",
+    "word": "stick",
+    "definition": "A long thin piece of wood.",
+    "example": "The dog carried a stick in its mouth.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "palo",
+      "de": "Stock",
+      "fr": "bâton",
+      "it": "bastone"
+    },
+    "_before": {
+      "definition": "to attach one thing to another",
+      "example": "He tried to stick the pieces together with glue.",
+      "translations": {
+        "es": "pegar",
+        "de": "kleben",
+        "fr": "coller",
+        "it": "incollare"
+      }
+    },
+    "_note": "Every one of the four original translations was the piece of wood, and all four had been changed to the action of gluing things. A stick is the first thing a learner pictures. Fully restored."
+  },
+  {
+    "id": "2441",
+    "word": "stick",
+    "definition": "A long thin piece of wood.",
+    "example": "The dog carried a stick in its mouth.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "palo",
+      "de": "Stock",
+      "fr": "bâton",
+      "it": "bastone"
+    },
+    "_before": {
+      "definition": "to attach one thing to another",
+      "example": "He tried to stick the pieces together with glue.",
+      "translations": {
+        "es": "pegar",
+        "de": "kleben",
+        "fr": "coller",
+        "it": "incollare"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "2446",
+    "word": "string",
+    "definition": "Thin cord used for tying things.",
+    "example": "She tied the parcel with a piece of string.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "cuerda",
+      "de": "Schnur",
+      "fr": "ficelle",
+      "it": "spago"
+    },
+    "_before": {
+      "definition": "a row of letters or symbols in computer code",
+      "example": "The programmer wrote a string of text in the code.",
+      "translations": {
+        "es": "cadena",
+        "de": "Zeichenkette",
+        "fr": "chaîne",
+        "it": "stringa"
+      }
+    },
+    "_note": "The entry taught only the narrow computer meaning. The original French was 'ficelle', the everyday cord, which is the first meaning of 'string'. Rebuilt around that."
+  },
+  {
+    "id": "2464",
+    "word": "switch",
+    "definition": "To turn a device off.",
+    "example": "Please switch off the lights when you leave.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "apagar",
+      "de": "ausschalten",
+      "fr": "éteindre",
+      "it": "spegnere"
+    },
+    "_before": {
+      "definition": "to turn a device on or off",
+      "example": "Please switch off the lights when you leave.",
+      "translations": {
+        "es": "apagar",
+        "de": "schalten",
+        "fr": "éteindre",
+        "it": "spegnere"
+      }
+    },
+    "_note": "Three of the four translations meant 'to turn off' but German 'schalten' was neutral, so it did not match. Changed to 'ausschalten', and the definition now matches the example."
+  },
+  {
+    "id": "2473",
+    "word": "tend",
+    "definition": "To be likely to do something.",
+    "example": "She tends to eat healthy food every day.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "tender a",
+      "de": "neigen zu",
+      "fr": "avoir tendance à",
+      "it": "tendere a"
+    },
+    "_before": {
+      "definition": "to be likely to do something",
+      "example": "She tends to eat healthy food every day.",
+      "translations": {
+        "es": "tender a",
+        "de": "neigen",
+        "fr": "avoir tendance à",
+        "it": "tendere"
+      }
+    },
+    "_note": "German and Italian were missing the little linking word that the Spanish and French both have. Added so all four are complete."
+  },
+  {
+    "id": "2476",
+    "word": "theirs",
+    "definition": "Belonging to them.",
+    "example": "The red car is theirs, not ours.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "suyo",
+      "de": "ihres",
+      "fr": "la leur",
+      "it": "la loro"
+    },
+    "_before": {
+      "definition": "belonging to them",
+      "example": "The red car is theirs, not ours.",
+      "translations": {
+        "es": "suyo",
+        "de": "ihre",
+        "fr": "la leur",
+        "it": "la loro"
+      }
+    },
+    "_note": "German 'ihre' was the wrong form for this sentence. Changed to 'ihres', which is what you say for 'it is theirs'."
+  },
+  {
+    "id": "2498",
+    "word": "transport",
+    "definition": "The system of moving people or goods from one place to another.",
+    "example": "Buses and trains are the main forms of public transport.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "transporte",
+      "de": "Transport",
+      "fr": "transport",
+      "it": "trasporto"
+    },
+    "_before": {
+      "definition": "to carry people or goods from one place to another",
+      "example": "Buses and trains transport many people every day.",
+      "translations": {
+        "es": "transportar",
+        "de": "transportieren",
+        "fr": "transporter",
+        "it": "trasportare"
+      }
+    },
+    "_note": "All three original translations were the thing itself and had been changed into the action. In British English the first meaning of 'transport' is the system, as in 'public transport'. Restored."
+  },
+  {
+    "id": "2543",
+    "word": "western",
+    "definition": "In or from the west.",
+    "example": "Western Europe includes France and Spain.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "occidental",
+      "de": "westlich",
+      "fr": "occidental",
+      "it": "occidentale"
+    },
+    "_before": {
+      "definition": "in or from the west",
+      "example": "The cowboy movie is a classic Western film.",
+      "translations": {
+        "es": "del oeste",
+        "de": "Western",
+        "fr": "occidental",
+        "it": "occidentale"
+      }
+    },
+    "_note": "The definition said 'in or from the west' but the example was about cowboy films, and the German translation was the name of that film type. Example rewritten and Spanish and German changed so all four mean 'in or from the west'."
+  },
+  {
+    "id": "2549",
+    "word": "will",
+    "definition": "Used to talk about something that happens in the future.",
+    "example": "She will visit her grandma next week.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "ir a",
+      "de": "werden",
+      "fr": "aller",
+      "it": "futuro (-rà)"
+    },
+    "_before": {
+      "definition": "used to show a future action",
+      "example": "She will visit her grandma next week.",
+      "translations": {
+        "es": "va a",
+        "de": "werden",
+        "fr": "va",
+        "it": "lo farà"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. Spanish, French and Italian were all half-conjugated fragments."
+  },
+  {
+    "id": "2555",
+    "word": "worldwide",
+    "definition": "Happening in all parts of the world.",
+    "example": "The internet provides instant worldwide communication.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "mundial",
+      "de": "weltweit",
+      "fr": "mondial",
+      "it": "mondiale"
+    },
+    "_before": {
+      "definition": "happening in all parts of the world",
+      "example": "The internet provides instant worldwide communication.",
+      "translations": {
+        "es": "mundial",
+        "de": "weltweit",
+        "fr": "mondial",
+        "it": "in tutto il mondo"
+      }
+    },
+    "_note": "Italian was a three-word phrase while the others were single describing words. Changed to 'mondiale'."
+  },
+  {
+    "id": "2556",
+    "word": "worry",
+    "definition": "To feel anxious about something.",
+    "example": "I worry about my exams tomorrow.",
+    "level": "Intermediate",
+    "translations": {
+      "es": "preocuparse",
+      "de": "sich sorgen",
+      "fr": "s'inquiéter",
+      "it": "preoccuparsi"
+    },
+    "_before": {
+      "definition": "to feel troubled about something",
+      "example": "I worry about my exams tomorrow.",
+      "translations": {
+        "es": "preocuparse",
+        "de": "sorgen",
+        "fr": "s'inquiéter",
+        "it": "preoccuparsi"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. German was missing the small reflexive word the other three have."
+  },
+  {
+    "id": "2582",
+    "word": "affair",
+    "definition": "A secret romantic relationship.",
+    "example": "He had an affair with his colleague at work.",
+    "level": "Advanced",
+    "translations": {
+      "es": "amorío",
+      "de": "Affäre",
+      "fr": "liaison",
+      "it": "relazione"
+    },
+    "_before": {
+      "definition": "a secret romantic relationship",
+      "example": "He had an affair with his colleague at work.",
+      "translations": {
+        "es": "amorío",
+        "de": "Affäre",
+        "fr": "liaison",
+        "it": "tresca"
+      }
+    },
+    "_note": "Italian 'tresca' is an old-fashioned, disapproving word. The normal word today is 'relazione'."
+  },
+  {
+    "id": "2600",
+    "word": "approach",
+    "definition": "To come nearer to something.",
+    "example": "The car began to approach the traffic light slowly.",
+    "level": "Advanced",
+    "translations": {
+      "es": "acercarse",
+      "de": "sich nähern",
+      "fr": "approcher",
+      "it": "avvicinarsi"
+    },
+    "_before": {
+      "definition": "to come nearer to something",
+      "example": "The car began to approach the traffic light slowly.",
+      "translations": {
+        "es": "acercarse",
+        "de": "sich nähern",
+        "fr": "approcher",
+        "it": "approcciarsi"
+      }
+    },
+    "_note": "Italian 'approcciarsi' is clumsy and mostly business jargon. The everyday word is 'avvicinarsi', which also matches the Spanish."
+  },
+  {
+    "id": "2601",
+    "word": "appropriate",
+    "definition": "Suitable or right for a particular situation.",
+    "example": "Please wear appropriate clothes for the job interview.",
+    "level": "Advanced",
+    "translations": {
+      "es": "apropiado",
+      "de": "geeignet",
+      "fr": "approprié",
+      "it": "appropriato"
+    },
+    "_before": {
+      "definition": "to take something for your own use, especially without the right to",
+      "example": "He appropriated the company funds for his personal expenses.",
+      "translations": {
+        "es": "apropiarse",
+        "de": "sich aneignen",
+        "fr": "s'approprier",
+        "it": "appropriarsi"
+      }
+    },
+    "_note": "Had been pushed onto the rare meaning 'to take something that is not yours'. The original German and French were both the describing word meaning 'suitable', which is the first meaning of 'appropriate'. Fully rebuilt around that."
+  },
+  {
+    "id": "2609",
+    "word": "ashamed",
+    "definition": "Feeling bad because you did something wrong.",
+    "example": "He felt ashamed after he lied to his friend.",
+    "level": "Advanced",
+    "translations": {
+      "es": "avergonzado",
+      "de": "beschämt",
+      "fr": "honteux",
+      "it": "mortificato"
+    },
+    "_before": {
+      "definition": "feeling bad because you did something wrong",
+      "example": "He felt ashamed after he lied to his friend.",
+      "translations": {
+        "es": "avergonzado",
+        "de": "beschämt",
+        "fr": "honteux",
+        "it": "vergognato"
+      }
+    },
+    "_note": "Italian 'vergognato' is not really used on its own. 'Mortificato' is the natural single word for feeling ashamed."
+  },
+  {
+    "id": "2620",
+    "word": "bar",
+    "definition": "A place where people go to buy and drink drinks.",
+    "example": "We met our friends at the bar for a drink.",
+    "level": "Advanced",
+    "translations": {
+      "es": "bar",
+      "de": "Bar",
+      "fr": "bar",
+      "it": "bar"
+    },
+    "_before": {
+      "definition": "a long straight piece of metal",
+      "example": "He lifted the heavy metal bar with difficulty.",
+      "translations": {
+        "es": "barra",
+        "de": "Stange",
+        "fr": "barre",
+        "it": "sbarra"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "2624",
+    "word": "bear",
+    "definition": "A large, strong wild animal with thick fur.",
+    "example": "A large brown bear walked slowly through the forest.",
+    "level": "Advanced",
+    "translations": {
+      "es": "oso",
+      "de": "Bär",
+      "fr": "ours",
+      "it": "orso"
+    },
+    "_before": {
+      "definition": "to carry or hold up something heavy",
+      "example": "Please help me bear this heavy box to the next room.",
+      "translations": {
+        "es": "llevar",
+        "de": "tragen",
+        "fr": "porter",
+        "it": "portare"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree."
+  },
+  {
+    "id": "2625",
+    "word": "beat",
+    "definition": "To hit something again and again.",
+    "example": "The drummer will beat the drum loudly.",
+    "level": "Advanced",
+    "translations": {
+      "es": "golpear",
+      "de": "schlagen",
+      "fr": "battre",
+      "it": "battere"
+    },
+    "_before": {
+      "definition": "to hit something again and again",
+      "example": "The drummer will beat the drum loudly.",
+      "translations": {
+        "es": "golpear",
+        "de": "schlagen",
+        "fr": "battre",
+        "it": "colpire"
+      }
+    },
+    "_note": "Italian 'colpire' means to strike once. The definition is about hitting again and again, which is 'battere'."
+  },
+  {
+    "id": "2654",
+    "word": "cast",
+    "definition": "To choose actors for a play or film.",
+    "example": "They will cast the main actor next week.",
+    "level": "Advanced",
+    "translations": {
+      "es": "seleccionar",
+      "de": "besetzen",
+      "fr": "distribuer les rôles",
+      "it": "scritturare"
+    },
+    "_before": {
+      "definition": "to choose actors for a play or film",
+      "example": "They will cast the main actor next week.",
+      "translations": {
+        "es": "elegir",
+        "de": "besetzen",
+        "fr": "distribuer les rôles",
+        "it": "scritturare"
+      }
+    },
+    "_note": "Spanish 'elegir' is the same word already used for 'elect', so the two entries clashed. Changed to 'seleccionar'."
+  },
+  {
+    "id": "2663",
+    "word": "chief",
+    "definition": "The leader of a group of people.",
+    "example": "The chief of the tribe made an important decision.",
+    "level": "Advanced",
+    "translations": {
+      "es": "jefe",
+      "de": "Anführer",
+      "fr": "chef",
+      "it": "capo"
+    },
+    "_before": {
+      "definition": "the leader of a group of people",
+      "example": "The chief of the tribe made an important decision.",
+      "translations": {
+        "es": "jefe",
+        "de": "Häuptling",
+        "fr": "chef",
+        "it": "capo"
+      }
+    },
+    "_note": "German 'Häuptling' is only used for a tribal chief, while the other three are general. Changed to 'Anführer' so all four match the definition."
+  },
+  {
+    "id": "2714",
+    "word": "crew",
+    "definition": "The people who work together on a ship or plane.",
+    "example": "The airplane crew prepared for takeoff.",
+    "level": "Advanced",
+    "translations": {
+      "es": "tripulación",
+      "de": "Besatzung",
+      "fr": "équipage",
+      "it": "equipaggio"
+    },
+    "_before": {
+      "definition": "the people who work together on a ship or plane",
+      "example": "The airplane crew prepared for takeoff.",
+      "translations": {
+        "es": "tripulación",
+        "de": "Besatzung",
+        "fr": "équipage",
+        "it": "personale di bordo"
+      }
+    },
+    "_note": "Italian was a three-word phrase while the others were single words. Changed to 'equipaggio'."
+  },
+  {
+    "id": "2764",
+    "word": "dismiss",
+    "definition": "To remove someone from their job.",
+    "example": "The company dismissed three workers last month.",
+    "level": "Advanced",
+    "translations": {
+      "es": "despedir",
+      "de": "entlassen",
+      "fr": "licencier",
+      "it": "licenziare"
+    },
+    "_before": {
+      "definition": "to tell people they can leave",
+      "example": "The teacher will dismiss the students early today.",
+      "translations": {
+        "es": "despedir",
+        "de": "entlassen",
+        "fr": "laisser partir",
+        "it": "congedare"
+      }
+    },
+    "_note": "The definition said 'to tell people they can leave' but Spanish and German both meant 'to fire someone from a job', and French was a loose phrase. All four now teach the job meaning, which is the first meaning of 'dismiss', and the example matches."
+  },
+  {
+    "id": "2782",
+    "word": "elderly",
+    "definition": "Old, especially of people.",
+    "example": "The elderly woman walked slowly with a cane.",
+    "level": "Advanced",
+    "translations": {
+      "es": "anciano",
+      "de": "älter",
+      "fr": "âgé",
+      "it": "anziano"
+    },
+    "_before": {
+      "definition": "old, especially of people",
+      "example": "The elderly woman walked slowly with a cane.",
+      "translations": {
+        "es": "anciano",
+        "de": "ältere",
+        "fr": "âgé",
+        "it": "anziano"
+      }
+    },
+    "_note": "German 'ältere' carried a grammar ending that did not fit on its own. Changed to the plain form 'älter'."
+  },
+  {
+    "id": "2805",
+    "word": "even",
+    "definition": "Flat and smooth, with no bumps.",
+    "example": "The road surface was even, with no bumps or holes.",
+    "level": "Advanced",
+    "translations": {
+      "es": "liso",
+      "de": "gleichmäßig",
+      "fr": "plat",
+      "it": "livellato"
+    },
+    "_before": {
+      "definition": "flat and smooth, with no bumps",
+      "example": "The road surface was even, with no bumps or holes.",
+      "translations": {
+        "es": "parejo",
+        "de": "gleichmäßig",
+        "fr": "plat",
+        "it": "livellato"
+      }
+    },
+    "_note": "Spanish 'parejo' is mainly Latin American. 'Liso' is understood everywhere and means smooth."
+  },
+  {
+    "id": "2831",
+    "word": "figure",
+    "definition": "To work out or understand something.",
+    "example": "Can you figure out the answer to the maths problem?",
+    "level": "Advanced",
+    "translations": {
+      "es": "averiguar",
+      "de": "herausfinden",
+      "fr": "comprendre",
+      "it": "capire"
+    },
+    "_before": {
+      "definition": "to work out or understand something",
+      "example": "Can you figure out the answer to the math problem?",
+      "translations": {
+        "es": "descifrar",
+        "de": "herausfinden",
+        "fr": "trouver",
+        "it": "capire"
+      }
+    },
+    "_note": "Spanish 'descifrar' means to decode a secret message and French 'trouver' just means 'to find'. Both changed so all four mean working something out."
+  },
+  {
+    "id": "2832",
+    "word": "file",
+    "definition": "A folder or holder for keeping papers together.",
+    "example": "Please put the documents in the correct file.",
+    "level": "Advanced",
+    "translations": {
+      "es": "carpeta",
+      "de": "Akte",
+      "fr": "dossier",
+      "it": "fascicolo"
+    },
+    "_before": {
+      "definition": "a folder or holder for keeping papers together",
+      "example": "Please put the documents in the correct file.",
+      "translations": {
+        "es": "archivo",
+        "de": "Akte",
+        "fr": "dossier",
+        "it": "fascicolo"
+      }
+    },
+    "_note": "Same word appears twice in the list with different Spanish. Spanish 'archivo' usually means a computer file; changed to 'carpeta' so the two entries agree."
+  },
+  {
+    "id": "2842",
+    "word": "folding",
+    "definition": "Bending cloth or paper so one part covers another.",
+    "example": "She was folding the clean laundry and putting it away.",
+    "level": "Advanced",
+    "translations": {
+      "es": "doblando",
+      "de": "faltend",
+      "fr": "pliant",
+      "it": "piegando"
+    },
+    "_before": {
+      "definition": "bending cloth or paper so one part covers another",
+      "example": "She was folding the clean laundry and putting it in the closet.",
+      "translations": {
+        "es": "doblando",
+        "de": "falten",
+        "fr": "plier",
+        "it": "piegando"
+      }
+    },
+    "_note": "The four languages were in two different shapes. They now all use the same '-ing' form."
+  },
+  {
+    "id": "2860",
+    "word": "gang",
+    "definition": "A group of criminals who work together.",
+    "example": "The police arrested a gang of thieves.",
+    "level": "Advanced",
+    "translations": {
+      "es": "banda",
+      "de": "Bande",
+      "fr": "gang",
+      "it": "banda"
+    },
+    "_before": {
+      "definition": "a group of people who spend time together",
+      "example": "The gang met at school every day.",
+      "translations": {
+        "es": "banda",
+        "de": "Bande",
+        "fr": "gang",
+        "it": "comitiva"
+      }
+    },
+    "_note": "Spanish, German and French all meant a criminal group, but the definition and example described a group of school friends, and Italian 'comitiva' meant a group of friends going out. The first meaning of 'gang' is the criminal group, so the definition, example and Italian were all brought into line."
+  },
+  {
+    "id": "2870",
+    "word": "handle",
+    "definition": "To deal with a person or situation.",
+    "example": "She can handle the difficult customers.",
+    "level": "Advanced",
+    "translations": {
+      "es": "manejar",
+      "de": "handhaben",
+      "fr": "gérer",
+      "it": "gestire"
+    },
+    "_before": {
+      "definition": "to deal with a person or situation",
+      "example": "She can handle the difficult customers.",
+      "translations": {
+        "es": "manejar",
+        "de": "handhaben",
+        "fr": "gérer",
+        "it": "maneggiare"
+      }
+    },
+    "_note": "Italian 'maneggiare' is about handling an object with your hands. For dealing with people the word is 'gestire'."
+  },
+  {
+    "id": "2913",
+    "word": "insight",
+    "definition": "A clear and deep understanding of something.",
+    "example": "Her research provided new insight into the problem.",
+    "level": "Advanced",
+    "translations": {
+      "es": "visión",
+      "de": "Einblick",
+      "fr": "aperçu",
+      "it": "intuizione"
+    },
+    "_before": {
+      "definition": "a clear and deep understanding of something",
+      "example": "Her research provided new insight into the problem.",
+      "translations": {
+        "es": "conocimiento",
+        "de": "Einblick",
+        "fr": "aperçu",
+        "it": "intuizione"
+      }
+    },
+    "_note": "Spanish 'conocimiento' just means 'knowledge'. Changed to 'visión', which carries the idea of seeing into something."
+  },
+  {
+    "id": "2937",
+    "word": "latest",
+    "definition": "The most recent.",
+    "example": "Have you seen the latest news about the city project?",
+    "level": "Advanced",
+    "translations": {
+      "es": "más reciente",
+      "de": "neueste",
+      "fr": "le plus récent",
+      "it": "più recente"
+    },
+    "_before": {
+      "definition": "the most recent",
+      "example": "Have you seen the latest news about the upcoming city project?",
+      "translations": {
+        "es": "el último",
+        "de": "neueste",
+        "fr": "dernier",
+        "it": "ultimo"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. French and Italian said 'last' rather than 'most recent'."
+  },
+  {
+    "id": "2952",
+    "word": "loose",
+    "definition": "Not tight, or not firmly fixed in place.",
+    "example": "The screw is loose and needs tightening.",
+    "level": "Advanced",
+    "translations": {
+      "es": "flojo",
+      "de": "locker",
+      "fr": "desserré",
+      "it": "allentato"
+    },
+    "_before": {
+      "definition": "free and not tied up or held",
+      "example": "The dog was loose in the park, running freely.",
+      "translations": {
+        "es": "suelto",
+        "de": "frei",
+        "fr": "lâché",
+        "it": "sciolto"
+      }
+    },
+    "_note": "Three of the four original translations meant 'not tight', and all had been changed to 'running free' because the example was about a dog. The first meaning of 'loose' is 'not tight'. Example and translations rebuilt around that."
+  },
+  {
+    "id": "2967",
+    "word": "means",
+    "definition": "A way of doing or achieving something.",
+    "example": "She found a means to solve the problem quickly.",
+    "level": "Advanced",
+    "translations": {
+      "es": "medio",
+      "de": "Mittel",
+      "fr": "moyen",
+      "it": "mezzo"
+    },
+    "_before": {
+      "definition": "a way of doing or achieving something",
+      "example": "She found a means to solve the problem quickly.",
+      "translations": {
+        "es": "significa",
+        "de": "Mittel",
+        "fr": "moyens",
+        "it": "mezzo"
+      }
+    },
+    "_note": "Spanish 'significa' was the verb 'it means', which is a completely different word. Corrected to 'medio'. French was plural; made singular so all four match."
+  },
+  {
+    "id": "3013",
+    "word": "oppose",
+    "definition": "To disagree with and try to stop something.",
+    "example": "Many people oppose the building of the new factory.",
+    "level": "Advanced",
+    "translations": {
+      "es": "oponerse a",
+      "de": "ablehnen",
+      "fr": "s'opposer à",
+      "it": "opporsi a"
+    },
+    "_before": {
+      "definition": "to disagree with and try to stop something",
+      "example": "Many people oppose the building of the new factory.",
+      "translations": {
+        "es": "oponerse a",
+        "de": "ablehnen",
+        "fr": "s'opposer à",
+        "it": "opporsi"
+      }
+    },
+    "_note": "Italian was missing the little linking word that Spanish and French both have. Added."
+  },
+  {
+    "id": "3025",
+    "word": "package",
+    "definition": "An object wrapped for sending or carrying.",
+    "example": "She mailed a small package to her friend.",
+    "level": "Advanced",
+    "translations": {
+      "es": "paquete",
+      "de": "Paket",
+      "fr": "colis",
+      "it": "pacco"
+    },
+    "_before": {
+      "definition": "an object wrapped for sending or carrying",
+      "example": "She mailed a small package to her friend.",
+      "translations": {
+        "es": "paquete",
+        "de": "Paket",
+        "fr": "colis",
+        "it": "pacchetto"
+      }
+    },
+    "_note": "Same word appears twice in the list with different Italian. Set to 'pacco' so the two entries agree."
+  },
+  {
+    "id": "3039",
+    "word": "pick",
+    "definition": "To choose one thing from several.",
+    "example": "Please pick a red apple from the fruit basket.",
+    "level": "Advanced",
+    "translations": {
+      "es": "elegir",
+      "de": "wählen",
+      "fr": "choisir",
+      "it": "scegliere"
+    },
+    "_before": {
+      "definition": "to choose one thing from several",
+      "example": "Please pick a red apple from the fruit basket.",
+      "translations": {
+        "es": "elegir",
+        "de": "wählen",
+        "fr": "prendre",
+        "it": "prendere"
+      }
+    },
+    "_note": "French and Italian said 'to take' while Spanish and German said 'to choose'. All four now mean 'to choose', matching the definition."
+  },
+  {
+    "id": "3042",
+    "word": "pitch",
+    "definition": "A marked area of ground where a sport is played.",
+    "example": "The players ran onto the football pitch.",
+    "level": "Advanced",
+    "translations": {
+      "es": "campo",
+      "de": "Spielfeld",
+      "fr": "terrain",
+      "it": "campo"
+    },
+    "_before": {
+      "definition": "a thick black sticky substance used to seal",
+      "example": "The workers sealed the roof with thick, black pitch.",
+      "translations": {
+        "es": "brea",
+        "de": "Pech",
+        "fr": "poix",
+        "it": "catrame"
+      }
+    },
+    "_note": "The four original translations all pointed at different meanings, and the entry had been settled on 'tar', which almost no learner will ever need. In British English the first meaning of 'pitch' is the sports field. Fully rebuilt around that."
+  },
+  {
+    "id": "3044",
+    "word": "plot",
+    "definition": "A secret plan to do something bad.",
+    "example": "The detective uncovered the plot to steal the diamonds.",
+    "level": "Advanced",
+    "translations": {
+      "es": "complot",
+      "de": "Komplott",
+      "fr": "complot",
+      "it": "complotto"
+    },
+    "_before": {
+      "definition": "a secret plan to do something bad",
+      "example": "The detective uncovered the plot to steal the diamonds.",
+      "translations": {
+        "es": "trama",
+        "de": "Komplott",
+        "fr": "complot",
+        "it": "trama"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. Spanish and Italian 'trama' means the storyline of a book, which is a different meaning."
+  },
+  {
+    "id": "3084",
+    "word": "rank",
+    "definition": "To hold a certain position in a list or order.",
+    "example": "She ranks first in her class thanks to her excellent grades.",
+    "level": "Advanced",
+    "translations": {
+      "es": "clasificarse",
+      "de": "einordnen",
+      "fr": "se classer",
+      "it": "classificarsi"
+    },
+    "_before": {
+      "definition": "to hold a certain position in a list or order",
+      "example": "She ranks first in her class due to her excellent grades.",
+      "translations": {
+        "es": "clasificar",
+        "de": "einordnen",
+        "fr": "se classer",
+        "it": "classificarsi"
+      }
+    },
+    "_note": "Spanish was the form you use for putting other things in order, not for holding a position yourself. Changed to match the French and Italian."
+  },
+  {
+    "id": "3087",
+    "word": "rate",
+    "definition": "The speed at which something happens, or how often it happens.",
+    "example": "The population is growing at a fast rate.",
+    "level": "Advanced",
+    "translations": {
+      "es": "tasa",
+      "de": "Rate",
+      "fr": "taux",
+      "it": "tasso"
+    },
+    "_before": {
+      "definition": "a measure of amount compared with something else",
+      "example": "The car traveled at a high rate of speed.",
+      "translations": {
+        "es": "tasa",
+        "de": "Rate",
+        "fr": "taux",
+        "it": "tasso"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. The old example used awkward English ('a high rate of speed')."
+  },
+  {
+    "id": "3097",
+    "word": "register",
+    "definition": "To put your name on an official list.",
+    "example": "You can register for the class online.",
+    "level": "Advanced",
+    "translations": {
+      "es": "inscribirse",
+      "de": "sich anmelden",
+      "fr": "s'inscrire",
+      "it": "iscriversi"
+    },
+    "_before": {
+      "definition": "to put your name on an official list",
+      "example": "You can register for the class online.",
+      "translations": {
+        "es": "registrar",
+        "de": "registrieren",
+        "fr": "s'inscrire",
+        "it": "registrare"
+      }
+    },
+    "_note": "Spanish, German and Italian all meant 'to record something', while French meant 'to sign yourself up'. All four now mean signing yourself up, which is what the example shows."
+  },
+  {
+    "id": "3103",
+    "word": "rely",
+    "definition": "To depend on someone or something.",
+    "example": "I rely on my friends for good advice.",
+    "level": "Advanced",
+    "translations": {
+      "es": "confiar en",
+      "de": "sich verlassen auf",
+      "fr": "compter sur",
+      "it": "fare affidamento su"
+    },
+    "_before": {
+      "definition": "to depend on someone or something",
+      "example": "I rely on my friends for good advice.",
+      "translations": {
+        "es": "confiar",
+        "de": "sich verlassen auf",
+        "fr": "compter sur",
+        "it": "fare affidamento"
+      }
+    },
+    "_note": "Spanish and Italian were missing the little linking word that German and French both have. Added."
+  },
+  {
+    "id": "3131",
+    "word": "saving",
+    "definition": "Money kept for future use.",
+    "example": "She puts part of her pay into a savings account every month.",
+    "level": "Advanced",
+    "translations": {
+      "es": "ahorro",
+      "de": "Ersparnis",
+      "fr": "économie",
+      "it": "risparmio"
+    },
+    "_before": {
+      "definition": "money kept for future use",
+      "example": "She put her extra money into a saving account every month.",
+      "translations": {
+        "es": "ahorro",
+        "de": "Ersparnis",
+        "fr": "économie",
+        "it": "risparmi"
+      }
+    },
+    "_note": "The example said 'a saving account'; the correct English is 'a savings account'. Italian was plural; made singular so all four match."
+  },
+  {
+    "id": "3139",
+    "word": "secure",
+    "definition": "To fasten something or make it safe.",
+    "example": "Please secure the doors before you leave the house.",
+    "level": "Advanced",
+    "translations": {
+      "es": "asegurar",
+      "de": "sichern",
+      "fr": "sécuriser",
+      "it": "assicurare"
+    },
+    "_before": {
+      "definition": "to fasten or make something safe",
+      "example": "Please secure the doors before you leave the house.",
+      "translations": {
+        "es": "asegurar",
+        "de": "sichern",
+        "fr": "verrouiller",
+        "it": "mettere in sicurezza"
+      }
+    },
+    "_note": "French 'verrouiller' only means 'to lock' and Italian was a three-word phrase. Both changed to single words that match the Spanish and German."
+  },
+  {
+    "id": "3158",
+    "word": "shift",
+    "definition": "To move something to a different position.",
+    "example": "Please shift your car so others can park here.",
+    "level": "Advanced",
+    "translations": {
+      "es": "mover",
+      "de": "verschieben",
+      "fr": "déplacer",
+      "it": "spostare"
+    },
+    "_before": {
+      "definition": "to move something to a different position",
+      "example": "Please shift your car so others can park here.",
+      "translations": {
+        "es": "cambiar",
+        "de": "umstellen",
+        "fr": "déplacer",
+        "it": "spostarsi"
+      }
+    },
+    "_note": "Same word appears twice in the list with different translations. Set to the same set so the two entries agree."
+  },
+  {
+    "id": "3162",
+    "word": "shooting",
+    "definition": "An event in which someone fires a gun.",
+    "example": "The police investigated the shooting in the town centre.",
+    "level": "Advanced",
+    "translations": {
+      "es": "tiroteo",
+      "de": "Schießerei",
+      "fr": "fusillade",
+      "it": "sparatoria"
+    },
+    "_before": {
+      "definition": "growing quickly upward",
+      "example": "The new plant is shooting up quickly toward the sun.",
+      "translations": {
+        "es": "creciendo",
+        "de": "sprießen",
+        "fr": "pousser",
+        "it": "germogliare"
+      }
+    },
+    "_note": "Had been pushed onto a plant growing upward, which is a rare use. 'Shooting' normally means gunfire, and this now matches the entry for 'shoot'. Fully rebuilt."
+  },
+  {
+    "id": "3163",
+    "word": "shot",
+    "definition": "The firing of a gun.",
+    "example": "We heard a shot in the distance.",
+    "level": "Advanced",
+    "translations": {
+      "es": "disparo",
+      "de": "Schuss",
+      "fr": "coup de feu",
+      "it": "sparo"
+    },
+    "_before": {
+      "definition": "a small amount of medicine given by needle",
+      "example": "He took a shot of medicine.",
+      "translations": {
+        "es": "inyección",
+        "de": "Spritze",
+        "fr": "piqûre",
+        "it": "dose"
+      }
+    },
+    "_note": "Had been changed to mean an injection at the doctor's. The original German and French were both 'gunshot', which is the first meaning of 'shot'. Restored."
+  },
+  {
+    "id": "3184",
+    "word": "spread",
+    "definition": "To open something out to its full size.",
+    "example": "The bird spread its wings and flew away quickly.",
+    "level": "Advanced",
+    "translations": {
+      "es": "extender",
+      "de": "ausbreiten",
+      "fr": "déployer",
+      "it": "spiegare"
+    },
+    "_before": {
+      "definition": "to open out or extend something wide",
+      "example": "The bird spread its wings and flew away quickly.",
+      "translations": {
+        "es": "desplegar",
+        "de": "ausbreiten",
+        "fr": "déployer",
+        "it": "spiegare"
+      }
+    },
+    "_note": "Same word appears twice in the list with different Spanish. Set to the same set so the two entries agree."
+  },
+  {
+    "id": "3187",
+    "word": "stand",
+    "definition": "To rise to an upright position on your feet.",
+    "example": "Please stand when the queen enters the room.",
+    "level": "Advanced",
+    "translations": {
+      "es": "ponerse de pie",
+      "de": "aufstehen",
+      "fr": "se lever",
+      "it": "alzarsi in piedi"
+    },
+    "_before": {
+      "definition": "to rise to an upright position on your feet",
+      "example": "Please stand when the queen enters the room.",
+      "translations": {
+        "es": "pararse",
+        "de": "stehen",
+        "fr": "se lever",
+        "it": "in piedi"
+      }
+    },
+    "_note": "Italian was not a verb at all, German 'stehen' means 'to be standing' rather than 'to get up', and Spanish 'pararse' is mainly Latin American. All four now mean rising to your feet."
+  },
+  {
+    "id": "3204",
+    "word": "subject",
+    "definition": "The topic that something is about.",
+    "example": "The subject of the book was ancient history.",
+    "level": "Advanced",
+    "translations": {
+      "es": "tema",
+      "de": "Thema",
+      "fr": "sujet",
+      "it": "argomento"
+    },
+    "_before": {
+      "definition": "the topic that something is about",
+      "example": "The subject of the book was ancient history.",
+      "translations": {
+        "es": "tema",
+        "de": "Thema",
+        "fr": "sujet",
+        "it": "materia"
+      }
+    },
+    "_note": "Italian 'materia' means a school subject such as maths. The word for the topic of a book is 'argomento'."
+  },
+  {
+    "id": "3214",
+    "word": "switch",
+    "definition": "To turn a device off.",
+    "example": "Please switch off the lights when you leave.",
+    "level": "Advanced",
+    "translations": {
+      "es": "apagar",
+      "de": "ausschalten",
+      "fr": "éteindre",
+      "it": "spegnere"
+    },
+    "_before": {
+      "definition": "to turn a device on or off",
+      "example": "Please switch off the lights when you leave.",
+      "translations": {
+        "es": "apagar",
+        "de": "schalten",
+        "fr": "éteindre",
+        "it": "spegnere"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. German 'schalten' was neutral and did not match the example."
+  },
+  {
+    "id": "3222",
+    "word": "term",
+    "definition": "One of the periods a school year is divided into.",
+    "example": "The school term ends in June.",
+    "level": "Advanced",
+    "translations": {
+      "es": "trimestre",
+      "de": "Trimester",
+      "fr": "trimestre",
+      "it": "trimestre"
+    },
+    "_before": {
+      "definition": "one of the periods a school year is divided into",
+      "example": "The school term ends in June.",
+      "translations": {
+        "es": "período",
+        "de": "Semester",
+        "fr": "trimestre",
+        "it": "trimestre"
+      }
+    },
+    "_note": "Spanish gave a vague 'period' and German 'Semester' is used for universities, not schools. All four now say the same thing."
+  },
+  {
+    "id": "3231",
+    "word": "track",
+    "definition": "The rails a train runs along.",
+    "example": "The train runs on the track.",
+    "level": "Advanced",
+    "translations": {
+      "es": "vía",
+      "de": "Schiene",
+      "fr": "voie",
+      "it": "binario"
+    },
+    "_before": {
+      "definition": "the rails a train runs along",
+      "example": "The train runs on the track.",
+      "translations": {
+        "es": "vía",
+        "de": "Schiene",
+        "fr": "voie",
+        "it": "binari"
+      }
+    },
+    "_note": "Italian was plural while the other three were singular. Made singular."
+  },
+  {
+    "id": "3238",
+    "word": "trouble",
+    "definition": "Difficulty or problems.",
+    "example": "I am having trouble understanding this new lesson.",
+    "level": "Advanced",
+    "translations": {
+      "es": "problema",
+      "de": "Problem",
+      "fr": "difficulté",
+      "it": "difficoltà"
+    },
+    "_before": {
+      "definition": "difficulty or problems",
+      "example": "I am having trouble understanding this new lesson.",
+      "translations": {
+        "es": "problema",
+        "de": "Problem",
+        "fr": "difficulté",
+        "it": "guaio"
+      }
+    },
+    "_note": "Italian 'guaio' means being in a scrape or a mess, which is stronger than the definition. Changed to 'difficoltà'."
+  },
+  {
+    "id": "3257",
+    "word": "venue",
+    "definition": "A place where an event is held.",
+    "example": "The band played at a new venue in the city centre.",
+    "level": "Advanced",
+    "translations": {
+      "es": "salón de eventos",
+      "de": "Veranstaltungsort",
+      "fr": "lieu",
+      "it": "sede"
+    },
+    "_before": {
+      "definition": "a place where an event is held",
+      "example": "The band played at a new venue in the city center.",
+      "translations": {
+        "es": "salón de eventos",
+        "de": "Veranstaltungsort",
+        "fr": "lieu",
+        "it": "locale"
+      }
+    },
+    "_note": "Italian 'locale' means a bar or club rather than any event place. Changed to 'sede'."
+  },
+  {
+    "id": "3269",
+    "word": "way",
+    "definition": "A method of doing something.",
+    "example": "This is a good way to learn new vocabulary.",
+    "level": "Advanced",
+    "translations": {
+      "es": "manera",
+      "de": "Art",
+      "fr": "façon",
+      "it": "modo"
+    },
+    "_before": {
+      "definition": "a method of doing something",
+      "example": "This is a good way to learn new vocabulary.",
+      "translations": {
+        "es": "manera",
+        "de": "Weise",
+        "fr": "façon",
+        "it": "modo"
+      }
+    },
+    "_note": "Same word appears twice in the list with different German. Set to 'Art' so the two entries agree."
+  },
+  {
+    "id": "3276",
+    "word": "whom",
+    "definition": "Used to refer to the person receiving an action.",
+    "example": "To whom did you give the book?",
+    "level": "Advanced",
+    "translations": {
+      "es": "a quien",
+      "de": "wem",
+      "fr": "à qui",
+      "it": "a chi"
+    },
+    "_before": {
+      "definition": "used to refer to the person receiving an action",
+      "example": "To whom did you give the book?",
+      "translations": {
+        "es": "a quien",
+        "de": "wem",
+        "fr": "qui",
+        "it": "a chi"
+      }
+    },
+    "_note": "French was missing the little linking word that Spanish and Italian both have. Added."
+  },
+  {
+    "id": "3290",
+    "word": "yet",
+    "definition": "Up to now; so far.",
+    "example": "She has not finished her homework yet.",
+    "level": "Advanced",
+    "translations": {
+      "es": "todavía",
+      "de": "noch",
+      "fr": "encore",
+      "it": "ancora"
+    },
+    "_before": {
+      "definition": "up to now; so far",
+      "example": "She has not finished her homework yet.",
+      "translations": {
+        "es": "todavía",
+        "de": "noch",
+        "fr": "pas encore",
+        "it": "ancora"
+      }
+    },
+    "_note": "French 'pas encore' already contained the word 'not'. Removed so it matches the other three."
+  },
+  {
+    "id": "3292",
+    "word": "run out of",
+    "definition": "To use up all of something.",
+    "example": "We will run out of milk soon.",
+    "level": "Advanced",
+    "translations": {
+      "es": "quedarse sin",
+      "de": "ausgehen",
+      "fr": "manquer de",
+      "it": "restare senza"
+    },
+    "_before": {
+      "definition": "to use up all of something",
+      "example": "We will run out of milk soon.",
+      "translations": {
+        "es": "quedarse sin",
+        "de": "ausgehen",
+        "fr": "manquer de",
+        "it": "esaurire"
+      }
+    },
+    "_note": "Italian 'esaurire' is what you do to a supply, not what happens to you. Changed to 'restare senza', matching the Spanish."
+  },
+  {
+    "id": "3307",
+    "word": "come in",
+    "definition": "To enter a place.",
+    "example": "Please come in and sit down.",
+    "level": "Advanced",
+    "translations": {
+      "es": "entrar",
+      "de": "reinkommen",
+      "fr": "entrer",
+      "it": "entrare"
+    },
+    "_before": {
+      "definition": "to enter a place",
+      "example": "Please come in and sit down.",
+      "translations": {
+        "es": "entrar",
+        "de": "reinkommen",
+        "fr": "entrer",
+        "it": "accomodarsi"
+      }
+    },
+    "_note": "Italian 'accomodarsi' means 'take a seat', not 'come in'. Changed to 'entrare'."
+  },
+  {
+    "id": "3313",
+    "word": "turn up",
+    "definition": "To be found or appear unexpectedly.",
+    "example": "My lost keys finally turned up in the sofa cushions.",
+    "level": "Advanced",
+    "translations": {
+      "es": "aparecer",
+      "de": "auftauchen",
+      "fr": "apparaître",
+      "it": "comparire"
+    },
+    "_before": {
+      "definition": "to be found or appear unexpectedly",
+      "example": "My lost keys finally turned up in the sofa cushions.",
+      "translations": {
+        "es": "aparecer",
+        "de": "auftauchen",
+        "fr": "réapparaître",
+        "it": "comparire"
+      }
+    },
+    "_note": "French 'réapparaître' means 'to appear again'. Changed to 'apparaître' so all four match."
+  },
+  {
+    "id": "3326",
+    "word": "tearing up",
+    "definition": "Beginning to cry.",
+    "example": "Her eyes started tearing up during the sad film.",
+    "level": "Advanced",
+    "translations": {
+      "es": "lagrimear",
+      "de": "Tränen bekommen",
+      "fr": "avoir les larmes aux yeux",
+      "it": "commuoversi"
+    },
+    "_before": {
+      "definition": "beginning to cry",
+      "example": "Her eyes started tearing up during the sad movie.",
+      "translations": {
+        "es": "lagrimear",
+        "de": "feuchte Augen bekommen",
+        "fr": "en larmes",
+        "it": "commuoversi"
+      }
+    },
+    "_note": "French 'en larmes' described a state rather than the action. Changed to a phrase that means the eyes are filling with tears."
+  },
+  {
+    "id": "3343",
+    "word": "break down",
+    "definition": "To stop working properly.",
+    "example": "The old car broke down on the way home.",
+    "level": "Advanced",
+    "translations": {
+      "es": "averiarse",
+      "de": "eine Panne haben",
+      "fr": "tomber en panne",
+      "it": "guastarsi"
+    },
+    "_before": {
+      "definition": "to stop working properly",
+      "example": "The old car broke down on the way home.",
+      "translations": {
+        "es": "romperse",
+        "de": "eine Panne haben",
+        "fr": "tomber en panne",
+        "it": "guastarsi"
+      }
+    },
+    "_note": "Spanish 'romperse' just means 'to break'. The word for a vehicle or machine failing is 'averiarse'."
+  },
+  {
+    "id": "3362",
+    "word": "make up",
+    "definition": "To invent a story or excuse.",
+    "example": "He had to make up a reason for being late.",
+    "level": "Advanced",
+    "translations": {
+      "es": "inventar",
+      "de": "sich ausdenken",
+      "fr": "inventer",
+      "it": "inventare"
+    },
+    "_before": {
+      "definition": "to invent a story or excuse",
+      "example": "He had to make up a reason for being late.",
+      "translations": {
+        "es": "inventar",
+        "de": "ausdenken",
+        "fr": "inventer",
+        "it": "inventare"
+      }
+    },
+    "_note": "German was missing the small reflexive word it needs. Added."
+  },
+  {
+    "id": "3375",
+    "word": "make out",
+    "definition": "To see or hear something with difficulty.",
+    "example": "I can barely make out the words on this old sign.",
+    "level": "Advanced",
+    "translations": {
+      "es": "distinguir",
+      "de": "erkennen",
+      "fr": "distinguer",
+      "it": "distinguere"
+    },
+    "_before": {
+      "definition": "to see or hear something with difficulty",
+      "example": "I can barely make out the words on this old sign.",
+      "translations": {
+        "es": "entender",
+        "de": "erkennen",
+        "fr": "distinguer",
+        "it": "capire"
+      }
+    },
+    "_note": "Spanish and Italian said 'to understand', which is a different idea. Both changed to 'to make out with difficulty', matching the definition."
+  },
+  {
+    "id": "3383",
+    "word": "keep up",
+    "definition": "To move at the same speed as someone else.",
+    "example": "She walks quickly, so I must walk fast to keep up.",
+    "level": "Advanced",
+    "translations": {
+      "es": "seguir el ritmo",
+      "de": "mithalten",
+      "fr": "suivre le rythme",
+      "it": "tenersi al passo"
+    },
+    "_before": {
+      "definition": "to move at the same speed as another",
+      "example": "She walks quickly, so I must walk fast to keep up.",
+      "translations": {
+        "es": "mantenerse",
+        "de": "mithalten",
+        "fr": "continuez",
+        "it": "tenersi al passo"
+      }
+    },
+    "_note": "French 'continuez' was a command form ('carry on'), which is not what the word means here. Spanish 'mantenerse' was too vague. Both changed to match the definition."
+  },
+  {
+    "id": "3389",
+    "word": "run out of",
+    "definition": "To use up all of something.",
+    "example": "We will run out of milk soon.",
+    "level": "Advanced",
+    "translations": {
+      "es": "quedarse sin",
+      "de": "ausgehen",
+      "fr": "manquer de",
+      "it": "restare senza"
+    },
+    "_before": {
+      "definition": "to use up all of something",
+      "example": "We will run out of milk soon.",
+      "translations": {
+        "es": "quedarse sin",
+        "de": "ausgegangen",
+        "fr": "manquer de",
+        "it": "esaurire"
+      }
+    },
+    "_note": "Same word appears twice in the list; corrected the same way so the two entries agree. German was a past form and Italian 'esaurire' was the wrong side of the action."
+  }
+]

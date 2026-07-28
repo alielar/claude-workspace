@@ -1,0 +1,2429 @@
+1) [2] about  (Basic)
+   EX : This book is about a brave knight and a dragon.
+   DEF: On the subject of; concerning.
+   ES acerca de                    | DE über                         | FR à propos                     | IT di/del/della/dello
+   ~M de: um -> über  (Example uses 'about' meaning 'on the subject of' (a book about a knight); 'um' does not convey the topic sense, which is 'über'.)
+
+2) [3] above  (Basic)
+   EX : The birds flew high above the tall trees.
+   DEF: In or to a higher position than something else.
+   ES por encima de                | DE über                         | FR au-dessus de                 | IT sopra/su/sul/sulla/sullo
+   ~M es: arriba -> por encima de  (Example uses 'above' as a preposition ('above the trees'); 'arriba' is an adverb ('up there'), the prepositional sense is 'por encima de'.)
+
+3) [145] classroom  (Basic)
+   EX : The students sat in the classroom and listened to their teacher.
+   DEF: A room in a school where lessons are taught.
+   ES aula                         | DE Klassenzimmer                | FR salle de classe              | IT aula
+   ~M it: classe -> aula  ('Classroom' is the physical room; 'classe' means the class group. The room sense is 'aula'.)
+
+4) [166] cooking  (Basic)
+   EX : She enjoys cooking delicious meals for her family every day.
+   DEF: The activity of preparing and heating food to eat.
+   ES cocinando                    | DE Kochen                       | FR cuisine                      | IT cucinare
+   ~M fr: cuisson -> cuisine  (Example uses 'cooking' as the activity of preparing food; 'cuisson' means the cooking process/doneness. The activity sense is 'cuisine' (faire la cuisine).)
+
+5) [187] date  (Basic)
+   EX : Let us set a date for our next meeting.
+   DEF: A particular day of the month or year.
+   ES fecha                        | DE Datum                        | FR date                         | IT data
+   ~M es: cita -> fecha  (Example uses 'date' meaning a calendar day for a meeting; 'cita' means an appointment/romantic date. The calendar sense is 'fecha'.)
+
+6) [216] downstairs  (Basic)
+   EX : I went downstairs to get a book from the shelf.
+   DEF: On or to a lower floor of a building.
+   ES abajo                        | DE unten                        | FR en bas                       | IT al piano di sotto
+   ~M it: piano inferiore -> al piano di sotto  (Example uses 'downstairs' as an adverb of movement ('went downstairs'); 'piano inferiore' is a noun (lower floor). The adverbial sense is 'al piano di sotto'.)
+
+7) [241] even  (Basic)
+   EX : The road surface was even, with no bumps or holes.
+   DEF: Flat and level, with no bumps or holes.
+   ES liso                         | DE eben                         | FR plat                         | IT uniforme/liscio/piano
+   ~M es: homogénea -> liso  (Example uses 'even' meaning flat/level (a road surface); 'homogénea' means homogeneous. The flat sense is 'liso/plano'.)
+   ~M de: gleichmäßig -> eben  (Example uses 'even' meaning flat/level (a road surface); 'gleichmäßig' means uniform/regular. The flat-surface sense is 'eben'.)
+   ~H fr: même -> plat  (Example uses 'even' meaning flat/level; French 'même' means 'same'. The flat sense is 'plat/uni'.)
+
+8) [271] favourite  (Basic)
+   EX : My favourite colour is blue, it is the best.
+   DEF: Liked more than any other.
+   ES favorito                     | DE Lieblings-                   | FR préféré                      | IT preferito
+   ~M de: Favorit -> Lieblings-  (Example uses 'favourite' as an adjective ('favourite colour'); 'Favorit' is the noun (a frontrunner). The adjective sense is 'Lieblings-' (e.g. Lieblingsfarbe).)
+
+9) [282] final  (Basic)
+   EX : The final exam is next week.
+   DEF: Coming at the end; last.
+   ES final                        | DE letzte                       | FR final                        | IT finale
+   ~M de: Finale -> letzte  (Example uses 'final' as an adjective ('final exam'); 'Finale' is a noun. The adjective sense is 'letzte/Abschluss-'.)
+
+10) [298] football  (Basic)
+   EX : Many people enjoy watching football matches on television.
+   DEF: A team sport played by kicking a ball, known as soccer in some countries.
+   ES fútbol                       | DE Fußball                      | FR football                     | IT calcio
+   ~M es: fútbol americano -> fútbol  (The other languages translate 'football' as soccer (Fußball/football/calcio); Spanish 'fútbol americano' is a different sport. To match, use 'fútbol'.)
+
+11) [310] from  (Basic)
+   EX : The train arrived from London at six o'clock.
+   DEF: Starting at a particular place, person, or time.
+   ES de                           | DE von                          | FR depuis                       | IT da
+   ~M de: also: von -> von  (The value contains a stray label ('also: '); the clean translation for 'from' (origin) is 'von'.)
+
+12) [314] fun  (Basic)
+   EX : Playing games with friends is often a lot of fun.
+   DEF: Pleasure and enjoyment.
+   ES diversión                    | DE Spaß                         | FR amusement                    | IT divertimento
+   ~M es: divertido -> diversión  (Example uses 'fun' as a noun ('a lot of fun'); 'divertido' is the adjective. The noun sense is 'diversión'.)
+   ~M fr: amusant -> amusement  (Example uses 'fun' as a noun ('a lot of fun'); 'amusant' is the adjective. The noun sense is 'amusement'.)
+
+13) [344] hard  (Basic)
+   EX : The test was very hard, so I studied a lot.
+   DEF: Difficult to do or understand.
+   ES difícil                      | DE schwer                       | FR difficile                    | IT difficile
+   ~M es: duro -> difícil  (Example uses 'hard' meaning difficult (a hard test); 'duro' means tough/solid. The difficulty sense is 'difícil'.)
+   ~H de: hart -> schwer  (Example uses 'hard' meaning difficult (a hard test); 'hart' means tough/solid. The difficulty sense is 'schwer'.)
+   ~M fr: dur -> difficile  (Example uses 'hard' meaning difficult (a hard test); 'dur' means tough/solid. The difficulty sense is 'difficile'.)
+
+14) [364] holiday  (Basic)
+   EX : We celebrated the holiday with a big family dinner.
+   DEF: A special day when people do not work and often celebrate.
+   ES día festivo                  | DE Feiertag                     | FR jour férié                   | IT festa
+   ~L es: vacaciones -> día festivo  (Example ('celebrated the holiday with a family dinner') points to a festive day, not a vacation; 'vacaciones' means vacation, the festive-day sense is 'día festivo'.)
+   ~L de: Urlaub -> Feiertag  (Example ('celebrated the holiday with a family dinner') points to a festive day, not a vacation; 'Urlaub' means vacation, the festive-day sense is 'Feiertag'.)
+   ~L fr: vacances -> jour férié  (Example ('celebrated the holiday with a family dinner') points to a festive day, not a vacation; 'vacances' means vacation, the festive-day sense is 'jour férié'.)
+   ~L it: vacanza -> festa  (Example ('celebrated the holiday with a family dinner') points to a festive day, not a vacation; 'vacanza' means vacation, the festive-day sense is 'festa'.)
+
+15) [409] just  (Basic)
+   EX : I just finished my homework a moment ago.
+   DEF: A very short time ago.
+   ES recién                       | DE gerade                       | FR juste                        | IT Appena
+   ~H de: nur -> gerade  (Example uses 'just' meaning a moment ago ('just finished'); 'nur' means 'only'. The recency sense is 'gerade/eben'.)
+   ~M es: justo -> recién  (Example uses 'just' meaning a moment ago ('just finished'); 'justo' means exactly/precisely. The recency sense is 'recién' (acabar de).)
+
+16) [424] leave  (Basic)
+   EX : I need to leave work early today.
+   DEF: To go away from a place or person.
+   ES irse                         | DE verlassen                    | FR partir                       | IT andare via
+   ~M it: lasciare -> andare via  (Example uses 'leave' meaning to depart ('leave work early'); 'lasciare' means to leave behind/quit. The depart sense is 'andare via/uscire'.)
+
+17) [443] look  (Basic)
+   EX : Please look at the picture on the wall.
+   DEF: To turn your eyes toward something in order to see it.
+   ES mirar                        | DE schauen                      | FR regarder                     | IT guardare
+   ~M de: sehen -> schauen  (Example uses 'look' meaning to direct your eyes ('look at the picture'); 'sehen' means to see. The 'look at' sense is 'schauen/ansehen'.)
+
+18) [457] married  (Basic)
+   EX : They got married last year in a beautiful ceremony.
+   DEF: Having a husband or wife.
+   ES casado                       | DE verheiratet                  | FR marié                        | IT sposato
+   ~M es: casarse -> casado  (Headword 'married' is an adjective (as in de/fr/it: verheiratet/marié/sposato); 'casarse' is the infinitive verb. The adjective sense is 'casado'.)
+
+19) [458] match  (Basic)
+   EX : The shoes match her dress perfectly.
+   DEF: To go well together or look good with something.
+   ES combinar                     | DE passen                       | FR assortir                     | IT abbinare
+   ~M de: übereinstimmen -> passen  (Example uses 'match' meaning to look good together (shoes match a dress); 'übereinstimmen' means to agree/coincide. The clothing sense is 'passen (zu)'.)
+
+20) [464] meaning  (Basic)
+   EX : The meaning of the word was clear.
+   DEF: What a word, sign, or action represents.
+   ES significado                  | DE Bedeutung                    | FR signification                | IT significato
+   ~M it: Senso -> significato  (Example refers to the meaning of a word; the precise term is 'significato' rather than the more general 'senso'.)
+
+21) [508] news  (Basic)
+   EX : The news reported a big storm coming our way.
+   DEF: Reports of recent events shared on TV, radio, or online.
+   ES noticias                     | DE Nachrichten                  | FR informations                 | IT notiziario
+   ~M de: Nachricht -> Nachrichten  (Example refers to the news broadcast ('the news reported'); 'Nachricht' is a single message. The news sense is plural 'Nachrichten'.)
+
+22) [526] number  (Basic)
+   EX : She wrote the number seven on the paper.
+   DEF: A word or symbol that represents an amount or quantity.
+   ES número                       | DE Zahl                         | FR nombre                       | IT numero
+   ~M de: Nummer -> Zahl  (Example uses 'number' as a numeral ('the number seven'); 'Nummer' means an assigned number (phone, house). The numeral sense is 'Zahl'.)
+
+23) [544] opposite  (Basic)
+   EX : The two buildings are on opposite sides of the street.
+   DEF: Completely different, or on the other side.
+   ES opuesto                      | DE gegenüberliegend             | FR opposé                       | IT opposto
+   ~M de: Gegenteil -> gegenüberliegend  (Example uses 'opposite' as an adjective ('opposite sides'); 'Gegenteil' is the noun (the opposite). The adjective sense is 'gegenüberliegend/entgegengesetzt'.)
+
+24) [550] out  (Basic)
+   EX : She stepped out of the car quickly moving car.
+   DEF: Away from the inside of a place.
+   ES afuera                       | DE aus                          | FR dehors                       | IT fuori
+   ~M fr: sorti -> dehors  (Example uses 'out' as a directional word; 'sorti' is a past participle (gone out). To match the others (afuera/aus/fuori), the word is 'dehors/hors'.)
+
+25) [556] painting  (Basic)
+   EX : She enjoyed creating a beautiful painting of the sunset.
+   DEF: A picture made using paint.
+   ES cuadro                       | DE Gemälde                      | FR tableau                      | IT dipinto
+   ~M de: Malerei -> Gemälde  (Example refers to a specific painting (artwork); 'Malerei' is the activity/art form. A single painting is 'Gemälde'.)
+
+26) [566] past  (Basic)
+   EX : The past year was very exciting for me.
+   DEF: The time before the present; already gone by.
+   ES pasado                       | DE vergangen                    | FR passé                        | IT passato
+   ~M de: Vergangenheit -> vergangen  (Example uses 'past' as an adjective ('the past year'); 'Vergangenheit' is the noun. The adjective sense is 'vergangen'.)
+
+27) [579] phrase  (Basic)
+   EX : The student learned new phrases in English class.
+   DEF: A small group of words that form part of a sentence.
+   ES frase                        | DE Ausdruck                     | FR expression                   | IT frase
+   ~M fr: phrase -> expression  ('Phrase' in English is a group of words; French 'phrase' means a full sentence (false friend). The correct term is 'expression/locution'.)
+   ~M de: Satz -> Ausdruck  (English 'phrase' is a group of words; German 'Satz' means a full sentence. The phrase sense is 'Ausdruck/Redewendung'.)
+
+28) [627] reading  (Basic)
+   EX : I enjoy reading interesting books in my free time.
+   DEF: The activity of looking at and understanding written words.
+   ES lectura                      | DE Lesen                        | FR lecture                      | IT lettura
+   ~M de: Lektüre -> Lesen  (Example uses 'reading' as the activity ('enjoy reading'); 'Lektüre' means reading material. The activity sense is 'Lesen'.)
+
+29) [629] real  (Basic)
+   EX : The bag was made of real leather.
+   DEF: Actually existing; not false or fake.
+   ES real                         | DE echt                         | FR véritable                    | IT vero
+   ~M de: real -> echt  (Example uses 'real' meaning genuine ('real leather'); the natural German for genuine material is 'echt' rather than 'real'.)
+   ~M fr: réel -> véritable  (Example uses 'real' meaning genuine ('real leather'); 'réel' means real in the abstract sense. The genuine-material sense is 'véritable/vrai'.)
+
+30) [662] number  (Basic)
+   EX : She wrote the number seven on the paper.
+   DEF: A word or symbol that represents an amount or quantity.
+   ES número                       | DE Zahl                         | FR nombre                       | IT numero
+   ~M de: Nummer -> Zahl  (Example uses 'number' as a numeral ('the number seven'); 'Nummer' means an assigned number. The numeral sense is 'Zahl'.)
+
+31) [678] shop  (Basic)
+   EX : I need to go to the shop to buy some milk.
+   DEF: A place where goods are sold.
+   ES tienda                       | DE Geschäft                     | FR boutique                     | IT negozio
+   ~M es: negocio -> tienda  (Example uses 'shop' meaning a store ('go to the shop to buy milk'); 'negocio' means a business. The store sense is 'tienda'.)
+
+32) [679] shopping  (Basic)
+   EX : She enjoys shopping for new clothes and gifts.
+   DEF: The activity of buying things from shops.
+   ES compras                      | DE Einkaufen                    | FR achats                       | IT shopping
+   ~M es: comprar -> compras  (Example uses 'shopping' as the activity ('enjoys shopping'); 'comprar' is the verb to buy. The activity noun is 'compras/ir de compras'.)
+
+33) [764] text  (Basic)
+   EX : She sent a text message to her friend.
+   DEF: written words, often sent as a message
+   ES texto                        | DE Text                         | FR texte                        | IT testo
+   ~M it: messaggio -> testo  ('messaggio' means message; the word 'text' (written words) is 'testo')
+
+34) [826] up  (Basic)
+   EX : Please pick up the pen. Time is up.
+   DEF: toward a higher place or position
+   ES arriba                       | DE hoch                         | FR en haut                      | IT in alto
+   ~M es: finalizado -> arriba  ('finalizado' means 'finished'; 'up' as a direction is 'arriba')
+
+35) [838] visitor  (Basic)
+   EX : The visitor enjoyed the beautiful museum exhibits at the museum.
+   DEF: a person who comes to see a place or another person
+   ES visitante                    | DE Besucher                     | FR visiteur                     | IT visitatore
+   ~M de: Gast -> Besucher  ('Gast' means guest; a visitor to a place is 'Besucher')
+
+36) [843] wall  (Basic)
+   EX : The picture hangs on the wall.
+   DEF: the side of a room or building that goes up from the floor
+   ES pared                        | DE Wand                         | FR mur                          | IT parete
+   ~M es: muro -> pared  ('muro' is an outdoor wall; an indoor wall you hang a picture on is 'pared')
+
+37) [847] watch  (Basic)
+   EX : We watch a movie together every Friday evening.
+   DEF: to look at something for a period of time
+   ES mirar                        | DE ansehen                      | FR regarder                     | IT guardare
+   ~M de: betrachten -> ansehen  ('betrachten' means to contemplate closely; watching a movie is 'ansehen')
+
+38) [849] way  (Basic)
+   EX : This is a good way to learn new vocabulary.
+   DEF: a method of doing something
+   ES manera                       | DE Weg                          | FR façon                        | IT modo
+   ~M fr: chemin -> façon  ('chemin' is a physical path; here 'way' means a method, which is 'façon')
+
+39) [878] worker  (Basic)
+   EX : The worker built the house with bricks and cement.
+   DEF: a person who does physical or manual work
+   ES obrero                       | DE Arbeiter                     | FR travailleur                  | IT lavoratore
+   ~M de: Arbeitnehmer -> Arbeiter  ('Arbeitnehmer' means employee; a manual worker is 'Arbeiter')
+
+40) [880] would  (Basic)
+   EX : I would often visit the park as a child.
+   DEF: used to talk about something that happened regularly in the past
+   ES solía                        | DE würde                        | FR avoir l'habitude de          | IT solevo
+   ~H es: ia -> solía  (the value was a broken fragment; the habitual past sense here is 'solía')
+   ~M it: volevo -> solevo  ('volevo' means 'I wanted'; the habitual past 'would' is 'solevo')
+
+41) [922] although  (Basic)
+   EX : Although it was raining, we still went for a walk.
+   DEF: used to introduce a fact that makes the main idea surprising
+   ES aunque                       | DE obwohl                       | FR bien que                     | IT Sebbene
+   ~M es: a pesar de -> aunque  ('a pesar de' means 'in spite of' (used with a noun); 'although' before a clause is 'aunque')
+
+42) [923] among  (Basic)
+   EX : The red bird is among the green leaves.
+   DEF: in the middle of or surrounded by a group of things
+   ES entre                        | DE unter                        | FR parmi                        | IT tra
+   ~M de: zwischen -> unter  ('zwischen' means between two things; 'among' many things is 'unter')
+
+43) [928] anybody  (Basic)
+   EX : Anybody can learn English if they try and study hard.
+   DEF: any person at all
+   ES cualquiera                   | DE jeder                        | FR n'importe qui                | IT chiunque
+   ~M de: jemand -> jeder  ('jemand' means somebody; 'anybody can' is better as 'jeder')
+
+44) [933] appear  (Basic)
+   EX : She appears happy today.
+   DEF: to seem to be a certain way
+   ES parecer                      | DE scheinen                     | FR paraître                     | IT sembrare
+   ~M de: erscheinen -> scheinen  ('erscheinen' means to physically appear; 'appears happy' (seems) is 'scheinen')
+   ~M fr: apparaître -> paraître  ('apparaître' means to come into view; 'appears happy' (seems) is 'paraître')
+   ~M it: apparire -> sembrare  ('apparire' means to come into view; 'appears happy' (seems) is 'sembrare')
+
+45) [935] apply  (Basic)
+   EX : She will apply for a new job next month.
+   DEF: to make a formal request, such as for a job
+   ES postular                     | DE sich bewerben                | FR postuler                     | IT fare domanda a
+   ~M es: aplicar -> postular  ('aplicar' means to apply a thing; applying for a job is 'postular')
+   ~H de: anwenden -> sich bewerben  ('anwenden' means to apply a method; applying for a job is 'sich bewerben')
+
+46) [938] argue  (Basic)
+   EX : They often argue about small things.
+   DEF: to disagree with someone, often in an angry way
+   ES discutir                     | DE streiten                     | FR se disputer                  | IT litigare
+   ~M de: argumentieren -> streiten  ('argumentieren' means to present arguments; arguing/quarrelling is 'streiten')
+   ~M fr: argumenter -> se disputer  ('argumenter' means to present arguments; arguing/quarrelling is 'se disputer')
+
+47) [939] argument  (Basic)
+   EX : They had an argument about the best way to travel.
+   DEF: an angry disagreement between people
+   ES discusión                    | DE Streit                       | FR dispute                      | IT discussione
+   ~M de: Argument -> Streit  ('Argument' is a reason/point; 'had an argument' (a quarrel) is 'Streit')
+
+48) [942] arrangement  (Basic)
+   EX : We made an arrangement to meet at the cafe.
+   DEF: a plan or agreement about how something will happen
+   ES acuerdo                      | DE Vereinbarung                 | FR arrangement                  | IT accordo
+   ~M de: Anordnung -> Vereinbarung  ('Anordnung' means a layout or order; an arrangement to meet is 'Vereinbarung')
+   ~M it: disposizione -> accordo  ('disposizione' means a layout; an arrangement to meet is 'accordo')
+
+49) [954] average  (Basic)
+   EX : The average student studies every day.
+   DEF: of the usual or typical kind; not special
+   ES medio                        | DE durchschnittlich             | FR moyen                        | IT medio
+   ~M es: promedio -> medio  ('promedio' is the noun (the mean); 'the average student' uses the adjective 'medio')
+   ~M de: Durchschnitt -> durchschnittlich  ('Durchschnitt' is the noun; 'the average student' uses the adjective 'durchschnittlich')
+   ~M fr: moyenne -> moyen  ('moyenne' is the noun; 'the average student' uses the adjective 'moyen')
+   ~M it: media -> medio  ('media' is the noun; 'the average student' uses the adjective 'medio')
+
+50) [993] bottom  (Basic)
+   EX : The ship sank to the bottom of the ocean.
+   DEF: the lowest part of something
+   ES fondo                        | DE Boden                        | FR bas                          | IT il fondo
+   ~M de: unten -> Boden  ('unten' is the adverb 'below'; the noun 'bottom' (of the ocean) is 'Boden')
+
+51) [1007] care  (Basic)
+   EX : She cares deeply about her students's students' progress.
+   DEF: to feel that something is important to you
+   ES interesarse                  | DE sorgen                       | FR se sentir concerné           | IT preoccuparsi
+   ~M it: cura -> preoccuparsi  ('cura' is the noun; here 'care about' is a verb, better as 'preoccuparsi')
+
+52) [1022] character  (Basic)
+   EX : The main character helped his friends solve the mystery.
+   DEF: a person in a book, film, or play
+   ES personaje                    | DE Figur                        | FR personnage                   | IT personaggio
+   ~M de: Charakter -> Figur  ('Charakter' means personality; a character in a story is a 'Figur')
+
+53) [1046] collect  (Basic)
+   EX : Please collect all the books and put them on the shelf.
+   DEF: to gather things together from different places
+   ES recoger                      | DE sammeln                      | FR collecter                    | IT raccogliere
+   ~M es: recolectar -> recoger  ('recolectar' means to harvest; collecting/gathering books is 'recoger')
+
+54) [1068] cooker  (Basic)
+   EX : She bought a new cooker for her small kitchen.
+   DEF: a machine used for cooking food in a kitchen
+   ES estufa                       | DE Herd                         | FR cuisinière                   | IT fornello
+   ~M de: Kocher -> Herd  ('Kocher' is a small portable burner; a kitchen cooker is 'Herd')
+
+55) [1080] cross  (Basic)
+   EX : Please cross the street carefully at the light.
+   DEF: to go from one side of something to the other
+   ES cruzar                       | DE überqueren                   | FR traverser                    | IT attraversare
+   ~M de: kreuzen -> überqueren  ('kreuzen' means to intersect; crossing a street is 'überqueren')
+
+56) [1111] direct  (Basic)
+   EX : Can you direct me to the nearest bus stop?
+   DEF: to show someone the way to a place
+   ES dirigir                      | DE weisen                       | FR diriger                      | IT indicare / dirigere
+   ~M de: direkt -> weisen  ('direkt' is the adjective 'direct'; here 'direct me to' is a verb (to show the way), 'weisen')
+
+57) [1131] driving  (Basic)
+   EX : She enjoys driving her car to new places on holidays.
+   DEF: the activity of controlling and steering a vehicle
+   ES conducir                     | DE Fahren                       | FR conduite                     | IT guidare
+   ~M es: conduciendo -> conducir  (the value was a gerund form; the base activity form is 'conducir')
+
+58) [1132] drop  (Basic)
+   EX : Please, do not drop the plate.
+   DEF: to let something fall by accident
+   ES dejar caer                   | DE fallen lassen                | FR faire tomber                 | IT fare cadere
+   ~M de: fallen -> fallen lassen  ('fallen' means to fall; dropping something (letting it fall) is 'fallen lassen')
+
+59) [1133] drug  (Basic)
+   EX : The doctor prescribed a new drug for her headache.
+   DEF: a substance used as a medicine to treat illness
+   ES medicamento                  | DE Arzneimittel                 | FR médicament                   | IT farmaco
+   ~M es: droga -> medicamento  ('droga' usually means an illegal drug; a prescribed medicine is 'medicamento')
+
+60) [1138] education  (Basic)
+   EX : Education helps people learn new things every day.
+   DEF: the process of teaching and learning in schools
+   ES educación                    | DE Bildung                      | FR éducation                    | IT istruzione
+   ~M de: Ausbildung -> Bildung  ('Ausbildung' means vocational training; general education is 'Bildung')
+
+61) [1168] expect  (Basic)
+   EX : I expect good news from the meeting today.
+   DEF: to think that something will happen
+   ES esperar                      | DE erwarten                     | FR s'attendre à                 | IT aspettarsi
+   ~M fr: attendre -> s'attendre à  ('attendre' means to wait; expecting/anticipating is 's'attendre à')
+
+62) [1179] fail  (Basic)
+   EX : I failed the exam because I did not study.
+   DEF: to not pass a test or not succeed at something
+   ES reprobar                     | DE scheitern                    | FR échouer                      | IT fallire
+   ~M es: fallar -> reprobar  ('fallar' means to malfunction/miss; failing an exam is 'reprobar')
+
+63) [1190] female  (Basic)
+   EX : The female bird laid three blue eggs in the nest.
+   DEF: belonging to the sex that can have babies or lay eggs
+   ES hembra                       | DE weiblich                     | FR femelle                      | IT femmina
+   ~M es: femenino -> hembra  ('femenino' means feminine; a female animal is 'hembra')
+
+64) [1193] fight  (Basic)
+   EX : The two friends had a small fight over a game.
+   DEF: an angry disagreement, sometimes with physical force
+   ES pelea                        | DE Kampf                        | FR dispute                      | IT litigio
+   ~M fr: se battre -> dispute  ('se battre' is the verb 'to fight'; here 'a fight' is a noun, 'dispute')
+
+65) [1196] final  (Basic)
+   EX : The final exam is next week.
+   DEF: coming last; at the end
+   ES final                        | DE letzte                       | FR final                        | IT finale
+   ~M de: Finale -> letzte  ('Finale' is the noun (a final/finale); 'final exam' uses the adjective 'letzte')
+
+66) [1210] focus  (Basic)
+   EX : Please focus on your homework and not the TV.
+   DEF: to give all your attention to one thing
+   ES concentrarse                 | DE fokussieren                  | FR se concentrer                | IT concentrarsi su
+   ~M es: enfocar -> concentrarse  ('enfocar' means to focus a lens; focusing your attention is 'concentrarse')
+
+67) [1215] formal  (Basic)
+   EX : She wore a formal dress to the elegant wedding ceremony.
+   DEF: suitable for serious or official occasions
+   ES formal                       | DE formal                       | FR formel                       | IT formale
+   ~M fr: officiel -> formel  ('officiel' means official; a formal dress uses 'formel')
+
+68) [1217] forward  (Basic)
+   EX : Please step forward and introduce yourself to the class.
+   DEF: toward the front or a place ahead
+   ES adelante                     | DE nach vorne                   | FR en avant                     | IT avanti
+   ~M fr: avant -> en avant  ('avant' means before/front; the direction 'forward' is 'en avant')
+
+69) [1222] fun  (Basic)
+   EX : Playing games with friends is often a lot of fun.
+   DEF: enjoyment or pleasure from doing something
+   ES diversión                    | DE Spaß                         | FR amusement                    | IT divertimento
+   ~M es: divertido -> diversión  ('divertido' is the adjective 'fun/funny'; the noun 'fun' is 'diversión')
+   ~M fr: amusant -> amusement  ('amusant' is the adjective; the noun 'fun' is 'amusement')
+
+70) [1227] gap  (Basic)
+   EX : There is a gap between the two fence posts.
+   DEF: an empty space between two things
+   ES brecha                       | DE Lücke                        | FR écart                        | IT spazio
+   ~M it: spacco -> spazio  ('spacco' is a slit (as in clothing); a gap between things is 'spazio')
+
+71) [1238] grass  (Basic)
+   EX : The cow eats fresh green grass in the field.
+   DEF: the low green plants that cover fields and lawns
+   ES hierba                       | DE Gras                         | FR herbe                        | IT erba
+   ~M es: césped -> hierba  ('césped' is a mowed lawn; the grass a cow grazes on is 'hierba')
+
+72) [1247] hall  (Basic)
+   EX : I walked down the hall to my classroom.
+   DEF: a long narrow passage inside a building
+   ES pasillo                      | DE Flur                         | FR couloir                      | IT corridoio
+   ~M de: Saal -> Flur  ('Saal' is a large room like a ballroom; a corridor is 'Flur')
+   ~M it: ingresso -> corridoio  ('ingresso' means entrance; a corridor/hallway is 'corridoio')
+
+73) [1268] home  (Basic)
+   EX : I am going home after work today.
+   DEF: the place where you live
+   ES casa                         | DE heim                         | FR maison                       | IT casa
+   ~M es: hogar -> casa  ('hogar' is home as a concept; 'going home' (destination) is 'casa')
+
+74) [1282] increase  (Basic)
+   EX : The company hopes to increase its sales next year.
+   DEF: to make something larger in number or amount
+   ES aumentar                     | DE steigern                     | FR augmenter                    | IT aumentare
+   ~M de: zunehmen -> steigern  ('zunehmen' is to increase intransitively; increasing sales (transitive) is 'steigern')
+
+75) [1311] kid  (Basic)
+   EX : The kid played happily with toys.
+   DEF: a young child
+   ES niño                         | DE Kind                         | FR enfant                       | IT bambino
+   ~M it: ragazzo -> bambino  ('ragazzo' means a boy/teenager; a young kid is 'bambino')
+
+76) [1316] knock  (Basic)
+   EX : Please knock on the door before entering the room.
+   DEF: to hit a door with your hand to get attention
+   ES llamar                       | DE klopfen                      | FR frapper                      | IT bussare
+   ~M es: golpear -> llamar  ('golpear' means to hit; knocking on a door is 'llamar' (a la puerta))
+
+77) [1332] leader  (Basic)
+   EX : The team leader motivated everyone to work together effectively.
+   DEF: a person who guides or is in charge of a group
+   ES líder                        | DE Anführer                     | FR chef                         | IT leader
+   ~M de: Führer -> Anführer  ('Führer' carries strong historical connotations; a team leader is better as 'Anführer')
+
+78) [1335] lecture  (Basic)
+   EX : The professor gave a lecture on ancient history this morning.
+   DEF: a talk given to teach people about a subject
+   ES conferencia                  | DE Vortrag                      | FR conférence                   | IT lezione
+   ~M es: lección -> conferencia  ('lección' means a lesson; a talk given by a professor is a 'conferencia')
+
+79) [1341] lift  (Basic)
+   EX : She helped me lift the heavy box onto the shelf.
+   DEF: to raise something to a higher position
+   ES levantar                     | DE heben                        | FR soulever                     | IT sollevare
+   ~M es: elevar -> levantar  ('elevar' is more abstract; lifting a box physically is 'levantar')
+
+80) [1349] look  (Basic)
+   EX : Please look at the picture on the wall.
+   DEF: to turn your eyes toward something to see it
+   ES mirar                        | DE schauen                      | FR regarder                     | IT guardare
+   ~M de: sehen -> schauen  ('sehen' means to see; 'look at' something is 'schauen')
+
+81) [1360] male  (Basic)
+   EX : The male bird sang a beautiful song.
+   DEF: belonging to the sex that cannot have babies or lay eggs
+   ES macho                        | DE männlich                     | FR mâle                         | IT maschio
+   ~M es: masculino -> macho  ('masculino' means masculine; a male animal is 'macho')
+
+82) [1363] manner  (Basic)
+   EX : She spoke in a polite manner to her teacher.
+   DEF: the way in which something is done
+   ES manera                       | DE Weise                        | FR manière                      | IT maniera
+   ~M de: Benehmen -> Weise  ('Benehmen' means behaviour; 'in a polite manner' uses 'Weise')
+
+83) [1365] marry  (Basic)
+   EX : They will marry next Saturday after dating for two years.
+   DEF: to become husband and wife
+   ES casarse                      | DE heiraten                     | FR se marier                    | IT sposarsi
+   ~M fr: marier -> se marier  ('marier' means to marry someone off; to get married is 'se marier')
+   ~M it: sposare -> sposarsi  ('sposare' is to marry someone; 'they will marry' (each other) is 'sposarsi')
+
+84) [1382] mobile  (Basic)
+   EX : She has a mobile phone that she carries everywhere.
+   DEF: a phone you can carry and use anywhere
+   ES móvil                        | DE Handy                        | FR téléphone portable           | IT cellulare
+   ~M de: Mobile -> Handy  ('Mobile' means a hanging decoration; a mobile phone is 'Handy')
+   ~M it: telefono -> cellulare  ('telefono' is a generic phone; a mobile phone is 'cellulare')
+
+85) [1396] neck  (Basic)
+   EX : She wore a beautiful necklace around her neck.
+   DEF: the part of the body that joins the head to the shoulders
+   ES cuello                       | DE Hals                         | FR cou                          | IT collo
+   ~M de: Nacken -> Hals  ('Nacken' is the nape (back of the neck); a necklace goes around the 'Hals')
+
+86) [1406] notice  (Basic)
+   EX : I notice she looks tired today.
+   DEF: to see or become aware of something
+   ES notar                        | DE bemerken                     | FR remarquer                    | IT notare
+   ~H es: aviso -> notar  ('aviso' is the noun 'a notice/warning'; here 'notice' is a verb meaning to perceive)
+   ~M de: beachten -> bemerken  ('beachten' means to heed; noticing (perceiving) something is 'bemerken')
+
+87) [1413] officer  (Basic)
+   EX : The officer asked to see my passport.
+   DEF: a person with authority, such as in the police or army
+   ES oficial                      | DE Beamter                      | FR officier                     | IT ufficiale
+   ~M de: Offizier -> Beamter  ('Offizier' is specifically a military officer; a passport/police officer is a 'Beamter')
+
+88) [1422] ourselves  (Basic)
+   EX : We painted the house ourselves.
+   DEF: us and no one else
+   ES nosotros mismos              | DE selbst                       | FR nous-mêmes                   | IT noi stesse
+   ~M de: uns -> selbst  ('uns' just means 'us'; the emphatic 'ourselves' (we did it) is 'selbst')
+
+89) [1427] pack  (Basic)
+   EX : Please pack your clothes in the suitcase for the trip.
+   DEF: to put things into a bag or case for a trip
+   ES empacar                      | DE packen                       | FR emballer                     | IT fare la valigia
+   ~M it: impacchettare / fare la valigia -> fare la valigia  (the value held two options with a slash; packing a suitcase is 'fare la valigia')
+
+90) [1438] pattern  (Basic)
+   EX : The artist used a floral pattern on the fabric.
+   DEF: a repeated design of shapes or lines
+   ES patrón                       | DE Muster                       | FR motif                        | IT motivo
+   ~M fr: modèle -> motif  ('modèle' means a model; a decorative repeated pattern is a 'motif')
+   ~M it: modello -> motivo  ('modello' means a model; a decorative repeated pattern is a 'motivo')
+
+91) [1443] perform  (Basic)
+   EX : She will perform a beautiful song for the audience tonight.
+   DEF: to sing, act, or play music in front of people
+   ES interpretar                  | DE auftreten                    | FR jouer                        | IT eseguire
+   ~H es: llevar a cabo -> interpretar  ('llevar a cabo' means to carry out a task; performing a song is 'interpretar')
+   ~M de: durchführen -> auftreten  ('durchführen' means to carry out; performing on stage is 'auftreten')
+
+92) [1458] platform  (Basic)
+   EX : They waited on the station platform.
+   DEF: the raised area beside railway tracks where you get on trains
+   ES andén                        | DE Bahnsteig                    | FR quai                         | IT binario
+   ~M es: plataforma -> andén  (a general 'plataforma'; a railway station platform is an 'andén')
+   ~M de: Plattform -> Bahnsteig  (a general 'Plattform'; a railway station platform is a 'Bahnsteig')
+   ~M fr: plate-forme -> quai  (a general 'plate-forme'; a railway station platform is a 'quai')
+   ~M it: piattaforma -> binario  (a general 'piattaforma'; a railway station platform is a 'binario')
+
+93) [1486] promise  (Basic)
+   EX : She made a promise to help.
+   DEF: a statement that you will surely do something
+   ES promesa                      | DE Versprechen                  | FR promesse                     | IT promessa
+   ~M de: versprechen -> Versprechen  (lowercase 'versprechen' is the verb; the noun 'a promise' is capitalised 'Versprechen')
+
+94) [1501] race  (Basic)
+   EX : The runners will race to the finish line.
+   DEF: to compete to be the fastest
+   ES correr                       | DE rennen                       | FR faire la course              | IT gareggiare
+   ~M de: Wettrennen -> rennen  ('Wettrennen' is the noun 'a race'; here 'race' is a verb, 'rennen')
+   ~M fr: course -> faire la course  ('course' is the noun 'a race'; the verb 'to race' is 'faire la course')
+   ~M it: gara -> gareggiare  ('gara' is the noun 'a race'; the verb 'to race' is 'gareggiare')
+
+95) [1503] raise  (Basic)
+   EX : Raise your hand.
+   DEF: to lift something to a higher position
+   ES levantar                     | DE heben                        | FR lever                        | IT alzare
+   ~H es: aumentar -> levantar  ('aumentar' means to increase numbers; raising your hand is 'levantar')
+   ~M de: erheben -> heben  ('erheben' is formal/to rise up; raising your hand is 'heben')
+   ~H it: aumentare -> alzare  ('aumentare' means to increase; raising your hand is 'alzare')
+
+96) [1504] rate  (Basic)
+   EX : The car traveled at a high rate of speed.
+   DEF: how fast or how often something happens
+   ES tasa                         | DE Rate                         | FR taux                         | IT ritmo
+   ~M it: velocità / ritmo -> ritmo  (the value held two options with a slash; a rate/pace is 'ritmo')
+
+97) [1512] reception  (Basic)
+   EX : The wedding reception had delicious food and dancing.
+   DEF: a party or formal welcome for guests
+   ES recepción                    | DE Empfang                      | FR réception                    | IT ricevimento
+   ~M de: Rezeption -> Empfang  ('Rezeption' is a hotel reception desk; a wedding reception (party) is an 'Empfang')
+   ~M it: reception -> ricevimento  (the English word was kept; a wedding reception is a 'ricevimento')
+
+98) [1525] remove  (Basic)
+   EX : Remove the sticker gently.
+   DEF: to take something away from where it is
+   ES quitar                       | DE entfernen                    | FR retirer                      | IT rimuovere
+   ~M es: eliminar -> quitar  ('eliminar' means to delete/eliminate; physically removing a sticker is 'quitar')
+
+99) [1537] review  (Basic)
+   EX : We will review the lesson.
+   DEF: to look at something again to check or study it
+   ES revisar                      | DE wiederholen                  | FR revoir                       | IT ripassare
+   ~M de: Rezension -> wiederholen  ('Rezension' is a written critique; reviewing/going over a lesson is 'wiederholen')
+   ~M it: revisione -> ripassare  ('revisione' means a revision/overhaul; reviewing a lesson is 'ripassare')
+
+100) [1551] sadly  (Basic)
+   EX : She sadly walked away.
+   DEF: in a way that shows sadness
+   ES tristemente                  | DE traurig                      | FR malheureusement              | IT tristemente
+   ~M de: leider -> traurig  ('leider' means 'unfortunately'; walking away sadly (in a sad way) is 'traurig')
+
+101) [1558] save  (Basic)
+   EX : Save the document frequently.
+   DEF: to keep a computer file so you can use it later
+   ES guardar                      | DE speichern                    | FR enregistrer                  | IT salvare
+   ~H fr: sauver -> enregistrer  ('sauver' means to rescue; saving a computer file is 'enregistrer')
+   ~M it: salva -> salvare  ('salva' is the imperative form; the base verb is 'salvare')
+
+102) [1560] scary  (Basic)
+   EX : The movie was scary.
+   DEF: causing fear
+   ES aterrador                    | DE beängstigend                 | FR effrayant                    | IT spaventoso
+   ~M it: allarmante -> spaventoso  ('allarmante' means alarming; a scary film is 'spaventoso')
+
+103) [1563] score  (Basic)
+   EX : His score improved.
+   DEF: the number of points won in a game or test
+   ES puntaje                      | DE Punktzahl                    | FR score                        | IT punteggio
+   ~M it: punto -> punteggio  ('punto' means a single point; a game score is a 'punteggio')
+
+104) [1574] separate  (Basic)
+   EX : Please separate the white clothes from the colored ones before washing.
+   DEF: to keep things apart from each other
+   ES separar                      | DE trennen                      | FR séparer                      | IT separare
+   ~M fr: séparé -> séparer  ('séparé' is the past participle 'separated'; the verb 'to separate' is 'séparer')
+
+105) [1581] shall  (Basic)
+   EX : Shall we begin?
+   DEF: used to ask about or suggest a future action
+   ES deber                        | DE soll                         | FR devoir                       | IT dovere
+   ~M it: deve -> dovere  ('deve' is 'he must' (3rd person); the base modal is 'dovere')
+
+106) [1589] sign  (Basic)
+   EX : Please read the road sign carefully.
+   DEF: a board with words or pictures that gives information
+   ES cartel                       | DE Schild                       | FR panneau                      | IT cartello
+   ~M de: Zeichen -> Schild  ('Zeichen' is an abstract sign/symbol; a road sign is a 'Schild')
+   ~M fr: signe -> panneau  ('signe' is a gesture/symbol; a road sign is a 'panneau')
+
+107) [1596] site  (Basic)
+   EX : The site is under construction.
+   DEF: a place where something is built or located
+   ES sitio                        | DE Baustelle                    | FR site                         | IT sito
+   ~M de: Seite -> Baustelle  ('Seite' means page/side; a construction site is a 'Baustelle')
+
+108) [1606] smile  (Basic)
+   EX : Her smile made me happy.
+   DEF: a happy expression made by turning up the mouth
+   ES sonrisa                      | DE Lächeln                      | FR sourire                      | IT sorriso
+   ~M de: lächeln -> Lächeln  (lowercase 'lächeln' is the verb; the noun 'a smile' is capitalised 'Lächeln')
+
+109) [1608] smoking  (Basic)
+   EX : Smoking is not allowed here.
+   DEF: the act of breathing in smoke from cigarettes
+   ES fumar                        | DE Rauchen                      | FR fumer                        | IT fumare
+   ~M es: fumando -> fumar  ('fumando' is the participle 'smoking (now)'; the activity noun is 'fumar')
+   ~M fr: qui fume -> fumer  ('qui fume' means 'who smokes'; the activity 'smoking' is 'fumer')
+
+110) [1621] speaker  (Basic)
+   EX : The speaker talked loudly.
+   DEF: a person who talks to an audience
+   ES orador                       | DE Redner                       | FR orateur                      | IT oratore
+   ~M es: vocero -> orador  ('vocero' means a spokesperson; a speaker addressing an audience is an 'orador')
+   ~H de: Lautsprecher -> Redner  ('Lautsprecher' is a loudspeaker device; a person who speaks to an audience is a 'Redner')
+   ~H fr: haut-parleur -> orateur  ('haut-parleur' is a loudspeaker device; a person who speaks to an audience is an 'orateur')
+   ~H it: altoparlante -> oratore  ('altoparlante' is a loudspeaker device; a person who speaks to an audience is an 'oratore')
+
+111) [1632] start  (Basic)
+   EX : Let's start our English lesson now and learn new words.
+   DEF: to begin doing something
+   ES comenzar                     | DE starten                      | FR commencer                    | IT iniziare
+   ~M de: Start -> starten  ('Start' is the noun 'a start'; here 'start' is a verb, 'starten')
+
+112) [1633] state  (Basic)
+   EX : The country is experiencing a state of economic growth.
+   DEF: a condition that someone or something is in
+   ES estado                       | DE Zustand                      | FR état                         | IT stato
+   ~M fr: État -> état  (capital 'État' means the nation/State; a state or condition is lowercase 'état')
+
+113) [1636] step  (Basic)
+   EX : She took a small step forward.
+   DEF: a movement made by lifting and putting down the foot
+   ES paso                         | DE Schritt                      | FR pas                          | IT passo
+   ~M it: fare un passo -> passo  ('fare un passo' is the verb phrase 'to take a step'; the noun 'a step' is 'passo')
+
+114) [1644] stress  (Basic)
+   EX : Stress is not healthy.
+   DEF: a worried, tense feeling caused by pressure
+   ES estrés                       | DE Stress                       | FR stress                       | IT stress
+   ~M fr: stresser -> stress  ('stresser' is the verb 'to stress'; the noun 'stress' is 'stress')
+
+115) [1666] target  (Basic)
+   EX : Our target is to finish the project next week.
+   DEF: a result you are trying to reach
+   ES objetivo                     | DE Ziel                         | FR objectif                     | IT obiettivo
+   ~M fr: cible -> objectif  ('cible' is a physical target to aim at; a goal/target is an 'objectif')
+
+116) [1679] thinking  (Basic)
+   EX : I'm thinking about lunch.
+   DEF: the act of using your mind to form ideas
+   ES pensando                     | DE Denken                       | FR pensée                       | IT pensiero
+   ~M es: pensamiento -> pensando  ('pensamiento' is the noun 'thought'; the -ing form 'thinking' is 'pensando')
+
+117) [1684] tie  (Basic)
+   EX : Please tie your shoes before you trip.
+   DEF: to fasten something with string or laces
+   ES atar                         | DE binden                       | FR attacher                     | IT allacciare
+   ~H fr: cravate -> attacher  ('cravate' is a necktie (noun); tying your shoes is 'attacher')
+   ~M it: legare / allacciare -> allacciare  (the value held two options; tying shoes is 'allacciare')
+
+118) [1687] top  (Basic)
+   EX : He climbed to the top quickly.
+   DEF: the highest part of something
+   ES cima                         | DE Spitze                       | FR haut                         | IT cima
+   ~M es: arriba -> cima  ('arriba' means up/above; the top (highest point) is the 'cima')
+   ~M it: sopra / cima -> cima  (the value held two options; the top (highest point) is the 'cima')
+
+119) [1689] tour  (Basic)
+   EX : We went on a tour of the historic castle.
+   DEF: a journey to visit and see interesting places
+   ES recorrido                    | DE Tour                         | FR visite                       | IT tour
+   ~M es: tour -> recorrido  (the English word was kept; a sightseeing tour is a 'recorrido')
+   ~M fr: tournée -> visite  ('tournée' is a performance/delivery tour; visiting a castle is a 'visite')
+
+120) [1700] training  (Basic)
+   EX : The training lasted two hours.
+   DEF: the process of learning a skill through practice
+   ES capacitación                 | DE Schulung                     | FR entraînement                 | IT formazione
+   ~M de: Ausbildung -> Schulung  ('Ausbildung' is long vocational education; a short training session is a 'Schulung')
+
+121) [1701] transport  (Basic)
+   EX : Buses and trains transport many people every day.
+   DEF: to carry people or goods from one place to another
+   ES transportar                  | DE transportieren               | FR transporter                  | IT trasportare
+   ~M de: Transport -> transportieren  ('Transport' is the noun; here 'transport' is a verb, 'transportieren')
+   ~M fr: transport -> transporter  ('transport' is the noun; the verb 'to transport' is 'transporter')
+   ~M it: trasporto -> trasportare  ('trasporto' is the noun; the verb 'to transport' is 'trasportare')
+
+122) [1703] trouble  (Basic)
+   EX : I am having trouble understanding this new lesson.
+   DEF: difficulty or problems
+   ES problema                     | DE Problem                      | FR difficulté                   | IT difficoltà
+   ~M it: guaio -> difficoltà  ('guaio' is a mess/scrape; having trouble understanding is 'difficoltà')
+
+123) [1707] underground  (Basic)
+   EX : We took the underground train.
+   DEF: a railway that runs in tunnels below a city
+   ES subterráneo                  | DE U-Bahn                       | FR souterrain                   | IT metropolitana
+   ~M de: Untergrund -> U-Bahn  ('Untergrund' means the underground/subsoil; the underground train is the 'U-Bahn')
+
+124) [1710] unhappy  (Basic)
+   EX : She was unhappy because her cat was sick.
+   DEF: feeling sad; not happy
+   ES infeliz                      | DE unglücklich                  | FR malheureux                   | IT infelice
+   ~M de: unzufrieden -> unglücklich  ('unzufrieden' means dissatisfied; sad/unhappy is 'unglücklich')
+
+125) [1740] whole  (Basic)
+   EX : She ate the whole apple, leaving nothing behind.
+   DEF: complete; with no part missing
+   ES entero                       | DE ganz                         | FR entier                       | IT intero
+   ~M it: Totale -> intero  ('Totale' means total; a whole apple (complete) is 'intero')
+
+126) [1747] wood  (Basic)
+   EX : The wood is heavy.
+   DEF: the hard material that trees are made of
+   ES madera                       | DE Holz                         | FR bois                         | IT legno
+   ~M it: legna -> legno  ('legna' means firewood; wood as a material is 'legno')
+
+127) [1749] working  (Basic)
+   EX : I am working now.
+   DEF: doing a job or making an effort
+   ES trabajando                   | DE Arbeiten                     | FR travailler                   | IT lavorando
+   ~M fr: qui travaille -> travailler  ('qui travaille' means 'who works'; the -ing form is 'travailler')
+
+128) [1756] yours  (Basic)
+   EX : This book is yours.
+   DEF: belonging to you
+   ES tuyo                         | DE deins                        | FR le vôtre                     | IT il tuo
+   ~M de: dein -> deins  ('dein' is the possessive determiner 'your'; the pronoun 'yours' is 'deins')
+
+129) [1773] aged  (Intermediate)
+   EX : The aged cheese had a strong, delicious flavor.
+   DEF: made stronger in flavour by being kept for a long time
+   ES curado                       | DE gealtert                     | FR affiné                       | IT stagionato
+   ~M es: viejo -> curado  ('viejo' means old; aged (matured) cheese is 'curado')
+   ~M fr: âgé -> affiné  ('âgé' means aged (of a person); aged/matured cheese is 'affiné')
+   ~H it: anziano -> stagionato  ('anziano' means elderly (of a person); aged/matured cheese is 'stagionato')
+
+130) [1776] ahead  (Intermediate)
+   EX : The finish line is just ahead; we are winning.
+   DEF: in front; further forward
+   ES adelante                     | DE voraus                       | FR en avant                     | IT più avanti
+   ~M fr: à l'avance -> en avant  ('à l'avance' means in advance (time); ahead (in front) is 'en avant')
+   ~M it: più avanti / davanti -> più avanti  (the value held two options; ahead (further forward) is 'più avanti')
+
+131) [1777] aim  (Intermediate)
+   EX : He aims the arrow at the center of the target.
+   DEF: to point something at a target
+   ES apuntar                      | DE zielen                       | FR viser                        | IT mirare
+   ~M it: mirare, puntare a -> mirare  (the value listed two options; 'to aim' is 'mirare')
+
+132) [1792] annoying  (Intermediate)
+   EX : The buzzing fly was very annoying.
+   DEF: making someone feel a little angry
+   ES irritante                    | DE nervig                       | FR agaçant                      | IT fastidioso
+   ~M fr: ennuyeux -> agaçant  ('ennuyeux' leans toward boring; annoying is 'agaçant')
+
+133) [1793] apart  (Intermediate)
+   EX : The two friends stood apart, looking at the painting.
+   DEF: separated by a distance from each other
+   ES por separado                 | DE auseinander                  | FR à part                       | IT separati
+   ~M it: separati, lontano -> separati  (the value listed two options; 'apart' (separated) is 'separati')
+
+134) [1795] application  (Intermediate)
+   EX : Please submit your application for the university by December 1st.
+   DEF: a formal request, often written, for a job or place
+   ES solicitud                    | DE Bewerbung                    | FR candidature                  | IT domanda
+   ~M it: richiesta, domanda -> domanda  (the value listed two options; a job/university application is a 'domanda')
+
+135) [1797] appreciate  (Intermediate)
+   EX : I appreciate your help with my homework.
+   DEF: to be grateful for something
+   ES apreciar                     | DE schätzen                     | FR apprécier                    | IT apprezzare
+   ~M de: anerkennen -> schätzen  ('anerkennen' means to acknowledge; appreciating/being grateful is 'schätzen')
+
+136) [1799] arrest  (Intermediate)
+   EX : The police will arrest the suspect soon.
+   DEF: to catch and hold someone by the law's power
+   ES arrestar                     | DE verhaften                    | FR arrêter                      | IT arrestare
+   ~M fr: interpeller -> arrêter  ('interpeller' means to question/hail; to arrest is 'arrêter')
+
+137) [1801] assignment  (Intermediate)
+   EX : Students must complete their writing assignment by Friday.
+   DEF: a piece of work given to someone to do
+   ES tarea                        | DE Aufgabe                      | FR devoir                       | IT compito
+   ~M de: Zuweisung -> Aufgabe  ('Zuweisung' means an allocation; a school assignment is an 'Aufgabe')
+   ~M fr: affectation -> devoir  ('affectation' means a job posting; a school assignment is a 'devoir')
+   ~M it: incarico, compito -> compito  (the value listed two options; a school assignment is a 'compito')
+
+138) [1804] attach  (Intermediate)
+   EX : Please attach the file to your email message.
+   DEF: to fasten or add one thing to another
+   ES adjuntar                     | DE anhängen                     | FR joindre                      | IT allegare
+   ~M fr: attacher -> joindre  ('attacher' means to tie/fasten; attaching a file is 'joindre')
+
+139) [1805] attitude  (Intermediate)
+   EX : Her positive attitude helped her succeed in school.
+   DEF: the way you think and feel about something
+   ES actitud                      | DE Einstellung                  | FR attitude                     | IT atteggiamento
+   ~M de: Attitüde -> Einstellung  ('Attitüde' means an affected pose; a person's attitude is their 'Einstellung')
+
+140) [1807] attraction  (Intermediate)
+   EX : The new exhibit at the museum is a major attraction.
+   DEF: something interesting that makes people want to visit
+   ES atracción                    | DE Attraktion                   | FR attraction                   | IT attrazione
+   ~M fr: attirance -> attraction  ('attirance' means romantic attraction; a tourist attraction is an 'attraction')
+
+141) [1813] bake  (Intermediate)
+   EX : She will bake a delicious cake for the party.
+   DEF: to cook food such as bread or cakes in an oven
+   ES hornear                      | DE backen                       | FR cuire                        | IT cuocere al forno
+   ~M it: cottura al forno -> cuocere al forno  ('cottura al forno' is the noun 'oven-baking'; the verb 'to bake' is 'cuocere al forno')
+
+142) [1814] balance  (Intermediate)
+   EX : She tried to balance work and her personal life.
+   DEF: to keep two or more things in a steady, equal state
+   ES balancear                    | DE balancieren                  | FR équilibrer                   | IT bilanciare
+   ~M fr: équilibre -> équilibrer  ('équilibre' is the noun 'balance'; the verb 'to balance' is 'équilibrer')
+
+143) [1815] ban  (Intermediate)
+   EX : The school will ban phones in classrooms.
+   DEF: to officially forbid something
+   ES prohibir                     | DE verbieten                    | FR interdire                    | IT vietare
+   ~M it: proibire, vietare -> vietare  (the value listed two options; 'to ban' is 'vietare')
+
+144) [1817] base  (Intermediate)
+   EX : The lamp has a heavy base so it will not tip over.
+   DEF: the bottom part that something stands on
+   ES base                         | DE Sockel                       | FR base                         | IT base
+   ~M de: Base -> Sockel  ('Base' means a chemical base; the base a lamp stands on is a 'Sockel')
+
+145) [1818] basic  (Intermediate)
+   EX : The new student learned basic English words quickly.
+   DEF: simple and at the first level; not advanced
+   ES básico                       | DE grundlegend                  | FR basique                      | IT di base
+   ~M de: simpel -> grundlegend  ('simpel' means simplistic; basic (fundamental/first-level) is 'grundlegend')
+
+146) [1827] benefit  (Intermediate)
+   EX : Eating vegetables has many benefits for your health.
+   DEF: a good or helpful effect of something
+   ES beneficio                    | DE Nutzen                       | FR avantage                     | IT beneficio
+   ~M it: benefit, vantaggio -> beneficio  (the value mixed English and two options; a benefit is a 'beneficio')
+
+147) [1830] block  (Intermediate)
+   EX : The child played with colorful building blocks.
+   DEF: a solid piece of hard material with flat sides
+   ES bloque                       | DE Block                        | FR bloc                         | IT blocco
+   ~M it: blocchi / mattoncini -> blocco  (the value held two plural options; a block is a 'blocco')
+
+148) [1831] board  (Intermediate)
+   EX : We used a wooden board to build a shelf.
+   DEF: a long flat piece of cut wood
+   ES tabla                        | DE Brett                        | FR planche                      | IT tavola
+   ~H fr: embarquer -> planche  ('embarquer' means to board a vehicle; a wooden board is a 'planche')
+   ~M it: tavola / asse -> tavola  (the value held two options; a wooden board is a 'tavola')
+
+149) [1837] brave  (Intermediate)
+   EX : The brave knight fought the dragon to save the princess.
+   DEF: showing courage; not afraid of danger
+   ES valiente                     | DE mutig                        | FR courageux                    | IT coraggioso
+   ~M es: corajudo -> valiente  ('corajudo' is informal/regional; the standard word for brave is 'valiente')
+
+150) [1838] breath  (Intermediate)
+   EX : Take a deep breath and relax your body will relax.
+   DEF: the air you take into and let out of your lungs
+   ES respiro                      | DE Atem                         | FR souffle                      | IT respiro
+   ~M fr: haleine -> souffle  ('haleine' is the breath from your mouth (odour); a deep breath is a 'souffle')
+
+151) [1849] cap  (Intermediate)
+   EX : She wore a blue cap on her head.
+   DEF: a soft flat hat, often with a curved part at the front
+   ES gorra                        | DE Kappe                        | FR casquette                    | IT berretto
+   ~H fr: boucher -> casquette  ('boucher' means to block or a butcher; a cap (hat) is a 'casquette')
+   ~M it: cappello -> berretto  ('cappello' is a hat generally; a soft cap is a 'berretto')
+
+152) [1860] champion  (Intermediate)
+   EX : She is a champion for children's rights and helps many people.
+   DEF: a person who strongly supports a cause
+   ES defensora                    | DE Verfechterin                 | FR défenseure                   | IT paladina
+   ~M es: campeón -> defensora  ('campeón' is a sports champion; a champion of a cause (she) is a 'defensora')
+   ~M de: Champion -> Verfechterin  ('Champion' is a sports champion; a champion of a cause (she) is a 'Verfechterin')
+   ~M fr: champion -> défenseure  ('champion' is a sports champion; a champion of a cause (she) is a 'défenseure')
+   ~M it: paladina / sostenitrice -> paladina  (the value held two options; a champion of a cause (she) is a 'paladina')
+
+153) [1870] claim  (Intermediate)
+   EX : He claimed he saw a ghost in the old house.
+   DEF: to say something is true without proof
+   ES afirmar                      | DE behaupten                    | FR prétendre                    | IT affermare
+   ~M es: reclamar -> afirmar  ('reclamar' means to demand; claiming/asserting something is true is 'afirmar')
+   ~M fr: réclamer -> prétendre  ('réclamer' means to demand; claiming/asserting something is true is 'prétendre')
+   ~M it: affermare / sostenere -> affermare  (the value held two options; 'to claim/assert' is 'affermare')
+
+154) [1872] clear  (Intermediate)
+   EX : The instructions were clear and simple to follow.
+   DEF: easy to see, hear, or understand
+   ES claro                        | DE klar                         | FR clair                        | IT chiaro
+   ~M fr: clairement -> clair  ('clairement' is the adverb 'clearly'; the adjective 'clear' is 'clair')
+
+155) [1878] clue  (Intermediate)
+   EX : The detective found a clue that helped solve the case.
+   DEF: a piece of information that helps solve a problem
+   ES pista                        | DE Hinweis                      | FR indice                       | IT indizio
+   ~M it: traccia -> indizio  ('traccia' means a trace/track; a clue is an 'indizio')
+
+156) [1883] coloured  (Intermediate)
+   EX : She coloured the picture with bright crayons.
+   DEF: to add colour to something using pens or paint
+   ES colorear                     | DE anmalen                      | FR colorier                     | IT colorare
+   ~H es: pintó (infinitive = pintar) -> colorear  (the value held an editorial note; 'to colour (in)' is 'colorear')
+   ~M fr: coloré -> colorier  ('coloré' is the adjective 'colourful'; the verb 'to colour in' is 'colorier')
+
+157) [1886] commercial  (Intermediate)
+   EX : Many commercials play during popular TV shows.
+   DEF: a short advert shown on TV or radio
+   ES comercial                    | DE Werbespot                    | FR publicité                    | IT pubblicità
+   ~M de: kommerziell -> Werbespot  ('kommerziell' is the adjective; a TV commercial (noun) is a 'Werbespot')
+   ~M fr: commercial -> publicité  ('commercial' is the adjective; a TV commercial (noun) is a 'publicité')
+   ~M it: la pubblicità -> pubblicità  (the value included the article 'la'; a TV commercial is 'pubblicità')
+
+158) [1892] complaint  (Intermediate)
+   EX : I want to make a complaint about the food.
+   DEF: a statement that you are not happy about something
+   ES queja                        | DE Beschwerde                   | FR plainte                      | IT reclamo
+   ~M it: rimostranza -> reclamo  ('rimostranza' is a formal remonstrance; a complaint about food is a 'reclamo')
+
+159) [1896] conclusion  (Intermediate)
+   EX : In conclusion, remember to study for the test.
+   DEF: a final decision or idea reached after thinking
+   ES conclusión                   | DE Schlussfolgerung             | FR conclusion                   | IT conclusione
+   ~M de: Abschluss -> Schlussfolgerung  ('Abschluss' means a completion/graduation; a reasoned conclusion is a 'Schlussfolgerung')
+
+160) [1902] contact  (Intermediate)
+   EX : I will contact you next week about the project.
+   DEF: to reach or communicate with someone
+   ES contactar                    | DE kontaktieren                 | FR contacter                    | IT contattare
+   ~M fr: contact -> contacter  ('contact' is the noun; the verb 'to contact' is 'contacter')
+
+161) [1904] content  (Intermediate)
+   EX : She felt content with her warm tea and good book.
+   DEF: happy and satisfied with what you have
+   ES contento                     | DE zufrieden                    | FR satisfaite                   | IT soddisfatta
+   ~H fr: contenu -> satisfaite  ('contenu' is the noun 'content/subject matter'; feeling content (satisfied, she) is 'satisfaite')
+   ~M de: zufriedengestellt -> zufrieden  ('zufriedengestellt' means appeased; feeling content is more naturally 'zufrieden')
+
+162) [1906] contrast  (Intermediate)
+   EX : The black cat contrasts with the white snow.
+   DEF: to look very different when placed next to something
+   ES contrastar                   | DE kontrastieren                | FR contraster                   | IT contrastare
+   ~M de: Kontrast -> kontrastieren  ('Kontrast' is the noun; here 'contrast' is a verb, 'kontrastieren')
+   ~M fr: contraste -> contraster  ('contraste' is the noun; the verb 'to contrast' is 'contraster')
+   ~M it: contrasto -> contrastare  ('contrasto' is the noun; the verb 'to contrast' is 'contrastare')
+
+163) [1909] cool  (Intermediate)
+   EX : The water in the lake felt cool on my skin.
+   DEF: slightly cold in a pleasant way
+   ES fresco                       | DE kühl                         | FR frais                        | IT fresco
+   ~M es: Frío -> fresco  ('Frío' means cold; pleasantly cool is 'fresco')
+   ~H fr: cool -> frais  ('cool' is a slang loanword (great/relaxed); a cool temperature is 'frais')
+   ~M it: Freddo -> fresco  ('Freddo' means cold; pleasantly cool is 'fresco')
+
+164) [1914] countryside  (Intermediate)
+   EX : We enjoyed a walk through the peaceful countryside.
+   DEF: land outside towns, with fields and farms
+   ES campo                        | DE Land                         | FR campagne                     | IT campagna
+   ~M de: Landschaft -> Land  ('Landschaft' means landscape/scenery; the countryside is 'Land')
+
+165) [1919] criminal  (Intermediate)
+   EX : The criminal ran from the police officer.
+   DEF: a person who has broken the law
+   ES criminal                     | DE Verbrecher                   | FR criminel                     | IT criminale
+   ~M de: kriminell -> Verbrecher  ('kriminell' is the adjective; a criminal (person) is a 'Verbrecher')
+
+166) [1923] current  (Intermediate)
+   EX : The current news is very important.
+   DEF: happening or existing now
+   ES actual                       | DE aktuell                      | FR actuel                       | IT corrente
+   ~M fr: courant -> actuel  ('courant' means common/running; current (present-time) is 'actuel')
+
+167) [1926] custom  (Intermediate)
+   EX : It is a custom to give gifts during holidays.
+   DEF: a way of doing something that a group has followed for years
+   ES costumbre                    | DE Brauch                       | FR coutume                      | IT usanza
+   ~M it: tradizione -> usanza  ('tradizione' means tradition; a custom is an 'usanza')
+
+168) [1946] difficulty  (Intermediate)
+   EX : She faced great difficulty learning the new language.
+   DEF: the state of being hard to do or understand
+   ES dificultad                   | DE Schwierigkeit                | FR difficulté                   | IT difficoltà
+   ~M fr: problème -> difficulté  ('problème' means problem; difficulty is 'difficulté')
+
+169) [1947] direct  (Intermediate)
+   EX : Can you direct me to the nearest bus stop?
+   DEF: to show someone the way to a place
+   ES indicar                      | DE weisen                       | FR indiquer                     | IT indicare
+   ~M es: dirigir -> indicar  ('dirigir' means to lead/manage; directing someone to a place is 'indicar')
+   ~M de: leiten -> weisen  ('leiten' means to lead/manage; directing someone to a place is 'weisen')
+   ~H fr: direct -> indiquer  ('direct' is the adjective; directing someone to a place is 'indiquer')
+   ~M it: indicare / dirigere -> indicare  (the value held two options; directing someone to a place is 'indicare')
+
+170) [1958] double  (Intermediate)
+   EX : Please double the recipe for dinner tonight.
+   DEF: to make something twice as much
+   ES duplicar                     | DE verdoppeln                   | FR doubler                      | IT raddoppiare
+   ~H de: doppelt -> verdoppeln  ('doppelt' is the adjective; the verb 'to double' is 'verdoppeln')
+   ~M fr: double -> doubler  ('double' is the adjective; the verb 'to double' is 'doubler')
+   ~H it: doppio -> raddoppiare  ('doppio' is the adjective; the verb 'to double' is 'raddoppiare')
+
+171) [1962] drum  (Intermediate)
+   EX : The drummer played a loud beat on the drum.
+   DEF: a musical instrument you hit to make a beat
+   ES tambor                       | DE Trommel                      | FR tambour                      | IT tamburo
+   ~M it: batteria -> tamburo  ('batteria' is a full drum kit; a single drum is a 'tamburo')
+
+172) [1964] due  (Intermediate)
+   EX : The payment is due tomorrow.
+   DEF: expected or required to happen at a certain time
+   ES previsto                     | DE fällig                       | FR prévu                        | IT previsto
+   ~M it: in arrivo / previsto -> previsto  (the value held two options; something due/scheduled is 'previsto')
+
+173) [1972] editor  (Intermediate)
+   EX : The editor corrected mistakes in the newspaper article.
+   DEF: a person who checks and corrects writing before it is published
+   ES editor                       | DE Redakteur                    | FR rédacteur                    | IT editore
+   ~M de: Editor -> Redakteur  ('Editor' is a software editor; a newspaper editor is a 'Redakteur')
+
+174) [1974] educated  (Intermediate)
+   EX : She is an educated person, always ready to learn more.
+   DEF: having learned a lot through study
+   ES instruido                    | DE gebildet                     | FR instruit                     | IT istruito
+   ~M es: educado -> instruido  ('educado' means polite/well-mannered; educated (learned) is 'instruido')
+   ~M fr: éduqué -> instruit  ('éduqué' means well-brought-up; educated (learned) is 'instruit')
+
+175) [1989] engaged  (Intermediate)
+   EX : They were engaged in a lively discussion about the book.
+   DEF: busy taking part in something
+   ES enfrascado                   | DE beschäftigt                  | FR engagé                       | IT impegnato
+   ~M es: comprometido -> enfrascado  ('comprometido' means engaged to marry/committed; engaged in a discussion is 'enfrascado')
+   ~H fr: fiancé -> engagé  ('fiancé' means engaged to marry; engaged in a discussion is 'engagé')
+
+176) [1995] environmental  (Intermediate)
+   EX : We need to protect the environmental health of our planet.
+   DEF: relating to the natural world around us
+   ES ambiental                    | DE ökologisch                   | FR environnemental              | IT ambientale
+   ~M de: Umwelt -> ökologisch  ('Umwelt' is the noun 'environment'; the adjective 'environmental' is 'ökologisch')
+
+177) [2002] examine  (Intermediate)
+   EX : The doctor will examine the patient carefully.
+   DEF: to look at something carefully to learn about it
+   ES examinar                     | DE untersuchen                  | FR examiner                     | IT esaminare
+   ~M de: prüfen -> untersuchen  ('prüfen' means to test/check; a doctor examining a patient is 'untersuchen')
+
+178) [2004] exchange  (Intermediate)
+   EX : We will exchange gifts at the party.
+   DEF: to give something and get another in return
+   ES intercambiar                 | DE austauschen                  | FR échanger                     | IT scambiarsi
+   ~M de: Austausch -> austauschen  ('Austausch' is the noun; the verb 'to exchange' is 'austauschen')
+   ~M fr: échange -> échanger  ('échange' is the noun; the verb 'to exchange' is 'échanger')
+
+179) [2016] export  (Intermediate)
+   EX : Our company exports cars to many countries.
+   DEF: to send goods to another country to sell
+   ES exportar                     | DE exportieren                  | FR exporter                     | IT esportare
+   ~M de: Export -> exportieren  ('Export' is the noun; the verb 'to export' is 'exportieren')
+
+180) [2025] fasten  (Intermediate)
+   EX : Please fasten your seatbelt before the car starts moving.
+   DEF: to close or attach something firmly
+   ES abrochar                     | DE anschnallen                  | FR attacher                     | IT allacciare
+   ~M es: ajustar -> abrochar  ('ajustar' means to adjust; fastening a seatbelt is 'abrochar')
+   ~M de: befestigen -> anschnallen  ('befestigen' means to attach; fastening a seatbelt is 'anschnallen')
+   ~M fr: fixer -> attacher  ('fixer' means to fix in place; fastening a seatbelt is 'attacher')
+
+181) [2030] fighting  (Intermediate)
+   EX : The two brothers were fighting over a toy car toy.
+   DEF: taking part in a physical or angry struggle
+   ES peleando                     | DE kämpfen                      | FR se disputer                  | IT litigare
+   ~M fr: lutte -> se disputer  ('lutte' is the noun 'a struggle'; brothers fighting is 'se disputer')
+
+182) [2031] file  (Intermediate)
+   EX : Please put the documents in the correct file.
+   DEF: a folder for keeping documents together
+   ES carpeta                      | DE Akte                         | FR dossier                      | IT fascicolo
+   ~M es: archivo -> carpeta  ('archivo' leans toward a computer/archive file; a folder for documents is a 'carpeta')
+   ~M de: Datei -> Akte  ('Datei' is a computer file; a physical file of documents is an 'Akte')
+   ~H fr: déposer -> dossier  ('déposer' is the verb 'to deposit'; a file (noun) is a 'dossier')
+   ~M it: cartella / fascicolo -> fascicolo  (the value held two options; a file of documents is a 'fascicolo')
+
+183) [2034] fitness  (Intermediate)
+   EX : Regular exercise helps improve your overall fitness level.
+   DEF: the state of being healthy and physically strong
+   ES estado físico                | DE Fitness                      | FR forme physique               | IT fitness
+   ~M fr: aptitude -> forme physique  ('aptitude' means ability; physical fitness is 'forme physique')
+
+184) [2041] folk  (Intermediate)
+   EX : The folk music tells stories of ancient times.
+   DEF: the traditional music or culture of ordinary people
+   ES folclórico                   | DE volkstümlich                 | FR folk                         | IT folk
+   ~M es: folklore -> folclórico  ('folklore' is a noun; folk music (adjective) is 'folclórico')
+   ~M de: Volk -> volkstümlich  ('Volk' means the people/nation; folk music (adjective) is 'volkstümlich')
+
+185) [2043] force  (Intermediate)
+   EX : The wind had enough force to move the small boat quickly.
+   DEF: physical power or strength
+   ES fuerza                       | DE Kraft                        | FR force                        | IT forza
+   ~M de: Gewalt -> Kraft  ('Gewalt' means violence; the physical force of wind is 'Kraft')
+
+186) [2057] further  (Intermediate)
+   EX : I need further information about the project details of the new project development.
+   DEF: more; additional
+   ES más                          | DE weiter                       | FR supplémentaire               | IT ulteriori
+   ~M fr: plus loin -> supplémentaire  ('plus loin' means farther (distance); further (additional) information is 'supplémentaire')
+
+187) [2063] gentle  (Intermediate)
+   EX : The nurse had a gentle touch when she helped the patient.
+   DEF: soft and careful; not rough
+   ES suave                        | DE sanft                        | FR doux                         | IT delicato
+   ~M it: gentile -> delicato  ('gentile' means kind/polite; a gentle (soft) touch is 'delicato')
+
+188) [2064] gentleman  (Intermediate)
+   EX : The gentleman held the door open for the elderly woman.
+   DEF: a polite, well-behaved man
+   ES caballero                    | DE Herr                         | FR gentleman                    | IT signore
+   ~H de: Hrr -> Herr  (misspelling; the word is 'Herr')
+   ~M fr: gentilhomme -> gentleman  ('gentilhomme' is an archaic nobleman; a well-mannered man is a 'gentleman')
+
+189) [2073] graduate  (Intermediate)
+   EX : She will graduate from university next year.
+   DEF: to finish your studies and get a degree
+   ES graduarse                    | DE absolvieren                  | FR obtenir son diplôme          | IT laurearsi
+   ~M fr: diplômé -> obtenir son diplôme  ('diplômé' is the adjective 'graduated'; the verb 'to graduate' is 'obtenir son diplôme')
+
+190) [2077] guard  (Intermediate)
+   EX : The dog will guard the house all night long.
+   DEF: to watch over something to keep it safe
+   ES vigilar                      | DE bewachen                     | FR garder                       | IT proteggere
+   ~M fr: garde -> garder  ('garde' is the noun/imperative; the verb 'to guard' is 'garder')
+
+191) [2087] heavily  (Intermediate)
+   EX : It rained heavily all through the night.
+   DEF: in a heavy or strong way
+   ES fuertemente                  | DE stark                        | FR fortement                    | IT intensamente
+   ~M it: pesantemente -> intensamente  ('pesantemente' means heavily in weight; raining heavily is 'intensamente')
+
+192) [2107] impact  (Intermediate)
+   EX : Her speech had a great impact on the students.
+   DEF: a strong effect on someone or something
+   ES impacto                      | DE Auswirkung                   | FR impact                       | IT impatto
+   ~M de: Auswirkungen -> Auswirkung  ('Auswirkungen' is plural; a single impact is 'Auswirkung')
+
+193) [2115] indicate  (Intermediate)
+   EX : The arrow indicates the right direction to the station.
+   DEF: to show or point out something
+   ES indicar                      | DE anzeigen                     | FR indiquer                     | IT indicare
+   ~M de: angeben -> anzeigen  ('angeben' means to state/declare; an arrow indicating a direction is 'anzeigen')
+
+194) [2134] keen  (Intermediate)
+   EX : She is a keen student and loves to learn.
+   DEF: very eager and interested
+   ES entusiasta                   | DE begeistert                   | FR désireux                     | IT entusiasta
+   ~M es: interesado -> entusiasta  ('interesado' means interested/self-interested; keen (eager) is 'entusiasta')
+
+195) [2137] kick  (Intermediate)
+   EX : The child will kick the ball very far.
+   DEF: to hit something with your foot
+   ES patear                       | DE treten                       | FR donner un coup de pied       | IT calciare
+   ~M fr: coup -> donner un coup de pied  ('coup' is a noun 'a blow'; the verb 'to kick' is 'donner un coup de pied')
+
+196) [2145] latest  (Intermediate)
+   EX : Have you seen the latest news about the election?
+   DEF: the most recent
+   ES más reciente                 | DE neueste                      | FR dernier                      | IT ultimo
+   ~M de: letzte -> neueste  ('letzte' means last; the latest (most recent) is 'neueste')
+
+197) [2146] lay  (Intermediate)
+   EX : She will lay the baby gently in its crib.
+   DEF: to put something down carefully
+   ES acostar                      | DE legen                        | FR poser                        | IT adagiare
+   ~M es: apoyar -> acostar  ('apoyar' means to lean/support; laying a baby down is 'acostar')
+
+198) [2149] leading  (Intermediate)
+   EX : She is the leading expert in her field of study.
+   DEF: most important or best
+   ES principal                    | DE führend                      | FR principal                    | IT principale
+   ~M es: líder -> principal  ('líder' is the noun 'a leader'; the adjective 'leading' is 'principal')
+   ~M fr: menant -> principal  ('menant' is awkward here; the leading expert is 'principal/de premier plan')
+
+199) [2166] located  (Intermediate)
+   EX : The book is located on the top shelf.
+   DEF: placed or found in a particular place
+   ES situado                      | DE gelegen                      | FR situé                        | IT situato
+   ~M de: befindet -> gelegen  ('befindet' alone is an incomplete verb; 'located' as an adjective is 'gelegen')
+
+200) [2189] mild  (Intermediate)
+   EX : The weather was mild, so we enjoyed a walk outside.
+   DEF: not strong or severe; gentle
+   ES suave                        | DE mild                         | FR doux                         | IT mite
+   ~M es: leve -> suave  ('leve' means slight/minor; mild weather is 'suave/templado')
+   ~M fr: bénin -> doux  ('bénin' means benign; mild weather is 'doux')
+
+201) [2201] narrative  (Intermediate)
+   EX : The author created a compelling narrative about a hero's journey.
+   DEF: a story or description of events
+   ES narrativa                    | DE Erzählung                    | FR récit                        | IT narrativa
+   ~M fr: narratif -> récit  ('narratif' is the adjective; the noun 'a narrative' is 'récit')
+
+202) [2205] necessarily  (Intermediate)
+   EX : He does not necessarily agree with the new rules.
+   DEF: in every case; always as a result
+   ES necesariamente               | DE unbedingt                    | FR forcément                    | IT necessariamente
+   ~M fr: pas forcément -> forcément  (the value includes the negation 'pas'; the word 'necessarily' alone is 'forcément')
+
+203) [2211] next  (Intermediate)
+   EX : The next train arrives in five minutes.
+   DEF: coming immediately after this one
+   ES próximo                      | DE nächste                      | FR prochain                     | IT Prossimo
+   ~M fr: suivant -> prochain  ('suivant' means following; the next train is 'prochain')
+
+204) [2214] northern  (Intermediate)
+   EX : Northern countries often have snow in winter months.
+   DEF: in or from the north
+   ES del norte                    | DE nördlich                     | FR du nord                      | IT settentrionale
+   ~M it: settentrionale / del nord -> settentrionale  (the value held two options; 'northern' is 'settentrionale')
+
+205) [2224] old-fashioned  (Intermediate)
+   EX : She likes to wear old-fashioned clothes from the 1950s.
+   DEF: belonging to an earlier time; no longer in style
+   ES anticuado                    | DE altmodisch                   | FR désuet                       | IT vecchio stile
+   ~M es: moda antigua -> anticuado  ('moda antigua' is a noun phrase; the adjective 'old-fashioned' is 'anticuado')
+
+206) [2243] passion  (Intermediate)
+   EX : She has a passion for music and plays piano daily.
+   DEF: a very strong feeling of liking something
+   ES pasión                       | DE Leidenschaft                 | FR passion                      | IT passione
+   ~M de: Hingabe -> Leidenschaft  ('Hingabe' means devotion; a passion for something is 'Leidenschaft')
+
+207) [2254] pin  (Intermediate)
+   EX : She used a pin to hold her scarf in place.
+   DEF: a short, thin piece of metal used to hold things together
+   ES alfiler                      | DE Nadel                        | FR épingle                      | IT spillo
+   ~H fr: épingler -> épingle  ('épingler' is the verb 'to pin'; the noun 'a pin' is 'épingle')
+   ~M it: spilla / spillo -> spillo  (the value held two options; a pin for holding cloth is a 'spillo')
+
+208) [2257] planning  (Intermediate)
+   EX : We are planning a trip to the beach next month.
+   DEF: the act of deciding and arranging what to do
+   ES planificar                   | DE planen                       | FR planifier                    | IT pianificare
+   ~M fr: planification -> planifier  (the example uses the verb 'are planning'; the verb is 'planifier')
+
+209) [2275] possibly  (Intermediate)
+   EX : She might possibly arrive late for the meeting today.
+   DEF: perhaps; it may be true
+   ES posiblemente                 | DE möglicherweise               | FR peut-être                    | IT possibilmente
+   ~M es: probablemente -> posiblemente  ('probablemente' means probably; 'possibly' is 'posiblemente')
+
+210) [2296] printing  (Intermediate)
+   EX : The printing of the new book will be finished next week.
+   DEF: the process of producing books or text on paper
+   ES impresión                    | DE Druck                        | FR impression                   | IT stampa
+   ~M de: drucken -> Druck  ('drucken' is the verb 'to print'; the noun 'printing' is 'Druck')
+   ~M it: stampare -> stampa  ('stampare' is the verb 'to print'; the noun 'printing' is 'stampa')
+
+211) [2315] qualification  (Intermediate)
+   EX : She earned a qualification in web development from the local college.
+   DEF: an official proof of training or skill
+   ES cualificación                | DE Qualifikation                | FR qualification                | IT qualificazione
+   ~M es: calificación -> cualificación  ('calificación' means a grade/mark; a qualification (credential) is 'cualificación')
+
+212) [2317] qualify  (Intermediate)
+   EX : She hopes to qualify for the final race next month.
+   DEF: to reach the level needed to take part in something
+   ES clasificarse                 | DE qualifizieren                | FR qualifier                    | IT qualificarsi
+   ~M es: calificar -> clasificarse  ('calificar' means to grade; qualifying for a race is 'clasificarse')
+
+213) [2319] quit  (Intermediate)
+   EX : She decided to quit her job and travel.
+   DEF: to stop doing something, especially a job
+   ES renunciar                    | DE kündigen                     | FR arrêter                      | IT lasciare
+   ~M de: aufhören -> kündigen  ('aufhören' means to stop; quitting a job is 'kündigen')
+
+214) [2320] quotation  (Intermediate)
+   EX : She used a famous quotation in her speech.
+   DEF: a group of words taken from a speech or writing
+   ES cita                         | DE Zitat                        | FR citation                     | IT citazione
+   ~H fr: devis -> citation  ('devis' is a cost estimate; a quotation (quoted words) is a 'citation')
+   ~M es: citacion -> cita  (misspelling and wrong word; a quotation is a 'cita')
+
+215) [2335] relate  (Intermediate)
+   EX : I can relate to your feelings about the difficult test.
+   DEF: to understand and share someone's feelings
+   ES identificarse con            | DE nachvollziehen               | FR s'identifier                 | IT immedesimarsi
+   ~M es: relacionar -> identificarse con  ('relacionar' means to link things; relating to feelings is 'identificarse con')
+   ~M it: immedesirarsi -> immedesimarsi  (misspelling; the correct verb is 'immedesimarsi')
+
+216) [2336] related  (Intermediate)
+   EX : The two topics are closely related and inform each other.
+   DEF: connected in some way
+   ES relacionado                  | DE verwandt                     | FR lié                          | IT correlato
+   ~M fr: connecté -> lié  ('connecté' means connected (online); closely related is 'lié')
+
+217) [2338] relative  (Intermediate)
+   EX : My aunt is a relative who lives in another country.
+   DEF: a member of your family
+   ES familiar                     | DE Verwandter                   | FR parent                       | IT parente
+   ~H de: relativ -> Verwandter  ('relativ' is the adjective 'relative'; a family relative is a 'Verwandter')
+   ~H fr: relatif -> parent  ('relatif' is the adjective; a family relative is a 'parent')
+   ~M it: parenti -> parente  ('parenti' is plural; a single relative is a 'parente')
+
+218) [2365] rise  (Intermediate)
+   EX : The sun will rise in the east every morning.
+   DEF: to move upward
+   ES salir                        | DE aufgehen                     | FR se lever                     | IT sorgere
+   ~M es: elevar -> salir  ('elevar' means to raise something; the sun rising is 'salir')
+   ~H de: erheben -> aufgehen  ('erheben' means to raise/lift; the sun rising is 'aufgehen')
+   ~H fr: augmenter -> se lever  ('augmenter' means to increase; the sun rising is 'se lever')
+
+219) [2368] roll  (Intermediate)
+   EX : The ball started to roll down the hill.
+   DEF: to move by turning over and over
+   ES rodar                        | DE rollen                       | FR rouler                       | IT rotolare
+   ~M it: far rotolare -> rotolare  ('far rotolare' is causative (make roll); the ball rolling is 'rotolare')
+
+220) [2371] rough  (Intermediate)
+   EX : The cat has a rough tongue.
+   DEF: having an uneven surface; not smooth
+   ES aspero                       | DE rauh                         | FR rugueux                      | IT ruvido
+   ~M it: irregolare -> ruvido  ('irregolare' means irregular; a rough texture is 'ruvido')
+
+221) [2377] sail  (Intermediate)
+   EX : They will sail across the ocean in a large ship.
+   DEF: to travel across water in a boat or ship
+   ES navegar                      | DE segeln                       | FR naviguer                     | IT navigare
+   ~H de: Segel -> segeln  ('Segel' is the noun 'a sail'; the verb 'to sail' is 'segeln')
+   ~M it: salpare -> navigare  ('salpare' means to set sail/weigh anchor; sailing across is 'navigare')
+
+222) [2391] servant  (Intermediate)
+   EX : The servant cleaned the large house every day.
+   DEF: a person employed to work in someone's house
+   ES sirviente                    | DE Diener                       | FR serviteur                    | IT servitore
+   ~M es: servidor -> sirviente  ('servidor' means a server; a household servant is a 'sirviente')
+
+223) [2392] set  (Intermediate)
+   EX : She set an alarm for 6 o'clock in the morning.
+   DEF: to arrange or fix something so it is ready
+   ES programar                    | DE stellen                      | FR mettre                       | IT impostare
+   ~H de: Satz -> stellen  ('Satz' is a noun (a set/sentence); setting an alarm uses 'stellen/einstellen')
+   ~M it: mettere / posare -> impostare  (the value held two options; setting an alarm is 'impostare')
+
+224) [2393] set  (Intermediate)
+   EX : She set an alarm for 6 o'clock in the morning.
+   DEF: to arrange or fix something so it is ready
+   ES programar                    | DE stellen                      | FR mettre                       | IT impostare
+   ~H de: Satz -> stellen  ('Satz' is a noun (a set/sentence); setting an alarm uses 'stellen/einstellen')
+   ~M it: mettere / posare -> impostare  (the value held two options; setting an alarm is 'impostare')
+
+225) [2394] setting  (Intermediate)
+   EX : The setting of the book is a small village in winter.
+   DEF: the place and time in which something happens
+   ES escenario                    | DE Schauplatz                   | FR cadre                        | IT ambientazione
+   ~M de: Einstellung -> Schauplatz  ('Einstellung' is a config setting; the setting of a story is a 'Schauplatz')
+   ~M fr: paramètre -> cadre  ('paramètre' is a parameter/config; the setting of a story is the 'cadre')
+
+226) [2399] sharp  (Intermediate)
+   EX : Be careful, that knife is very sharp.
+   DEF: having a fine edge or point that cuts easily
+   ES afilado                      | DE scharf                       | FR tranchant                    | IT affilato
+   ~M fr: pointu -> tranchant  ('pointu' means pointed; a sharp cutting knife is 'tranchant')
+
+227) [2402] shift  (Intermediate)
+   EX : Please shift your car so others can park here.
+   DEF: to move something to a different position
+   ES mover                        | DE verschieben                  | FR déplacer                     | IT spostare
+   ~M es: cambiar -> mover  ('cambiar' means to change; shifting/moving the car is 'mover')
+   ~H fr: changement -> déplacer  ('changement' is the noun 'a change'; shifting the car is 'déplacer')
+
+228) [2405] shoot  (Intermediate)
+   EX : The plant will shoot up quickly in the warm weather.
+   DEF: to grow upward quickly
+   ES crecerá                      | DE schießen                     | FR pousser                      | IT spuntare
+   ~H fr: tirer -> pousser  ('tirer' means to fire a gun; a plant shooting up is 'pousser')
+   ~M it: spuntare / crescere rapidamente -> spuntare  (the value held two options; a plant shooting up is 'spuntare')
+
+229) [2415] sink  (Intermediate)
+   EX : The heavy stone began to sink in the deep lake.
+   DEF: to go down below the surface of water
+   ES hundirse                     | DE sinken                       | FR couler                       | IT affondare
+   ~H de: Waschbecken -> sinken  ('Waschbecken' is a wash basin; a stone sinking in water is 'sinken')
+   ~M es: hundir -> hundirse  ('hundir' is transitive (to sink something); the stone sinking is 'hundirse')
+
+230) [2422] soil  (Intermediate)
+   EX : The farmer planted seeds in the dark, rich soil.
+   DEF: the top layer of earth in which plants grow
+   ES tierra                       | DE Boden                        | FR sol                          | IT suolo
+   ~M es: suelo -> tierra  ('suelo' means ground/floor; soil for planting is 'tierra')
+
+231) [2427] spending  (Intermediate)
+   EX : She enjoys spending time and money on books.
+   DEF: using money to buy things
+   ES gastar                       | DE ausgeben                     | FR dépenser                     | IT spendere
+   ~M fr: dépenses -> dépenser  ('dépenses' is the noun 'expenses'; spending money is 'dépenser')
+
+232) [2432] spread  (Intermediate)
+   EX : The bird spread its wings and flew away quickly.
+   DEF: to open something out to its full size
+   ES extender                     | DE ausbreiten                   | FR déployer                     | IT spiegare
+   ~H fr: propager -> déployer  ('propager' means to spread news/disease; spreading wings is 'déployer')
+   ~M it: aprire / spiegare le ali -> spiegare  (the value held two options and included 'the wings'; the verb is 'spiegare')
+
+233) [2459] supporter  (Intermediate)
+   EX : She is a strong supporter of environmental protection.
+   DEF: a person who supports a cause or group
+   ES partidario                   | DE Fan                          | FR partisan                     | IT sostenitore
+   ~M fr: supporter -> partisan  ('supporter' is a sports fan; a supporter of a cause is a 'partisan/défenseur')
+
+234) [2469] tape  (Intermediate)
+   EX : Please use tape to attach the poster to the wall.
+   DEF: a strip of sticky material used to join things
+   ES cinta                        | DE Klebeband                    | FR ruban adhésif                | IT nastro adesivo
+   ~M de: Band -> Klebeband  ('Band' means ribbon/band; sticky tape is 'Klebeband')
+
+235) [2470] tax  (Intermediate)
+   EX : The government collects taxes to fund public services for everyone.
+   DEF: money people must pay to the government
+   ES impuesto                     | DE Steuer                       | FR taxe                         | IT tassa
+   ~M it: tasse -> tassa  ('tasse' is plural; a single tax is 'tassa')
+
+236) [2473] tend  (Intermediate)
+   EX : She tends to eat healthy food every day.
+   DEF: to be likely to do something
+   ES tender a                     | DE neigen                       | FR avoir tendance à             | IT tendere
+   ~M es: tender -> tender a  ('tender' alone means to spread/hang; 'to tend to do' is 'tender a/soler')
+
+237) [2476] theirs  (Intermediate)
+   EX : The red car is theirs, not ours.
+   DEF: belonging to them
+   ES suyo                         | DE ihre                         | FR la leur                      | IT la loro
+   ~M it: di loro / la loro -> la loro  (the value held two options; 'theirs' is 'la loro')
+
+238) [2494] tour  (Intermediate)
+   EX : We went on a tour of the historic castle.
+   DEF: a journey to see the interesting parts of a place
+   ES recorrido                    | DE Tour                         | FR visite                       | IT tour
+   ~M fr: tournée -> visite  ('tournée' is a concert/round tour; a tour of a castle is a 'visite')
+
+239) [2510] uncomfortable  (Intermediate)
+   EX : The new shoes felt uncomfortable on my feet.
+   DEF: not giving a nice feeling; causing discomfort
+   ES incómodo                     | DE unbequem                     | FR inconfortable                | IT scomodo
+   ~M it: a disagio -> scomodo  ('a disagio' means ill at ease (of a person); an uncomfortable object is 'scomodo')
+
+240) [2517] unlike  (Intermediate)
+   EX : Unlike my brother, I enjoy studying mathematics.
+   DEF: different from
+   ES a diferencia de              | DE im Gegensatz zu              | FR contrairement à              | IT a differenza di
+   ~M it: diverso da -> a differenza di  ('diverso da' means different from; 'unlike' (in contrast to) is 'a differenza di')
+
+241) [2533] volunteer  (Intermediate)
+   EX : She decided to volunteer at the local animal shelter every weekend.
+   DEF: to offer to do something without being paid
+   ES ser voluntario               | DE freiwillig melden            | FR faire du bénévolat           | IT fare volontariato
+   ~H fr: bénévole -> faire du bénévolat  ('bénévole' is a volunteer (person); the verb 'to volunteer' is 'faire du bénévolat')
+   ~M it: volontario -> fare volontariato  ('volontario' is a volunteer (person); the verb 'to volunteer' is 'fare volontariato')
+
+242) [2536] warn  (Intermediate)
+   EX : The teacher warned the students about the difficult test next week.
+   DEF: to tell someone about a possible danger or problem
+   ES advertir                     | DE warnen                       | FR avertir                      | IT avvertire
+   ~M it: avvisare -> avvertire  ('avvisare' means to notify; warning of danger is 'avvertire')
+
+243) [2555] worldwide  (Intermediate)
+   EX : The internet provides instant worldwide communication.
+   DEF: happening in all parts of the world
+   ES mundial                      | DE weltweit                     | FR mondial                      | IT in tutto il mondo
+   ~M es: mundialmente -> mundial  ('mundialmente' is an adverb; 'worldwide communication' (adjective) is 'mundial')
+
+244) [2570] account  (Advanced)
+   EX : I opened a bank account to save money.
+   DEF: an arrangement with a bank to keep your money
+   ES cuenta                       | DE Konto                        | FR compte                       | IT conto
+   ~M it: conto bancario / account -> conto  (the value held two options including the English word; a bank account is a 'conto')
+
+245) [2581] advance  (Advanced)
+   EX : The company advanced its plans for a new product.
+   DEF: to move forward or make progress
+   ES avanzar                      | DE vorantreiben                 | FR avancer                      | IT avanzare
+   ~M de: fördern -> vorantreiben  ('fördern' means to promote/support; advancing plans is 'vorantreiben')
+
+246) [2599] appeal  (Advanced)
+   EX : The lawyer decided to appeal the court's judgment.
+   DEF: to ask a higher court to change a decision
+   ES apelar                       | DE appellieren                  | FR faire appel                  | IT appellarsi
+   ~H fr: appel -> faire appel  ('appel' is the noun; the legal verb 'to appeal' is 'faire appel')
+   ~M it: appellarsi / fare appello -> appellarsi  (the value held two options; the verb 'to appeal' is 'appellarsi')
+
+247) [2600] approach  (Advanced)
+   EX : The car began to approach the traffic light slowly.
+   DEF: to come nearer to something
+   ES acercarse                    | DE sich nähern                  | FR approcher                    | IT approcciarsi
+   ~H fr: approche -> approcher  ('approche' is the noun; the verb 'to approach' is 'approcher')
+   ~M de: nähern -> sich nähern  ('nähern' is incomplete; the reflexive verb 'to approach' is 'sich nähern')
+
+248) [2609] ashamed  (Advanced)
+   EX : He felt ashamed after he lied to his friend.
+   DEF: feeling bad because you did something wrong
+   ES avergonzado                  | DE beschämt                     | FR honteux                      | IT vergognato
+   ~M it: vergognarsi -> vergognato  ('vergognarsi' is the verb 'to be ashamed'; the adjective 'ashamed' is 'vergognato')
+
+249) [2624] bear  (Advanced)
+   EX : Please help me bear this heavy box to the next room.
+   DEF: to carry or hold up something heavy
+   ES llevar                       | DE tragen                       | FR porter                       | IT portare
+   ~H fr: ours -> porter  ('ours' is the animal 'a bear'; to bear/carry a box is 'porter')
+   ~M it: portare / reggere / sostenere -> portare  (the value held three options; to bear/carry a box is 'portare')
+
+250) [2631] bill  (Advanced)
+   EX : Please pay your electricity bill by next week.
+   DEF: a paper showing how much money you must pay
+   ES factura                      | DE Rechnung                     | FR facture                      | IT bolletta
+   ~M it: conto -> bolletta  ('conto' is a restaurant bill; a utility bill is a 'bolletta')
+
+251) [2639] broad  (Advanced)
+   EX : The river is very broad at this point.
+   DEF: wide from side to side
+   ES amplio                       | DE breit                        | FR large                        | IT largo
+   ~M it: AMPIO / LARGO -> largo  (the value was capitalized and held two options; a broad river is 'largo')
+
+252) [2643] bunch  (Advanced)
+   EX : She picked a bunch of grapes from the vine.
+   DEF: a group of things growing or fastened together
+   ES racimo                       | DE Traube                       | FR grappe                       | IT grappolo
+   ~M de: Bündel -> Traube  ('Bündel' is a bundle; a bunch of grapes is a 'Traube')
+   ~H fr: flopée -> grappe  ('flopée' means a whole load of; a bunch of grapes is a 'grappe')
+
+253) [2654] cast  (Advanced)
+   EX : They will cast the main actor next week.
+   DEF: to choose actors for a play or film
+   ES elegir                       | DE besetzen                     | FR distribuer les rôles         | IT scritturare
+   ~M fr: casting -> distribuer les rôles  ('casting' is a noun anglicism; the verb 'to cast' is 'distribuer les rôles')
+
+254) [2661] characteristic  (Advanced)
+   EX : Her most notable characteristic is her kindness towards everyone.
+   DEF: a typical quality or feature of someone or something
+   ES característica               | DE Merkmal                      | FR caractéristique              | IT caratteristica
+   ~M fr: caractéristiques -> caractéristique  (the value is plural; a single characteristic is 'caractéristique')
+
+255) [2663] chief  (Advanced)
+   EX : The chief of the tribe made an important decision.
+   DEF: the leader of a group of people
+   ES jefe                         | DE Häuptling                    | FR chef                         | IT capo
+   ~M de: Chef -> Häuptling  ('Chef' means a workplace boss; the chief of a tribe is a 'Häuptling')
+
+256) [2670] closely  (Advanced)
+   EX : He watched the bird closely as it built its nest.
+   DEF: with close attention
+   ES de cerca                     | DE genau                        | FR étroitement                  | IT attentamente
+   ~M es: cercanamente -> de cerca  ('cercanamente' is awkward; watching closely is 'de cerca/atentamente')
+   ~M it: attentamente / da vicino -> attentamente  (the value held two options; watching closely is 'attentamente')
+
+257) [2685] concerned  (Advanced)
+   EX : The teacher was concerned about the student's low grades.
+   DEF: worried about something
+   ES preocupado                   | DE besorgt                      | FR préoccupé                    | IT preoccupato
+   ~M de: betroffen -> besorgt  ('betroffen' means affected; concerned (worried) is 'besorgt')
+
+258) [2692] consideration  (Advanced)
+   EX : Please give my proposal your full consideration.
+   DEF: careful thought before making a decision
+   ES consideración                | DE Berücksichtigung             | FR considération                | IT considerazione
+   ~M de: Rücksichtnahme -> Berücksichtigung  ('Rücksichtnahme' is being considerate of others; considering a proposal is 'Berücksichtigung')
+
+259) [2693] consistent  (Advanced)
+   EX : Her consistent effort helped her improve quickly.
+   DEF: always behaving or happening in the same way
+   ES constante                    | DE konsistent                   | FR cohérent                     | IT costante
+   ~M es: consistente -> constante  ('consistente' means solid/firm; consistent effort is 'constante')
+
+260) [2703] convert  (Advanced)
+   EX : They want to convert the old factory into apartments.
+   DEF: to change something into a different form or use
+   ES convertir                    | DE umwandeln                    | FR convertir                    | IT convertire
+   ~M de: konvertieren -> umwandeln  ('konvertieren' is used for data/religion; converting a building is 'umwandeln/umbauen')
+
+261) [2711] creation  (Advanced)
+   EX : The artist's new creation was a beautiful painting.
+   DEF: something that has been made or invented
+   ES creación                     | DE Schöpfung                    | FR création                     | IT creazione
+   ~M de: Schaffung -> Schöpfung  ('Schaffung' is the process of creating; a created work is a 'Schöpfung')
+
+262) [2714] crew  (Advanced)
+   EX : The airplane crew prepared for takeoff.
+   DEF: the people who work together on a ship or plane
+   ES tripulación                  | DE Besatzung                    | FR équipage                     | IT personale di bordo
+   ~M es: personal -> tripulación  ('personal' means staff generally; a plane/ship crew is a 'tripulación')
+
+263) [2718] critical  (Advanced)
+   EX : The teacher gave critical feedback on the student's essay.
+   DEF: pointing out faults; involving careful judgement
+   ES crítico                      | DE kritisch                     | FR critique                     | IT critico
+   ~M it: severo -> critico  ('severo' means strict/harsh; critical feedback is 'critico')
+
+264) [2721] crop  (Advanced)
+   EX : Farmers grew a crop of corn.
+   DEF: a plant grown by farmers for food
+   ES cultivo                      | DE Feldfrucht                   | FR culture                      | IT coltura
+   ~M de: Ernte -> Feldfrucht  ('Ernte' is the harvest/yield; a crop being grown is a 'Feldfrucht')
+   ~M it: raccolto -> coltura  ('raccolto' is the harvest; a crop being grown is a 'coltura')
+
+265) [2733] decline  (Advanced)
+   EX : She declined the invitation to the party due to illness.
+   DEF: to politely refuse something
+   ES rechazar                     | DE ablehnen                     | FR décliner                     | IT declinare
+   ~M it: rifiutare / declinare -> declinare  (the value held two options; politely declining is 'declinare')
+
+266) [2764] dismiss  (Advanced)
+   EX : The teacher will dismiss the students early today.
+   DEF: to tell people they can leave
+   ES despedir                     | DE entlassen                    | FR laisser partir               | IT congedare
+   ~M de: zurückweisen -> entlassen  ('zurückweisen' means to reject; dismissing a class is 'entlassen/gehen lassen')
+   ~M fr: rejeter -> laisser partir  ('rejeter' means to reject; dismissing a class is 'laisser partir')
+
+267) [2765] display  (Advanced)
+   EX : The store will display new clothes in the window.
+   DEF: to put something where people can see it
+   ES mostrar                      | DE ausstellen                   | FR afficher                     | IT esporre
+   ~M it: esibire -> esporre  ('esibire' means to show off; displaying goods is 'esporre')
+
+268) [2770] division  (Advanced)
+   EX : The division of tasks made the project easier to complete.
+   DEF: the act of splitting something into parts
+   ES división                     | DE Aufteilung                   | FR division                     | IT divisione
+   ~M de: Verteilung -> Aufteilung  ('Verteilung' means distribution; the division of tasks is 'Aufteilung')
+
+269) [2772] domestic  (Advanced)
+   EX : Domestic animals live with people on farms or as pets.
+   DEF: kept or living with people, not wild
+   ES doméstico                    | DE domestiziert                 | FR domestique                   | IT domestico
+   ~M de: inländisch -> domestiziert  ('inländisch' means national (not foreign); a domestic animal is 'domestiziert')
+
+270) [2782] elderly  (Advanced)
+   EX : The elderly woman walked slowly with a cane.
+   DEF: old, especially of people
+   ES anciano                      | DE ältere                       | FR âgé                          | IT anziano
+   ~M de: ältere Menschen -> ältere  (the value is a noun phrase 'elderly people'; the adjective 'elderly' is 'ältere')
+
+271) [2789] enable  (Advanced)
+   EX : The new software will enable us to work faster.
+   DEF: to make it possible for someone to do something
+   ES permitir                     | DE ermöglichen                  | FR permettre                    | IT permettere
+   ~M de: erlauben -> ermöglichen  ('erlauben' means to allow; to enable (make possible) is 'ermöglichen')
+   ~H fr: activer -> permettre  ('activer' means to activate; to enable someone to do something is 'permettre')
+
+272) [2791] engage  (Advanced)
+   EX : The interesting book engaged my mind for hours.
+   DEF: to attract and hold someone's interest
+   ES captar                       | DE fesseln                      | FR captiver                     | IT coinvolgere
+   ~M es: comprometer -> captar  ('comprometer' means to commit; engaging the mind is 'captar/atraer')
+   ~M de: engagieren -> fesseln  ('engagieren' means to hire/commit; a book engaging the mind is 'fesseln')
+   ~M fr: s'engager -> captiver  ('s'engager' means to commit oneself; engaging the mind is 'captiver')
+
+273) [2792] enhance  (Advanced)
+   EX : She wanted to enhance her drawing skills.
+   DEF: to improve the quality of something
+   ES mejorar                      | DE verbessern                   | FR améliorer                    | IT migliorare
+   ~M de: erweitern -> verbessern  ('erweitern' means to expand; enhancing a skill is 'verbessern')
+
+274) [2814] expose  (Advanced)
+   EX : The journalist decided to expose the truth about the scandal.
+   DEF: to make hidden wrongdoing known to the public
+   ES exponer                      | DE aufdecken                    | FR exposer                      | IT smascherare
+   ~M it: esporre/smascherare -> smascherare  (the value held two options; exposing a scandal is 'smascherare')
+
+275) [2816] extent  (Advanced)
+   EX : I agree with you to a certain extent.
+   DEF: the degree or level of something
+   ES medida                       | DE Ausmaß                       | FR étendue                      | IT misura
+   ~M it: grado / misura -> misura  (the value held two options; 'to a certain extent' is 'in una certa misura')
+
+276) [2823] fault  (Advanced)
+   EX : It was my fault that the cup broke.
+   DEF: responsibility for something bad that happened
+   ES culpa                        | DE Schuld                       | FR faute                        | IT colpa
+   ~M de: Fehler -> Schuld  ('Fehler' means a mistake; fault (blame) for something is 'Schuld')
+
+277) [2831] figure  (Advanced)
+   EX : Can you figure out the answer to the math problem?
+   DEF: to work out or understand something
+   ES descifrar                    | DE herausfinden                 | FR trouver                      | IT capire
+   ~H de: Figur -> herausfinden  ('Figur' is a figure/character; to figure out an answer is 'herausfinden')
+   ~H fr: chiffre -> trouver  ('chiffre' is a digit/number; to figure out an answer is 'trouver')
+   ~M it: capire / trovare -> capire  (the value held two options; to figure out is 'capire')
+
+278) [2832] file  (Advanced)
+   EX : Please put the documents in the correct file.
+   DEF: a folder or holder for keeping papers together
+   ES archivo                      | DE Akte                         | FR dossier                      | IT fascicolo
+   ~M de: Datei -> Akte  ('Datei' is a computer file; a physical file of documents is an 'Akte')
+   ~H fr: déposer -> dossier  ('déposer' is the verb 'to file'; a file (folder) is a 'dossier')
+   ~M it: fascicolo/ archivio -> fascicolo  (the value held two options; a file of documents is a 'fascicolo')
+
+279) [2835] firm  (Advanced)
+   EX : The foundation of the building needs to be very firm.
+   DEF: solid and not easily moved
+   ES firme                        | DE fest                         | FR ferme                        | IT solido
+   ~M it: solido / stabile -> solido  (the value held two options; a firm foundation is 'solido')
+
+280) [2836] fix  (Advanced)
+   EX : Can you fix my broken chair, please?
+   DEF: to repair something that is broken
+   ES arreglar                     | DE reparieren                   | FR réparer                      | IT riparare
+   ~M it: risolvere -> riparare  ('risolvere' means to solve; fixing a broken chair is 'riparare')
+
+281) [2842] folding  (Advanced)
+   EX : She was folding the clean laundry and putting it in the closet.
+   DEF: bending cloth or paper so one part covers another
+   ES doblando                     | DE falten                       | FR plier                        | IT piegando
+   ~M fr: plié -> plier  ('plié' is the past participle 'folded'; the ongoing action is 'plier')
+
+282) [2860] gang  (Advanced)
+   EX : The gang met at school every day.
+   DEF: a group of people who spend time together
+   ES banda                        | DE Bande                        | FR gang                         | IT comitiva
+   ~M it: comitiva / gruppo -> comitiva  (the value held two options; a gang of friends is a 'comitiva')
+
+283) [2880] hold  (Advanced)
+   EX : She can hold three books at once.
+   DEF: to keep something in your hands or arms
+   ES sostener                     | DE halten                       | FR tenir                        | IT tenere
+   ~H fr: prise -> tenir  ('prise' is the noun 'a hold/grip'; the verb 'to hold' is 'tenir')
+   ~M it: tenere / reggere -> tenere  (the value held two options; to hold books is 'tenere')
+
+284) [2886] household  (Advanced)
+   EX : Our household has four members, including two children.
+   DEF: the people living together in one home
+   ES hogar                        | DE Haushalt                     | FR foyer                        | IT nucleo familiare
+   ~M es: hogar/familia -> hogar  (the value held two options; a household is a 'hogar')
+   ~M fr: domicile -> foyer  ('domicile' is a residence address; a household is a 'foyer/ménage')
+   ~M it: abitazione -> nucleo familiare  ('abitazione' is a dwelling; the household (people) is the 'nucleo familiare')
+
+285) [2896] imagination  (Advanced)
+   EX : Use your imagination to create a story.
+   DEF: the ability to form pictures in your mind
+   ES imaginación                  | DE Fantasie                     | FR imagination                  | IT immaginazione
+   ~M de: Vorstellung -> Fantasie  ('Vorstellung' means an idea/notion; the faculty of imagination is 'Fantasie/Vorstellungskraft')
+
+286) [2902] inch  (Advanced)
+   EX : The snail moved one inch in a minute.
+   DEF: a unit of length equal to about 2.5 centimetres
+   ES pulgada                      | DE Zoll                         | FR pouce                        | IT pollice
+   ~M fr: pouce (mesure) -> pouce  (the value had a parenthetical note; the clean word is 'pouce')
+
+287) [2913] insight  (Advanced)
+   EX : Her research provided new insight into the problem.
+   DEF: a clear and deep understanding of something
+   ES conocimiento                 | DE Einblick                     | FR aperçu                       | IT intuizione
+   ~M it: comprenzione / intuizione -> intuizione  (the value had a typo and two options; insight is 'intuizione')
+
+288) [2934] labour  (Advanced)
+   EX : Building a house requires a lot of hard labour.
+   DEF: hard physical work
+   ES trabajo                      | DE Arbeit                       | FR travail                      | IT lavoro
+   ~M es: mano de obra -> trabajo  ('mano de obra' is the workforce; hard labour (work) is 'trabajo')
+
+289) [2940] league  (Advanced)
+   EX : The team won the league championship last season.
+   DEF: a group of sports teams that compete with each other
+   ES liga                         | DE Liga                         | FR ligue                        | IT lega
+   ~M it: campionato -> lega  ('campionato' is a championship; a sports league is a 'lega')
+
+290) [2943] level  (Advanced)
+   EX : What is your current English level?
+   DEF: a position on a scale of amount or ability
+   ES nivel                        | DE Niveau                       | FR niveau                       | IT livello
+   ~M de: Ebene -> Niveau  ('Ebene' is a flat plane/layer; a level on a scale is 'Niveau')
+
+291) [2946] line  (Advanced)
+   EX : Please wait in line behind the other customers.
+   DEF: a row of people waiting for something
+   ES fila                         | DE Schlange                     | FR file                         | IT fila
+   ~M es: línea -> fila  ('línea' is a geometric line; a line of waiting people is a 'fila')
+   ~M de: Linie -> Schlange  ('Linie' is a geometric line; a queue of people is a 'Schlange')
+   ~M fr: ligne -> file  ('ligne' is a geometric line; a queue of people is a 'file')
+
+292) [2947] lively  (Advanced)
+   EX : The children had a lively discussion about their favorite animals.
+   DEF: full of energy and activity
+   ES animado                      | DE lebhaft                      | FR animé                        | IT vivace
+   ~M fr: vivant -> animé  ('vivant' means alive; a lively discussion is 'animé')
+
+293) [2952] loose  (Advanced)
+   EX : The dog was loose in the park, running freely.
+   DEF: free and not tied up or held
+   ES suelto                       | DE frei                         | FR lâché                        | IT sciolto
+   ~M de: lose -> frei  ('lose' means slack/not tight; a loose (free) dog is 'frei')
+   ~M fr: desserré -> lâché  ('desserré' means loosened; a loose (free) dog is 'lâché')
+   ~M it: allentato -> sciolto  ('allentato' means loosened; a loose (free) dog is 'sciolto')
+
+294) [2953] lord  (Advanced)
+   EX : The lord lived in a large castle many years ago.
+   DEF: a man of high rank or noble title
+   ES señor                        | DE Herr                         | FR seigneur                     | IT signore
+   ~M es: caballero -> señor  ('caballero' is a gentleman; a noble lord is a 'señor')
+
+295) [2954] low  (Advanced)
+   EX : The fence is very low. Please jump over it.
+   DEF: not high; near the ground
+   ES bajo                         | DE niedrig                      | FR bas                          | IT basso
+   ~L it: Basso -> basso  (the value was capitalised; the word is 'basso')
+   ~M fr: faible -> bas  ('faible' means weak; a low fence is 'bas')
+
+296) [2959] make  (Advanced)
+   EX : She will make a delicious cake for the party.
+   DEF: to create or produce something
+   ES hacer                        | DE machen                       | FR faire                        | IT fare
+   ~L it: Fare -> fare  (the value was capitalised; the word is 'fare')
+
+297) [2962] massive  (Advanced)
+   EX : The massive stone blocked the road completely.
+   DEF: very large and heavy
+   ES masivo                       | DE massiv                       | FR massif                       | IT massiccio
+   ~M it: massiccio / enorme -> massiccio  (the value held two options; a massive stone is 'massiccio')
+
+298) [2967] means  (Advanced)
+   EX : She found a means to solve the problem quickly.
+   DEF: a way of doing or achieving something
+   ES significa                    | DE Mittel                       | FR moyens                       | IT mezzo
+   ~M it: mezzo / modo -> mezzo  (the value held two options; a means to do something is a 'mezzo')
+
+299) [2968] measurement  (Advanced)
+   EX : The measurement of the table was 120 centimeters long.
+   DEF: a size or amount found by measuring
+   ES medida                       | DE Messung                      | FR mesure                       | IT misurazione
+   ~M fr: mesures -> mesure  (the plural was given; a single measurement is a 'mesure')
+
+300) [2969] medium  (Advanced)
+   EX : Television is a popular medium for news.
+   DEF: a way of communicating with many people
+   ES medio                        | DE Medium                       | FR média                        | IT mezzo
+   ~M fr: moyen -> média  ('moyen' means a means; a news medium is a 'média')
+   ~M it: medio -> mezzo  ('medio' means average; a news medium is a 'mezzo')
+
+301) [2975] minor  (Advanced)
+   EX : She had a minor injury, so she could still play.
+   DEF: small and not very serious
+   ES menor                        | DE geringfügig                  | FR mineur                       | IT minore
+   ~L fr: mineure -> mineur  (the feminine form was given; the base form is 'mineur')
+
+302) [2983] moral  (Advanced)
+   EX : Stealing is not moral because it is wrong.
+   DEF: concerned with right and wrong behaviour
+   ES moral                        | DE moralisch                    | FR moral                        | IT morale
+   ~H de: Moral -> moralisch  ('Moral' is the noun morals; the adjective 'moral' is 'moralisch')
+   ~M fr: morale -> moral  ('morale' is the noun morals; the adjective 'moral' is 'moral')
+
+303) [2985] mount  (Advanced)
+   EX : The children mount the small hill to see the view.
+   DEF: to climb up onto something
+   ES montar                       | DE besteigen                    | FR monter                       | IT scalare
+   ~M it: scalare / salire -> scalare  (the value held two options; to mount a hill is 'scalare')
+
+304) [2991] neat  (Advanced)
+   EX : Your bedroom is very neat.
+   DEF: tidy and in good order
+   ES ordenado                     | DE ordentlich                   | FR rangé                        | IT ordinato
+   ~M es: limpio -> ordenado  ('limpio' means clean; neat (tidy) is 'ordenado')
+   ~M de: sauber -> ordentlich  ('sauber' means clean; neat (tidy) is 'ordentlich')
+   ~M it: pulito -> ordinato  ('pulito' means clean; neat (tidy) is 'ordinato')
+
+305) [3006] offence  (Advanced)
+   EX : Stealing a car is a serious offence against the law.
+   DEF: an act that breaks the law
+   ES delito                       | DE Straftat                     | FR infraction                   | IT reato
+   ~M es: ofensa -> delito  ('ofensa' is an insult; a legal offence is a 'delito')
+   ~H de: Angriff -> Straftat  ('Angriff' means an attack; a legal offence is a 'Straftat')
+
+306) [3008] offensive  (Advanced)
+   EX : The rude comment was highly offensive to many people.
+   DEF: causing anger or upset; rude
+   ES ofensivo                     | DE anstößig                     | FR offensant                    | IT offensivo
+   ~M it: offensiva -> offensivo  ('offensiva' is the noun an offensive; the adjective is 'offensivo')
+
+307) [3011] operate  (Advanced)
+   EX : He knows how to operate the new computer.
+   DEF: to control the working of a machine
+   ES operar                       | DE bedienen                     | FR utiliser                     | IT usare
+   ~M fr: fonctionner -> utiliser  ('fonctionner' means to function; to operate a machine is 'utiliser')
+
+308) [3013] oppose  (Advanced)
+   EX : Many people oppose the building of the new factory.
+   DEF: to disagree with and try to stop something
+   ES oponerse a                   | DE ablehnen                     | FR s'opposer à                  | IT opporsi
+   ~M fr: opposer -> s'opposer à  ('opposer' sets things against; to oppose something is 's'opposer à')
+
+309) [3018] otherwise  (Advanced)
+   EX : Study hard; otherwise, you might not pass the exam.
+   DEF: if not; or else
+   ES de lo contrario              | DE ansonsten                    | FR sinon                        | IT altrimenti
+   ~L it: Altrimenti -> altrimenti  (the value was capitalised; the word is 'altrimenti')
+
+310) [3021] outline  (Advanced)
+   EX : She wrote an outline for her essay before writing it.
+   DEF: a short plan of the main points
+   ES esquema                      | DE Gliederung                   | FR plan                         | IT schema
+   ~M fr: contour -> plan  ('contour' is a physical edge; an essay outline is a 'plan')
+
+311) [3039] pick  (Advanced)
+   EX : Please pick a red apple from the fruit basket.
+   DEF: to choose one thing from several
+   ES elegir                       | DE wählen                       | FR prendre                      | IT prendere
+   ~M it: prendere / raccogliere -> prendere  (the value held two options; to pick an apple is 'prendere')
+
+312) [3048] pose  (Advanced)
+   EX : She likes to pose for pictures in the garden.
+   DEF: to hold a position for a photo or picture
+   ES posar                        | DE posieren                     | FR poser                        | IT posare
+   ~M fr: pose -> poser  ('pose' is the noun; the verb to pose is 'poser')
+   ~M it: posa -> posare  ('posa' is the noun; the verb to pose is 'posare')
+
+313) [3053] power  (Advanced)
+   EX : The queen has great power over her people.
+   DEF: control or authority over others
+   ES poder                        | DE Macht                        | FR pouvoir                      | IT potere
+   ~H de: Leistung -> Macht  ('Leistung' is output/performance; power over people is 'Macht')
+   ~M it: potenza -> potere  ('potenza' is physical strength; power/authority is 'potere')
+
+314) [3054] praise  (Advanced)
+   EX : The teacher will praise students for their hard work and good behavior.
+   DEF: to express approval of someone
+   ES elogiar                      | DE loben                        | FR louer                        | IT lodare
+   ~M es: elogio -> elogiar  ('elogio' is the noun praise; the verb to praise is 'elogiar')
+
+315) [3060] prime  (Advanced)
+   EX : The prime rib was a delicious meal for dinner.
+   DEF: of the best quality
+   ES de primera calidad           | DE erstklassig                  | FR de premier choix             | IT eccellente
+   ~M de: Haupt -> erstklassig  ('Haupt' means main/chief; prime (top quality) is 'erstklassig')
+   ~M fr: prime -> de premier choix  ('prime' means a bonus; prime (top quality) is 'de premier choix')
+
+316) [3074] prospect  (Advanced)
+   EX : She has good prospects for a promotion at work.
+   DEF: a chance that something good will happen
+   ES perspectiva                  | DE Aussicht                     | FR perspective                  | IT prospettiva
+   ~M es: prospecto -> perspectiva  ('prospecto' is a leaflet; a prospect (chance) is a 'perspectiva')
+
+317) [3083] range  (Advanced)
+   EX : The store offers a range of products for sale.
+   DEF: a variety of different things of one type
+   ES gama                         | DE Auswahl                      | FR gamme                        | IT gamma
+   ~M es: rango -> gama  ('rango' means rank; a range/variety is a 'gama')
+
+318) [3084] rank  (Advanced)
+   EX : She ranks first in her class due to her excellent grades.
+   DEF: to hold a certain position in a list or order
+   ES clasificar                   | DE einordnen                    | FR se classer                   | IT classificarsi
+   ~M fr: rang -> se classer  ('rang' is the noun rank; to rank (place) is 'se classer')
+
+319) [3092] recall  (Advanced)
+   EX : She could not recall his name.
+   DEF: to bring a memory back to mind
+   ES recordar                     | DE sich erinnern                | FR se rappeler                  | IT ricordare
+   ~M de: abrufen -> sich erinnern  ('abrufen' is to retrieve data; to recall/remember is 'sich erinnern')
+   ~M fr: rappel -> se rappeler  ('rappel' is the noun; to recall/remember is 'se rappeler')
+
+320) [3097] register  (Advanced)
+   EX : You can register for the class online.
+   DEF: to put your name on an official list
+   ES registrar                    | DE registrieren                 | FR s'inscrire                   | IT registrare
+   ~M fr: registre -> s'inscrire  ('registre' is the noun register; to register/sign up is 's'inscrire')
+
+321) [3098] regret  (Advanced)
+   EX : She felt regret for her unkind words to her friend.
+   DEF: a feeling of sadness about something done
+   ES arrepentimiento              | DE Reue                         | FR regret                       | IT rimpianto
+   ~M es: arrepentirse -> arrepentimiento  ('arrepentirse' is the verb; the noun regret is 'arrepentimiento')
+
+322) [3108] rescue  (Advanced)
+   EX : The lifeguard helped to rescue the swimmer in trouble.
+   DEF: to save someone from danger
+   ES rescatar                     | DE retten                       | FR sauver                       | IT salvare
+   ~M es: rescate -> rescatar  ('rescate' is the noun rescue; the verb to rescue is 'rescatar')
+   ~M de: Rettung -> retten  ('Rettung' is the noun rescue; the verb to rescue is 'retten')
+   ~M fr: sauvetage -> sauver  ('sauvetage' is the noun rescue; the verb to rescue is 'sauver')
+
+323) [3109] reserve  (Advanced)
+   EX : I want to reserve a table for dinner tonight.
+   DEF: to arrange to keep something for later use
+   ES reservar                     | DE reservieren                  | FR réserver                     | IT prenotare
+   ~M fr: réserve -> réserver  ('réserve' is the noun; the verb to reserve is 'réserver')
+
+324) [3121] round  (Advanced)
+   EX : The Earth is round.
+   DEF: shaped like a circle or ball
+   ES redondo                      | DE rund                         | FR rond                         | IT rotondo
+   ~H de: runden -> rund  ('runden' is the verb to round off; the adjective round is 'rund')
+   ~M it: rotonda -> rotondo  (the feminine form was given; the base form is 'rotondo')
+
+325) [3131] saving  (Advanced)
+   EX : She put her extra money into a saving account every month.
+   DEF: money kept for future use
+   ES ahorro                       | DE Ersparnis                    | FR économie                     | IT risparmi
+   ~M de: sparen -> Ersparnis  ('sparen' is the verb to save; savings (noun) is 'Ersparnis')
+
+326) [3134] scheme  (Advanced)
+   EX : The company devised a scheme to increase its profits quickly.
+   DEF: a clever plan to achieve something
+   ES plan                         | DE Plan                         | FR plan                         | IT piano
+   ~M es: esquema -> plan  ('esquema' is a diagram; a scheme (plan) is a 'plan')
+   ~M de: Schema -> Plan  ('Schema' is a diagram/pattern; a scheme (plan) is a 'Plan')
+   ~M fr: schème -> plan  ('schème' is a mental pattern; a scheme (plan) is a 'plan')
+   ~M it: schema -> piano  ('schema' is a diagram; a scheme (plan) is a 'piano')
+
+327) [3139] secure  (Advanced)
+   EX : Please secure the doors before you leave the house.
+   DEF: to fasten or make something safe
+   ES asegurar                     | DE sichern                      | FR verrouiller                  | IT mettere in sicurezza
+   ~M es: seguro -> asegurar  ('seguro' is the adjective safe; to secure/fasten is 'asegurar')
+   ~M de: sicher -> sichern  ('sicher' is the adjective safe; to secure/fasten is 'sichern')
+   ~M fr: sécurisé -> verrouiller  ('sécurisé' is the adjective secured; to secure the doors is 'verrouiller')
+   ~M it: chiudere bene / mettere in sicurezza/ -> mettere in sicurezza  (the value held two options and stray marks; to secure is 'mettere in sicurezza')
+
+328) [3143] self  (Advanced)
+   EX : You must love your true self.
+   DEF: a person's own nature or being
+   ES yo                           | DE selbst                       | FR soi                          | IT se stesso
+   ~M es: propio -> yo  ('propio' means own (adjective); the self (noun) is the 'yo')
+   ~L it: sé / se stesso -> se stesso  (the value held two options; one's self is 'se stesso')
+
+329) [3150] settle  (Advanced)
+   EX : They need to settle on a date for the meeting.
+   DEF: to agree on something after discussion
+   ES acordar                      | DE festlegen                    | FR régler                       | IT accordarsi
+   ~M es: establecer -> acordar  ('establecer' means to establish; to settle on a date is 'acordar')
+
+330) [3155] shame  (Advanced)
+   EX : He felt deep shame for his disrespectful actions.
+   DEF: a painful feeling of guilt or embarrassment
+   ES vergüenza                    | DE Scham                        | FR honte                        | IT vergogna
+   ~L es: verguenza -> vergüenza  (the value was missing its accent; the word is 'vergüenza')
+
+331) [3162] shooting  (Advanced)
+   EX : The new plant is shooting up quickly toward the sun.
+   DEF: growing quickly upward
+   ES creciendo                    | DE sprießen                     | FR pousser                      | IT germogliare
+   ~M de: schießen -> sprießen  ('schießen' means to fire a gun; a plant shooting up is 'sprießen')
+   ~H fr: tournage -> pousser  ('tournage' is film shooting; a plant shooting up is 'pousser')
+   ~M it: crescendo / germogliando -> germogliare  (the value held two options; a plant shooting up is 'germogliare')
+
+332) [3170] slide  (Advanced)
+   EX : The children love to slide down the big hill.
+   DEF: to move smoothly over a surface
+   ES deslizar                     | DE rutschen                     | FR glisser                      | IT scivolare
+   ~L it: scivolare giù -> scivolare  (the value had an extra word; to slide is 'scivolare')
+
+333) [3173] slope  (Advanced)
+   EX : The skiers went down the snowy slope quickly.
+   DEF: a surface that goes up or down at an angle
+   ES pendiente                    | DE Hang                         | FR pente                        | IT pendenza
+   ~M de: Neigung -> Hang  ('Neigung' means an incline/tendency; a ski slope is a 'Hang')
+
+334) [3184] spread  (Advanced)
+   EX : The bird spread its wings and flew away quickly.
+   DEF: to open out or extend something wide
+   ES desplegar                    | DE ausbreiten                   | FR déployer                     | IT spiegare
+   ~M es: abrió -> desplegar  ('abrió' is past tense 'opened'; to spread wings is 'desplegar')
+   ~M de: verbreiten -> ausbreiten  ('verbreiten' is to spread news; to spread wings is 'ausbreiten')
+   ~M fr: propagé -> déployer  ('propagé' is 'spread' of news; to spread wings is 'déployer')
+   ~M it: diffondere -> spiegare  ('diffondere' is to spread news; to spread wings is 'spiegare')
+
+335) [3187] stand  (Advanced)
+   EX : Please stand when the queen enters the room.
+   DEF: to rise to an upright position on your feet
+   ES pararse                      | DE stehen                       | FR se lever                     | IT in piedi
+   ~M fr: rester -> se lever  ('rester' means to remain; to stand up is 'se lever')
+
+336) [3188] stare  (Advanced)
+   EX : The children stare at the new toy in the shop window.
+   DEF: to look at something for a long time
+   ES mirar fijo                   | DE starren                      | FR fixer                        | IT fissare
+   ~M fr: regard -> fixer  ('regard' is the noun gaze; to stare is 'fixer')
+
+337) [3195] stiff  (Advanced)
+   EX : After exercise, my muscles felt stiff and sore.
+   DEF: hard to bend or move
+   ES rígido                       | DE steif                        | FR raide                        | IT rigido
+   ~M fr: rigide -> raide  ('rigide' means rigid; stiff sore muscles are 'raide')
+   ~M it: indolenzito -> rigido  ('indolenzito' means sore; stiff (hard to bend) is 'rigido')
+
+338) [3200] strike  (Advanced)
+   EX : The workers decided to strike for higher wages next month.
+   DEF: to refuse to work as a protest
+   ES hacer huelga                 | DE streiken                     | FR faire grève                  | IT scioperare
+   ~M fr: grève -> faire grève  ('grève' is the noun strike; to go on strike is 'faire grève')
+   ~M it: sciopero -> scioperare  ('sciopero' is the noun strike; to go on strike is 'scioperare')
+
+339) [3202] struggle  (Advanced)
+   EX : He struggled to open the jar of pickles.
+   DEF: to try hard to do something difficult
+   ES esforzarse                   | DE kämpfen                      | FR lutter                       | IT sforzarsi
+   ~M es: lucha -> esforzarse  ('lucha' is the noun; he struggled (verb) is 'esforzarse')
+   ~M fr: lutte -> lutter  ('lutte' is the noun; he struggled (verb) is 'lutter')
+   ~M it: lottare/sforzarsi -> sforzarsi  (the value held two options; struggling to open a jar is 'sforzarsi')
+
+340) [3203] stuff  (Advanced)
+   EX : Please put your stuff away in the closet.
+   DEF: things or belongings
+   ES cosas                        | DE Sachen                       | FR affaires                     | IT cose
+   ~M fr: truc -> affaires  ('truc' is one thingamajig; stuff/belongings is 'affaires')
+
+341) [3209] surrounding  (Advanced)
+   EX : The forest provided a peaceful surrounding for our picnic.
+   DEF: the area or conditions around a place
+   ES entorno                      | DE Umgebung                     | FR environnement                | IT ambiente
+   ~M fr: environnant -> environnement  ('environnant' is the adjective; the surroundings (noun) is 'environnement')
+
+342) [3211] suspect  (Advanced)
+   EX : Police suspect the man stole the car.
+   DEF: to believe someone is guilty without proof
+   ES sospechar                    | DE verdächtigen                 | FR soupçonner                   | IT sospettare
+   ~L de: vderdächtigen -> verdächtigen  (the value had a typo; the verb is 'verdächtigen')
+   ~M fr: suspect -> soupçonner  ('suspect' is the noun/adjective; the verb to suspect is 'soupçonner')
+
+343) [3214] switch  (Advanced)
+   EX : Please switch off the lights when you leave.
+   DEF: to turn a device on or off
+   ES apagar                       | DE schalten                     | FR éteindre                     | IT spegnere
+   ~M es: cambiar -> apagar  ('cambiar' means to change; to switch off the lights is 'apagar')
+   ~M fr: changer -> éteindre  ('changer' means to change; to switch off the lights is 'éteindre')
+   ~M it: cambiare -> spegnere  ('cambiare' means to change; to switch off the lights is 'spegnere')
+
+344) [3215] sympathy  (Advanced)
+   EX : I felt great sympathy for the lost child.
+   DEF: a feeling of care for someone who is suffering
+   ES compasión                    | DE Mitgefühl                    | FR compassion                   | IT compassione
+   ~M de: Sympathie -> Mitgefühl  ('Sympathie' means fondness; sympathy for suffering is 'Mitgefühl')
+   ~M fr: sympathie -> compassion  ('sympathie' means liking; sympathy for suffering is 'compassion')
+
+345) [3222] term  (Advanced)
+   EX : The school term ends in June.
+   DEF: one of the periods a school year is divided into
+   ES período                      | DE Semester                     | FR trimestre                    | IT trimestre
+   ~M de: Laufzeit -> Semester  ('Laufzeit' is a contract duration; a school term is a 'Semester')
+   ~M fr: terme -> trimestre  ('terme' means an expression/deadline; a school term is a 'trimestre')
+   ~M it: termine -> trimestre  ('termine' means a deadline/word; a school term is a 'trimestre')
+
+346) [3224] threat  (Advanced)
+   EX : The dark clouds were a threat of a storm.
+   DEF: a sign that something bad may happen
+   ES amenaza                      | DE Bedrohung                    | FR menace                       | IT minaccia
+   ~M de: Warnung -> Bedrohung  ('Warnung' means a warning; a threat is a 'Bedrohung')
+
+347) [3231] track  (Advanced)
+   EX : The train runs on the track.
+   DEF: the rails a train runs along
+   ES vía                          | DE Schiene                      | FR voie                         | IT binari
+   ~M es: carril -> vía  ('carril' is a road lane; a railway track is a 'vía')
+   ~M fr: piste -> voie  ('piste' is a trail/runway; a railway track is a 'voie')
+
+348) [3232] transfer  (Advanced)
+   EX : She will transfer money to her savings account.
+   DEF: to move something from one place to another
+   ES transferir                   | DE überweisen                   | FR transférer                   | IT trasferire
+   ~M fr: transfert -> transférer  ('transfert' is the noun; the verb to transfer is 'transférer')
+
+349) [3235] trial  (Advanced)
+   EX : The trial lasted for many weeks.
+   DEF: the examination of a case in a court of law
+   ES juicio                       | DE Prozess                      | FR procès                       | IT processo
+   ~H de: Versuch -> Prozess  ('Versuch' means an attempt; a court trial is a 'Prozess')
+   ~M it: prova -> processo  ('prova' means a test/attempt; a court trial is a 'processo')
+
+350) [3238] trouble  (Advanced)
+   EX : I am having trouble understanding this new lesson.
+   DEF: difficulty or problems
+   ES problema                     | DE Problem                      | FR difficulté                   | IT guaio
+   ~M fr: inquiéter -> difficulté  ('inquiéter' means to worry; trouble/difficulty is 'difficulté')
+
+351) [3253] urge  (Advanced)
+   EX : I urge you to study for your exam.
+   DEF: to strongly advise someone to do something
+   ES instar                       | DE drängen                      | FR exhorter                     | IT esortare
+   ~L it: esortare / sollecitare -> esortare  (the value held two options; to urge is 'esortare')
+
+352) [3256] vast  (Advanced)
+   EX : The vast desert stretched for many miles.
+   DEF: extremely large in size or amount
+   ES vasto                        | DE riesig                       | FR vaste                        | IT vasto
+   ~M de: groß -> riesig  ('groß' means big; vast (enormous) is 'riesig')
+
+353) [3257] venue  (Advanced)
+   EX : The band played at a new venue in the city center.
+   DEF: a place where an event is held
+   ES salón de eventos             | DE Veranstaltungsort            | FR lieu                         | IT locale
+   ~L es: salon de eventos -> salón de eventos  (the value was missing its accent; the word is 'salón de eventos')
+
+354) [3269] way  (Advanced)
+   EX : This is a good way to learn new vocabulary.
+   DEF: a method of doing something
+   ES manera                       | DE Weise                        | FR façon                        | IT modo
+   ~M de: Weg -> Weise  ('Weg' is a path/road; a way/method is a 'Weise')
+   ~M fr: chemin -> façon  ('chemin' is a path; a way/method is a 'façon')
+
+355) [3276] whom  (Advanced)
+   EX : To whom did you give the book?
+   DEF: used to refer to the person receiving an action
+   ES a quien                      | DE wem                          | FR qui                          | IT a chi
+   ~M de: dem -> wem  ('dem' is the dative article; 'to whom' is 'wem')
+
+356) [3284] worse  (Advanced)
+   EX : Her cold became worse, so she went to the doctor.
+   DEF: of poorer quality or condition
+   ES peor                         | DE schlechter                   | FR pire                         | IT peggiore
+   ~M it: peggiorato -> peggiore  ('peggiorato' means worsened; the comparative worse is 'peggiore')
+
+357) [3290] yet  (Advanced)
+   EX : She has not finished her homework yet.
+   DEF: up to now; so far
+   ES todavía                      | DE noch                         | FR pas encore                   | IT ancora
+   ~L it: Ancora -> ancora  (the value was capitalised; the word is 'ancora')
+
+358) [3292] run out of  (Advanced)
+   EX : We will run out of milk soon.
+   DEF: to use up all of something
+   ES quedarse sin                 | DE ausgehen                     | FR manquer de                   | IT esaurire
+   ~L de: ausgegangen -> ausgehen  (the past participle was given; the base form is 'ausgehen')
+
+359) [3296] give in  (Advanced)
+   EX : My parents did not want a dog, but they finally gave in.
+   DEF: to finally agree after refusing
+   ES ceder                        | DE nachgeben                    | FR céder                        | IT cedere
+   ~M de: gib nach -> nachgeben  (the imperative was given; the base form is 'nachgeben')
+   ~H fr: donner -> céder  ('donner' means to give; to give in (yield) is 'céder')
+
+360) [3298] look after  (Advanced)
+   EX : Please look after my cat while I am on holiday.
+   DEF: to take care of someone or something
+   ES cuidar de                    | DE betreuen                     | FR s'occuper de                 | IT prendersi cura di
+   ~M fr: soigner -> s'occuper de  ('soigner' means to treat medically; to look after is 's'occuper de')
+
+361) [3299] wait for  (Advanced)
+   EX : I will wait for you at the bus stop.
+   DEF: to stay until someone or something arrives
+   ES esperar                      | DE warten auf                   | FR attendre                     | IT aspettare
+   ~M it: aspettare per -> aspettare  (the 'per' is incorrect; to wait for someone is simply 'aspettare')
+
+362) [3301] put on  (Advanced)
+   EX : She put on her coat before going outside.
+   DEF: to dress yourself in a piece of clothing
+   ES ponerse                      | DE anziehen                     | FR mettre                       | IT mettere
+   ~M de: aufsetzen -> anziehen  ('aufsetzen' is for a hat; putting on a coat is 'anziehen')
+   ~L fr: mettez -> mettre  (the imperative was given; the base form is 'mettre')
+
+363) [3307] come in  (Advanced)
+   EX : Please come in and sit down.
+   DEF: to enter a place
+   ES entrar                       | DE reinkommen                   | FR entrer                       | IT accomodarsi
+   ~L es: Entrar -> entrar  (the value was capitalised; the word is 'entrar')
+   ~L fr: Entrez -> entrer  (the imperative was given; the base form is 'entrer')
+
+364) [3313] turn up  (Advanced)
+   EX : My lost keys finally turned up in the sofa cushions.
+   DEF: to be found or appear unexpectedly
+   ES aparecer                     | DE auftauchen                   | FR réapparaître                 | IT comparire
+   ~M fr: venez -> réapparaître  ('venez' is the imperative 'come'; to turn up/appear is 'réapparaître')
+
+365) [3317] insane  (Advanced)
+   EX : The man was declared insane by the court.
+   DEF: seriously mentally ill
+   ES loco                         | DE verrückt                     | FR fou                          | IT folle
+   ~L it: mentalmente instabile -> folle  (the value was a phrase; insane is 'folle')
+
+366) [3326] tearing up  (Advanced)
+   EX : Her eyes started tearing up during the sad movie.
+   DEF: beginning to cry
+   ES lagrimear                    | DE feuchte Augen bekommen       | FR en larmes                    | IT commuoversi
+   ~M es: llorisquear -> lagrimear  ('llorisquear' means to whimper; eyes tearing up is 'lagrimear')
+   ~M de: zerreißen -> feuchte Augen bekommen  ('zerreißen' means to rip apart; eyes tearing up is 'feuchte Augen bekommen')
+
+367) [3343] break down  (Advanced)
+   EX : The old car broke down on the way home.
+   DEF: to stop working properly
+   ES romperse                     | DE eine Panne haben             | FR tomber en panne              | IT guastarsi
+   ~M de: zusammenbrechen -> eine Panne haben  ('zusammenbrechen' means to collapse; a car breaking down is 'eine Panne haben')
+   ~M fr: panne -> tomber en panne  ('panne' is the noun; to break down is 'tomber en panne')
+   ~H it: scoppiare in lacrime -> guastarsi  ('scoppiare in lacrime' means to burst into tears; a car breaking down is 'guastarsi')
+
+368) [3344] break up  (Advanced)
+   EX : They decided to break up after two years together.
+   DEF: to end a relationship
+   ES separarse                    | DE sich trennen                 | FR rompre                       | IT lasciarsi
+   ~M de: beenden -> sich trennen  ('beenden' means to end something; to break up (as a couple) is 'sich trennen')
+   ~M it: rompere -> lasciarsi  ('rompere' means to break an object; a couple breaking up is 'lasciarsi')
+
+369) [3345] bring up  (Advanced)
+   EX : Parents bring up their children with love and guidance.
+   DEF: to care for a child until grown
+   ES criar                        | DE erziehen                     | FR élever                       | IT crescere
+   ~H fr: faire monter -> élever  ('faire monter' means to carry up; to bring up a child is 'élever')
+   ~L it: crescere / educare -> crescere  (the value held two options; to bring up a child is 'crescere')
+
+370) [3348] work out  (Advanced)
+   EX : She works out at the gym three times a week.
+   DEF: to exercise to stay fit
+   ES entrenar                     | DE trainieren                   | FR s'entraîner                  | IT allenarsi
+   ~M fr: entraînement -> s'entraîner  ('entraînement' is the noun; to work out is 's'entraîner')
+
+371) [3372] show off  (Advanced)
+   EX : He likes to show off his new car to all his friends.
+   DEF: to display something proudly to impress
+   ES presumir                     | DE angeben                      | FR frimer                       | IT vantarsi
+   ~M it: esibire -> vantarsi  ('esibire' means to display something; to show off is 'vantarsi')
+
+372) [3377] blow up  (Advanced)
+   EX : The old building will blow up next week.
+   DEF: to explode
+   ES explotar                     | DE explodieren                  | FR sauter                       | IT esplodere
+   ~L de: sprengen -> explodieren  ('sprengen' means to blow something up; the building blowing up is 'explodieren')
+
+373) [3383] keep up  (Advanced)
+   EX : She walks quickly, so I must walk fast to keep up.
+   DEF: to move at the same speed as another
+   ES mantenerse                   | DE mithalten                    | FR continuez                    | IT tenersi al passo
+   ~M de: weitermachen -> mithalten  ('weitermachen' means to continue; to keep up with someone is 'mithalten')
+
+374) [3387] put down  (Advanced)
+   EX : His brother often put him down, which made him feel sad.
+   DEF: to criticise and make someone feel small
+   ES menospreciar                 | DE herabsetzen                  | FR rabaisser                    | IT sminuire
+   ~H es: apoyar -> menospreciar  ('apoyar' means to support; to put someone down is 'menospreciar')
+   ~M de: ablegen -> herabsetzen  ('ablegen' means to set an object down; to belittle someone is 'herabsetzen')
+   ~M fr: déposer -> rabaisser  ('déposer' means to set an object down; to belittle someone is 'rabaisser')
+   ~M it: mettere giù -> sminuire  ('mettere giù' means to set an object down; to belittle someone is 'sminuire')
+
+375) [3388] put on  (Advanced)
+   EX : She put on her coat before going outside.
+   DEF: to dress yourself in a piece of clothing
+   ES ponerse                      | DE anziehen                     | FR mettre                       | IT mettere
+   ~M de: aufsetzen -> anziehen  ('aufsetzen' is for a hat; putting on a coat is 'anziehen')
+   ~L fr: mettez -> mettre  (the imperative was given; the base form is 'mettre')
+
+376) [3409] write down  (Advanced)
+   EX : Please write down the important notes from the meeting.
+   DEF: to record something in writing
+   ES anotar                       | DE notieren                     | FR noter                        | IT annotare
+   ~M fr: écrire -> noter  ('écrire' means to write; to write down/note is 'noter')
+   ~L it: annotare / prendere nota -> annotare  (the value held two options; to write down is 'annotare')
+
