@@ -6140,3 +6140,31 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 projects/vocab healing/vocabulary_corrected.json
 To github.com:alielar/claude-workspace.git
    6f3b104..af9aeb3  main -> main
+[main 5c948c9] auto-save: 2026-07-28 23:47
+ 26 files changed, 28883 insertions(+)
+ create mode 100644 projects/vocab healing/Word_Bank_3000_Correction_Report.pdf
+ create mode 100644 projects/vocab healing/Word_Bank_3000_Detailed_Changes.pdf
+ create mode 100644 projects/vocab healing/assemble_final.py
+ create mode 100644 projects/vocab healing/build_review.py
+ create mode 100644 projects/vocab healing/check.py
+ create mode 100644 projects/vocab healing/check_dups.py
+ create mode 100644 projects/vocab healing/inspect.py
+ create mode 100644 projects/vocab healing/make_detailed_report.py
+ create mode 100644 projects/vocab healing/make_final_report.py
+ create mode 100644 projects/vocab healing/make_report.py
+ create mode 100644 projects/vocab healing/patch_01.json
+ create mode 100644 projects/vocab healing/patch_02.json
+ create mode 100644 projects/vocab healing/patch_03.json
+ create mode 100644 projects/vocab healing/patch_04.json
+ create mode 100644 projects/vocab healing/patch_05.json
+ create mode 100644 projects/vocab healing/patch_06.json
+ create mode 100644 projects/vocab healing/patch_07.json
+ create mode 100644 projects/vocab healing/patch_08.json
+ create mode 100644 projects/vocab healing/patch_09.json
+ create mode 100644 projects/vocab healing/review_all.txt
+ create mode 100644 projects/vocab healing/review_lowmed.json
+ create mode 100644 projects/vocab healing/review_lowmed.txt
+ create mode 100644 projects/vocab healing/vocabulary_adjusted.json
+ create mode 100644 projects/vocab healing/vocabulary_adjusted_with_notes.json
+To github.com:alielar/claude-workspace.git
+   af9aeb3..5c948c9  main -> main
