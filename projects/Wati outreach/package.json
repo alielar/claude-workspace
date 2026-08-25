@@ -1,0 +1,8 @@
+{
+  "name": "wati-outreach",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --env-file=.env check.mjs"
+  }
+}
