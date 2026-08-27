@@ -11947,3 +11947,13 @@ To github.com:alielar/claude-workspace.git
  delete mode 100644 projects/grammar-survey-whatsapp/send_campaign.js
 To github.com:alielar/claude-workspace.git
    7a177ec..0907c60  main -> main
+[main c6fbc0a] auto-save: 2026-08-26 23:47
+ 8 files changed, 25214 insertions(+), 1 deletion(-)
+ create mode 100644 projects/Wati outreach/data/leads_had_meeting.csv
+ create mode 100644 projects/Wati outreach/data/leads_no_meeting_yet.csv
+ create mode 100644 projects/Wati outreach/data/plan.json
+ create mode 100644 projects/Wati outreach/data/skipped.csv
+ create mode 100644 projects/Wati outreach/prepare.mjs
+ create mode 100644 projects/Wati outreach/send.mjs
+To github.com:alielar/claude-workspace.git
+   0907c60..c6fbc0a  main -> main

@@ -1,0 +1,692 @@
+<title>French Closing Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground: #F5F6F4;
+    --surface: #FFFFFF;
+    --surface-2: #ECEFEC;
+    --ink: #16191A;
+    --ink-2: #333A38;
+    --muted: #5C6663;
+    --line: #D8DDD9;
+    --line-soft: #E6EAE7;
+    --accent: #0B6B5B;
+    --accent-soft: #E2EFEB;
+    --signal: #A84A18;
+    --signal-soft: #F7E9DF;
+    --retire: #8E241D;
+    --retire-soft: #F7E4E2;
+
+    --display: "Newsreader", Georgia, "Times New Roman", serif;
+    --body: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --spine: 74ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #101413;
+      --surface: #171C1B;
+      --surface-2: #1E2523;
+      --ink: #E9EEEB;
+      --ink-2: #C3CCC8;
+      --muted: #909B97;
+      --line: #2C3432;
+      --line-soft: #232A28;
+      --accent: #4FB39D;
+      --accent-soft: #16302B;
+      --signal: #DE9260;
+      --signal-soft: #2E2018;
+      --retire: #E08079;
+      --retire-soft: #2E1B19;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #101413;
+    --surface: #171C1B;
+    --surface-2: #1E2523;
+    --ink: #E9EEEB;
+    --ink-2: #C3CCC8;
+    --muted: #909B97;
+    --line: #2C3432;
+    --line-soft: #232A28;
+    --accent: #4FB39D;
+    --accent-soft: #16302B;
+    --signal: #DE9260;
+    --signal-soft: #2E2018;
+    --retire: #E08079;
+    --retire-soft: #2E1B19;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(32px, 6vw, 72px) clamp(20px, 5vw, 48px) 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+
+  /* ── Masthead ─────────────────────────────────────── */
+
+  .masthead { display: flex; flex-direction: column; gap: 20px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(38px, 6.2vw, 62px);
+    line-height: 1.04;
+    letter-spacing: -0.021em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-family: var(--display);
+    font-size: clamp(19px, 2.3vw, 23px);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .tally {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .tally div {
+    flex: 1 1 120px;
+    padding: 16px 20px;
+    border-right: 1px solid var(--line-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .tally div:last-child { border-right: 0; }
+  .tally b {
+    font-family: var(--display);
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .tally span {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .tally .hi b { color: var(--accent); }
+  .tally .lo b { color: var(--retire); }
+
+  /* ── Sections ─────────────────────────────────────── */
+
+  section { display: flex; flex-direction: column; gap: 24px; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(27px, 3.6vw, 36px);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    margin: 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+    text-wrap: balance;
+  }
+
+  .lede { max-width: var(--spine); margin: 0; color: var(--ink-2); }
+  .lede + .lede { margin-top: -10px; }
+
+  /* ── Closing ladder ───────────────────────────────── */
+
+  .ladder { display: flex; flex-direction: column; gap: 14px; }
+
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .stage.deadline { border-left-color: var(--signal); }
+
+  .stage-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .step {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    color: var(--accent);
+    padding-top: 3px;
+  }
+  .stage.deadline .step { color: var(--signal); }
+  .stage-head h3 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    margin: 0;
+    flex: 1 1 auto;
+  }
+  .when {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Template cards ───────────────────────────────── */
+
+  .tpl { display: flex; flex-direction: column; gap: 7px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+  .tpl:first-of-type { padding-top: 0; border-top: 0; }
+
+  .tpl-id { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .tpl-id code {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--surface-2);
+    padding: 2px 7px;
+    border-radius: 2px;
+    word-break: break-all;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2.5px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .badge.util { background: var(--accent-soft); color: var(--accent); }
+  .badge.mkt  { background: var(--surface-2); color: var(--muted); }
+  .badge.pick { background: var(--signal-soft); color: var(--signal); }
+
+  .vars { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+
+  blockquote {
+    margin: 0;
+    padding-left: 15px;
+    border-left: 2px solid var(--line);
+    font-family: var(--display);
+    font-size: 16.5px;
+    font-style: italic;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 66ch;
+  }
+
+  .why { font-size: 15px; color: var(--muted); max-width: 66ch; margin: 0; }
+  .why strong { color: var(--ink-2); font-weight: 600; }
+
+  /* ── Objection lookup ─────────────────────────────── */
+
+  .lookup {
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    border-top: 1px solid var(--line-soft);
+  }
+  .row:first-child { border-top: 0; }
+  .said, .send { padding: 17px 20px; display: flex; flex-direction: column; gap: 7px; }
+  .said {
+    background: var(--surface-2);
+    border-right: 1px solid var(--line-soft);
+  }
+  .said q {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 16.5px;
+    color: var(--ink);
+    quotes: "«\00a0" "\00a0»";
+  }
+  .said em { font-style: normal; font-size: 13.5px; color: var(--muted); }
+
+  @media (max-width: 660px) {
+    .row { grid-template-columns: 1fr; }
+    .said { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  }
+
+  /* ── Supporting kit ───────────────────────────────── */
+
+  .kit { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card h4 {
+    font-family: var(--display);
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .card li { display: flex; flex-direction: column; gap: 3px; }
+  .card li code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink);
+    word-break: break-all;
+  }
+  .card li span { font-size: 13.5px; color: var(--muted); }
+
+  /* ── Retire table ─────────────────────────────────── */
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 560px; }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  td { padding: 13px 18px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td code { font-family: var(--mono); font-size: 12.5px; word-break: break-all; }
+  td.reason { color: var(--muted); }
+  .flag {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--retire);
+    background: var(--retire-soft);
+    padding: 2.5px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  /* ── Fixes ────────────────────────────────────────── */
+
+  .fixes { display: flex; flex-direction: column; gap: 14px; counter-reset: fix; }
+  .fix {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .fix h4 {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .fix p { margin: 0; color: var(--ink-2); max-width: 70ch; }
+  .fix p code, .lede code, .why code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    font-size: 14px;
+    color: var(--muted);
+    max-width: var(--spine);
+  }
+
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  a { color: var(--accent); }
+  a:focus-visible, code:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">easypeasy · Wati · France</div>
+    <h1>French Closing Playbook</h1>
+    <p class="standfirst">Your Wati account holds 116 approved French templates. Most are noise — duplicates, abandoned versions, and test artefacts. These 23 are the ones that close.</p>
+    <div class="tally">
+      <div><b>116</b><span>French approved</span></div>
+      <div class="hi"><b>23</b><span>Worth keeping</span></div>
+      <div class="lo"><b>15</b><span>Retire now</span></div>
+      <div><b>11</b><span>Exact duplicates</span></div>
+      <div><b>76</b><span>Marketing category</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>The closing ladder</h2>
+    <p class="lede">This is the one genuine sequence in your account, and it's good. It runs on a single day: the place is offered in the morning, and the deadline lands that evening. The pressure escalates deliberately — soft check-in, third-party pressure, hard deadline, then the place is reassigned.</p>
+    <p class="lede">Send these in order. Skipping to the deadline without the soft steps is what makes scarcity read as a bluff.</p>
+
+    <div class="ladder">
+
+      <div class="stage">
+        <div class="stage-head">
+          <span class="step">Stage 1</span>
+          <h3>The place is yours</h3>
+          <span class="when">Morning, after the consultation</span>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>admission_message_fra</code><span class="badge mkt">Marketing</span></div>
+          <div class="vars">{name} · {owned_by_name}</div>
+          <blockquote>Nous avons le plaisir de vous informer que vous faites partie des personnes sélectionnées pour rejoindre notre académie.</blockquote>
+          <p class="why">Frames enrolment as <strong>selection, not purchase</strong>. Sets up every later message — you can only lose a place you were told you'd won.</p>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>to_be_converted1_fra</code><span class="badge mkt">Marketing</span></div>
+          <div class="vars">{name}</div>
+          <blockquote>Avez-vous des questions avant 20h ? Prévoyez-vous d'accepter la place ?</blockquote>
+          <p class="why">Plants the 20h deadline early and casually, so the evening messages are a reminder rather than a new demand.</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head">
+          <span class="step">Stage 2</span>
+          <h3>Someone else is asking about you</h3>
+          <span class="when">Early afternoon</span>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>to_be_converted2_fra</code><span class="badge mkt">Marketing</span></div>
+          <blockquote>Nous sommes en train de finaliser l'organisation d'aujourd'hui. Comment est la situation de votre côté ?</blockquote>
+          <p class="why">A reason to write that isn't "have you decided". The pressure is logistical, not personal.</p>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>to_be_converted3_fra</code><span class="badge mkt">Marketing</span></div>
+          <blockquote>L'administration vient de me demander des nouvelles vous concernant. Pourriez-vous me répondre rapidement ?</blockquote>
+          <p class="why">Moves the pressure to a <strong>third party</strong>, so you stay on the lead's side. The strongest psychological move in the whole ladder.</p>
+        </div>
+      </div>
+
+      <div class="stage deadline">
+        <div class="stage-head">
+          <span class="step">Stage 3</span>
+          <h3>The deadline is real</h3>
+          <span class="when">Late afternoon</span>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>tbc_followup1_fra</code><span class="badge mkt">Marketing</span><span class="badge pick">Best in class</span></div>
+          <div class="vars">{name}</div>
+          <blockquote>Où en êtes-vous dans votre réflexion ? Votre place est réservée jusqu'à ce soir 20h00. Prévoyez-vous de l'accepter ?</blockquote>
+          <p class="why">Named hour, named consequence, open question. If you keep only one closing template, keep this one.</p>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>to_be_converted6_fra</code><span class="badge mkt">Marketing</span></div>
+          <blockquote>Si vous souhaitez commencer avec nous, vous devez me le confirmer aujourd'hui. Ou bien ne prévoyez-vous pas de participer ?</blockquote>
+          <p class="why">The negative alternative does the work — it's easier to reject a wrong assumption than to make a decision.</p>
+        </div>
+      </div>
+
+      <div class="stage deadline">
+        <div class="stage-head">
+          <span class="step">Stage 4</span>
+          <h3>The place goes to someone else</h3>
+          <span class="when">Evening, at the deadline</span>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>to_be_converted4_fra</code><span class="badge mkt">Marketing</span></div>
+          <div class="vars">{name}</div>
+          <blockquote>Aujourd'hui, je peux encore vous inscrire pour les prochains mois. Après cela, il ne sera de nouveau possible de rejoindre les cours qu'à partir de septembre/octobre au plus tôt, via la liste d'attente.</blockquote>
+          <p class="why">Quantifies the cost of waiting in months, not vague urgency. Update the month names each intake or it stops being credible.</p>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>to_be_converted5_fra</code><span class="badge util">Utility</span><span class="badge pick">Cheapest hard close</span></div>
+          <div class="vars">{name}</div>
+          <blockquote>Malheureusement, nous devons réattribuer votre place ce soir. Après cela, vous ne pourrez rejoindre les cours que via la liste d'attente, sans garantie d'une nouvelle place.</blockquote>
+          <p class="why">The hardest message in the account, and it's already <strong>Utility</strong> — lower cost per send and no marketing opt-in needed. Follow with <code>to_be_converted7_fra</code> if still silent.</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head">
+          <span class="step">Stage 5</span>
+          <h3>They said yes — now collect</h3>
+          <span class="when">After acceptance</span>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>payment_reminder_1_fr_new</code><span class="badge util">Utility</span><span class="badge pick">Best in class</span></div>
+          <div class="vars">{name} · {start_date} · {deadline_date}</div>
+          <blockquote>Pour pouvoir commencer le cours {{start_date}}, il nous manque encore votre paiement… Pourriez-vous le faire d'ici {{deadline_date}} au plus tard afin que nous puissions vous inclure dans le planning ?</blockquote>
+          <p class="why">The only payment template with <strong>both dates as variables</strong>, so it never goes stale. Utility category. Use this and retire the rest.</p>
+        </div>
+        <div class="tpl">
+          <div class="tpl-id"><code>course_payment_reminder2_fra</code><span class="badge mkt">Marketing</span></div>
+          <div class="vars">{name}</div>
+          <blockquote>Nous n'avons toujours pas reçu votre paiement. Souhaitez-vous reporter le début à un autre mois ?</blockquote>
+          <p class="why">Last resort. Offering to postpone recovers a start date instead of losing the student entirely.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Objection handlers</h2>
+    <p class="lede">Not a sequence — a lookup. These are the six things French leads actually say, and the template that answers each. Your closers should know this table by heart.</p>
+
+    <div class="lookup">
+      <div class="row">
+        <div class="said"><q>C'est trop cher</q><em>Price objection</em></div>
+        <div class="send">
+          <div class="tpl-id"><code>tbc_reject_price_fra</code><span class="badge mkt">Marketing</span></div>
+          <blockquote>Il serait aussi possible de payer le cours en jusqu'à 10 mensualités via Alma.</blockquote>
+        </div>
+      </div>
+      <div class="row">
+        <div class="said"><q>Je ne peux pas payer d'un coup</q><em>Cash-flow, not price</em></div>
+        <div class="send">
+          <div class="tpl-id"><code>fr_payment_option</code><span class="badge util">Utility</span></div>
+          <blockquote>Vous pouvez payer en 1 fois, 3 fois, 4 fois ou 6 fois. Est-ce que cela vous convient ?</blockquote>
+        </div>
+      </div>
+      <div class="row">
+        <div class="said"><q>Est-ce finançable par mon CPF ?</q><em>Uniquely French — expect it constantly</em></div>
+        <div class="send">
+          <div class="tpl-id"><code>cpf_fr</code><span class="badge mkt">Marketing</span><span class="badge pick">High value</span></div>
+          <blockquote>Bien que nous ne puissions pas accepter le CPF, car nous sommes suisse… nous pouvons vous accorder 20 % de réduction sur présentation d'une preuve d'éligibilité.</blockquote>
+        </div>
+      </div>
+      <div class="row">
+        <div class="said"><q>L'acompte est trop élevé</q><em>Deposit blocking the start</em></div>
+        <div class="send">
+          <div class="tpl-id"><code>prepayment_1_fra</code><span class="badge mkt">Marketing</span></div>
+          <blockquote>Nous pouvons également vous proposer d'effectuer un pré-paiement de 80€ au lieu de 120€.</blockquote>
+        </div>
+      </div>
+      <div class="row">
+        <div class="said"><q>Pas maintenant, plus tard</q><em>Timing — the most common no</em></div>
+        <div class="send">
+          <div class="tpl-id"><code>conversation_opener_10_fr</code><span class="badge util">Utility</span></div>
+          <div class="vars">{date}</div>
+          <blockquote>Vous pouvez commencer les cours {{date}}. Cependant, il est préférable de déjà vous inscrire pour vous assurer d'avoir une place à ce moment là.</blockquote>
+          <p class="why">Separates <strong>starting later</strong> from <strong>deciding later</strong>. Concede the start date, keep the commitment. If they push further, <code>tbc_reject2_fra</code> puts them on the waitlist with no guarantee.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="said"><q>Je réfléchis</q><em>Stalling after a proposal</em></div>
+        <div class="send">
+          <div class="tpl-id"><code>conversation_opener_5_fr</code><span class="badge util">Utility</span></div>
+          <div class="vars">{name}</div>
+          <blockquote>Que pensez-vous de la proposition faite dans le message précédent ?</blockquote>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The supporting kit</h2>
+    <p class="lede">Everything around the close. The booking and reminder set is all Utility category — cheap, high deliverability, and no opt-in requirement. Use it freely.</p>
+
+    <div class="kit">
+      <div class="card">
+        <h4>Booking &amp; reminders</h4>
+        <ul>
+          <li><code>booking_text_fixed_fr_v1</code><span>Confirms the Meet, warns to join from a quiet room</span></li>
+          <li><code>1_reminder_fr_utility</code><span>Day-before reminder with date and time</span></li>
+          <li><code>2_reminder_fr_utility</code><span>"Another client asked for your slot" — confirm or cancel</span></li>
+          <li><code>3_reminder_fr_utility</code><span>One hour out</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>No-show recovery</h4>
+        <ul>
+          <li><code>noshow_immediate_fr</code><span>Sent live: the tutor is waiting in the call</span></li>
+          <li><code>no_show_allinone_fr_v2</code><span>One clean reschedule ask — replaces the seven-message noshow_text chain</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Cold-lead revival</h4>
+        <ul>
+          <li><code>revive_iitf_discount_fr</code><span>20% off plus "you're next on the waitlist" — the strongest offer in the account</span></li>
+          <li><code>fr_revivingoldleads_3</code><span>"Someone postponed, a place opened" — uses {owner_name}, so it works for any closer</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Existing students</h4>
+        <ul>
+          <li><code>fr_upsell_meeting_high</code><span>Top 20% of performers</span></li>
+          <li><code>fr_upsell_meeting_medium</code><span>Top 25%</span></li>
+          <li><code>fr_upsell_meeting_low</code><span>Missed a few lessons</span></li>
+          <li><code>fr_upsell_meeting_verylow</code><span>Barely attended — "when shall we restart?"</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Retire these</h2>
+    <p class="lede">Fifteen templates that should not be reachable by a closer. One is actively broken and will embarrass you if anyone sends it.</p>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Template</th><th>Problem</th><th>Do this</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>followup_text_1_fra</code></td>
+            <td><span class="flag">Broken</span> Sends the literal text <code>Bonjour (prénom)</code> — the placeholder was never made a variable</td>
+            <td class="reason">Delete today. Use <code>followup_text_1_fra_v2</code>, which has a real {name}</td>
+          </tr>
+          <tr>
+            <td><code>test_test_test</code></td>
+            <td>English test template live in a French production account</td>
+            <td class="reason">Delete</td>
+          </tr>
+          <tr>
+            <td><code>payment_reminder_2_france_test</code><br><code>payment_reminder_3_france_test</code></td>
+            <td>Named "test" but approved and sendable</td>
+            <td class="reason">Delete — <code>payment_reminder_1_fr_new</code> covers the job properly</td>
+          </tr>
+          <tr>
+            <td><code>reactivation_1_fr</code><br><code>reactivation_2_fr</code><br><code>reactivation_3_fr</code></td>
+            <td>Word-for-word identical to the <code>_v2</code> versions</td>
+            <td class="reason">Keep the <code>_v2</code> set, delete these</td>
+          </tr>
+          <tr>
+            <td><code>duplicate_booking_fr</code><br><code>duplicate_meeting_done_fr</code><br><code>duplicate_scheduled_fr</code></td>
+            <td>Identical to their <code>_v2</code> counterparts</td>
+            <td class="reason">Keep <code>_v2</code>, delete these</td>
+          </tr>
+          <tr>
+            <td><code>interestedinfuture_fra_booking1</code></td>
+            <td>Identical to <code>interestedinfuture_fra_booking</code></td>
+            <td class="reason">Delete. <code>booking2</code> is a genuinely different, better-written version — keep that</td>
+          </tr>
+          <tr>
+            <td><code>noshow_text_5_fra</code> / <code>_6_fra</code><br><code>reschedule_text_2_fra</code> / <code>_3_fra</code></td>
+            <td>The same two sentences approved three times across three chains</td>
+            <td class="reason">Keep one copy in the followup chain, delete the other four</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Three things to fix</h2>
+
+    <div class="fixes">
+      <div class="fix">
+        <h4>Your leads don't know who they're talking to</h4>
+        <p>Twelve French templates introduce the sender as <strong>Léa</strong>, two as <strong>Juliette</strong>, two as <strong>Ali</strong>, and one as <strong>Paula</strong> — all from the same WhatsApp number. A lead who gets a booking message from Léa and a closing message from Ali sees an inconsistency, and inconsistency reads as a scam.</p>
+        <p>Several templates already solve this with an <code>{owner_name}</code> variable — <code>fr_upsell_meeting_*</code> and <code>fr_revivingoldleads_3</code> among them. Make that the standard for every new template and the name always matches whoever actually replies.</p>
+      </div>
+      <div class="fix">
+        <h4>You're paying Marketing rates for Utility messages</h4>
+        <p>76 of your 116 French templates are <strong>Marketing</strong> category, which costs more per send and requires marketing opt-in. Some of that is unavoidable — an offer is an offer. But reminders, confirmations, payment chases and logistics are legitimately Utility, and you've already proved it: <code>to_be_converted5_fra</code> and <code>payment_reminder_1_fr_new</code> are approved as Utility while carrying real closing weight.</p>
+        <p>When you next resubmit a template, try Utility first. Worth knowing that the four templates in the campaign now running were submitted as Utility and Meta reclassified them to <strong>Marketing</strong> — so the content has to genuinely be transactional, not just labelled that way.</p>
+      </div>
+      <div class="fix">
+        <h4>Naming is costing you time</h4>
+        <p>Three conventions run in parallel — <code>_fr</code>, <code>_fra</code>, and <code>_france</code> — plus version suffixes <code>_v1</code>, <code>_v2</code>, <code>_v3</code>, <code>_new</code>, and <code>_test</code> used inconsistently. And the four templates in today's campaign misspell "meeting" as <code>no_meating</code> and <code>hadmeating</code>, which can't be corrected without resubmitting to Meta.</p>
+        <p>Pick one pattern for anything new — <code>stage_purpose_fr_v1</code> — and the list stays navigable as it grows past 116.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Read live from the easypeasy Wati account (tenant 603726, EU) on 27 August 2026 — 625 templates total, 141 French, 116 of them approved. Wording quoted verbatim from the approved template bodies.
+  </footer>
+
+</div>

@@ -44,6 +44,20 @@ const { tracks } = JSON.parse(readFileSync('data/plan.json', 'utf8'));
 
 // ── Who are we sending to? ───────────────────────────────────────────────────
 
+// Load the log of what has already gone out first, so --limit can mean
+// "this many people who have not been messaged yet".
+mkdirSync('logs', { recursive: true });
+const done = new Set();
+if (existsSync(LOG)) {
+  for (const line of readFileSync(LOG, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      const e = JSON.parse(line);
+      if (e.ok) done.add(`${e.phone}:${e.template}`);
+    } catch { /* ignore a half-written line */ }
+  }
+}
+
 let audience;
 const testPhone = arg('test');
 if (testPhone) {
@@ -59,22 +73,17 @@ if (testPhone) {
   audience = JSON.parse(readFileSync('data/plan.json', 'utf8')).leads;
   const track = arg('track');
   if (track) audience = audience.filter((l) => l.track === track);
+
+  // Drop anyone who already got their whole pair, BEFORE applying the limit —
+  // so --limit counts fresh people, not rows we are about to skip.
+  const alreadyFullyDone = (l) => tracks[l.track].every((t) => done.has(`${l.phone}:${t}`));
+  const before = audience.length;
+  audience = audience.filter((l) => !alreadyFullyDone(l));
+  const skippedUpFront = before - audience.length;
+  if (skippedUpFront) console.log(`\n  Skipping ${skippedUpFront} people already messaged in an earlier run.`);
+
   const limit = arg('limit');
   if (limit) audience = audience.slice(0, Number(limit));
-}
-
-// ── Skip anyone already done ─────────────────────────────────────────────────
-
-mkdirSync('logs', { recursive: true });
-const done = new Set();
-if (existsSync(LOG)) {
-  for (const line of readFileSync(LOG, 'utf8').split('\n')) {
-    if (!line.trim()) continue;
-    try {
-      const e = JSON.parse(line);
-      if (e.ok) done.add(`${e.phone}:${e.template}`);
-    } catch { /* ignore a half-written line */ }
-  }
 }
 
 const record = (entry) => {
