@@ -1,0 +1,9 @@
+lead_id,name,phone,reason,matched_phrase,context
+180020,Ines,+33782798583,DATA DELETION REQUEST,/supprim\w*[^.]{0,30}(donn[ée]es?|coordonn[ée]es?|num[ée]ro|,demandé à ce que mes coordonnées soient supprimés de votre base de donnée et visiblement cela n’a toujours toujours pas été fait donc je souhaiterais que cela soit effect
+209193,Mourad,+33665321234,DATA DELETION REQUEST,/d[ée]sinscri\w*[^.]{0,20}(fichier|base|liste)/i,Je souhaite me desinscrire de vos listes de diffusion. Cdt  Non
+198060,Koné,+32479356066,explicit refusal,/plus\s+(du\s+tout\s+)?int[ée]ress/i,Bonjour   malheureusement je ne suis plus intéressé.  Bonne journée Marc
+259284,Sam,+33650489535,explicit refusal,/plus\s+(du\s+tout\s+)?int[ée]ress/i,pu me débrouiller  Bonjour   Je ne suis plus intéressé  désolé.  Bien à vous  Sami
+178203,Tarik,+33629177957,explicit refusal,/plus\s+(du\s+tout\s+)?int[ée]ress/i,Bonsoir  Je suis plus intéressé. Merci
+189925,Angélique,+32494927458,soft no (timing) — review,/plus\s+(du\s+tout\s+)?int[ée]ress/i,rcie pour votre message mais je ne suis plus intéressée.
+223967,Nathalie,+33611075926,soft no (timing) — review,/plus\s+(du\s+tout\s+)?int[ée]ress/i,Merci Mais je ne suis plus intéressée je laisse ma place  Bonne soirée  Merci mais je ne donnerai pas suite  Bonne journée e  Vous êtes une excellente c
+242370,Leona,+32489110129,soft no (timing) — review,/me\s+d[ée]sinscrire/i,quences au cas où je devrais finalement me désinscrire si mon emploi du temps ne me permettait pas de suivre les cours à raison de 2 à 4h par semaine ?  Bonjour  oui je s

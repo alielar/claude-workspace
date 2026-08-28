@@ -5,6 +5,8 @@
   "scripts": {
     "check": "node --env-file=.env check.mjs",
     "prepare": "node prepare.mjs",
-    "send": "node --env-file=.env send.mjs"
+    "send": "node --env-file=.env send.mjs",
+    "triage": "node --env-file=.env triage.mjs",
+    "scan-history": "node --env-file=.env scan-history.mjs"
   }
 }

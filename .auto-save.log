@@ -11957,3 +11957,9 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 projects/Wati outreach/send.mjs
 To github.com:alielar/claude-workspace.git
    0907c60..c6fbc0a  main -> main
+[main a8dc4d6] auto-save: 2026-08-27 23:47
+ 4 files changed, 777 insertions(+), 14 deletions(-)
+ create mode 100644 projects/Wati outreach/data/not-on-whatsapp.csv
+ create mode 100644 projects/Wati outreach/playbook.html
+To github.com:alielar/claude-workspace.git
+   c6fbc0a..a8dc4d6  main -> main
