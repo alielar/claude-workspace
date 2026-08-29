@@ -11,6 +11,7 @@ import { eq, and } from "drizzle-orm";
 import { generateNewsBrief, type NewsBrief } from "@/lib/news-brief";
 import { todayInTz } from "@/lib/utils";
 import { enhanceStoriesWithAI, generateDeepDives } from "@/lib/news/summarize";
+import { fetchBriefVideos } from "@/lib/news/youtube";
 
 export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
   const [settings] = await db
@@ -29,8 +30,11 @@ export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
 
   if (existing) return JSON.parse(existing.content) as NewsBrief;
 
-  // Generate, enhance with AI summaries + deep dives, and save
-  const brief = await generateNewsBrief(today);
+  // Generate (articles + YouTube videos in parallel), enhance with AI summaries + deep dives, and save
+  let enabledChannels: string[] | null = null;
+  try { enabledChannels = settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : null; } catch { enabledChannels = null; }
+  const [brief, videos] = await Promise.all([generateNewsBrief(today), fetchBriefVideos(enabledChannels)]);
+  brief.videos = videos;
   await enhanceStoriesWithAI(brief.stories);
   await generateDeepDives(brief.stories);
 

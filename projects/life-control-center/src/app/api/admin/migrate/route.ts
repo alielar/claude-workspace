@@ -127,6 +127,9 @@ export async function POST() {
     )`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_reading_queue_slug ON reading_queue(user_id, slug)`,
 
+    // ── News: YouTube channel choice (Phase 6) ─────────────────────────────
+    `ALTER TABLE user_settings ADD COLUMN news_channels TEXT`,
+
     // ── To-do (Phase 5) ─────────────────────────────────────────────────────
     `CREATE TABLE IF NOT EXISTS todos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

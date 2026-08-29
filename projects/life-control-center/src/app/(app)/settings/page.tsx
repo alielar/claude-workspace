@@ -10,20 +10,30 @@
  *  5. App: version, force-update
  */
 
+import { useState } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
 import { useCached, fetchJson, readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ARCHIVE } from "@/lib/archive";
+import { YT_CHANNELS } from "@/lib/news/youtube";
 
 type UserSettings = {
   timezone: string;
   newsTopics: string;
   newsEmailEnabled: boolean;
   newsEmailTime: string;
+  newsChannels?: string | null;
   kettlebellKg?: number;
 };
+
+const CHANNEL_GROUPS: { category: string; label: string }[] = [
+  { category: "football",    label: "Football" },
+  { category: "geopolitics", label: "Geopolitics" },
+  { category: "tech",        label: "Tech & AI" },
+  { category: "business",    label: "Business" },
+];
 
 const KETTLEBELLS = [
   { key: "12", label: "12 kg" },
@@ -116,6 +126,22 @@ export default function SettingsPage() {
     } catch { /* keep optimistic state */ }
   };
 
+  // YouTube channels for the brief: null = all on.
+  const channels: string[] = (() => {
+    try { return settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : YT_CHANNELS.map((c) => c.id); }
+    catch { return YT_CHANNELS.map((c) => c.id); }
+  })();
+  const [showChannels, setShowChannels] = useState(false);
+  const toggleChannel = async (id: string) => {
+    if (!settings) return;
+    const next = channels.includes(id) ? channels.filter((c) => c !== id) : [...channels, id];
+    const json = JSON.stringify(next);
+    setData({ ...settings, newsChannels: json });
+    try {
+      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { newsChannels: json }, dedupeKey: "settings:newsChannels" });
+    } catch { /* keep optimistic state */ }
+  };
+
   const hardRefresh = async () => {
     try {
       const regs = await navigator.serviceWorker?.getRegistrations?.();
@@ -187,6 +213,39 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* YouTube channels */}
+      <section className="cc-card">
+        <button onClick={() => setShowChannels((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showChannels ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+          <span className="title">YouTube channels in the brief</span>
+          <span className="tail">{settings ? `${channels.filter((id) => YT_CHANNELS.some((c) => c.id === id)).length} of ${YT_CHANNELS.length} on` : "—"} {showChannels ? "▴" : "▾"}</span>
+        </button>
+        {showChannels && (
+          <div style={{ padding: "4px 14px 10px" }}>
+            {CHANNEL_GROUPS.map((g) => (
+              <div key={g.category}>
+                <div style={{ fontSize: 10.5, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)", padding: "12px 2px 4px" }}>{g.label}</div>
+                {YT_CHANNELS.filter((c) => c.category === g.category).map((c) => {
+                  const on = channels.includes(c.id);
+                  return (
+                    <button key={c.id} onClick={() => toggleChannel(c.id)} disabled={!settings} role="switch" aria-checked={on}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%", minHeight: 52, padding: "6px 2px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 15 }}>{c.name}</span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--ink-3)", marginTop: 1 }}>{c.why}</span>
+                      </span>
+                      <span aria-hidden style={{ width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0, background: on ? "var(--violet)" : "var(--fill-3)", transition: "background 0.15s" }}>
+                        <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+            <div style={{ fontSize: 12, color: "var(--ink-4)", padding: "10px 2px 0", lineHeight: 1.5 }}>Changes apply to the next morning&rsquo;s brief (or tap Refresh on News).</div>
+          </div>
+        )}
+      </section>
+
       {/* Books */}
       <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
@@ -223,7 +282,7 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 5</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 6</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 14, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>

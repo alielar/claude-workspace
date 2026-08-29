@@ -46,6 +46,8 @@ export const userSettings = sqliteTable("user_settings", {
   newsTopics: text("news_topics").notNull().default('["football","geopolitics","tech","ai","business"]'),
   newsEmailEnabled: integer("news_email_enabled", { mode: "boolean" }).notNull().default(true),
   newsEmailTime: text("news_email_time").notNull().default("09:00"),
+  /** Enabled YouTube channel ids for the brief as a JSON array; null = all of YT_CHANNELS. */
+  newsChannels: text("news_channels"),
   /** Current kettlebell weight. 12 until every movement is mastered, then 16. */
   kettlebellKg: real("kettlebell_kg").notNull().default(12),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })

@@ -230,7 +230,7 @@ function NewsCard({ today }: { today: string }) {
   const picks = useMemo(() => {
     if (!brief) return [];
     return NEWS_CATS.flatMap((c) => {
-      const s = brief.stories.find((st) => c.match.includes(st.category));
+      const s = brief.stories.find((st) => c.match.includes(st.category) && st.featured) ?? brief.stories.find((st) => c.match.includes(st.category));
       return s ? [{ ...c, headline: s.headline }] : [];
     });
   }, [brief]);
@@ -248,6 +248,9 @@ function NewsCard({ today }: { today: string }) {
           <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
             {loading ? "Loading the last brief…" : "The brief arrives every morning. Tap to open News."}
           </span>
+        )}
+        {(brief?.videos?.length ?? 0) > 0 && (
+          <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>▶ {brief!.videos!.length} fresh video{brief!.videos!.length === 1 ? "" : "s"} from your channels</div>
         )}
         {picks.map((p) => (
           <div key={p.label} style={{ display: "grid", gridTemplateColumns: "8px 1fr", gap: 10, alignItems: "start" }}>

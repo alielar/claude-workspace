@@ -269,7 +269,7 @@ Each phase ships working on my phone before the next one begins.
 3. Workouts (Workout 2, then Workout 1 AMRAP game; gym page archived) — **built 2026-08-30**
 4. Reading list (moved earlier — small, unblocks the evening reading-habit card) — **built 2026-08-30**
 5. To-do list — **built 2026-08-30**
-6. News upgrade
+6. News upgrade — **built 2026-08-30**
 7. Next steps (above)
 
 ## 7b. Stop conditions

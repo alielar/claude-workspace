@@ -6,8 +6,8 @@
  *
  * Categories:  football · geopolitics · business · tech/ai
  *
- * Topics of interest:
- *   Football: KACM, Morocco / Atlas Lions, FRMF, World Cup 2026, Champions League, European leagues
+ * Topics of interest (2026-08-29: World Cup coverage removed on Ali's request):
+ *   Football: Real Madrid, Morocco national team / Atlas Lions, Champions League
  *   Geopolitics: Morocco news, MENA, world affairs
  *   Business: markets, companies, economics
  *   Tech & AI: product launches, AI research, industry shifts
@@ -29,11 +29,19 @@ export type NewsStory = {
   category: NewsCategory | "ai" | "other";
   source?: string;
   deepDive?: DeepDive;
+  /** The standout item of its interest — shown first as "Worth your time". */
+  featured?: boolean;
+  /** Keyword relevance at generation time (higher = closer to Ali's interests). */
+  score?: number;
 };
+
+export type { NewsVideo } from "@/lib/news/youtube";
 
 export type NewsBrief = {
   date: string;
   stories: NewsStory[];
+  /** Fresh YouTube videos from the chosen channels, up to 2 per interest (added Phase 6). */
+  videos?: import("@/lib/news/youtube").NewsVideo[];
   generatedAt: string;
 };
 
@@ -47,14 +55,13 @@ type FeedConfig = {
 };
 
 const FEEDS: FeedConfig[] = [
-  // Football — Morocco national team, World Cup 2026, Champions League, European leagues
+  // Football — Real Madrid, Morocco national team, Champions League (World Cup coverage removed)
   { url: "https://www.goal.com/feeds/en/news", category: "football" },
   { url: "https://www.football-espana.net/feed", category: "football" },
   { url: "https://www.marca.com/en/rss/football.xml", category: "football" },
+  { url: "https://www.realmadrid.com/en-US/rss/news", category: "football" },
   { url: "https://moroccoworldnews.com/category/sports/feed", category: "football" },
-  { url: "https://www.fifa.com/rss/index.xml", category: "football", keywords: ["world cup", "2026", "morocco", "fifa", "atlas lions"] },
-  // Morocco-focused football sources
-  { url: "https://www.reuters.com/sports/soccer/rss", category: "football", keywords: ["morocco", "atlas lions", "hakimi", "regragui", "world cup 2026", "africa cup"] },
+  { url: "https://www.reuters.com/sports/soccer/rss", category: "football", keywords: ["morocco", "atlas lions", "hakimi", "regragui", "real madrid", "africa cup", "afcon"] },
   { url: "https://www.skysports.com/rss/12040", category: "football" },
 
   // Geopolitics — Morocco politics, MENA, world affairs
@@ -78,7 +85,7 @@ const FEEDS: FeedConfig[] = [
 
 // Keywords that boost a story for Ali's specific interests
 const INTEREST_KEYWORDS: Record<NewsCategory, string[]> = {
-  football: ["morocco", "atlas lions", "moroccan", "kacm", "kawkab", "frmf", "world cup", "2026", "champions league", "real madrid", "barcelona", "premier league", "ligue 1", "botola", "regragui", "hakimi", "achraf", "en-nesyri", "mazraoui", "amrabat", "ziyech", "ounahi", "diaz", "brahim", "aguerd", "bounou", "el kaabi", "fifa", "caf", "africa cup", "afcon", "nations cup", "psg", "man city", "arsenal"],
+  football: ["real madrid", "madrid", "bernabéu", "bernabeu", "mbappé", "mbappe", "vinícius", "vinicius", "bellingham", "xabi alonso", "morocco", "atlas lions", "moroccan", "frmf", "regragui", "hakimi", "achraf", "en-nesyri", "mazraoui", "amrabat", "ziyech", "ounahi", "diaz", "brahim", "aguerd", "bounou", "el kaabi", "champions league", "clásico", "clasico", "la liga", "africa cup", "afcon", "caf"],
   geopolitics: ["morocco", "rabat", "sahara", "mena", "africa", "middle east", "israel", "palestine", "ukraine", "nato", "eu", "trump", "election", "casablanca", "fes", "marrakech", "king mohammed"],
   business: ["markets", "stock", "earnings", "gdp", "recession", "startup", "ipo", "acquisition", "apple", "google", "amazon", "tesla"],
   tech: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "apple", "google", "chip", "semiconductor", "robot", "machine learning", "deepmind", "chatbot", "agent"],
@@ -188,8 +195,16 @@ async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; cate
   }
 }
 
+/** Interests Ali removed — a story about these never makes the brief. */
+const EXCLUDE_KEYWORDS = ["world cup"];
+
+function isExcluded(story: NewsStory): boolean {
+  const text = `${story.headline} ${story.summary}`.toLowerCase();
+  return EXCLUDE_KEYWORDS.some((k) => text.includes(k));
+}
+
 /** Score a story based on keyword relevance */
-function relevanceScore(story: NewsStory): number {
+export function relevanceScore(story: NewsStory): number {
   const text = `${story.headline} ${story.summary}`.toLowerCase();
   const keywords = INTEREST_KEYWORDS[story.category as NewsCategory] ?? [];
   let score = 0;
@@ -218,10 +233,11 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
     byCategory[category].push(...stories);
   }
 
-  // Deduplicate by headline similarity within each category
+  // Deduplicate by headline similarity within each category; drop removed interests
   for (const cat of Object.keys(byCategory)) {
     const seen = new Set<string>();
     byCategory[cat] = byCategory[cat].filter((s) => {
+      if (isExcluded(s)) return false;
       const key = s.headline.toLowerCase().slice(0, 40);
       if (seen.has(key)) return false;
       seen.add(key);
@@ -236,7 +252,10 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
 
   const selected: NewsStory[] = [];
   for (const cat of ["football", "geopolitics", "business", "tech"]) {
-    selected.push(...byCategory[cat].slice(0, 5));
+    const top = byCategory[cat].slice(0, 5).map((s) => ({ ...s, score: relevanceScore(s) }));
+    // The standout of each interest: the best-scoring story, when it actually matched something.
+    if (top[0] && (top[0].score ?? 0) > 0) top[0].featured = true;
+    selected.push(...top);
   }
 
   return {
