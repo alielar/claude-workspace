@@ -73,6 +73,38 @@ export async function POST() {
     `ALTER TABLE checklist_items ADD COLUMN kind TEXT NOT NULL DEFAULT 'manual'`,
     `ALTER TABLE checklist_items ADD COLUMN routine_key TEXT`,
 
+    // ── Train — kettlebell era (Phase 3) ────────────────────────────────────
+    `ALTER TABLE user_settings ADD COLUMN kettlebell_kg REAL NOT NULL DEFAULT 12`,
+    `CREATE TABLE IF NOT EXISTS kb_workouts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      key TEXT NOT NULL,
+      name TEXT NOT NULL,
+      format TEXT NOT NULL,
+      amrap_minutes INTEGER,
+      rest_seconds INTEGER NOT NULL DEFAULT 90,
+      exercises TEXT NOT NULL DEFAULT '[]',
+      assigned_days TEXT,
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_kb_workout ON kb_workouts(user_id, key)`,
+    `CREATE TABLE IF NOT EXISTS kb_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      client_id TEXT NOT NULL UNIQUE,
+      workout_key TEXT NOT NULL,
+      date TEXT NOT NULL,
+      started_at INTEGER NOT NULL,
+      finished_at INTEGER,
+      duration_seconds INTEGER,
+      rounds INTEGER,
+      weight_kg REAL,
+      log TEXT NOT NULL DEFAULT '{}',
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE INDEX IF NOT EXISTS ix_kb_sessions_user_date ON kb_sessions(user_id, date)`,
+
     // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
     `CREATE TABLE IF NOT EXISTS checklist_suggestions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

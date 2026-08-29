@@ -20,7 +20,7 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 2. Installable + offline — service worker, local-first data, never a hanging spinner.
 3. Fast — usable screen under ~1.5s on a cold open; render the local copy first, refresh after.
 4. Dark and light — follows the phone by default, manual override in Settings.
-5. Simple — three tabs today (Today · News · Settings). Train and To-do join later.
+5. Simple — four tabs (Today · Train · News · Settings). To-do joins in Phase 5.
 6. Links open externally — `target="_blank" rel="noopener noreferrer"`.
 
 ## 3. Architecture
@@ -29,6 +29,7 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 ```
 src/app/(app)/today       home screen — what to do right now (client, local-first)
 src/app/(app)/stretch     guided stretching timer (16 moves, 30/10, wake lock, voice + beeps)
+src/app/(app)/train       Train tab: next workout, weekly bests, recent · /train/w1 AMRAP · /train/w2 sets
 src/app/(app)/news        daily brief (client, local-first, cron-generated)
 src/app/(app)/settings    theme, news topics, install hint, archive, force-update
 src/app/(app)/archive     index of archived modules
@@ -58,6 +59,14 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Stretch/breathe rows get an action button (`/stretch`, or the YouTube link opening externally). Finishing the timer ticks the item via the outbox.
 - `src/lib/routine/stretching.ts` holds the movement list/timings; `cues.ts` the beep/vibration/voice cues (AudioContext must be armed from a tap).
 - Breathing pacer (replacing the video) is a planned drop-in: same `breathe` item, add a `/breathe` page and switch `routineAction`.
+
+### Train (Phase 3 — kettlebell era)
+- Tables `kb_workouts` (two templates per user, `exercises` JSON, `assignedDays` reserved for a future fixed schedule) and `kb_sessions` (`clientId` unique → offline replays upsert). Kettlebell weight is `user_settings.kettlebell_kg` (12 → 16 later, changed in Settings).
+- `src/lib/train/types.ts` — defaults from spec §4.2, ISO-week helpers, `weeklyBests`, `numberToBeat` (last week's best, else most recent earlier week), `nextWorkoutKey` (alternate W1/W2).
+- `src/lib/train/useTrain.ts` — cached templates + overview, active session persisted in localStorage on every tap, `saveSession` through the outbox.
+- `/train` hub · `/train/w1` AMRAP game (whole middle = +1 round, 700 ms double-tap guard, undo, pace projection, record flash, no pause — it's a race) · `/train/w2` straight sets with set bubbles, sticky rest bar, inline rep/set/weight editor (`RepEditor`).
+- Today shows a virtual "Train" row from today's `kb_sessions` (source `workout`): informational, **never counted** toward the daily streak.
+- Old gym system stays at `/workouts` (archive).
 
 ### Day / time
 - Everything runs on **Europe/Madrid**. Use `src/lib/checklist/day.ts`: `checklistToday()` (before 04:00 still counts as yesterday), `dayPart()` → morning 04–12, afternoon 12–21, evening 21–04 (Ali's clock, spec §8a).

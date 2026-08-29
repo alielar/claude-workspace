@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
+import { ensureMigrate } from "@/lib/ensureMigrate";
 import { useOnline } from "@/lib/useOnline";
 import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
 import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
@@ -68,6 +69,7 @@ function linkify(text: string) {
 
 /** Built-in routine steps get a dedicated action next to the tick. */
 function routineAction(item: ChecklistItem): { label: string; href: string; external: boolean } | null {
+  if (item.source === "workout") return { label: "Train", href: "/train", external: false };
   if (item.routineKey === "stretch") return { label: "Start", href: "/stretch", external: false };
   if (item.routineKey === "breathe") return { label: "Video", href: BREATHING_VIDEO_URL, external: true };
   return null;
@@ -276,6 +278,9 @@ export default function TodayPage() {
     () => fetchJson<ChecklistData>("/api/checklist")
   );
 
+  // Make sure new database columns exist (once per session, fire-and-forget).
+  useEffect(() => { ensureMigrate(); }, []);
+
   // When the outbox finishes syncing, or the app comes back to the foreground, pull fresh data.
   useEffect(() => {
     const h = () => refresh();
@@ -323,7 +328,8 @@ export default function TodayPage() {
   }, [setData, today]);
 
   // ── Grouping ──────────────────────────────────────────────────────────────
-  const counted = items.filter((i) => i.kind !== "habit");
+  // Habits being built and the auto workout row are shown, but never counted (rest days must not break the streak).
+  const counted = items.filter((i) => i.kind !== "habit" && i.source !== "workout");
   const total = counted.length;
   const doneCount = counted.filter((i) => i.completedToday).length;
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
@@ -334,7 +340,8 @@ export default function TodayPage() {
   const isNext = (i: ChecklistItem) => NEXT_PART[part] !== null && partOf(i) === NEXT_PART[part];
 
   const open = items.filter((i) => !i.completedToday);
-  const nowItems   = open.filter((i) => i.kind !== "habit" && isNow(i));
+  // The workout row lands after the routine steps in NOW.
+  const nowItems   = open.filter((i) => i.kind !== "habit" && isNow(i)).sort((a, b) => (a.source === "workout" ? 1 : 0) - (b.source === "workout" ? 1 : 0));
   const earlier    = open.filter((i) => i.kind !== "habit" && isEarlier(i));
   const building   = open.filter((i) => i.kind === "habit" && (isNow(i) || isEarlier(i)));
   const upNext     = open.filter((i) => isNext(i));

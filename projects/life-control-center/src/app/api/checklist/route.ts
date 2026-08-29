@@ -13,11 +13,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { checklistItems, checklistCompletions } from "@/db/schema";
+import { checklistItems, checklistCompletions, kbSessions } from "@/db/schema";
 import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
 import { checklistToday } from "@/lib/checklist/day";
 import { ROUTINE_SEED, type ItemKind, type RoutineKey, type TimeOfDay } from "@/lib/checklist/types";
+import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK } from "@/lib/train/types";
+import { rowToSession } from "@/lib/train/rows";
 
 function calcStreak(dates: string[], today: string): number {
   if (dates.length === 0) return 0;
@@ -134,7 +136,7 @@ export async function GET() {
   // Seeding is best-effort; the list still loads without it.
   try { await seedRoutine(userId); } catch { /* migration pending */ }
 
-  const [items, allCompletions] = await Promise.all([
+  const [items, allCompletions, trainRows] = await Promise.all([
     db
       .select()
       .from(checklistItems)
@@ -144,9 +146,45 @@ export async function GET() {
       .select()
       .from(checklistCompletions)
       .where(and(eq(checklistCompletions.userId, userId), gte(checklistCompletions.date, lookback))),
+    db
+      .select()
+      .from(kbSessions)
+      .where(eq(kbSessions.userId, userId))
+      .orderBy(desc(kbSessions.date), desc(kbSessions.startedAt))
+      .limit(20)
+      .catch(() => [] as (typeof kbSessions.$inferSelect)[]), // table may not exist before migration
   ]);
 
   const last7Dates = getLastNDates(today, 7);
+
+  // ── Virtual "Workout" row from the Train tab — informational, never counted ──
+  const trainSessions = trainRows.map(rowToSession).filter((s) => s.finishedAt !== null);
+  const todayTrain = trainSessions.find((s) => s.date === today) ?? null;
+  const nextKey = nextWorkoutKey(trainSessions);
+  const thisWeekCount = sessionsPerWeek(trainSessions).get(isoWeekKey(today)) ?? 0;
+  const workoutRow = {
+    id: -1,
+    title: todayTrain
+      ? `${todayTrain.workoutKey === "w1" ? "Workout 1" : "Workout 2"} done${todayTrain.rounds ? ` · ${todayTrain.rounds} rounds` : ""}`
+      : `Train · ${nextKey === "w1" ? "Workout 1 (AMRAP)" : "Workout 2 (sets)"}`,
+    emoji: "🏋️",
+    sortOrder: -5,
+    timeOfDay: "anytime" as TimeOfDay,
+    kind: "manual" as ItemKind,
+    routineKey: null,
+    completedToday: todayTrain !== null,
+    streak: 0,
+    last7: last7Dates.map((d) => trainSessions.some((s) => s.date === d)),
+    source: "workout" as const,
+    autoSource: null,
+    color: "cyan",
+    notes: todayTrain
+      ? `${thisWeekCount} of ${SESSIONS_PER_WEEK} this week`
+      : thisWeekCount >= SESSIONS_PER_WEEK
+        ? `${thisWeekCount} of ${SESSIONS_PER_WEEK} this week — week complete, extra is a bonus`
+        : `${thisWeekCount} of ${SESSIONS_PER_WEEK} this week · any days`,
+    href: "/train",
+  };
 
   const enriched = items.map((item) => {
     const itemDates = allCompletions
@@ -179,7 +217,7 @@ export async function GET() {
   const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
 
   return NextResponse.json({
-    items: enriched,
+    items: [workoutRow, ...enriched],
     overallStreak: calcOverallStreak(byDate, total, today),
     monthlyPct: getMonthlyPct(byDate, total, today),
     thirtyDayAvg,

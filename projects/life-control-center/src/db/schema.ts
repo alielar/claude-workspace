@@ -46,7 +46,54 @@ export const userSettings = sqliteTable("user_settings", {
   newsTopics: text("news_topics").notNull().default('["football","geopolitics","tech","ai","business"]'),
   newsEmailEnabled: integer("news_email_enabled", { mode: "boolean" }).notNull().default(true),
   newsEmailTime: text("news_email_time").notNull().default("09:00"),
+  /** Current kettlebell weight. 12 until every movement is mastered, then 16. */
+  kettlebellKg: real("kettlebell_kg").notNull().default(12),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+// ─── Train — kettlebell era (Phase 3) ─────────────────────────────────────────
+
+/**
+ * Workout templates. Two rows per user: "w1" (AMRAP) and "w2" (straight sets).
+ * `exercises` is JSON — see TrainExercise in src/lib/train/types.ts.
+ * `assignedDays` is reserved for a future fixed schedule (JSON array of "mon".."sun"); null = alternate.
+ */
+export const kbWorkouts = sqliteTable("kb_workouts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  key: text("key").notNull(),                      // "w1" | "w2"
+  name: text("name").notNull(),
+  format: text("format").notNull(),                // "amrap" | "sets"
+  amrapMinutes: integer("amrap_minutes"),          // w1 only
+  restSeconds: integer("rest_seconds").notNull().default(90), // w2 only
+  exercises: text("exercises").notNull().default("[]"),
+  assignedDays: text("assigned_days"),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+/** One finished (or abandoned) workout. `clientId` makes offline replays idempotent. */
+export const kbSessions = sqliteTable("kb_sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: text("client_id").notNull().unique(),
+  workoutKey: text("workout_key").notNull(),       // "w1" | "w2"
+  date: text("date").notNull(),                    // YYYY-MM-DD (Europe/Madrid)
+  startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+  finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+  durationSeconds: integer("duration_seconds"),
+  rounds: integer("rounds"),                       // w1
+  weightKg: real("weight_kg"),                     // kettlebell used
+  log: text("log").notNull().default("{}"),        // JSON: w1 round timestamps / w2 sets done
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
 });

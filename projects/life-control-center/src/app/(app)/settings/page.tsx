@@ -13,7 +13,7 @@
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
-import { useCached, fetchJson } from "@/lib/local/store";
+import { useCached, fetchJson, readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ARCHIVE } from "@/lib/archive";
 
@@ -22,7 +22,15 @@ type UserSettings = {
   newsTopics: string;
   newsEmailEnabled: boolean;
   newsEmailTime: string;
+  kettlebellKg?: number;
 };
+
+const KETTLEBELLS = [
+  { key: "12", label: "12 kg" },
+  { key: "16", label: "16 kg" },
+  { key: "20", label: "20 kg" },
+  { key: "24", label: "24 kg" },
+];
 
 const NEWS_TOPICS = [
   { key: "football",    label: "Football" },
@@ -95,6 +103,19 @@ export default function SettingsPage() {
     } catch { /* keep optimistic state; next refresh corrects it */ }
   };
 
+  const kettlebell = String(settings?.kettlebellKg ?? 12);
+  const setKettlebell = async (key: string) => {
+    if (!settings) return;
+    const kg = Number(key);
+    setData({ ...settings, kettlebellKg: kg });
+    try {
+      // Also refresh the Train tab's cached copy of the weight right away.
+      const ov = readCache<{ kettlebellKg: number }>("train-overview");
+      if (ov) writeCache("train-overview", { ...ov.data, kettlebellKg: kg });
+      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { kettlebellKg: kg }, dedupeKey: "settings:kettlebellKg" });
+    } catch { /* keep optimistic state */ }
+  };
+
   const hardRefresh = async () => {
     try {
       const regs = await navigator.serviceWorker?.getRegistrations?.();
@@ -119,6 +140,14 @@ export default function SettingsPage() {
         <div className="cc-card-head"><span className="title">Appearance</span><span className="tail">{THEMES.find((t) => t.key === theme)?.hint}</span></div>
         <div className="cc-card-body">
           <Segmented value={theme} options={THEMES} onChange={setTheme} />
+        </div>
+      </section>
+
+      {/* Kettlebell */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Kettlebell</span><span className="tail">stay at 12 until every move is mastered</span></div>
+        <div className="cc-card-body">
+          <Segmented value={kettlebell} options={KETTLEBELLS} onChange={setKettlebell} />
         </div>
       </section>
 
@@ -183,7 +212,7 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 1</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 3</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 14, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>

@@ -48,10 +48,14 @@ export async function PATCH(req: NextRequest) {
 
   const body = await req.json();
   const allowed = ["timezone", "newsTopics", "newsEmailEnabled", "newsEmailTime"];
-  const updates: Record<string, unknown> = { updatedAt: Date.now() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
 
   for (const key of allowed) {
     if (key in body) updates[key] = body[key];
+  }
+  if ("kettlebellKg" in body) {
+    const kg = Number(body.kettlebellKg);
+    if (Number.isFinite(kg) && kg >= 4 && kg <= 48) updates.kettlebellKg = kg;
   }
 
   // Ensure settings row exists
