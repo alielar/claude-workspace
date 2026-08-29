@@ -6,13 +6,17 @@
  * Renders instantly from the phone's local copy, refreshes in the background,
  * and every tick works offline (queued and synced later).
  *
- * Layout (phone first, single column):
- *   greeting + date + streak
- *   progress line
- *   NOW      — items for this part of the day (+ anytime), not yet done
- *   LATER    — the rest of today, collapsed to a compact list
- *   DONE     — what's already ticked, dimmed
- *   NEWS     — up to 4 headlines from the last brief (cached), tap → /news
+ * The day is the spine (spec §6): wake → stretch → breathe → supplements →
+ * day → evening → magnesium → reading habit.
+ *
+ * Sections, phone first, single column:
+ *   greeting + date + streak · progress line
+ *   NOW        — routine + items for this part of the day (+ anytime), not done
+ *   STILL OPEN — items from earlier today that weren't ticked (compact)
+ *   BUILDING   — habits being built, only in their part of the day
+ *   UP NEXT    — the next part of the day (compact) — evening items stay hidden in the morning
+ *   DONE       — ticked today, dimmed
+ *   NEWS       — 4 headlines from the last brief (cached) → /news
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -21,7 +25,7 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { useOnline } from "@/lib/useOnline";
 import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
-import { itemColor, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
+import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
 import type { NewsBrief } from "@/lib/news-brief";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -38,6 +42,8 @@ const PART_LABEL: Record<DayPart, string> = {
   afternoon: "This afternoon",
   evening: "This evening",
 };
+const NEXT_PART: Record<DayPart, DayPart | null> = { morning: "afternoon", afternoon: "evening", evening: null };
+const PART_ORDER: Record<DayPart, number> = { morning: 0, afternoon: 1, evening: 2 };
 
 function longDate(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
@@ -60,6 +66,20 @@ function linkify(text: string) {
   );
 }
 
+/** Built-in routine steps get a dedicated action next to the tick. */
+function routineAction(item: ChecklistItem): { label: string; href: string; external: boolean } | null {
+  if (item.routineKey === "stretch") return { label: "Start", href: "/stretch", external: false };
+  if (item.routineKey === "breathe") return { label: "Video", href: BREATHING_VIDEO_URL, external: true };
+  return null;
+}
+
+/** Notes for built-in steps are shown without the raw URL (the Video button carries it). */
+function displayNotes(item: ChecklistItem): string | null {
+  if (!item.notes) return null;
+  if (item.routineKey === "breathe") return item.notes.replace(/https?:\/\/\S+/g, "").replace(/·\s*$/, "").trim() || null;
+  return item.notes;
+}
+
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
 function Row({ item, onToggle, compact = false }: {
@@ -70,74 +90,117 @@ function Row({ item, onToggle, compact = false }: {
   const auto = item.source === "workout" || item.autoSource !== null;
   const done = item.completedToday;
   const accent = itemColor(item.color);
+  const action = !done && !compact ? routineAction(item) : null;
+  const notes = compact ? null : displayNotes(item);
 
   return (
-    <button
-      type="button"
-      onClick={() => !auto && onToggle(item)}
-      disabled={auto}
+    <div
       className="today-row"
-      aria-pressed={done}
       style={{
         display: "grid",
-        gridTemplateColumns: "28px 1fr auto",
-        gap: 14,
-        alignItems: "center",
-        width: "100%",
-        minHeight: compact ? 48 : 56,
-        padding: compact ? "8px 4px" : "12px 4px",
-        background: "transparent",
-        border: "none",
+        gridTemplateColumns: action ? "1fr auto" : "1fr",
+        alignItems: "stretch",
         borderBottom: "1px solid var(--line)",
-        textAlign: "left",
-        color: "inherit",
-        font: "inherit",
-        cursor: auto ? "default" : "pointer",
-        opacity: done ? 0.55 : 1,
-        WebkitTapHighlightColor: "transparent",
       }}
     >
-      <span
-        aria-hidden
+      <button
+        type="button"
+        onClick={() => !auto && onToggle(item)}
+        disabled={auto}
+        aria-pressed={done}
         style={{
-          width: 28, height: 28, borderRadius: 9,
-          border: `2px solid ${done ? "transparent" : auto ? `${accent}66` : "var(--line-strong)"}`,
-          borderStyle: item.source === "workout" ? "dashed" : "solid",
-          background: done ? accent : "var(--fill-1)",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          transition: "background 0.15s, border-color 0.15s",
-          flexShrink: 0,
+          display: "grid",
+          gridTemplateColumns: "28px 1fr auto",
+          gap: 14,
+          alignItems: "center",
+          width: "100%",
+          minHeight: compact ? 48 : 56,
+          padding: compact ? "8px 4px" : "12px 4px",
+          background: "transparent",
+          border: "none",
+          textAlign: "left",
+          color: "inherit",
+          font: "inherit",
+          cursor: auto ? "default" : "pointer",
+          opacity: done ? 0.55 : 1,
+          WebkitTapHighlightColor: "transparent",
         }}
       >
-        {done && (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        )}
-      </span>
-
-      <span style={{ minWidth: 0 }}>
-        <span style={{
-          display: "block", fontSize: compact ? 14 : 16, fontWeight: 500,
-          color: done ? "var(--ink-3)" : "var(--ink)",
-          textDecoration: done ? "line-through" : "none",
-          textDecorationColor: "var(--ink-4)",
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-        }}>
-          {item.emoji ? `${item.emoji} ` : ""}{item.title}
+        <span
+          aria-hidden
+          style={{
+            width: 28, height: 28, borderRadius: 9,
+            border: `2px solid ${done ? "transparent" : auto ? `${accent}66` : "var(--line-strong)"}`,
+            background: done ? accent : "var(--fill-1)",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            transition: "background 0.15s, border-color 0.15s",
+            flexShrink: 0,
+          }}
+        >
+          {done && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
         </span>
-        {!compact && item.notes && (
-          <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
-            {linkify(item.notes)}
-          </span>
-        )}
-      </span>
 
-      <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--f-mono)", fontSize: 11, color: "var(--ink-3)" }}>
-        {auto && <span className="cc-pill" style={{ fontSize: 9.5, padding: "2px 6px" }}>auto</span>}
-        {item.streak >= 2 && <span title={`${item.streak}-day streak`}>🔥 {item.streak}</span>}
-      </span>
-    </button>
+        <span style={{ minWidth: 0 }}>
+          <span style={{
+            display: "block", fontSize: compact ? 14 : 16, fontWeight: 500,
+            color: done ? "var(--ink-3)" : "var(--ink)",
+            textDecoration: done ? "line-through" : "none",
+            textDecorationColor: "var(--ink-4)",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {item.emoji ? `${item.emoji} ` : ""}{item.title}
+          </span>
+          {notes && (
+            <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
+              {linkify(notes)}
+            </span>
+          )}
+        </span>
+
+        <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--f-mono)", fontSize: 11, color: "var(--ink-3)" }}>
+          {auto && <span className="cc-pill" style={{ fontSize: 9.5, padding: "2px 6px" }}>auto</span>}
+          {item.streak >= 2 && <span title={`${item.streak}-day streak`}>🔥 {item.streak}</span>}
+        </span>
+      </button>
+
+      {action && (
+        action.external ? (
+          <a
+            href={action.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cc-btn cc-btn-primary"
+            style={{ alignSelf: "center", minHeight: 44, padding: "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
+          >
+            ▶ {action.label}
+          </a>
+        ) : (
+          <Link
+            href={action.href}
+            className="cc-btn cc-btn-primary"
+            style={{ alignSelf: "center", minHeight: 44, padding: "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
+          >
+            ▶ {action.label}
+          </Link>
+        )
+      )}
+    </div>
+  );
+}
+
+function Card({ title, tail, children }: { title: string; tail?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head">
+        <span className="title">{title}</span>
+        {tail !== undefined && <span className="tail">{tail}</span>}
+      </div>
+      <div style={{ padding: "0 14px" }}>{children}</div>
+    </section>
   );
 }
 
@@ -194,6 +257,8 @@ function NewsCard({ today }: { today: string }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const EMPTY: ChecklistData = { items: [], overallStreak: 0, monthlyPct: [], thirtyDayAvg: 0, bestStreak30: 0 };
+
 export default function TodayPage() {
   const online = useOnline();
   const [now, setNow] = useState(() => new Date());
@@ -211,30 +276,40 @@ export default function TodayPage() {
     () => fetchJson<ChecklistData>("/api/checklist")
   );
 
-  // When the outbox finishes syncing, pull fresh streaks.
+  // When the outbox finishes syncing, or the app comes back to the foreground, pull fresh data.
   useEffect(() => {
     const h = () => refresh();
+    const vis = () => { if (document.visibilityState === "visible") refresh(); };
     window.addEventListener("cc:outbox-flushed", h);
-    return () => window.removeEventListener("cc:outbox-flushed", h);
+    document.addEventListener("visibilitychange", vis);
+    return () => {
+      window.removeEventListener("cc:outbox-flushed", h);
+      document.removeEventListener("visibilitychange", vis);
+    };
   }, [refresh]);
 
-  // If the cached copy is from a previous day, the ticks no longer apply.
+  // If the saved copy is from a previous day, yesterday's ticks no longer apply.
+  const [cachedDay, setCachedDay] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+      setCachedDay(localStorage.getItem("cc:v1:checklist-day"));
+      if (data) localStorage.setItem("cc:v1:checklist-day", today);
+    } catch { /* ignore */ }
+  }, [data, today]);
   const items = useMemo(() => {
     const list = data?.items ?? [];
-    const cachedDay = typeof window !== "undefined" ? localStorage.getItem("cc:v1:checklist-day") : null;
-    if (cachedDay && cachedDay !== today) return list.map((i) => ({ ...i, completedToday: false }));
+    if (cachedDay && cachedDay !== today && stale) return list.map((i) => ({ ...i, completedToday: false }));
     return list;
-  }, [data, today]);
-  useEffect(() => {
-    try { if (data) localStorage.setItem("cc:v1:checklist-day", today); } catch {}
-  }, [data, today]);
+  }, [data, cachedDay, today, stale]);
 
   const toggle = useCallback(async (item: ChecklistItem) => {
     const next = !item.completedToday;
-    setData((prev) => ({
-      ...(prev ?? { items: [], overallStreak: 0, monthlyPct: [], thirtyDayAvg: 0, bestStreak30: 0 }),
-      items: (prev?.items ?? []).map((i) => i.id === item.id ? { ...i, completedToday: next } : i),
-    }));
+    const patch = (v: boolean) => (prev: ChecklistData | null): ChecklistData => ({
+      ...(prev ?? EMPTY),
+      items: (prev?.items ?? []).map((i) => i.id === item.id ? { ...i, completedToday: v } : i),
+    });
+    setData(patch(next));
     try {
       await sendOrQueue({
         url: "/api/checklist/toggle",
@@ -243,22 +318,29 @@ export default function TodayPage() {
         dedupeKey: `toggle:${item.id}:${today}`,
       });
     } catch {
-      // server refused — put it back
-      setData((prev) => ({
-        ...(prev ?? { items: [], overallStreak: 0, monthlyPct: [], thirtyDayAvg: 0, bestStreak30: 0 }),
-        items: (prev?.items ?? []).map((i) => i.id === item.id ? { ...i, completedToday: !next } : i),
-      }));
+      setData(patch(!next)); // server refused — put it back
     }
   }, [setData, today]);
 
-  const total = items.length;
-  const doneCount = items.filter((i) => i.completedToday).length;
+  // ── Grouping ──────────────────────────────────────────────────────────────
+  const counted = items.filter((i) => i.kind !== "habit");
+  const total = counted.length;
+  const doneCount = counted.filter((i) => i.completedToday).length;
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
 
-  const isNow = (i: ChecklistItem) => i.timeOfDay === part || i.timeOfDay === "anytime";
-  const nowItems   = items.filter((i) => !i.completedToday && isNow(i));
-  const laterItems = items.filter((i) => !i.completedToday && !isNow(i));
+  const partOf = (i: ChecklistItem): DayPart | "anytime" => i.timeOfDay === "anytime" ? "anytime" : i.timeOfDay;
+  const isNow = (i: ChecklistItem) => partOf(i) === part || partOf(i) === "anytime";
+  const isEarlier = (i: ChecklistItem) => partOf(i) !== "anytime" && PART_ORDER[partOf(i) as DayPart] < PART_ORDER[part];
+  const isNext = (i: ChecklistItem) => NEXT_PART[part] !== null && partOf(i) === NEXT_PART[part];
+
+  const open = items.filter((i) => !i.completedToday);
+  const nowItems   = open.filter((i) => i.kind !== "habit" && isNow(i));
+  const earlier    = open.filter((i) => i.kind !== "habit" && isEarlier(i));
+  const building   = open.filter((i) => i.kind === "habit" && (isNow(i) || isEarlier(i)));
+  const upNext     = open.filter((i) => isNext(i));
   const doneItems  = items.filter((i) => i.completedToday);
+
+  const allNowDone = data && total > 0 && nowItems.length === 0;
 
   return (
     <div className="today-page" style={{ display: "grid", gap: 18 }}>
@@ -294,55 +376,54 @@ export default function TodayPage() {
       </div>
 
       {/* NOW */}
-      <section className="cc-card">
-        <div className="cc-card-head">
-          <span className="title">{PART_LABEL[part]}</span>
-          <Link href="/checklist" className="tail" style={{ textDecoration: "none", color: "var(--ink-3)" }}>Edit</Link>
-        </div>
-        <div style={{ padding: "0 14px" }}>
-          {loading && !data && (
-            <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>
-              {[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}
-            </div>
-          )}
-          {!loading && total === 0 && (
-            <div style={{ padding: "18px 0", fontSize: 14, color: "var(--ink-3)" }}>
-              No items yet. <Link href="/checklist" style={{ color: "var(--violet)" }}>Set up your checklist →</Link>
-            </div>
-          )}
-          {data && total > 0 && nowItems.length === 0 && (
-            <div style={{ padding: "18px 0", fontSize: 14, color: "var(--pos)" }}>
-              ✓ Nothing left for {PART_LABEL[part].toLowerCase()}.
-            </div>
-          )}
-          {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} />)}
-        </div>
-      </section>
+      <Card
+        title={PART_LABEL[part]}
+        tail={<Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-3)" }}>Edit</Link>}
+      >
+        {loading && !data && (
+          <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>
+            {[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}
+          </div>
+        )}
+        {!loading && total === 0 && (
+          <div style={{ padding: "18px 0", fontSize: 14, color: "var(--ink-3)" }}>
+            No items yet. <Link href="/checklist" style={{ color: "var(--violet)" }}>Set up your checklist →</Link>
+          </div>
+        )}
+        {allNowDone && (
+          <div style={{ padding: "18px 0", fontSize: 14, color: "var(--pos)" }}>
+            ✓ Nothing left for {PART_LABEL[part].toLowerCase()}.
+          </div>
+        )}
+        {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} />)}
+      </Card>
 
-      {/* LATER */}
-      {laterItems.length > 0 && (
-        <section className="cc-card">
-          <div className="cc-card-head">
-            <span className="title">Later today</span>
-            <span className="tail">{laterItems.length}</span>
-          </div>
-          <div style={{ padding: "0 14px" }}>
-            {laterItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
-          </div>
-        </section>
+      {/* STILL OPEN (earlier today) */}
+      {earlier.length > 0 && (
+        <Card title="Still open from earlier" tail={earlier.length}>
+          {earlier.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
+        </Card>
+      )}
+
+      {/* BUILDING */}
+      {building.length > 0 && (
+        <Card title="Building" tail="habits, own streak">
+          {building.map((item) => <Row key={item.id} item={item} onToggle={toggle} />)}
+        </Card>
+      )}
+
+      {/* UP NEXT */}
+      {upNext.length > 0 && (
+        <Card title={NEXT_PART[part] === "evening" ? "This evening" : "This afternoon"} tail={upNext.length}>
+          {upNext.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
+        </Card>
       )}
 
       {/* DONE */}
       {doneItems.length > 0 && (
-        <section className="cc-card">
-          <div className="cc-card-head">
-            <span className="title">Done</span>
-            <span className="tail">{doneItems.length}</span>
-          </div>
-          <div style={{ padding: "0 14px" }}>
-            {doneItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
-          </div>
-        </section>
+        <Card title="Done" tail={doneItems.length}>
+          {doneItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
+        </Card>
       )}
 
       {/* NEWS */}
@@ -350,7 +431,7 @@ export default function TodayPage() {
 
       <style>{`
         .today-row:last-child { border-bottom: none !important; }
-        .today-row:active:not(:disabled) { background: var(--fill-1); }
+        .today-row > button:active:not(:disabled) { background: var(--fill-1); }
       `}</style>
     </div>
   );

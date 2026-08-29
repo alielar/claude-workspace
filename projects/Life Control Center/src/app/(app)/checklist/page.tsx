@@ -19,6 +19,7 @@ import WeeklyReviews from "@/components/checklist/WeeklyReviews";
 
 type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
 type AutoSource = "workout" | "reading" | "words" | "journal" | "mood" | null;
+type ItemKind = "routine" | "habit" | "manual";
 
 type Item = {
   id: number;
@@ -26,6 +27,8 @@ type Item = {
   emoji: string | null;
   sortOrder: number;
   timeOfDay: TimeOfDay;
+  kind: ItemKind;
+  routineKey: string | null;
   completedToday: boolean;
   streak: number;
   last7: boolean[];
@@ -67,6 +70,12 @@ const ITEM_COLORS = [
   { id: "amber",  hex: "#F59E0B" },
   { id: "red",    hex: "#FF8A8A" },
   { id: "pink",   hex: "#F472B6" },
+];
+
+const KIND_OPTIONS: { id: ItemKind; label: string; hint: string }[] = [
+  { id: "routine", label: "Daily routine", hint: "Counts toward the day's streak" },
+  { id: "habit",   label: "Habit I'm building", hint: "Own streak, doesn't count yet" },
+  { id: "manual",  label: "Regular item", hint: "Counts toward the day" },
 ];
 
 const AUTO_SOURCE_OPTIONS: { id: string; label: string; emoji: string }[] = [
@@ -174,7 +183,7 @@ interface DrawerProps {
   onClose: () => void;
   onSave: (data: {
     title: string; emoji: string; timeOfDay: TimeOfDay;
-    color: string; notes: string; autoSource: string | null;
+    color: string; notes: string; autoSource: string | null; kind: ItemKind;
   }) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
 }
@@ -185,6 +194,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   const [tod, setTod]           = useState<TimeOfDay>("anytime");
   const [color, setColor]       = useState("violet");
   const [notes, setNotes]       = useState("");
+  const [kind, setKind]         = useState<ItemKind>("manual");
   const [isAuto, setIsAuto]     = useState(false);
   const [autoSource, setAutoSource] = useState<string>("workout");
   const [saving, setSaving]     = useState(false);
@@ -201,6 +211,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
       setTod(item?.timeOfDay ?? "anytime");
       setColor(item?.color ?? "violet");
       setNotes(item?.notes ?? "");
+      setKind(item?.kind ?? "manual");
       const src = item?.autoSource ?? null;
       setIsAuto(src !== null);
       setAutoSource(src ?? "workout");
@@ -213,7 +224,7 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    await onSave({ title: title.trim(), emoji: emoji.trim(), timeOfDay: tod, color, notes: notes.trim(), autoSource: isAuto ? autoSource : null });
+    await onSave({ title: title.trim(), emoji: emoji.trim(), timeOfDay: tod, color, notes: notes.trim(), autoSource: isAuto ? autoSource : null, kind });
     setSaving(false);
   };
 
@@ -324,6 +335,35 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label style={{ fontSize: 10.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600 }}>What is it</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+              {KIND_OPTIONS.map((k) => {
+                const active = kind === k.id;
+                return (
+                  <button
+                    key={k.id}
+                    type="button"
+                    onClick={() => setKind(k.id)}
+                    style={{
+                      minHeight: 44, padding: "9px 14px", borderRadius: 10, textAlign: "left",
+                      border: `1px solid ${active ? "var(--violet)" : "var(--line)"}`,
+                      background: active ? "rgba(124,92,255,0.12)" : "var(--fill-1)",
+                      color: active ? "var(--ink)" : "var(--ink-3)",
+                      fontSize: 13, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
+                    }}
+                  >
+                    <span>{k.label}</span>
+                    <span style={{ fontSize: 11, color: "var(--ink-4)" }}>{k.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {item?.kind === "habit" && kind === "routine" && (
+              <div style={{ marginTop: 8, fontSize: 12, color: "var(--pos)" }}>Promoting this habit to your daily routine. Its streak carries over.</div>
+            )}
           </div>
 
           {!isVirtualWorkout && (
@@ -770,7 +810,7 @@ export default function ChecklistPage() {
   // ── Drawer save ──
   const handleSave = async (data: {
     title: string; emoji: string; timeOfDay: TimeOfDay;
-    color: string; notes: string; autoSource: string | null;
+    color: string; notes: string; autoSource: string | null; kind: ItemKind;
   }) => {
     if (editTarget) {
       await fetch(`/api/checklist/${editTarget.id}`, {

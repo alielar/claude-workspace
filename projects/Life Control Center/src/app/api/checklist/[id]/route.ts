@@ -29,6 +29,8 @@ export async function PATCH(
   if (body.color !== undefined) updates.color = body.color;
   if (body.notes !== undefined) updates.notes = body.notes?.trim() || null;
   if (body.autoSource !== undefined) updates.autoSource = body.autoSource ?? null;
+  // kind: "routine" | "habit" | "manual" — promoting a habit = setting kind to "routine"
+  if (body.kind === "routine" || body.kind === "habit" || body.kind === "manual") updates.kind = body.kind;
 
   const [updated] = await db.update(checklistItems)
     .set(updates)

@@ -69,6 +69,10 @@ export async function POST() {
     `ALTER TABLE checklist_items ADD COLUMN color TEXT NOT NULL DEFAULT 'violet'`,
     `ALTER TABLE checklist_items ADD COLUMN notes TEXT`,
 
+    // ── Checklist: routine engine (Phase 2) ─────────────────────────────────
+    `ALTER TABLE checklist_items ADD COLUMN kind TEXT NOT NULL DEFAULT 'manual'`,
+    `ALTER TABLE checklist_items ADD COLUMN routine_key TEXT`,
+
     // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
     `CREATE TABLE IF NOT EXISTS checklist_suggestions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

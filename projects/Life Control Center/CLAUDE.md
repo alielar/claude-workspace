@@ -28,6 +28,7 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 ### Screens
 ```
 src/app/(app)/today       home screen — what to do right now (client, local-first)
+src/app/(app)/stretch     guided stretching timer (16 moves, 30/10, wake lock, voice + beeps)
 src/app/(app)/news        daily brief (client, local-first, cron-generated)
 src/app/(app)/settings    theme, news topics, install hint, archive, force-update
 src/app/(app)/archive     index of archived modules
@@ -49,6 +50,14 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Tokens in `globals.css` `:root` (dark). Light values under `:root[data-theme="light"]` and `@media (prefers-color-scheme: light) :root:not([data-theme="dark"])`.
 - `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint.
 - **Never hardcode `rgba(255,255,255,…)` or `#E8E8F0` in new UI** — use `--fill-1/2/3`, `--ink*`, `--line*`, `--bg-chrome`.
+
+### Routine engine (Phase 2)
+- Routine steps, habits and regular items are all **checklist items** with a `kind`: `routine` (counts toward the day's streak), `habit` (being built — own streak, not counted until promoted), `manual`. Promotion = set `kind` to `routine` in the editor.
+- Built-in steps carry a stable `routineKey` and are seeded once by `GET /api/checklist` from `ROUTINE_SEED` in `src/lib/checklist/types.ts` (stretch, breathe, supp-am, supp-pm, read). Never seed by title.
+- Today shows: NOW (this part of day + anytime) · Still open (earlier parts) · Building (habits in their part) · Up next (next part only — evening items stay hidden in the morning) · Done · News.
+- Stretch/breathe rows get an action button (`/stretch`, or the YouTube link opening externally). Finishing the timer ticks the item via the outbox.
+- `src/lib/routine/stretching.ts` holds the movement list/timings; `cues.ts` the beep/vibration/voice cues (AudioContext must be armed from a tap).
+- Breathing pacer (replacing the video) is a planned drop-in: same `breathe` item, add a `/breathe` page and switch `routineAction`.
 
 ### Day / time
 - Everything runs on **Europe/Madrid**. Use `src/lib/checklist/day.ts`: `checklistToday()` (before 04:00 still counts as yesterday), `dayPart()` → morning 04–12, afternoon 12–21, evening 21–04 (Ali's clock, spec §8a).

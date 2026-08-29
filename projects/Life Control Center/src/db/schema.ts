@@ -371,6 +371,14 @@ export const checklistItems = sqliteTable("checklist_items", {
   color: text("color").notNull().default("violet"),
   /** Optional note shown under the title in the item row */
   notes: text("notes"),
+  /**
+   * routine — part of the fixed daily routine (stretch, breathe, supplements…)
+   * habit   — a habit being built; tracked, but not counted in the day's streak until promoted
+   * manual  — a regular checklist item
+   */
+  kind: text("kind").notNull().default("manual"),
+  /** Stable id for built-in routine steps (stretch | breathe | supp-am | supp-pm | read). */
+  routineKey: text("routine_key"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

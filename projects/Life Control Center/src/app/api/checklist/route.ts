@@ -1,37 +1,23 @@
 /**
- * GET  /api/checklist — list items with today's completion + per-item streak + historical data
+ * GET  /api/checklist — items with today's completion, per-item streak, 7-day history,
+ *                       plus day-level stats. Seeds the built-in routine steps once.
  * POST /api/checklist — create a new item
  *
  * GET Response: { items: Item[], overallStreak, monthlyPct, thirtyDayAvg, bestStreak30 }
+ *
+ * Day-level stats (overall streak, %, 30-day average) count routine + manual items.
+ * Habits being built (kind = "habit") have their own streak but do not count
+ * toward the day until promoted — that is the whole point of "building".
  */
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import {
-  checklistItems,
-  checklistCompletions,
-  gymSessions,
-  workoutPlans,
-  programs,
-} from "@/db/schema";
+import { checklistItems, checklistCompletions } from "@/db/schema";
 import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
-
-/**
- * "Today" for checklist purposes — if it's before 4 AM in Madrid,
- * we treat it as still being the previous day so late-night check-offs
- * count toward yesterday's list.
- */
-function checklistToday(): string {
-  const now = new Date();
-  const madridHour = parseInt(
-    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "numeric", hour12: false }).format(now)
-  );
-  const offset = madridHour < 4 ? -1 : 0;
-  const adjusted = new Date(now.getTime() + offset * 86400000);
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(adjusted);
-}
+import { checklistToday } from "@/lib/checklist/day";
+import { ROUTINE_SEED, type ItemKind, type RoutineKey, type TimeOfDay } from "@/lib/checklist/types";
 
 function calcStreak(dates: string[], today: string): number {
   if (dates.length === 0) return 0;
@@ -56,103 +42,86 @@ function getLastNDates(today: string, n: number): string[] {
   );
 }
 
-/** Consecutive days where ALL db items were completed */
-function calcOverallStreak(
-  completions: { date: string; itemId: number }[],
-  totalItems: number,
-  today: string
-): number {
-  if (totalItems === 0) return 0;
-
+function groupByDate(completions: { date: string; itemId: number }[], counted: Set<number>) {
   const byDate = new Map<string, Set<number>>();
   for (const c of completions) {
+    if (!counted.has(c.itemId)) continue;
     if (!byDate.has(c.date)) byDate.set(c.date, new Set());
     byDate.get(c.date)!.add(c.itemId);
   }
+  return byDate;
+}
 
-  const todayDone = (byDate.get(today)?.size ?? 0) >= totalItems;
-  let checkDate = todayDone
-    ? today
-    : format(subDays(new Date(today + "T12:00:00"), 1), "yyyy-MM-dd");
+/** Consecutive days where ALL counted items were completed */
+function calcOverallStreak(byDate: Map<string, Set<number>>, total: number, today: string): number {
+  if (total === 0) return 0;
+  const todayDone = (byDate.get(today)?.size ?? 0) >= total;
+  let checkDate = todayDone ? today : format(subDays(new Date(today + "T12:00:00"), 1), "yyyy-MM-dd");
   let count = 0;
-
   for (let i = 0; i < 90; i++) {
-    if ((byDate.get(checkDate)?.size ?? 0) >= totalItems) {
+    if ((byDate.get(checkDate)?.size ?? 0) >= total) {
       count++;
       checkDate = format(subDays(new Date(checkDate + "T12:00:00"), 1), "yyyy-MM-dd");
-    } else {
-      break;
-    }
+    } else break;
   }
-
   return count;
 }
 
 /** Completion % per day for the current month (up to and including today) */
-function getMonthlyPct(
-  completions: { date: string; itemId: number }[],
-  totalItems: number,
-  today: string
-): { date: string; pct: number }[] {
-  if (totalItems === 0) return [];
-
+function getMonthlyPct(byDate: Map<string, Set<number>>, total: number, today: string) {
+  if (total === 0) return [];
   const currentMonth = today.substring(0, 7);
   const year = parseInt(today.substring(0, 4));
   const month = parseInt(today.substring(5, 7));
   const daysInMonth = new Date(year, month, 0).getDate();
-
-  const byDate = new Map<string, Set<number>>();
-  for (const c of completions) {
-    if (c.date.startsWith(currentMonth)) {
-      if (!byDate.has(c.date)) byDate.set(c.date, new Set());
-      byDate.get(c.date)!.add(c.itemId);
-    }
-  }
-
   const result: { date: string; pct: number }[] = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = `${currentMonth}-${String(d).padStart(2, "0")}`;
     if (date > today) break;
     const count = byDate.get(date)?.size ?? 0;
-    result.push({ date, pct: Math.round((count / totalItems) * 100) });
+    result.push({ date, pct: Math.round((count / total) * 100) });
   }
-
   return result;
 }
 
 /** 30-day average completion % and best all-items streak */
-function getThirtyDayStats(
-  completions: { date: string; itemId: number }[],
-  totalItems: number,
-  today: string
-): { avg: number; bestStreak: number } {
-  if (totalItems === 0) return { avg: 0, bestStreak: 0 };
-
-  const days = getLastNDates(today, 30);
-
-  const byDate = new Map<string, Set<number>>();
-  for (const c of completions) {
-    if (!byDate.has(c.date)) byDate.set(c.date, new Set());
-    byDate.get(c.date)!.add(c.itemId);
-  }
-
-  let totalPct = 0;
-  let best = 0, cur = 0;
-  for (const d of days) {
+function getThirtyDayStats(byDate: Map<string, Set<number>>, total: number, today: string) {
+  if (total === 0) return { avg: 0, bestStreak: 0 };
+  let totalPct = 0, best = 0, cur = 0;
+  for (const d of getLastNDates(today, 30)) {
     const count = byDate.get(d)?.size ?? 0;
-    totalPct += count / totalItems;
-    if (count >= totalItems) {
-      cur++;
-      if (cur > best) best = cur;
-    } else {
-      cur = 0;
-    }
+    totalPct += count / total;
+    if (count >= total) { cur++; if (cur > best) best = cur; } else cur = 0;
   }
-
   return { avg: Math.round((totalPct / 30) * 100), bestStreak: best };
 }
 
-const ROTATION = ["Push", "Pull", "Legs", "Core", "Push", "Pull", "Push-Up Skill"];
+/** Insert any built-in routine step that doesn't exist yet (matched by routine_key). */
+async function seedRoutine(userId: string) {
+  const existing = await db
+    .select({ routineKey: checklistItems.routineKey })
+    .from(checklistItems)
+    .where(eq(checklistItems.userId, userId));
+  const have = new Set(existing.map((r) => r.routineKey).filter(Boolean));
+  const missing = ROUTINE_SEED.filter((s) => !have.has(s.routineKey));
+  if (missing.length === 0) return false;
+  for (const s of missing) {
+    try {
+      await db.insert(checklistItems).values({
+        userId,
+        title: s.title,
+        emoji: s.emoji,
+        timeOfDay: s.timeOfDay,
+        kind: s.kind,
+        routineKey: s.routineKey,
+        color: s.color,
+        notes: s.notes,
+        sortOrder: s.sortOrder,
+      });
+    } catch { /* raced with another request — fine */ }
+  }
+  return true;
+}
 
 export async function GET() {
   const session = await auth();
@@ -161,58 +130,38 @@ export async function GET() {
   const today = checklistToday();
   const lookback = format(subDays(new Date(today + "T12:00:00"), 90), "yyyy-MM-dd");
 
-  const [items, allCompletions, recentGymSessions] = await Promise.all([
+  // The routine columns may not exist on a database that hasn't run the migration yet.
+  // Seeding is best-effort; the list still loads without it.
+  try { await seedRoutine(userId); } catch { /* migration pending */ }
+
+  const [items, allCompletions] = await Promise.all([
     db
       .select()
       .from(checklistItems)
       .where(and(eq(checklistItems.userId, userId), eq(checklistItems.active, true)))
       .orderBy(checklistItems.sortOrder, checklistItems.createdAt),
-
     db
       .select()
       .from(checklistCompletions)
       .where(and(eq(checklistCompletions.userId, userId), gte(checklistCompletions.date, lookback))),
-
-    db
-      .select({
-        id: gymSessions.id,
-        workoutName: gymSessions.workoutName,
-        date: gymSessions.date,
-        durationSeconds: gymSessions.durationSeconds,
-      })
-      .from(gymSessions)
-      .where(eq(gymSessions.userId, userId))
-      .orderBy(desc(gymSessions.date))
-      .limit(30),
   ]);
 
-  // ── Derive next workout name from actual gym sessions ──
-  const lastGymSession = recentGymSessions.find(s => s.durationSeconds !== null) ?? null;
-  const lastSessionName = lastGymSession?.workoutName ?? null;
-  const lastIdx = lastSessionName ? ROTATION.lastIndexOf(lastSessionName) : -1;
-  const nextSessionName = ROTATION[(lastIdx + 1) % ROTATION.length];
-
-  // Check if any workout was done today (finished sessions only)
-  const todayFinished = recentGymSessions.filter(s => s.date === today && s.durationSeconds !== null);
-  const nextDoneToday = todayFinished.some(s => s.workoutName === nextSessionName);
-
-  // ── last 7 dates ──
   const last7Dates = getLastNDates(today, 7);
 
-  // ── Build enriched items ──
   const enriched = items.map((item) => {
     const itemDates = allCompletions
       .filter((c) => c.itemId === item.id)
       .map((c) => c.date)
       .sort()
       .reverse();
-
     return {
       id: item.id,
       title: item.title,
       emoji: item.emoji,
       sortOrder: item.sortOrder,
-      timeOfDay: (item.timeOfDay ?? "anytime") as "morning" | "afternoon" | "evening" | "anytime",
+      timeOfDay: (item.timeOfDay ?? "anytime") as TimeOfDay,
+      kind: ((item.kind as ItemKind) ?? "manual"),
+      routineKey: (item.routineKey as RoutineKey | null) ?? null,
       completedToday: itemDates.includes(today),
       streak: calcStreak(itemDates, today),
       last7: last7Dates.map((d) => itemDates.includes(d)),
@@ -223,45 +172,16 @@ export async function GET() {
     };
   });
 
-  // ── Aggregate stats (DB items only, excludes virtual workout) ──
-  const totalItems = items.length;
-  const overallStreak = calcOverallStreak(allCompletions, totalItems, today);
-  const monthlyPct = getMonthlyPct(allCompletions, totalItems, today);
-  const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(
-    allCompletions,
-    totalItems,
-    today
-  );
-
-  // ── Virtual workout item — shows whether any workout was done today ──
-  const anyWorkoutDoneToday = todayFinished.length > 0;
-  const workoutItem =
-    recentGymSessions.length > 0
-      ? {
-          id: -1,
-          title: anyWorkoutDoneToday
-            ? todayFinished[0].workoutName + " workout"
-            : nextSessionName + " workout",
-          emoji: "🏋️",
-          sortOrder: -1,
-          timeOfDay: "anytime" as const,
-          completedToday: anyWorkoutDoneToday,
-          streak: 0,
-          last7: last7Dates.map((d) => recentGymSessions.some(s => s.date === d && s.durationSeconds !== null)),
-          source: "workout" as const,
-          autoSource: null,
-          color: "cyan",
-          notes: null,
-          href: `/workouts`,
-        }
-      : null;
-
-  const resultItems = [...(workoutItem ? [workoutItem] : []), ...enriched];
+  // Day-level stats: everything except habits still being built.
+  const counted = new Set(enriched.filter((i) => i.kind !== "habit").map((i) => i.id));
+  const byDate = groupByDate(allCompletions, counted);
+  const total = counted.size;
+  const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
 
   return NextResponse.json({
-    items: resultItems,
-    overallStreak,
-    monthlyPct,
+    items: enriched,
+    overallStreak: calcOverallStreak(byDate, total, today),
+    monthlyPct: getMonthlyPct(byDate, total, today),
     thirtyDayAvg,
     bestStreak30,
   });
@@ -272,7 +192,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { title, emoji, timeOfDay, autoSource, color, notes } = await req.json();
+  const { title, emoji, timeOfDay, autoSource, color, notes, kind } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
 
   const existing = await db
@@ -281,7 +201,7 @@ export async function POST(req: Request) {
     .where(eq(checklistItems.userId, userId))
     .orderBy(desc(checklistItems.sortOrder))
     .limit(1);
-  const nextOrder = (existing[0]?.sortOrder ?? -1) + 1;
+  const nextOrder = Math.max(0, (existing[0]?.sortOrder ?? -1) + 1);
 
   const [item] = await db
     .insert(checklistItems)
@@ -290,6 +210,7 @@ export async function POST(req: Request) {
       title: title.trim(),
       emoji: emoji?.trim() || null,
       timeOfDay: timeOfDay ?? "anytime",
+      kind: kind === "routine" || kind === "habit" ? kind : "manual",
       autoSource: autoSource ?? null,
       color: color ?? "violet",
       notes: notes?.trim() || null,
