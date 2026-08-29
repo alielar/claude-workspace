@@ -7,6 +7,8 @@
     "prepare": "node prepare.mjs",
     "send": "node --env-file=.env send.mjs",
     "triage": "node --env-file=.env triage.mjs",
-    "scan-history": "node --env-file=.env scan-history.mjs"
+    "scan-history": "node --env-file=.env scan-history.mjs",
+    "german-scan": "node --env-file=.env german-scan.mjs",
+    "german-export": "node --env-file=.env german-export.mjs"
   }
 }

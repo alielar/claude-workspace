@@ -40,7 +40,48 @@ if (problems.length) {
   process.exit(1);
 }
 
-const { tracks } = JSON.parse(readFileSync('data/plan.json', 'utf8'));
+// ── Which pair of messages, for which kind of lead ───────────────────────────
+
+const STAGES = {
+  // The first approach — already sent to everyone.
+  campaign: {
+    no_meeting: ['no_meating_fr_1_1', 'no_meating_fr_1_2'],
+    had_meeting: ['hadmeating_fr_1_1', 'hadmeating_fr_1_2'],
+  },
+  // First follow-up, for people who never replied to the campaign.
+  followup1: {
+    no_meeting: ['followup_text_1_fra_v2', 'followup_text_2_fra'],
+    had_meeting: ['noshow_text_3_france', 'noshow_text_4_fra'],
+  },
+};
+
+const STAGE = String(arg('stage', 'campaign'));
+const tracks = STAGES[STAGE];
+if (!tracks) {
+  console.log(`\n  Unknown stage "${STAGE}". Use: ${Object.keys(STAGES).join(', ')}\n`);
+  process.exit(1);
+}
+
+// ── Never contact these people ───────────────────────────────────────────────
+
+// This gate is not optional. If the exclusion list is missing we stop, rather
+// than send to people who asked us not to.
+const DNC_FILE = 'data/do-not-contact-full.csv';
+if (!existsSync(DNC_FILE)) {
+  console.log(`\n  Refusing to send: ${DNC_FILE} is missing.`);
+  console.log('  Run "npm run scan-history" first — without it we could message');
+  console.log('  someone who asked to be removed.\n');
+  process.exit(1);
+}
+const blocked = new Map();
+for (const line of readFileSync(DNC_FILE, 'utf8').split('\n').slice(1)) {
+  if (!line.trim()) continue;
+  const f = line.split(',');
+  const reason = f[3] || '';
+  // Rows flagged as likely false positives are not blocks.
+  if (/false positive/i.test(reason)) continue;
+  blocked.set(f[2].replace(/[^\d]/g, ''), reason);
+}
 
 // ── Who are we sending to? ───────────────────────────────────────────────────
 
@@ -71,8 +112,26 @@ if (testPhone) {
   }];
 } else {
   audience = JSON.parse(readFileSync('data/plan.json', 'utf8')).leads;
+
+  // A follow-up only goes to people who stayed silent through the campaign.
+  if (STAGE === 'followup1') {
+    const silent = new Set(
+      readFileSync('data/no-reply.csv', 'utf8').split('\n').slice(1)
+        .filter((l) => l.trim()).map((l) => l.split(',')[2].replace(/[^\d]/g, '')),
+    );
+    audience = audience.filter((l) => silent.has(l.phone));
+  }
+
   const track = arg('track');
   if (track) audience = audience.filter((l) => l.track === track);
+
+  // Remove anyone who asked not to be contacted. Always, before anything else.
+  const excluded = audience.filter((l) => blocked.has(l.phone));
+  audience = audience.filter((l) => !blocked.has(l.phone));
+  if (excluded.length) {
+    console.log(`\n  Excluded ${excluded.length} people who asked not to be contacted:`);
+    for (const l of excluded) console.log(`   • ${l.name} +${l.phone} — ${blocked.get(l.phone)}`);
+  }
 
   // Drop anyone who already got their whole pair, BEFORE applying the limit —
   // so --limit counts fresh people, not rows we are about to skip.
@@ -80,7 +139,7 @@ if (testPhone) {
   const before = audience.length;
   audience = audience.filter((l) => !alreadyFullyDone(l));
   const skippedUpFront = before - audience.length;
-  if (skippedUpFront) console.log(`\n  Skipping ${skippedUpFront} people already messaged in an earlier run.`);
+  if (skippedUpFront) console.log(`\n  Skipping ${skippedUpFront} people already messaged at this stage.`);
 
   const limit = arg('limit');
   if (limit) audience = audience.slice(0, Number(limit));

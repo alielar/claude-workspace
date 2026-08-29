@@ -111,7 +111,7 @@ for (const lead of leads) {
   if (checked % 300 === 0) console.log(`  …scanned ${checked}/${leads.length}`);
 }
 
-const order = { 'DATA DELETION REQUEST': 0, 'explicit refusal': 1, 'soft no (timing) — review': 2 };
+const order = { 'DATA DELETION REQUEST': 0, 'explicit refusal': 1, 'soft no (timing) — your call': 2, 'probably a false positive — asking about cancelling, not refusing': 3 };
 rows.sort((a, b) => order[a.reason] - order[b.reason]);
 
 writeFileSync('data/do-not-contact-full.csv',
@@ -122,5 +122,6 @@ const count = (r) => rows.filter((x) => x.reason === r).length;
 console.log(`\n  Scanned all ${checked} leads · ${withHistory} have replied to you at some point.\n`);
 console.log(`   ${String(count('DATA DELETION REQUEST')).padStart(4)}  DATA DELETION REQUESTS — must be erased, not just excluded`);
 console.log(`   ${String(count('explicit refusal')).padStart(4)}  explicit refusals — never contact again`);
-console.log(`   ${String(count('soft no (timing) — review')).padStart(4)}  soft "not now" — your call`);
+console.log(`   ${String(count('soft no (timing) — your call')).padStart(4)}  soft "not now" — your call`);
+console.log(`   ${String(count('probably a false positive — asking about cancelling, not refusing')).padStart(4)}  likely false positives — asking about cancelling, not refusing`);
 console.log(`\n  → data/do-not-contact-full.csv\n`);
