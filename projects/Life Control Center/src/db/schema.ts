@@ -1,19 +1,16 @@
 /**
- * Database schema for Life Control Center
- * Using Drizzle ORM with Turso (SQLite)
+ * Database schema for Control Center
+ * Drizzle ORM + Turso (SQLite)
  *
- * Tables:
- *  - users, sessions, accounts          → NextAuth
- *  - workout_programs, sessions,
- *    exercises, set_templates,
- *    workout_logs, set_logs, prs        → Workouts module
- *  - books, reading_progress,
- *    annotations, word_lookups          → Library module
- *  - news_briefs                        → News module
- *  - tasks                              → Calendar / Tasks module
- *  - goals                              → Goals module
- *  - word_bank_entries                  → Word Bank module
- *  - user_settings                      → App-wide settings
+ * Only tables the code still reads/writes are declared here. Old tables that
+ * still exist in the database (NextAuth accounts/sessions, workout v1, tasks,
+ * goals) are left alone in Turso but no longer declared — nothing touches them.
+ *
+ * Active:   users, user_settings, news_briefs, checklist_*, weekly_reviews
+ * Archived: programs / workout_plans / exercise_db / plan_exercises /
+ *           gym_sessions / gym_sets / exercise_prs / workout_coach / run_logs,
+ *           books / reading_* / annotations / pdf_blobs, word_bank_entries,
+ *           mood_entries, sleep_entries (data kept, UI out of navigation)
  */
 
 import { sql } from "drizzle-orm";
@@ -22,10 +19,9 @@ import {
   integer,
   real,
   sqliteTable,
-  primaryKey,
 } from "drizzle-orm/sqlite-core";
 
-// ─── NextAuth Tables ──────────────────────────────────────────────────────────
+// ─── User ─────────────────────────────────────────────────────────────────────
 
 export const users = sqliteTable("users", {
   id: text("id").notNull().primaryKey(),
@@ -37,50 +33,6 @@ export const users = sqliteTable("users", {
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
 });
-
-export const accounts = sqliteTable(
-  "accounts",
-  {
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("provider_account_id").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-  })
-);
-
-export const sessions = sqliteTable("sessions", {
-  sessionToken: text("session_token").notNull().primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-});
-
-export const verificationTokens = sqliteTable(
-  "verification_tokens",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-  },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
-);
 
 // ─── User Settings ─────────────────────────────────────────────────────────────
 
@@ -99,127 +51,9 @@ export const userSettings = sqliteTable("user_settings", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-// ─── Workouts ──────────────────────────────────────────────────────────────────
+// ─── Running (archived) ───────────────────────────────────────────────────────
 
-/** A named workout program (e.g. "PPL Hypertrophy") */
-export const workoutPrograms = sqliteTable("workout_programs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  // JSON array of session IDs in weekly rotation order
-  rotationOrder: text("rotation_order").notNull().default("[]"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch() * 1000)`),
-});
-
-/**
- * A workout definition (e.g. "Push", "Pull", "Legs").
- * Not to be confused with workout_logs which are actual performed sessions.
- */
-export const workoutSessions = sqliteTable("workout_sessions", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  programId: integer("program_id")
-    .notNull()
-    .references(() => workoutPrograms.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // "Push", "Pull", "Legs", "Core", "Push-Up Skill"
-  // "ppl" | "core" | "skill" — affects UI grouping
-  type: text("type").notNull().default("ppl"),
-  defaultRestSeconds: integer("default_rest_seconds").notNull().default(60),
-  sortOrder: integer("sort_order").notNull().default(0),
-});
-
-/** An exercise slot within a workout definition */
-export const exercises = sqliteTable("exercises", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  sessionId: integer("session_id")
-    .notNull()
-    .references(() => workoutSessions.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  muscleGroup: text("muscle_group"), // "chest", "shoulders", "triceps", etc.
-  // ExerciseDB / API Ninjas lookup name for fetching GIF demos
-  apiLookupName: text("api_lookup_name"),
-  // Cached GIF URL from ExerciseDB
-  demoGifUrl: text("demo_gif_url"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  notes: text("notes"),
-});
-
-/**
- * Set templates define the default target for each set in an exercise.
- * These are the "planned" sets shown when starting a workout.
- */
-export const setTemplates = sqliteTable("set_templates", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  exerciseId: integer("exercise_id")
-    .notNull()
-    .references(() => exercises.id, { onDelete: "cascade" }),
-  setNumber: integer("set_number").notNull(),
-  // "standard" | "drop" | "warmup"
-  setType: text("set_type").notNull().default("standard"),
-  repRangeMin: integer("rep_range_min"),
-  repRangeMax: integer("rep_range_max"),
-  // null for timed sets (Core holds)
-  durationSeconds: integer("duration_seconds"),
-  rirTarget: integer("rir_target"), // 0–4; null = not tracked
-  restSeconds: integer("rest_seconds").notNull().default(60),
-});
-
-/** One full workout performed on a given date */
-export const workoutLogs = sqliteTable("workout_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  sessionId: integer("session_id")
-    .notNull()
-    .references(() => workoutSessions.id),
-  startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
-  finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
-  // Computed: finishedAt - startedAt in seconds
-  durationSeconds: integer("duration_seconds"),
-  notes: text("notes"),
-});
-
-/** One logged set inside a workout_log */
-export const setLogs = sqliteTable("set_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  workoutLogId: integer("workout_log_id")
-    .notNull()
-    .references(() => workoutLogs.id, { onDelete: "cascade" }),
-  exerciseId: integer("exercise_id")
-    .notNull()
-    .references(() => exercises.id),
-  setNumber: integer("set_number").notNull(),
-  setType: text("set_type").notNull().default("standard"),
-  weightKg: real("weight_kg"),
-  repsLogged: integer("reps_logged"),
-  // Timed sets (Core holds): duration in seconds instead of reps
-  durationSeconds: integer("duration_seconds"),
-  rirLogged: integer("rir_logged"), // 0–4; null = not tracked
-  restSeconds: integer("rest_seconds"),
-  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
-});
-
-/** Personal records — updated automatically after each workout log */
-export const personalRecords = sqliteTable("personal_records", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  exerciseId: integer("exercise_id")
-    .notNull()
-    .references(() => exercises.id),
-  bestWeightKg: real("best_weight_kg"),
-  bestReps: integer("best_reps"),
-  // Estimated 1RM: weight × (1 + reps/30)
-  estimated1rm: real("estimated_1rm"),
-  achievedAt: integer("achieved_at", { mode: "timestamp_ms" }).notNull(),
-});
-
-/** Running log entries (separate from PPL sessions) */
+/** Running log entries */
 export const runLogs = sqliteTable("run_logs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -392,51 +226,7 @@ export const wordBankEntries = sqliteTable("word_bank_entries", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-// ─── Tasks ─────────────────────────────────────────────────────────────────────
-
-export const tasks = sqliteTable("tasks", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  notes: text("notes"),
-  dueDate: integer("due_date", { mode: "timestamp_ms" }),
-  // "todo" | "done"
-  status: text("status").notNull().default("todo"),
-  // Google Calendar event ID (set after syncing to Google Calendar)
-  googleCalendarEventId: text("google_calendar_event_id"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch() * 1000)`),
-  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
-});
-
-// ─── Goals ─────────────────────────────────────────────────────────────────────
-
-export const goals = sqliteTable("goals", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  // "fitness" | "reading" | "work" | "other"
-  category: text("category").notNull().default("other"),
-  // Optional numeric target (e.g. 5 for "run 5km")
-  targetValue: real("target_value"),
-  currentValue: real("current_value").notNull().default(0),
-  unit: text("unit"), // "km", "books", etc.
-  targetDate: integer("target_date", { mode: "timestamp_ms" }),
-  // "active" | "completed" | "archived"
-  status: text("status").notNull().default("active"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch() * 1000)`),
-  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
-});
-
-// ─── Workouts v2 (MacroFactor import — non-conflicting names) ──────────────────
+// ─── Workouts (archived gym system — data kept) ───────────────────────────────
 
 /** Named training programs (e.g. "Beta", "Alpha") */
 export const programs = sqliteTable("programs", {

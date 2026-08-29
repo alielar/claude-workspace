@@ -18,14 +18,14 @@ export default function NotFound() {
         Page not found
       </p>
       <Link
-        href="/dashboard"
+        href="/today"
         className="cc-btn-primary"
         style={{
           marginTop: 8, padding: "10px 20px", borderRadius: 8,
           fontSize: 13, fontWeight: 600, textDecoration: "none",
         }}
       >
-        Back to Dashboard
+        Back to Today
       </Link>
     </div>
   );

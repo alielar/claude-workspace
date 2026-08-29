@@ -1,10 +1,8 @@
 "use client";
 
 /**
- * Sidebar — collapses to 56px, expands to 200px on hover.
- *
- * Desktop only (hidden on mobile). Active module gets gradient bg + violet glow.
- * Labels fade in as the sidebar expands. No tooltip needed.
+ * Sidebar — desktop only (hidden <768px via CSS). 56px icon rail,
+ * expands to show labels on hover. Same NAV list as the phone tab bar.
  */
 
 import Link from "next/link";
@@ -17,22 +15,20 @@ export function Sidebar() {
 
   return (
     <aside className="cc-sidebar">
-      {/* Module icons */}
       <nav className="cc-sidebar-nav" aria-label="Main navigation">
         {NAV.map((item) => {
-          const { href, label, icon } = item;
           const active = isNavActive(item, pathname);
           return (
             <Link
-              key={href}
-              href={href}
+              key={item.href}
+              href={item.href}
               className={`cc-sidebar-link${active ? " active" : ""}`}
-              aria-label={label}
+              aria-label={item.label}
             >
               <span className="cc-sidebar-icon">
-                <Icon name={icon} size={18} strokeWidth={active ? 2.2 : 1.6} />
+                <Icon name={item.icon} size={18} strokeWidth={active ? 2.2 : 1.6} />
               </span>
-              <span className="cc-sidebar-label">{label}</span>
+              <span className="cc-sidebar-label">{item.label}</span>
             </Link>
           );
         })}

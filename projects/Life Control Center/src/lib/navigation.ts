@@ -1,49 +1,26 @@
 /**
- * Navigation config — single source of truth for all nav items.
- * Icon names map to keys in <Icon /> component.
+ * Navigation — single source of truth for the tab bar (phone) and sidebar (desktop).
+ *
+ * Phase 1: Today · News · Settings.
+ * Phase 3 adds Train, Phase 5 adds To-do. Keep this list short on purpose —
+ * if something needs a second thought about where it lives, the nav is wrong.
+ *
+ * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
+ * journal) are deliberately NOT here. They are reachable from /archive.
+ * To restore one: add a line to NAV below. That is the whole restore step.
  */
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: string;        // key in ICONS map (see Icon.tsx)
-  color: string;       // module accent colour
-  match?: string[];    // route prefixes that mark this item active (defaults to [href])
+  icon: "today" | "news" | "settings" | "train" | "todo";
+  match?: string[]; // extra route prefixes that mark this item active
 };
 
 export const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard", color: "#7C4DFF" },
-  { href: "/workouts",  label: "Workouts",  icon: "workouts",  color: "#FF8A8A" },
-  // Mind groups Words + Knowledge + Library (each still its own page)
-  { href: "/mind",      label: "Mind",      icon: "mind",      color: "#7C4DFF",
-    match: ["/mind", "/wordbank", "/knowledge", "/library"] },
-  // Wellbeing groups Mood + Sleep + Journal (each still its own page)
-  { href: "/wellbeing", label: "Wellbeing", icon: "wellbeing", color: "#FFC15C",
-    match: ["/wellbeing", "/mood", "/sleep", "/journal"] },
-  // Checklist removed from sidebar — reached via the "Edit" button on the dashboard checklist card
-  // News removed from sidebar — accessible via "See all" link on the dashboard
-  // Finance removed — module not in use
-];
-
-// Primary 5 for mobile bottom bar
-export const NAV_PRIMARY = NAV.slice(0, 5);
-// Remaining for "More" sheet
-export const NAV_MORE    = NAV.slice(5);
-
-/**
- * Every reachable destination — used by the command palette (⌘K) so the
- * grouped sub-pages and the checklist stay searchable even though they
- * aren't top-level sidebar items.
- */
-export const ALL_DESTINATIONS: NavItem[] = [
-  ...NAV,
-  { href: "/checklist", label: "Checklist", icon: "checklist", color: "#6FD49A" },
-  { href: "/wordbank",  label: "Words",     icon: "words",     color: "#7C4DFF" },
-  { href: "/knowledge", label: "Knowledge", icon: "knowledge", color: "#FFC15C" },
-  { href: "/library",   label: "Library",   icon: "library",   color: "#64FFDA" },
-  { href: "/mood",      label: "Mood",      icon: "mood",      color: "#FFC15C" },
-  { href: "/sleep",     label: "Sleep",     icon: "sleep",     color: "#818CF8" },
-  { href: "/journal",   label: "Journal",   icon: "journal",   color: "#FB923C" },
+  { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist"] },
+  { href: "/news",     label: "News",     icon: "news" },
+  { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
 ];
 
 /** Whether a nav item is active for the current pathname. */

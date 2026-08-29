@@ -19,27 +19,38 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Control Center",
-  description: "Ali's personal life OS. Workouts, news, books, checklist, words.",
-  manifest: "/manifest.json",
+  description: "Ali's daily control center.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Control Center",
+    title: "Control",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#06060B",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#06060B" },
+    { media: "(prefers-color-scheme: light)", color: "#F4F4F8" },
+  ],
 };
+
+/**
+ * Applies the saved theme before the first paint so there is no flash.
+ * Values: "light" | "dark" | (absent = follow the phone's setting).
+ */
+const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`h-full ${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="h-full">
-        {/* Shared SVG gradient defs — referenced by id throughout app */}
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
+      <body>
+        {/* Shared SVG gradient defs — referenced by id in the archived pages */}
         <SvgDefs />
         {children}
       </body>

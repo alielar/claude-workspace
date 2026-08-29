@@ -12,6 +12,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ensureMigrate } from "@/lib/ensureMigrate";
+import { sendOrQueue } from "@/lib/local/outbox";
 import WeeklyReviews from "@/components/checklist/WeeklyReviews";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -236,8 +237,9 @@ function Drawer({ open, item, onClose, onSave, onDelete }: DrawerProps) {
         />
       )}
       <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0, width: 380, zIndex: 50,
-        background: "rgba(12,12,22,0.98)", backdropFilter: "blur(24px)",
+        position: "fixed", top: 0, right: 0, bottom: 0, width: "min(380px, 100vw)", zIndex: 50,
+        background: "var(--bg-chrome)", backdropFilter: "blur(24px)",
+        paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)",
         borderLeft: "1px solid var(--line-hi)",
         display: "flex", flexDirection: "column",
         transform: open ? "translateX(0)" : "translateX(100%)",
@@ -493,14 +495,22 @@ function CkRow({ item, onToggle, onEdit }: {
     : null;
 
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "2px 22px 1fr auto",
-      gap: "0 12px",
-      alignItems: "center",
-      padding: "11px 0",
-      borderBottom: "1px solid var(--line)",
-    }}>
+    <div
+      // The whole row is the tap target (≥44px tall); the small box is just the visual.
+      role={isAnyAuto ? undefined : "checkbox"}
+      aria-checked={isAnyAuto ? undefined : done}
+      onClick={() => !isAnyAuto && onToggle(item.id)}
+      style={{
+        display: "grid",
+        gridTemplateColumns: "2px 22px 1fr auto",
+        gap: "0 12px",
+        alignItems: "center",
+        padding: "11px 0",
+        minHeight: 48,
+        borderBottom: "1px solid var(--line)",
+        cursor: isAnyAuto ? "default" : "pointer",
+        WebkitTapHighlightColor: "transparent",
+      }}>
       <div style={{
         alignSelf: "stretch",
         background: accent,
@@ -510,10 +520,10 @@ function CkRow({ item, onToggle, onEdit }: {
       }} />
 
       <span
-        onClick={() => !isAnyAuto && onToggle(item.id)}
+        aria-hidden
         style={{
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          width: 20, height: 20,
+          width: 22, height: 22,
           borderRadius: isVirtualWorkout ? 99 : 6,
           border: `1.5px solid ${
             done ? "transparent"
@@ -600,16 +610,15 @@ function CkRow({ item, onToggle, onEdit }: {
 
       {!isVirtualWorkout ? (
         <button
-          onClick={() => onEdit(item)}
+          aria-label={`Edit ${item.title}`}
+          onClick={(e) => { e.stopPropagation(); onEdit(item); }}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            color: "var(--ink-4)", padding: 4, display: "flex",
-            opacity: 0.6, transition: "opacity 0.15s",
+            color: "var(--ink-3)", padding: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            width: 44, height: 44, marginRight: -12,
           }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.6")}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
@@ -740,16 +749,21 @@ export default function ChecklistPage() {
     })();
   }, [load, loadSuggestions]);
 
-  // ── Toggle ──
+  // ── Toggle (idempotent + offline-queued, same as the Today screen) ──
   const toggle = async (id: number) => {
-    setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
-    const res = await fetch("/api/checklist/toggle", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId: id }),
-    });
-    if (!res.ok) {
-      setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !it.completedToday } : it));
+    const current = items.find((it) => it.id === id);
+    if (!current) return;
+    const next = !current.completedToday;
+    setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: next } : it));
+    try {
+      await sendOrQueue({
+        url: "/api/checklist/toggle",
+        method: "POST",
+        body: { itemId: id, completed: next, date: todayStr },
+        dedupeKey: `toggle:${id}:${todayStr}`,
+      });
+    } catch {
+      setItems((prev) => prev.map((it) => it.id === id ? { ...it, completedToday: !next } : it));
     }
   };
 
@@ -839,8 +853,8 @@ export default function ChecklistPage() {
         </button>
       </div>
 
-      {/* 8fr / 4fr layout */}
-      <div style={{ display: "grid", gridTemplateColumns: "8fr 4fr", gap: 14 }}>
+      {/* 8fr / 4fr on desktop, single column on the phone (see .ck-grid in globals.css) */}
+      <div className="ck-grid" style={{ display: "grid", gridTemplateColumns: "8fr 4fr", gap: 14 }}>
 
         {/* ── LEFT ─────────────────────────────────────────────────────────── */}
         <div>

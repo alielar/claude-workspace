@@ -2,134 +2,90 @@
 
 ---
 
-# Life Control Center
+# Control Center
 
-> Last updated: 2026-05-24. Read this before touching anything.
+> Last updated: 2026-08-30 (Phase 1). Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 
-## 1. What This Is
+## 1. What this is
 
-Ali's personal life dashboard — a single-user Next.js web app on Vercel. Modules: dashboard, workouts, news, checklist, word bank, library, mood, sleep, journal, finance, settings.
+Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every day. Single user, no login (deliberate for now — see spec §8a). Deployed on Vercel.
 
-**Stack:** Next.js (App Router, latest — see AGENTS.md), Drizzle ORM + Turso (libSQL/SQLite), NextAuth v5 (Google OAuth), Anthropic API (`claude-haiku-4-5-20251001`), Vercel hosting + cron. **No Tailwind** — all styles are inline or via `globals.css` CSS custom properties.
+**The rebuild is a convenience problem first.** Phone first, instant open, works offline, dark + light, few sections. If a feature makes the app slower or heavier on the phone, cut the feature.
 
----
+**Stack:** Next.js 16 (App Router, see AGENTS.md), Drizzle ORM + Turso (libSQL), Tailwind v4 utilities are available but the design system is hand-written CSS in `globals.css` + inline styles. Anthropic API (`claude-haiku-4-5-20251001`) for the few AI features. Vercel cron.
 
-## 2. Design System
+## 2. Acceptance gates (every phase, spec §3)
 
-**`design-system/mockups/`** is the authoritative reference for every page. Reproduce mockups pixel-faithfully. Do not invent layout changes.
-
-### Tokens (CSS custom properties in `globals.css`)
-
-```
---bg / --bg-card / --bg-input
---ink / --ink-2 / --ink-3 / --ink-4 / --ink-5
---line / --line-hi / --line-strong
---violet / --cyan / --pos / --neg / --warn
---grad (purple→cyan gradient)
---f-sans / --f-mono
---easeOut
-```
-
-### Reusable CSS classes
-
-```
-.cc-card           — card container (dark bg, border, radius 16px)
-.cc-card-head      — card header (padding 14px 16px, flex, border-bottom) — MUST USE, content must not sit flush
-.cc-card-body      — card body (padding 14px 16px)
-.cc-btn            — base button (ghost/outline style)
-.cc-btn-primary    — primary button: rgba(124,77,255,0.15) bg, rgba(124,77,255,0.4) border, #E8E8F0 text
-                     hover: rgba(124,77,255,0.25) bg + 0 0 20px rgba(124,77,255,0.25) glow
-                     active: scale(0.98). disabled: 40% opacity.
-                     REPLACES all former white #E8E8F0 / #06060B buttons app-wide.
-.cc-pagetitle      — page header (h1 + .sub subtitle)
-.grad-text         — gradient text via WebkitBackgroundClip
-.num               — large number display
-```
-
-### Primary button rule
-
-**Every primary action button in the app uses `.cc-btn-primary`.** No more white (`#E8E8F0`) buttons.
-
-Keep unchanged: ghost/secondary buttons, Discard/red-tinted buttons, the floating `+` FAB (gradient orb).
-
----
+1. Phone first — thumb-reachable actions, ≥44px tap targets, single column on the phone.
+2. Installable + offline — service worker, local-first data, never a hanging spinner.
+3. Fast — usable screen under ~1.5s on a cold open; render the local copy first, refresh after.
+4. Dark and light — follows the phone by default, manual override in Settings.
+5. Simple — three tabs today (Today · News · Settings). Train and To-do join later.
+6. Links open externally — `target="_blank" rel="noopener noreferrer"`.
 
 ## 3. Architecture
 
+### Screens
+```
+src/app/(app)/today       home screen — what to do right now (client, local-first)
+src/app/(app)/news        daily brief (client, local-first, cron-generated)
+src/app/(app)/settings    theme, news topics, install hint, archive, force-update
+src/app/(app)/archive     index of archived modules
+src/app/(app)/checklist   checklist editor (add/edit items) — reached from Today → Edit
+src/app/offline           shown by the service worker only when nothing is cached
+```
+Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/wordbank`, `/mood`, `/sleep`, `/journal`.
+
+### Local-first data (`src/lib/local/`)
+- `store.ts` — `useCached(key, fetcher)`: paints the phone's saved copy instantly, refreshes in the background, `setData` for optimistic edits. Backed by localStorage (swap for IndexedDB in one file if a module outgrows it).
+- `outbox.ts` — `sendOrQueue(...)`: writes go straight to the server; if offline they queue and replay in order on reconnect. Entries have a `dedupeKey` so repeated taps collapse to the final state. **Every endpoint used through the outbox must be idempotent** (send the desired final state, never "toggle").
+- `SyncOutbox` (in AppShell) replays on open / online / foreground and fires `cc:outbox-flushed`.
+
+### Service worker (`public/sw.js`, registered by `SwRegister`)
+- `/_next/static/*` cache-first · page navigations stale-while-revalidate · `GET /api/*` network-first (3s) then cache · `/offline` fallback.
+- Bump `VERSION` in `sw.js` when cache behaviour changes. Settings → "Update app" clears caches and reloads.
+
+### Theme
+- Tokens in `globals.css` `:root` (dark). Light values under `:root[data-theme="light"]` and `@media (prefers-color-scheme: light) :root:not([data-theme="dark"])`.
+- `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint.
+- **Never hardcode `rgba(255,255,255,…)` or `#E8E8F0` in new UI** — use `--fill-1/2/3`, `--ink*`, `--line*`, `--bg-chrome`.
+
+### Day / time
+- Everything runs on **Europe/Madrid**. Use `src/lib/checklist/day.ts`: `checklistToday()` (before 04:00 still counts as yesterday), `dayPart()` → morning 04–12, afternoon 12–21, evening 21–04 (Ali's clock, spec §8a).
+
 ### Auth
-- Single-user app, always Ali's account in production.
-- `auth()` (server) or `useSession()` (client). Always guard with `if (!session?.user?.id) return 401`.
-- Never hardcode user IDs.
+- `src/lib/auth.ts` is a stub: `auth()` always resolves to the one user. API routes still guard `if (!session?.user?.id) return 401` so a real login can be added later (spec Phase 7).
 
 ### Database
-- **Drizzle ORM + Turso**. Client: `src/db/index.ts`. Schema: `src/db/schema.ts` (single source of truth).
-- No Drizzle migrations CLI. Use `POST /api/admin/migrate` (idempotent `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE ADD COLUMN`).
-- Schema change = update `schema.ts` + add `ALTER TABLE` to migrate route. Call `/api/admin/migrate` in `useEffect` on pages with new columns.
-
-### Timezone
-- All "today" calculations: **Europe/Madrid** via `todayMadrid()`:
-  ```ts
-  function todayMadrid(): string {
-    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
-  }
-  ```
+- Drizzle + Turso. Client `src/db/index.ts`, schema `src/db/schema.ts` (only tables the code uses are declared; old tables stay in Turso untouched).
+- No migrations CLI. `POST /api/admin/migrate` is idempotent (`CREATE TABLE IF NOT EXISTS` + `ALTER TABLE ADD COLUMN`). Schema change = update `schema.ts` + add to the migrate route.
 
 ### AI
-- `@anthropic-ai/sdk`, model `claude-haiku-4-5-20251001`. Limit to 1 call/user/day max. Cache in DB.
+- `@anthropic-ai/sdk`, model `claude-haiku-4-5-20251001`, lazy-imported server-side only. ≤1 call/user/day per feature; cache in DB.
 
-### File Structure
-```
-src/
-  app/(app)/       — authenticated pages (sidebar layout)
-  app/api/         — API routes
-  components/      — React components
-  db/              — index.ts (client) + schema.ts (tables)
-  lib/             — shared logic (auth, news, checklist, SRS, etc.)
-```
+## 4. Archive — how to restore
 
----
+Each archived module is one line away from the main navigation:
 
-## 4. Module Status
+| Module | Pages | Restore |
+|---|---|---|
+| Gym workouts | `/workouts`, `/workouts/session/*` | add `{ href: "/workouts", label: "Gym", icon: "train" }` to `NAV` in `src/lib/navigation.ts` |
+| Library & notes | `/library`, `/library/read/[id]`, `/knowledge` | add `{ href: "/library", … }` to `NAV` |
+| Word bank | `/wordbank` | add `{ href: "/wordbank", … }` to `NAV` |
+| Mood / Sleep / Journal | `/mood`, `/sleep`, `/journal` | add the href(s) to `NAV` |
 
-| Module | Backend | Notes |
-|--------|---------|-------|
-| Dashboard | DB | Server component, time-aware layout, 5 data-wired cards |
-| Workouts | DB | 4-Day Split (Push/Pull/Legs/Upper). Live logger, rest timer, PRs (Epley 1RM), exercise alternatives/swapping, run log. Seed: `/api/workouts/seed-program` (auto-runs on empty state). |
-| News Brief | DB | 4-column grid, cron at 06:00 UTC, 30-day retention |
-| Checklist | DB | Drawer with emoji/color, auto-tracked items (workout/reading/words/mood), streaks, AI suggestions, weekly reviews |
-| Word Bank | DB | SRS flashcards, fill-in-the-blank, multi-language, review drill |
-| Library | DB | PDF reader, reading sessions, annotations, word lookup, notes SRS drill |
-| Mood | DB | Heatmap, daily scores, auto-check wired to checklist |
-| Sleep | DB | Apple Health sync via ingest API, manual quick-log, sleep stages/scores |
-| Journal | localStorage | Full UI, no backend yet |
-| Finance | — | Not implemented |
-| Settings | DB | Timezone and news preferences |
-
----
+Icons for new nav entries go in `src/components/Icon.tsx`. All API routes and tables behind these pages are still live. `/api/sleep/ingest` keeps accepting the Apple Shortcut (data is unreliable — don't trust it yet).
 
 ## 5. Rules
 
-**Communication:**
-- Plain, everyday language. No jargon.
-- Describe issues in terms of what the user sees, not code internals.
+**Communication** — plain language, describe what the user sees, one-line "I decided X because Y" for judgement calls (spec §9).
 
-**Read first:**
-- Read `node_modules/next/dist/docs/` before writing Next.js-specific code. Breaking API changes.
+**UI** — phone layout first, then widen. Every card: `.cc-card` + `.cc-card-head` + `.cc-card-body`. Use `—` or `.cc-skeleton` while loading, never spinners. No fixed pixel widths wider than `min(Npx, 100vw - 32px)`. No hover-only controls. Inputs ≥16px on the phone.
 
-**UI:**
-- No direct DOM mutation. State via `useState` / `useReducer`.
-- Use `—` or skeleton placeholders when loading, not spinners.
-- Match `design-system/mockups/` exactly.
-- Every card header uses `.cc-card-head`. Every card body uses `.cc-card-body` or `padding: "14px 16px"`.
+**Data** — optimistic updates with rollback; writes through `sendOrQueue`; reads through `useCached`. Idempotent endpoints with unique constraints + silent catch on duplicates.
 
-**Data:**
-- All dates in Europe/Madrid timezone via `todayMadrid()`.
-- Optimistic UI updates with rollback on error.
-- Idempotent writes with unique DB constraints + silent catch on duplicates.
+**Performance** — no new dependency without a reason it can't be 30 lines of code. No client component that pulls a library into every route (`AppShell` must stay tiny). Check `next build` route sizes before shipping a phase.
 
-**API:**
-- All routes: check `session.user.id`, return 401 if missing.
-- Never hardcode user IDs.
+**Read first** — `node_modules/next/dist/docs/` before any Next.js-specific code.
 
-**Commits:**
-- Small, reviewable commits with descriptive messages.
+**Commits** — small, descriptive. After pushing, run `npx vercel --prod` (auto-deploy is not relied on).

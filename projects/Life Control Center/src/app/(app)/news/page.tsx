@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import { useCached, fetchJson } from "@/lib/local/store";
 import type { NewsBrief, NewsStory } from "@/lib/news-brief";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -350,8 +351,13 @@ function ArchiveDrawer({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function NewsPage() {
-  const [brief, setBrief]           = useState<NewsBrief | null>(null);
-  const [loading, setLoading]       = useState(true);
+  // Local-first: the last brief shows instantly (also offline); a fresh copy
+  // is fetched in the background. Nothing is generated on open — the 06:00
+  // cron does that; the Refresh button is the only manual trigger.
+  const { data: brief, loading, setData: setBrief } = useCached<NewsBrief>(
+    "news-brief",
+    () => fetchJson<NewsBrief>("/api/news/generate")
+  );
   const [generating, setGenerating] = useState(false);
   const [confirmRefresh, setConfirmRefresh] = useState(false);
 
@@ -376,27 +382,7 @@ export default function NewsPage() {
       if (data) setBrief(data);
     }
     setGenerating(false);
-  }, []);
-
-  // Initial load: fetch today's brief; auto-generate if missing
-  useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/news/generate").catch(() => null);
-      if (res?.ok) {
-        const data = await res.json();
-        if (data) {
-          setBrief(data);
-          setLoading(false);
-        } else {
-          setLoading(false);
-          generate();
-        }
-      } else {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [generate]);
+  }, [setBrief]);
 
   // Load archive list when drawer opens
   useEffect(() => {
