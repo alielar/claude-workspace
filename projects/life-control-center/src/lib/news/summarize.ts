@@ -6,7 +6,7 @@
  * is configured or if the request fails.
  */
 
-import type { NewsStory, DeepDive } from "../news-brief";
+import type { NewsStory } from "../news-brief";
 
 let genAI: InstanceType<typeof import("@google/generative-ai").GoogleGenerativeAI> | null = null;
 
@@ -19,13 +19,40 @@ async function getModel() {
   return genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 }
 
+/** One prompt → text, Gemini first (free), Claude Haiku second. Null when neither is configured or both fail. */
+async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
+  const model = await getModel();
+  if (model) {
+    try {
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    } catch { /* fall through to Haiku */ }
+  }
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const client = new Anthropic();
+      const message = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: maxTokens,
+        messages: [{ role: "user", content: prompt }],
+      });
+      return (message.content[0] as { type: string; text: string }).text?.trim() ?? null;
+    } catch { /* give up quietly */ }
+  }
+  return null;
+}
+
+function parseJson<T>(text: string): T {
+  return JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "")) as T;
+}
+
 /**
  * Enhance a batch of stories with AI-generated summaries and key points.
  * Mutates the stories in place. Falls back silently on failure.
  */
 export async function enhanceStoriesWithAI(stories: NewsStory[]): Promise<void> {
-  const model = await getModel();
-  if (!model || stories.length === 0) return;
+  if (stories.length === 0) return;
 
   // Batch all stories into one prompt to minimize API calls
   const storyList = stories
@@ -43,11 +70,9 @@ Stories:
 ${storyList}`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-    // Strip markdown code fences if present
-    const jsonStr = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "");
-    const parsed: { index: number; summary: string; keyPoints: string[] }[] = JSON.parse(jsonStr);
+    const text = await askAI(prompt);
+    if (!text) return;
+    const parsed = parseJson<{ index: number; summary: string; keyPoints: string[] }[]>(text);
 
     for (const item of parsed) {
       const story = stories[item.index];
