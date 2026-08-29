@@ -125,6 +125,34 @@ export const readingQueue = sqliteTable("reading_queue", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+// ─── To-do (Phase 5) ──────────────────────────────────────────────────────────
+
+/**
+ * One row per task. `clientId` is generated on the phone and unique, so every
+ * write is an upsert (safe to replay from the offline outbox). Soft-deleted rows
+ * stay so a late replay cannot resurrect a task. `updatedAt` = last-writer-wins.
+ */
+export const todos = sqliteTable("todos", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: text("client_id").notNull().unique(),
+  title: text("title").notNull(),
+  notes: text("notes"),
+  project: text("project"),
+  dueDate: text("due_date"),           // YYYY-MM-DD
+  dueTime: text("due_time"),           // HH:MM
+  evening: integer("evening", { mode: "boolean" }).notNull().default(false),
+  someday: integer("someday", { mode: "boolean" }).notNull().default(false),
+  priority: integer("priority").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+  doneAt: integer("done_at", { mode: "timestamp_ms" }),
+  deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 // ─── Running (archived) ───────────────────────────────────────────────────────
 
 /** Running log entries */

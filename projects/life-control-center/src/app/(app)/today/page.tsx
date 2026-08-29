@@ -29,6 +29,8 @@ import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checkli
 import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
 import type { NewsBrief } from "@/lib/news-brief";
 import type { BooksData } from "@/lib/books/types";
+import { useTodos } from "@/lib/todo/useTodos";
+import { fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -261,6 +263,36 @@ function NewsCard({ today }: { today: string }) {
   );
 }
 
+// ─── To-do card ───────────────────────────────────────────────────────────────
+
+function TodoCard({ today, part }: { today: string; part: DayPart }) {
+  const { data, toggleDone } = useTodos(today); // also keeps the home-screen badge current
+  const open = useMemo(() => {
+    type Due = Todo & { dueDate: string };
+    const list = (data?.todos ?? []).filter((t): t is Due => !t.deleted && !t.doneAt && !t.someday && t.dueDate !== null && t.dueDate <= today);
+    // in the morning/afternoon, evening tasks wait their turn
+    return list.filter((t) => part === "evening" || !t.evening || t.dueDate < today).sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : sortTodos(a, b)));
+  }, [data, today, part]);
+  if (!data || open.length === 0) return null;
+  const overdue = open.filter((t) => t.dueDate < today).length;
+  return (
+    <Card title="To-do" tail={<Link href="/todo" style={{ textDecoration: "none", color: "var(--ink-3)" }}>{open.length > 4 ? `+${open.length - 4} more ›` : "All ›"}</Link>}>
+      {open.slice(0, 4).map((t, i, arr) => (
+        <div key={t.clientId} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 50, padding: "6px 4px", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
+          <button onClick={() => toggleDone(t)} aria-label="Mark done" style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: "var(--fill-1)", cursor: "pointer", padding: 0 }} />
+          <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+            <span style={{ display: "block", fontSize: 12, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+              {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.project ? ` · #${t.project}` : ""}
+            </span>
+          </Link>
+        </div>
+      ))}
+      {overdue > 0 && <div style={{ padding: "6px 4px 10px", fontSize: 12, color: "var(--ink-4)" }}>{overdue} overdue — open To-do to move or clear them.</div>}
+    </Card>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const EMPTY: ChecklistData = { items: [], overallStreak: 0, monthlyPct: [], thirtyDayAvg: 0, bestStreak30: 0 };
@@ -415,6 +447,9 @@ export default function TodayPage() {
         )}
         {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
       </Card>
+
+      {/* TO-DO due today */}
+      <TodoCard today={today} part={part} />
 
       {/* STILL OPEN (earlier today) */}
       {earlier.length > 0 && (

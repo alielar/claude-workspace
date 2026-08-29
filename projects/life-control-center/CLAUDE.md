@@ -4,7 +4,7 @@
 
 # Control Center
 
-> Last updated: 2026-08-30 (Phase 4). Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
+> Last updated: 2026-08-30 (Phase 5). Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 
 ## 1. What this is
 
@@ -20,7 +20,7 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 2. Installable + offline — service worker, local-first data, never a hanging spinner.
 3. Fast — usable screen under ~1.5s on a cold open; render the local copy first, refresh after.
 4. Dark and light — follows the phone by default, manual override in Settings.
-5. Simple — four tabs (Today · Train · News · Settings). To-do joins in Phase 5.
+5. Simple — five tabs (Today · Train · To-do · News · Settings). Books and Stretch are reached from Today, not tabs.
 6. Links open externally — `target="_blank" rel="noopener noreferrer"`.
 
 ## 3. Architecture
@@ -31,6 +31,7 @@ src/app/(app)/today       home screen — what to do right now (client, local-fi
 src/app/(app)/stretch     guided stretching timer (16 moves, 30/10, wake lock, voice + beeps)
 src/app/(app)/train       Train tab: next workout, weekly bests, recent · /train/w1 AMRAP · /train/w2 sets
 src/app/(app)/books       reading waiting list (Phase 4) — reached from Today's read row and Settings, not a tab
+src/app/(app)/todo        to-do list (Phase 5) — quick add with natural-language dates, intent buckets, badge
 src/app/(app)/news        daily brief (client, local-first, cron-generated)
 src/app/(app)/settings    theme, news topics, install hint, archive, force-update
 src/app/(app)/archive     index of archived modules
@@ -74,6 +75,13 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Status `queue | reading | finished`, one book "reading" at a time (starting another sends the current one back to the queue). Covers: Open Library by ISBN (`coverByIsbn`), Google Books for the one book Open Library lacks.
 - `src/lib/books/useBooks.ts` — cached list, optimistic status/order/add/remove through the outbox. Today reads the current book from the cache only (`Reading: <title>` under the read habit) — no extra request on the home screen.
 - Reading is still the `read` **habit** on Today; `/books` is just the shelf. Old `/library` (PDF reader + notes) stays archived.
+
+### To-do (Phase 5)
+- Table `todos`; every write is `PUT /api/todos` with the **full task** keyed by a phone-generated `clientId` (upsert, last-writer-wins on `updatedAt`, soft `deleted`) — replay-safe from the outbox.
+- `src/lib/todo/types.ts` — `parseQuickAdd()` (tomorrow/fri/weekend/next week/15/9/10am/#project/!!/someday), `bucketOf()` (overdue · today · evening · upcoming · anytime · someday), `badgeCount()`.
+- `src/lib/todo/useTodos.ts` — cached list, optimistic upsert, and it sets the **home-screen badge** (`navigator.setAppBadge`) to the count due today/overdue. Reminders are due date + time shown in the app and the badge; push notifications are Phase 7.
+- Today shows a "To-do" card with up to 4 tasks due today/overdue (evening tasks wait until the evening); tick inline.
+- Design borrowed: Things (Today/Evening/Anytime/Someday), Todoist (one-line natural-language quick add), TickTick (one-tap "→ tomorrow" defer). Deliberately no sub-tasks, filters or databases.
 
 ### Day / time
 - Everything runs on **Europe/Madrid**. Use `src/lib/checklist/day.ts`: `checklistToday()` (before 04:00 still counts as yesterday), `dayPart()` → morning 04–12, afternoon 12–21, evening 21–04 (Ali's clock, spec §8a).

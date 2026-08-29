@@ -1,7 +1,7 @@
 /**
  * Navigation — single source of truth for the tab bar (phone) and sidebar (desktop).
  *
- * Today · Train · News · Settings. Phase 5 adds To-do. Keep this list short on purpose —
+ * Today · Train · To-do · News · Settings. Keep this list short on purpose —
  * if something needs a second thought about where it lives, the nav is wrong.
  *
  * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
@@ -19,6 +19,7 @@ export type NavItem = {
 export const NAV: NavItem[] = [
   { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/books"] },
   { href: "/train",    label: "Train",    icon: "train" },
+  { href: "/todo",     label: "To-do",    icon: "todo" },
   { href: "/news",     label: "News",     icon: "news" },
   { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
 ];

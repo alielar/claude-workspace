@@ -127,6 +127,27 @@ export async function POST() {
     )`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_reading_queue_slug ON reading_queue(user_id, slug)`,
 
+    // ── To-do (Phase 5) ─────────────────────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS todos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      client_id TEXT NOT NULL UNIQUE,
+      title TEXT NOT NULL,
+      notes TEXT,
+      project TEXT,
+      due_date TEXT,
+      due_time TEXT,
+      evening INTEGER NOT NULL DEFAULT 0,
+      someday INTEGER NOT NULL DEFAULT 0,
+      priority INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      done_at INTEGER,
+      deleted INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS ix_todos_user_due ON todos(user_id, due_date)`,
+
     // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
     `CREATE TABLE IF NOT EXISTS checklist_suggestions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

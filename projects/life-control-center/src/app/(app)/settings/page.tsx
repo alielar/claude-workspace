@@ -223,7 +223,7 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 4</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 5</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 14, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>
