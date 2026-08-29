@@ -21,13 +21,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useCached, fetchJson } from "@/lib/local/store";
+import { useCached, fetchJson, readCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ensureMigrate } from "@/lib/ensureMigrate";
 import { useOnline } from "@/lib/useOnline";
 import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
 import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
 import type { NewsBrief } from "@/lib/news-brief";
+import type { BooksData } from "@/lib/books/types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -72,11 +73,13 @@ function routineAction(item: ChecklistItem): { label: string; href: string; exte
   if (item.source === "workout") return { label: "Train", href: "/train", external: false };
   if (item.routineKey === "stretch") return { label: "Start", href: "/stretch", external: false };
   if (item.routineKey === "breathe") return { label: "Video", href: BREATHING_VIDEO_URL, external: true };
+  if (item.routineKey === "read") return { label: "Books", href: "/books", external: false };
   return null;
 }
 
 /** Notes for built-in steps are shown without the raw URL (the Video button carries it). */
-function displayNotes(item: ChecklistItem): string | null {
+function displayNotes(item: ChecklistItem, currentBook: string | null): string | null {
+  if (item.routineKey === "read" && currentBook) return `Reading: ${currentBook}`;
   if (!item.notes) return null;
   if (item.routineKey === "breathe") return item.notes.replace(/https?:\/\/\S+/g, "").replace(/·\s*$/, "").trim() || null;
   return item.notes;
@@ -84,16 +87,17 @@ function displayNotes(item: ChecklistItem): string | null {
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
-function Row({ item, onToggle, compact = false }: {
+function Row({ item, onToggle, compact = false, currentBook = null }: {
   item: ChecklistItem;
   onToggle: (item: ChecklistItem) => void;
   compact?: boolean;
+  currentBook?: string | null;
 }) {
   const auto = item.source === "workout" || item.autoSource !== null;
   const done = item.completedToday;
   const accent = itemColor(item.color);
   const action = !done && !compact ? routineAction(item) : null;
-  const notes = compact ? null : displayNotes(item);
+  const notes = compact ? null : displayNotes(item, currentBook);
 
   return (
     <div
@@ -281,6 +285,13 @@ export default function TodayPage() {
   // Make sure new database columns exist (once per session, fire-and-forget).
   useEffect(() => { ensureMigrate(); }, []);
 
+  // The book being read right now — from the phone's saved copy of /books (no extra request here).
+  const [currentBook, setCurrentBook] = useState<string | null>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    setCurrentBook(readCache<BooksData>("books")?.data.books.find((b) => b.status === "reading")?.title ?? null);
+  }, []);
+
   // When the outbox finishes syncing, or the app comes back to the foreground, pull fresh data.
   useEffect(() => {
     const h = () => refresh();
@@ -402,7 +413,7 @@ export default function TodayPage() {
             ✓ Nothing left for {PART_LABEL[part].toLowerCase()}.
           </div>
         )}
-        {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} />)}
+        {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
       </Card>
 
       {/* STILL OPEN (earlier today) */}
@@ -415,7 +426,7 @@ export default function TodayPage() {
       {/* BUILDING */}
       {building.length > 0 && (
         <Card title="Building" tail="habits, own streak">
-          {building.map((item) => <Row key={item.id} item={item} onToggle={toggle} />)}
+          {building.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
         </Card>
       )}
 

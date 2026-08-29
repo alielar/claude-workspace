@@ -131,7 +131,7 @@ export default function SettingsPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Settings</h1>
-          <div className="sub">Appearance, news, archive</div>
+          <div className="sub">Appearance, kettlebell, news, books, archive</div>
         </div>
       </div>
 
@@ -187,6 +187,17 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Books */}
+      <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+          <span>
+            <span style={{ display: "block", fontSize: 15, fontWeight: 500 }}>📚 Books</span>
+            <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)" }}>The waiting list of physical books</span>
+          </span>
+          <span style={{ color: "var(--ink-3)", fontSize: 13 }}>Open ›</span>
+        </div>
+      </Link>
+
       {/* Install hint */}
       {!standalone && (
         <section className="cc-card">
@@ -212,7 +223,7 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 3</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 4</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 14, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>

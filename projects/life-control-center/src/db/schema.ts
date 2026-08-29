@@ -98,6 +98,33 @@ export const kbSessions = sqliteTable("kb_sessions", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
+// ─── Books — the waiting list (Phase 4) ───────────────────────────────────────
+
+/** Physical books to read. Seeded from BOOK_SEED by slug; custom ones have slug "c:<clientId>". */
+export const readingQueue = sqliteTable("reading_queue", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  slug: text("slug"),
+  title: text("title").notNull(),
+  subtitle: text("subtitle"),
+  author: text("author").notNull(),
+  isbn: text("isbn"),
+  coverUrl: text("cover_url"),
+  covers: text("covers"),          // what this book covers
+  payoff: text("payoff"),          // what I'll get out of it
+  pages: integer("pages"),
+  year: integer("year"),
+  status: text("status").notNull().default("queue"), // queue | reading | finished
+  sortOrder: integer("sort_order").notNull().default(0),
+  startedAt: integer("started_at", { mode: "timestamp_ms" }),
+  finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
 // ─── Running (archived) ───────────────────────────────────────────────────────
 
 /** Running log entries */

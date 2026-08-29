@@ -105,6 +105,28 @@ export async function POST() {
     )`,
     `CREATE INDEX IF NOT EXISTS ix_kb_sessions_user_date ON kb_sessions(user_id, date)`,
 
+    // ── Books — waiting list (Phase 4) ──────────────────────────────────────
+    `CREATE TABLE IF NOT EXISTS reading_queue (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      slug TEXT,
+      title TEXT NOT NULL,
+      subtitle TEXT,
+      author TEXT NOT NULL,
+      isbn TEXT,
+      cover_url TEXT,
+      covers TEXT,
+      payoff TEXT,
+      pages INTEGER,
+      year INTEGER,
+      status TEXT NOT NULL DEFAULT 'queue',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      started_at INTEGER,
+      finished_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_reading_queue_slug ON reading_queue(user_id, slug)`,
+
     // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
     `CREATE TABLE IF NOT EXISTS checklist_suggestions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

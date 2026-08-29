@@ -4,7 +4,7 @@
 
 # Control Center
 
-> Last updated: 2026-08-30 (Phase 1). Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
+> Last updated: 2026-08-30 (Phase 4). Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 
 ## 1. What this is
 
@@ -30,6 +30,7 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 src/app/(app)/today       home screen — what to do right now (client, local-first)
 src/app/(app)/stretch     guided stretching timer (16 moves, 30/10, wake lock, voice + beeps)
 src/app/(app)/train       Train tab: next workout, weekly bests, recent · /train/w1 AMRAP · /train/w2 sets
+src/app/(app)/books       reading waiting list (Phase 4) — reached from Today's read row and Settings, not a tab
 src/app/(app)/news        daily brief (client, local-first, cron-generated)
 src/app/(app)/settings    theme, news topics, install hint, archive, force-update
 src/app/(app)/archive     index of archived modules
@@ -67,6 +68,12 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - `/train` hub · `/train/w1` AMRAP game (whole middle = +1 round, 700 ms double-tap guard, undo, pace projection, record flash, no pause — it's a race) · `/train/w2` straight sets with set bubbles, sticky rest bar, inline rep/set/weight editor (`RepEditor`).
 - Today shows a virtual "Train" row from today's `kb_sessions` (source `workout`): informational, **never counted** toward the daily streak.
 - Old gym system stays at `/workouts` (archive).
+
+### Books (Phase 4 — physical reading list)
+- Table `reading_queue`; seeded once from `BOOK_SEED` in `src/lib/books/types.ts` (matched by `slug`, researched editions + verified cover URLs). Custom books get `slug = "c:<clientId>"` so offline replays of the add never duplicate.
+- Status `queue | reading | finished`, one book "reading" at a time (starting another sends the current one back to the queue). Covers: Open Library by ISBN (`coverByIsbn`), Google Books for the one book Open Library lacks.
+- `src/lib/books/useBooks.ts` — cached list, optimistic status/order/add/remove through the outbox. Today reads the current book from the cache only (`Reading: <title>` under the read habit) — no extra request on the home screen.
+- Reading is still the `read` **habit** on Today; `/books` is just the shelf. Old `/library` (PDF reader + notes) stays archived.
 
 ### Day / time
 - Everything runs on **Europe/Madrid**. Use `src/lib/checklist/day.ts`: `checklistToday()` (before 04:00 still counts as yesterday), `dayPart()` → morning 04–12, afternoon 12–21, evening 21–04 (Ali's clock, spec §8a).

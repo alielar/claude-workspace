@@ -17,7 +17,7 @@ export type NavItem = {
 };
 
 export const NAV: NavItem[] = [
-  { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch"] },
+  { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/books"] },
   { href: "/train",    label: "Train",    icon: "train" },
   { href: "/news",     label: "News",     icon: "news" },
   { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
