@@ -28,7 +28,7 @@ import { useOnline } from "@/lib/useOnline";
 import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
 import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
 import type { NewsBrief } from "@/lib/news-brief";
-import type { BooksData } from "@/lib/books/types";
+import type { Book, BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
 
@@ -292,6 +292,49 @@ function NewsCard({ today }: { today: string }) {
   );
 }
 
+// ─── Books card ───────────────────────────────────────────────────────────────
+// Current book (cover + title) and what's next. Tap → /books. Phone copy first.
+
+function BookCover({ b, width }: { b: Book; width: number }) {
+  const [failed, setFailed] = useState(false);
+  const h = Math.round(width * 1.5);
+  if (!b.coverUrl || failed) return <span aria-hidden style={{ width, height: h, borderRadius: 5, background: "var(--grad-soft)", border: "1px solid var(--line)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(width / 3), flexShrink: 0 }}>📖</span>;
+  // eslint-disable-next-line @next/next/no-img-element -- external cover, plain <img> keeps the bundle small
+  return <img src={b.coverUrl} alt="" width={width} height={h} loading="lazy" decoding="async" onError={() => setFailed(true)} style={{ width, height: h, objectFit: "cover", borderRadius: 5, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.3)", background: "var(--fill-2)" }} />;
+}
+
+function BooksCard() {
+  const { data, loading } = useCached<BooksData>("books", () => fetchJson<BooksData>("/api/books"));
+  const books = data?.books ?? [];
+  const reading = books.find((b) => b.status === "reading") ?? null;
+  const queue = books.filter((b) => b.status === "queue");
+  const next = queue[0] ?? null;
+  const show = reading ?? next;
+  return (
+    <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      <div className="cc-card-head">
+        <span className="title">{reading ? "Reading now" : "Next book"}</span>
+        <span className="tail">{queue.length ? `${queue.length} waiting ›` : "shelf ›"}</span>
+      </div>
+      <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: show ? "44px 1fr" : "1fr", gap: 12, alignItems: "center", minHeight: 66 }}>
+        {loading && !data && <div className="cc-skeleton" style={{ height: 44, gridColumn: "1 / -1" }} />}
+        {data && !show && <span style={{ fontSize: 14, color: "var(--ink-3)" }}>The shelf is empty — add a book.</span>}
+        {show && (
+          <>
+            <BookCover b={show} width={44} />
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 15.5, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{show.title}</span>
+              <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {show.author}{reading && next ? ` · next: ${next.title}` : !reading ? " · tap to start" : ""}
+              </span>
+            </span>
+          </>
+        )}
+      </div>
+    </Link>
+  );
+}
+
 // ─── To-do card ───────────────────────────────────────────────────────────────
 
 function TodoCard({ today, part }: { today: string; part: DayPart }) {
@@ -482,6 +525,9 @@ export default function TodayPage() {
 
       {/* TO-DO due today */}
       <TodoCard today={today} part={part} />
+
+      {/* BOOKS */}
+      <BooksCard />
 
       {/* STILL OPEN (earlier today) */}
       {earlier.length > 0 && (
