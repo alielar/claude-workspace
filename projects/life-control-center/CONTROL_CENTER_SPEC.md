@@ -325,8 +325,8 @@ Any future session picks these up from here; Ali should not have to repeat them.
    (Mon–Sun per workout; a day belongs to one workout). Off = the old "4 a week, any days,
    alternating". On = Today shows the planned workout or a quiet "Rest day · next: …" row, Train
    says "Up next · Tuesday", weekly target = number of planned days.
-7. ~~**Running lists & notes.**~~ Built 2026-08-30 as option **A** (Ali's pick): third segment
-   "Personal · Work · Lists" in To-do. Lists = `todos.area = "list"`: no checkbox, no buckets,
+7. ~~**Running lists & notes.**~~ Built 2026-08-30 as option **A** (Ali's pick), renamed **Docs**
+   the same day: third segment "Personal · Work · Docs" in To-do (thin divider before it). Lists = `todos.area = "list"`: no checkbox, no buckets,
    pinned-first then last-touched, search over titles + content (appears past 3 lists), quick add
    opens straight into the big notes editor, optional reminder (date+time) surfaces it on Today /
    badge / its own "📒" nag notification. Row shows first line or item count + last-touched. Also noted: iOS cannot open an installed PWA

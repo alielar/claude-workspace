@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     if (mine.length === 0 || !toNag.some((t) => ((t.area === "work" || t.area === "list") ? t.area : "personal") === area)) continue;
     const titles = mine.map((t) => t.title).slice(0, 3).join(" · ") + (mine.length > 3 ? ` +${mine.length - 3}` : "");
     const r = await sendToUser(userId, {
-      title: area === "list" ? `📒 ${mine.length === 1 ? mine[0].title : `${mine.length} list reminders`}`
+      title: area === "list" ? (mine.length === 1 ? `Reminder · ${mine[0].title}` : `${mine.length} doc reminders`)
         : area === "work" ? `Work · ${mine.length} to-do${mine.length === 1 ? "" : "s"} due` : `${mine.length} to-do${mine.length === 1 ? "" : "s"} due`,
       body: titles,
       tag: `nag-${area}`,

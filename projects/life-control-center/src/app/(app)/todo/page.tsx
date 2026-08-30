@@ -6,7 +6,7 @@
  * Three segments at the top, remembered on the phone:
  *   Personal · Work — tasks: buckets (Overdue · Today · Evening · Upcoming · Anytime · Someday),
  *     one-line quick add with natural-language dates, detail sheet, one-tap defer, swipe to delete.
- *   Lists — things to KEEP, not do (spec §7c item 7): running lists and notes ("Gift ideas 🎁").
+ *   Docs — things to KEEP, not do (spec §7c item 7): notes and running lists.
  *     No checkboxes, no buckets, no nagging. Type a name → straight into the editor. Pin the ones
  *     you reach for; search finds the rest (titles and content). A list can carry one optional
  *     reminder (date + time) — then it behaves like a reminder: Today card, badge, notifications.
@@ -23,7 +23,7 @@ import {
   type Area, type Bucket, type Priority, type Todo,
 } from "@/lib/todo/types";
 
-const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Lists" }];
+const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Docs" }];
 
 const BUCKETS: { key: Bucket; label: string; color: string }[] = [
   { key: "overdue",  label: "Overdue",      color: "var(--neg)" },
@@ -109,17 +109,12 @@ function SwipeWrap({ swipe, onDelete, children }: { swipe: ReturnType<typeof use
 function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false }: {
   value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean;
 }) {
-  // Wrap the selection (B/I) or prefix the current line (lists);
-  // pressing return inside a list continues it, return on an empty item ends it.
+  // Prefix the current line (dash / numbered list); pressing return inside a
+  // list continues it, return on an empty item ends it.
   const ref = useRef<HTMLTextAreaElement>(null);
   const apply = (v: string, selStart: number, selEnd: number) => {
     onChange(v);
     requestAnimationFrame(() => { const el = ref.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); } });
-  };
-  const wrap = (mark: string) => {
-    const el = ref.current; if (!el) return;
-    const v = el.value, a = el.selectionStart, b = el.selectionEnd;
-    apply(v.slice(0, a) + mark + v.slice(a, b) + mark + v.slice(b), a + mark.length, b + mark.length);
   };
   const prefixLine = (prefix: string) => {
     const el = ref.current; if (!el) return;
@@ -132,7 +127,7 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
     const el = e.currentTarget, v = el.value, a = el.selectionStart;
     const ls = v.lastIndexOf("\n", a - 1) + 1;
     const line = v.slice(ls, a);
-    const m = line.match(/^(- \[ \] |- |(\d+)\. )/);
+    const m = line.match(/^(- |(\d+)\. )/);
     if (!m) return;
     e.preventDefault();
     if (line === m[1]) { apply(v.slice(0, ls) + v.slice(a), ls, ls); return; } // empty item ends the list
@@ -143,10 +138,7 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   return (
     <div style={{ display: "grid", gap: 6 }}>
       <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
-        <button type="button" title="Bold" onClick={() => wrap("**")} style={{ ...btn, fontWeight: 700 }}>B</button>
-        <button type="button" title="Italic" onClick={() => wrap("_")} style={{ ...btn, fontStyle: "italic" }}>I</button>
-        <button type="button" title="Bullet list" onClick={() => prefixLine("- ")} style={btn}>•</button>
-        <button type="button" title="Checklist" onClick={() => prefixLine("- [ ] ")} style={btn}>☑</button>
+        <button type="button" title="Dash list" onClick={() => prefixLine("- ")} style={btn}>−</button>
         <button type="button" title="Numbered list" onClick={() => prefixLine("1. ")} style={btn}>1.</button>
       </div>
       <textarea ref={ref} className="cc-input" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onEnter}
@@ -204,7 +196,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
   const preview = firstLine(t.notes);
   const items = (t.notes?.match(/^- (\[[ xX]\] )?/gm) ?? []).length;
   const sub = [
-    t.dueDate ? `⏰ ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
+    t.dueDate ? `remind ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
     items > 0 ? `${items} item${items === 1 ? "" : "s"}` : preview,
     fmtAgo(t.updatedAt),
   ].filter(Boolean).join(" · ");
@@ -212,8 +204,8 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
       <button onClick={onOpen} className="todo-row" {...swipe.handlers}
-        style={{ display: "grid", gridTemplateColumns: "40px 1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 4px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...swipe.style }}>
-        <span aria-hidden style={{ fontSize: 19, textAlign: "center" }}>{t.priority > 0 ? "📌" : "📒"}</span>
+        style={{ display: "grid", gridTemplateColumns: t.priority > 0 ? "32px 1fr" : "1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 10px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...swipe.style }}>
+        {t.priority > 0 && <span aria-hidden style={{ fontSize: 16, textAlign: "center" }}>📌</span>}
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
           <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty — tap to write"}</span>
@@ -309,7 +301,7 @@ function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
   return (
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div role="dialog" aria-label="Edit list" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto" }}>
+      <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto" }}>
         <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
 
         {/* The content IS the feature — big editor, focused immediately on a new list. */}
@@ -317,8 +309,8 @@ function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
           placeholder="" />
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)}>📌 {d.priority > 0 ? "Pinned" : "Pin to top"}</button>
-          <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)}>⏰ {remind ? "Reminder on" : "Remind me"}</button>
+          <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>
+          <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)} aria-pressed={remind}>Remind me</button>
         </div>
 
         {remind && (
@@ -334,7 +326,7 @@ function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
-          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this list?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
+          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
         </div>
       </div>
     </>
@@ -417,7 +409,7 @@ export default function TodoPage() {
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
           <div className="sub">
             {loading && !data ? "—"
-              : isLists ? `${inArea.length} list${inArea.length === 1 ? "" : "s"} kept`
+              : isLists ? `${inArea.length} doc${inArea.length === 1 ? "" : "s"} kept`
               : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${openTasks.length ? ` · ${openTasks.length} open` : ""}`}
             {stale ? " · saved copy" : ""}
           </div>
@@ -431,6 +423,7 @@ export default function TodoPage() {
           const n = badgeCount(all, today, a.key);
           return (
             <button key={a.key} role="tab" aria-selected={on} onClick={() => setArea(a.key)}
+              className={a.key === "list" ? "seg-docs" : undefined}
               style={{ minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, WebkitTapHighlightColor: "transparent" }}>
               {a.label}
               {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
@@ -443,14 +436,14 @@ export default function TodoPage() {
       {isLists && (
         <>
           {inArea.length > 3 && (
-            <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search lists and what's in them…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
+            <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
           )}
 
           {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 48 }} />)}</div></div>}
 
           {data && lists.length === 0 && (
             <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              {q ? `Nothing matches “${query}”.` : "Things to keep, not to do. Type a name below and start writing."}
+              {q ? `Nothing matches “${query}”.` : "Notes and running lists to keep, not to do. Type a name below and start writing."}
             </div></div>
           )}
 
@@ -519,7 +512,7 @@ export default function TodoPage() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
-              placeholder={isLists ? "New list…" : filter ? `Add to #${filter}…` : area === "work" ? "Add a work task…" : "Add a task…"}
+              placeholder={isLists ? "New doc…" : filter ? `Add to #${filter}…` : area === "work" ? "Add a work task…" : "Add a task…"}
               enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
@@ -539,7 +532,8 @@ export default function TodoPage() {
             onDelete={() => { /* discard the draft */ }}
             onClose={() => setDraft(null)} />)}
 
-      <style>{`.todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }
+      <style>{`.seg-docs { position: relative; } .seg-docs::before { content: ""; position: absolute; left: -2.75px; top: 8px; bottom: 8px; width: 1.5px; background: var(--line-strong); border-radius: 1px; }
+        .todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }
         @media (min-width: 768px) { form[style*="position: fixed"] { bottom: 0 !important; left: 56px !important; } }`}</style>
     </div>
   );

@@ -374,7 +374,7 @@ function TodoCard({ today, part }: { today: string; part: DayPart }) {
           <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
             <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
             <span style={{ display: "block", fontSize: 14, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-              {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.area === "work" ? " · Work" : t.area === "list" ? " · List" : ""}{t.project ? ` · #${t.project}` : ""}
+              {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}{t.project ? ` · #${t.project}` : ""}
             </span>
           </Link>
         </div>
