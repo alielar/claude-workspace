@@ -1,6 +1,7 @@
 // A L I — home-screen widget for Scriptable (https://scriptable.app, free).
 //
-// Install once: open Scriptable → + → paste this file → name it "ALI".
+// Install once: in A L I → Settings → Home-screen widget → "Open the script", select all, copy;
+// open Scriptable → + → paste → name it "ALI".
 // Then long-press the home screen → + → Scriptable → medium or small widget →
 // long-press the widget → Edit → Script: ALI · When interacting: Open URL · URL: https://life-control-center-eta.vercel.app/today
 //
@@ -8,6 +9,7 @@
 // Data comes from /api/widget; iOS refreshes widgets every 10–30 minutes on its own.
 
 const BASE = "https://life-control-center-eta.vercel.app";
+const KEY = "";   // filled in automatically when you copy the script from Settings
 const VIOLET = new Color("#8B7CF0");
 const BG = new Color("#15161C");
 const INK = new Color("#F2F2F7");
@@ -18,6 +20,7 @@ const POS = new Color("#5FBF8A");
 let d = null;
 try {
   const req = new Request(BASE + "/api/widget");
+  req.headers = { "x-app-key": KEY };
   req.timeoutInterval = 8;
   d = await req.loadJSON();
 } catch (e) { d = null; }

@@ -102,7 +102,10 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Everything runs on **Europe/Madrid**. Use `src/lib/checklist/day.ts`: `checklistToday()` (before 04:00 still counts as yesterday), `dayPart()` → morning 04–12, afternoon 12–21, evening 21–04 (Ali's clock, spec §8a).
 
 ### Auth
-- `src/lib/auth.ts` is a stub: `auth()` always resolves to the one user. API routes still guard `if (!session?.user?.id) return 401` so a real login can be added later (spec Phase 7).
+- `auth()` resolves to the one user. With `AUTH_REQUIRED=1` (+ GOOGLE_CLIENT_ID/SECRET, AUTH_SECRET) it needs the `ali_session` cookie (`src/lib/session.ts`, HMAC, 400 days) or the `x-app-key: APP_KEY` header (widget, curl). `src/proxy.ts` redirects pages to `/login` and 401s APIs; public paths listed there. Cron/pinger routes check their own secrets. Migrate via curl: add `-H "x-app-key: $APP_KEY"`.
+
+### Reminders (push)
+- `web-push` + VAPID env (`VAPID_PUBLIC_KEY/PRIVATE_KEY/SUBJECT`). `src/lib/push/server.ts` `sendToUser`; `src/lib/push/client.ts` subscribe/unsubscribe. `/api/reminders/tick?key=APP_KEY` is hit every 5 min by cron-job.org (Vercel Hobby cron is daily-only); nags per list every 30 min via `todos.last_nagged_at`; quiet 23:00–08:00.
 
 ### Database
 - Drizzle + Turso. Client `src/db/index.ts`, schema `src/db/schema.ts` (only tables the code uses are declared; old tables stay in Turso untouched).

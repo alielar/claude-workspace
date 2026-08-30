@@ -152,6 +152,18 @@ export async function POST() {
     `CREATE INDEX IF NOT EXISTS ix_todos_user_due ON todos(user_id, due_date)`,
     // Work / Personal split (§7c item 4)
     `ALTER TABLE todos ADD COLUMN area TEXT NOT NULL DEFAULT 'personal'`,
+    // Reminders (§7c item 3)
+    `ALTER TABLE todos ADD COLUMN last_nagged_at INTEGER`,
+    `CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      endpoint TEXT NOT NULL UNIQUE,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      user_agent TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+      last_used_at INTEGER
+    )`,
 
     // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
     `CREATE TABLE IF NOT EXISTS checklist_suggestions (

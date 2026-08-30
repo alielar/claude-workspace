@@ -151,9 +151,23 @@ export const todos = sqliteTable("todos", {
   priority: integer("priority").notNull().default(0),
   sortOrder: integer("sort_order").notNull().default(0),
   doneAt: integer("done_at", { mode: "timestamp_ms" }),
+  lastNaggedAt: integer("last_nagged_at", { mode: "timestamp_ms" }),  // reminders: last "nag until done" push
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+// ─── Push subscriptions (reminders) ──────────────────────────────────────────
+
+export const pushSubscriptions = sqliteTable("push_subscriptions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("user_agent"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
+  lastUsedAt: integer("last_used_at", { mode: "timestamp_ms" }),
 });
 
 // ─── Running (archived) ───────────────────────────────────────────────────────

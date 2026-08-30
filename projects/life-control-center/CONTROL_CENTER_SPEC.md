@@ -290,7 +290,12 @@ Any future session picks these up from here; Ali should not have to repeat them.
    drive a **Scriptable** widget (free app) in the app's look — progress, next steps, to-dos due;
    tap opens `/today`. Instructions in Settings. A real native widget would need a Capacitor
    wrapper + Apple developer account (€99/yr) — not worth it for one tile.
-2. **Google sign-in / login.** The app is currently open to anyone with the URL.
+2. **Google sign-in / login.** Built 2026-08-30, hand-rolled (no NextAuth): `/api/auth/google` →
+   Google → `/api/auth/callback/google` checks the email is the one DB user → signed cookie
+   `ali_session` (HMAC with AUTH_SECRET, 400 days, re-issued monthly by the proxy — sign in once).
+   `src/proxy.ts` gates pages (→ `/login`) and APIs (401) **only when `AUTH_REQUIRED=1`** is set in
+   Vercel; widget + pinger pass with the `x-app-key` header/`?key=`. Google Cloud OAuth client must
+   list `https://life-control-center-eta.vercel.app/api/auth/callback/google` as a redirect URI.
 3. **Phone notifications for to-do reminders.** Ali wants a notification that stays visible
    until dismissed by hand — not one that disappears on unlock. **Before building, report
    honestly what iOS actually allows a web app (PWA) to do**; if a truly persistent
@@ -306,7 +311,10 @@ Any future session picks these up from here; Ali should not have to repeat them.
    visible. Cost: web-push library + VAPID keys = free; scheduling = Vercel Hobby crons run at
    most once a day, so a minute-level scheduler needs either Vercel Pro (~$20/month) or a free
    external pinger (e.g. cron-job.org hitting `/api/reminders/tick` every 5 min). Recommended:
-   free external pinger. Awaiting Ali's go.
+   free external pinger. **Built 2026-08-30** (Ali said go): `push_subscriptions` table, `/api/push`
+   (subscribe/unsubscribe/test), service-worker `push` + `notificationclick`, Settings → Reminders
+   (turn on per device, send a test), `/api/reminders/tick?key=APP_KEY` = the nag (every 5 min from
+   cron-job.org; one notification per list every 30 min until ticked; quiet 23:00–08:00).
 4. ~~**To-do split: WORK and PERSONAL.**~~ Built 2026-08-30: Personal · Work switch at the top of
    To-do (remembered on the phone), each with its own due count; same quick add in both; area chips
    in the task sheet; Today tags work tasks "· Work"; widget shows "N due · n work". Per-area

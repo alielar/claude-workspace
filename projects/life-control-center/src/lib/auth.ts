@@ -1,39 +1,37 @@
 /**
- * Auth — single-user bypass.
+ * Auth — one user, optional Google sign-in.
  *
- * Replaces NextAuth entirely. auth() is a drop-in for all existing API routes
- * and server components — they all call `const session = await auth()` and
- * read `session.user.id`, which now resolves to the one DB user.
- *
- * signIn / signOut are no-ops (kept for import compatibility if anything still
- * references them, though they should be removed from UI components).
+ * All API routes call `const session = await auth()` and read `session.user.id`.
+ *  - Login off (AUTH_REQUIRED unset): always resolves to the one DB user (as before).
+ *  - Login on: resolves only with a valid session cookie, or the `x-app-key` header
+ *    (used by the home-screen widget and the reminder pinger). Otherwise null → 401.
  */
 
+import { cookies, headers } from "next/headers";
 import { getUserId } from "@/lib/user";
+import { authRequired, SESSION_COOKIE, verifySession } from "@/lib/session";
 
 type Session = {
   user: { id: string; name: string; email: string };
 };
 
-/** Drop-in replacement for NextAuth's auth(). Always resolves to the single user. */
 export async function auth(): Promise<Session | null> {
   const userId = await getUserId();
   if (!userId) return null; // no user in DB yet — graceful degradation
-  return {
-    user: {
-      id:    userId,
-      name:  "Ali",
-      email: process.env.USER_EMAIL ?? "ali@control.center",
-    },
-  };
+  let email = process.env.USER_EMAIL ?? "ali@control.center";
+  if (authRequired()) {
+    const h = await headers();
+    const keyOk = !!process.env.APP_KEY && h.get("x-app-key") === process.env.APP_KEY;
+    if (!keyOk) {
+      const c = await cookies();
+      const s = await verifySession(c.get(SESSION_COOKIE)?.value);
+      if (!s) return null;
+      email = s.e;
+    }
+  }
+  return { user: { id: userId, name: "Ali", email } };
 }
 
-/** Stub handlers — the /api/auth/[...nextauth] route is kept for build compat. */
-export const handlers = {
-  GET:  () => Response.redirect("/dashboard"),
-  POST: () => Response.redirect("/dashboard"),
-};
-
-/** No-op stubs kept so any stray imports don't break the build. */
+/** Kept for import compatibility. */
 export const signIn  = async () => {};
 export const signOut = async () => {};

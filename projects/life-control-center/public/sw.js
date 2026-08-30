@@ -13,7 +13,7 @@
  * (see src/lib/local/outbox.ts) and replays when back online.
  */
 
-const VERSION = "cc-v13";
+const VERSION = "cc-v14";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const API = `${VERSION}-api`;
@@ -123,6 +123,34 @@ self.addEventListener("fetch", (event) => {
         const hit = await cache.match(req);
         return hit || Response.error();
       }
+    })
+  );
+});
+
+// ── Reminders (web push) ──────────────────────────────────────────────────────
+self.addEventListener("push", (event) => {
+  let data = { title: "A L I", body: "", tag: "cc", url: "/todo" };
+  try { data = { ...data, ...event.data.json() }; } catch { /* keep defaults */ }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      tag: data.tag,
+      renotify: true,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "/today", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      const open = list.find((c) => "focus" in c);
+      if (open) { open.navigate(url); return open.focus(); }
+      return self.clients.openWindow(url);
     })
   );
 });

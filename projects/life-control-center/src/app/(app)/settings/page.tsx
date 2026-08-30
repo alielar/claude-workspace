@@ -10,7 +10,7 @@
  *  5. App: version, force-update
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
@@ -20,6 +20,7 @@ import { ARCHIVE } from "@/lib/archive";
 import { YT_CHANNELS } from "@/lib/news/youtube";
 import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
+import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 
 type UserSettings = {
   timezone: string;
@@ -134,6 +135,22 @@ export default function SettingsPage() {
   };
   const plannedCount = workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0);
 
+  // Reminders (push) on this device
+  const [push, setPush] = useState<PushState | "loading">("loading");
+  const [pushMsg, setPushMsg] = useState<string | null>(null);
+  useEffect(() => { pushState().then(setPush).catch(() => setPush("unsupported")); }, []);
+  const togglePush = async () => {
+    setPushMsg(null);
+    try { setPush(push === "on" ? await disablePush() : await enablePush()); }
+    catch { setPushMsg("Couldn't turn reminders on — try again in a moment."); }
+  };
+  const testPush = async () => {
+    setPushMsg("Sending…");
+    const r = await fetch("/api/push/test", { method: "POST" }).then((x) => x.json()).catch(() => null) as { sent?: number } | null;
+    setPushMsg(r?.sent ? "Sent — it should appear in a few seconds." : "Nothing sent — is this device subscribed?");
+  };
+  const { data: me } = useCached<{ required: boolean; email: string | null }>("auth-me", () => fetchJson("/api/auth/me"));
+
   const kettlebell = String(settings?.kettlebellKg ?? 12);
   const setKettlebell = async (key: string) => {
     if (!settings) return;
@@ -195,6 +212,24 @@ export default function SettingsPage() {
         <div className="cc-card-head"><span className="title">Kettlebell</span><span className="tail">16 once every move is mastered</span></div>
         <div className="cc-card-body">
           <Segmented value={kettlebell} options={KETTLEBELLS} onChange={setKettlebell} />
+        </div>
+      </section>
+
+      {/* Reminders */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "—" : "off"}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
+          <p style={{ margin: 0 }}>A to-do that’s due and not ticked gets a notification every 30 minutes until you tick it. Quiet from 23:00 to 08:00. Personal and Work nag separately.</p>
+          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app — add A L I to the home screen first, then come back here.</p>}
+          {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Notifications are blocked for this app in iOS Settings → Notifications → A L I.</p>}
+          {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>This browser can’t receive notifications.</p>}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
+              {push === "on" ? "Turn off on this device" : "Turn on reminders"}
+            </button>
+            {push === "on" && <button className="cc-btn cc-btn-ghost" onClick={testPush}>Send a test</button>}
+          </div>
+          {pushMsg && <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}>{pushMsg}</p>}
         </div>
       </section>
 
@@ -330,7 +365,7 @@ export default function SettingsPage() {
           <p style={{ margin: "0 0 10px" }}>iOS only lets native apps draw widgets, so this goes through the free <b>Scriptable</b> app. Once: install Scriptable, paste the script, add a Scriptable widget and point it at the script named <b>ALI</b>.</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Get Scriptable</a>
-            <a href="/widget.js" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Open the script</a>
+            <a href="/api/widget/script" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Open the script</a>
           </div>
         </div>
       </section>
@@ -357,6 +392,17 @@ export default function SettingsPage() {
           {ARCHIVE.length} old modules are kept out of the way but still work: {ARCHIVE.map((a) => a.label).join(", ")}.
         </div>
       </section>
+
+      {/* Account */}
+      {me?.required && (
+        <section className="cc-card">
+          <div className="cc-card-head"><span className="title">Account</span><span className="tail">{me.email ?? ""}</span></div>
+          <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)" }}>
+            <p style={{ margin: 0 }}>Signed in with Google. This stays signed in on this device; only your account can get in.</p>
+            <form method="post" action="/api/auth/logout"><button type="submit" className="cc-btn cc-btn-ghost">Sign out</button></form>
+          </div>
+        </section>
+      )}
 
       {/* App */}
       <section className="cc-card">

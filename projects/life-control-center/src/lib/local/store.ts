@@ -108,6 +108,10 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
 /** Small helper: GET a JSON endpoint, null on any failure. */
 export async function fetchJson<T>(url: string): Promise<T | null> {
   const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (res.status === 401 && typeof window !== "undefined" && !location.pathname.startsWith("/login")) {
+    // Signed out (login is on and the cookie is gone) — go sign in once.
+    location.assign("/login");
+  }
   if (!res.ok) return null;
   return (await res.json()) as T;
 }
