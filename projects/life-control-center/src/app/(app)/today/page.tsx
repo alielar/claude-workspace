@@ -107,10 +107,10 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
       <Link href="/train" className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 56, padding: "12px 4px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
         <span aria-hidden style={{ fontSize: 22, textAlign: "center" }}>{done ? "✅" : "🏋️"}</span>
         <span style={{ minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: done ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title.replace(/^Train · /, "")}</span>
-          {item.notes && <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2 }}>{item.notes}</span>}
+          <span style={{ display: "block", fontSize: 17, fontWeight: 500, color: done ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title.replace(/^Train · /, "")}</span>
+          {item.notes && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{item.notes}</span>}
         </span>
-        <span className={done ? "cc-pill" : "cc-btn cc-btn-primary"} style={done ? { fontSize: 12 } : { minHeight: 44, padding: "0 16px", borderRadius: 12 }}>{done ? "done" : "▶ Train"}</span>
+        <span className={done ? "cc-pill" : "cc-btn cc-btn-primary"} style={done ? { fontSize: 14 } : { minHeight: 44, padding: "0 16px", borderRadius: 12 }}>{done ? "done" : "▶ Train"}</span>
       </Link>
     );
   }
@@ -177,14 +177,14 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
             {item.emoji ? `${item.emoji} ` : ""}{item.title}
           </span>
           {notes && (
-            <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
               {linkify(notes)}
             </span>
           )}
         </span>
 
-        <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--f-mono)", fontSize: 11, color: "var(--ink-3)" }}>
-          {auto && <span className="cc-pill" style={{ fontSize: 9.5, padding: "2px 6px" }}>auto</span>}
+        <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-3)" }}>
+          {auto && <span className="cc-pill" style={{ fontSize: 13, padding: "2px 6px" }}>auto</span>}
           {item.streak >= 2 && <span title={`${item.streak}-day streak`}>🔥 {item.streak}</span>}
         </span>
       </button>
@@ -231,10 +231,10 @@ function Card({ title, tail, children }: { title: string; tail?: React.ReactNode
 // touched, swipes left/right, tap opens News. Reads the phone's copy of the brief.
 
 const NEWS_CATS: { label: string; match: string[]; color: string }[] = [
-  { label: "Football",    match: ["football"],     color: "#F97316" },
-  { label: "Geopolitics", match: ["geopolitics"],  color: "#FF8A8A" },
-  { label: "Business",    match: ["business"],     color: "#6FD49A" },
-  { label: "Tech & AI",   match: ["tech", "ai"],   color: "#64FFDA" },
+  { label: "Football",    match: ["football"],     color: "#D97A2B" },
+  { label: "Geopolitics", match: ["geopolitics"],  color: "#D05A5A" },
+  { label: "Business",    match: ["business"],     color: "#3E9A63" },
+  { label: "Tech & AI",   match: ["tech", "ai"],   color: "#2E9E8F" },
 ];
 
 function firstLine(text: string, max = 120): string {
@@ -279,17 +279,17 @@ function NewsCard({ today }: { today: string }) {
       style={{ display: "block", textDecoration: "none", color: "inherit", overflow: "hidden" }}>
       <div className="cc-card-head">
         <span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span>
-        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : `${n} stories`) : loading ? "—" : "no brief yet"}</span>
+        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : "") : loading ? "—" : "no brief yet"}</span>
       </div>
       <div className="cc-card-body" style={{ display: "grid", gap: 8, minHeight: 96 }}>
         {!cur && (
-          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{loading ? "Loading the last brief…" : "The brief arrives every morning. Tap to open News."}</span>
+          <span style={{ fontSize: 15, color: "var(--ink-3)" }}>{loading ? "Loading the last brief…" : "The brief arrives every morning. Tap to open News."}</span>
         )}
         {cur && (
           <div key={cur.label} className="news-rotate" style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 10.5, fontFamily: "var(--f-mono)", letterSpacing: "0.1em", textTransform: "uppercase", color: cur.color }}>{cur.label}</span>
-            <span style={{ fontSize: 16.5, fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em" }}>{cur.headline}</span>
-            {cur.line && <span style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.45 }}>{cur.line}</span>}
+            <span style={{ fontSize: 13, color: cur.color }}>{cur.label}</span>
+            <span style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em" }}>{cur.headline}</span>
+            {cur.line && <span style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.45 }}>{cur.line}</span>}
           </div>
         )}
         {n > 1 && (
@@ -297,7 +297,7 @@ function NewsCard({ today }: { today: string }) {
             {picks.map((p, k) => (
               <span key={p.label} style={{ height: 4, borderRadius: 99, flex: k === i ? 3 : 1, background: k === i ? p.color : "var(--fill-3)", transition: "flex .3s, background .3s" }} />
             ))}
-            {brief?.videos?.length ? <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 6, whiteSpace: "nowrap" }}>▶ {brief.videos.length} videos</span> : null}
+            {brief?.videos?.length ? <span style={{ fontSize: 13, color: "var(--ink-4)", marginLeft: 6, whiteSpace: "nowrap" }}>▶ {brief.videos.length} videos</span> : null}
           </div>
         )}
       </div>
@@ -332,13 +332,13 @@ function BooksCard() {
       </div>
       <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: show ? "44px 1fr" : "1fr", gap: 12, alignItems: "center", minHeight: 66 }}>
         {loading && !data && <div className="cc-skeleton" style={{ height: 44, gridColumn: "1 / -1" }} />}
-        {data && !show && <span style={{ fontSize: 14, color: "var(--ink-3)" }}>The shelf is empty — add a book.</span>}
+        {!loading && !show && <span style={{ fontSize: 15, color: "var(--ink-3)" }}>{data ? "The shelf is empty — add a book." : "Couldn't load the shelf — tap to open it."}</span>}
         {show && (
           <>
             <BookCover b={show} width={44} />
             <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 15.5, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{show.title}</span>
-              <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{show.title}</span>
+              <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {show.author}{reading && next ? ` · next: ${next.title}` : !reading ? " · tap to start" : ""}
               </span>
             </span>
@@ -367,14 +367,14 @@ function TodoCard({ today, part }: { today: string; part: DayPart }) {
         <div key={t.clientId} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 50, padding: "6px 4px", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
           <button onClick={() => toggleDone(t)} aria-label="Mark done" style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: "var(--fill-1)", cursor: "pointer", padding: 0 }} />
           <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
-            <span style={{ display: "block", fontSize: 12, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+            <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+            <span style={{ display: "block", fontSize: 14, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
               {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.project ? ` · #${t.project}` : ""}
             </span>
           </Link>
         </div>
       ))}
-      {overdue > 0 && <div style={{ padding: "6px 4px 10px", fontSize: 12, color: "var(--ink-4)" }}>{overdue} overdue — open To-do to move or clear them.</div>}
+      {overdue > 0 && <div style={{ padding: "6px 4px 10px", fontSize: 14, color: "var(--ink-4)" }}>{overdue} overdue — open To-do to move or clear them.</div>}
     </Card>
   );
 }
@@ -485,16 +485,16 @@ export default function TodayPage() {
       <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
-            {greeting(hour)}<span className="grad-text">.</span>
+            {greeting(hour)}
           </h1>
-          <div style={{ fontSize: 13.5, color: "var(--ink-3)", marginTop: 4 }}>
+          <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 4 }}>
             {longDate(now)}
             {!online && <span style={{ color: "var(--warn)" }}> · offline, changes will sync</span>}
             {online && stale && <span> · showing saved copy</span>}
           </div>
         </div>
         {data && data.overallStreak > 0 && (
-          <div className="cc-pill cc-pill-warn" style={{ fontSize: 13, padding: "6px 10px", whiteSpace: "nowrap" }}>
+          <div className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>
             🔥 {data.overallStreak} day{data.overallStreak === 1 ? "" : "s"}
           </div>
         )}
@@ -502,7 +502,7 @@ export default function TodayPage() {
 
       {/* Progress */}
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontFamily: "var(--f-mono)", color: "var(--ink-3)", marginBottom: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontFamily: "var(--f-mono)", color: "var(--ink-3)", marginBottom: 6 }}>
           <span>{loading && !data ? "—" : `${doneCount} / ${total} done`}</span>
           <span>{loading && !data ? "" : `${pct}%`}</span>
         </div>
@@ -514,7 +514,7 @@ export default function TodayPage() {
       {/* NOW */}
       <Card
         title={PART_LABEL[part]}
-        tail={<Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 13, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
+        tail={<Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
       >
         {loading && !data && (
           <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>
@@ -522,12 +522,12 @@ export default function TodayPage() {
           </div>
         )}
         {!loading && total === 0 && (
-          <div style={{ padding: "18px 0", fontSize: 14, color: "var(--ink-3)" }}>
+          <div style={{ padding: "18px 0", fontSize: 15, color: "var(--ink-3)" }}>
             No items yet. <Link href="/checklist" style={{ color: "var(--violet)" }}>Set up your checklist →</Link>
           </div>
         )}
         {allNowDone && (
-          <div style={{ padding: "18px 0", fontSize: 14, color: "var(--pos)" }}>
+          <div style={{ padding: "18px 0", fontSize: 15, color: "var(--pos)" }}>
             ✓ Nothing left for {PART_LABEL[part].toLowerCase()}.
           </div>
         )}

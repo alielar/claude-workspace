@@ -1,21 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SvgDefs } from "@/components/SvgDefs";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Control Center",
@@ -32,8 +17,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#06060B" },
-    { media: "(prefers-color-scheme: light)", color: "#F4F4F8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0B10" },
+    { media: "(prefers-color-scheme: light)", color: "#F3F4F7" },
   ],
 };
 
@@ -45,7 +30,7 @@ const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");if(t==="light"||t
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
       </head>

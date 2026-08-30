@@ -53,15 +53,15 @@ function Sheet({ item, onClose, onSave, onDelete }: {
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div role="dialog" aria-label={item ? "Edit item" : "New item"} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
-        <div style={{ fontSize: 17, fontWeight: 600 }}>{item ? "Edit" : "New item"}</div>
+        <div style={{ fontSize: 18, fontWeight: 600 }}>{item ? "Edit" : "New item"}</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "56px 1fr", gap: 10 }}>
           <input className="cc-input" value={d.emoji} onChange={(e) => set({ emoji: [...e.target.value].slice(-1).join("") })} placeholder="🙂" aria-label="Emoji" style={{ fontSize: 22, textAlign: "center", minHeight: 48, padding: 0 }} />
-          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 16, minHeight: 48 }} />
+          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 17, minHeight: 48 }} />
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {EMOJIS.map((e) => (
-            <button key={e} onClick={() => set({ emoji: e })} aria-label={e} style={{ width: 40, height: 40, borderRadius: 10, fontSize: 20, border: `1px solid ${d.emoji === e ? "var(--violet)" : "var(--line)"}`, background: d.emoji === e ? "rgba(124,77,255,0.18)" : "var(--fill-1)", cursor: "pointer" }}>{e}</button>
+            <button key={e} onClick={() => set({ emoji: e })} aria-label={e} style={{ width: 40, height: 40, borderRadius: 10, fontSize: 20, border: `1px solid ${d.emoji === e ? "var(--violet)" : "var(--line)"}`, background: d.emoji === e ? "var(--accent-soft)" : "var(--fill-1)", cursor: "pointer" }}>{e}</button>
           ))}
         </div>
 
@@ -69,32 +69,32 @@ function Sheet({ item, onClose, onSave, onDelete }: {
           {TIMES.map((t) => {
             const on = d.timeOfDay === t.key;
             return (
-              <button key={t.key} onClick={() => set({ timeOfDay: t.key })} style={{ minHeight: 46, borderRadius: 12, font: "inherit", fontSize: 13.5, cursor: "pointer", border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "rgba(124,77,255,0.18)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)" }}>
+              <button key={t.key} onClick={() => set({ timeOfDay: t.key })} style={{ minHeight: 46, borderRadius: 12, font: "inherit", fontSize: 15, cursor: "pointer", border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)" }}>
                 {t.label}
               </button>
             );
           })}
         </div>
 
-        <label style={{ display: "grid", gap: 4, fontSize: 12, color: "var(--ink-3)" }}>Link (optional — a video, a page; opens with one tap on Today)
-          <input className="cc-input" type="url" inputMode="url" value={d.link} onChange={(e) => set({ link: e.target.value })} placeholder="https://…" style={{ fontSize: 16, minHeight: 46 }} />
+        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Link (optional — a video, a page; opens with one tap on Today)
+          <input className="cc-input" type="url" inputMode="url" value={d.link} onChange={(e) => set({ link: e.target.value })} placeholder="https://…" style={{ fontSize: 17, minHeight: 46 }} />
         </label>
 
         {item && !builtIn && (
           <button onClick={() => set({ habit: !d.habit })} role="switch" aria-checked={d.habit} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 48, padding: "0 2px", background: "transparent", border: "none", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
             <span>
-              <span style={{ display: "block", fontSize: 15 }}>Habit I&rsquo;m building</span>
-              <span style={{ display: "block", fontSize: 12, color: "var(--ink-3)" }}>Own streak · not counted in the day until you switch this off</span>
+              <span style={{ display: "block", fontSize: 16 }}>Habit I&rsquo;m building</span>
+              <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Own streak · not counted in the day until you switch this off</span>
             </span>
             <span aria-hidden style={{ width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0, background: d.habit ? "var(--violet)" : "var(--fill-3)", transition: "background .15s" }}>
               <span style={{ position: "absolute", top: 3, left: d.habit ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .15s" }} />
             </span>
           </button>
         )}
-        {item && builtIn && <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>Part of the built-in routine — you can rename it or move it, not delete it.</div>}
+        {item && builtIn && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Part of the built-in routine — you can rename it or move it, not delete it.</div>}
 
         <div style={{ display: "grid", gridTemplateColumns: item && !builtIn ? "1fr auto" : "1fr", gap: 10 }}>
-          <button className="cc-btn cc-btn-primary" onClick={save} disabled={!d.title.trim()} style={{ minHeight: 50, borderRadius: 14, fontSize: 16 }}>{item ? "Save" : "Add"}</button>
+          <button className="cc-btn cc-btn-primary" onClick={save} disabled={!d.title.trim()} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{item ? "Save" : "Add"}</button>
           {item && !builtIn && <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Delete “${item.title}”?`)) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label="Delete">✕</button>}
         </div>
       </div>
@@ -152,8 +152,8 @@ export default function ChecklistPage() {
                 <button key={i.id} onClick={() => setSheet({ open: true, item: i })} style={{ display: "grid", gridTemplateColumns: "32px 1fr auto", gap: 12, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 2px", background: "transparent", border: "none", borderBottom: idx < g.items.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
                   <span style={{ fontSize: 22, textAlign: "center" }}>{i.emoji ?? "•"}</span>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 15.5 }}>{i.title}</span>
-                    <span style={{ display: "block", fontSize: 12, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: 17 }}>{i.title}</span>
+                    <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {i.kind === "habit" ? "habit I'm building" : i.routineKey ? "routine" : "daily"}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]} link` : ""}
                     </span>
                   </span>
@@ -165,7 +165,7 @@ export default function ChecklistPage() {
         </section>
       ))}
 
-      <Link href="/today" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>← Back to Today</Link>
+      <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back to Today</Link>
 
       {sheet.open && <Sheet item={sheet.item} onClose={() => setSheet({ open: false, item: null })} onSave={save} onDelete={remove} />}
     </div>

@@ -24,10 +24,10 @@ export default function ArchivePage() {
             }}
           >
             <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 15, fontWeight: 500 }}>{m.label}</span>
-              <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>{m.what}</span>
+              <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{m.label}</span>
+              <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>{m.what}</span>
               {m.comeback && (
-                <span style={{ display: "block", fontSize: 11, color: "var(--ink-4)", marginTop: 4, fontFamily: "var(--f-mono)" }}>
+                <span style={{ display: "block", fontSize: 13, color: "var(--ink-4)", marginTop: 4, fontFamily: "var(--f-mono)" }}>
                   Comes back: {m.comeback}
                 </span>
               )}
@@ -37,7 +37,7 @@ export default function ArchivePage() {
         ))}
       </div>
 
-      <p style={{ fontSize: 12.5, color: "var(--ink-4)", lineHeight: 1.5 }}>
+      <p style={{ fontSize: 14, color: "var(--ink-4)", lineHeight: 1.5 }}>
         Everything here is one line away from returning to the main navigation.
       </p>
     </div>

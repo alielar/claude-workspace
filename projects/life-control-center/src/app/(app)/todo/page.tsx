@@ -57,15 +57,15 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer }: {
         </span>
       </button>
       <button onClick={onOpen} style={{ minHeight: 54, padding: "8px 4px 8px 0", background: "transparent", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", minWidth: 0, WebkitTapHighlightColor: "transparent" }}>
-        <span style={{ display: "block", fontSize: 15.5, lineHeight: 1.3, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
+        <span style={{ display: "block", fontSize: 17, lineHeight: 1.3, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
           {t.priority === 2 && !done && <span style={{ color: "var(--neg)", marginRight: 6 }}>!!</span>}
           {t.priority === 1 && !done && <span style={{ color: "var(--warn)", marginRight: 6 }}>!</span>}
           {t.title}
         </span>
-        {sub && <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
       </button>
       {onDefer && !done && (
-        <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 12, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
+        <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
       )}
     </div>
   );
@@ -91,30 +91,30 @@ function Sheet({ t, today, projects, onSave, onDelete, onClose }: {
     { label: "Someday",   on: d.someday,                               go: () => when(null, false, true) },
   ];
   const chip = (on: boolean): React.CSSProperties => ({
-    minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 13.5, font: "inherit", cursor: "pointer",
-    border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "rgba(124,77,255,0.18)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
+    minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
+    border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
   });
 
   return (
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div role="dialog" aria-label="Edit task" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
-        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What needs doing?" style={{ fontSize: 17, fontWeight: 500, minHeight: 48 }} />
+        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What needs doing?" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {chips.map((c) => <button key={c.label} onClick={c.go} style={chip(c.on)}>{c.label}</button>)}
           <label style={{ ...chip(!!d.dueDate && !chips.slice(0, 4).some((c) => c.on)), display: "inline-flex", alignItems: "center", gap: 6, position: "relative" }}>
             {d.dueDate && !chips.slice(0, 4).some((c) => c.on) ? fmtDue(d.dueDate, today) : "Pick a date"}
-            <input type="date" value={d.dueDate ?? ""} min={today} onChange={(e) => e.target.value && when(e.target.value, d.evening)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", fontSize: 16 }} />
+            <input type="date" value={d.dueDate ?? ""} min={today} onChange={(e) => e.target.value && when(e.target.value, d.evening)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", fontSize: 17 }} />
           </label>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <label style={{ display: "grid", gap: 4, fontSize: 12, color: "var(--ink-3)" }}>Time (reminder)
-            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 16, minHeight: 44 }} />
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Time (reminder)
+            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44 }} />
           </label>
-          <label style={{ display: "grid", gap: 4, fontSize: 12, color: "var(--ink-3)" }}>Project
-            <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 16, minHeight: 44 }} />
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Project
+            <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 17, minHeight: 44 }} />
             <datalist id="todo-projects">{projects.map((p) => <option key={p} value={p} />)}</datalist>
           </label>
         </div>
@@ -125,10 +125,10 @@ function Sheet({ t, today, projects, onSave, onDelete, onClose }: {
           ))}
         </div>
 
-        <textarea className="cc-input" value={d.notes ?? ""} onChange={(e) => set({ notes: e.target.value || null })} placeholder="Notes" rows={2} style={{ fontSize: 15, resize: "vertical" }} />
+        <textarea className="cc-input" value={d.notes ?? ""} onChange={(e) => set({ notes: e.target.value || null })} placeholder="Notes" rows={2} style={{ fontSize: 16, resize: "vertical" }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
-          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 16 }}>Done</button>
+          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>Done</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label="Delete">✕</button>
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function TodoPage() {
       {projects.length > 0 && (
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
           {[null, ...projects].map((p) => (
-            <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "rgba(124,77,255,0.18)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
+            <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "var(--accent-soft)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
               {p ? `#${p}` : "All"}
             </button>
           ))}
@@ -201,7 +201,7 @@ export default function TodoPage() {
       {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
 
       {data && openTasks.length === 0 && (
-        <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 14, color: "var(--ink-3)", lineHeight: 1.6 }}>
+        <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
           Nothing on the list{filter ? ` in #${filter}` : ""}. Type below — try <span style={{ color: "var(--ink-2)" }}>“Call the bank tomorrow 10am #money !!”</span>
         </div></div>
       )}
@@ -232,12 +232,12 @@ export default function TodoPage() {
       <form onSubmit={(e) => { e.preventDefault(); submit(); }} style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom))", zIndex: 30, padding: "8px 12px 10px", background: "var(--bg-chrome)", borderTop: "1px solid var(--line)" }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
           {previewBits.length > 0 && (
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11.5, fontFamily: "var(--f-mono)", color: "var(--cyan)" }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 14, fontFamily: "var(--f-mono)", color: "var(--cyan)" }}>
               {previewBits.map((b) => <span key={b as string}>{b}</span>)}
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={filter ? `Add to #${filter}…` : "Add a task… “fri 9am #work !!”"} enterKeyHint="done" autoComplete="off" style={{ fontSize: 16, minHeight: 48, borderRadius: 14 }} />
+            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={filter ? `Add to #${filter}…` : "Add a task… “fri 9am #work !!”"} enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" disabled={!parsed?.title} style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
         </div>

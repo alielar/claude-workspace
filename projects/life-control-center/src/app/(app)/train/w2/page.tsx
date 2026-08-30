@@ -117,10 +117,10 @@ export default function SetsPage() {
     const n = "sets" in summary.log && summary.log.sets ? Object.values(summary.log.sets).flat().filter(Boolean).length : 0;
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 24, textAlign: "center" }}>
-        <div style={{ fontSize: 12, fontFamily: "var(--f-mono)", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--pos)" }}>Workout 2 done</div>
+        <div style={{ fontSize: 14, color: "var(--pos)" }}>Workout 2 done</div>
         <div className="tabular-nums" style={{ fontSize: 110, fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em" }}>{n}<span style={{ fontSize: 28, color: "var(--ink-3)" }}>/{totalSets}</span></div>
-        <div style={{ fontSize: 16, color: "var(--ink-2)" }}>sets in {fmtClock(summary.durationSeconds ?? 0)} · {summary.weightKg} kg</div>
-        <button className="cc-btn cc-btn-primary" onClick={() => router.push("/train")} style={{ minHeight: 56, fontSize: 17, borderRadius: 14, width: "min(320px, 100%)", marginTop: 16 }}>Done</button>
+        <div style={{ fontSize: 17, color: "var(--ink-2)" }}>sets in {fmtClock(summary.durationSeconds ?? 0)} · {summary.weightKg} kg</div>
+        <button className="cc-btn cc-btn-primary" onClick={() => router.push("/train")} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 16 }}>Done</button>
       </div>
     );
   }
@@ -134,11 +134,11 @@ export default function SetsPage() {
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>{w.name}</h1>
           <div className="sub">{w.exercises.length} exercises · {totalSets} sets · {kg} kg kettlebell</div>
         </div>
-        {running && <span className="cc-pill cc-pill-cyan tabular-nums" style={{ fontSize: 13, padding: "6px 10px" }}>{doneSets}/{totalSets}</span>}
+        {running && <span className="cc-pill cc-pill-cyan tabular-nums" style={{ fontSize: 15, padding: "6px 10px" }}>{doneSets}/{totalSets}</span>}
       </div>
 
       {!running && (
-        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 60, fontSize: 18, borderRadius: 16 }}>▶ Start</button>
+        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 60, fontSize: 19, borderRadius: 16 }}>▶ Start</button>
       )}
 
       {/* Exercises */}
@@ -146,9 +146,9 @@ export default function SetsPage() {
         <div className="cc-card-head">
           <span className="title">{running ? "Tap a set when done" : "Plan"}</span>
           <span className="tail" style={{ display: "flex", gap: 8, alignItems: "center", overflow: "visible" }}>
-            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(-15)} style={{ minHeight: 40, minWidth: 40, padding: 0, borderRadius: 10, fontSize: 16 }} aria-label="less rest">−</button>
-            <span className="tabular-nums" style={{ minWidth: 60, textAlign: "center", fontSize: 12 }}>rest {w.restSeconds}s</span>
-            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(15)} style={{ minHeight: 40, minWidth: 40, padding: 0, borderRadius: 10, fontSize: 16 }} aria-label="more rest">+</button>
+            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(-15)} style={{ minHeight: 40, minWidth: 40, padding: 0, borderRadius: 10, fontSize: 17 }} aria-label="less rest">−</button>
+            <span className="tabular-nums" style={{ minWidth: 60, textAlign: "center", fontSize: 14 }}>rest {w.restSeconds}s</span>
+            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(15)} style={{ minHeight: 40, minWidth: 40, padding: 0, borderRadius: 10, fontSize: 17 }} aria-label="more rest">+</button>
           </span>
         </div>
         <div style={{ padding: "0 14px" }}>
@@ -158,8 +158,8 @@ export default function SetsPage() {
             return (
               <div key={e.id} style={{ padding: "12px 0", borderBottom: i < w.exercises.length - 1 ? "1px solid var(--line)" : "none", opacity: allDone ? 0.55 : 1 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
-                  <span style={{ fontSize: 15.5, fontWeight: 500, textDecoration: allDone ? "line-through" : "none" }}>{e.name}</span>
-                  <button onClick={() => setEditing(e)} className="cc-pill cc-pill-violet" style={{ fontSize: 13, fontFamily: "var(--f-mono)", minHeight: 36, cursor: "pointer", border: "1px solid rgba(179,136,255,0.3)" }}>
+                  <span style={{ fontSize: 17, fontWeight: 500, textDecoration: allDone ? "line-through" : "none" }}>{e.name}</span>
+                  <button onClick={() => setEditing(e)} className="cc-pill cc-pill-violet" style={{ fontSize: 15, fontFamily: "var(--f-mono)", minHeight: 36, cursor: "pointer", border: "1px solid var(--line-hi)" }}>
                     {e.reps}{e.perSide ? "/arm" : ""} × {e.sets}{e.kettlebell ? ` · ${kg} kg` : e.weightKg ? ` · ${e.weightKg} kg` : ""}
                   </button>
                 </div>
@@ -174,7 +174,7 @@ export default function SetsPage() {
                         aria-pressed={on}
                         aria-label={`${e.name} set ${idx + 1}`}
                         style={{
-                          flex: 1, minHeight: 52, borderRadius: 14, fontSize: 15, fontWeight: 600, font: "inherit",
+                          flex: 1, minHeight: 52, borderRadius: 14, fontSize: 16, fontWeight: 600, font: "inherit",
                           border: `2px solid ${on ? "transparent" : running ? "var(--line-strong)" : "var(--line)"}`,
                           background: on ? "var(--violet)" : "var(--fill-1)", color: on ? "#fff" : running ? "var(--ink-2)" : "var(--ink-4)",
                           cursor: running ? "pointer" : "default", WebkitTapHighlightColor: "transparent", touchAction: "manipulation",
@@ -193,19 +193,19 @@ export default function SetsPage() {
 
       {running && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
-          <button className="cc-btn cc-btn-primary" onClick={finish} style={{ minHeight: 56, fontSize: 17, borderRadius: 14 }}>
+          <button className="cc-btn cc-btn-primary" onClick={finish} style={{ minHeight: 56, fontSize: 18, borderRadius: 14 }}>
             {doneSets >= totalSets ? "Finish ✓" : `Finish (${doneSets}/${totalSets})`}
           </button>
           <button className="cc-btn cc-btn-ghost" onClick={discard} style={{ minHeight: 56, minWidth: 56, borderRadius: 14, color: "var(--neg)", padding: 0 }} aria-label="Discard">✕</button>
         </div>
       )}
 
-      {!running && <Link href="/train" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>← Back</Link>}
+      {!running && <Link href="/train" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back</Link>}
 
       {/* Rest bar */}
       {restLeft !== null && (
         <div style={{ position: "fixed", left: 12, right: 12, bottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px)", zIndex: 45, background: "var(--bg-chrome)", border: "1px solid var(--line-hi)", borderRadius: 18, padding: "12px 16px", display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 14, alignItems: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.35)" }}>
-          <span style={{ fontSize: 12, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--cyan)" }}>Rest</span>
+          <span style={{ fontSize: 14, color: "var(--cyan)" }}>Rest</span>
           <span>
             <span className="tabular-nums" style={{ fontSize: 28, fontWeight: 300 }}>{fmtClock(restLeft / 1000)}</span>
             <span className="cc-progress-track" style={{ display: "block", height: 3, marginTop: 4 }}>

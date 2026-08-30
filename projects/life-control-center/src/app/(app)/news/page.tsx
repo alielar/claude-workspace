@@ -29,10 +29,10 @@ type ArchiveEntry = {
 // ─── Column config ────────────────────────────────────────────────────────────
 
 const COLUMNS = [
-  { id: "football",    label: "Football",    color: "#F97316", categories: ["football"] },
-  { id: "geopolitics", label: "Geopolitics", color: "#FF8A8A", categories: ["geopolitics"] },
-  { id: "business",    label: "Business",    color: "#6FD49A", categories: ["business"] },
-  { id: "tech",        label: "Tech & AI",   color: "#64FFDA", categories: ["tech", "ai"] },
+  { id: "football",    label: "Football",    color: "#D97A2B", categories: ["football"] },
+  { id: "geopolitics", label: "Geopolitics", color: "#D05A5A", categories: ["geopolitics"] },
+  { id: "business",    label: "Business",    color: "#3E9A63", categories: ["business"] },
+  { id: "tech",        label: "Tech & AI",   color: "#2E9E8F", categories: ["tech", "ai"] },
 ];
 
 // ─── Story card ───────────────────────────────────────────────────────────────
@@ -135,11 +135,11 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {/* Source domain + summary preview */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, minWidth: 0 }}>
         {story.featured && (
-          <span style={{ fontSize: 10, color: "var(--warn)", flexShrink: 0, fontFamily: "var(--f-mono)", letterSpacing: "0.04em", textTransform: "uppercase", padding: "1px 5px", borderRadius: 3, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
+          <span style={{ fontSize: 13, color: "var(--warn)", flexShrink: 0, padding: "1px 5px", borderRadius: 3, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
         )}
         {hostname && (
           <span style={{
-            fontSize: 10, color: accentColor, flexShrink: 0,
+            fontSize: 13, color: accentColor, flexShrink: 0,
             fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
             textTransform: "uppercase",
             padding: "1px 5px", borderRadius: 3,
@@ -150,7 +150,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
         )}
         {!open && summaryText && (
           <span style={{
-            fontSize: 12.5, color: "var(--ink-3)", flex: 1, minWidth: 0,
+            fontSize: 14, color: "var(--ink-3)", flex: 1, minWidth: 0,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {summaryText.slice(0, 120)}{summaryText.length > 120 ? "…" : ""}
@@ -162,14 +162,14 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {open && (
         <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
           {summaryText && (
-            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--ink-2)", margin: "0 0 10px 0" }}>
+            <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--ink-2)", margin: "0 0 10px 0" }}>
               {summaryText}
             </p>
           )}
           {keyPoints.length > 0 && (
             <ul style={{ margin: "0 0 10px 0", paddingLeft: 16 }}>
               {keyPoints.map((pt, i) => (
-                <li key={i} style={{ fontSize: 14, lineHeight: 1.55, color: "var(--ink-2)", marginBottom: 4 }}>
+                <li key={i} style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink-2)", marginBottom: 4 }}>
                   {pt}
                 </li>
               ))}
@@ -178,8 +178,8 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
 
           {/* Deep dive analysis — pre-generated or fetched on expand */}
           {loadingDive && (
-            <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 12 }}>⟳</span>
+            <div style={{ fontSize: 13, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 14 }}>⟳</span>
               Analyzing...
             </div>
           )}
@@ -194,10 +194,10 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
                 if (!text) return null;
                 return (
                   <div key={key}>
-                    <div style={{ fontSize: 9.5, letterSpacing: "0.12em", textTransform: "uppercase", color: accentColor, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)" }}>
+                    <div style={{ fontSize: 13, color: accentColor, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)" }}>
                       {icon} {label}
                     </div>
-                    <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-2)" }}>{text}</div>
+                    <div style={{ fontSize: 15, lineHeight: 1.6, color: "var(--ink-2)" }}>{text}</div>
                   </div>
                 );
               })}
@@ -208,7 +208,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
             <a
               href={story.source} target="_blank" rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              style={{ fontSize: 13.5, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 500, minHeight: 44 }}
+              style={{ fontSize: 15, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 500, minHeight: 44 }}
             >
               Read full article
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -291,7 +291,7 @@ function ArchiveDrawer({
           display: "flex", alignItems: "center", justifyContent: "space-between",
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-2)" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-2)" }}>
             Archive
           </span>
           <button
@@ -307,11 +307,11 @@ function ArchiveDrawer({
         {/* Drawer list */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {loading ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 12, color: "var(--ink-4)" }}>
+            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 14, color: "var(--ink-4)" }}>
               Loading…
             </div>
           ) : entries.length === 0 ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 12, color: "var(--ink-4)" }}>
+            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 14, color: "var(--ink-4)" }}>
               No past briefs yet
             </div>
           ) : (
@@ -330,16 +330,16 @@ function ArchiveDrawer({
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "var(--violet)" : "var(--ink-2)", letterSpacing: "0.02em" }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: isSelected ? "var(--violet)" : "var(--ink-2)", letterSpacing: "0.02em" }}>
                       {formatArchiveDate(entry.date)}
                     </span>
-                    <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
+                    <span style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
                       {entry.storyCount}
                     </span>
                   </div>
                   {entry.topHeadline && (
                     <div style={{
-                      fontSize: 11.5, color: "var(--ink-3)", lineHeight: 1.4,
+                      fontSize: 14, color: "var(--ink-3)", lineHeight: 1.4,
                       overflow: "hidden", display: "-webkit-box",
                       WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
                     } as React.CSSProperties}>
@@ -372,12 +372,12 @@ function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
         {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail, plain <img> keeps the bundle small */}
         <img src={v.thumbnail} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         <span aria-hidden style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ width: 30, height: 30, borderRadius: 99, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, paddingLeft: 2 }}>▶</span>
+          <span style={{ width: 30, height: 30, borderRadius: 99, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, paddingLeft: 2 }}>▶</span>
         </span>
       </span>
       <span style={{ minWidth: 0 }}>
-        <span style={{ fontSize: 14, lineHeight: 1.35, fontWeight: 500, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{v.title}</span>
-        <span style={{ display: "block", fontSize: 12, color: "var(--ink-3)", marginTop: 4 }}>
+        <span style={{ fontSize: 15, lineHeight: 1.35, fontWeight: 500, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{v.title}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 4 }}>
           <span style={{ color }}>{v.channel}</span> · {ago(v.publishedAt)}
         </span>
       </span>
@@ -500,7 +500,7 @@ export default function NewsPage() {
 
       {confirmRefresh && (
         <div className="cc-card"><div className="cc-card-body" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <span style={{ fontSize: 13, color: "var(--ink-2)" }}>Today&apos;s brief is fresh ({genTime}). Rebuild it anyway?</span>
+          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Today&apos;s brief is fresh ({genTime}). Rebuild it anyway?</span>
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
             <button className="cc-btn cc-btn-ghost" onClick={() => setConfirmRefresh(false)} style={{ minHeight: 40 }}>Cancel</button>
             <button className="cc-btn cc-btn-primary" onClick={() => generate(true)} style={{ minHeight: 40 }}>Refresh</button>
@@ -510,20 +510,20 @@ export default function NewsPage() {
 
       {isViewingPast && (
         <div className="cc-card" style={{ borderColor: "var(--violet)" }}><div className="cc-card-body" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <span style={{ fontSize: 13, color: "var(--ink-2)" }}>Viewing {formatArchiveDate(viewingDate!)}</span>
+          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Viewing {formatArchiveDate(viewingDate!)}</span>
           <button className="cc-btn cc-btn-ghost" onClick={backToToday} style={{ minHeight: 40 }}>‹ Back to today</button>
         </div></div>
       )}
 
       {generating && (
         <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
-          <div style={{ fontSize: 14, color: "var(--ink-2)" }}>Building today&apos;s brief… about half a minute.</div>
+          <div style={{ fontSize: 15, color: "var(--ink-2)" }}>Building today&apos;s brief… about half a minute.</div>
           {[0, 1, 2].map(i => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}
         </div></div>
       )}
 
       {!generating && !displayedLoading && !displayedBrief && (
-        <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 14, color: "var(--ink-3)", lineHeight: 1.6 }}>
+        <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
           No brief yet. It arrives every morning around 08:00; tap the refresh button to build one now.
         </div></div>
       )}
@@ -531,12 +531,12 @@ export default function NewsPage() {
       {/* Worth your time */}
       {!generating && (displayedLoading || featured.length > 0) && (
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span><span className="tail">one per interest</span></div>
+          <div className="cc-card-head"><span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span></div>
           <div style={{ padding: "0 16px" }}>
             {displayedLoading && <ColumnSkeleton />}
             {!displayedLoading && featured.map(({ story, col }) => (
               <div key={col.id} style={{ borderLeft: `2px solid ${col.color}`, paddingLeft: 12, margin: "4px 0" }}>
-                <div style={{ fontSize: 10, fontFamily: "var(--f-mono)", letterSpacing: "0.1em", textTransform: "uppercase", color: col.color, marginTop: 10 }}>{col.label}</div>
+                <div style={{ fontSize: 13, color: col.color, marginTop: 10 }}>{col.label}</div>
                 <StoryCard story={story} accentColor={col.color} index={0} />
               </div>
             ))}
@@ -547,7 +547,7 @@ export default function NewsPage() {
       {/* Videos */}
       {!generating && !displayedLoading && videos.length > 0 && (
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">▶ Videos</span><span className="tail">swipe · opens YouTube</span></div>
+          <div className="cc-card-head"><span className="title">▶ Videos</span><span className="tail">opens YouTube</span></div>
           <div className="news-videos" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "12px 16px 14px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
             {videos.map(v => <VideoCard key={v.id} v={v} color={COLUMNS.find(c => c.categories.includes(v.category))?.color ?? "var(--ink-2)"} />)}
           </div>
@@ -558,7 +558,7 @@ export default function NewsPage() {
       {!generating && columns.length > 1 && (
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
           {[{ id: null as string | null, label: "All", color: "var(--ink-2)" }, ...columns.map(c => ({ id: c.id as string | null, label: c.label, color: c.color }))].map(c => (
-            <button key={c.id ?? "all"} onClick={() => setSection(c.id)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", borderColor: section === c.id ? c.color : undefined, color: section === c.id ? "var(--ink)" : undefined }}>
+            <button key={c.id ?? "all"} onClick={() => setSection(c.id)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", borderColor: section === c.id ? c.color : undefined, color: section === c.id ? "var(--ink)" : undefined }}>
               {c.label}
             </button>
           ))}
@@ -574,14 +574,14 @@ export default function NewsPage() {
           </div>
           <div style={{ padding: "0 16px" }}>
             {displayedLoading ? <ColumnSkeleton /> : col.stories.length === 0 ? (
-              <div style={{ padding: "16px 0", fontSize: 13, color: "var(--ink-4)" }}>No stories today</div>
+              <div style={{ padding: "16px 0", fontSize: 15, color: "var(--ink-4)" }}>No stories today</div>
             ) : col.stories.map((s, i) => <StoryCard key={i} story={s} accentColor={col.color} index={i} />)}
           </div>
         </section>
       ))}
 
       {displayedBrief && !displayedLoading && !generating && (
-        <div style={{ color: "var(--ink-4)", fontSize: 11.5, letterSpacing: "0.02em", display: "flex", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ color: "var(--ink-4)", fontSize: 14, letterSpacing: "0.02em", display: "flex", justifyContent: "space-between", gap: 12 }}>
           <span>RSS + YouTube feeds · summaries by AI · no editorial opinion</span>
           <Link href="/settings" style={{ color: "var(--ink-3)", textDecoration: "none", whiteSpace: "nowrap" }}>Topics & channels ›</Link>
         </div>

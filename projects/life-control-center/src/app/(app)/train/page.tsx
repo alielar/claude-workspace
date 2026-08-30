@@ -28,10 +28,10 @@ function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, minHeight: 52, alignItems: "center", padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
       <span style={{ minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 15, fontWeight: 500 }}>{w?.name ?? s.workoutKey.toUpperCase()}</span>
-        <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)" }}>{when}{s.finishedAt === null ? " · not finished" : ""}</span>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{w?.name ?? s.workoutKey.toUpperCase()}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{when}{s.finishedAt === null ? " · not finished" : ""}</span>
       </span>
-      <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-2)", textAlign: "right" }}>
+      <span style={{ fontSize: 15, color: "var(--ink-2)", textAlign: "right" }}>
         {s.workoutKey === "w1" ? `${s.rounds ?? 0} rounds` : setsDone !== null ? `${setsDone} sets` : "—"}
         {s.durationSeconds ? <span style={{ color: "var(--ink-4)" }}> · {fmtClock(s.durationSeconds)}</span> : null}
       </span>
@@ -61,11 +61,11 @@ export default function TrainPage() {
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {ov && ov.weekStreak > 0 && (
-            <span className="cc-pill cc-pill-warn" style={{ fontSize: 13, padding: "6px 10px", whiteSpace: "nowrap" }} title="weeks in a row with 4 sessions">
+            <span className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }} title="weeks in a row with 4 sessions">
               🔥 {ov.weekStreak} wk
             </span>
           )}
-          <Link href="/settings" className="cc-pill" style={{ textDecoration: "none", fontSize: 13, padding: "6px 10px", whiteSpace: "nowrap" }}>
+          <Link href="/settings" className="cc-pill" style={{ textDecoration: "none", fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>
             🏋️ {kg} kg
           </Link>
         </div>
@@ -82,7 +82,7 @@ export default function TrainPage() {
       {active && (
         <Link href={`/train/${active.workoutKey}`} className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit", borderColor: "var(--warn)" }}>
           <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 15 }}>You have a workout in progress</span>
+            <span style={{ fontSize: 16 }}>You have a workout in progress</span>
             <span className="cc-btn cc-btn-primary" style={{ minHeight: 40 }}>Resume</span>
           </div>
         </Link>
@@ -101,16 +101,16 @@ export default function TrainPage() {
             <>
               <div>
                 <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-0.02em" }}>{next.name}</div>
-                <div style={{ fontSize: 13.5, color: "var(--ink-3)", marginTop: 2 }}>{describe(next)}</div>
+                <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 2 }}>{describe(next)}</div>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {next.exercises.map((e) => (
-                  <span key={e.id} className="cc-pill" style={{ fontSize: 12 }}>
+                  <span key={e.id} className="cc-pill" style={{ fontSize: 14 }}>
                     {e.name} · {e.reps}{e.perSide ? "/side" : ""}{next.format === "sets" ? ` × ${e.sets}` : ""}
                   </span>
                 ))}
               </div>
-              <Link href={`/train/${next.key}`} className="cc-btn cc-btn-primary" style={{ minHeight: 60, fontSize: 18, borderRadius: 16, textDecoration: "none" }}>
+              <Link href={`/train/${next.key}`} className="cc-btn cc-btn-primary" style={{ minHeight: 60, fontSize: 19, borderRadius: 16, textDecoration: "none" }}>
                 ▶ Start {next.name}
               </Link>
             </>
@@ -123,10 +123,10 @@ export default function TrainPage() {
         <Link href={`/train/${other.key}`} className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
           <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center" }}>
             <span>
-              <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{other.name}</span>
-              <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)" }}>{describe(other)}</span>
+              <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>{other.name}</span>
+              <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{describe(other)}</span>
             </span>
-            <span style={{ color: "var(--ink-3)", fontSize: 13 }}>Start instead ›</span>
+            <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Start instead ›</span>
           </div>
         </Link>
       )}
@@ -135,12 +135,12 @@ export default function TrainPage() {
       <section className="cc-card">
         <div className="cc-card-head">
           <span className="title">Workout 1 · weekly bests</span>
-          <span className="tail">{ov?.thisWeekBest !== null && ov?.thisWeekBest !== undefined ? `this week: ${ov.thisWeekBest}` : "rounds"}</span>
+          <span className="tail">{ov?.thisWeekBest !== null && ov?.thisWeekBest !== undefined ? `this week: ${ov.thisWeekBest}` : ""}</span>
         </div>
         <div style={{ padding: "4px 14px" }}>
           {!ov && <div className="cc-skeleton" style={{ height: 44, margin: "10px 0" }} />}
           {ov && ov.weeklyBests.length === 0 && (
-            <div style={{ padding: "14px 0", fontSize: 14, color: "var(--ink-3)" }}>No rounds logged yet. The first session sets the number to beat.</div>
+            <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>No rounds logged yet. The first session sets the number to beat.</div>
           )}
           {ov?.weeklyBests.slice(0, 8).map((b, i, arr) => {
             const prev = arr[i + 1];
@@ -148,14 +148,14 @@ export default function TrainPage() {
             const maxBest = Math.max(...arr.map((x) => x.best), 1);
             return (
               <div key={b.week} style={{ display: "grid", gridTemplateColumns: "90px 1fr auto", gap: 12, alignItems: "center", minHeight: 44, borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
-                <span style={{ fontSize: 13, color: i === 0 ? "var(--ink)" : "var(--ink-3)" }}>{b.label}</span>
+                <span style={{ fontSize: 15, color: i === 0 ? "var(--ink)" : "var(--ink-3)" }}>{b.label}</span>
                 <span className="cc-progress-track" style={{ height: 6 }}>
                   <span className="cc-progress-fill" style={{ display: "block", width: `${(b.best / maxBest) * 100}%` }} />
                 </span>
-                <span className="tabular-nums" style={{ fontFamily: "var(--f-mono)", fontSize: 14, fontWeight: 600 }}>
+                <span className="tabular-nums" style={{ fontSize: 15, fontWeight: 600 }}>
                   {b.best}
                   {prev && delta !== 0 && (
-                    <span style={{ fontSize: 11, marginLeft: 6, color: delta > 0 ? "var(--pos)" : "var(--neg)" }}>{delta > 0 ? `+${delta}` : delta}</span>
+                    <span style={{ fontSize: 13, marginLeft: 6, color: delta > 0 ? "var(--pos)" : "var(--neg)" }}>{delta > 0 ? `+${delta}` : delta}</span>
                   )}
                 </span>
               </div>
@@ -166,14 +166,14 @@ export default function TrainPage() {
 
       {/* Recent */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Recent</span><span className="tail">{ov ? `${ov.sessions.length} logged` : "—"}</span></div>
+        <div className="cc-card-head"><span className="title">Recent</span></div>
         <div style={{ padding: "0 14px" }}>
-          {ov && ov.sessions.length === 0 && <div style={{ padding: "14px 0", fontSize: 14, color: "var(--ink-3)" }}>Nothing yet.</div>}
+          {ov && ov.sessions.length === 0 && <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>Nothing yet.</div>}
           {ov?.sessions.slice(0, 6).map((s) => <SessionLine key={s.clientId} s={s} workouts={workouts} />)}
         </div>
       </section>
 
-      <Link href="/archive" style={{ fontSize: 12.5, color: "var(--ink-4)", textDecoration: "none" }}>Old gym workouts are in the archive →</Link>
+      <Link href="/archive" style={{ fontSize: 14, color: "var(--ink-4)", textDecoration: "none" }}>Old gym workouts are in the archive →</Link>
     </div>
   );
 }

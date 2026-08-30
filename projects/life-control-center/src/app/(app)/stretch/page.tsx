@@ -214,29 +214,29 @@ export default function StretchPage() {
         <button
           className="cc-btn cc-btn-primary"
           onClick={start}
-          style={{ minHeight: 64, fontSize: 18, borderRadius: 16, width: "100%" }}
+          style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}
         >
           ▶ Start
         </button>
 
-        <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44, fontSize: 14, color: "var(--ink-2)" }}>
+        <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44, fontSize: 15, color: "var(--ink-2)" }}>
           <span>Speak each movement name</span>
           <input type="checkbox" checked={voice} onChange={(e) => setVoice(e.target.checked)} style={{ width: 22, height: 22, accentColor: "var(--violet)" }} />
         </label>
 
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">Order</span><span className="tail">screen stays on</span></div>
+          <div className="cc-card-head"><span className="title">Order</span></div>
           <ol style={{ padding: "4px 16px 8px", margin: 0, listStyle: "none" }}>
             {STRETCH_MOVES.map((m, i) => (
-              <li key={m} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 8, minHeight: 40, alignItems: "center", fontSize: 15, borderBottom: i < STRETCH_MOVES.length - 1 ? "1px solid var(--line)" : "none" }}>
-                <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
+              <li key={m} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 8, minHeight: 40, alignItems: "center", fontSize: 16, borderBottom: i < STRETCH_MOVES.length - 1 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
                 <span>{m}</span>
               </li>
             ))}
           </ol>
         </section>
 
-        <Link href="/today" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>← Back to Today</Link>
+        <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back to Today</Link>
       </div>
     );
   }
@@ -247,8 +247,8 @@ export default function StretchPage() {
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
         <div style={{ fontSize: 64 }}>✓</div>
         <h1 style={{ fontSize: 28, fontWeight: 600 }}>Stretching done</h1>
-        <p style={{ color: "var(--ink-3)", fontSize: 15 }}>{STRETCH_MOVES.length} moves · {fmt(STRETCH_TOTAL_SECONDS)} · ticked on today&rsquo;s list</p>
-        <button className="cc-btn cc-btn-primary" onClick={exit} style={{ minHeight: 56, fontSize: 17, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
+        <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{STRETCH_MOVES.length} moves · {fmt(STRETCH_TOTAL_SECONDS)} · ticked on today&rsquo;s list</p>
+        <button className="cc-btn cc-btn-primary" onClick={exit} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
           Back to Today
         </button>
       </div>
@@ -269,13 +269,13 @@ export default function StretchPage() {
         <div className="cc-progress-track" style={{ flex: 1, height: 4 }}>
           <div className="cc-progress-fill" style={{ width: `${(elapsed / STRETCH_TOTAL_SECONDS) * 100}%`, transition: "width 0.3s linear" }} />
         </div>
-        <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--ink-3)" }}>{fmt(Math.max(0, STRETCH_TOTAL_SECONDS - elapsed))} left</span>
+        <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-3)" }}>{fmt(Math.max(0, STRETCH_TOTAL_SECONDS - elapsed))} left</span>
         <button onClick={exit} aria-label="Exit" className="cc-btn cc-btn-ghost" style={{ minWidth: 44, minHeight: 44, padding: 0, borderRadius: 12 }}>✕</button>
       </div>
 
       {/* Middle: phase, name, countdown */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 8 }}>
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", color: accent }}>
+        <div style={{ fontFamily: "var(--f-mono)", fontSize: 14, letterSpacing: "0.18em", textTransform: "uppercase", color: accent }}>
           {isLead ? "Get ready" : isRest ? "Rest" : `Move ${moveNumber} of ${STRETCH_MOVES.length}`}
         </div>
         <div style={{ fontSize: "clamp(24px, 7vw, 34px)", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em", minHeight: "2.4em", display: "flex", alignItems: "center" }}>
@@ -288,23 +288,23 @@ export default function StretchPage() {
           {seconds}
         </div>
         {!isRest && nextName && (
-          <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Next: {nextName}</div>
+          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Next: {nextName}</div>
         )}
-        {isRest && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>coming up</div>}
+        {isRest && <div style={{ fontSize: 15, color: "var(--ink-3)" }}>coming up</div>}
         {status === "paused" && <div className="cc-pill cc-pill-warn" style={{ marginTop: 8 }}>Paused</div>}
       </div>
 
       {/* Bottom: controls — thumb zone */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10 }}>
-        <button onClick={back} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 16, fontSize: 15 }}>‹ Back</button>
+        <button onClick={back} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 16, fontSize: 16 }}>‹ Back</button>
         <button
           onClick={status === "running" ? pause : resume}
           className="cc-btn cc-btn-primary"
-          style={{ minHeight: 64, borderRadius: 16, fontSize: 18 }}
+          style={{ minHeight: 64, borderRadius: 16, fontSize: 19 }}
         >
           {status === "running" ? "Pause" : "Resume"}
         </button>
-        <button onClick={skip} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 16, fontSize: 15 }}>Skip ›</button>
+        <button onClick={skip} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 16, fontSize: 16 }}>Skip ›</button>
       </div>
     </div>
   );

@@ -184,33 +184,33 @@ export default function AmrapPage() {
         <div className="cc-card">
           <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, textAlign: "center" }}>
             <div>
-              <div style={{ fontSize: 11, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)" }}>To beat</div>
+              <div style={{ fontSize: 13, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)" }}>To beat</div>
               <div className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1.1 }}>{toBeat ?? "—"}</div>
-              <div style={{ fontSize: 12, color: "var(--ink-4)" }}>{ov?.toBeat?.label ?? "first week — set the bar"}</div>
+              <div style={{ fontSize: 14, color: "var(--ink-4)" }}>{ov?.toBeat?.label ?? "first week — set the bar"}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)" }}>This week</div>
+              <div style={{ fontSize: 13, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)" }}>This week</div>
               <div className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1.1 }}>{ov?.thisWeekBest ?? "—"}</div>
-              <div style={{ fontSize: 12, color: "var(--ink-4)" }}>best so far</div>
+              <div style={{ fontSize: 14, color: "var(--ink-4)" }}>best so far</div>
             </div>
           </div>
         </div>
 
-        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 18, borderRadius: 16 }}>▶ Start {minutes}:00</button>
+        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 16 }}>▶ Start {minutes}:00</button>
 
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">One round</span><span className="tail">tap a number to change it</span></div>
           <div style={{ padding: "0 14px" }}>
             {w.exercises.map((e, i) => (
               <button key={e.id} onClick={() => setEditing(e)} style={{ display: "grid", gridTemplateColumns: "1fr auto", width: "100%", minHeight: 48, alignItems: "center", background: "transparent", border: "none", borderBottom: i < w.exercises.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", padding: "0 2px" }}>
-                <span style={{ fontSize: 15 }}>{e.name}</span>
-                <span className="cc-pill cc-pill-violet" style={{ fontSize: 13, fontFamily: "var(--f-mono)" }}>{e.reps}{e.perSide ? " / side" : ""}</span>
+                <span style={{ fontSize: 16 }}>{e.name}</span>
+                <span className="cc-pill cc-pill-violet" style={{ fontSize: 15, fontFamily: "var(--f-mono)" }}>{e.reps}{e.perSide ? " / side" : ""}</span>
               </button>
             ))}
           </div>
         </section>
 
-        <Link href="/train" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>← Back</Link>
+        <Link href="/train" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back</Link>
         {editing && <RepEditor exercise={editing} showSets={false} kettlebellKg={kg} onSave={saveExercise} onClose={() => setEditing(null)} />}
       </div>
     );
@@ -223,15 +223,15 @@ export default function AmrapPage() {
     const avg = session.rounds ? (session.durationSeconds ?? 0) / session.rounds : 0;
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 24, textAlign: "center" }}>
-        <div style={{ fontSize: 12, fontFamily: "var(--f-mono)", letterSpacing: "0.16em", textTransform: "uppercase", color: beat ? "var(--pos)" : "var(--ink-3)" }}>
+        <div style={{ fontSize: 14, fontFamily: "var(--f-mono)", letterSpacing: "0.16em", textTransform: "uppercase", color: beat ? "var(--pos)" : "var(--ink-3)" }}>
           {beat ? "New weekly record" : tied ? "Matched your best" : "Workout 1 done"}
         </div>
         <div className="tabular-nums" style={{ fontSize: 120, fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em" }}>{session.rounds}</div>
-        <div style={{ fontSize: 16, color: "var(--ink-2)" }}>rounds in {fmtClock(session.durationSeconds ?? 0)}</div>
-        <div style={{ fontSize: 13.5, color: "var(--ink-3)" }}>
+        <div style={{ fontSize: 17, color: "var(--ink-2)" }}>rounds in {fmtClock(session.durationSeconds ?? 0)}</div>
+        <div style={{ fontSize: 15, color: "var(--ink-3)" }}>
           {toBeat !== null ? `to beat was ${toBeat}` : "first score on the board"}{avg ? ` · ${fmtClock(avg)} per round` : ""} · {session.weightKg} kg
         </div>
-        <button className="cc-btn cc-btn-primary" onClick={() => router.push("/train")} style={{ minHeight: 56, fontSize: 17, borderRadius: 14, width: "min(320px, 100%)", marginTop: 16 }}>Done</button>
+        <button className="cc-btn cc-btn-primary" onClick={() => router.push("/train")} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 16 }}>Done</button>
       </div>
     );
   }
@@ -242,20 +242,20 @@ export default function AmrapPage() {
     <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 12px)" }}>
       {/* Record flash */}
       {flash && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 5, background: "var(--grad)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", color: "#06060B", animation: "cc-flash 1.8s var(--easeOut) forwards", pointerEvents: "none" }}>
-          <div style={{ fontSize: 14, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase" }}>New record</div>
+        <div style={{ position: "absolute", inset: 0, zIndex: 5, background: "var(--violet)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", color: "#06060B", animation: "cc-flash 1.8s var(--easeOut) forwards", pointerEvents: "none" }}>
+          <div style={{ fontSize: 15, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase" }}>New record</div>
           <div style={{ fontSize: 96, fontWeight: 700, lineHeight: 1 }}>{rounds}</div>
         </div>
       )}
 
       {/* Top bar: clock + to-beat */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 }}>
-        <div style={{ fontSize: 12, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-          TO BEAT <span style={{ fontSize: 18, color: "var(--ink)", fontWeight: 600 }}>{toBeat ?? "—"}</span>
+        <div style={{ fontSize: 14, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+          TO BEAT <span style={{ fontSize: 19, color: "var(--ink)", fontWeight: 600 }}>{toBeat ?? "—"}</span>
         </div>
         <div className="tabular-nums" style={{ fontSize: 34, fontWeight: 300, fontVariantNumeric: "tabular-nums", color: urgent ? "var(--neg)" : "var(--ink)" }}>{fmtClock(remainingMs / 1000)}</div>
-        <div style={{ textAlign: "right", fontSize: 12, color: paceColor, fontFamily: "var(--f-mono)" }}>
-          {pace ? <>PACE <span style={{ fontSize: 18, fontWeight: 600 }}>{pace.projected}</span></> : <span style={{ color: "var(--ink-4)" }}>PACE —</span>}
+        <div style={{ textAlign: "right", fontSize: 14, color: paceColor, fontFamily: "var(--f-mono)" }}>
+          {pace ? <>PACE <span style={{ fontSize: 19, fontWeight: 600 }}>{pace.projected}</span></> : <span style={{ color: "var(--ink-4)" }}>PACE —</span>}
         </div>
       </div>
       <div className="cc-progress-track" style={{ height: 3, marginTop: 8 }}>
@@ -274,11 +274,11 @@ export default function AmrapPage() {
         }}
         className="amrap-tap"
       >
-        <div style={{ fontSize: 12, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)" }}>rounds</div>
+        <div style={{ fontSize: 14, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)" }}>rounds</div>
         <div key={rounds} className="tabular-nums amrap-num" style={{ fontSize: "clamp(120px, 42vw, 220px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.05em", color: toBeat !== null && rounds > toBeat ? "var(--pos)" : "var(--ink)" }}>{rounds}</div>
-        <div style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 6 }}>tap anywhere here after each round</div>
+        <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 6 }}>tap anywhere here after each round</div>
         {pace && (
-          <div style={{ fontSize: 13, color: paceColor, marginTop: 2 }}>
+          <div style={{ fontSize: 15, color: paceColor, marginTop: 2 }}>
             {fmtClock(pace.avg / 1000)} per round · on pace for {pace.projected}
             {toBeat !== null && (pace.projected > toBeat ? " · ahead" : pace.projected === toBeat ? " · tight" : " · behind")}
           </div>
@@ -288,7 +288,7 @@ export default function AmrapPage() {
       {/* Round recipe, compact */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", marginBottom: 12 }}>
         {w.exercises.map((e) => (
-          <span key={e.id} style={{ fontSize: 11.5, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.reps} {e.name.toLowerCase()}</span>
+          <span key={e.id} style={{ fontSize: 14, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.reps} {e.name.toLowerCase()}</span>
         ))}
       </div>
 

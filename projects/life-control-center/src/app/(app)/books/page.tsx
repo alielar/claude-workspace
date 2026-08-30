@@ -42,8 +42,8 @@ function Detail({ label, text }: { label: string; text: string | null }) {
   if (!text) return null;
   return (
     <div>
-      <div style={{ fontSize: 10.5, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 4 }}>{label}</div>
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--ink-2)" }}>{text}</p>
+      <div style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 4 }}>{label}</div>
+      <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "var(--ink-2)" }}>{text}</p>
     </div>
   );
 }
@@ -91,8 +91,8 @@ export default function BooksPage() {
         </div>
         <div className="cc-card-body">
           {loading && !data && <div className="cc-skeleton" style={{ height: 96 }} />}
-          {data && !reading && (
-            <div style={{ fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
+          {!loading && !reading && (
+            <div style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.5 }}>
               Nothing open. Pick the next one below and tap <strong style={{ color: "var(--ink-2)" }}>Start reading</strong>.
             </div>
           )}
@@ -101,15 +101,15 @@ export default function BooksPage() {
               <div style={{ display: "grid", gridTemplateColumns: "84px 1fr", gap: 14, alignItems: "start" }}>
                 <Cover book={reading} width={84} />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.25, letterSpacing: "-0.01em" }}>{reading.title}</div>
-                  {reading.subtitle && <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>{reading.subtitle}</div>}
-                  <div style={{ fontSize: 13.5, color: "var(--ink-2)", marginTop: 6 }}>{reading.author}</div>
-                  {meta(reading) && <div style={{ fontSize: 12, color: "var(--ink-4)", marginTop: 2, fontFamily: "var(--f-mono)" }}>{meta(reading)}</div>}
+                  <div style={{ fontSize: 19, fontWeight: 600, lineHeight: 1.25, letterSpacing: "-0.01em" }}>{reading.title}</div>
+                  {reading.subtitle && <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>{reading.subtitle}</div>}
+                  <div style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 6 }}>{reading.author}</div>
+                  {meta(reading) && <div style={{ fontSize: 14, color: "var(--ink-4)", marginTop: 2, fontFamily: "var(--f-mono)" }}>{meta(reading)}</div>}
                 </div>
               </div>
               <Detail label="What I'll get out of it" text={reading.payoff} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
-                <button className="cc-btn cc-btn-primary" onClick={() => setStatus(reading, "finished")} style={{ minHeight: 48, borderRadius: 12, fontSize: 15 }}>Finished ✓</button>
+                <button className="cc-btn cc-btn-primary" onClick={() => setStatus(reading, "finished")} style={{ minHeight: 48, borderRadius: 12, fontSize: 16 }}>Finished ✓</button>
                 <button className="cc-btn cc-btn-ghost" onClick={() => setStatus(reading, "queue")} style={{ minHeight: 48, borderRadius: 12 }}>Back to list</button>
               </div>
             </div>
@@ -119,10 +119,10 @@ export default function BooksPage() {
 
       {/* Queue */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Up next</span><span className="tail">tap a book for details</span></div>
+        <div className="cc-card-head"><span className="title">Up next</span></div>
         <div style={{ padding: "0 14px" }}>
           {loading && !data && [0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 72, margin: "10px 0" }} />)}
-          {data && queue.length === 0 && <div style={{ padding: "16px 0", fontSize: 14, color: "var(--ink-3)" }}>The list is empty. Add a book above.</div>}
+          {!loading && queue.length === 0 && <div style={{ padding: "16px 0", fontSize: 15, color: "var(--ink-3)" }}>{data ? "The list is empty. Add a book above." : "Couldn't load the list. It will show once you're back online."}</div>}
           {queue.map((b, i) => {
             const open = openId === b.id;
             return (
@@ -134,19 +134,19 @@ export default function BooksPage() {
                 >
                   <Cover book={b} width={48} />
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 15.5, fontWeight: 500, lineHeight: 1.3 }}>{b.title}</span>
-                    <span style={{ display: "block", fontSize: 13, color: "var(--ink-3)", marginTop: 2 }}>{b.author}</span>
+                    <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3 }}>{b.title}</span>
+                    <span style={{ display: "block", fontSize: 15, color: "var(--ink-3)", marginTop: 2 }}>{b.author}</span>
                   </span>
-                  <span style={{ fontFamily: "var(--f-mono)", fontSize: 11, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
+                  <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
                 </button>
                 {open && (
                   <div style={{ display: "grid", gap: 12, padding: "2px 2px 16px" }}>
-                    {b.subtitle && <div style={{ fontSize: 13.5, color: "var(--ink-2)", fontStyle: "italic" }}>{b.subtitle}</div>}
+                    {b.subtitle && <div style={{ fontSize: 15, color: "var(--ink-2)", fontStyle: "italic" }}>{b.subtitle}</div>}
                     <Detail label="What it covers" text={b.covers} />
                     <Detail label="What I'll get out of it" text={b.payoff} />
-                    {meta(b) && <div style={{ fontSize: 12, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{meta(b)}{b.isbn ? ` · ISBN ${b.isbn}` : ""}</div>}
+                    {meta(b) && <div style={{ fontSize: 14, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{meta(b)}{b.isbn ? ` · ISBN ${b.isbn}` : ""}</div>}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8 }}>
-                      <button className="cc-btn cc-btn-primary" onClick={() => { setStatus(b, "reading"); setOpenId(null); }} style={{ minHeight: 46, borderRadius: 12, fontSize: 15 }}>▶ Start reading</button>
+                      <button className="cc-btn cc-btn-primary" onClick={() => { setStatus(b, "reading"); setOpenId(null); }} style={{ minHeight: 46, borderRadius: 12, fontSize: 16 }}>▶ Start reading</button>
                       {i > 0 && <button className="cc-btn cc-btn-ghost" onClick={() => moveToTop(b)} style={{ minHeight: 46, borderRadius: 12 }}>↑ Top</button>}
                       <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Remove "${b.title}" from the list?`)) remove(b); }} style={{ minHeight: 46, minWidth: 46, borderRadius: 12, padding: 0, color: "var(--neg)" }} aria-label="Remove">✕</button>
                     </div>
@@ -170,10 +170,10 @@ export default function BooksPage() {
                 <div key={b.id} style={{ display: "grid", gridTemplateColumns: "36px 1fr auto", gap: 12, alignItems: "center", minHeight: 60, padding: "8px 2px", borderBottom: i < finished.length - 1 ? "1px solid var(--line)" : "none", opacity: 0.8 }}>
                   <Cover book={b} width={36} />
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 14.5, fontWeight: 500 }}>{b.title}</span>
-                    <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)" }}>{b.author}{b.finishedAt ? ` · ${new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric" }).format(b.finishedAt)}` : ""}</span>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{b.title}</span>
+                    <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{b.author}{b.finishedAt ? ` · ${new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric" }).format(b.finishedAt)}` : ""}</span>
                   </span>
-                  <button className="cc-btn cc-btn-ghost" onClick={() => setStatus(b, "queue")} style={{ minHeight: 40, borderRadius: 10, fontSize: 12 }}>Re-read</button>
+                  <button className="cc-btn cc-btn-ghost" onClick={() => setStatus(b, "queue")} style={{ minHeight: 40, borderRadius: 10, fontSize: 14 }}>Re-read</button>
                 </div>
               ))}
             </div>
@@ -181,7 +181,7 @@ export default function BooksPage() {
         </section>
       )}
 
-      <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--ink-4)" }}>
+      <div style={{ display: "flex", gap: 16, fontSize: 15, color: "var(--ink-4)" }}>
         <Link href="/today" style={{ color: "var(--ink-3)", textDecoration: "none" }}>← Today</Link>
         <Link href="/library" style={{ color: "var(--ink-4)", textDecoration: "none" }}>Old library & notes (archive) →</Link>
       </div>
@@ -191,13 +191,13 @@ export default function BooksPage() {
         <>
           <div onClick={() => setAdding(false)} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
           <div role="dialog" aria-label="Add a book" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "16px 20px calc(env(safe-area-inset-bottom) + 16px)", display: "grid", gap: 10, maxWidth: 560, margin: "0 auto" }}>
-            <div style={{ fontSize: 17, fontWeight: 600 }}>Add a book</div>
-            <input className="cc-input" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} autoFocus style={{ fontSize: 16, minHeight: 48 }} />
-            <input className="cc-input" placeholder="Author" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} style={{ fontSize: 16, minHeight: 48 }} />
-            <input className="cc-input" placeholder="ISBN (optional — fetches the cover)" inputMode="numeric" value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} style={{ fontSize: 16, minHeight: 48 }} />
-            <div style={{ fontSize: 12, color: "var(--ink-4)" }}>The 13-digit number above the barcode on the back of the book.</div>
+            <div style={{ fontSize: 18, fontWeight: 600 }}>Add a book</div>
+            <input className="cc-input" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} autoFocus style={{ fontSize: 17, minHeight: 48 }} />
+            <input className="cc-input" placeholder="Author" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} style={{ fontSize: 17, minHeight: 48 }} />
+            <input className="cc-input" placeholder="ISBN (optional — fetches the cover)" inputMode="numeric" value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} style={{ fontSize: 17, minHeight: 48 }} />
+            <div style={{ fontSize: 14, color: "var(--ink-4)" }}>The 13-digit number above the barcode on the back of the book.</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, marginTop: 4 }}>
-              <button className="cc-btn cc-btn-primary" onClick={submit} disabled={!form.title.trim()} style={{ minHeight: 52, borderRadius: 14, fontSize: 16 }}>Add to list</button>
+              <button className="cc-btn cc-btn-primary" onClick={submit} disabled={!form.title.trim()} style={{ minHeight: 52, borderRadius: 14, fontSize: 17 }}>Add to list</button>
               <button className="cc-btn cc-btn-ghost" onClick={() => setAdding(false)} style={{ minHeight: 52, borderRadius: 14 }}>Cancel</button>
             </div>
           </div>

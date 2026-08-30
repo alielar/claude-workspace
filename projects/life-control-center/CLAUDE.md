@@ -49,8 +49,10 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - `/_next/static/*` cache-first · page navigations stale-while-revalidate · `GET /api/*` network-first (3s) then cache · `/offline` fallback.
 - Bump `VERSION` in `sw.js` when cache behaviour changes. Settings → "Update app" clears caches and reloads.
 
-### Theme
+### Theme — "Quiet Morning" (2026-08-30)
+- Flat solid surfaces (no blur/grain/gradients), **system font** (`-apple-system…`, no web fonts), body 17px, card titles 15/600, captions 13–14 sentence case. Mono (`ui-monospace`) only for clocks/counters. One accent (`--violet`: #8B7CF0 dark / #5B4BD6 light) + semantic pos/warn/neg. `--accent-soft` for selected chips, `--on-accent` for text on the accent.
 - Tokens in `globals.css` `:root` (dark). Light values under `:root[data-theme="light"]` and `@media (prefers-color-scheme: light) :root:not([data-theme="dark"])`.
+- Timer/workout screens keep the big high-contrast numerals — the one place the app may shout.
 - `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint.
 - **Never hardcode `rgba(255,255,255,…)` or `#E8E8F0` in new UI** — use `--fill-1/2/3`, `--ink*`, `--line*`, `--bg-chrome`.
 
