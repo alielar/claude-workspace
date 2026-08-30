@@ -106,8 +106,9 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {/* Headline row */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
         <div style={{
-          fontSize: isTopStory ? 15.5 : 14.5,
-          lineHeight: 1.45,
+          fontSize: isTopStory ? 16.5 : 15.5,
+          lineHeight: 1.4,
+          minWidth: 0, overflowWrap: "anywhere",
           letterSpacing: "-0.01em",
           fontWeight: 600,
           color: "var(--ink)",
@@ -130,13 +131,13 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       </div>
 
       {/* Source domain + summary preview */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, minWidth: 0 }}>
         {story.featured && (
-          <span style={{ fontSize: 9.5, color: "var(--warn)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em", textTransform: "uppercase", padding: "1px 5px", borderRadius: 3, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
+          <span style={{ fontSize: 10, color: "var(--warn)", flexShrink: 0, fontFamily: "var(--f-mono)", letterSpacing: "0.04em", textTransform: "uppercase", padding: "1px 5px", borderRadius: 3, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
         )}
         {hostname && (
           <span style={{
-            fontSize: 9.5, color: accentColor,
+            fontSize: 10, color: accentColor, flexShrink: 0,
             fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
             textTransform: "uppercase",
             padding: "1px 5px", borderRadius: 3,
@@ -147,7 +148,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
         )}
         {!open && summaryText && (
           <span style={{
-            fontSize: 11, color: "var(--ink-4)", flex: 1,
+            fontSize: 12.5, color: "var(--ink-3)", flex: 1, minWidth: 0,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {summaryText.slice(0, 120)}{summaryText.length > 120 ? "…" : ""}
@@ -159,14 +160,14 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {open && (
         <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
           {summaryText && (
-            <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--ink-2)", margin: "0 0 10px 0" }}>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--ink-2)", margin: "0 0 10px 0" }}>
               {summaryText}
             </p>
           )}
           {keyPoints.length > 0 && (
             <ul style={{ margin: "0 0 10px 0", paddingLeft: 16 }}>
               {keyPoints.map((pt, i) => (
-                <li key={i} style={{ fontSize: 12, lineHeight: 1.5, color: "var(--ink-3)", marginBottom: 3 }}>
+                <li key={i} style={{ fontSize: 14, lineHeight: 1.55, color: "var(--ink-2)", marginBottom: 4 }}>
                   {pt}
                 </li>
               ))}
@@ -194,7 +195,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
                     <div style={{ fontSize: 9.5, letterSpacing: "0.12em", textTransform: "uppercase", color: accentColor, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)" }}>
                       {icon} {label}
                     </div>
-                    <div style={{ fontSize: 12, lineHeight: 1.55, color: "var(--ink-2)" }}>{text}</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-2)" }}>{text}</div>
                   </div>
                 );
               })}
@@ -205,7 +206,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
             <a
               href={story.source} target="_blank" rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              style={{ fontSize: 11, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 500 }}
+              style={{ fontSize: 13.5, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 500, minHeight: 44 }}
             >
               Read full article
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -364,8 +365,8 @@ function ago(iso: string): string {
 
 function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
   return (
-    <a href={v.url} target="_blank" rel="noopener noreferrer" className="news-video" style={{ display: "grid", gridTemplateColumns: "128px 1fr", gap: 12, alignItems: "center", textDecoration: "none", color: "inherit", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
-      <span style={{ position: "relative", display: "block", width: 128, aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", background: "var(--fill-2)" }}>
+    <a href={v.url} target="_blank" rel="noopener noreferrer" className="news-video" style={{ display: "grid", gridTemplateColumns: "112px minmax(0, 1fr)", gap: 12, alignItems: "center", textDecoration: "none", color: "inherit", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
+      <span style={{ position: "relative", display: "block", width: 112, aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", background: "var(--fill-2)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail, plain <img> keeps the bundle small */}
         <img src={v.thumbnail} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         <span aria-hidden style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -469,7 +470,7 @@ export default function NewsPage() {
   const shown = section ? columns.filter(c => c.id === section) : columns;
 
   return (
-    <div style={{ display: "grid", gap: 18, paddingBottom: 24 }}>
+    <div style={{ display: "grid", gap: 18, paddingBottom: 24, maxWidth: "100%", minWidth: 0, overflowX: "hidden" }}>
 
       {/* Page title */}
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>

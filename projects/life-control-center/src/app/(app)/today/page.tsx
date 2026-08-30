@@ -19,7 +19,7 @@
  *   NEWS       — 4 headlines from the last brief (cached) → /news
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCached, fetchJson, readCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
@@ -212,56 +212,82 @@ function Card({ title, tail, children }: { title: string; tail?: React.ReactNode
   );
 }
 
-// ─── News card ────────────────────────────────────────────────────────────────
+// ─── News: rotating "Worth your time" card ────────────────────────────────────
+// One featured story at a time (one per interest), auto-advances every 6 s, pauses while
+// touched, swipes left/right, tap opens News. Reads the phone's copy of the brief.
 
 const NEWS_CATS: { label: string; match: string[]; color: string }[] = [
   { label: "Football",    match: ["football"],     color: "#F97316" },
   { label: "Geopolitics", match: ["geopolitics"],  color: "#FF8A8A" },
-  { label: "Tech & AI",   match: ["tech", "ai"],   color: "#64FFDA" },
   { label: "Business",    match: ["business"],     color: "#6FD49A" },
+  { label: "Tech & AI",   match: ["tech", "ai"],   color: "#64FFDA" },
 ];
 
-function NewsCard({ today }: { today: string }) {
-  const { data: brief, loading } = useCached<NewsBrief>(
-    "news-brief",
-    () => fetchJson<NewsBrief>("/api/news/generate")
-  );
+function firstLine(text: string, max = 120): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  const dot = t.search(/[.!?](\s|$)/);
+  const cut = dot > 40 && dot < max ? t.slice(0, dot + 1) : t.slice(0, max);
+  return cut.length < t.length && !/[.!?]$/.test(cut) ? cut.replace(/\s\S*$/, "") + "…" : cut;
+}
 
+function NewsCard({ today }: { today: string }) {
+  const { data: brief, loading } = useCached<NewsBrief>("news-brief", () => fetchJson<NewsBrief>("/api/news/generate"));
   const picks = useMemo(() => {
     if (!brief) return [];
     return NEWS_CATS.flatMap((c) => {
       const s = brief.stories.find((st) => c.match.includes(st.category) && st.featured) ?? brief.stories.find((st) => c.match.includes(st.category));
-      return s ? [{ ...c, headline: s.headline }] : [];
+      return s ? [{ ...c, headline: s.headline, line: firstLine(s.summary || "") }] : [];
     });
   }, [brief]);
 
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
+  const n = picks.length;
+  useEffect(() => {
+    if (n < 2 || paused) return;
+    const t = setInterval(() => setI((x) => (x + 1) % n), 6000);
+    return () => clearInterval(t);
+  }, [n, paused]);
+  const cur = picks[Math.min(i, Math.max(0, n - 1))];
   const isOld = brief && brief.date !== today;
 
+  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; setPaused(true); };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const dx = touchX.current === null ? 0 : e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) > 40 && n > 1) setI((x) => (x + (dx < 0 ? 1 : n - 1)) % n);
+    setTimeout(() => setPaused(false), 400);
+  };
+
   return (
-    <Link href="/news" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+    <Link href="/news" className="cc-card" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchCancel={() => { touchX.current = null; setPaused(false); }}
+      style={{ display: "block", textDecoration: "none", color: "inherit", overflow: "hidden" }}>
       <div className="cc-card-head">
-        <span className="title">News</span>
-        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : "today") : loading ? "—" : "no brief yet"}</span>
+        <span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span>
+        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : `${n} stories`) : loading ? "—" : "no brief yet"}</span>
       </div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
-        {picks.length === 0 && (
-          <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
-            {loading ? "Loading the last brief…" : "The brief arrives every morning. Tap to open News."}
-          </span>
+      <div className="cc-card-body" style={{ display: "grid", gap: 8, minHeight: 96 }}>
+        {!cur && (
+          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{loading ? "Loading the last brief…" : "The brief arrives every morning. Tap to open News."}</span>
         )}
-        {(brief?.videos?.length ?? 0) > 0 && (
-          <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>▶ {brief!.videos!.length} fresh video{brief!.videos!.length === 1 ? "" : "s"} from your channels</div>
-        )}
-        {picks.map((p) => (
-          <div key={p.label} style={{ display: "grid", gridTemplateColumns: "8px 1fr", gap: 10, alignItems: "start" }}>
-            <span style={{ width: 8, height: 8, borderRadius: 99, background: p.color, marginTop: 6 }} />
-            <span style={{ fontSize: 14, lineHeight: 1.4, color: "var(--ink)" }}>
-              <span style={{ fontSize: 10, fontFamily: "var(--f-mono)", letterSpacing: "0.08em", textTransform: "uppercase", color: p.color, marginRight: 8 }}>{p.label}</span>
-              {p.headline}
-            </span>
+        {cur && (
+          <div key={cur.label} className="news-rotate" style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 10.5, fontFamily: "var(--f-mono)", letterSpacing: "0.1em", textTransform: "uppercase", color: cur.color }}>{cur.label}</span>
+            <span style={{ fontSize: 16.5, fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em" }}>{cur.headline}</span>
+            {cur.line && <span style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.45 }}>{cur.line}</span>}
           </div>
-        ))}
+        )}
+        {n > 1 && (
+          <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
+            {picks.map((p, k) => (
+              <span key={p.label} style={{ height: 4, borderRadius: 99, flex: k === i ? 3 : 1, background: k === i ? p.color : "var(--fill-3)", transition: "flex .3s, background .3s" }} />
+            ))}
+            {brief?.videos?.length ? <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 6, whiteSpace: "nowrap" }}>▶ {brief.videos.length} videos</span> : null}
+          </div>
+        )}
       </div>
+      <style>{`@keyframes news-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } } .news-rotate { animation: news-in .35s var(--easeOut); }`}</style>
     </Link>
   );
 }
@@ -451,6 +477,9 @@ export default function TodayPage() {
         {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
       </Card>
 
+      {/* NEWS — worth your time, rotating */}
+      <NewsCard today={today} />
+
       {/* TO-DO due today */}
       <TodoCard today={today} part={part} />
 
@@ -481,9 +510,6 @@ export default function TodayPage() {
           {doneItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
         </Card>
       )}
-
-      {/* NEWS */}
-      <NewsCard today={today} />
 
       <style>{`
         .today-row:last-child { border-bottom: none !important; }
