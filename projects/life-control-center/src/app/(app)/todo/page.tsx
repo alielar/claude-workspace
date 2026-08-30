@@ -1,17 +1,15 @@
 "use client";
 
 /**
- * /todo — the To-do tab (spec §4.5).
+ * /todo — the To-do tab (spec §4.5 + §7c item 7).
  *
- *   list, grouped by intent:  Overdue · Today · This evening · Upcoming · Anytime · Someday · Done
- *   quick add, pinned above the tab bar (thumb zone): one line that understands
- *   "tomorrow 10am", "fri", "weekend", "next week", "15/9", "#project", "!!", "someday"
- *   tap a task → detail sheet: when (Today · Evening · Tomorrow · Weekend · Date · Someday), time,
- *   project, priority, notes, delete
- *   one-tap defer from the list on overdue/today rows ("→ tomorrow")
- *   optional project filter chips when you have projects
- *   two lists — Personal · Work — switched at the top (remembered on the phone); each has its own
- *   due count, the home-screen badge adds both
+ * Three segments at the top, remembered on the phone:
+ *   Personal · Work — tasks: buckets (Overdue · Today · Evening · Upcoming · Anytime · Someday),
+ *     one-line quick add with natural-language dates, detail sheet, one-tap defer, swipe to delete.
+ *   Lists — things to KEEP, not do (spec §7c item 7): running lists and notes ("Gift ideas 🎁").
+ *     No checkboxes, no buckets, no nagging. Type a name → straight into the editor. Pin the ones
+ *     you reach for; search finds the rest (titles and content). A list can carry one optional
+ *     reminder (date + time) — then it behaves like a reminder: Today card, badge, notifications.
  *
  * Works offline; the home-screen badge shows what's due today.
  */
@@ -25,6 +23,8 @@ import {
   type Area, type Bucket, type Priority, type Todo,
 } from "@/lib/todo/types";
 
+const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Lists" }];
+
 const BUCKETS: { key: Bucket; label: string; color: string }[] = [
   { key: "overdue",  label: "Overdue",      color: "var(--neg)" },
   { key: "today",    label: "Today",        color: "var(--violet)" },
@@ -36,20 +36,34 @@ const BUCKETS: { key: Bucket; label: string; color: string }[] = [
 
 const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)", 2: "var(--neg)" };
 
-// ─── Row ──────────────────────────────────────────────────────────────────────
+/** "today" / "yesterday" / "5d ago" / "3w ago" for a ms timestamp. */
+function fmtAgo(ms: number): string {
+  const days = Math.floor((Date.now() - ms) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 14) return `${days}d ago`;
+  if (days < 60) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
 
-function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
-  t: Todo; today: string; showDate: boolean;
-  onToggle: () => void; onOpen: () => void; onDefer?: () => void; onDelete: () => void;
-}) {
-  const done = t.doneAt !== null;
+/** First non-empty content line, with list markers stripped — the row preview. */
+function firstLine(notes: string | null): string | null {
+  if (!notes) return null;
+  for (const raw of notes.split("\n")) {
+    const l = raw.replace(/^- \[[ xX]\] /, "").replace(/^- /, "").replace(/^\d+\. /, "").replace(/[*_]/g, "").trim();
+    if (l) return l;
+  }
+  return null;
+}
 
-  // Swipe left → reveal Delete; keep going → delete, like clearing a notification.
+// ─── Swipe left to delete (shared by task rows and list rows) ─────────────────
+
+function useSwipeDelete(onDelete: () => void) {
   const [offset, setOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
   const gesture = useRef<{ x: number; y: number; base: number; active: boolean } | null>(null);
-  const tStart = (e: React.TouchEvent) => { gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, base: offset, active: false }; };
-  const tMove = (e: React.TouchEvent) => {
+  const onTouchStart = (e: React.TouchEvent) => { gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, base: offset, active: false }; };
+  const onTouchMove = (e: React.TouchEvent) => {
     const g = gesture.current;
     if (!g) return;
     const dx = e.touches[0].clientX - g.x, dy = e.touches[0].clientY - g.y;
@@ -60,7 +74,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
     }
     setOffset(Math.min(0, Math.max(-170, g.base + dx)));
   };
-  const tEnd = () => {
+  const onTouchEnd = () => {
     const g = gesture.current; gesture.current = null; setDragging(false);
     if (!g || !g.active) return;
     setOffset((o) => {
@@ -68,6 +82,87 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
       return o < -48 ? -88 : 0;
     });
   };
+  return {
+    offset,
+    handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd },
+    style: {
+      background: "var(--bg-card)", position: "relative", touchAction: "pan-y",
+      transform: `translateX(${offset}px)`, transition: dragging ? "none" : "transform 0.18s ease",
+    } as React.CSSProperties,
+  };
+}
+
+function SwipeWrap({ swipe, onDelete, children }: { swipe: ReturnType<typeof useSwipeDelete>; onDelete: () => void; children: React.ReactNode }) {
+  return (
+    <div style={{ position: "relative", overflow: "hidden", borderBottom: "1px solid var(--line)" }} className="todo-row-wrap">
+      <button onClick={onDelete} tabIndex={-1} aria-label="Delete"
+        style={{ position: "absolute", inset: "0 0 0 auto", width: 96, border: "none", background: "var(--neg)", color: "#fff", fontSize: 15, fontWeight: 600, font: "inherit", cursor: "pointer", opacity: swipe.offset < -10 ? 1 : 0 }}>
+        Delete
+      </button>
+      {children}
+    </div>
+  );
+}
+
+// ─── Notes editor (tasks + lists) ─────────────────────────────────────────────
+
+function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false }: {
+  value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean;
+}) {
+  // Wrap the selection (B/I) or prefix the current line (lists);
+  // pressing return inside a list continues it, return on an empty item ends it.
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const apply = (v: string, selStart: number, selEnd: number) => {
+    onChange(v);
+    requestAnimationFrame(() => { const el = ref.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); } });
+  };
+  const wrap = (mark: string) => {
+    const el = ref.current; if (!el) return;
+    const v = el.value, a = el.selectionStart, b = el.selectionEnd;
+    apply(v.slice(0, a) + mark + v.slice(a, b) + mark + v.slice(b), a + mark.length, b + mark.length);
+  };
+  const prefixLine = (prefix: string) => {
+    const el = ref.current; if (!el) return;
+    const v = el.value, a = el.selectionStart;
+    const ls = v.lastIndexOf("\n", a - 1) + 1;
+    apply(v.slice(0, ls) + prefix + v.slice(ls), a + prefix.length, a + prefix.length);
+  };
+  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== "Enter") return;
+    const el = e.currentTarget, v = el.value, a = el.selectionStart;
+    const ls = v.lastIndexOf("\n", a - 1) + 1;
+    const line = v.slice(ls, a);
+    const m = line.match(/^(- \[ \] |- |(\d+)\. )/);
+    if (!m) return;
+    e.preventDefault();
+    if (line === m[1]) { apply(v.slice(0, ls) + v.slice(a), ls, ls); return; } // empty item ends the list
+    const next = m[2] ? `${Number(m[2]) + 1}. ` : m[1];
+    apply(v.slice(0, a) + "\n" + next + v.slice(el.selectionEnd), a + 1 + next.length, a + 1 + next.length);
+  };
+  const btn: React.CSSProperties = { minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
+  return (
+    <div style={{ display: "grid", gap: 6 }}>
+      <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
+        <button type="button" title="Bold" onClick={() => wrap("**")} style={{ ...btn, fontWeight: 700 }}>B</button>
+        <button type="button" title="Italic" onClick={() => wrap("_")} style={{ ...btn, fontStyle: "italic" }}>I</button>
+        <button type="button" title="Bullet list" onClick={() => prefixLine("- ")} style={btn}>•</button>
+        <button type="button" title="Checklist" onClick={() => prefixLine("- [ ] ")} style={btn}>☑</button>
+        <button type="button" title="Numbered list" onClick={() => prefixLine("1. ")} style={btn}>1.</button>
+      </div>
+      <textarea ref={ref} className="cc-input" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onEnter}
+        placeholder={placeholder} rows={rows} autoFocus={autoFocus} style={{ fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
+    </div>
+  );
+}
+
+// ─── Task row ─────────────────────────────────────────────────────────────────
+
+function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
+  t: Todo; today: string; showDate: boolean;
+  onToggle: () => void; onOpen: () => void; onDefer?: () => void; onDelete: () => void;
+}) {
+  const done = t.doneAt !== null;
+  const swipe = useSwipeDelete(onDelete);
   const sub = [
     showDate && t.dueDate ? fmtDue(t.dueDate, today) : null,
     t.dueTime,
@@ -77,13 +172,9 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
   ].filter(Boolean).join(" · ");
 
   return (
-    <div style={{ position: "relative", overflow: "hidden", borderBottom: "1px solid var(--line)" }} className="todo-row-wrap">
-      <button onClick={onDelete} tabIndex={-1} aria-label="Delete task"
-        style={{ position: "absolute", inset: "0 0 0 auto", width: 96, border: "none", background: "var(--neg)", color: "#fff", fontSize: 15, fontWeight: 600, font: "inherit", cursor: "pointer", opacity: offset < -10 ? 1 : 0 }}>
-        Delete
-      </button>
-    <div className="todo-row" onTouchStart={tStart} onTouchMove={tMove} onTouchEnd={tEnd} onTouchCancel={tEnd}
-      style={{ display: "grid", gridTemplateColumns: onDefer ? "auto 1fr auto" : "auto 1fr", alignItems: "center", background: "var(--bg-card)", position: "relative", touchAction: "pan-y", transform: `translateX(${offset}px)`, transition: dragging ? "none" : "transform 0.18s ease" }}>
+    <SwipeWrap swipe={swipe} onDelete={onDelete}>
+    <div className="todo-row" {...swipe.handlers}
+      style={{ display: "grid", gridTemplateColumns: onDefer ? "auto 1fr auto" : "auto 1fr", alignItems: "center", ...swipe.style }}>
       <button onClick={onToggle} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={done}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, border: `2px solid ${done ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: done ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -102,11 +193,44 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
         <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
       )}
     </div>
-    </div>
+    </SwipeWrap>
   );
 }
 
-// ─── Detail sheet ─────────────────────────────────────────────────────────────
+// ─── List row (Lists segment — kept things, no checkbox) ──────────────────────
+
+function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelete: () => void }) {
+  const swipe = useSwipeDelete(onDelete);
+  const preview = firstLine(t.notes);
+  const items = (t.notes?.match(/^- (\[[ xX]\] )?/gm) ?? []).length;
+  const sub = [
+    t.dueDate ? `⏰ ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
+    items > 0 ? `${items} item${items === 1 ? "" : "s"}` : preview,
+    fmtAgo(t.updatedAt),
+  ].filter(Boolean).join(" · ");
+
+  return (
+    <SwipeWrap swipe={swipe} onDelete={onDelete}>
+      <button onClick={onOpen} className="todo-row" {...swipe.handlers}
+        style={{ display: "grid", gridTemplateColumns: "40px 1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 4px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...swipe.style }}>
+        <span aria-hidden style={{ fontSize: 19, textAlign: "center" }}>{t.priority > 0 ? "📌" : "📒"}</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty — tap to write"}</span>
+        </span>
+      </button>
+    </SwipeWrap>
+  );
+}
+
+// ─── Shared chip style ────────────────────────────────────────────────────────
+
+const chipStyle = (on: boolean): React.CSSProperties => ({
+  minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
+  border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
+});
+
+// ─── Task detail sheet ────────────────────────────────────────────────────────
 
 function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }: {
   t: Todo; today: string; projects: string[]; isNew?: boolean;
@@ -125,41 +249,6 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
     { label: "Anytime",   on: isWhen(null, false, false),              go: () => when(null) },
     { label: "Someday",   on: d.someday,                               go: () => when(null, false, true) },
   ];
-  // Notes formatting: wrap the selection (B/I) or prefix the current line (lists);
-  // pressing return inside a list continues it, return on an empty item ends it.
-  const notesRef = useRef<HTMLTextAreaElement>(null);
-  const applyNotes = (v: string, selStart: number, selEnd: number) => {
-    set({ notes: v || null });
-    requestAnimationFrame(() => { const el = notesRef.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); } });
-  };
-  const wrapNotes = (mark: string) => {
-    const el = notesRef.current; if (!el) return;
-    const v = el.value, a = el.selectionStart, b = el.selectionEnd;
-    applyNotes(v.slice(0, a) + mark + v.slice(a, b) + mark + v.slice(b), a + mark.length, b + mark.length);
-  };
-  const prefixNotesLine = (prefix: string) => {
-    const el = notesRef.current; if (!el) return;
-    const v = el.value, a = el.selectionStart;
-    const ls = v.lastIndexOf("\n", a - 1) + 1;
-    applyNotes(v.slice(0, ls) + prefix + v.slice(ls), a + prefix.length, a + prefix.length);
-  };
-  const notesEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key !== "Enter") return;
-    const el = e.currentTarget, v = el.value, a = el.selectionStart;
-    const ls = v.lastIndexOf("\n", a - 1) + 1;
-    const line = v.slice(ls, a);
-    const m = line.match(/^(- \[ \] |- |(\d+)\. )/);
-    if (!m) return;
-    e.preventDefault();
-    if (line === m[1]) { applyNotes(v.slice(0, ls) + v.slice(a), ls, ls); return; } // empty item ends the list
-    const next = m[2] ? `${Number(m[2]) + 1}. ` : m[1];
-    applyNotes(v.slice(0, a) + "\n" + next + v.slice(el.selectionEnd), a + 1 + next.length, a + 1 + next.length);
-  };
-
-  const chip = (on: boolean): React.CSSProperties => ({
-    minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
-    border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
-  });
 
   return (
     <>
@@ -168,12 +257,12 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
         <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What needs doing?" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-          {AREAS.map((a) => <button key={a.key} onClick={() => set({ area: a.key })} style={chip((d.area ?? "personal") === a.key)}>{a.label}</button>)}
+          {AREAS.map((a) => <button key={a.key} onClick={() => set({ area: a.key })} style={chipStyle((d.area ?? "personal") === a.key)}>{a.label}</button>)}
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {chips.map((c) => <button key={c.label} onClick={c.go} style={chip(c.on)}>{c.label}</button>)}
-          <label style={{ ...chip(!!d.dueDate && !chips.slice(0, 4).some((c) => c.on)), display: "inline-flex", alignItems: "center", gap: 6, position: "relative" }}>
+          {chips.map((c) => <button key={c.label} onClick={c.go} style={chipStyle(c.on)}>{c.label}</button>)}
+          <label style={{ ...chipStyle(!!d.dueDate && !chips.slice(0, 4).some((c) => c.on)), display: "inline-flex", alignItems: "center", gap: 6, position: "relative" }}>
             {d.dueDate && !chips.slice(0, 4).some((c) => c.on) ? fmtDue(d.dueDate, today) : "Pick a date"}
             <input type="date" value={d.dueDate ?? ""} min={today} onChange={(e) => e.target.value && when(e.target.value, d.evening)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", fontSize: 17 }} />
           </label>
@@ -191,27 +280,61 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
           {([0, 1, 2] as Priority[]).map((p) => (
-            <button key={p} onClick={() => set({ priority: p })} style={chip(d.priority === p)}>{p === 0 ? "Normal" : p === 1 ? "! Important" : "!! Urgent"}</button>
+            <button key={p} onClick={() => set({ priority: p })} style={chipStyle(d.priority === p)}>{p === 0 ? "Normal" : p === 1 ? "! Important" : "!! Urgent"}</button>
           ))}
         </div>
 
-        <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
-            {([["B", "**", "Bold"], ["I", "_", "Italic"]] as const).map(([label, mark, title]) => (
-              <button key={label} type="button" title={title} onClick={() => wrapNotes(mark)}
-                style={{ minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, fontWeight: label === "B" ? 700 : 400, fontStyle: label === "I" ? "italic" : undefined, cursor: "pointer" }}>{label}</button>
-            ))}
-            {([["•", "- ", "Bullet list"], ["☑", "- [ ] ", "Checklist"], ["1.", "1. ", "Numbered list"]] as const).map(([label, prefix, title]) => (
-              <button key={label} type="button" title={title} onClick={() => prefixNotesLine(prefix)}
-                style={{ minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" }}>{label}</button>
-            ))}
-          </div>
-          <textarea ref={notesRef} className="cc-input" value={d.notes ?? ""} onChange={(e) => set({ notes: e.target.value || null })} onKeyDown={notesEnter} placeholder="Notes — lists keep going when you press return" rows={4} style={{ fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
-        </div>
+        <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes — lists keep going when you press return" />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── List sheet (Lists segment) — a place to write, not to schedule ──────────
+
+function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
+  t: Todo; today: string; isNew?: boolean;
+  onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
+}) {
+  const [d, setD] = useState<Todo>(t);
+  const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
+  const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
+  const [remind, setRemind] = useState(!!t.dueDate);
+
+  return (
+    <>
+      <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
+      <div role="dialog" aria-label="Edit list" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto" }}>
+        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name the list — “Gift ideas 🎁”" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
+
+        {/* The content IS the feature — big editor, focused immediately on a new list. */}
+        <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} rows={9} autoFocus={isNew && !!t.title}
+          placeholder={"Write here — • for a list, ☑ to tick things off later.\nEverything is searchable."} />
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)}>📌 {d.priority > 0 ? "Pinned" : "Pin to top"}</button>
+          <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)}>⏰ {remind ? "Reminder on" : "Remind me"}</button>
+        </div>
+
+        {remind && (
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
+            <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Date
+              <input type="date" className="cc-input" value={d.dueDate ?? ""} min={today} onChange={(e) => set({ dueDate: e.target.value || null })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            </label>
+            <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Time (optional)
+              <input type="time" className="cc-input" value={d.dueTime ?? ""} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            </label>
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
+          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
+          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this list?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
         </div>
       </div>
     </>
@@ -233,36 +356,52 @@ export default function TodoPage() {
   const [area, setAreaState] = useState<Area>("personal");
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
-    try { if (localStorage.getItem("cc-todo-area") === "work") setAreaState("work"); } catch { /* ignore */ }
+    try { const a = localStorage.getItem("cc-todo-area"); if (a === "work" || a === "list") setAreaState(a); } catch { /* ignore */ }
   }, []);
-  const setArea = (a: Area) => { setAreaState(a); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
+  const setArea = (a: Area) => { setAreaState(a); setText(""); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
+  const isLists = area === "list";
   const [filter, setFilter] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState<Todo | null>(null);
-  const [draft, setDraft] = useState<Todo | null>(null); // new task being composed in the sheet
+  const [draft, setDraft] = useState<Todo | null>(null); // new entry being composed in a sheet
   const [showDone, setShowDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const parsed = useMemo(() => (text.trim() ? parseQuickAdd(text, today) : null), [text, today]);
+  const parsed = useMemo(() => (!isLists && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists]);
   const projects = useMemo(() => [...new Set(all.filter((t) => (t.area ?? "personal") === area).map((t) => t.project).filter((p): p is string => !!p))].sort(), [all, area]);
 
-  // "+" opens the full sheet so every detail is set at creation. Whatever was
-  // typed is already parsed into it ("fri 9am #money !!" lands pre-filled).
+  // "+" opens the full sheet so every detail is set at creation. For tasks the typed
+  // line is already parsed in ("fri 9am #money !!"); for lists the line is the name.
   const submit = () => {
-    const now = Date.now();
+    const ts = Date.now();
     setDraft({
-      clientId: newTodoId(), title: parsed?.title ?? "", area, notes: null,
-      project: parsed?.project ?? filter, dueDate: parsed?.dueDate ?? null, dueTime: parsed?.dueTime ?? null,
-      evening: parsed?.evening ?? false, someday: parsed?.someday ?? false, priority: parsed?.priority ?? 0,
-      sortOrder: now, doneAt: null, createdAt: now, updatedAt: now, deleted: false,
+      clientId: newTodoId(),
+      title: isLists ? text.trim() : parsed?.title ?? "",
+      area, notes: null,
+      project: isLists ? null : parsed?.project ?? filter,
+      dueDate: isLists ? null : parsed?.dueDate ?? null,
+      dueTime: isLists ? null : parsed?.dueTime ?? null,
+      evening: !isLists && (parsed?.evening ?? false),
+      someday: !isLists && (parsed?.someday ?? false),
+      priority: isLists ? 0 : parsed?.priority ?? 0,
+      sortOrder: ts, doneAt: null, createdAt: ts, updatedAt: ts, deleted: false,
     });
   };
 
   const inArea = all.filter((t) => (t.area ?? "personal") === area);
-  const visible = filter ? inArea.filter((t) => t.project === filter) : inArea;
+  const visible = filter && !isLists ? inArea.filter((t) => t.project === filter) : inArea;
+
+  // Tasks (Personal / Work)
   const openTasks = visible.filter((t) => !t.doneAt);
   const doneToday = visible.filter((t) => t.doneAt !== null).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0));
   const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
   const dueCount = groups.filter((g) => g.key === "overdue" || g.key === "today").reduce((s, g) => s + g.items.length, 0);
+
+  // Lists — pinned first, then most recently touched; search covers names and content.
+  const q = query.trim().toLowerCase();
+  const lists = (isLists ? visible : [])
+    .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q))
+    .sort((a, b) => (b.priority > 0 ? 1 : 0) - (a.priority > 0 ? 1 : 0) || b.updatedAt - a.updatedAt);
 
   const previewBits = parsed ? [
     parsed.someday ? "Someday" : parsed.dueDate ? fmtDue(parsed.dueDate, today) : null,
@@ -277,15 +416,17 @@ export default function TodoPage() {
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
           <div className="sub">
-            {loading && !data ? "—" : dueCount === 0 ? "nothing due today" : `${dueCount} due today`}
-            {openTasks.length ? ` · ${openTasks.length} open` : ""}{stale ? " · saved copy" : ""}
+            {loading && !data ? "—"
+              : isLists ? `${inArea.length} list${inArea.length === 1 ? "" : "s"} kept`
+              : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${openTasks.length ? ` · ${openTasks.length} open` : ""}`}
+            {stale ? " · saved copy" : ""}
           </div>
         </div>
       </div>
 
-      {/* Personal · Work */}
-      <div role="tablist" aria-label="List" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
-        {AREAS.map((a) => {
+      {/* Personal · Work · Lists */}
+      <div role="tablist" aria-label="List" style={{ display: "grid", gridTemplateColumns: `repeat(${SEGMENTS.length}, 1fr)`, gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
+        {SEGMENTS.map((a) => {
           const on = a.key === area;
           const n = badgeCount(all, today, a.key);
           return (
@@ -298,44 +439,74 @@ export default function TodoPage() {
         })}
       </div>
 
-      {projects.length > 0 && (
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
-          {[null, ...projects].map((p) => (
-            <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "var(--accent-soft)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
-              {p ? `#${p}` : "All"}
-            </button>
+      {/* ── Lists segment ── */}
+      {isLists && (
+        <>
+          {inArea.length > 3 && (
+            <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search lists and what's in them…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
+          )}
+
+          {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 48 }} />)}</div></div>}
+
+          {data && lists.length === 0 && (
+            <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
+              {q ? `Nothing matches “${query}”.` : <>Things to keep, not to do — running lists you&apos;ll want later. Type a name below — try <span style={{ color: "var(--ink-2)" }}>“Gift ideas 🎁”</span> — and start writing.</>}
+            </div></div>
+          )}
+
+          {lists.length > 0 && (
+            <section className="cc-card">
+              <div style={{ padding: "0 8px 0 0" }}>
+                {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}
+              </div>
+            </section>
+          )}
+        </>
+      )}
+
+      {/* ── Tasks segments ── */}
+      {!isLists && (
+        <>
+          {projects.length > 0 && (
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
+              {[null, ...projects].map((p) => (
+                <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "var(--accent-soft)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
+                  {p ? `#${p}` : "All"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
+
+          {data && openTasks.length === 0 && (
+            <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
+              Nothing on the {area} list{filter ? ` in #${filter}` : ""}. Type below — try <span style={{ color: "var(--ink-2)" }}>“Call the bank tomorrow 10am #money !!”</span>
+            </div></div>
+          )}
+
+          {groups.filter((g) => g.items.length > 0).map((g) => (
+            <section key={g.key} className="cc-card">
+              <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
+              <div style={{ padding: "0 8px 0 0" }}>
+                {g.items.map((t) => (
+                  <Row key={t.clientId} t={t} today={today} showDate={g.key === "upcoming" || g.key === "overdue"}
+                    onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)}
+                    onDefer={g.key === "overdue" || g.key === "today" || g.key === "evening" ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined} />
+                ))}
+              </div>
+            </section>
           ))}
-        </div>
-      )}
 
-      {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
-
-      {data && openTasks.length === 0 && (
-        <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-          Nothing on the {area} list{filter ? ` in #${filter}` : ""}. Type below — try <span style={{ color: "var(--ink-2)" }}>“Call the bank tomorrow 10am #money !!”</span>
-        </div></div>
-      )}
-
-      {groups.filter((g) => g.items.length > 0).map((g) => (
-        <section key={g.key} className="cc-card">
-          <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
-          <div style={{ padding: "0 8px 0 0" }}>
-            {g.items.map((t) => (
-              <Row key={t.clientId} t={t} today={today} showDate={g.key === "upcoming" || g.key === "overdue"}
-                onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)}
-                onDefer={g.key === "overdue" || g.key === "today" || g.key === "evening" ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {doneToday.length > 0 && (
-        <section className="cc-card">
-          <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-            <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
-          </button>
-          {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}</div>}
-        </section>
+          {doneToday.length > 0 && (
+            <section className="cc-card">
+              <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+                <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
+              </button>
+              {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}</div>}
+            </section>
+          )}
+        </>
       )}
 
       {/* Quick add — pinned above the tab bar */}
@@ -347,21 +518,28 @@ export default function TodoPage() {
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={filter ? `Add to #${filter}…` : area === "work" ? "Add a work task… “fri 9am !!”" : "Add a task… “tomorrow 10am #money !!”"} enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
+            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
+              placeholder={isLists ? "New list… “Gift ideas 🎁”" : filter ? `Add to #${filter}…` : area === "work" ? "Add a work task… “fri 9am !!”" : "Add a task… “tomorrow 10am #money !!”"}
+              enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
         </div>
       </form>
 
-      {open && <Sheet t={open} today={today} projects={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />}
-      {draft && (
-        <Sheet t={draft} today={today} projects={projects} isNew
-          onSave={(t) => { upsert(t); setText(""); }}
-          onDelete={() => { /* discard the draft */ }}
-          onClose={() => setDraft(null)} />
-      )}
+      {open && ((open.area ?? "personal") === "list"
+        ? <ListSheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
+        : <Sheet t={open} today={today} projects={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />)}
+      {draft && (draft.area === "list"
+        ? <ListSheet t={draft} today={today} isNew
+            onSave={(t) => { upsert(t); setText(""); }}
+            onDelete={() => { /* discard the draft */ }}
+            onClose={() => setDraft(null)} />
+        : <Sheet t={draft} today={today} projects={projects} isNew
+            onSave={(t) => { upsert(t); setText(""); }}
+            onDelete={() => { /* discard the draft */ }}
+            onClose={() => setDraft(null)} />)}
 
-      <style>{`.todo-row-wrap:last-child { border-bottom: none !important; } .todo-row > button:active { background: var(--fill-1); }
+      <style>{`.todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }
         @media (min-width: 768px) { form[style*="position: fixed"] { bottom: 0 !important; left: 56px !important; } }`}</style>
     </div>
   );
