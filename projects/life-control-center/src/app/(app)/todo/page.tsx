@@ -45,7 +45,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer }: {
     t.dueTime,
     t.evening && !showDate && t.dueDate === today ? null : t.evening && t.dueDate ? "evening" : null,
     t.project ? `#${t.project}` : null,
-    t.notes ? "…" : null,
+    t.notes ? "has notes" : null,
   ].filter(Boolean).join(" · ");
 
   return (

@@ -144,12 +144,11 @@ export default function SetsPage() {
       {/* Exercises */}
       <section className="cc-card">
         <div className="cc-card-head">
-          <span className="title">{running ? "Tap a set when it's done" : "Plan · tap numbers to change"}</span>
-          <span className="tail" style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            rest
-            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(-15)} style={{ minHeight: 32, minWidth: 32, padding: 0, borderRadius: 8 }} aria-label="less rest">−</button>
-            <span className="tabular-nums" style={{ minWidth: 34, textAlign: "center" }}>{w.restSeconds}s</span>
-            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(15)} style={{ minHeight: 32, minWidth: 32, padding: 0, borderRadius: 8 }} aria-label="more rest">+</button>
+          <span className="title">{running ? "Tap a set when done" : "Plan"}</span>
+          <span className="tail" style={{ display: "flex", gap: 8, alignItems: "center", overflow: "visible" }}>
+            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(-15)} style={{ minHeight: 40, minWidth: 40, padding: 0, borderRadius: 10, fontSize: 16 }} aria-label="less rest">−</button>
+            <span className="tabular-nums" style={{ minWidth: 60, textAlign: "center", fontSize: 12 }}>rest {w.restSeconds}s</span>
+            <button className="cc-btn cc-btn-ghost" onClick={() => changeRest(15)} style={{ minHeight: 40, minWidth: 40, padding: 0, borderRadius: 10, fontSize: 16 }} aria-label="more rest">+</button>
           </span>
         </div>
         <div style={{ padding: "0 14px" }}>

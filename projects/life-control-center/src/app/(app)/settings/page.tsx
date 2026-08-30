@@ -171,7 +171,7 @@ export default function SettingsPage() {
 
       {/* Kettlebell */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Kettlebell</span><span className="tail">stay at 12 until every move is mastered</span></div>
+        <div className="cc-card-head"><span className="title">Kettlebell</span><span className="tail">16 once every move is mastered</span></div>
         <div className="cc-card-body">
           <Segmented value={kettlebell} options={KETTLEBELLS} onChange={setKettlebell} />
         </div>
@@ -282,7 +282,7 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">Phase 6</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-08-30</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 14, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>

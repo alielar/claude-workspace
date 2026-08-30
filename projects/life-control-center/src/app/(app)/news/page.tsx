@@ -367,8 +367,8 @@ function ago(iso: string): string {
 
 function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
   return (
-    <a href={v.url} target="_blank" rel="noopener noreferrer" className="news-video" style={{ display: "grid", gridTemplateColumns: "112px minmax(0, 1fr)", gap: 12, alignItems: "center", textDecoration: "none", color: "inherit", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
-      <span style={{ position: "relative", display: "block", width: 112, aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", background: "var(--fill-2)" }}>
+    <a href={v.url} target="_blank" rel="noopener noreferrer" className="news-video" style={{ display: "grid", gap: 8, alignContent: "start", width: 180, flexShrink: 0, scrollSnapAlign: "start", textDecoration: "none", color: "inherit" }}>
+      <span style={{ position: "relative", display: "block", width: 180, aspectRatio: "16 / 9", borderRadius: 10, overflow: "hidden", background: "var(--fill-2)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail, plain <img> keeps the bundle small */}
         <img src={v.thumbnail} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         <span aria-hidden style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -485,11 +485,11 @@ export default function NewsPage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button className="cc-btn cc-btn-ghost" onClick={openArchive} style={{ minHeight: 40, borderRadius: 12 }} aria-label="Archive">
+          <button className="cc-btn cc-btn-ghost" onClick={openArchive} style={{ minHeight: 44, minWidth: 44, borderRadius: 12 }} aria-label="Archive">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
           </button>
           {!isViewingPast && (
-            <button className="cc-btn cc-btn-ghost" onClick={handleRefreshClick} disabled={generating || loading} style={{ minHeight: 40, borderRadius: 12 }} aria-label="Refresh">
+            <button className="cc-btn cc-btn-ghost" onClick={handleRefreshClick} disabled={generating || loading} style={{ minHeight: 44, minWidth: 44, borderRadius: 12 }} aria-label="Refresh">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: generating ? "spin 1s linear infinite" : "none" }}>
                 <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
               </svg>
@@ -547,8 +547,8 @@ export default function NewsPage() {
       {/* Videos */}
       {!generating && !displayedLoading && videos.length > 0 && (
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">▶ Videos</span><span className="tail">opens YouTube</span></div>
-          <div style={{ padding: "0 16px" }}>
+          <div className="cc-card-head"><span className="title">▶ Videos</span><span className="tail">swipe · opens YouTube</span></div>
+          <div className="news-videos" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "12px 16px 14px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
             {videos.map(v => <VideoCard key={v.id} v={v} color={COLUMNS.find(c => c.categories.includes(v.category))?.color ?? "var(--ink-2)"} />)}
           </div>
         </section>
@@ -591,7 +591,7 @@ export default function NewsPage() {
 
       <style>{`
         @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
-        .news-video:last-child { border-bottom: none !important; }
+        .news-videos::-webkit-scrollbar { display: none; }
         .news-video:active { opacity: 0.7; }
       `}</style>
     </div>

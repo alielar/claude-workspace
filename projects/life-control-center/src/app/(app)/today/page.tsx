@@ -98,8 +98,22 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
   const auto = item.source === "workout" || item.autoSource !== null;
   const done = item.completedToday;
   const accent = itemColor(item.color);
-  const action = !done && !compact ? routineAction(item) : null;
+  const action = !done ? routineAction(item) : null;
   const notes = compact ? null : displayNotes(item, currentBook);
+
+  // The workout row is not a tick box — it's a door to the Train tab.
+  if (item.source === "workout") {
+    return (
+      <Link href="/train" className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 56, padding: "12px 4px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
+        <span aria-hidden style={{ fontSize: 22, textAlign: "center" }}>{done ? "✅" : "🏋️"}</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: done ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title.replace(/^Train · /, "")}</span>
+          {item.notes && <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2 }}>{item.notes}</span>}
+        </span>
+        <span className={done ? "cc-pill" : "cc-btn cc-btn-primary"} style={done ? { fontSize: 12 } : { minHeight: 44, padding: "0 16px", borderRadius: 12 }}>{done ? "done" : "▶ Train"}</span>
+      </Link>
+    );
+  }
 
   return (
     <div
@@ -182,7 +196,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
             target="_blank"
             rel="noopener noreferrer"
             className="cc-btn cc-btn-primary"
-            style={{ alignSelf: "center", minHeight: 44, padding: "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
+            style={{ alignSelf: "center", minHeight: 44, padding: compact ? "0 12px" : "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
           >
             ▶ {action.label}
           </a>
@@ -190,7 +204,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
           <Link
             href={action.href}
             className="cc-btn cc-btn-primary"
-            style={{ alignSelf: "center", minHeight: 44, padding: "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
+            style={{ alignSelf: "center", minHeight: 44, padding: compact ? "0 12px" : "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
           >
             ▶ {action.label}
           </Link>
@@ -488,7 +502,7 @@ export default function TodayPage() {
 
       {/* Progress */}
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: "var(--f-mono)", color: "var(--ink-3)", marginBottom: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontFamily: "var(--f-mono)", color: "var(--ink-3)", marginBottom: 6 }}>
           <span>{loading && !data ? "—" : `${doneCount} / ${total} done`}</span>
           <span>{loading && !data ? "" : `${pct}%`}</span>
         </div>
@@ -500,7 +514,7 @@ export default function TodayPage() {
       {/* NOW */}
       <Card
         title={PART_LABEL[part]}
-        tail={<Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-3)" }}>Edit</Link>}
+        tail={<Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 13, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
       >
         {loading && !data && (
           <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>

@@ -154,7 +154,7 @@ export default function ChecklistPage() {
                   <span style={{ minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 15.5 }}>{i.title}</span>
                     <span style={{ display: "block", fontSize: 12, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {i.kind === "habit" ? "habit I'm building" : i.routineKey ? "routine" : "daily"}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "")}` : ""}
+                      {i.kind === "habit" ? "habit I'm building" : i.routineKey ? "routine" : "daily"}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]} link` : ""}
                     </span>
                   </span>
                   <span style={{ color: "var(--ink-4)" }}>›</span>
