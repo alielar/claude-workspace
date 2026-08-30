@@ -299,15 +299,94 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
   const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
   const [remind, setRemind] = useState(!!t.dueDate);
 
+  // Two shapes for the same stored text: a LIST (each line "- item", shown as real
+  // rows) or a DOC (free text). Detected from the content; switchable any time.
+  const looksLikeList = (notes: string | null) => {
+    const lines = (notes ?? "").split("\n").filter((l) => l.trim());
+    return lines.length === 0 || lines.every((l) => /^- /.test(l));
+  };
+  const [mode, setMode] = useState<"list" | "doc">(isNew || looksLikeList(t.notes) ? "list" : "doc");
+  const items = (d.notes ?? "").split("\n").map((l) => l.replace(/^- /, "")).filter((l) => l.trim());
+  const writeItems = (list: string[]) => set({ notes: list.length ? list.map((i) => `- ${i.trim()}`).join("\n") : null });
+  const toList = () => { writeItems((d.notes ?? "").split("\n").map((l) => l.replace(/^- /, "").replace(/^\d+\. /, "")).filter((l) => l.trim())); setMode("list"); };
+
+  const [newItem, setNewItem] = useState("");
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+  const addItem = () => {
+    if (!newItem.trim()) return;
+    writeItems([...items, newItem]);
+    setNewItem("");
+  };
+  const commitEdit = () => {
+    if (editIdx === null) return;
+    const next = [...items];
+    if (editText.trim()) next[editIdx] = editText; else next.splice(editIdx, 1);
+    writeItems(next);
+    setEditIdx(null);
+  };
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= items.length) return;
+    const next = [...items];
+    [next[i], next[j]] = [next[j], next[i]];
+    writeItems(next);
+    if (editIdx === i) setEditIdx(j);
+  };
+
+  const seg = (on: boolean): React.CSSProperties => ({
+    minHeight: 40, borderRadius: 10, border: "none", font: "inherit", fontSize: 15, fontWeight: on ? 600 : 500,
+    color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", cursor: "pointer",
+  });
+
   return (
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto" }}>
-        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
+      <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto", alignContent: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
+          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
+          <div role="tablist" aria-label="Shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 3, borderRadius: 12, background: "var(--fill-1)", minWidth: 128 }}>
+            <button role="tab" aria-selected={mode === "list"} onClick={toList} style={seg(mode === "list")}>List</button>
+            <button role="tab" aria-selected={mode === "doc"} onClick={() => setMode("doc")} style={seg(mode === "doc")}>Doc</button>
+          </div>
+        </div>
 
-        {/* The content IS the feature — big editor, focused immediately on a new list. */}
-        <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} rows={9} autoFocus={isNew && !!t.title}
-          placeholder="" />
+        {mode === "doc" ? (
+          <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} rows={10} placeholder="" />
+        ) : (
+          <div style={{ display: "grid", gap: 2 }}>
+            {items.length === 0 && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet — add the first item below.</div>}
+            {items.map((it, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "14px 1fr auto", gap: 10, alignItems: "center", minHeight: 48, borderBottom: "1px solid var(--line)" }}>
+                <span aria-hidden style={{ width: 5, height: 5, borderRadius: 3, background: "var(--violet)", justifySelf: "center" }} />
+                {editIdx === i ? (
+                  <input
+                    className="cc-input" value={editText} autoFocus
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); }}
+                    style={{ fontSize: 16, minHeight: 40 }}
+                  />
+                ) : (
+                  <button onClick={() => { setEditIdx(i); setEditText(it); }} style={{ background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, lineHeight: 1.4, padding: "10px 0", cursor: "pointer", minWidth: 0, overflowWrap: "anywhere" }}>
+                    {it}
+                  </button>
+                )}
+                <span style={{ display: "flex", gap: 2 }}>
+                  <button onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up" style={{ width: 34, height: 40, background: "transparent", border: "none", color: i === 0 ? "var(--ink-4)" : "var(--ink-3)", fontSize: 14, cursor: "pointer" }}>↑</button>
+                  <button onClick={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down" style={{ width: 34, height: 40, background: "transparent", border: "none", color: i === items.length - 1 ? "var(--ink-4)" : "var(--ink-3)", fontSize: 14, cursor: "pointer" }}>↓</button>
+                  <button onClick={() => writeItems(items.filter((_, j) => j !== i))} aria-label="Remove item" style={{ width: 34, height: 40, background: "transparent", border: "none", color: "var(--ink-3)", fontSize: 15, cursor: "pointer" }}>✕</button>
+                </span>
+              </div>
+            ))}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
+              <input className="cc-input" value={newItem} autoFocus={isNew} onChange={(e) => setNewItem(e.target.value)} enterKeyHint="done"
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
+                placeholder="Add an item" style={{ fontSize: 16, minHeight: 46, borderRadius: 12 }} />
+              <button onClick={addItem} disabled={!newItem.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 46, minWidth: 46, borderRadius: 12, fontSize: 18, padding: 0 }} aria-label="Add item">+</button>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>

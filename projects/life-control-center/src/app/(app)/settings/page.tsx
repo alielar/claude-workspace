@@ -214,24 +214,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Reminders */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "—" : "off"}</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          <p style={{ margin: 0 }}>A to-do that’s due and not ticked gets a notification every 30 minutes until you tick it. Quiet from 23:00 to 08:00. Personal and Work nag separately.</p>
-          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app — add A L I to the home screen first, then come back here.</p>}
-          {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Notifications are blocked for this app in iOS Settings → Notifications → A L I.</p>}
-          {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>This browser can’t receive notifications.</p>}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
-              {push === "on" ? "Turn off on this device" : "Turn on reminders"}
-            </button>
-            {push === "on" && <button className="cc-btn cc-btn-ghost" onClick={testPush}>Send a test</button>}
-          </div>
-          {pushMsg && <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}>{pushMsg}</p>}
-        </div>
-      </section>
-
       {/* Training days */}
       <section className="cc-card">
         <div className="cc-card-head"><span className="title">Training days</span><span className="tail">{plannedCount ? `${plannedCount} a week` : "any days"}</span></div>
@@ -357,18 +339,6 @@ export default function SettingsPage() {
         </div>
       </Link>
 
-      {/* Home-screen widget (via Scriptable — iOS gives widgets to native apps only) */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Home-screen widget</span></div>
-        <div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          <p style={{ margin: "0 0 10px" }}>iOS only lets native apps draw widgets, so this goes through the free <b>Scriptable</b> app. Once: install Scriptable, paste the script, add a Scriptable widget and point it at the script named <b>ALI</b>.</p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Get Scriptable</a>
-            <a href="/api/widget/script" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Open the script</a>
-          </div>
-        </div>
-      </section>
-
       {/* Install hint */}
       {!standalone && (
         <section className="cc-card">
@@ -380,6 +350,24 @@ export default function SettingsPage() {
           </div>
         </section>
       )}
+
+      {/* Reminders */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "—" : "off"}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
+          <p style={{ margin: 0 }}>A to-do that’s due and not ticked gets a notification every 30 minutes until you tick it. Quiet from 23:00 to 08:00. Personal and Work nag separately.</p>
+          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app — add A L I to the home screen first, then come back here.</p>}
+          {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Notifications are blocked for this app in iOS Settings → Notifications → A L I.</p>}
+          {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>This browser can’t receive notifications.</p>}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
+              {push === "on" ? "Turn off on this device" : "Turn on reminders"}
+            </button>
+            {push === "on" && <button className="cc-btn cc-btn-ghost" onClick={testPush}>Send a test</button>}
+          </div>
+          {pushMsg && <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}>{pushMsg}</p>}
+        </div>
+      </section>
 
       {/* Account */}
       {me?.required && (
