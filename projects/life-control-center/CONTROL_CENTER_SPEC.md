@@ -325,11 +325,11 @@ Any future session picks these up from here; Ali should not have to repeat them.
    (Mon–Sun per workout; a day belongs to one workout). Off = the old "4 a week, any days,
    alternating". On = Today shows the planned workout or a quiet "Rest day · next: …" row, Train
    says "Up next · Tuesday", weekly target = number of planned days.
-7. **Running lists & notes** (added 2026-08-30): a third kind of entry that is not a to-do —
-   running lists to keep and reference (e.g. gift ideas). Three options proposed to Ali, decision
-   pending: (A) third segment in To-do "Personal · Work · Lists" (no checkboxes/dates/nags),
-   (B) separate /lists screen reached from Today + Settings like Books, (C) convention: Someday +
-   #list project. Ali picks a letter before building. Also noted: iOS cannot open an installed PWA
+7. ~~**Running lists & notes.**~~ Built 2026-08-30 as option **A** (Ali's pick): third segment
+   "Personal · Work · Lists" in To-do. Lists = `todos.area = "list"`: no checkbox, no buckets,
+   pinned-first then last-touched, search over titles + content (appears past 3 lists), quick add
+   opens straight into the big notes editor, optional reminder (date+time) surfaces it on Today /
+   badge / its own "📒" nag notification. Row shows first line or item count + last-touched. Also noted: iOS cannot open an installed PWA
    from a widget (no URL scheme; browser opens instead) and the widget's "Scriptable" label is
    stamped by iOS — both unfixable without a native WidgetKit wrapper.
 8. **Word bank / spaced repetition revival.** Archived at `/wordbank`, restorable in one line

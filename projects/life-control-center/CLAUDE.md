@@ -85,7 +85,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Table `todos`; every write is `PUT /api/todos` with the **full task** keyed by a phone-generated `clientId` (upsert, last-writer-wins on `updatedAt`, soft `deleted`) — replay-safe from the outbox.
 - `src/lib/todo/types.ts` — `parseQuickAdd()` (tomorrow/fri/weekend/next week/15/9/10am/#project/!!/someday), `bucketOf()` (overdue · today · evening · upcoming · anytime · someday), `badgeCount()`.
 - `src/lib/todo/useTodos.ts` — cached list, optimistic upsert, and it sets the **home-screen badge** (`navigator.setAppBadge`) to the count due today/overdue. Reminders are due date + time shown in the app and the badge; push notifications are Phase 7.
-- `area: "work" | "personal"` on every task (Personal · Work switch on /todo, remembered in `localStorage["cc-todo-area"]`; `badgeCount(todos, today, area?)`).
+- `area: "work" | "personal" | "list"` (segments on /todo, remembered in `localStorage["cc-todo-area"]`; `badgeCount(todos, today, area?)`). `area="list"` = kept lists/notes (spec §7c item 7): no buckets, pin = `priority>0`, search client-side, optional reminder via dueDate/dueTime → Today card + "📒" nag.
 - Today shows a "To-do" card with up to 4 tasks due today/overdue (evening tasks wait until the evening); tick inline.
 - Design borrowed: Things (Today/Evening/Anytime/Someday), Todoist (one-line natural-language quick add), TickTick (one-tap "→ tomorrow" defer). Deliberately no sub-tasks, filters or databases.
 

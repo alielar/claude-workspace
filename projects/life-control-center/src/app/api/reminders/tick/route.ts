@@ -54,12 +54,13 @@ export async function GET(req: NextRequest) {
   // makes you forget the task it isn't about.
   let sent = 0;
   const stamped: number[] = [];
-  for (const area of ["personal", "work"] as const) {
-    const mine = due.filter((t) => (t.area === "work" ? "work" : "personal") === area);
-    if (mine.length === 0 || !toNag.some((t) => (t.area === "work" ? "work" : "personal") === area)) continue;
+  for (const area of ["personal", "work", "list"] as const) {
+    const mine = due.filter((t) => ((t.area === "work" || t.area === "list") ? t.area : "personal") === area);
+    if (mine.length === 0 || !toNag.some((t) => ((t.area === "work" || t.area === "list") ? t.area : "personal") === area)) continue;
     const titles = mine.map((t) => t.title).slice(0, 3).join(" · ") + (mine.length > 3 ? ` +${mine.length - 3}` : "");
     const r = await sendToUser(userId, {
-      title: area === "work" ? `Work · ${mine.length} to-do${mine.length === 1 ? "" : "s"} due` : `${mine.length} to-do${mine.length === 1 ? "" : "s"} due`,
+      title: area === "list" ? `📒 ${mine.length === 1 ? mine[0].title : `${mine.length} list reminders`}`
+        : area === "work" ? `Work · ${mine.length} to-do${mine.length === 1 ? "" : "s"} due` : `${mine.length} to-do${mine.length === 1 ? "" : "s"} due`,
       body: titles,
       tag: `nag-${area}`,
       url: "/todo",

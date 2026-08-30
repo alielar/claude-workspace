@@ -14,8 +14,9 @@
 
 export type Priority = 0 | 1 | 2; // none · important · urgent
 
-/** Two lists, same capture: Work and Personal (spec §7c item 4). */
-export type Area = "work" | "personal";
+/** Work and Personal are tasks; "list" entries are kept things — running lists
+ * and notes (spec §7c item 7): no buckets, no nagging unless given a reminder date. */
+export type Area = "work" | "personal" | "list";
 export const AREAS: { key: Area; label: string }[] = [
   { key: "personal", label: "Personal" },
   { key: "work", label: "Work" },
