@@ -18,6 +18,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTodos } from "@/lib/todo/useTodos";
+import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
 import {
   addDays, AREAS, badgeCount, bucketOf, fmtDue, nextWeekend, parseQuickAdd, sortTodos,
@@ -75,8 +76,8 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer }: {
 
 // ─── Detail sheet ─────────────────────────────────────────────────────────────
 
-function Sheet({ t, today, projects, onSave, onDelete, onClose }: {
-  t: Todo; today: string; projects: string[];
+function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }: {
+  t: Todo; today: string; projects: string[]; isNew?: boolean;
   onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
 }) {
   const [d, setD] = useState<Todo>(t);
@@ -115,12 +116,12 @@ function Sheet({ t, today, projects, onSave, onDelete, onClose }: {
           </label>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Time (reminder)
-            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44 }} />
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Time (reminder)
+            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
           </label>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Project
-            <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 17, minHeight: 44 }} />
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Project
+            <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
             <datalist id="todo-projects">{projects.map((p) => <option key={p} value={p} />)}</datalist>
           </label>
         </div>
@@ -134,8 +135,8 @@ function Sheet({ t, today, projects, onSave, onDelete, onClose }: {
         <textarea className="cc-input" value={d.notes ?? ""} onChange={(e) => set({ notes: e.target.value || null })} placeholder="Notes" rows={2} style={{ fontSize: 16, resize: "vertical" }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
-          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>Done</button>
-          <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label="Delete">✕</button>
+          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
+          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
         </div>
       </div>
     </>
@@ -150,7 +151,7 @@ export default function TodoPage() {
   const today = checklistToday(now);
   const eveningNow = dayPart(now) === "evening";
 
-  const { data, loading, stale, add, upsert, toggleDone, remove } = useTodos(today);
+  const { data, loading, stale, upsert, toggleDone, remove } = useTodos(today);
   const all = useMemo(() => (data?.todos ?? []).filter((t) => !t.deleted), [data]);
 
   const [text, setText] = useState("");
@@ -162,17 +163,23 @@ export default function TodoPage() {
   const setArea = (a: Area) => { setAreaState(a); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
   const [filter, setFilter] = useState<string | null>(null);
   const [open, setOpen] = useState<Todo | null>(null);
+  const [draft, setDraft] = useState<Todo | null>(null); // new task being composed in the sheet
   const [showDone, setShowDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = useMemo(() => (text.trim() ? parseQuickAdd(text, today) : null), [text, today]);
   const projects = useMemo(() => [...new Set(all.filter((t) => (t.area ?? "personal") === area).map((t) => t.project).filter((p): p is string => !!p))].sort(), [all, area]);
 
+  // "+" opens the full sheet so every detail is set at creation. Whatever was
+  // typed is already parsed into it ("fri 9am #money !!" lands pre-filled).
   const submit = () => {
-    if (!parsed || !parsed.title) return;
-    add({ ...parsed, area, project: parsed.project ?? filter });
-    setText("");
-    inputRef.current?.focus();
+    const now = Date.now();
+    setDraft({
+      clientId: newTodoId(), title: parsed?.title ?? "", area, notes: null,
+      project: parsed?.project ?? filter, dueDate: parsed?.dueDate ?? null, dueTime: parsed?.dueTime ?? null,
+      evening: parsed?.evening ?? false, someday: parsed?.someday ?? false, priority: parsed?.priority ?? 0,
+      sortOrder: now, doneAt: null, createdAt: now, updatedAt: now, deleted: false,
+    });
   };
 
   const inArea = all.filter((t) => (t.area ?? "personal") === area);
@@ -266,12 +273,18 @@ export default function TodoPage() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={filter ? `Add to #${filter}…` : area === "work" ? "Add a work task… “fri 9am !!”" : "Add a task… “tomorrow 10am #money !!”"} enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
-            <button type="submit" className="cc-btn cc-btn-primary" disabled={!parsed?.title} style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
+            <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
         </div>
       </form>
 
       {open && <Sheet t={open} today={today} projects={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />}
+      {draft && (
+        <Sheet t={draft} today={today} projects={projects} isNew
+          onSave={(t) => { upsert(t); setText(""); }}
+          onDelete={() => { /* discard the draft */ }}
+          onClose={() => setDraft(null)} />
+      )}
 
       <style>{`.todo-row:last-child { border-bottom: none !important; } .todo-row > button:active { background: var(--fill-1); }
         @media (min-width: 768px) { form[style*="position: fixed"] { bottom: 0 !important; left: 56px !important; } }`}</style>
