@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
   const email = (info.email ?? "").toLowerCase();
   if (!email || info.email_verified === false) return fail("profile");
 
-  // Only Ali gets in: the one user in the database (or USER_EMAIL, if set).
+  // Only Ali gets in: the addresses in USER_EMAIL (comma-separated) plus the one user in the database.
   const allowed = new Set<string>();
-  if (process.env.USER_EMAIL) allowed.add(process.env.USER_EMAIL.toLowerCase());
+  for (const e of (process.env.USER_EMAIL ?? "").split(",")) if (e.trim()) allowed.add(e.trim().toLowerCase());
   try {
     const rows = await db.select({ email: users.email }).from(users).limit(5);
     for (const r of rows) if (r.email) allowed.add(r.email.toLowerCase());

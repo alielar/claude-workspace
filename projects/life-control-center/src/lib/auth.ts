@@ -18,7 +18,7 @@ type Session = {
 export async function auth(): Promise<Session | null> {
   const userId = await getUserId();
   if (!userId) return null; // no user in DB yet — graceful degradation
-  let email = process.env.USER_EMAIL ?? "ali@control.center";
+  let email = (process.env.USER_EMAIL ?? "ali@control.center").split(",")[0].trim();
   if (authRequired()) {
     const h = await headers();
     const keyOk = !!process.env.APP_KEY && h.get("x-app-key") === process.env.APP_KEY;

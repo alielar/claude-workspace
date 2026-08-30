@@ -291,7 +291,7 @@ Any future session picks these up from here; Ali should not have to repeat them.
    tap opens `/today`. Instructions in Settings. A real native widget would need a Capacitor
    wrapper + Apple developer account (€99/yr) — not worth it for one tile.
 2. **Google sign-in / login.** Built 2026-08-30, hand-rolled (no NextAuth): `/api/auth/google` →
-   Google → `/api/auth/callback/google` checks the email is the one DB user → signed cookie
+   Google → `/api/auth/callback/google` checks the email is in `USER_EMAIL` (comma-separated: personal al.elaraki@elaraki.ac.ma first, work ali.elaraki@edueasy.group) or the DB user → signed cookie
    `ali_session` (HMAC with AUTH_SECRET, 400 days, re-issued monthly by the proxy — sign in once).
    `src/proxy.ts` gates pages (→ `/login`) and APIs (401) **only when `AUTH_REQUIRED=1`** is set in
    Vercel; widget + pinger pass with the `x-app-key` header/`?key=`. Google Cloud OAuth client must
