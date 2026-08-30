@@ -185,7 +185,6 @@ export default function TrainPage() {
         </div>
       </section>
 
-      <Link href="/archive" style={{ fontSize: 14, color: "var(--ink-4)", textDecoration: "none" }}>Old gym workouts are in the archive →</Link>
     </div>
   );
 }

@@ -16,7 +16,6 @@ import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
 import { useCached, fetchJson, readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
-import { ARCHIVE } from "@/lib/archive";
 import { YT_CHANNELS } from "@/lib/news/youtube";
 import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
@@ -195,7 +194,7 @@ export default function SettingsPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Settings</h1>
-          <div className="sub">Appearance, kettlebell, training days, news, books, archive</div>
+          <div className="sub">Appearance, kettlebell, training days, news, books</div>
         </div>
       </div>
 
@@ -381,17 +380,6 @@ export default function SettingsPage() {
           </div>
         </section>
       )}
-
-      {/* Archive */}
-      <section className="cc-card">
-        <div className="cc-card-head">
-          <span className="title">Archive</span>
-          <Link href="/archive" className="tail" style={{ textDecoration: "none", color: "var(--ink-3)" }}>Open</Link>
-        </div>
-        <div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          {ARCHIVE.length} old modules are kept out of the way but still work: {ARCHIVE.map((a) => a.label).join(", ")}.
-        </div>
-      </section>
 
       {/* Account */}
       {me?.required && (
