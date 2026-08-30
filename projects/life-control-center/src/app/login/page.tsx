@@ -18,12 +18,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", padding: "24px 16px", background: "var(--bg)", color: "var(--ink)" }}>
       <div style={{ width: "min(360px, 100%)", display: "grid", gap: 20, textAlign: "center" }}>
-        <svg width="88" height="88" viewBox="0 0 512 512" aria-hidden style={{ margin: "0 auto", borderRadius: 22 }}>
+        <svg width="88" height="88" viewBox="0 0 512 512" aria-hidden style={{ margin: "0 auto", borderRadius: 22, border: "1px solid #262833" }}>
           <rect width="512" height="512" fill="#0B0B10" />
-          <defs><clipPath id="a"><path d="M256 130 L150 400 L362 400 Z" /></clipPath></defs>
-          <circle cx="256" cy="330" r="70" fill="#8B7CF0" clipPath="url(#a)" />
-          <g stroke="#FFFFFF" strokeWidth="50" strokeLinecap="round" strokeLinejoin="round" fill="none">
-            <path d="M120 404 L256 106 L392 404" /><path d="M182 330 L330 330" />
+          <g stroke="#FFFFFF" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <path d="M112 140 H430" /><path d="M300 140 V404" /><path d="M292 146 L118 404" /><path d="M158 300 H424" /><path d="M300 404 H424" />
           </g>
         </svg>
         <div>

@@ -281,9 +281,9 @@ Any future session picks these up from here; Ali should not have to repeat them.
    Fixed: the button stays as a quiet "▶ Again" after ticking, and Settings has a permanent
    "Stretching › Open" card. Player = 16 moves from §4.1, 30 s / 10 s, big current move, next
    move visible, beep + vibration + spoken name on every change, screen kept awake.
-1. ~~**App name.**~~ Picked 2026-08-30: **A L I** (spaced). Manifest, iOS title and icon updated —
-   icon is a white A on the dark ground, the crossbar a horizon with the violet sun rising
-   behind it. ("Helm" was tried first the same day and replaced.) "Control Center" truncated under the home-screen icon.
+1. ~~**App name.**~~ Picked 2026-08-30: **A L I** (spaced), icon = Ali's own A·T·E ligature
+   (sketch by Ali, "Clean" cut: white round-cap glyph on the near-black ground; chosen over the
+   sunrise-A and "Helm" wheel the same day). Drawn in code in `src/lib/appIcon.tsx`. "Control Center" truncated under the home-screen icon.
    Reinstall the PWA (or Settings → Update app) to see the new name and icon.
 1b. ~~**Home-screen widget (2×2, in the Notion slot).**~~ Done 2026-08-30, as far as iOS allows:
    a PWA cannot provide a widget (WidgetKit is native-only), so `/api/widget` + `public/widget.js`

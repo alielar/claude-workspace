@@ -38,11 +38,36 @@ const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
-function Row({ t, today, showDate, onToggle, onOpen, onDefer }: {
+function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
   t: Todo; today: string; showDate: boolean;
-  onToggle: () => void; onOpen: () => void; onDefer?: () => void;
+  onToggle: () => void; onOpen: () => void; onDefer?: () => void; onDelete: () => void;
 }) {
   const done = t.doneAt !== null;
+
+  // Swipe left → reveal Delete; keep going → delete, like clearing a notification.
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const gesture = useRef<{ x: number; y: number; base: number; active: boolean } | null>(null);
+  const tStart = (e: React.TouchEvent) => { gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, base: offset, active: false }; };
+  const tMove = (e: React.TouchEvent) => {
+    const g = gesture.current;
+    if (!g) return;
+    const dx = e.touches[0].clientX - g.x, dy = e.touches[0].clientY - g.y;
+    if (!g.active) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dy) > Math.abs(dx)) { gesture.current = null; return; } // vertical scroll wins
+      g.active = true; setDragging(true);
+    }
+    setOffset(Math.min(0, Math.max(-170, g.base + dx)));
+  };
+  const tEnd = () => {
+    const g = gesture.current; gesture.current = null; setDragging(false);
+    if (!g || !g.active) return;
+    setOffset((o) => {
+      if (o < -140) { onDelete(); return 0; }
+      return o < -48 ? -88 : 0;
+    });
+  };
   const sub = [
     showDate && t.dueDate ? fmtDue(t.dueDate, today) : null,
     t.dueTime,
@@ -52,7 +77,13 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer }: {
   ].filter(Boolean).join(" · ");
 
   return (
-    <div className="todo-row" style={{ display: "grid", gridTemplateColumns: onDefer ? "auto 1fr auto" : "auto 1fr", alignItems: "center", borderBottom: "1px solid var(--line)" }}>
+    <div style={{ position: "relative", overflow: "hidden", borderBottom: "1px solid var(--line)" }} className="todo-row-wrap">
+      <button onClick={onDelete} tabIndex={-1} aria-label="Delete task"
+        style={{ position: "absolute", inset: "0 0 0 auto", width: 96, border: "none", background: "var(--neg)", color: "#fff", fontSize: 15, fontWeight: 600, font: "inherit", cursor: "pointer", opacity: offset < -10 ? 1 : 0 }}>
+        Delete
+      </button>
+    <div className="todo-row" onTouchStart={tStart} onTouchMove={tMove} onTouchEnd={tEnd} onTouchCancel={tEnd}
+      style={{ display: "grid", gridTemplateColumns: onDefer ? "auto 1fr auto" : "auto 1fr", alignItems: "center", background: "var(--bg-card)", position: "relative", touchAction: "pan-y", transform: `translateX(${offset}px)`, transition: dragging ? "none" : "transform 0.18s ease" }}>
       <button onClick={onToggle} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={done}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, border: `2px solid ${done ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: done ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -70,6 +101,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer }: {
       {onDefer && !done && (
         <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
       )}
+    </div>
     </div>
   );
 }
@@ -93,6 +125,37 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
     { label: "Anytime",   on: isWhen(null, false, false),              go: () => when(null) },
     { label: "Someday",   on: d.someday,                               go: () => when(null, false, true) },
   ];
+  // Notes formatting: wrap the selection (B/I) or prefix the current line (lists);
+  // pressing return inside a list continues it, return on an empty item ends it.
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+  const applyNotes = (v: string, selStart: number, selEnd: number) => {
+    set({ notes: v || null });
+    requestAnimationFrame(() => { const el = notesRef.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); } });
+  };
+  const wrapNotes = (mark: string) => {
+    const el = notesRef.current; if (!el) return;
+    const v = el.value, a = el.selectionStart, b = el.selectionEnd;
+    applyNotes(v.slice(0, a) + mark + v.slice(a, b) + mark + v.slice(b), a + mark.length, b + mark.length);
+  };
+  const prefixNotesLine = (prefix: string) => {
+    const el = notesRef.current; if (!el) return;
+    const v = el.value, a = el.selectionStart;
+    const ls = v.lastIndexOf("\n", a - 1) + 1;
+    applyNotes(v.slice(0, ls) + prefix + v.slice(ls), a + prefix.length, a + prefix.length);
+  };
+  const notesEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== "Enter") return;
+    const el = e.currentTarget, v = el.value, a = el.selectionStart;
+    const ls = v.lastIndexOf("\n", a - 1) + 1;
+    const line = v.slice(ls, a);
+    const m = line.match(/^(- \[ \] |- |(\d+)\. )/);
+    if (!m) return;
+    e.preventDefault();
+    if (line === m[1]) { applyNotes(v.slice(0, ls) + v.slice(a), ls, ls); return; } // empty item ends the list
+    const next = m[2] ? `${Number(m[2]) + 1}. ` : m[1];
+    applyNotes(v.slice(0, a) + "\n" + next + v.slice(el.selectionEnd), a + 1 + next.length, a + 1 + next.length);
+  };
+
   const chip = (on: boolean): React.CSSProperties => ({
     minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
     border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
@@ -132,7 +195,19 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           ))}
         </div>
 
-        <textarea className="cc-input" value={d.notes ?? ""} onChange={(e) => set({ notes: e.target.value || null })} placeholder="Notes" rows={2} style={{ fontSize: 16, resize: "vertical" }} />
+        <div style={{ display: "grid", gap: 6 }}>
+          <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
+            {([["B", "**", "Bold"], ["I", "_", "Italic"]] as const).map(([label, mark, title]) => (
+              <button key={label} type="button" title={title} onClick={() => wrapNotes(mark)}
+                style={{ minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, fontWeight: label === "B" ? 700 : 400, fontStyle: label === "I" ? "italic" : undefined, cursor: "pointer" }}>{label}</button>
+            ))}
+            {([["•", "- ", "Bullet list"], ["☑", "- [ ] ", "Checklist"], ["1.", "1. ", "Numbered list"]] as const).map(([label, prefix, title]) => (
+              <button key={label} type="button" title={title} onClick={() => prefixNotesLine(prefix)}
+                style={{ minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" }}>{label}</button>
+            ))}
+          </div>
+          <textarea ref={notesRef} className="cc-input" value={d.notes ?? ""} onChange={(e) => set({ notes: e.target.value || null })} onKeyDown={notesEnter} placeholder="Notes — lists keep going when you press return" rows={4} style={{ fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
@@ -247,7 +322,7 @@ export default function TodoPage() {
           <div style={{ padding: "0 8px 0 0" }}>
             {g.items.map((t) => (
               <Row key={t.clientId} t={t} today={today} showDate={g.key === "upcoming" || g.key === "overdue"}
-                onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)}
+                onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)}
                 onDefer={g.key === "overdue" || g.key === "today" || g.key === "evening" ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined} />
             ))}
           </div>
@@ -259,7 +334,7 @@ export default function TodoPage() {
           <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
             <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
           </button>
-          {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} />)}</div>}
+          {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}</div>}
         </section>
       )}
 
@@ -286,7 +361,7 @@ export default function TodoPage() {
           onClose={() => setDraft(null)} />
       )}
 
-      <style>{`.todo-row:last-child { border-bottom: none !important; } .todo-row > button:active { background: var(--fill-1); }
+      <style>{`.todo-row-wrap:last-child { border-bottom: none !important; } .todo-row > button:active { background: var(--fill-1); }
         @media (min-width: 768px) { form[style*="position: fixed"] { bottom: 0 !important; left: 56px !important; } }`}</style>
     </div>
   );
