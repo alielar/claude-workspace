@@ -41,6 +41,7 @@ type DeepDive = {
   whatHappened: string;
   whyItMatters: string;
   context: string;
+  implications?: string;
   whatsNext: string;
 };
 
@@ -90,6 +91,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
     { key: "whatHappened", label: "What happened", icon: "📰" },
     { key: "whyItMatters", label: "Why it matters", icon: "💡" },
     { key: "context", label: "Context", icon: "🔗" },
+    { key: "implications", label: "Implications", icon: "🧭" },
     { key: "whatsNext", label: "What's next", icon: "👉" },
   ] as const;
 

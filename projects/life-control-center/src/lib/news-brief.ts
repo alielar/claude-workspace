@@ -19,6 +19,8 @@ export type DeepDive = {
   whatHappened: string;
   whyItMatters: string;
   context: string;
+  /** Knock-on effects: who wins/loses, what changes next (added 2026-08-30). */
+  implications?: string;
   whatsNext: string;
 };
 

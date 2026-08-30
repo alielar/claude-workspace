@@ -25,6 +25,9 @@ WHY IT MATTERS
 CONTEXT
 2-3 sentences of background — what led to this, relevant history, how it connects to bigger trends.
 
+IMPLICATIONS
+2-3 sentences on the knock-on effects — who gains, who loses, what becomes more or less likely.
+
 WHAT'S NEXT
 1-2 sentences on likely next steps or what to watch for.
 
@@ -32,7 +35,7 @@ Rules:
 - Write in plain, direct language — no jargon
 - Be factual and specific, not vague
 - Each section should add NEW information, don't repeat yourself
-- Total length: 150-250 words
+- Total length: 200-320 words
 - Do NOT include any headers or labels — just the text for each section separated by a blank line`;
 
   // Try Gemini first (free)
@@ -55,7 +58,7 @@ Rules:
     const client = new Anthropic();
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 500,
+      max_tokens: 900,
       messages: [{ role: "user", content: prompt }],
     });
     return (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
@@ -83,7 +86,8 @@ export async function POST(req: NextRequest) {
       whatHappened: paragraphs[0] ?? "",
       whyItMatters: paragraphs[1] ?? "",
       context: paragraphs[2] ?? "",
-      whatsNext: paragraphs[3] ?? "",
+      implications: paragraphs[3] ?? "",
+      whatsNext: paragraphs[4] ?? "",
       raw: analysis,
     });
   } catch (err) {

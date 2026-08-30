@@ -87,9 +87,9 @@ ${storyList}`;
 }
 
 /**
- * Batch-generate deep dive analyses for all stories.
- * Uses Gemini (free) → Haiku fallback. One API call for all stories.
- * Mutates stories in place, adding deepDive field.
+/**
+ * Batch-generate the deep analysis for all stories in ONE call (Gemini free tier → Claude Haiku).
+ * Mutates stories in place, adding deepDive. Stored with the brief, so it works offline.
  */
 export async function generateDeepDives(stories: NewsStory[]): Promise<void> {
   if (stories.length === 0) return;
@@ -98,69 +98,38 @@ export async function generateDeepDives(stories: NewsStory[]): Promise<void> {
     .map((s, i) => `[${i}] ${s.headline}\n${s.summary}`)
     .join("\n\n");
 
-  const prompt = `You are a senior news analyst. For each story, write a brief deep analysis with 4 parts:
-1. WHAT HAPPENED — 1-2 sentences, the core event in plain language
-2. WHY IT MATTERS — 1-2 sentences, broader significance
-3. CONTEXT — 1-2 sentences, background and how it connects to bigger trends
-4. WHATS NEXT — 1 sentence, what to watch for
+  // One batched call for all stories — the same call that has always run, asked for more depth.
+  const prompt = `You are a senior news analyst writing for one busy reader who wants to genuinely understand each story, not skim it. For each story write five parts, each 2-3 full sentences, plain direct language, specific facts (names, numbers, places) — never vague filler, never repeat the headline:
+1. WHAT HAPPENED — the core event, who did what, when, and the key numbers.
+2. WHY IT MATTERS — who is affected and what actually changes for them.
+3. CONTEXT — the background that explains it: what led here, the relevant history or trend.
+4. IMPLICATIONS — the knock-on effects: who gains, who loses, what this makes more or less likely; where relevant, what it means for Europe, Morocco / MENA, markets, or the AI industry.
+5. WHATS NEXT — concrete things to watch for, with dates or triggers when known.
 
-Return ONLY valid JSON — an array of objects with "index" (number), "whatHappened" (string), "whyItMatters" (string), "context" (string), "whatsNext" (string).
-No markdown fences, no extra text. Be concise — each field should be 1-2 sentences max.
+Return ONLY valid JSON — an array of objects with "index" (number), "whatHappened", "whyItMatters", "context", "implications", "whatsNext" (all strings).
+No markdown fences, no extra text.
 
 Stories:
 ${storyList}`;
 
-  // Try Gemini first (free)
-  const model = await getModel();
-  if (model) {
-    try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text().trim();
-      const jsonStr = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "");
-      const parsed: { index: number; whatHappened: string; whyItMatters: string; context: string; whatsNext: string }[] = JSON.parse(jsonStr);
-      for (const item of parsed) {
-        const story = stories[item.index];
-        if (story && item.whatHappened) {
-          story.deepDive = {
-            whatHappened: item.whatHappened,
-            whyItMatters: item.whyItMatters ?? "",
-            context: item.context ?? "",
-            whatsNext: item.whatsNext ?? "",
-          };
-        }
+  type Item = { index: number; whatHappened: string; whyItMatters: string; context: string; implications?: string; whatsNext: string };
+  try {
+    const text = await askAI(prompt, 12000);
+    if (!text) return;
+    const parsed = parseJson<Item[]>(text);
+    for (const item of parsed) {
+      const story = stories[item.index];
+      if (story && item.whatHappened) {
+        story.deepDive = {
+          whatHappened: item.whatHappened,
+          whyItMatters: item.whyItMatters ?? "",
+          context: item.context ?? "",
+          implications: item.implications ?? "",
+          whatsNext: item.whatsNext ?? "",
+        };
       }
-      return;
-    } catch {
-      // Fall through to Haiku
     }
-  }
-
-  // Haiku fallback
-  if (process.env.ANTHROPIC_API_KEY) {
-    try {
-      const Anthropic = (await import("@anthropic-ai/sdk")).default;
-      const client = new Anthropic();
-      const message = await client.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 4000,
-        messages: [{ role: "user", content: prompt }],
-      });
-      const text = (message.content[0] as { type: string; text: string }).text?.trim() ?? "";
-      const jsonStr = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "");
-      const parsed: { index: number; whatHappened: string; whyItMatters: string; context: string; whatsNext: string }[] = JSON.parse(jsonStr);
-      for (const item of parsed) {
-        const story = stories[item.index];
-        if (story && item.whatHappened) {
-          story.deepDive = {
-            whatHappened: item.whatHappened,
-            whyItMatters: item.whyItMatters ?? "",
-            context: item.context ?? "",
-            whatsNext: item.whatsNext ?? "",
-          };
-        }
-      }
-    } catch {
-      // Silently skip deep dives
-    }
+  } catch {
+    // Silently skip deep dives — the brief still ships with summaries
   }
 }
