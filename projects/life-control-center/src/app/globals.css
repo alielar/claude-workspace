@@ -201,7 +201,8 @@ body::after {
   padding-top: 0;
   padding-bottom: 0;
   position: relative;
-  z-index: 1;
+  /* No z-index here on purpose: it would trap full-screen timers and bottom sheets
+     (position: fixed inside the page) underneath the tab bar. */
 }
 /* Page content wrapper — adds breathing room around all page content */
 .app-content {
