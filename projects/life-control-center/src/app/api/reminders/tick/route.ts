@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
   // One notification per list. Everything due in that list is mentioned, so a nag never
   // makes you forget the task it isn't about.
   let sent = 0;
+  const stamped: number[] = [];
   for (const area of ["personal", "work"] as const) {
     const mine = due.filter((t) => (t.area === "work" ? "work" : "personal") === area);
     if (mine.length === 0 || !toNag.some((t) => (t.area === "work" ? "work" : "personal") === area)) continue;
@@ -64,7 +65,10 @@ export async function GET(req: NextRequest) {
       url: "/todo",
     });
     sent += r.sent;
+    // The 30-minute clock only starts when a push was actually delivered —
+    // a failed send must not silence the task.
+    if (r.sent > 0) stamped.push(...mine.map((t) => t.id));
   }
-  await db.update(todos).set({ lastNaggedAt: now }).where(inArray(todos.id, due.map((t) => t.id)));
+  if (stamped.length) await db.update(todos).set({ lastNaggedAt: now }).where(inArray(todos.id, stamped));
   return NextResponse.json({ due: due.length, nagged: toNag.length, sent, hm });
 }
