@@ -104,10 +104,20 @@ function SwipeWrap({ swipe, onDelete, children }: { swipe: ReturnType<typeof use
   );
 }
 
+// While a sheet is open, the page behind it must not scroll (iOS otherwise keeps
+// scrolling the background and gets stuck until the app is reopened).
+function useLockBodyScroll() {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+}
+
 // ─── Notes editor (tasks + lists) ─────────────────────────────────────────────
 
-function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false }: {
-  value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean;
+function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false, fill = false }: {
+  value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean; fill?: boolean;
 }) {
   // Prefix the current line (dash / numbered list); pressing return inside a
   // list continues it, return on an empty item ends it.
@@ -136,13 +146,14 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   };
   const btn: React.CSSProperties = { minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
   return (
-    <div style={{ display: "grid", gap: 6 }}>
+    <div style={fill ? { display: "flex", flexDirection: "column", gap: 6, height: "100%" } : { display: "grid", gap: 6 }}>
       <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
         <button type="button" title="Dash list" onClick={() => prefixLine("- ")} style={btn}>−</button>
         <button type="button" title="Numbered list" onClick={() => prefixLine("1. ")} style={btn}>1.</button>
       </div>
       <textarea ref={ref} className="cc-input" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onEnter}
-        placeholder={placeholder} rows={rows} autoFocus={autoFocus} style={{ fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
+        placeholder={placeholder} rows={rows} autoFocus={autoFocus}
+        style={fill ? { fontSize: 16, resize: "none", lineHeight: 1.5, flex: 1, minHeight: 240, width: "100%", boxSizing: "border-box" } : { fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
     </div>
   );
 }
@@ -229,6 +240,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
   t: Todo; today: string; projects: string[]; isNew?: boolean;
   onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
 }) {
+  useLockBodyScroll();
   const [d, setD] = useState<Todo>(t);
   const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
   const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
@@ -294,6 +306,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
   t: Todo; today: string; tags: string[]; isNew?: boolean;
   onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
 }) {
+  useLockBodyScroll();
   const [d, setD] = useState<Todo>(t);
   const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
   const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
@@ -342,17 +355,19 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
   return (
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto", alignContent: "start" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
-          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
-          <div role="tablist" aria-label="Shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 3, borderRadius: 12, background: "var(--fill-1)", minWidth: 128 }}>
+      <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "12px 18px calc(env(safe-area-inset-bottom) + 12px)", display: "flex", flexDirection: "column", gap: 12, maxWidth: 560, margin: "0 auto", height: "92dvh" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
+          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48, minWidth: 0 }} />
+          <div role="tablist" aria-label="Shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 3, borderRadius: 12, background: "var(--fill-1)", minWidth: 118 }}>
             <button role="tab" aria-selected={mode === "list"} onClick={toList} style={seg(mode === "list")}>List</button>
             <button role="tab" aria-selected={mode === "doc"} onClick={() => setMode("doc")} style={seg(mode === "doc")}>Doc</button>
           </div>
+          <button onClick={close} aria-label="Close" style={{ width: 44, height: 44, borderRadius: 12, border: "none", background: "var(--fill-1)", color: "var(--ink-2)", fontSize: 17, cursor: "pointer" }}>✕</button>
         </div>
 
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
         {mode === "doc" ? (
-          <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} rows={10} placeholder="" />
+          <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : (
           <div style={{ display: "grid", gap: 2 }}>
             {items.length === 0 && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet — add the first item below.</div>}
@@ -387,6 +402,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
             </div>
           </div>
         )}
+        </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>
@@ -408,7 +424,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
-          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
+          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, borderRadius: 14, padding: "0 16px", color: "var(--neg)", fontSize: 15 }}>{isNew ? "Discard" : "Delete"}</button>
         </div>
       </div>
     </>

@@ -13,8 +13,9 @@ import { sendToUser } from "@/lib/push/server";
  * Finds tasks that are due and not done, and re-sends one notification per list
  * (Personal / Work) every 30 minutes until they're ticked. Quiet 23:00–08:00 (Madrid).
  *
- *  due = overdue, or due today with no time (from 09:00; "evening" tasks from 19:00),
- *        or due today with a time that has passed.
+ *  due = a date with a time → once the time has passed;
+ *        a date with no time → from 14:00 that day ("evening" tasks from 19:00);
+ *        overdue → timed tasks from 09:00, untimed from 14:00.
  */
 
 export const dynamic = "force-dynamic";
@@ -43,9 +44,9 @@ export async function GET(req: NextRequest) {
 
   const due = rows.filter((t) => {
     if (!t.dueDate) return false;
-    if (t.dueDate < today) return hm >= "09:00";
+    if (t.dueDate < today) return hm >= (t.dueTime ? "09:00" : "14:00");
     if (t.dueTime) return hm >= t.dueTime;
-    return hm >= (t.evening ? "19:00" : "09:00");
+    return hm >= (t.evening ? "19:00" : "14:00");
   });
   const toNag = due.filter((t) => !t.lastNaggedAt || now.getTime() - t.lastNaggedAt.getTime() >= NAG_EVERY_MS);
   if (toNag.length === 0) return NextResponse.json({ due: due.length, sent: 0, hm });
