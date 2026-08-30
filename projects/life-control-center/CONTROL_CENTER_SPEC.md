@@ -285,6 +285,11 @@ Any future session picks these up from here; Ali should not have to repeat them.
    icon is a white A on the dark ground, the crossbar a horizon with the violet sun rising
    behind it. ("Helm" was tried first the same day and replaced.) "Control Center" truncated under the home-screen icon.
    Reinstall the PWA (or Settings → Update app) to see the new name and icon.
+1b. ~~**Home-screen widget (2×2, in the Notion slot).**~~ Done 2026-08-30, as far as iOS allows:
+   a PWA cannot provide a widget (WidgetKit is native-only), so `/api/widget` + `public/widget.js`
+   drive a **Scriptable** widget (free app) in the app's look — progress, next steps, to-dos due;
+   tap opens `/today`. Instructions in Settings. A real native widget would need a Capacitor
+   wrapper + Apple developer account (€99/yr) — not worth it for one tile.
 2. **Google sign-in / login.** The app is currently open to anyone with the URL.
 3. **Phone notifications for to-do reminders.** Ali wants a notification that stays visible
    until dismissed by hand — not one that disappears on unlock. **Before building, report

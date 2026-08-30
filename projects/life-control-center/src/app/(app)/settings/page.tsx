@@ -268,6 +268,18 @@ export default function SettingsPage() {
         </div>
       </Link>
 
+      {/* Home-screen widget (via Scriptable — iOS gives widgets to native apps only) */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Home-screen widget</span></div>
+        <div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
+          <p style={{ margin: "0 0 10px" }}>iOS only lets native apps draw widgets, so this goes through the free <b>Scriptable</b> app. Once: install Scriptable, paste the script, add a Scriptable widget and point it at the script named <b>ALI</b>.</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Get Scriptable</a>
+            <a href="/widget.js" target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ textDecoration: "none" }}>Open the script</a>
+          </div>
+        </div>
+      </section>
+
       {/* Install hint */}
       {!standalone && (
         <section className="cc-card">
