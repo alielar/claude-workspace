@@ -1,9 +1,9 @@
-import { renderAppIcon } from "@/lib/appIcon";
+import { renderFavicon } from "@/lib/appIcon";
 
-// Browser-tab favicon (laptop). Same drawing as the phone icon.
+// Browser-tab favicon (laptop): bare black glyph, no tile, transparent ground.
 export const size = { width: 64, height: 64 };
 export const contentType = "image/png";
 
 export default function Icon() {
-  return renderAppIcon(64);
+  return renderFavicon(64);
 }
