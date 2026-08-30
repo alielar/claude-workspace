@@ -6,9 +6,9 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Helm",
-    short_name: "Helm",
-    description: "Ali's daily helm — routine, training, to-do, news",
+    name: "A L I",
+    short_name: "A L I",
+    description: "Ali's day — routine, training, to-do, news",
     id: "/today",
     start_url: "/today",
     scope: "/",

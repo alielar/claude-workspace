@@ -3,12 +3,12 @@ import "./globals.css";
 import { SvgDefs } from "@/components/SvgDefs";
 
 export const metadata: Metadata = {
-  title: "Helm",
-  description: "Ali's daily helm — routine, training, to-do, news.",
+  title: "A L I",
+  description: "Ali's day — routine, training, to-do, news.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Helm",
+    title: "A L I",
   },
 };
 

@@ -1,4 +1,4 @@
-# Helm (formerly Control Center) — Rebuild Spec
+# A L I (formerly Control Center) — Rebuild Spec
 
 > **How to use this file:** put it in the repo root as `CONTROL_CENTER_SPEC.md`.
 > Then open Claude Code in the repo and paste the short kickoff prompt in section 0.
@@ -281,8 +281,9 @@ Any future session picks these up from here; Ali should not have to repeat them.
    Fixed: the button stays as a quiet "▶ Again" after ticking, and Settings has a permanent
    "Stretching › Open" card. Player = 16 moves from §4.1, 30 s / 10 s, big current move, next
    move visible, beep + vibration + spoken name on every change, screen kept awake.
-1. ~~**App name.**~~ Picked 2026-08-30: **Helm**. Manifest, iOS title and icon (violet tile,
-   white ship's wheel) updated. "Control Center" truncated under the home-screen icon.
+1. ~~**App name.**~~ Picked 2026-08-30: **A L I** (spaced). Manifest, iOS title and icon updated —
+   icon is a white A on the dark ground, the crossbar a horizon with the violet sun rising
+   behind it. ("Helm" was tried first the same day and replaced.) "Control Center" truncated under the home-screen icon.
    Reinstall the PWA (or Settings → Update app) to see the new name and icon.
 2. **Google sign-in / login.** The app is currently open to anyone with the URL.
 3. **Phone notifications for to-do reminders.** Ali wants a notification that stays visible
