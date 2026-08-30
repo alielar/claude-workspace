@@ -184,11 +184,11 @@ export function parseQuickAdd(input: string, today: string): QuickParse {
 
 // ─── Grouping for the list ────────────────────────────────────────────────────
 
-export type Bucket = "overdue" | "today" | "evening" | "upcoming" | "anytime" | "someday";
+export type Bucket = "overdue" | "today" | "evening" | "upcoming" | "someday";
 
 export function bucketOf(t: Todo, today: string, isEveningNow: boolean): Bucket {
-  if (t.someday) return "someday";
-  if (!t.dueDate) return "anytime";
+  // No date = Someday (the "Anytime" bucket was retired 2026-08-31).
+  if (t.someday || !t.dueDate) return "someday";
   if (t.dueDate < today) return "overdue";
   if (t.dueDate === today) return t.evening && !isEveningNow ? "evening" : "today";
   return "upcoming";

@@ -30,8 +30,7 @@ const BUCKETS: { key: Bucket; label: string; color: string }[] = [
   { key: "today",    label: "Today",        color: "var(--violet)" },
   { key: "evening",  label: "This evening", color: "var(--cyan)" },
   { key: "upcoming", label: "Upcoming",     color: "var(--ink-2)" },
-  { key: "anytime",  label: "Anytime",      color: "var(--ink-3)" },
-  { key: "someday",  label: "Someday",      color: "var(--ink-4)" },
+  { key: "someday",  label: "Someday",      color: "var(--ink-3)" },
 ];
 
 const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)", 2: "var(--neg)" };
@@ -251,8 +250,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
     { label: "Evening",   on: isWhen(today, true, false),              go: () => when(today, true) },
     { label: "Tomorrow",  on: isWhen(addDays(today, 1), false, false),  go: () => when(addDays(today, 1)) },
     { label: "Weekend",   on: isWhen(nextWeekend(today), false, false), go: () => when(nextWeekend(today)) },
-    { label: "Anytime",   on: isWhen(null, false, false),              go: () => when(null) },
-    { label: "Someday",   on: d.someday,                               go: () => when(null, false, true) },
+    { label: "Someday",   on: d.someday || !d.dueDate,                 go: () => when(null, false, true) },
   ];
 
   return (
