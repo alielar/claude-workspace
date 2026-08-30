@@ -41,6 +41,24 @@ export async function GET() {
     .slice(0, 3)
     .map((i) => ({ title: i.title, emoji: i.emoji }));
 
+  // Lock-screen widget (option 4 "List"): the three most urgent tasks.
+  // Overdue first (oldest first), then today's — timed by time, evening-untimed last.
+  const urgent = todos
+    .filter((t) => !t.deleted && !t.doneAt && !t.someday && (t.area ?? "personal") !== "list" && t.dueDate !== null && t.dueDate <= today)
+    .sort((a, b) => {
+      const lateA = a.dueDate! < today ? 0 : 1, lateB = b.dueDate! < today ? 0 : 1;
+      if (lateA !== lateB) return lateA - lateB;
+      if (lateA === 0 && a.dueDate !== b.dueDate) return a.dueDate! < b.dueDate! ? -1 : 1;
+      const evA = a.evening && !a.dueTime ? 1 : 0, evB = b.evening && !b.dueTime ? 1 : 0;
+      if (evA !== evB) return evA - evB;
+      return (a.dueTime ?? "98:99") <= (b.dueTime ?? "98:99") ? -1 : 1;
+    })
+    .slice(0, 3)
+    .map((t) => ({
+      t: t.title,
+      w: t.dueDate! < today ? "late" : t.dueTime ? t.dueTime : t.evening && part !== "evening" ? "eve" : "today",
+    }));
+
   return NextResponse.json(
     {
       greeting: GREETING[part],
@@ -51,6 +69,7 @@ export async function GET() {
       bestStreak: data.bestStreak30 ?? 0,
       next,
       todosDue: badgeCount(todos, today),
+      urgent,
       todosWork: badgeCount(todos, today, "work"),
       trainedToday: items.some((i) => i.source === "workout" && i.completedToday),
     },

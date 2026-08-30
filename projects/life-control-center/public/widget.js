@@ -1,4 +1,5 @@
-// A L I — home-screen widget for Scriptable (design 3 · "The Ring").
+// A L I — Scriptable widget. Home screen: design 3 "The Ring".
+// Lock Screen (rectangular): design "List" — the three most urgent to-dos.
 //
 // Install: in A L I → Settings → Home-screen widget → "Open the script", select all, copy;
 // then in Scriptable open the script named "ALI", select everything, paste over, Done.
@@ -78,6 +79,70 @@ try {
   req.timeoutInterval = 8;
   d = await req.loadJSON();
 } catch (e) { d = null; }
+
+// ─── Lock Screen widgets ──────────────────────────────────────────────────────
+// iOS repaints these frosted white — no colors survive, so it's shapes + text only.
+const FAMILY = config.widgetFamily || "";
+if (FAMILY.indexOf("accessory") === 0) {
+  const lw = new ListWidget();
+  lw.url = BASE + "/todo";
+  lw.addAccessoryWidgetBackground = true;
+  lw.refreshAfterDate = new Date(Date.now() + 10 * 60 * 1000);
+  const urgent = (d && d.urgent) || [];
+  const due = d ? d.todosDue || 0 : 0;
+
+  if (FAMILY === "accessoryRectangular") {
+    // "List" — top three urgent tasks with a when-label (late / 15:00 / eve / today).
+    lw.setPadding(3, 7, 3, 7);
+    if (!urgent.length) {
+      lw.addSpacer();
+      const row = lw.addStack();
+      const t = row.addText(d ? "✓ All clear" : "A L I — tap to open");
+      t.font = Font.semiboldSystemFont(14);
+      lw.addSpacer();
+    } else {
+      lw.addSpacer();
+      for (let i = 0; i < urgent.length; i++) {
+        if (i > 0) lw.addSpacer(3);
+        const row = lw.addStack();
+        row.centerAlignContent();
+        const dot = row.addText("●");
+        dot.font = Font.systemFont(6);
+        row.addSpacer(6);
+        const title = row.addText(urgent[i].t);
+        title.font = Font.semiboldSystemFont(13);
+        title.lineLimit = 1;
+        row.addSpacer(6);
+        row.addSpacer();
+        const when = row.addText(urgent[i].w);
+        when.font = Font.mediumSystemFont(11);
+        when.textOpacity = 0.65;
+      }
+      lw.addSpacer();
+    }
+  } else if (FAMILY === "accessoryCircular") {
+    // Fallback if the circle size is chosen: due count, ✓ when clear.
+    lw.addSpacer();
+    const n = lw.addText(!d ? "Æ" : due > 0 ? String(due) : "✓");
+    n.font = Font.boldSystemFont(due > 0 ? 26 : 22);
+    n.centerAlignText();
+    if (d && due > 0) {
+      const lbl = lw.addText("DUE");
+      lbl.font = Font.semiboldSystemFont(9);
+      lbl.centerAlignText();
+      lbl.textOpacity = 0.65;
+    }
+    lw.addSpacer();
+  } else {
+    // accessoryInline: the one line above the clock.
+    const t = lw.addText(!d ? "A L I" : urgent.length ? urgent[0].t + (urgent.length > 1 ? " +" + (urgent.length - 1) : "") : "All clear");
+    t.font = Font.mediumSystemFont(13);
+  }
+
+  Script.setWidget(lw);
+  Script.complete();
+  return;
+}
 
 const w = new ListWidget();
 w.backgroundColor = BG;
