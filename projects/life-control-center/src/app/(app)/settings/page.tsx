@@ -246,6 +246,17 @@ export default function SettingsPage() {
         )}
       </section>
 
+      {/* Stretching player — a second door, so it is reachable even when the Today row is ticked */}
+      <Link href="/stretch" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+          <span>
+            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>🤸 Stretching</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>16 moves · 30 s on, 10 s off</span>
+          </span>
+          <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
+        </div>
+      </Link>
+
       {/* Books */}
       <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>

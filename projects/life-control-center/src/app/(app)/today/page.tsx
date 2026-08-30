@@ -98,7 +98,11 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
   const auto = item.source === "workout" || item.autoSource !== null;
   const done = item.completedToday;
   const accent = itemColor(item.color);
-  const action = !done ? routineAction(item) : null;
+  // The action stays after ticking (as a quiet "Again") so the stretch player is
+  // always one tap from home — before this, a ticked row hid the only way in.
+  const action = routineAction(item);
+  const actionClass = done ? "cc-btn cc-btn-ghost" : "cc-btn cc-btn-primary";
+  const actionLabel = done ? "Again" : action?.label;
   const notes = compact ? null : displayNotes(item, currentBook);
 
   // The workout row is not a tick box — it's a door to the Train tab.
@@ -195,18 +199,18 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
             href={action.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="cc-btn cc-btn-primary"
+            className={actionClass}
             style={{ alignSelf: "center", minHeight: 44, padding: compact ? "0 12px" : "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
           >
-            ▶ {action.label}
+            ▶ {actionLabel}
           </a>
         ) : (
           <Link
             href={action.href}
-            className="cc-btn cc-btn-primary"
+            className={actionClass}
             style={{ alignSelf: "center", minHeight: 44, padding: compact ? "0 12px" : "0 16px", borderRadius: 12, textDecoration: "none", marginLeft: 8 }}
           >
-            ▶ {action.label}
+            ▶ {actionLabel}
           </Link>
         )
       )}

@@ -1,4 +1,4 @@
-# Control Center — Rebuild Spec
+# Helm (formerly Control Center) — Rebuild Spec
 
 > **How to use this file:** put it in the repo root as `CONTROL_CENTER_SPEC.md`.
 > Then open Claude Code in the repo and paste the short kickoff prompt in section 0.
@@ -270,7 +270,34 @@ Each phase ships working on my phone before the next one begins.
 4. Reading list (moved earlier — small, unblocks the evening reading-habit card) — **built 2026-08-30**
 5. To-do list — **built 2026-08-30**
 6. News upgrade — **built 2026-08-30**
-7. Next steps (above)
+7. Next steps — see **§7c Deferred list** (the authoritative version, kept current)
+
+### 7c. Deferred list (recorded 2026-08-30 — build later, in this order unless told otherwise)
+
+Any future session picks these up from here; Ali should not have to repeat them.
+
+0. ~~**Stretch player — verify first.**~~ Done 2026-08-30. The `/stretch` player was live but
+   unreachable once the Stretching row was ticked (the ▶ Start button vanished with it).
+   Fixed: the button stays as a quiet "▶ Again" after ticking, and Settings has a permanent
+   "Stretching › Open" card. Player = 16 moves from §4.1, 30 s / 10 s, big current move, next
+   move visible, beep + vibration + spoken name on every change, screen kept awake.
+1. ~~**App name.**~~ Picked 2026-08-30: **Helm**. Manifest, iOS title and icon (violet tile,
+   white ship's wheel) updated. "Control Center" truncated under the home-screen icon.
+   Reinstall the PWA (or Settings → Update app) to see the new name and icon.
+2. **Google sign-in / login.** The app is currently open to anyone with the URL.
+3. **Phone notifications for to-do reminders.** Ali wants a notification that stays visible
+   until dismissed by hand — not one that disappears on unlock. **Before building, report
+   honestly what iOS actually allows a web app (PWA) to do**; if a truly persistent
+   notification is not possible, describe the closest alternative and what it costs
+   (time, money, a native wrapper, etc.). Needs server-side scheduling.
+4. **To-do split: WORK and PERSONAL.** Two sections, each with its own reminders and
+   notifications, same one-line capture in both.
+5. **Apple Watch sync — sleep and workout data.** The old Apple Shortcut posting sleep data
+   was unreliable; needs a new approach (`/api/sleep/ingest` still accepts it, don't trust it).
+6. **Fixed workout day scheduling.** Currently "4 sessions a week, any days";
+   `kb_workouts.assignedDays` is reserved for this.
+7. **Word bank / spaced repetition revival.** Archived at `/wordbank`, restorable in one line
+   (see CLAUDE.md §4).
 
 ## 7b. Stop conditions
 

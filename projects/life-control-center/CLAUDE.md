@@ -2,7 +2,9 @@
 
 ---
 
-# Control Center
+# Helm (Control Center)
+
+> App name on the phone is **Helm** (picked 2026-08-30; manifest + iOS title + icon in `src/lib/appIcon.tsx`). The repo, spec and this file keep "Control Center" as the project name. Deferred work lives in the spec §7c — read it before proposing new features.
 
 > Last updated: 2026-08-30 (Phase 6). Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 
