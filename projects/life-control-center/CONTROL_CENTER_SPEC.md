@@ -296,6 +296,17 @@ Any future session picks these up from here; Ali should not have to repeat them.
    honestly what iOS actually allows a web app (PWA) to do**; if a truly persistent
    notification is not possible, describe the closest alternative and what it costs
    (time, money, a native wrapper, etc.). Needs server-side scheduling.
+   **Honest report (2026-08-30):** a web app on iPhone *can* send push notifications (iOS 16.4+,
+   only when installed on the home screen, after Ali taps "Allow" once inside the app). What no
+   app can do — web *or* native — is a notification that stays on screen until dismissed: iOS
+   moves every notification to Notification Center on unlock; only Apple-approved "Critical
+   Alerts" (medical/safety entitlement) break through, and web push cannot use "Time Sensitive".
+   Closest thing: **nag until done** — the server re-sends the reminder every 30 min until the
+   task is ticked, plus the home-screen badge (built) and the widget (built) which keep the count
+   visible. Cost: web-push library + VAPID keys = free; scheduling = Vercel Hobby crons run at
+   most once a day, so a minute-level scheduler needs either Vercel Pro (~$20/month) or a free
+   external pinger (e.g. cron-job.org hitting `/api/reminders/tick` every 5 min). Recommended:
+   free external pinger. Awaiting Ali's go.
 4. ~~**To-do split: WORK and PERSONAL.**~~ Built 2026-08-30: Personal · Work switch at the top of
    To-do (remembered on the phone), each with its own due count; same quick add in both; area chips
    in the task sheet; Today tags work tasks "· Work"; widget shows "N due · n work". Per-area
