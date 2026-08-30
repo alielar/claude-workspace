@@ -35,8 +35,9 @@ export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
   try { enabledChannels = settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : null; } catch { enabledChannels = null; }
   const [brief, videos] = await Promise.all([generateNewsBrief(today), fetchBriefVideos(enabledChannels)]);
   brief.videos = videos;
-  await enhanceStoriesWithAI(brief.stories);
-  await generateDeepDives(brief.stories);
+  // Summaries and the deeper analysis run side by side (both read the RSS text), in small
+  // concurrent batches — same number of tokens as before, a fraction of the wall time.
+  await Promise.all([enhanceStoriesWithAI(brief.stories), generateDeepDives(brief.stories)]);
 
   await db.insert(newsBriefs).values({
     userId,

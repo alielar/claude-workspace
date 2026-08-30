@@ -43,6 +43,17 @@ async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
   return null;
 }
 
+/**
+ * Run `fn` on chunks of `size` stories concurrently. Same total tokens as one big call
+ * (so the same cost), but 20 stories finish in the time of 5 — needed to stay under the
+ * 60 s function limit now that each story gets a fuller analysis.
+ */
+async function inBatches(stories: NewsStory[], size: number, fn: (chunk: NewsStory[]) => Promise<void>): Promise<void> {
+  const chunks: NewsStory[][] = [];
+  for (let i = 0; i < stories.length; i += size) chunks.push(stories.slice(i, i + size));
+  await Promise.all(chunks.map((c) => fn(c).catch(() => {})));
+}
+
 function parseJson<T>(text: string): T {
   return JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "")) as T;
 }
@@ -51,8 +62,12 @@ function parseJson<T>(text: string): T {
  * Enhance a batch of stories with AI-generated summaries and key points.
  * Mutates the stories in place. Falls back silently on failure.
  */
-export async function enhanceStoriesWithAI(stories: NewsStory[]): Promise<void> {
-  if (stories.length === 0) return;
+export async function enhanceStoriesWithAI(all: NewsStory[]): Promise<void> {
+  if (all.length === 0) return;
+  await inBatches(all, 5, enhanceBatch);
+}
+
+async function enhanceBatch(stories: NewsStory[]): Promise<void> {
 
   // Batch all stories into one prompt to minimize API calls
   const storyList = stories
@@ -91,8 +106,12 @@ ${storyList}`;
  * Batch-generate the deep analysis for all stories in ONE call (Gemini free tier → Claude Haiku).
  * Mutates stories in place, adding deepDive. Stored with the brief, so it works offline.
  */
-export async function generateDeepDives(stories: NewsStory[]): Promise<void> {
-  if (stories.length === 0) return;
+export async function generateDeepDives(all: NewsStory[]): Promise<void> {
+  if (all.length === 0) return;
+  await inBatches(all, 5, deepDiveBatch);
+}
+
+async function deepDiveBatch(stories: NewsStory[]): Promise<void> {
 
   const storyList = stories
     .map((s, i) => `[${i}] ${s.headline}\n${s.summary}`)
@@ -114,7 +133,7 @@ ${storyList}`;
 
   type Item = { index: number; whatHappened: string; whyItMatters: string; context: string; implications?: string; whatsNext: string };
   try {
-    const text = await askAI(prompt, 12000);
+    const text = await askAI(prompt, 4000);
     if (!text) return;
     const parsed = parseJson<Item[]>(text);
     for (const item of parsed) {
