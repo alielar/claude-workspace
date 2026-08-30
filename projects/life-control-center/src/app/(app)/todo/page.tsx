@@ -197,6 +197,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
   const items = (t.notes?.match(/^- (\[[ xX]\] )?/gm) ?? []).length;
   const sub = [
     t.dueDate ? `remind ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
+    t.project ? `#${t.project}` : null,
     items > 0 ? `${items} item${items === 1 ? "" : "s"}` : preview,
     fmtAgo(t.updatedAt),
   ].filter(Boolean).join(" · ");
@@ -289,8 +290,8 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
 
 // ─── List sheet (Lists segment) — a place to write, not to schedule ──────────
 
-function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
-  t: Todo; today: string; isNew?: boolean;
+function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }: {
+  t: Todo; today: string; tags: string[]; isNew?: boolean;
   onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
 }) {
   const [d, setD] = useState<Todo>(t);
@@ -308,9 +309,11 @@ function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
         <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} rows={9} autoFocus={isNew && !!t.title}
           placeholder="" />
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>
           <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)} aria-pressed={remind}>Remind me</button>
+          <input className="cc-input" list="doc-tags" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="Tag" style={{ fontSize: 16, minHeight: 40, flex: 1, minWidth: 110, borderRadius: 10 }} />
+          <datalist id="doc-tags">{tags.map((p) => <option key={p} value={p} />)}</datalist>
         </div>
 
         {remind && (
@@ -350,7 +353,7 @@ export default function TodoPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
     try { const a = localStorage.getItem("cc-todo-area"); if (a === "work" || a === "list") setAreaState(a); } catch { /* ignore */ }
   }, []);
-  const setArea = (a: Area) => { setAreaState(a); setText(""); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
+  const setArea = (a: Area) => { setAreaState(a); setText(""); setFilter(null); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
   const isLists = area === "list";
   const [filter, setFilter] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -370,7 +373,7 @@ export default function TodoPage() {
       clientId: newTodoId(),
       title: isLists ? text.trim() : parsed?.title ?? "",
       area, notes: null,
-      project: isLists ? null : parsed?.project ?? filter,
+      project: isLists ? filter : parsed?.project ?? filter,
       dueDate: isLists ? null : parsed?.dueDate ?? null,
       dueTime: isLists ? null : parsed?.dueTime ?? null,
       evening: !isLists && (parsed?.evening ?? false),
@@ -381,7 +384,7 @@ export default function TodoPage() {
   };
 
   const inArea = all.filter((t) => (t.area ?? "personal") === area);
-  const visible = filter && !isLists ? inArea.filter((t) => t.project === filter) : inArea;
+  const visible = filter ? inArea.filter((t) => t.project === filter) : inArea;
 
   // Tasks (Personal / Work)
   const openTasks = visible.filter((t) => !t.doneAt);
@@ -432,7 +435,18 @@ export default function TodoPage() {
         })}
       </div>
 
-      {/* ── Lists segment ── */}
+      {/* Tag chips — tasks use projects, docs use tags; same mechanism */}
+      {projects.length > 0 && (
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
+          {[null, ...projects].map((p) => (
+            <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "var(--accent-soft)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
+              {p ? `#${p}` : "All"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Docs segment ── */}
       {isLists && (
         <>
           {inArea.length > 3 && (
@@ -460,16 +474,6 @@ export default function TodoPage() {
       {/* ── Tasks segments ── */}
       {!isLists && (
         <>
-          {projects.length > 0 && (
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
-              {[null, ...projects].map((p) => (
-                <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "var(--accent-soft)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
-                  {p ? `#${p}` : "All"}
-                </button>
-              ))}
-            </div>
-          )}
-
           {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
 
           {data && openTasks.length === 0 && (
@@ -520,10 +524,10 @@ export default function TodoPage() {
       </form>
 
       {open && ((open.area ?? "personal") === "list"
-        ? <ListSheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
+        ? <ListSheet t={open} today={today} tags={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
         : <Sheet t={open} today={today} projects={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />)}
       {draft && (draft.area === "list"
-        ? <ListSheet t={draft} today={today} isNew
+        ? <ListSheet t={draft} today={today} tags={projects} isNew
             onSave={(t) => { upsert(t); setText(""); }}
             onDelete={() => { /* discard the draft */ }}
             onClose={() => setDraft(null)} />

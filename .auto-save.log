@@ -11975,3 +11975,28 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 projects/Wati outreach/triage.mjs
 To github.com:alielar/claude-workspace.git
    a8dc4d6..c57b877  main -> main
+[main 45b54b9] auto-save: 2026-08-29 23:47
+ 26 files changed, 239304 insertions(+), 46 deletions(-)
+ delete mode 100644 CLAUDE.md
+ create mode 100644 projects/Life Control Center/CONTROL_CENTER_SPEC.md
+ create mode 100644 projects/Wati outreach/data/german/contacts.json
+ create mode 100644 projects/Wati outreach/data/german/conversations.jsonl
+ create mode 100644 projects/Wati outreach/data/german/export/messages.csv
+ create mode 100644 projects/Wati outreach/data/german/export/summary.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/interested-in-the-future.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/meeting-done.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/meeting-scheduled.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/new-wa1.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/no-show.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/no-stage-part1-of-2.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/no-stage-part2-of-2.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/offer-rejected.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/sale.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/to-be-converted-part1-of-4.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/to-be-converted-part2-of-4.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/to-be-converted-part3-of-4.md
+ create mode 100644 projects/Wati outreach/data/german/export/transcripts/to-be-converted-part4-of-4.md
+ create mode 100644 projects/Wati outreach/german-export.mjs
+ create mode 100644 projects/Wati outreach/german-scan.mjs
+To github.com:alielar/claude-workspace.git
+   c57b877..45b54b9  main -> main
