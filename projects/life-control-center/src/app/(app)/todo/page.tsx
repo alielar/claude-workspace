@@ -284,7 +284,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           ))}
         </div>
 
-        <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes — lists keep going when you press return" />
+        <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
@@ -310,11 +310,11 @@ function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div role="dialog" aria-label="Edit list" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "92vh", overflowY: "auto" }}>
-        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name the list — “Gift ideas 🎁”" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
+        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
 
         {/* The content IS the feature — big editor, focused immediately on a new list. */}
         <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} rows={9} autoFocus={isNew && !!t.title}
-          placeholder={"Write here — • for a list, ☑ to tick things off later.\nEverything is searchable."} />
+          placeholder="" />
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)}>📌 {d.priority > 0 ? "Pinned" : "Pin to top"}</button>
@@ -450,7 +450,7 @@ export default function TodoPage() {
 
           {data && lists.length === 0 && (
             <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              {q ? `Nothing matches “${query}”.` : <>Things to keep, not to do — running lists you&apos;ll want later. Type a name below — try <span style={{ color: "var(--ink-2)" }}>“Gift ideas 🎁”</span> — and start writing.</>}
+              {q ? `Nothing matches “${query}”.` : "Things to keep, not to do. Type a name below and start writing."}
             </div></div>
           )}
 
@@ -481,7 +481,7 @@ export default function TodoPage() {
 
           {data && openTasks.length === 0 && (
             <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              Nothing on the {area} list{filter ? ` in #${filter}` : ""}. Type below — try <span style={{ color: "var(--ink-2)" }}>“Call the bank tomorrow 10am #money !!”</span>
+              Nothing on the {area} list{filter ? ` in #${filter}` : ""}. Type below to add one.
             </div></div>
           )}
 
@@ -519,7 +519,7 @@ export default function TodoPage() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
-              placeholder={isLists ? "New list… “Gift ideas 🎁”" : filter ? `Add to #${filter}…` : area === "work" ? "Add a work task… “fri 9am !!”" : "Add a task… “tomorrow 10am #money !!”"}
+              placeholder={isLists ? "New list…" : filter ? `Add to #${filter}…` : area === "work" ? "Add a work task…" : "Add a task…"}
               enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>

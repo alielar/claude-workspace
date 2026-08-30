@@ -56,7 +56,7 @@ function Sheet({ item, onClose, onSave, onDelete }: {
         <div style={{ fontSize: 18, fontWeight: 600 }}>{item ? "Edit" : "New item"}</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "56px 1fr", gap: 10 }}>
-          <input className="cc-input" value={d.emoji} onChange={(e) => set({ emoji: [...e.target.value].slice(-1).join("") })} placeholder="🙂" aria-label="Emoji" style={{ fontSize: 22, textAlign: "center", minHeight: 48, padding: 0 }} />
+          <input className="cc-input" value={d.emoji} onChange={(e) => set({ emoji: [...e.target.value].slice(-1).join("") })} placeholder="" aria-label="Emoji" style={{ fontSize: 22, textAlign: "center", minHeight: 48, padding: 0 }} />
           <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 17, minHeight: 48 }} />
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
