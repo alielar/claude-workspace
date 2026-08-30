@@ -48,6 +48,7 @@ export async function GET() {
       done,
       total: counted.length,
       streak: data.overallStreak,
+      bestStreak: data.bestStreak30 ?? 0,
       next,
       todosDue: badgeCount(todos, today),
       todosWork: badgeCount(todos, today, "work"),
