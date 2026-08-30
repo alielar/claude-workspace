@@ -10,40 +10,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { kbWorkouts } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { DEFAULT_WORKOUTS, type TrainExercise, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
-
-function rowToWorkout(r: typeof kbWorkouts.$inferSelect): TrainWorkout {
-  let exercises: TrainExercise[] = [];
-  let assignedDays: string[] | null = null;
-  try { exercises = JSON.parse(r.exercises); } catch { /* keep [] */ }
-  try { assignedDays = r.assignedDays ? JSON.parse(r.assignedDays) : null; } catch { /* keep null */ }
-  return {
-    key: r.key as WorkoutKey,
-    name: r.name,
-    format: r.format as TrainWorkout["format"],
-    amrapMinutes: r.amrapMinutes,
-    restSeconds: r.restSeconds,
-    exercises,
-    assignedDays,
-  };
-}
-
-async function loadOrSeed(userId: string): Promise<TrainWorkout[]> {
-  const rows = await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));
-  const have = new Set(rows.map((r) => r.key));
-  for (const w of DEFAULT_WORKOUTS) {
-    if (have.has(w.key)) continue;
-    try {
-      await db.insert(kbWorkouts).values({
-        userId, key: w.key, name: w.name, format: w.format,
-        amrapMinutes: w.amrapMinutes, restSeconds: w.restSeconds,
-        exercises: JSON.stringify(w.exercises), assignedDays: null,
-      });
-    } catch { /* raced — fine */ }
-  }
-  const fresh = have.size === DEFAULT_WORKOUTS.length ? rows : await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));
-  return fresh.map(rowToWorkout).sort((a, b) => (a.key < b.key ? -1 : 1));
-}
+import { DAY_CODES, type TrainExercise } from "@/lib/train/types";
+import { loadOrSeedWorkouts as loadOrSeed, rowToWorkout } from "@/lib/train/workoutRows";
 
 export async function GET() {
   const session = await auth();
@@ -97,7 +65,9 @@ export async function PATCH(req: Request) {
     if (Number.isFinite(m) && m >= 1 && m <= 120) updates.amrapMinutes = Math.round(m);
   }
   if (body.assignedDays !== undefined) {
-    updates.assignedDays = Array.isArray(body.assignedDays) ? JSON.stringify(body.assignedDays) : null;
+    // Day codes only, de-duplicated; empty list or anything else = no fixed days.
+    const days = Array.isArray(body.assignedDays) ? [...new Set(body.assignedDays.filter((d: unknown) => typeof d === "string" && (DAY_CODES as string[]).includes(d)))] : [];
+    updates.assignedDays = days.length ? JSON.stringify(days) : null;
   }
 
   const [row] = await db.update(kbWorkouts).set(updates)

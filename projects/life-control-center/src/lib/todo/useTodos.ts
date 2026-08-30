@@ -44,7 +44,7 @@ export function useTodos(today: string) {
   const add = useCallback((partial: Partial<Todo> & { title: string }) => {
     const now = Date.now();
     const t: Todo = {
-      clientId: newTodoId(), title: partial.title.trim(), notes: partial.notes ?? null, project: partial.project ?? null,
+      clientId: newTodoId(), title: partial.title.trim(), area: partial.area ?? "personal", notes: partial.notes ?? null, project: partial.project ?? null,
       dueDate: partial.dueDate ?? null, dueTime: partial.dueTime ?? null, evening: partial.evening ?? false,
       someday: partial.someday ?? false, priority: partial.priority ?? 0, sortOrder: now, doneAt: null,
       createdAt: now, updatedAt: now, deleted: false,

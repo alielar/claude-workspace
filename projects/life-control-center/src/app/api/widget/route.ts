@@ -50,6 +50,7 @@ export async function GET() {
       streak: data.overallStreak,
       next,
       todosDue: badgeCount(todos, today),
+      todosWork: badgeCount(todos, today, "work"),
       trainedToday: items.some((i) => i.source === "workout" && i.completedToday),
     },
     { headers: { "Cache-Control": "no-store" } }

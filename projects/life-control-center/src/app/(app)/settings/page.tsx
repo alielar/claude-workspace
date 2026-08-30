@@ -18,6 +18,8 @@ import { useCached, fetchJson, readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ARCHIVE } from "@/lib/archive";
 import { YT_CHANNELS } from "@/lib/news/youtube";
+import { useWorkouts } from "@/lib/train/useTrain";
+import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 
 type UserSettings = {
   timezone: string;
@@ -113,6 +115,25 @@ export default function SettingsPage() {
     } catch { /* keep optimistic state; next refresh corrects it */ }
   };
 
+  // Fixed training days (optional). A day belongs to one workout; tapping it on the other moves it.
+  const { workouts, saveWorkout } = useWorkouts();
+  const dayOwner = (d: DayCode): WorkoutKey | null => workouts.find((w) => w.assignedDays?.includes(d))?.key ?? null;
+  const toggleDay = (key: WorkoutKey, d: DayCode) => {
+    const owner = dayOwner(d);
+    for (const w of workouts) {
+      const has = w.assignedDays?.includes(d) ?? false;
+      if (w.key === key) {
+        if (owner === key) saveWorkout({ ...w, assignedDays: (w.assignedDays ?? []).filter((x) => x !== d) });
+        else saveWorkout({ ...w, assignedDays: [...(w.assignedDays ?? []), d] });
+      } else if (has) {
+        saveWorkout({ ...w, assignedDays: (w.assignedDays ?? []).filter((x) => x !== d) });
+      }
+    }
+    // Today and Train read the schedule from the server; drop their cached copies so the next open is fresh.
+    try { localStorage.removeItem("cc:v1:train-overview"); } catch { /* ignore */ }
+  };
+  const plannedCount = workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0);
+
   const kettlebell = String(settings?.kettlebellKg ?? 12);
   const setKettlebell = async (key: string) => {
     if (!settings) return;
@@ -157,7 +178,7 @@ export default function SettingsPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Settings</h1>
-          <div className="sub">Appearance, kettlebell, news, books, archive</div>
+          <div className="sub">Appearance, kettlebell, training days, news, books, archive</div>
         </div>
       </div>
 
@@ -174,6 +195,40 @@ export default function SettingsPage() {
         <div className="cc-card-head"><span className="title">Kettlebell</span><span className="tail">16 once every move is mastered</span></div>
         <div className="cc-card-body">
           <Segmented value={kettlebell} options={KETTLEBELLS} onChange={setKettlebell} />
+        </div>
+      </section>
+
+      {/* Training days */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Training days</span><span className="tail">{plannedCount ? `${plannedCount} a week` : "any days"}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
+          {workouts.map((w) => (
+            <div key={w.key} style={{ display: "grid", gap: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 500 }}>{w.name}</span>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
+                {DAY_CODES.map((d) => {
+                  const owner = dayOwner(d);
+                  const on = owner === w.key;
+                  const other = owner !== null && !on;
+                  return (
+                    <button key={d} onClick={() => toggleDay(w.key, d)} aria-pressed={on}
+                      style={{ minHeight: 44, borderRadius: 10, fontSize: 14, font: "inherit", cursor: "pointer", padding: 0,
+                        border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`,
+                        background: on ? "var(--violet)" : "var(--fill-1)",
+                        color: on ? "var(--on-accent)" : other ? "var(--ink-4)" : "var(--ink-2)",
+                        textDecoration: other ? "line-through" : "none" }}>
+                      {DAY_LABELS[d]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
+            {plannedCount
+              ? "Today shows the planned workout, or a quiet rest day. You can always train anyway."
+              : "Leave everything off to keep “4 a week, any days, alternating”."}
+          </p>
         </div>
       </section>
 

@@ -14,9 +14,17 @@
 
 export type Priority = 0 | 1 | 2; // none · important · urgent
 
+/** Two lists, same capture: Work and Personal (spec §7c item 4). */
+export type Area = "work" | "personal";
+export const AREAS: { key: Area; label: string }[] = [
+  { key: "personal", label: "Personal" },
+  { key: "work", label: "Work" },
+];
+
 export type Todo = {
   clientId: string;            // generated on the phone, makes every write idempotent
   title: string;
+  area: Area;                  // work | personal — each list has its own due counts and reminders
   notes: string | null;
   project: string | null;      // free-form "#tag", lower-case
   dueDate: string | null;      // YYYY-MM-DD (Europe/Madrid day) — null = Anytime / Someday
@@ -193,6 +201,6 @@ export function sortTodos(a: Todo, b: Todo): number {
 }
 
 /** Number to put on the home-screen badge: open tasks due today or earlier. */
-export function badgeCount(todos: Todo[], today: string): number {
-  return todos.filter((t) => !t.deleted && !t.doneAt && !t.someday && t.dueDate !== null && t.dueDate <= today).length;
+export function badgeCount(todos: Todo[], today: string, area?: Area): number {
+  return todos.filter((t) => !t.deleted && !t.doneAt && !t.someday && t.dueDate !== null && t.dueDate <= today && (!area || (t.area ?? "personal") === area)).length;
 }

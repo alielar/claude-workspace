@@ -72,6 +72,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - `src/lib/train/useTrain.ts` — cached templates + overview, active session persisted in localStorage on every tap, `saveSession` through the outbox.
 - `/train` hub · `/train/w1` AMRAP game (whole middle = +1 round, 700 ms double-tap guard, undo, pace projection, record flash, no pause — it's a race) · `/train/w2` straight sets with set bubbles, sticky rest bar, inline rep/set/weight editor (`RepEditor`).
 - Today shows a virtual "Train" row from today's `kb_sessions` (source `workout`): informational, **never counted** toward the daily streak.
+- Fixed days (opt-in, Settings → Training days): `kb_workouts.assignedDays` = `["mon","wed",…]`. Helpers `hasSchedule/scheduledFor/nextScheduled` in `types.ts`; `loadOrSeedWorkouts` in `src/lib/train/workoutRows.ts` (server). Overview carries `target` + `schedule`; the checklist workout row becomes "Rest day" on unplanned days.
 - Old gym system stays at `/workouts` (archive).
 
 ### Books (Phase 4 — physical reading list)
@@ -84,6 +85,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Table `todos`; every write is `PUT /api/todos` with the **full task** keyed by a phone-generated `clientId` (upsert, last-writer-wins on `updatedAt`, soft `deleted`) — replay-safe from the outbox.
 - `src/lib/todo/types.ts` — `parseQuickAdd()` (tomorrow/fri/weekend/next week/15/9/10am/#project/!!/someday), `bucketOf()` (overdue · today · evening · upcoming · anytime · someday), `badgeCount()`.
 - `src/lib/todo/useTodos.ts` — cached list, optimistic upsert, and it sets the **home-screen badge** (`navigator.setAppBadge`) to the count due today/overdue. Reminders are due date + time shown in the app and the badge; push notifications are Phase 7.
+- `area: "work" | "personal"` on every task (Personal · Work switch on /todo, remembered in `localStorage["cc-todo-area"]`; `badgeCount(todos, today, area?)`).
 - Today shows a "To-do" card with up to 4 tasks due today/overdue (evening tasks wait until the evening); tick inline.
 - Design borrowed: Things (Today/Evening/Anytime/Someday), Todoist (one-line natural-language quick add), TickTick (one-tap "→ tomorrow" defer). Deliberately no sub-tasks, filters or databases.
 

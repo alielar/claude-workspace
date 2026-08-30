@@ -10,6 +10,8 @@
  *   project, priority, notes, delete
  *   one-tap defer from the list on overdue/today rows ("→ tomorrow")
  *   optional project filter chips when you have projects
+ *   two lists — Personal · Work — switched at the top (remembered on the phone); each has its own
+ *   due count, the home-screen badge adds both
  *
  * Works offline; the home-screen badge shows what's due today.
  */
@@ -18,8 +20,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTodos } from "@/lib/todo/useTodos";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
 import {
-  addDays, bucketOf, fmtDue, nextWeekend, parseQuickAdd, sortTodos,
-  type Bucket, type Priority, type Todo,
+  addDays, AREAS, badgeCount, bucketOf, fmtDue, nextWeekend, parseQuickAdd, sortTodos,
+  type Area, type Bucket, type Priority, type Todo,
 } from "@/lib/todo/types";
 
 const BUCKETS: { key: Bucket; label: string; color: string }[] = [
@@ -101,6 +103,10 @@ function Sheet({ t, today, projects, onSave, onDelete, onClose }: {
       <div role="dialog" aria-label="Edit task" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
         <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What needs doing?" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
 
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          {AREAS.map((a) => <button key={a.key} onClick={() => set({ area: a.key })} style={chip((d.area ?? "personal") === a.key)}>{a.label}</button>)}
+        </div>
+
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {chips.map((c) => <button key={c.label} onClick={c.go} style={chip(c.on)}>{c.label}</button>)}
           <label style={{ ...chip(!!d.dueDate && !chips.slice(0, 4).some((c) => c.on)), display: "inline-flex", alignItems: "center", gap: 6, position: "relative" }}>
@@ -148,22 +154,29 @@ export default function TodoPage() {
   const all = useMemo(() => (data?.todos ?? []).filter((t) => !t.deleted), [data]);
 
   const [text, setText] = useState("");
+  const [area, setAreaState] = useState<Area>("personal");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    try { if (localStorage.getItem("cc-todo-area") === "work") setAreaState("work"); } catch { /* ignore */ }
+  }, []);
+  const setArea = (a: Area) => { setAreaState(a); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
   const [filter, setFilter] = useState<string | null>(null);
   const [open, setOpen] = useState<Todo | null>(null);
   const [showDone, setShowDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = useMemo(() => (text.trim() ? parseQuickAdd(text, today) : null), [text, today]);
-  const projects = useMemo(() => [...new Set(all.map((t) => t.project).filter((p): p is string => !!p))].sort(), [all]);
+  const projects = useMemo(() => [...new Set(all.filter((t) => (t.area ?? "personal") === area).map((t) => t.project).filter((p): p is string => !!p))].sort(), [all, area]);
 
   const submit = () => {
     if (!parsed || !parsed.title) return;
-    add({ ...parsed, project: parsed.project ?? filter });
+    add({ ...parsed, area, project: parsed.project ?? filter });
     setText("");
     inputRef.current?.focus();
   };
 
-  const visible = filter ? all.filter((t) => t.project === filter) : all;
+  const inArea = all.filter((t) => (t.area ?? "personal") === area);
+  const visible = filter ? inArea.filter((t) => t.project === filter) : inArea;
   const openTasks = visible.filter((t) => !t.doneAt);
   const doneToday = visible.filter((t) => t.doneAt !== null).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0));
   const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
@@ -188,6 +201,21 @@ export default function TodoPage() {
         </div>
       </div>
 
+      {/* Personal · Work */}
+      <div role="tablist" aria-label="List" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
+        {AREAS.map((a) => {
+          const on = a.key === area;
+          const n = badgeCount(all, today, a.key);
+          return (
+            <button key={a.key} role="tab" aria-selected={on} onClick={() => setArea(a.key)}
+              style={{ minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, WebkitTapHighlightColor: "transparent" }}>
+              {a.label}
+              {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
+            </button>
+          );
+        })}
+      </div>
+
       {projects.length > 0 && (
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
           {[null, ...projects].map((p) => (
@@ -202,7 +230,7 @@ export default function TodoPage() {
 
       {data && openTasks.length === 0 && (
         <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-          Nothing on the list{filter ? ` in #${filter}` : ""}. Type below — try <span style={{ color: "var(--ink-2)" }}>“Call the bank tomorrow 10am #money !!”</span>
+          Nothing on the {area} list{filter ? ` in #${filter}` : ""}. Type below — try <span style={{ color: "var(--ink-2)" }}>“Call the bank tomorrow 10am #money !!”</span>
         </div></div>
       )}
 
@@ -237,7 +265,7 @@ export default function TodoPage() {
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={filter ? `Add to #${filter}…` : "Add a task… “fri 9am #work !!”"} enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
+            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={filter ? `Add to #${filter}…` : area === "work" ? "Add a work task… “fri 9am !!”" : "Add a task… “tomorrow 10am #money !!”"} enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" disabled={!parsed?.title} style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
         </div>

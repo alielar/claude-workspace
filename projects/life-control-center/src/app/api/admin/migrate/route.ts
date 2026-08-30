@@ -150,6 +150,8 @@ export async function POST() {
       updated_at INTEGER NOT NULL
     )`,
     `CREATE INDEX IF NOT EXISTS ix_todos_user_due ON todos(user_id, due_date)`,
+    // Work / Personal split (§7c item 4)
+    `ALTER TABLE todos ADD COLUMN area TEXT NOT NULL DEFAULT 'personal'`,
 
     // ── Checklist suggestions (AI habit ideas generated weekly) ─────────────
     `CREATE TABLE IF NOT EXISTS checklist_suggestions (

@@ -11,7 +11,8 @@
 
 import Link from "next/link";
 import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrain";
-import { fmtClock, SESSIONS_PER_WEEK, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
+import { fmtClock, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
+import { checklistToday } from "@/lib/checklist/day";
 import { useClientValue } from "@/lib/useClientValue";
 
 function describe(w: TrainWorkout): string {
@@ -49,6 +50,11 @@ export default function TrainPage() {
   const other = workouts.find((w) => w.key !== nextKey);
   const kg = ov?.kettlebellKg ?? 12;
   const loading = wLoading && oLoading && !ov;
+  const target = ov?.target ?? SESSIONS_PER_WEEK;
+  const today = checklistToday();
+  const sched = ov?.schedule ?? null;
+  const planned = DAY_CODES.filter((d) => workouts.some((w) => w.assignedDays?.includes(d))).map((d) => DAY_LABELS[d as DayCode]).join(" · ");
+  const restToday = sched !== null && sched.todayKey === null && !ov?.sessions.some((s) => s.date === today && s.finishedAt !== null);
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -56,7 +62,7 @@ export default function TrainPage() {
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Train</h1>
           <div className="sub">
-            {ov ? `${ov.thisWeekSessions} of ${SESSIONS_PER_WEEK} this week` : `${SESSIONS_PER_WEEK} a week`} · any days, alternating
+            {ov ? `${ov.thisWeekSessions} of ${target} this week` : `${target} a week`} · {sched ? planned : "any days, alternating"}
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -73,7 +79,7 @@ export default function TrainPage() {
 
       {/* Week progress: 4 dots */}
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        {Array.from({ length: SESSIONS_PER_WEEK }).map((_, i) => (
+        {Array.from({ length: target }).map((_, i) => (
           <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: ov && i < ov.thisWeekSessions ? "var(--violet)" : "var(--fill-3)" }} />
         ))}
       </div>
@@ -88,10 +94,16 @@ export default function TrainPage() {
         </Link>
       )}
 
+      {restToday && (
+        <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>
+          🛌 Rest day today{sched?.next ? ` — ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} is ${fmtScheduleDate(sched.next.date, today)}` : ""}. Training anyway is fine.
+        </div>
+      )}
+
       {/* Hero: next workout */}
       <section className="cc-card" style={{ overflow: "hidden" }}>
         <div className="cc-card-head">
-          <span className="title">Up next</span>
+          <span className="title">{sched?.next ? `Up next · ${fmtScheduleDate(sched.next.date, today)}` : "Up next"}</span>
           <span className="tail">{ov?.toBeat && nextKey === "w1" ? `to beat: ${ov.toBeat.rounds}` : nextKey === "w1" ? "set the bar" : "checklist"}</span>
         </div>
         <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>

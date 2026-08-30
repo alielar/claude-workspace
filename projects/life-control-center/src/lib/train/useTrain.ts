@@ -28,7 +28,7 @@ export function useWorkouts() {
       await sendOrQueue({
         url: "/api/train/workouts",
         method: "PATCH",
-        body: { key: w.key, exercises: w.exercises, restSeconds: w.restSeconds, amrapMinutes: w.amrapMinutes },
+        body: { key: w.key, exercises: w.exercises, restSeconds: w.restSeconds, amrapMinutes: w.amrapMinutes, assignedDays: w.assignedDays ?? [] },
         dedupeKey: `train-workout:${w.key}`,
       });
     } catch { /* server refused — next refresh shows the truth */ }

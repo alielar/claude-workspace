@@ -55,6 +55,10 @@ export type TrainOverview = {
   /** Consecutive weeks (ending this week or last week) with at least 4 finished sessions. */
   weekStreak: number;
   kettlebellKg: number;
+  /** Sessions per week to aim for: the number of fixed days when set, else 4. */
+  target: number;
+  /** Fixed-day schedule (spec §7c item 6). null = "any days, alternating" (the default). */
+  schedule: { todayKey: WorkoutKey | null; next: { key: WorkoutKey; date: string } | null } | null;
 };
 
 export const SESSIONS_PER_WEEK = 4;
@@ -195,6 +199,47 @@ export function numberToBeat(bests: WeeklyBest[], today: string): TrainOverview[
   const prior = bests.filter((b) => b.week < todayWeek);
   const pick = prior[0] ?? null;
   return pick ? { rounds: pick.best, week: pick.week, label: pick.label } : null;
+}
+
+// ─── Fixed training days (opt-in) ────────────────────────────────────────────
+
+export type DayCode = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export const DAY_CODES: DayCode[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+export const DAY_LABELS: Record<DayCode, string> = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
+
+export function dayCode(ymd: string): DayCode {
+  return DAY_CODES[(new Date(ymd + "T12:00:00Z").getUTCDay() + 6) % 7];
+}
+
+/** True when at least one workout has fixed days. */
+export function hasSchedule(workouts: Pick<TrainWorkout, "assignedDays">[]): boolean {
+  return workouts.some((w) => (w.assignedDays?.length ?? 0) > 0);
+}
+
+/** Which workout is planned on a given date, or null (rest day / no schedule). */
+export function scheduledFor(workouts: TrainWorkout[], ymd: string): WorkoutKey | null {
+  const code = dayCode(ymd);
+  return workouts.find((w) => w.assignedDays?.includes(code))?.key ?? null;
+}
+
+/** Next planned session from `today` (today counts unless already trained today), within 7 days. */
+export function nextScheduled(workouts: TrainWorkout[], today: string, trainedToday: boolean): { key: WorkoutKey; date: string } | null {
+  if (!hasSchedule(workouts)) return null;
+  for (let i = trainedToday ? 1 : 0; i < 8; i++) {
+    const d = new Date(today + "T12:00:00Z");
+    d.setUTCDate(d.getUTCDate() + i);
+    const ymd = d.toISOString().slice(0, 10);
+    const key = scheduledFor(workouts, ymd);
+    if (key) return { key, date: ymd };
+  }
+  return null;
+}
+
+export function fmtScheduleDate(ymd: string, today: string): string {
+  if (ymd === today) return "today";
+  const d = new Date(today + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 1);
+  if (ymd === d.toISOString().slice(0, 10)) return "tomorrow";
+  return new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(new Date(ymd + "T12:00:00Z"));
 }
 
 /** Alternate W1 / W2 based on the last finished session. W1 first. */

@@ -296,12 +296,16 @@ Any future session picks these up from here; Ali should not have to repeat them.
    honestly what iOS actually allows a web app (PWA) to do**; if a truly persistent
    notification is not possible, describe the closest alternative and what it costs
    (time, money, a native wrapper, etc.). Needs server-side scheduling.
-4. **To-do split: WORK and PERSONAL.** Two sections, each with its own reminders and
-   notifications, same one-line capture in both.
+4. ~~**To-do split: WORK and PERSONAL.**~~ Built 2026-08-30: Personal · Work switch at the top of
+   To-do (remembered on the phone), each with its own due count; same quick add in both; area chips
+   in the task sheet; Today tags work tasks "· Work"; widget shows "N due · n work". Per-area
+   *notifications* wait for item 3.
 5. **Apple Watch sync — sleep and workout data.** The old Apple Shortcut posting sleep data
    was unreliable; needs a new approach (`/api/sleep/ingest` still accepts it, don't trust it).
-6. **Fixed workout day scheduling.** Currently "4 sessions a week, any days";
-   `kb_workouts.assignedDays` is reserved for this.
+6. ~~**Fixed workout day scheduling.**~~ Built 2026-08-30, **opt-in**: Settings → Training days
+   (Mon–Sun per workout; a day belongs to one workout). Off = the old "4 a week, any days,
+   alternating". On = Today shows the planned workout or a quiet "Rest day · next: …" row, Train
+   says "Up next · Tuesday", weekly target = number of planned days.
 7. **Word bank / spaced repetition revival.** Archived at `/wordbank`, restorable in one line
    (see CLAUDE.md §4).
 

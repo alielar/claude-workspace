@@ -107,14 +107,15 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
 
   // The workout row is not a tick box — it's a door to the Train tab.
   if (item.source === "workout") {
+    const rest = item.title === "Rest day";
     return (
       <Link href="/train" className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 56, padding: "12px 4px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
-        <span aria-hidden style={{ fontSize: 22, textAlign: "center" }}>{done ? "✅" : "🏋️"}</span>
+        <span aria-hidden style={{ fontSize: 22, textAlign: "center" }}>{done ? "✅" : rest ? "🛌" : "🏋️"}</span>
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 500, color: done ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title.replace(/^Train · /, "")}</span>
           {item.notes && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{item.notes}</span>}
         </span>
-        <span className={done ? "cc-pill" : "cc-btn cc-btn-primary"} style={done ? { fontSize: 14 } : { minHeight: 44, padding: "0 16px", borderRadius: 12 }}>{done ? "done" : "▶ Train"}</span>
+        <span className={done ? "cc-pill" : rest ? "cc-btn cc-btn-ghost" : "cc-btn cc-btn-primary"} style={done ? { fontSize: 14 } : { minHeight: 44, padding: "0 16px", borderRadius: 12 }}>{done ? "done" : rest ? "Train anyway" : "▶ Train"}</span>
       </Link>
     );
   }
@@ -373,7 +374,7 @@ function TodoCard({ today, part }: { today: string; part: DayPart }) {
           <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
             <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
             <span style={{ display: "block", fontSize: 14, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-              {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.project ? ` · #${t.project}` : ""}
+              {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.area === "work" ? " · Work" : ""}{t.project ? ` · #${t.project}` : ""}
             </span>
           </Link>
         </div>

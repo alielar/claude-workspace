@@ -18,7 +18,8 @@ import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
 import { checklistToday } from "@/lib/checklist/day";
 import { ROUTINE_SEED, type ItemKind, type RoutineKey, type TimeOfDay } from "@/lib/checklist/types";
-import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK } from "@/lib/train/types";
+import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK, hasSchedule, scheduledFor, nextScheduled, fmtScheduleDate } from "@/lib/train/types";
+import { loadOrSeedWorkouts } from "@/lib/train/workoutRows";
 import { rowToSession } from "@/lib/train/rows";
 
 function calcStreak(dates: string[], today: string): number {
@@ -136,7 +137,7 @@ export async function GET() {
   // Seeding is best-effort; the list still loads without it.
   try { await seedRoutine(userId); } catch { /* migration pending */ }
 
-  const [items, allCompletions, trainRows] = await Promise.all([
+  const [items, allCompletions, trainRows, workouts] = await Promise.all([
     db
       .select()
       .from(checklistItems)
@@ -153,6 +154,7 @@ export async function GET() {
       .orderBy(desc(kbSessions.date), desc(kbSessions.startedAt))
       .limit(20)
       .catch(() => [] as (typeof kbSessions.$inferSelect)[]), // table may not exist before migration
+    loadOrSeedWorkouts(userId).catch(() => []),
   ]);
 
   const last7Dates = getLastNDates(today, 7);
@@ -160,13 +162,21 @@ export async function GET() {
   // ── Virtual "Workout" row from the Train tab — informational, never counted ──
   const trainSessions = trainRows.map(rowToSession).filter((s) => s.finishedAt !== null);
   const todayTrain = trainSessions.find((s) => s.date === today) ?? null;
-  const nextKey = nextWorkoutKey(trainSessions);
+  const scheduled = hasSchedule(workouts);
+  const todayKey = scheduled ? scheduledFor(workouts, today) : null;
+  const upcoming = scheduled ? nextScheduled(workouts, today, todayTrain !== null) : null;
+  const nextKey = todayKey ?? upcoming?.key ?? nextWorkoutKey(trainSessions);
   const thisWeekCount = sessionsPerWeek(trainSessions).get(isoWeekKey(today)) ?? 0;
+  const target = scheduled ? workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0) : SESSIONS_PER_WEEK;
+  const restDay = scheduled && !todayTrain && todayKey === null;
+  const workoutName = (k: string) => (k === "w1" ? "Workout 1" : "Workout 2");
   const workoutRow = {
     id: -1,
     title: todayTrain
-      ? `${todayTrain.workoutKey === "w1" ? "Workout 1" : "Workout 2"} done${todayTrain.rounds ? ` · ${todayTrain.rounds} rounds` : ""}`
-      : `Train · ${nextKey === "w1" ? "Workout 1 (AMRAP)" : "Workout 2 (sets)"}`,
+      ? `${workoutName(todayTrain.workoutKey)} done${todayTrain.rounds ? ` · ${todayTrain.rounds} rounds` : ""}`
+      : restDay
+        ? "Rest day"
+        : `Train · ${nextKey === "w1" ? "Workout 1 (AMRAP)" : "Workout 2 (sets)"}`,
     emoji: "🏋️",
     sortOrder: -5,
     timeOfDay: "anytime" as TimeOfDay,
@@ -179,10 +189,14 @@ export async function GET() {
     autoSource: null,
     color: "cyan",
     notes: todayTrain
-      ? `${thisWeekCount} of ${SESSIONS_PER_WEEK} this week`
-      : thisWeekCount >= SESSIONS_PER_WEEK
-        ? `${thisWeekCount} of ${SESSIONS_PER_WEEK} this week — week complete, extra is a bonus`
-        : `${thisWeekCount} of ${SESSIONS_PER_WEEK} this week · any days`,
+      ? `${thisWeekCount} of ${target} this week`
+      : restDay
+        ? upcoming ? `next: ${workoutName(upcoming.key)} ${fmtScheduleDate(upcoming.date, today)} · ${thisWeekCount} of ${target} this week` : `${thisWeekCount} of ${target} this week`
+        : thisWeekCount >= target
+          ? `${thisWeekCount} of ${target} this week — week complete, extra is a bonus`
+          : scheduled
+            ? `planned for today · ${thisWeekCount} of ${target} this week`
+            : `${thisWeekCount} of ${target} this week · any days`,
     href: "/train",
   };
 

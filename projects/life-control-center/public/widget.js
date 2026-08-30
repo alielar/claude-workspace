@@ -79,7 +79,8 @@ if (!d) {
   // Foot: to-dos due
   w.addSpacer();
   const foot = w.addStack(); foot.centerAlignContent();
-  const td = foot.addText(d.todosDue === 0 ? "No to-dos due" : `${d.todosDue} to-do${d.todosDue === 1 ? "" : "s"} due`);
+  const work = d.todosWork ? ` · ${d.todosWork} work` : "";
+  const td = foot.addText(d.todosDue === 0 ? "No to-dos due" : `${d.todosDue} to-do${d.todosDue === 1 ? "" : "s"} due${work}`);
   td.font = Font.systemFont(13); td.textColor = d.todosDue ? VIOLET : INK3;
   foot.addSpacer();
   if (d.trainedToday) { const tr = foot.addText("🏋️ trained"); tr.font = Font.systemFont(13); tr.textColor = INK3; }

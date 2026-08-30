@@ -9,7 +9,8 @@ import { db } from "@/db";
 import { kbSessions, userSettings } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
-import { isoWeekKey, nextWorkoutKey, numberToBeat, weeklyBests, sessionsPerWeek, weekStreak, type TrainOverview } from "@/lib/train/types";
+import { isoWeekKey, nextWorkoutKey, numberToBeat, weeklyBests, sessionsPerWeek, weekStreak, hasSchedule, scheduledFor, nextScheduled, SESSIONS_PER_WEEK, type TrainOverview } from "@/lib/train/types";
+import { loadOrSeedWorkouts } from "@/lib/train/workoutRows";
 import { rowToSession } from "@/lib/train/rows";
 
 export async function GET() {
@@ -18,26 +19,34 @@ export async function GET() {
   const userId = session.user.id;
   const today = checklistToday();
 
-  const [rows, [settings]] = await Promise.all([
+  const [rows, [settings], workouts] = await Promise.all([
     db.select().from(kbSessions).where(eq(kbSessions.userId, userId))
       .orderBy(desc(kbSessions.date), desc(kbSessions.startedAt)).limit(60),
     db.select({ kettlebellKg: userSettings.kettlebellKg }).from(userSettings)
       .where(eq(userSettings.userId, userId)).limit(1),
+    loadOrSeedWorkouts(userId).catch(() => []),
   ]);
 
   const sessions = rows.map(rowToSession);
   const bests = weeklyBests(sessions, today);
   const thisWeek = bests.find((b) => b.week === isoWeekKey(today));
+  const finished = sessions.filter((s) => s.finishedAt !== null);
+  const trainedToday = finished.some((s) => s.date === today);
+  const scheduled = hasSchedule(workouts);
+  const upcoming = scheduled ? nextScheduled(workouts, today, trainedToday) : null;
+  const target = scheduled ? workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0) : SESSIONS_PER_WEEK;
 
   const overview: TrainOverview = {
     sessions,
     weeklyBests: bests,
-    next: nextWorkoutKey(sessions),
+    next: upcoming?.key ?? nextWorkoutKey(sessions),
     toBeat: numberToBeat(bests, today),
     thisWeekBest: thisWeek ? thisWeek.best : null,
     thisWeekSessions: sessionsPerWeek(sessions).get(isoWeekKey(today)) ?? 0,
     weekStreak: weekStreak(sessions, today),
     kettlebellKg: settings?.kettlebellKg ?? 12,
+    target,
+    schedule: scheduled ? { todayKey: scheduledFor(workouts, today), next: upcoming } : null,
   };
   return NextResponse.json(overview);
 }

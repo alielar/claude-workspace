@@ -141,6 +141,7 @@ export const todos = sqliteTable("todos", {
     .references(() => users.id, { onDelete: "cascade" }),
   clientId: text("client_id").notNull().unique(),
   title: text("title").notNull(),
+  area: text("area").notNull().default("personal"),   // "work" | "personal"
   notes: text("notes"),
   project: text("project"),
   dueDate: text("due_date"),           // YYYY-MM-DD

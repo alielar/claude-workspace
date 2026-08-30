@@ -9,11 +9,11 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { todos } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import type { Todo, Priority } from "@/lib/todo/types";
+import type { Todo, Priority, Area } from "@/lib/todo/types";
 
 function rowToTodo(r: typeof todos.$inferSelect): Todo {
   return {
-    clientId: r.clientId, title: r.title, notes: r.notes, project: r.project,
+    clientId: r.clientId, title: r.title, area: (r.area === "work" ? "work" : "personal") as Area, notes: r.notes, project: r.project,
     dueDate: r.dueDate, dueTime: r.dueTime, evening: r.evening, someday: r.someday,
     priority: (r.priority as Priority) ?? 0, sortOrder: r.sortOrder,
     doneAt: r.doneAt ? r.doneAt.getTime() : null,
@@ -46,6 +46,7 @@ export async function PUT(req: Request) {
     userId,
     clientId: b.clientId,
     title: title || "(deleted)",
+    area: b.area === "work" ? "work" : "personal",
     notes: typeof b.notes === "string" ? b.notes.slice(0, 4000) || null : null,
     project: typeof b.project === "string" ? b.project.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "").slice(0, 24) || null : null,
     dueDate: typeof b.dueDate === "string" && YMD.test(b.dueDate) ? b.dueDate : null,
