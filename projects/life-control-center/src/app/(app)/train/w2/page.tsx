@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useOverview, useWorkouts, readActiveSession, writeActiveSession, saveSession, workoutByKey } from "@/lib/train/useTrain";
-import { fmtClock, newClientId, type TrainExercise, type TrainSession } from "@/lib/train/types";
+import { newExerciseId, fmtClock, newClientId, type TrainExercise, type TrainSession } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { cues } from "@/lib/routine/cues";
 import { RepEditor } from "@/components/train/RepEditor";
@@ -109,7 +109,13 @@ export default function SetsPage() {
     setRestEndsAt(null);
   };
 
-  const saveExercise = (e: TrainExercise) => saveWorkout({ ...w, exercises: w.exercises.map((x) => (x.id === e.id ? e : x)) });
+  const saveExercise = (e: TrainExercise) => {
+    const exists = w.exercises.some((x) => x.id === e.id);
+    saveWorkout({ ...w, exercises: exists ? w.exercises.map((x) => (x.id === e.id ? e : x)) : [...w.exercises, e] });
+  };
+  const removeExercise = (id: string) => saveWorkout({ ...w, exercises: w.exercises.filter((x) => x.id !== id) });
+  const blankExercise = (): TrainExercise => ({ id: newExerciseId("new"), name: "", reps: 12, sets: 3, perSide: false, kettlebell: true, weightKg: null, videoUrl: null });
+  const [addingNew, setAddingNew] = useState(false);
   const changeRest = (delta: number) => saveWorkout({ ...w, restSeconds: Math.max(0, Math.min(600, w.restSeconds + delta)) });
 
   // ── Summary ───────────────────────────────────────────────────────────────
@@ -157,8 +163,12 @@ export default function SetsPage() {
             const allDone = running && flags.filter(Boolean).length >= e.sets;
             return (
               <div key={e.id} style={{ padding: "12px 0", borderBottom: i < w.exercises.length - 1 ? "1px solid var(--line)" : "none", opacity: allDone ? 0.55 : 1 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
+                <div style={{ display: "grid", gridTemplateColumns: e.videoUrl ? "1fr auto auto" : "1fr auto", gap: 10, alignItems: "center" }}>
                   <span style={{ fontSize: 17, fontWeight: 500, textDecoration: allDone ? "line-through" : "none" }}>{e.name}</span>
+                  {e.videoUrl && (
+                    <a href={e.videoUrl} target="_blank" rel="noopener noreferrer" aria-label={`How to do ${e.name}`}
+                      style={{ minHeight: 36, minWidth: 36, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--violet)", textDecoration: "none", fontSize: 15 }}>▶</a>
+                  )}
                   <button onClick={() => setEditing(e)} className="cc-pill cc-pill-violet" style={{ fontSize: 15, fontFamily: "var(--f-mono)", minHeight: 36, cursor: "pointer", border: "1px solid var(--line-hi)" }}>
                     {e.reps}{e.perSide ? "/arm" : ""} × {e.sets}{e.kettlebell ? ` · ${kg} kg` : e.weightKg ? ` · ${e.weightKg} kg` : ""}
                   </button>
@@ -188,6 +198,7 @@ export default function SetsPage() {
               </div>
             );
           })}
+          <button onClick={() => setAddingNew(true)} style={{ width: "100%", minHeight: 50, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left", padding: "0 2px" }}>+ Add exercise</button>
         </div>
       </section>
 
@@ -216,7 +227,8 @@ export default function SetsPage() {
         </div>
       )}
 
-      {editing && <RepEditor exercise={editing} showSets kettlebellKg={kg} onSave={saveExercise} onClose={() => setEditing(null)} />}
+      {editing && <RepEditor exercise={editing} showSets kettlebellKg={kg} onSave={saveExercise} onRemove={() => removeExercise(editing.id)} onClose={() => setEditing(null)} />}
+      {addingNew && <RepEditor exercise={blankExercise()} showSets kettlebellKg={kg} isNew onSave={saveExercise} onClose={() => setAddingNew(false)} />}
     </div>
   );
 }

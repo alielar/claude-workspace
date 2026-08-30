@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useOverview, useWorkouts, readActiveSession, writeActiveSession, saveSession, workoutByKey } from "@/lib/train/useTrain";
-import { fmtClock, newClientId, type TrainSession } from "@/lib/train/types";
+import { newExerciseId, fmtClock, newClientId, type TrainSession } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { cues } from "@/lib/routine/cues";
 import { RepEditor } from "@/components/train/RepEditor";
@@ -168,7 +168,13 @@ export default function AmrapPage() {
     ? pace.projected > toBeat ? "var(--pos)" : pace.projected === toBeat ? "var(--warn)" : "var(--neg)"
     : "var(--ink-3)";
 
-  const saveExercise = (e: TrainExercise) => saveWorkout({ ...w, exercises: w.exercises.map((x) => (x.id === e.id ? e : x)) });
+  const saveExercise = (e: TrainExercise) => {
+    const exists = w.exercises.some((x) => x.id === e.id);
+    saveWorkout({ ...w, exercises: exists ? w.exercises.map((x) => (x.id === e.id ? e : x)) : [...w.exercises, e] });
+  };
+  const removeExercise = (id: string) => saveWorkout({ ...w, exercises: w.exercises.filter((x) => x.id !== id) });
+  const blankExercise = (): TrainExercise => ({ id: newExerciseId("new"), name: "", reps: 5, sets: 1, perSide: true, kettlebell: true, weightKg: null, videoUrl: null });
+  const [addingNew, setAddingNew] = useState(false);
 
   // ── Idle ──────────────────────────────────────────────────────────────────
   if (status === "idle") {
@@ -201,17 +207,25 @@ export default function AmrapPage() {
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">One round</span><span className="tail">tap a number to change it</span></div>
           <div style={{ padding: "0 14px" }}>
-            {w.exercises.map((e, i) => (
-              <button key={e.id} onClick={() => setEditing(e)} style={{ display: "grid", gridTemplateColumns: "1fr auto", width: "100%", minHeight: 48, alignItems: "center", background: "transparent", border: "none", borderBottom: i < w.exercises.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", padding: "0 2px" }}>
-                <span style={{ fontSize: 16 }}>{e.name}</span>
-                <span className="cc-pill cc-pill-violet" style={{ fontSize: 15, fontFamily: "var(--f-mono)" }}>{e.reps}{e.perSide ? " / side" : ""}</span>
-              </button>
+            {w.exercises.map((e) => (
+              <div key={e.id} style={{ display: "grid", gridTemplateColumns: e.videoUrl ? "1fr auto auto" : "1fr auto", alignItems: "center", borderBottom: "1px solid var(--line)", gap: 8 }}>
+                <button onClick={() => setEditing(e)} style={{ display: "grid", gridTemplateColumns: "1fr auto", minHeight: 48, alignItems: "center", background: "transparent", border: "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", padding: "0 2px", gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>{e.name}</span>
+                  <span className="cc-pill cc-pill-violet" style={{ fontSize: 15, fontFamily: "var(--f-mono)" }}>{e.reps}{e.perSide ? " / side" : ""}</span>
+                </button>
+                {e.videoUrl && (
+                  <a href={e.videoUrl} target="_blank" rel="noopener noreferrer" aria-label={`How to do ${e.name}`}
+                    style={{ minHeight: 44, minWidth: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--violet)", textDecoration: "none", fontSize: 15 }}>▶</a>
+                )}
+              </div>
             ))}
+            <button onClick={() => setAddingNew(true)} style={{ width: "100%", minHeight: 48, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left", padding: "0 2px" }}>+ Add exercise</button>
           </div>
         </section>
 
         <Link href="/train" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back</Link>
-        {editing && <RepEditor exercise={editing} showSets={false} kettlebellKg={kg} onSave={saveExercise} onClose={() => setEditing(null)} />}
+        {editing && <RepEditor exercise={editing} showSets={false} kettlebellKg={kg} onSave={saveExercise} onRemove={() => removeExercise(editing.id)} onClose={() => setEditing(null)} />}
+        {addingNew && <RepEditor exercise={blankExercise()} showSets={false} kettlebellKg={kg} isNew onSave={saveExercise} onClose={() => setAddingNew(false)} />}
       </div>
     );
   }

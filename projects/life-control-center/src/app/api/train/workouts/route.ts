@@ -21,7 +21,7 @@ export async function GET() {
 }
 
 function cleanExercises(input: unknown): TrainExercise[] | null {
-  if (!Array.isArray(input)) return null;
+  if (!Array.isArray(input) || input.length === 0 || input.length > 30) return null;
   const out: TrainExercise[] = [];
   for (const e of input) {
     if (!e || typeof e !== "object") return null;
@@ -31,11 +31,13 @@ function cleanExercises(input: unknown): TrainExercise[] | null {
     if (!Number.isFinite(reps) || reps < 1 || reps > 999) return null;
     if (!Number.isFinite(sets) || sets < 1 || sets > 20) return null;
     const weight = x.weightKg === null || x.weightKg === undefined ? null : Number(x.weightKg);
+    const video = typeof x.videoUrl === "string" && /^https?:\/\/\S+$/.test(x.videoUrl.trim()) ? x.videoUrl.trim().slice(0, 300) : null;
     out.push({
       id: x.id, name: x.name.slice(0, 80),
       reps: Math.round(reps), sets: Math.round(sets),
       perSide: !!x.perSide, kettlebell: !!x.kettlebell,
       weightKg: weight !== null && Number.isFinite(weight) ? weight : null,
+      videoUrl: video,
     });
   }
   return out;

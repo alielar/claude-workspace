@@ -13,6 +13,7 @@ export type TrainExercise = {
   perSide: boolean;      // "per side" / "per arm"
   kettlebell: boolean;   // weight comes from the kettlebell setting
   weightKg: number | null; // dumbbell exercises: editable, null = not set
+  videoUrl?: string | null; // how-to video (YouTube / Instagram reel), opens externally
 };
 
 export type TrainWorkout = {
@@ -101,9 +102,9 @@ export function weekStreak(sessions: TrainSession[], today: string): number {
 // ─── Defaults (spec §4.2) ─────────────────────────────────────────────────────
 
 const kb = (id: string, name: string, reps: number, sets = 1, perSide = true): TrainExercise =>
-  ({ id, name, reps, sets, perSide, kettlebell: true, weightKg: null });
+  ({ id, name, reps, sets, perSide, kettlebell: true, weightKg: null, videoUrl: null });
 const db = (id: string, name: string, reps: number, sets = 3, perSide = false): TrainExercise =>
-  ({ id, name, reps, sets, perSide, kettlebell: false, weightKg: null });
+  ({ id, name, reps, sets, perSide, kettlebell: false, weightKg: null, videoUrl: null });
 
 export const DEFAULT_WORKOUTS: TrainWorkout[] = [
   {
@@ -253,6 +254,12 @@ export function fmtClock(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, "0")}`;
+}
+
+/** A stable-enough id for a new custom exercise. */
+export function newExerciseId(name: string): string {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "exercise";
+  return `${slug}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 export function newClientId(): string {
