@@ -9,6 +9,10 @@
     "triage": "node --env-file=.env triage.mjs",
     "scan-history": "node --env-file=.env scan-history.mjs",
     "german-scan": "node --env-file=.env german-scan.mjs",
-    "german-export": "node --env-file=.env german-export.mjs"
+    "german-export": "node --env-file=.env german-export.mjs",
+    "french-stalled": "node --env-file=.env french-stalled.mjs",
+    "classify-stalled": "node classify-stalled.mjs",
+    "find-missed": "node find-missed.mjs",
+    "slots-no-answer": "node --env-file=.env slots-no-answer.mjs"
   }
 }

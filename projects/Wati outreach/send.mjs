@@ -8,6 +8,8 @@
 //   npm run send
 //
 // Options:
+//   --stage <s>      campaign | followup1 | reengage | reengage2
+//   --bucket <text>  reengage only: just one situation, e.g. "by hand"
 //   --test <phone>   send one pair to this number only, ignoring the lead list
 //   --name <name>    the name used by --test (default: Ali)
 //   --track <t>      no_meeting | had_meeting
@@ -25,6 +27,39 @@ const arg = (name, fallback = null) => {
   return i === -1 ? fallback : (process.argv[i + 1] ?? true);
 };
 const flag = (name) => process.argv.includes(`--${name}`);
+
+// Minimal quoted-CSV reader — the stalled list contains commas inside messages.
+function parseCsv(text) {
+  const rows = [];
+  let row = [], cell = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false; }
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if (ch !== '\r') cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  const head = rows.shift();
+  return rows.filter((r) => r.length === head.length && r.some((c) => c.trim()))
+    .map((r) => Object.fromEntries(head.map((h, i) => [h, r[i]])));
+}
+
+// A first name fit to drop into a template, or '' if there isn't one.
+const PARTICLES = new Set(['el','al','de','da','du','di','le','la','ben','bin','ait','aït','van','von','der','den','dos','des','ould','abd','ba','mc','mac']);
+function firstName(full) {
+  for (const w of String(full || '').trim().split(/[\s_.-]+/)) {
+    const c = w.replace(/[^\p{L}'’]/gu, '');
+    if (c.length < 3) continue;
+    if (PARTICLES.has(c.toLowerCase())) continue;
+    if (/^(test|tbc|eeee+|moi|nuovo|null|undefined|whatsapp|lead)$/i.test(c)) continue;
+    return c[0].toUpperCase() + c.slice(1);
+  }
+  return '';
+}
 
 const DRY = flag('dry-run');
 const GAP = Number(arg('gap', 5)) * 1000;
@@ -53,7 +88,19 @@ const STAGES = {
     no_meeting: ['followup_text_1_fra_v2', 'followup_text_2_fra'],
     had_meeting: ['noshow_text_3_france', 'noshow_text_4_fra'],
   },
+  // Reopening the door on people who said yes and then went quiet.
+  // Audience comes from data/french/stalled.csv, not plan.json.
+  reengage: {
+    stalled: ['reschedule_text_1_fra'],
+  },
+  // If they stay quiet after reengage.
+  reengage2: {
+    stalled: ['reschedule_followup_1_fr'],
+  },
 };
+
+// Stages whose audience is the stalled list rather than the campaign plan.
+const STALLED_STAGES = new Set(['reengage', 'reengage2']);
 
 const STAGE = String(arg('stage', 'campaign'));
 const tracks = STAGES[STAGE];
@@ -83,6 +130,28 @@ for (const line of readFileSync(DNC_FILE, 'utf8').split('\n').slice(1)) {
   blocked.set(f[2].replace(/[^\d]/g, ''), reason);
 }
 
+// People who asked to be taken off the list, or called it harassment. Found by
+// find-missed.mjs across the whole conversation history.
+const MR_FILE = 'data/french/must-remove.csv';
+if (existsSync(MR_FILE)) {
+  for (const line of readFileSync(MR_FILE, 'utf8').split('\n').slice(1)) {
+    if (!line.trim()) continue;
+    const phone = (line.match(/^"([^"]*)"/) || [])[1];
+    if (phone) blocked.set(phone.replace(/[^\d]/g, ''), 'asked to be removed / called it harassment');
+  }
+}
+
+// Anyone who has replied since the campaign went out must never be told they
+// did not reply. Built by freshcheck.mjs.
+const RS_FILE = 'data/replied-since.csv';
+if (existsSync(RS_FILE)) {
+  for (const line of readFileSync(RS_FILE, 'utf8').split('\n').slice(1)) {
+    if (!line.trim()) continue;
+    const f = line.split(',');
+    blocked.set(f[2].replace(/[^\d]/g, ''), 'replied since — needs a human reply, not a follow-up');
+  }
+}
+
 // ── Who are we sending to? ───────────────────────────────────────────────────
 
 // Load the log of what has already gone out first, so --limit can mean
@@ -110,6 +179,58 @@ if (testPhone) {
     phone: String(testPhone).replace(/[^\d]/g, ''),
     track,
   }];
+} else if (STALLED_STAGES.has(STAGE)) {
+  // People who showed interest and then went silent. Built by french-stalled.mjs.
+  const SF = 'data/french/stalled.csv';
+  if (!existsSync(SF)) {
+    console.log(`\n  Refusing to send: ${SF} is missing. Run "npm run french-stalled" first.\n`);
+    process.exit(1);
+  }
+  const rows = parseCsv(readFileSync(SF, 'utf8'));
+  audience = rows.map((r) => ({
+    leadId: r.phone,
+    name: firstName(r.name),
+    phone: r.phone.replace(/[^\d]/g, ''),
+    track: 'stalled',
+    bucket: r.bucket,
+    window: r.window,
+    days: Number(r.days_silent),
+  }));
+
+  // Anyone whose 24-hour window is still open should get a real typed reply,
+  // not a template. Those are listed, never sent to.
+  const stillOpen = audience.filter((l) => l.window === 'OPEN');
+  audience = audience.filter((l) => l.window !== 'OPEN');
+  if (stillOpen.length) {
+    console.log(`\n  ${stillOpen.length} people are still inside the 24-hour window — answer these by hand, not by template:`);
+    for (const l of stillOpen) console.log(`   • ${l.name} +${l.phone} — silent ${l.days} days`);
+  }
+
+  const bucket = arg('bucket');
+  if (bucket) audience = audience.filter((l) => l.bucket.includes(String(bucket)));
+
+  // A template needs a usable first name for {{1}}.
+  const noName = audience.filter((l) => !l.name);
+  audience = audience.filter((l) => l.name);
+  if (noName.length) {
+    console.log(`\n  ${noName.length} people have no usable first name — skipped (the template needs one):`);
+    for (const l of noName) console.log(`   • +${l.phone}`);
+  }
+
+  const excluded = audience.filter((l) => blocked.has(l.phone));
+  audience = audience.filter((l) => !blocked.has(l.phone));
+  if (excluded.length) {
+    console.log(`\n  Excluded ${excluded.length} people who asked not to be contacted:`);
+    for (const l of excluded) console.log(`   • ${l.name} +${l.phone} — ${blocked.get(l.phone)}`);
+  }
+
+  const before = audience.length;
+  audience = audience.filter((l) => !tracks.stalled.every((t) => done.has(`${l.phone}:${t}`)));
+  const already = before - audience.length;
+  if (already) console.log(`\n  Skipping ${already} people already messaged at this stage.`);
+
+  const limit = arg('limit');
+  if (limit) audience = audience.slice(0, Number(limit));
 } else {
   audience = JSON.parse(readFileSync('data/plan.json', 'utf8')).leads;
 
@@ -185,7 +306,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const batches = [];
 for (let i = 0; i < audience.length; i += BATCH) batches.push(audience.slice(i, i + BATCH));
 
-const totalMessages = audience.length * 2;
+const totalMessages = audience.reduce((n, l) => n + tracks[l.track].length, 0);
 const estimateMin = Math.round(((batches.length - 1) * EVERY + GAP) / 60000);
 
 console.log(`\n  ${DRY ? 'DRY RUN — nothing will be sent.' : 'Sending for real.'}`);
@@ -201,9 +322,9 @@ for (const [n, batch] of batches.entries()) {
   // Both messages of a pair use the same track, so group by it.
   for (const track of [...new Set(batch.map((p) => p.track))]) {
     const people = batch.filter((p) => p.track === track);
-    const [first, second] = tracks[track];
 
-    for (const [step, template] of [first, second].entries()) {
+    // Some stages are a pair of messages, some are a single one.
+    for (const [step, template] of tracks[track].entries()) {
       const todo = people.filter((p) => !done.has(`${p.phone}:${template}`));
       skipped += people.length - todo.length;
       if (!todo.length) continue;
@@ -219,7 +340,8 @@ for (const [n, batch] of batches.entries()) {
         }
       });
 
-      if (step === 0 && GAP > 0 && !DRY) await sleep(GAP);
+      const isLast = step === tracks[track].length - 1;
+      if (!isLast && GAP > 0 && !DRY) await sleep(GAP);
     }
   }
 
