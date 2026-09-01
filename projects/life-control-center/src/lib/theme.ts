@@ -22,14 +22,32 @@ export function readTheme(): ThemeChoice {
   }
 }
 
-export function applyTheme(choice: ThemeChoice) {
+/** After sunset (20:00–07:00, Ali's clock) the app never shows a bright screen. */
+function inSunsetWindow(d = new Date()): boolean {
+  const h = d.getHours();
+  return h >= 20 || h < 7;
+}
+
+/** Recompute the <html data-theme> attribute from the stored choice + the clock.
+ * Light/Automatic are overridden to Dark during the sunset window; an explicit
+ * Dark or Night choice is already dark and stays untouched. */
+export function refreshThemeAttr() {
   const root = document.documentElement;
+  const choice = readTheme();
+  if (inSunsetWindow() && (choice === "system" || choice === "light")) {
+    root.setAttribute("data-theme", "dark");
+    return;
+  }
   if (choice === "system") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", choice);
+}
+
+export function applyTheme(choice: ThemeChoice) {
   try {
     if (choice === "system") localStorage.removeItem(KEY);
     else localStorage.setItem(KEY, choice);
   } catch { /* ignore */ }
+  refreshThemeAttr();
   window.dispatchEvent(new Event(EVENT));
 }
 

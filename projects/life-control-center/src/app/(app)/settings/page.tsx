@@ -204,6 +204,7 @@ export default function SettingsPage() {
         <div className="cc-card-head"><span className="title">Appearance</span><span className="tail">{THEMES.find((t) => t.key === theme)?.hint}</span></div>
         <div className="cc-card-body">
           <Segmented value={theme} options={THEMES} onChange={setTheme} />
+          <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 2px" }}>After sunset (20:00–07:00) the app switches itself to Dark; your choice comes back in the morning. Dark and Night stay as they are.</div>
         </div>
       </section>
 

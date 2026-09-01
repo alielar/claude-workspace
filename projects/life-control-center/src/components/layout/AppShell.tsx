@@ -12,6 +12,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { SwRegister } from "@/components/pwa/SwRegister";
 import { SyncOutbox } from "@/components/pwa/SyncOutbox";
+import { ThemeSunset } from "@/components/pwa/ThemeSunset";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <MobileNav />
       <SwRegister />
       <SyncOutbox />
+      <ThemeSunset />
     </>
   );
 }

@@ -172,10 +172,10 @@ if (!d) {
   t.font = Font.mediumSystemFont(13); t.textColor = INK3;
 } else {
   const tCount = d.todosDue || 0, sCount = d.someday || 0;
-  const countTxt = lineStack.addText(`${tCount} today`);
+  const countTxt = lineStack.addText(`${tCount} TD`);
   countTxt.font = Font.mediumSystemFont(13);
   countTxt.textColor = tCount > 0 ? INK : INK3;
-  const sdTxt = lineStack.addText(` · ${sCount} someday`);
+  const sdTxt = lineStack.addText(` · ${sCount} SD`);
   sdTxt.font = Font.mediumSystemFont(13);
   sdTxt.textColor = INK3;
   const streak = d.streak ?? 0;

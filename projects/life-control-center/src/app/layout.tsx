@@ -26,7 +26,7 @@ export const viewport: Viewport = {
  * Applies the saved theme before the first paint so there is no flash.
  * Values: "light" | "dark" | (absent = follow the phone's setting).
  */
-const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");if(t==="light"||t==="dark"||t==="night"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}`;
+const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");var h=new Date().getHours();if((h>=20||h<7)&&(t===null||t==="light")){document.documentElement.setAttribute("data-theme","dark")}else if(t==="light"||t==="dark"||t==="night"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
