@@ -75,7 +75,7 @@ function linkify(text: string) {
 function routineAction(item: ChecklistItem): { label: string; href: string; external: boolean } | null {
   if (item.source === "workout") return { label: "Train", href: "/train", external: false };
   if (item.routineKey === "stretch") return { label: "Start", href: "/stretch", external: false };
-  if (item.routineKey === "breathe") return { label: "Video", href: BREATHING_VIDEO_URL, external: true };
+  if (item.routineKey === "breathe") return { label: "Start", href: "/breathe", external: false };
   if (item.routineKey === "read") return { label: "Books", href: "/books", external: false };
   return null;
 }

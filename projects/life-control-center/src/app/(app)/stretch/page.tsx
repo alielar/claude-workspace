@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   STRETCH_MOVES, STRETCH_TOTAL_SECONDS, buildStretchPlan, type StretchPhase,
+  STRETCH_DEMOS,
 } from "@/lib/routine/stretching";
 import { cues } from "@/lib/routine/cues";
 import { STRETCH_TRACKS, trackUrl } from "@/lib/routine/music";
@@ -51,6 +52,28 @@ async function completeStretchItem() {
       dedupeKey: `toggle:${item.id}:${today}`,
     });
   } catch { /* server refused — the next refresh will show the truth */ }
+}
+
+/** Big two-frame demo, crossfading — shows how the move is performed.
+ * Photos: free-exercise-db (public domain). No demo = render nothing. */
+function Demo({ move, size = "big" }: { move: string; size?: "big" | "thumb" }) {
+  const d = STRETCH_DEMOS[move];
+  if (!d) return null;
+  if (size === "thumb") {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`/demos/${d.base}-0.jpg`} alt="" loading="lazy" style={{ width: 52, height: 40, objectFit: "cover", borderRadius: 8, justifySelf: "end" }} />;
+  }
+  return (
+    <div style={{ position: "relative", width: "min(86vw, 400px)", aspectRatio: "3 / 2", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/demos/${d.base}-0.jpg`} alt={`How to: ${move}`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/demos/${d.base}-1.jpg`} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", animation: "cc-demo-fade 2.2s ease-in-out infinite alternate" }} />
+      {d.approx && (
+        <span style={{ position: "absolute", right: 8, bottom: 8, fontSize: 12, padding: "2px 8px", borderRadius: 8, background: "rgba(0,0,0,0.55)", color: "#fff" }}>similar movement</span>
+      )}
+    </div>
+  );
 }
 
 export default function StretchPage() {
@@ -283,9 +306,10 @@ export default function StretchPage() {
           <div className="cc-card-head"><span className="title">Order</span></div>
           <ol style={{ padding: "4px 16px 8px", margin: 0, listStyle: "none" }}>
             {STRETCH_MOVES.map((m, i) => (
-              <li key={m} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 8, minHeight: 40, alignItems: "center", fontSize: 16, borderBottom: i < STRETCH_MOVES.length - 1 ? "1px solid var(--line)" : "none" }}>
+              <li key={m} style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 8, minHeight: 48, alignItems: "center", fontSize: 16, borderBottom: i < STRETCH_MOVES.length - 1 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
                 <span>{m}</span>
+                <Demo move={m} size="thumb" />
               </li>
             ))}
           </ol>
@@ -336,9 +360,10 @@ export default function StretchPage() {
         <div style={{ fontSize: "clamp(24px, 7vw, 34px)", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em", minHeight: "2.4em", display: "flex", alignItems: "center" }}>
           {isRest ? (nextName ?? "") : moveName}
         </div>
+        <Demo move={isRest || isLead ? (nextName ?? moveName) : moveName} />
         <div
           className="tabular-nums"
-          style={{ fontSize: "clamp(96px, 32vw, 160px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", color: status === "paused" ? "var(--ink-3)" : "var(--ink)", fontVariantNumeric: "tabular-nums" }}
+          style={{ fontSize: STRETCH_DEMOS[isRest || isLead ? (nextName ?? moveName) : moveName] ? "clamp(64px, 20vw, 110px)" : "clamp(96px, 32vw, 160px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", color: status === "paused" ? "var(--ink-3)" : "var(--ink)", fontVariantNumeric: "tabular-nums" }}
         >
           {seconds}
         </div>

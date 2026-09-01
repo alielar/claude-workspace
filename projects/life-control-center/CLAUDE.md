@@ -65,7 +65,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - `/stretch` has a music library: 10 CC-BY tracks (Kevin MacLeod, self-hosted in `public/music/`, list in `src/lib/routine/music.ts`), preview + pick on the idle screen, plays looped at 0.35 vol during the session (pause/stop follows the timer). Movement names are spoken ONCE — at move start, never during rest.
 - Stretch/breathe rows get an action button (`/stretch`, or the YouTube link opening externally). Finishing the timer ticks the item via the outbox.
 - `src/lib/routine/stretching.ts` holds the movement list/timings; `cues.ts` the beep/vibration/voice cues (AudioContext must be armed from a tap).
-- Breathing pacer (replacing the video) is a planned drop-in: same `breathe` item, add a `/breathe` page and switch `routineAction`.
+- `/breathe` = Wim Hof player (2026-09-02): 3×30 breaths (synth sweeps via its own AudioContext), 1:30 retention (tap anywhere ends it, Solfeggio/432 Hz tone synthesized live during the hold only, picker on idle screen, `cc-breathe-freq`), 15 s recovery, ticks the `breathe` item. Demos: `STRETCH_DEMOS` in `stretching.ts` → `public/demos/` photo pairs (free-exercise-db, public domain) crossfade on the stretch timer.
 
 ### Train (Phase 3 — kettlebell era)
 - Tables `kb_workouts` (two templates per user, `exercises` JSON, `assignedDays` reserved for a future fixed schedule) and `kb_sessions` (`clientId` unique → offline replays upsert). Kettlebell weight is `user_settings.kettlebell_kg` (12 → 16 later, changed in Settings).

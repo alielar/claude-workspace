@@ -94,6 +94,24 @@ phone in my pocket. Order:
    the phases itself; a small card on Today ("Day 14 · around ovulation — energy usually high")
    plus a Docs-style guidance sheet per phase. Privacy: this is her data on his phone — keep it
    out of widgets and notifications by default. Build only when Ali says go.
+10. **News as a daily podcast (investigated 2026-09-02, waiting on ~$2/month).** Research done:
+   free TTS options all fail (iOS web voice dies on screen lock; free Microsoft-voice trick breaks
+   randomly; Google free tier sounds flat). Plan when Ali funds it: Haiku rewrites the brief for
+   the ear (cold open, 4–6 stories, ritual sign-off) → OpenAI mini TTS (~$2/mo) → MP3 cached at
+   06:00 → play card on News/Today, works with the screen locked (MediaSession).
+11. **Reels knowledge hub (investigated 2026-09-02, waiting on paid scraper decision).** Honest
+   verdict: every free route is dead (official APIs don't serve others' reels; server-side
+   downloaders are IP-blocked). Realistic build: Apify scraper (~1–2 ¢/reel, free credit likely
+   covers personal volume, outsourced ToS risk) → Whisper transcript → Haiku analysis filed by
+   category in a "Resources" home; manual fallback (screen recording / pasted caption) built in.
+12. ~~**Wim Hof breathing player.**~~ Built 2026-09-02 at `/breathe` (replaces the YouTube video;
+   Today's breathe row now says Start): 3 rounds × 30 paced breaths (synth sweeps, no voice),
+   1:30 retention with tap-anywhere-to-end + chosen healing-frequency tone (synthesized live,
+   only during the hold), 15 s recovery hold, ticks the breathe item. Wake lock, offline-safe.
+13. ~~**Exercise demo images (free tier).**~~ Built 2026-09-02: 8 of the 16 stretch moves show big
+   crossfading photo pairs from free-exercise-db (public domain) during the timer + thumbnails in
+   the Order list; only honest matches shipped ("similar movement" badge where approximate).
+   Upgrade path when Ali wants it: GymVisual royalty-free animations, ~$15 one-time for all 16.
 9. Cat Cow
 10. Push Up +
 11. Bootstrapper Squats

@@ -44,3 +44,19 @@ export function buildStretchPlan(): StretchPhase[] {
 }
 
 export const STRETCH_TOTAL_SECONDS = buildStretchPlan().reduce((s, p) => s + p.seconds, 0);
+
+/** Demo photo pairs (public/demos/<base>-0.jpg / -1.jpg) from free-exercise-db
+ * (github.com/yuhonas/free-exercise-db, Unlicense/public domain). Only honest
+ * matches are mapped; `approx` marks a similar-but-not-identical movement.
+ * Missing moves show no demo (better nothing than a wrong demonstration). */
+export const STRETCH_DEMOS: Record<string, { base: string; approx?: boolean }> = {
+  "Lateral Arm Swings": { base: "dynamic-chest-stretch" },
+  "Alternating Windmills": { base: "standing-toe-touches", approx: true },
+  "Walk Outs": { base: "inchworm" },
+  "Cat Cow": { base: "cat-stretch" },
+  "Push Up +": { base: "pushups" },
+  "World's Greatest Stretch — Left Leg Forward": { base: "groiners" },
+  "World's Greatest Stretch — Right Leg Forward": { base: "groiners" },
+  "Around the World": { base: "arm-circles", approx: true },
+  "Hindu Squats": { base: "bodyweight-squat", approx: true },
+};

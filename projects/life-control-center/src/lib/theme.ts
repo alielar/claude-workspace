@@ -22,20 +22,20 @@ export function readTheme(): ThemeChoice {
   }
 }
 
-/** After sunset (20:00–07:00, Ali's clock) the app never shows a bright screen. */
+/** Sunset→sunrise (20:00–07:00, Ali's clock): the app is always in NIGHT mode. */
 function inSunsetWindow(d = new Date()): boolean {
   const h = d.getHours();
   return h >= 20 || h < 7;
 }
 
 /** Recompute the <html data-theme> attribute from the stored choice + the clock.
- * Light/Automatic are overridden to Dark during the sunset window; an explicit
- * Dark or Night choice is already dark and stays untouched. */
+ * During the sunset window the app is always Night (warm, low blue light) —
+ * whatever was chosen; the daytime choice (Light/Dark/Automatic) rules the day. */
 export function refreshThemeAttr() {
   const root = document.documentElement;
   const choice = readTheme();
-  if (inSunsetWindow() && (choice === "system" || choice === "light")) {
-    root.setAttribute("data-theme", "dark");
+  if (inSunsetWindow()) {
+    root.setAttribute("data-theme", "night");
     return;
   }
   if (choice === "system") root.removeAttribute("data-theme");
