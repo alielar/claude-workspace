@@ -12006,3 +12006,20 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 .next/trace-build
 To github.com:alielar/claude-workspace.git
    2b926da..a5d2e4d  main -> main
+[main 020459d] auto-save: 2026-08-31 23:47
+ 16 files changed, 7847 insertions(+), 5 deletions(-)
+ create mode 100644 projects/Wati outreach/classify-stalled.mjs
+ create mode 100644 projects/Wati outreach/data/french/contact-names.json
+ create mode 100644 projects/Wati outreach/data/french/conversations.jsonl
+ create mode 100644 projects/Wati outreach/data/french/must-remove.csv
+ create mode 100644 projects/Wati outreach/data/french/ready-to-buy.csv
+ create mode 100644 projects/Wati outreach/data/french/slots-no-answer.csv
+ create mode 100644 projects/Wati outreach/data/french/stalled.csv
+ create mode 100644 projects/Wati outreach/data/french/stalled.md
+ create mode 100644 projects/Wati outreach/data/replied-since.csv
+ create mode 100644 projects/Wati outreach/find-missed.mjs
+ create mode 100644 projects/Wati outreach/french-stalled.mjs
+ create mode 100644 projects/Wati outreach/freshcheck.mjs
+ create mode 100644 projects/Wati outreach/slots-no-answer.mjs
+To github.com:alielar/claude-workspace.git
+   d73868e..020459d  main -> main

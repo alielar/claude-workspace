@@ -206,6 +206,22 @@ if (testPhone) {
     for (const l of stillOpen) console.log(`   • ${l.name} +${l.phone} — silent ${l.days} days`);
   }
 
+  // People already contacted outside this tool. Not a do-not-contact — just
+  // not to be messaged again by this stage.
+  const AC_FILE = 'data/french/already-contacted.csv';
+  if (existsSync(AC_FILE)) {
+    const contacted = new Set();
+    for (const line of readFileSync(AC_FILE, 'utf8').split('\n').slice(1)) {
+      if (!line.trim()) continue;
+      const phone = line.split(',')[0].replace(/[^\d]/g, '');
+      if (phone) contacted.add(phone);
+    }
+    const before = audience.length;
+    audience = audience.filter((l) => !contacted.has(l.phone));
+    const n = before - audience.length;
+    if (n) console.log(`\n  Skipping ${n} people recorded as already contacted.`);
+  }
+
   const bucket = arg('bucket');
   if (bucket) audience = audience.filter((l) => l.bucket.includes(String(bucket)));
 
