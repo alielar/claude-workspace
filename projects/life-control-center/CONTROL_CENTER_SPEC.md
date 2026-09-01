@@ -108,10 +108,13 @@ phone in my pocket. Order:
    Today's breathe row now says Start): 3 rounds × 30 paced breaths (synth sweeps, no voice),
    1:30 retention with tap-anywhere-to-end + chosen healing-frequency tone (synthesized live,
    only during the hold), 15 s recovery hold, ticks the breathe item. Wake lock, offline-safe.
-13. ~~**Exercise demo images (free tier).**~~ Built 2026-09-02: 8 of the 16 stretch moves show big
-   crossfading photo pairs from free-exercise-db (public domain) during the timer + thumbnails in
-   the Order list; only honest matches shipped ("similar movement" badge where approximate).
-   Upgrade path when Ali wants it: GymVisual royalty-free animations, ~$15 one-time for all 16.
+13. **Exercise demo animations (PARKED, paid).** Free tier was built 2026-09-02 (photo pairs from
+   free-exercise-db) and removed the same day at Ali's call: static photos are not precise enough,
+   he wants real motion or nothing. Checked wger's 78 real videos: all gym-machine lifts, zero
+   coverage of the 16 mobility moves. Path when funded: GymVisual royalty-free animated GIFs
+   (~$15 one-time for the 16, ~$1/move later for kettlebell), converted to small looping WebM,
+   bundled offline, shown big on the timer. Alternative free idea worth testing someday: muted
+   YouTube embeds per move (online-only, heavier).
 9. Cat Cow
 10. Push Up +
 11. Bootstrapper Squats
