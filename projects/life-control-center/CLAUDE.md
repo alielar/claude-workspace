@@ -55,13 +55,14 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Flat solid surfaces (no blur/grain/gradients), **system font** (`-apple-system…`, no web fonts), body 17px, card titles 15/600, captions 13–14 sentence case. Mono (`ui-monospace`) only for clocks/counters. One accent (`--violet`: #8B7CF0 dark / #5B4BD6 light) + semantic pos/warn/neg. `--accent-soft` for selected chips, `--on-accent` for text on the accent.
 - Tokens in `globals.css` `:root` (dark). Light values under `:root[data-theme="light"]` and `@media (prefers-color-scheme: light) :root:not([data-theme="dark"])`.
 - Timer/workout screens keep the big high-contrast numerals — the one place the app may shout.
-- `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint. Four choices: Automatic · Light · Dark · **Night** (`data-theme="night"` — warm dark palette, amber accent, low blue light; tokens under `:root[data-theme="night"]`).
+- `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint. Four choices: Automatic · Light · Dark · **Night**; 20:00–07:00 Light/Automatic are overridden to Dark (`refreshThemeAttr` + `ThemeSunset` in AppShell) (`data-theme="night"` — warm dark palette, amber accent, low blue light; tokens under `:root[data-theme="night"]`).
 - **Never hardcode `rgba(255,255,255,…)` or `#E8E8F0` in new UI** — use `--fill-1/2/3`, `--ink*`, `--line*`, `--bg-chrome`.
 
 ### Routine engine (Phase 2)
 - Routine steps, habits and regular items are all **checklist items** with a `kind`: `routine` (counts toward the day's streak), `habit` (being built — own streak, not counted until promoted), `manual`. Promotion = set `kind` to `routine` in the editor.
 - Built-in steps carry a stable `routineKey` and are seeded once by `GET /api/checklist` from `ROUTINE_SEED` in `src/lib/checklist/types.ts` (stretch, breathe, supp-am, supp-pm, read). Never seed by title.
 - Today shows: NOW (this part of day + anytime) · Still open (earlier parts) · Building (habits in their part) · Up next (next part only — evening items stay hidden in the morning) · Done · News.
+- `/stretch` has a music library: 10 CC-BY tracks (Kevin MacLeod, self-hosted in `public/music/`, list in `src/lib/routine/music.ts`), preview + pick on the idle screen, plays looped at 0.35 vol during the session (pause/stop follows the timer). Movement names are spoken ONCE — at move start, never during rest.
 - Stretch/breathe rows get an action button (`/stretch`, or the YouTube link opening externally). Finishing the timer ticks the item via the outbox.
 - `src/lib/routine/stretching.ts` holds the movement list/timings; `cues.ts` the beep/vibration/voice cues (AudioContext must be armed from a tap).
 - Breathing pacer (replacing the video) is a planned drop-in: same `breathe` item, add a `/breathe` page and switch `routineAction`.

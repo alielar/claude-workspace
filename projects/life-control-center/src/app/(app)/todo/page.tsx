@@ -540,7 +540,7 @@ export default function TodoPage() {
   ].filter(Boolean) : [];
 
   return (
-    <div style={{ display: "grid", gap: 16, maxWidth: 560, paddingBottom: 84 }}>
+    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84 }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
