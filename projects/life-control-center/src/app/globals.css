@@ -899,6 +899,58 @@ html, body {
 }
 :root[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(20,20,40,0.15); }
 
+/* ─── Night — warm dark, blue light dialled down (manual pick in Settings).
+   Same dark ambience, but every token is shifted toward amber: warm blacks,
+   cream ink, and the accent swaps violet (blue-heavy) for candle amber. ─── */
+:root[data-theme="night"] {
+  color-scheme: dark;
+  --bg-deep:   #120E08;
+  --bg:        #120E08;
+  --bg-card:   #1C1610;
+  --bg-card-2: #241C14;
+  --bg-chrome: #17120B;
+  --accent-soft: #3A2C15;
+  --on-accent: #1A1206;
+
+  --violet: #E0A35C;
+  --cyan:   #C9A06A;
+  --grad:   var(--violet);
+  --grad-soft: var(--accent-soft);
+
+  --ink:   #F2E4CE;
+  --ink-2: #C9B698;
+  --ink-3: #9C8C72;
+  --ink-4: #6B5F4C;
+  --ink-5: #352A1C;
+
+  --pos:  #A9B36B;
+  --neg:  #E0796B;
+  --warn: #E0A64A;
+
+  --c-politics: #E09B8A;
+  --c-tech:     #C9C08A;
+  --c-ai:       #E0A35C;
+  --c-mena:     #E0B26B;
+  --c-biz:      #B3B36B;
+
+  --border:       #2E2517;
+  --border-hi:    #3B2F1E;
+  --border-focus: rgba(224, 163, 92, 0.5);
+  --line:        #2E2517;
+  --line-hi:     #3B2F1E;
+  --line-strong: #55452C;
+
+  --bg-input:   #1E1810;
+  --bg-input-2: #262014;
+  --fill-1: #1E1810;
+  --fill-2: #262014;
+  --fill-3: #322A18;
+  --bg-elevated:   #1C1610;
+  --bg-elevated-2: #241C14;
+  --bg-elevated-3: #2C2318;
+}
+:root[data-theme="night"] ::-webkit-scrollbar-thumb { background: rgba(120,95,50,0.3); }
+
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;

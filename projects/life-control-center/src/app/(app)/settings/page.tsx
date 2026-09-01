@@ -55,7 +55,8 @@ const NEWS_TOPICS = [
 const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
   { key: "system", label: "Automatic", hint: "Follows the phone" },
   { key: "light",  label: "Light",     hint: "" },
-  { key: "dark",   label: "Dark",      hint: "For night use" },
+  { key: "dark",   label: "Dark",      hint: "" },
+  { key: "night",  label: "Night",     hint: "Warm — less blue light" },
 ];
 
 function parseTopics(s: string | undefined): string[] {
