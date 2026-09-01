@@ -5,7 +5,7 @@
  *
  *   WORTH YOUR TIME — the standout story of each interest (keyword-matched to Ali's interests)
  *   VIDEOS          — fresh uploads from the chosen YouTube channels (2 per interest), open in the YouTube app
- *   BY INTEREST     — Football · Geopolitics · Business · Tech & AI, 5 stories each, tap to expand
+ *   BY INTEREST     — Geopolitics · Business · Tech & AI · Football, 5 stories each, tap to expand
  *
  * Generated once a day by the 06:00 cron (RSS + YouTube feeds, AI summaries). Cached on the phone:
  * the last brief shows instantly and offline; Refresh is the only manual trigger.
@@ -29,10 +29,10 @@ type ArchiveEntry = {
 // ─── Column config ────────────────────────────────────────────────────────────
 
 const COLUMNS = [
-  { id: "football",    label: "Football",    color: "#D97A2B", categories: ["football"] },
   { id: "geopolitics", label: "Geopolitics", color: "#D05A5A", categories: ["geopolitics"] },
   { id: "business",    label: "Business",    color: "#3E9A63", categories: ["business"] },
   { id: "tech",        label: "Tech & AI",   color: "#2E9E8F", categories: ["tech", "ai"] },
+  { id: "football",    label: "Football",    color: "#D97A2B", categories: ["football"] },
 ];
 
 // ─── Story card ───────────────────────────────────────────────────────────────
@@ -57,7 +57,6 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
   }
 
   const summaryText = story.summary || "";
-  const keyPoints: string[] = Array.isArray(story.keyPoints) ? story.keyPoints : [];
   const isTopStory = index === 0;
 
   // Fetch deep dive on-demand only if not pre-generated
@@ -161,21 +160,6 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {/* Expanded: Summary + key points + deep dive + source */}
       {open && (
         <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
-          {summaryText && (
-            <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--ink-2)", margin: "0 0 10px 0" }}>
-              {summaryText}
-            </p>
-          )}
-          {keyPoints.length > 0 && (
-            <ul style={{ margin: "0 0 10px 0", paddingLeft: 16 }}>
-              {keyPoints.map((pt, i) => (
-                <li key={i} style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink-2)", marginBottom: 4 }}>
-                  {pt}
-                </li>
-              ))}
-            </ul>
-          )}
-
           {/* Deep dive analysis — pre-generated or fetched on expand */}
           {loadingDive && (
             <div style={{ fontSize: 13, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
