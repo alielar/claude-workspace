@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * /library — Reading library. Client component for full interactivity.
+ * /library · Reading library. Client component for full interactivity.
  *
  * Layout: 1fr / 340px
  *   Left:  Year progress bar (real reading periods) + book list
  *   Right: Reading habit stats + Add book form
  *
- * Books have no monthly assignments — they're a free-form library.
+ * Books have no monthly assignments · they're a free-form library.
  * The year bar shows when each book was actually started/finished.
  */
 
@@ -237,7 +237,7 @@ export default function LibraryPage({ embedded = false }: { embedded?: boolean }
         </button>
       </div>
 
-      {/* Add book panel — slides in under the header */}
+      {/* Add book panel · slides in under the header */}
       {addingBook && (
         <div className="cc-card" style={{ marginBottom: 14, padding: "20px 24px" }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", marginBottom: 16 }}>New book</div>
@@ -274,7 +274,7 @@ export default function LibraryPage({ embedded = false }: { embedded?: boolean }
               </div>
             </div>
 
-            {/* Year bar — highlights actual reading periods */}
+            {/* Year bar · highlights actual reading periods */}
             <div style={{ height: 8, background: "rgba(255,255,255,0.04)", borderRadius: 99, overflow: "hidden", marginTop: 18, display: "flex", gap: 1 }}>
               {segments.map((state, i) => (
                 <div key={i} style={{
@@ -307,7 +307,7 @@ export default function LibraryPage({ embedded = false }: { embedded?: boolean }
             </div>
 
             {loading && (
-              <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--ink-3)", fontSize: 13 }}>—</div>
+              <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--ink-3)", fontSize: 13 }}>…</div>
             )}
 
             {!loading && books.length === 0 && (
@@ -444,7 +444,7 @@ export default function LibraryPage({ embedded = false }: { embedded?: boolean }
                         )}
                       </>
                     ) : (
-                      /* No PDF yet — show upload button */
+                      /* No PDF yet · show upload button */
                       <>
                         {isNotStarted && (
                           <button
@@ -490,16 +490,16 @@ export default function LibraryPage({ embedded = false }: { embedded?: boolean }
                 <div style={{ paddingRight: 12, borderRight: "1px solid var(--line)" }}>
                   <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)" }}>This month</div>
                   <div style={{ fontSize: 22, marginTop: 4, fontWeight: 300, letterSpacing: "-0.02em" }}>
-                    {habit ? (habit.thisMonthMinutes > 0 ? fmtDuration(habit.thisMonthMinutes) : "—") : "—"}
+                    {habit ? (habit.thisMonthMinutes > 0 ? fmtDuration(habit.thisMonthMinutes) : "…") : "…"}
                   </div>
                   <div style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
-                    {habit ? `${habit.thisMonthSessions} session${habit.thisMonthSessions !== 1 ? "s" : ""}` : "—"}
+                    {habit ? `${habit.thisMonthSessions} session${habit.thisMonthSessions !== 1 ? "s" : ""}` : "…"}
                   </div>
                 </div>
                 <div style={{ paddingLeft: 12 }}>
                   <div style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)" }}>Days streak</div>
                   <div style={{ fontSize: 22, marginTop: 4, fontWeight: 300, letterSpacing: "-0.02em" }}>
-                    {habit?.streak ?? "—"} <span style={{ color: "var(--ink-3)", fontSize: 12 }}>days</span>
+                    {habit?.streak ?? "…"} <span style={{ color: "var(--ink-3)", fontSize: 12 }}>days</span>
                   </div>
                   <div style={{ fontSize: 10.5, color: (habit?.streak ?? 0) >= 7 ? "var(--pos)" : "var(--ink-3)", marginTop: 2, fontFamily: "var(--f-mono)" }}>
                     {(habit?.streak ?? 0) >= 7 ? "on a roll" : "keep going"}

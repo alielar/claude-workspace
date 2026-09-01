@@ -1,5 +1,5 @@
 /**
- * PATCH  /api/books/[id] — { status?, sortOrder?, covers?, payoff?, title?, author? } — sends final state (idempotent)
+ * PATCH  /api/books/[id] · { status?, sortOrder?, covers?, payoff?, title?, author? } · sends final state (idempotent)
  * DELETE /api/books/[id]
  */
 

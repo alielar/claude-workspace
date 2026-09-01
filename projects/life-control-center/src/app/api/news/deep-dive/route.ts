@@ -1,5 +1,5 @@
 /**
- * POST /api/news/deep-dive — AI-powered deep analysis of a news story.
+ * POST /api/news/deep-dive · AI-powered deep analysis of a news story.
  * Uses Gemini (free) → Haiku fallback.
  * Body: { headline, summary, source }
  */
@@ -20,23 +20,23 @@ WHAT HAPPENED
 2-3 sentences explaining the core event or announcement in plain language.
 
 WHY IT MATTERS
-2-3 sentences on the broader significance — who is affected, what changes, why people should care.
+2-3 sentences on the broader significance · who is affected, what changes, why people should care.
 
 CONTEXT
-2-3 sentences of background — what led to this, relevant history, how it connects to bigger trends.
+2-3 sentences of background · what led to this, relevant history, how it connects to bigger trends.
 
 IMPLICATIONS
-2-3 sentences on the knock-on effects — who gains, who loses, what becomes more or less likely.
+2-3 sentences on the knock-on effects · who gains, who loses, what becomes more or less likely.
 
 WHAT'S NEXT
 1-2 sentences on likely next steps or what to watch for.
 
 Rules:
-- Write in plain, direct language — no jargon
+- Write in plain, direct language · no jargon
 - Be factual and specific, not vague
 - Each section should add NEW information, don't repeat yourself
 - Total length: 200-320 words
-- Do NOT include any headers or labels — just the text for each section separated by a blank line`;
+- Do NOT include any headers or labels · just the text for each section separated by a blank line`;
 
   // Try Gemini first (free)
   if (process.env.GEMINI_API_KEY) {

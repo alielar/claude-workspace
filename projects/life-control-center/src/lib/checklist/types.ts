@@ -1,11 +1,11 @@
-/** Shape returned by GET /api/checklist — shared by the Today screen and the editor. */
+/** Shape returned by GET /api/checklist · shared by the Today screen and the editor. */
 
 export type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
 
 /**
- * routine — fixed daily routine step (counts toward the day's streak)
- * habit   — being built; own streak, not counted in the day total until promoted
- * manual  — regular item
+ * routine · fixed daily routine step (counts toward the day's streak)
+ * habit   · being built; own streak, not counted in the day total until promoted
+ * manual  · regular item
  */
 export type ItemKind = "routine" | "habit" | "manual";
 
@@ -50,7 +50,7 @@ export function itemColor(id: string | null | undefined): string {
   return ITEM_COLORS[id ?? "violet"] ?? ITEM_COLORS.violet;
 }
 
-/** Wim Hof guided breathing — the video Ali follows today (a built-in pacer replaces it later). */
+/** Wim Hof guided breathing · the video Ali follows today (a built-in pacer replaces it later). */
 export const BREATHING_VIDEO_URL = "https://youtu.be/tybOi4hjZFQ?si=sFm7xUpv-9VcY--k";
 
 /**

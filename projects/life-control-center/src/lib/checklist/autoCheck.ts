@@ -1,5 +1,5 @@
 /**
- * autoCheck — shared helper called by source modules when a daily habit fires.
+ * autoCheck · shared helper called by source modules when a daily habit fires.
  *
  * Called from:
  *   - /api/workouts/log (POST)        → source: 'workout'  [wired in step 5]
@@ -8,7 +8,7 @@
  *   - /api/journal (POST)             → source: 'journal'  [wired when module exists]
  *   - /api/mood (POST)                → source: 'mood'     [wired when module exists]
  *
- * Idempotent — safe to call multiple times per day (unique constraint on
+ * Idempotent · safe to call multiple times per day (unique constraint on
  * checklist_completions prevents duplicate rows).
  */
 
@@ -51,7 +51,7 @@ export async function autoCheck(userId: string, source: AutoSourceType): Promise
         date: today,
       });
     } catch {
-      // Unique constraint violation = already completed today — ignore
+      // Unique constraint violation = already completed today · ignore
     }
   }
 }

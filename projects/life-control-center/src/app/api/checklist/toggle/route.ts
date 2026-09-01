@@ -3,7 +3,7 @@
  *
  * Body: { itemId: number, completed?: boolean, date?: "YYYY-MM-DD" }
  *
- * With `completed` → sets that exact state (idempotent — safe to replay from the
+ * With `completed` → sets that exact state (idempotent · safe to replay from the
  * offline outbox any number of times). `date` lets a phone that was offline
  * overnight still record yesterday's tick against yesterday.
  *
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     try {
       await db.insert(checklistCompletions).values({ itemId, userId, date });
     } catch {
-      /* duplicate from a replayed request — already done */
+      /* duplicate from a replayed request · already done */
     }
   } else if (!want && existing) {
     await db.delete(checklistCompletions).where(eq(checklistCompletions.id, existing.id));

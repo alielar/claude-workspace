@@ -110,7 +110,7 @@ Prefer uncommon vocabulary, domain-specific terms, or expressive phrases.${alrea
 
 ${context}
 
-Return ONLY a JSON array with exactly this shape — no markdown:
+Return ONLY a JSON array with exactly this shape · no markdown:
 [
   { "word": "...", "source": "news" | "library", "context": "short quote or reason why this word is interesting (≤12 words)" },
   ...

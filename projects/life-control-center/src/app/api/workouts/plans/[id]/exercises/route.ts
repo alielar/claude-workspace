@@ -1,6 +1,6 @@
 /**
- * GET  /api/workouts/plans/[id]/exercises  — list exercises in a plan
- * POST /api/workouts/plans/[id]/exercises  — add exercise to plan
+ * GET  /api/workouts/plans/[id]/exercises  · list exercises in a plan
+ * POST /api/workouts/plans/[id]/exercises  · add exercise to plan
  */
 
 import { NextRequest, NextResponse } from "next/server";

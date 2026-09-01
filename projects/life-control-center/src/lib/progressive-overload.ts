@@ -7,9 +7,9 @@
  *    → Suggest weight increase next session
  *
  * 2. Did NOT hit top of rep range on all sets
- *    → Maintain weight — note "aim for the top of your rep range"
+ *    → Maintain weight · note "aim for the top of your rep range"
  *
- * 3. Max dumbbell cap: 20kg — flag when at or above
+ * 3. Max dumbbell cap: 20kg · flag when at or above
  *
  * Warm-up sets are excluded from calculations.
  */
@@ -49,36 +49,36 @@ function pick<T>(exerciseName: string, options: T[]): T {
 // ─── Message template pools ────────────────────────────────────────────────
 
 const MSG_INCREASE = [
-  (w: number) => `Solid progress — bump up to ${w}kg next session.`,
+  (w: number) => `Solid progress · bump up to ${w}kg next session.`,
   (w: number) => `You earned this. Go ${w}kg next time.`,
-  (w: number) => `All sets hit the top — time for ${w}kg.`,
+  (w: number) => `All sets hit the top · time for ${w}kg.`,
   (w: number) => `Strong work. Move to ${w}kg and own it.`,
   (w: number) => `Rep targets crushed. Step up to ${w}kg.`,
-  (w: number) => `Ready for the next level — ${w}kg is yours.`,
+  (w: number) => `Ready for the next level · ${w}kg is yours.`,
   (w: number) => `Clean reps across the board. Load ${w}kg next.`,
 ];
 
 const MSG_MAINTAIN = [
-  (max: number | string) => `Keep pushing toward ${max} reps per set — you're close.`,
+  (max: number | string) => `Keep pushing toward ${max} reps per set · you're close.`,
   (max: number | string) => `Not quite at ${max} reps on every set yet. Stay the course.`,
   (max: number | string) => `Stick with this weight until all sets hit ${max} reps.`,
-  (max: number | string) => `Almost there — one or two sets short of ${max}. Hold steady.`,
+  (max: number | string) => `Almost there · one or two sets short of ${max}. Hold steady.`,
   (max: number | string) => `Focus on form and hitting ${max} reps consistently.`,
   (max: number | string) => `You're building a base. Lock in ${max} reps before moving up.`,
 ];
 
 const MSG_CAP = [
   `At max dumbbell (${MAX_DUMBBELL_KG}kg). Add a set or slow the tempo.`,
-  `Maxed out at ${MAX_DUMBBELL_KG}kg — try paused reps or an extra set.`,
+  `Maxed out at ${MAX_DUMBBELL_KG}kg · try paused reps or an extra set.`,
   `${MAX_DUMBBELL_KG}kg ceiling reached. Focus on mind-muscle connection.`,
   `Can't go heavier (${MAX_DUMBBELL_KG}kg cap). Add volume or time under tension.`,
-  `Topped out at ${MAX_DUMBBELL_KG}kg — play with tempo or squeeze at the top.`,
+  `Topped out at ${MAX_DUMBBELL_KG}kg · play with tempo or squeeze at the top.`,
 ];
 
 const MSG_NO_SETS = [
-  "No working sets logged — keep the same weight next time.",
+  "No working sets logged · keep the same weight next time.",
   "Nothing recorded for this one. Repeat the same load.",
-  "Skipped or not logged — maintain your previous weight.",
+  "Skipped or not logged · maintain your previous weight.",
 ];
 
 /**

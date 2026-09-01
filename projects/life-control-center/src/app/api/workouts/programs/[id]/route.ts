@@ -1,7 +1,7 @@
 /**
- * GET    /api/workouts/programs/[id]  — get one program with its plans
- * PATCH  /api/workouts/programs/[id]  — update name/description/cycles/isActive
- * DELETE /api/workouts/programs/[id]  — delete program (cascades to plans)
+ * GET    /api/workouts/programs/[id]  · get one program with its plans
+ * PATCH  /api/workouts/programs/[id]  · update name/description/cycles/isActive
+ * DELETE /api/workouts/programs/[id]  · delete program (cascades to plans)
  */
 
 import { NextRequest, NextResponse } from "next/server";

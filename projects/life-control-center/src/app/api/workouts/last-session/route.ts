@@ -1,5 +1,5 @@
 /**
- * GET /api/workouts/last-session — returns the most recent completed gym session.
+ * GET /api/workouts/last-session · returns the most recent completed gym session.
  */
 
 import { NextResponse } from "next/server";

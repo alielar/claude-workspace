@@ -6,7 +6,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { autoCheck } from "@/lib/checklist/autoCheck";
 
-/** GET /api/mood — list mood entries for the authenticated user */
+/** GET /api/mood · list mood entries for the authenticated user */
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json(rows);
 }
 
-/** POST /api/mood — upsert a mood entry by (user_id, date) */
+/** POST /api/mood · upsert a mood entry by (user_id, date) */
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {

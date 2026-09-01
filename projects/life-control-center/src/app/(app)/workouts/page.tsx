@@ -1,5 +1,5 @@
 /**
- * /workouts — main overview page
+ * /workouts · main overview page
  * Dense single-page layout: PR ticker, Up Next, Info tiles, This Week, Calendar, Running.
  */
 
@@ -39,7 +39,7 @@ export default async function WorkoutsPage() {
     new Date(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now)).getDay()
   ] ?? "mon";
 
-  // ── Plans — find workout plans from the ACTIVE program only ─────────────
+  // ── Plans · find workout plans from the ACTIVE program only ─────────────
   type PlanRow = {
     id: number; programId: number; name: string; type: string; sortOrder: number;
     assignedDays: string | null; targetMuscles: string | null;
@@ -107,7 +107,7 @@ export default async function WorkoutsPage() {
   const todayIdx = DOW_ORDER.indexOf(todayDow);
   let upNextPlan: PlanRow | null = null;
 
-  // Check today first, then upcoming days — skip plans already done today
+  // Check today first, then upcoming days · skip plans already done today
   for (let offset = 0; offset < 7 && !upNextPlan; offset++) {
     const dow = DOW_ORDER[(todayIdx + offset) % 7];
     for (const p of plans) {
@@ -283,7 +283,7 @@ export default async function WorkoutsPage() {
       {/* ── PR Ticker ────────────────────────────────────────────────────── */}
       {prs.length > 0 && <PrTickerClient initialPrs={prs} />}
 
-      {/* ── Coach Notes ticker — rolling weekly insight + overload calls ──── */}
+      {/* ── Coach Notes ticker · rolling weekly insight + overload calls ──── */}
       <CoachTicker />
 
       {/* ── Resume in-progress session banner ───────────────────────────── */}
@@ -323,10 +323,10 @@ export default async function WorkoutsPage() {
         </div>
       )}
 
-      {/* ── Info tiles (Workouts / Exercises / Analytics) — always visible ── */}
+      {/* ── Info tiles (Workouts / Exercises / Analytics) · always visible ── */}
       <InfoTiles plans={infoTilePlans} />
 
-      {/* ── Bottom row: This Week + Calendar + Running — always visible ───── */}
+      {/* ── Bottom row: This Week + Calendar + Running · always visible ───── */}
       <div className="workout-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
         <div>
           <WeeklyVolume />

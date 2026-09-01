@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * /wordbank — Vocabulary with spaced repetition. V2 Ambient Futurism design.
- * Layout: 1fr / 360px — left: flashcard or table; right: stats sidebar.
+ * /wordbank · Vocabulary with spaced repetition. V2 Ambient Futurism design.
+ * Layout: 1fr / 360px · left: flashcard or table; right: stats sidebar.
  * Tabs: Review (N due) | All Words (N total)
  */
 
@@ -36,7 +36,7 @@ type ReadingNote = {
   interval: number;
 };
 
-/** A unified review item — either a word or a reading note */
+/** A unified review item · either a word or a reading note */
 type ReviewItem =
   | { type: "word"; data: Word }
   | { type: "note"; data: ReadingNote };

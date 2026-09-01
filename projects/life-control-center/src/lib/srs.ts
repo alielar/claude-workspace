@@ -27,7 +27,7 @@ const MAX_STEP = STEPS.length - 1;
 export type SrsButton = "again" | "good" | "easy";
 
 export interface SrsResult {
-  /** New step index — stored in `interval` column */
+  /** New step index · stored in `interval` column */
   step: number;
   /** ISO "YYYY-MM-DD" date of next review */
   nextReviewDate: string;
@@ -67,7 +67,7 @@ export function srsReview(
     newStep = Math.min(step + 1, MAX_STEP);
     newStreak = streak + 1;
   } else {
-    // easy — skip ahead two steps
+    // easy · skip ahead two steps
     newStep = Math.min(step + 2, MAX_STEP);
     newStreak = streak + 1;
   }

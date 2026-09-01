@@ -29,7 +29,7 @@ function NewSessionInner() {
           setActiveSession(data.session);
           setChecking(false);
         } else {
-          // No active session — create new one
+          // No active session · create new one
           createSession();
         }
       })

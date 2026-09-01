@@ -1,5 +1,5 @@
 /**
- * Outbox — writes that must reach the server eventually.
+ * Outbox · writes that must reach the server eventually.
  *
  * When the phone is offline (or the server is unreachable) a write is stored
  * here and replayed later, in order. Entries carry a `dedupeKey`: a newer entry
@@ -88,11 +88,11 @@ export async function flushOutbox(): Promise<void> {
     for (const entry of entries) {
       try {
         const res = await send(entry);
-        if (res.status >= 500) break; // server down — try again later
+        if (res.status >= 500) break; // server down · try again later
         // 2xx or 4xx: either accepted or permanently rejected; drop it either way
         save(load().filter((e) => e.id !== entry.id));
       } catch {
-        break; // network failure — try again later
+        break; // network failure · try again later
       }
     }
   } finally {

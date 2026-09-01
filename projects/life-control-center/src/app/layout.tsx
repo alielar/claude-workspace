@@ -4,7 +4,7 @@ import { SvgDefs } from "@/components/SvgDefs";
 
 export const metadata: Metadata = {
   title: "A L I",
-  description: "Ali's day — routine, training, to-do, news.",
+  description: "Ali's day · routine, training, to-do, news.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
       </head>
       <body>
-        {/* Shared SVG gradient defs — referenced by id in the archived pages */}
+        {/* Shared SVG gradient defs · referenced by id in the archived pages */}
         <SvgDefs />
         {children}
       </body>

@@ -1,6 +1,6 @@
 /**
- * POST /api/news/generate — manually trigger today's brief (or return cached version).
- * GET  /api/news/generate — fetch today's cached brief without generating.
+ * POST /api/news/generate · manually trigger today's brief (or return cached version).
+ * GET  /api/news/generate · fetch today's cached brief without generating.
  */
 
 export const maxDuration = 60;

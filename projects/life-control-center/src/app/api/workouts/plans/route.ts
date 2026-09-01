@@ -1,6 +1,6 @@
 /**
- * GET  /api/workouts/plans  — list all plans for the current user
- * POST /api/workouts/plans  — create a new plan (auto-creates program if needed)
+ * GET  /api/workouts/plans  · list all plans for the current user
+ * POST /api/workouts/plans  · create a new plan (auto-creates program if needed)
  */
 
 import { NextRequest, NextResponse } from "next/server";

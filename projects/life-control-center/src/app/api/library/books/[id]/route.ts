@@ -1,5 +1,5 @@
 /**
- * PATCH /api/library/books/[id] — update book status
+ * PATCH /api/library/books/[id] · update book status
  *
  * Body: { status: "reading" | "finished" | "not_started" }
  *

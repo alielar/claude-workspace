@@ -1,7 +1,7 @@
 /**
  * POST /api/admin/migrate
  *
- * One-shot migration endpoint — creates any new tables that don't exist yet.
+ * One-shot migration endpoint · creates any new tables that don't exist yet.
  * Protected by session auth (only authenticated users can trigger).
  * Uses CREATE TABLE IF NOT EXISTS so it's safe to run multiple times.
  *
@@ -44,7 +44,7 @@ export async function POST() {
     `CREATE UNIQUE INDEX IF NOT EXISTS
       ux_checklist_completion ON checklist_completions(item_id, user_id, date)`,
 
-    // ── Checklist: time-of-day tag (additive — safe to re-run) ─────────────
+    // ── Checklist: time-of-day tag (additive · safe to re-run) ─────────────
     `ALTER TABLE checklist_items ADD COLUMN time_of_day TEXT NOT NULL DEFAULT 'anytime'`,
 
     // ── Reading sessions ─────────────────────────────────────────────────────
@@ -59,12 +59,12 @@ export async function POST() {
       started_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
 
-    // ── Word Bank new columns (additive — safe to re-run) ───────────────────
+    // ── Word Bank new columns (additive · safe to re-run) ───────────────────
     `ALTER TABLE word_bank_entries ADD COLUMN part_of_speech TEXT`,
     `ALTER TABLE word_bank_entries ADD COLUMN language TEXT NOT NULL DEFAULT 'en'`,
     `ALTER TABLE word_bank_entries ADD COLUMN streak INTEGER NOT NULL DEFAULT 0`,
 
-    // ── Checklist: auto-source, color, notes (additive — safe to re-run) ───
+    // ── Checklist: auto-source, color, notes (additive · safe to re-run) ───
     `ALTER TABLE checklist_items ADD COLUMN auto_source TEXT`,
     `ALTER TABLE checklist_items ADD COLUMN color TEXT NOT NULL DEFAULT 'violet'`,
     `ALTER TABLE checklist_items ADD COLUMN notes TEXT`,
@@ -73,7 +73,7 @@ export async function POST() {
     `ALTER TABLE checklist_items ADD COLUMN kind TEXT NOT NULL DEFAULT 'manual'`,
     `ALTER TABLE checklist_items ADD COLUMN routine_key TEXT`,
 
-    // ── Train — kettlebell era (Phase 3) ────────────────────────────────────
+    // ── Train · kettlebell era (Phase 3) ────────────────────────────────────
     `ALTER TABLE user_settings ADD COLUMN kettlebell_kg REAL NOT NULL DEFAULT 12`,
     `CREATE TABLE IF NOT EXISTS kb_workouts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,7 +105,7 @@ export async function POST() {
     )`,
     `CREATE INDEX IF NOT EXISTS ix_kb_sessions_user_date ON kb_sessions(user_id, date)`,
 
-    // ── Books — waiting list (Phase 4) ──────────────────────────────────────
+    // ── Books · waiting list (Phase 4) ──────────────────────────────────────
     `CREATE TABLE IF NOT EXISTS reading_queue (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -291,7 +291,7 @@ export async function POST() {
     `UPDATE gym_sessions SET original_template_name = workout_name WHERE original_template_name IS NULL`,
 
     // ── Workouts v3: one-time cleanup (already executed, kept as comment) ────
-    // These ran once to clear imported templates. DO NOT re-run — they wipe user data.
+    // These ran once to clear imported templates. DO NOT re-run · they wipe user data.
     // `UPDATE gym_sessions SET plan_id = NULL, program_id = NULL WHERE plan_id IS NOT NULL`,
     // `DELETE FROM plan_exercises`,
     // `DELETE FROM workout_plans`,
@@ -306,7 +306,7 @@ export async function POST() {
       generated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
 
-    // ── Library: reading period tracking (additive — safe to re-run) ─────────
+    // ── Library: reading period tracking (additive · safe to re-run) ─────────
     // Records when a user actually started/finished each book.
     // Replaces the old monthly-target system for the year progress bar.
     `ALTER TABLE books ADD COLUMN started_at INTEGER`,
@@ -337,7 +337,7 @@ export async function POST() {
     )`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_sleep_entry ON sleep_entries(user_id, date)`,
 
-    // ── Sleep entries — Apple Health columns ────────────────────────────────
+    // ── Sleep entries · Apple Health columns ────────────────────────────────
     `ALTER TABLE sleep_entries ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'`,
     `ALTER TABLE sleep_entries ADD COLUMN stage_deep_minutes INTEGER`,
     `ALTER TABLE sleep_entries ADD COLUMN stage_core_minutes INTEGER`,
@@ -351,7 +351,7 @@ export async function POST() {
     `ALTER TABLE sleep_entries ADD COLUMN raw_payload TEXT`,
     `ALTER TABLE sleep_entries ADD COLUMN sleep_score INTEGER`,
 
-    // ── Reading progress — bookmark columns ─────────────────────────────────
+    // ── Reading progress · bookmark columns ─────────────────────────────────
     `ALTER TABLE reading_progress ADD COLUMN bookmark_text TEXT`,
     `ALTER TABLE reading_progress ADD COLUMN bookmark_page INTEGER`,
 

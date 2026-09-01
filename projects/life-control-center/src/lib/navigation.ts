@@ -1,5 +1,5 @@
 /**
- * Navigation — single source of truth for the tab bar (phone) and sidebar (desktop).
+ * Navigation · single source of truth for the tab bar (phone) and sidebar (desktop).
  *
  * Today · Train · To-do · News · Settings. Keep this list short on purpose —
  * if something needs a second thought about where it lives, the nav is wrong.

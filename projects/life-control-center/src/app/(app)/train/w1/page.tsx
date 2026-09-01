@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * /train/w1 — Workout 1: AMRAP, the game.
+ * /train/w1 · Workout 1: AMRAP, the game.
  *
  *   - 30:00 counts down from the moment you press Start (no pause: it's a race)
- *   - the whole middle of the screen is the +1 ROUND button — one thumb, sweaty hands,
+ *   - the whole middle of the screen is the +1 ROUND button · one thumb, sweaty hands,
  *     mid-set; a 700 ms guard stops accidental double taps; small undo bottom-left
  *   - the number to beat (last week's best) is always visible
  *   - pace: "on pace for N" from your average round time; colour says ahead / tight / behind
@@ -81,7 +81,7 @@ export default function AmrapPage() {
     saveSession(done).then(() => refresh());
   }, [refresh]);
 
-  // Clock — also where "time up" is detected (inside the tick, not in render).
+  // Clock · also where "time up" is detected (inside the tick, not in render).
   useEffect(() => {
     if (status !== "running" || !session) return;
     const id = setInterval(() => {
@@ -191,12 +191,12 @@ export default function AmrapPage() {
           <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, textAlign: "center" }}>
             <div>
               <div style={{ fontSize: 13, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)" }}>To beat</div>
-              <div className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1.1 }}>{toBeat ?? "—"}</div>
-              <div style={{ fontSize: 14, color: "var(--ink-4)" }}>{ov?.toBeat?.label ?? "first week — set the bar"}</div>
+              <div className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1.1 }}>{toBeat ?? "…"}</div>
+              <div style={{ fontSize: 14, color: "var(--ink-4)" }}>{ov?.toBeat?.label ?? "first week · set the bar"}</div>
             </div>
             <div>
               <div style={{ fontSize: 13, fontFamily: "var(--f-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)" }}>This week</div>
-              <div className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1.1 }}>{ov?.thisWeekBest ?? "—"}</div>
+              <div className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1.1 }}>{ov?.thisWeekBest ?? "…"}</div>
               <div style={{ fontSize: 14, color: "var(--ink-4)" }}>best so far</div>
             </div>
           </div>
@@ -265,11 +265,11 @@ export default function AmrapPage() {
       {/* Top bar: clock + to-beat */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 }}>
         <div style={{ fontSize: 14, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-          TO BEAT <span style={{ fontSize: 19, color: "var(--ink)", fontWeight: 600 }}>{toBeat ?? "—"}</span>
+          TO BEAT <span style={{ fontSize: 19, color: "var(--ink)", fontWeight: 600 }}>{toBeat ?? "…"}</span>
         </div>
         <div className="tabular-nums" style={{ fontSize: 34, fontWeight: 300, fontVariantNumeric: "tabular-nums", color: urgent ? "var(--neg)" : "var(--ink)" }}>{fmtClock(remainingMs / 1000)}</div>
         <div style={{ textAlign: "right", fontSize: 14, color: paceColor, fontFamily: "var(--f-mono)" }}>
-          {pace ? <>PACE <span style={{ fontSize: 19, fontWeight: 600 }}>{pace.projected}</span></> : <span style={{ color: "var(--ink-4)" }}>PACE —</span>}
+          {pace ? <>PACE <span style={{ fontSize: 19, fontWeight: 600 }}>{pace.projected}</span></> : <span style={{ color: "var(--ink-4)" }}>PACE …</span>}
         </div>
       </div>
       <div className="cc-progress-track" style={{ height: 3, marginTop: 8 }}>

@@ -32,7 +32,7 @@ export async function loadOrSeedWorkouts(userId: string): Promise<TrainWorkout[]
         amrapMinutes: w.amrapMinutes, restSeconds: w.restSeconds,
         exercises: JSON.stringify(w.exercises), assignedDays: null,
       });
-    } catch { /* raced — fine */ }
+    } catch { /* raced · fine */ }
   }
   const fresh = have.size === DEFAULT_WORKOUTS.length ? rows : await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));
   return fresh.map(rowToWorkout).sort((a, b) => (a.key < b.key ? -1 : 1));

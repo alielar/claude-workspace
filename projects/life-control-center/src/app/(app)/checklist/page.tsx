@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /checklist — edit the daily list. Deliberately small.
+ * /checklist · edit the daily list. Deliberately small.
  *
  *   list grouped by time of day (Morning · Afternoon · Evening · Anytime)
  *   + Add: name, emoji, time of day, optional link. That's it.
@@ -77,7 +77,7 @@ function Sheet({ item, onClose, onSave, onDelete }: {
           })}
         </div>
 
-        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Link (optional — a video, a page; opens with one tap on Today)
+        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Link (optional · a video, a page; opens with one tap on Today)
           <input className="cc-input" type="url" inputMode="url" value={d.link} onChange={(e) => set({ link: e.target.value })} placeholder="https://…" style={{ fontSize: 17, minHeight: 46 }} />
         </label>
 
@@ -92,7 +92,7 @@ function Sheet({ item, onClose, onSave, onDelete }: {
             </span>
           </button>
         )}
-        {item && builtIn && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Part of the built-in routine — you can rename it or move it, not delete it.</div>}
+        {item && builtIn && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Part of the built-in routine · you can rename it or move it, not delete it.</div>}
 
         <div style={{ display: "grid", gridTemplateColumns: item && !builtIn ? "1fr auto" : "1fr", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={save} disabled={!d.title.trim()} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{item ? "Save" : "Add"}</button>

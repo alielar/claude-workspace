@@ -1,5 +1,5 @@
 /**
- * Train — kettlebell era. Types, defaults and pure helpers shared by API + screens.
+ * Train · kettlebell era. Types, defaults and pure helpers shared by API + screens.
  */
 
 export type WorkoutKey = "w1" | "w2";

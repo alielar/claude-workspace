@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 /**
  * The app icon, drawn in code so there is no binary asset to keep in sync.
- * Ali's own mark: the A·T·E ligature ("Clean" cut, chosen 2026-08-30) — one glyph
+ * Ali's own mark: the A·T·E ligature ("Clean" cut, chosen 2026-08-30) · one glyph
  * holding all three initials. Top bar + centre stem = T; diagonal + shared
  * crossbar = A; stem with three arms = E. White, round caps, on the app's
  * near-black ground.
@@ -29,9 +29,9 @@ export function renderAppIcon(size: number) {
 }
 
 /**
- * Browser-tab favicon: the same ligature with NO tile — transparent ground,
+ * Browser-tab favicon: the same ligature with NO tile · transparent ground,
  * near-black strokes, cropped tight so it fills the tab slot. (Chosen for the
- * light browser chrome; on a dark tab bar a black glyph fades — say the word
+ * light browser chrome; on a dark tab bar a black glyph fades · say the word
  * and this flips to white or theme-aware.)
  */
 export function renderFavicon(size: number) {

@@ -1,6 +1,6 @@
 /**
- * GET /api/todos — all open tasks + tasks done in the last 7 days (soft-deleted ones excluded)
- * PUT /api/todos — upsert one task by clientId (the full desired state — idempotent, replay-safe).
+ * GET /api/todos · all open tasks + tasks done in the last 7 days (soft-deleted ones excluded)
+ * PUT /api/todos · upsert one task by clientId (the full desired state · idempotent, replay-safe).
  *                  Older `updatedAt` than the stored row → ignored (last writer wins).
  */
 

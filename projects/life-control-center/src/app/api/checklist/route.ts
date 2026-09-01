@@ -1,13 +1,13 @@
 /**
- * GET  /api/checklist — items with today's completion, per-item streak, 7-day history,
+ * GET  /api/checklist · items with today's completion, per-item streak, 7-day history,
  *                       plus day-level stats. Seeds the built-in routine steps once.
- * POST /api/checklist — create a new item
+ * POST /api/checklist · create a new item
  *
  * GET Response: { items: Item[], overallStreak, monthlyPct, thirtyDayAvg, bestStreak30 }
  *
  * Day-level stats (overall streak, %, 30-day average) count routine + manual items.
  * Habits being built (kind = "habit") have their own streak but do not count
- * toward the day until promoted — that is the whole point of "building".
+ * toward the day until promoted · that is the whole point of "building".
  */
 
 import { NextResponse } from "next/server";
@@ -121,7 +121,7 @@ async function seedRoutine(userId: string) {
         notes: s.notes,
         sortOrder: s.sortOrder,
       });
-    } catch { /* raced with another request — fine */ }
+    } catch { /* raced with another request · fine */ }
   }
   return true;
 }
@@ -159,7 +159,7 @@ export async function GET() {
 
   const last7Dates = getLastNDates(today, 7);
 
-  // ── Virtual "Workout" row from the Train tab — informational, never counted ──
+  // ── Virtual "Workout" row from the Train tab · informational, never counted ──
   const trainSessions = trainRows.map(rowToSession).filter((s) => s.finishedAt !== null);
   const todayTrain = trainSessions.find((s) => s.date === today) ?? null;
   const scheduled = hasSchedule(workouts);
@@ -193,7 +193,7 @@ export async function GET() {
       : restDay
         ? upcoming ? `next: ${workoutName(upcoming.key)} ${fmtScheduleDate(upcoming.date, today)} · ${thisWeekCount} of ${target} this week` : `${thisWeekCount} of ${target} this week`
         : thisWeekCount >= target
-          ? `${thisWeekCount} of ${target} this week — week complete, extra is a bonus`
+          ? `${thisWeekCount} of ${target} this week · week complete, extra is a bonus`
           : scheduled
             ? `planned for today · ${thisWeekCount} of ${target} this week`
             : `${thisWeekCount} of ${target} this week · any days`,

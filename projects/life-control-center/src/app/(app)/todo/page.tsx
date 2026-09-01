@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * /todo — the To-do tab (spec §4.5 + §7c item 7).
+ * /todo · the To-do tab (spec §4.5 + §7c item 7).
  *
  * Three segments at the top, remembered on the phone:
- *   Personal · Work — tasks: buckets (Overdue · Today · Evening · Upcoming · Anytime · Someday),
+ *   Personal · Work · tasks: buckets (Overdue · Today · Evening · Upcoming · Anytime · Someday),
  *     one-line quick add with natural-language dates, detail sheet, one-tap defer, swipe to delete.
- *   Docs — things to KEEP, not do (spec §7c item 7): notes and running lists.
+ *   Docs · things to KEEP, not do (spec §7c item 7): notes and running lists.
  *     No checkboxes, no buckets, no nagging. Type a name → straight into the editor. Pin the ones
  *     you reach for; search finds the rest (titles and content). A list can carry one optional
- *     reminder (date + time) — then it behaves like a reminder: Today card, badge, notifications.
+ *     reminder (date + time) · then it behaves like a reminder: Today card, badge, notifications.
  *
  * Works offline; the home-screen badge shows what's due today.
  */
@@ -46,7 +46,7 @@ function fmtAgo(ms: number): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
-/** First non-empty content line, with list markers stripped — the row preview. */
+/** First non-empty content line, with list markers stripped · the row preview. */
 function firstLine(notes: string | null): string | null {
   if (!notes) return null;
   for (const raw of notes.split("\n")) {
@@ -213,7 +213,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
   );
 }
 
-// ─── List row (Lists segment — kept things, no checkbox) ──────────────────────
+// ─── List row (Lists segment · kept things, no checkbox) ──────────────────────
 
 function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelete: () => void }) {
   const swipe = useSwipeDelete(onDelete);
@@ -233,7 +233,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
         {t.priority > 0 && <span aria-hidden style={{ fontSize: 16, textAlign: "center" }}>📌</span>}
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
-          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty — tap to write"}</span>
+          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty · tap to write"}</span>
         </span>
       </button>
     </SwipeWrap>
@@ -251,7 +251,7 @@ const NAG_STEPS = [30, 15, 10, 5];
 const nextNag = (cur: number | null | undefined) => NAG_STEPS[(NAG_STEPS.indexOf(cur ?? 30) + 1) % NAG_STEPS.length];
 const nagChip: React.CSSProperties = { minHeight: 28, padding: "0 8px", borderRadius: 8, fontSize: 13, font: "inherit", cursor: "pointer", border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)" };
 
-// Title field that grows with its text — long titles wrap instead of hiding
+// Title field that grows with its text · long titles wrap instead of hiding
 // their end behind horizontal scroll. Enter closes the keyboard.
 function TitleInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -336,7 +336,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
   );
 }
 
-// ─── List sheet (Lists segment) — a place to write, not to schedule ──────────
+// ─── List sheet (Lists segment) · a place to write, not to schedule ──────────
 
 function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }: {
   t: Todo; today: string; tags: string[]; isNew?: boolean;
@@ -406,7 +406,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : (
           <div style={{ display: "grid", gap: 2 }}>
-            {items.length === 0 && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet — add the first item below.</div>}
+            {items.length === 0 && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet · add the first item below.</div>}
             {items.map((it, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "14px 1fr auto", gap: 10, alignItems: "center", minHeight: 48, borderBottom: "1px solid var(--line)" }}>
                 <span aria-hidden style={{ width: 5, height: 5, borderRadius: 3, background: "var(--violet)", justifySelf: "center" }} />
@@ -526,7 +526,7 @@ export default function TodoPage() {
   const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
   const dueCount = groups.filter((g) => g.key === "overdue" || g.key === "today").reduce((s, g) => s + g.items.length, 0);
 
-  // Lists — pinned first, then most recently touched; search covers names and content.
+  // Lists · pinned first, then most recently touched; search covers names and content.
   const q = query.trim().toLowerCase();
   const lists = (isLists ? visible : [])
     .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q))
@@ -545,7 +545,7 @@ export default function TodoPage() {
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
           <div className="sub">
-            {loading && !data ? "—"
+            {loading && !data ? "…"
               : isLists ? `${inArea.length} doc${inArea.length === 1 ? "" : "s"} kept`
               : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${openTasks.length ? ` · ${openTasks.length} open` : ""}`}
             {stale ? " · saved copy" : ""}
@@ -569,7 +569,7 @@ export default function TodoPage() {
         })}
       </div>
 
-      {/* Tag chips — tasks use projects, docs use tags; same mechanism */}
+      {/* Tag chips · tasks use projects, docs use tags; same mechanism */}
       {projects.length > 0 && (
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
           {[null, ...projects].map((p) => (
@@ -640,7 +640,7 @@ export default function TodoPage() {
         </>
       )}
 
-      {/* Quick add — pinned above the tab bar */}
+      {/* Quick add · pinned above the tab bar */}
       <form onSubmit={(e) => { e.preventDefault(); submit(); }} style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom))", zIndex: 30, padding: "8px 12px 10px", background: "var(--bg-chrome)", borderTop: "1px solid var(--line)" }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
           {previewBits.length > 0 && (

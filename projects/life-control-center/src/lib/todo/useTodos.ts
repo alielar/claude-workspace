@@ -38,7 +38,7 @@ export function useTodos(today: string) {
     });
     try {
       await sendOrQueue({ url: "/api/todos", method: "PUT", body: next, dedupeKey: `todo:${t.clientId}` });
-    } catch { /* server refused — the next refresh shows the truth */ }
+    } catch { /* server refused · the next refresh shows the truth */ }
   }, [setData]);
 
   const add = useCallback((partial: Partial<Todo> & { title: string }) => {

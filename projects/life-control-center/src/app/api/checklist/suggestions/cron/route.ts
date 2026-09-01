@@ -115,7 +115,7 @@ async function generateForUser(userId: string): Promise<void> {
 
   const text = await generateAIText(
     `Current habits:\n${itemsList}\n\nLast 30 days completion log:\n${statsLines}\n\nRespond with this exact JSON:\n{\n  "suggestions": [\n    { "title": "...", "rationale": "...", "emoji": "..." },\n    { "title": "...", "rationale": "...", "emoji": "..." }\n  ],\n  "patternObservation": "2-3 sentences about patterns in their completion data."\n}\n\nRules:\n- Suggest 2-3 NEW habits not already tracked\n- Keep each rationale to 1-2 sentences\n- Pattern observation: factual and specific to their actual data`,
-    "You are a personal habit coach. Analyze checklist data and respond with JSON only — no markdown, no extra text."
+    "You are a personal habit coach. Analyze checklist data and respond with JSON only · no markdown, no extra text."
   );
 
   let parsed: {

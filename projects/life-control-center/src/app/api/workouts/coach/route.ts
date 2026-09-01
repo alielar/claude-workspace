@@ -1,6 +1,6 @@
 /**
- * GET  /api/workouts/coach  — returns the latest coach card
- * POST /api/workouts/coach  — generates a new card (rate-limited to 1/day manual)
+ * GET  /api/workouts/coach  · returns the latest coach card
+ * POST /api/workouts/coach  · generates a new card (rate-limited to 1/day manual)
  */
 
 export const maxDuration = 60;

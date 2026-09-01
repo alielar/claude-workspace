@@ -1032,7 +1032,7 @@ export default function ActiveSessionPage({ params }: { params: Promise<{ sessio
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ exerciseId, exerciseName, setNumber, ...setData }),
     });
-    if (!res.ok) { setLogError("Failed to save set — tap to retry"); return; }
+    if (!res.ok) { setLogError("Failed to save set · tap to retry"); return; }
     const json = await res.json();
     if (json.setId) {
       setLoggedSets((prev) => [...prev, {

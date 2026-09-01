@@ -45,7 +45,7 @@ async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
 
 /**
  * Run `fn` on chunks of `size` stories concurrently. Same total tokens as one big call
- * (so the same cost), but 20 stories finish in the time of 5 — needed to stay under the
+ * (so the same cost), but 20 stories finish in the time of 5 · needed to stay under the
  * 60 s function limit now that each story gets a fuller analysis.
  */
 async function inBatches(stories: NewsStory[], size: number, fn: (chunk: NewsStory[]) => Promise<void>): Promise<void> {
@@ -76,9 +76,9 @@ async function enhanceBatch(stories: NewsStory[]): Promise<void> {
 
   const prompt = `You are a concise news editor. For each story below, write:
 1. A sharp 1-2 sentence summary that captures the key facts (not just repeating the headline)
-2. 2-3 bullet key points — short, factual, no filler
+2. 2-3 bullet key points · short, factual, no filler
 
-Return ONLY valid JSON — an array of objects with "index" (number), "summary" (string), and "keyPoints" (string array).
+Return ONLY valid JSON · an array of objects with "index" (number), "summary" (string), and "keyPoints" (string array).
 No markdown fences, no extra text.
 
 Stories:
@@ -117,15 +117,15 @@ async function deepDiveBatch(stories: NewsStory[]): Promise<void> {
     .map((s, i) => `[${i}] ${s.headline}\n${s.summary}`)
     .join("\n\n");
 
-  // One batched call for all stories — the same call that has always run, asked for more depth.
-  const prompt = `You are a senior news analyst writing for one busy reader who wants to genuinely understand each story, not skim it. For each story write five parts, each 2-3 full sentences, plain direct language, specific facts (names, numbers, places) — never vague filler, never repeat the headline:
-1. WHAT HAPPENED — the core event, who did what, when, and the key numbers.
-2. WHY IT MATTERS — who is affected and what actually changes for them.
-3. CONTEXT — the background that explains it: what led here, the relevant history or trend.
-4. IMPLICATIONS — the knock-on effects: who gains, who loses, what this makes more or less likely; where relevant, what it means for Europe, Morocco / MENA, markets, or the AI industry.
-5. WHATS NEXT — concrete things to watch for, with dates or triggers when known.
+  // One batched call for all stories · the same call that has always run, asked for more depth.
+  const prompt = `You are a senior news analyst writing for one busy reader who wants to genuinely understand each story, not skim it. For each story write five parts, each 2-3 full sentences, plain direct language, specific facts (names, numbers, places) · never vague filler, never repeat the headline:
+1. WHAT HAPPENED · the core event, who did what, when, and the key numbers.
+2. WHY IT MATTERS · who is affected and what actually changes for them.
+3. CONTEXT · the background that explains it: what led here, the relevant history or trend.
+4. IMPLICATIONS · the knock-on effects: who gains, who loses, what this makes more or less likely; where relevant, what it means for Europe, Morocco / MENA, markets, or the AI industry.
+5. WHATS NEXT · concrete things to watch for, with dates or triggers when known.
 
-Return ONLY valid JSON — an array of objects with "index" (number), "whatHappened", "whyItMatters", "context", "implications", "whatsNext" (all strings).
+Return ONLY valid JSON · an array of objects with "index" (number), "whatHappened", "whyItMatters", "context", "implications", "whatsNext" (all strings).
 No markdown fences, no extra text.
 
 Stories:
@@ -149,6 +149,6 @@ ${storyList}`;
       }
     }
   } catch {
-    // Silently skip deep dives — the brief still ships with summaries
+    // Silently skip deep dives · the brief still ships with summaries
   }
 }

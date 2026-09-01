@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * RunningCard — shows 5K goal progress + recent run stats.
+ * RunningCard · shows 5K goal progress + recent run stats.
  * Includes a "Log run" modal.
  * Embeds in the (server-rendered) workouts page.
  */

@@ -1,6 +1,6 @@
 /**
- * Stretching music — 10 calm/gently-rhythmic tracks, self-hosted in /public/music.
- * All by Kevin MacLeod (incompetech.com), licensed CC BY 4.0 — legal to play and
+ * Stretching music · 10 calm/gently-rhythmic tracks, self-hosted in /public/music.
+ * All by Kevin MacLeod (incompetech.com), licensed CC BY 4.0 · legal to play and
  * redistribute with attribution (shown in the picker). Gymnopédie is Erik Satie
  * (public domain composition), MacLeod's recording.
  */

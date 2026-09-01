@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Coach Notes ticker — a tight, auto-rolling strip (same motion as the
+ * Coach Notes ticker · a tight, auto-rolling strip (same motion as the
  * dashboard news ticker). Rolls the weekly AI insight (WINS / FOCUS / WATCH)
  * plus per-exercise progressive-overload calls. Hover to pause and read.
  */
@@ -90,7 +90,7 @@ export default function CoachTicker() {
             const sug: Record<string, Suggestion> = await sugRes.json();
             for (const [name, s] of Object.entries(sug ?? {})) {
               const meta = ACTION_META[s.action] ?? { label: s.action, color: "var(--ink-3)" };
-              next.push({ label: meta.label, color: meta.color, text: `${name} — ${s.message}` });
+              next.push({ label: meta.label, color: meta.color, text: `${name} · ${s.message}` });
             }
           }
         }

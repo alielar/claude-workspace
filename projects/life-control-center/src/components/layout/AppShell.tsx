@@ -1,5 +1,5 @@
 /**
- * AppShell — the frame around every screen.
+ * AppShell · the frame around every screen.
  *
  * Phone:   content + fixed bottom tab bar (MobileNav).
  * Desktop: 56px icon sidebar + content.

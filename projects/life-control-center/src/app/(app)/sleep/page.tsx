@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * /sleep — Apple Watch sleep tracker.
+ * /sleep · Apple Watch sleep tracker.
  * Data syncs automatically from Apple Health via Shortcuts.
- * Layout: 1fr / 300px — left: hero + Apple Health card + weekly bars; right: stats + debt.
+ * Layout: 1fr / 300px · left: hero + Apple Health card + weekly bars; right: stats + debt.
  */
 
 import { useEffect, useState, useCallback } from "react";
@@ -153,7 +153,7 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Heart rate</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-              {e.heart_rate_avg != null ? Math.round(e.heart_rate_avg) : "—"}
+              {e.heart_rate_avg != null ? Math.round(e.heart_rate_avg) : "…"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>bpm</span>
             </div>
             {e.heart_rate_min != null && e.heart_rate_max != null && (
@@ -165,14 +165,14 @@ function AppleHealthCard({ entry, yesterdayEntry }: { entry: SleepEntry | null; 
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>Resp. rate</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-              {e.respiratory_rate_avg != null ? e.respiratory_rate_avg.toFixed(1) : "—"}
+              {e.respiratory_rate_avg != null ? e.respiratory_rate_avg.toFixed(1) : "…"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>br/m</span>
             </div>
           </div>
           <div style={{ padding: "12px 14px", border: "1px solid rgba(180,180,240,0.06)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
             <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600, fontFamily: "var(--f-mono)", marginBottom: 6 }}>SpO2</div>
             <div style={{ fontSize: 24, fontWeight: 200, letterSpacing: "-0.03em", fontFamily: "var(--f-mono)", color: "var(--ink)" }}>
-              {e.blood_oxygen_avg != null ? e.blood_oxygen_avg.toFixed(1) : "—"}
+              {e.blood_oxygen_avg != null ? e.blood_oxygen_avg.toFixed(1) : "…"}
               <span style={{ fontSize: 11, color: "var(--ink-4)", marginLeft: 3 }}>%</span>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function SleepPage({ embedded = false }: { embedded?: boolean }) 
           <div>
             <h1>Sleep<span className="grad-text">.</span></h1>
             <div className="sub">
-              Weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b>
+              Weekly avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "…"}</b>
               {weekDebt !== 0 && (
                 <> · debt <b style={{ color: weekDebt > 0 ? "var(--warn)" : "var(--pos)" }}>
                   {weekDebt > 0 ? `-${fmtHours(weekDebt)}` : "0h"}
@@ -326,7 +326,7 @@ export default function SleepPage({ embedded = false }: { embedded?: boolean }) 
         {/* ── LEFT ──────────────────────────────────────────────────────── */}
         <div>
 
-          {/* Hero card — last night's sleep */}
+          {/* Hero card · last night's sleep */}
           <div className="cc-card" style={{
             padding: "26px 28px", marginBottom: 14,
             background: "radial-gradient(60% 80% at 0% 0%, rgba(100,255,218,0.08), transparent 60%), radial-gradient(50% 80% at 100% 100%, rgba(120,160,255,0.06), transparent 60%), var(--bg-card)",
@@ -422,7 +422,7 @@ export default function SleepPage({ embedded = false }: { embedded?: boolean }) 
           <div className="cc-card" style={{ marginBottom: 14 }}>
             <div className="cc-card-head">
               <div className="title">This week</div>
-              <div className="tail">avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "—"}</b> · target {TARGET_HOURS}h</div>
+              <div className="tail">avg <b style={{ color: "var(--ink)" }}>{weekAvg > 0 ? fmtHours(weekAvg) : "…"}</b> · target {TARGET_HOURS}h</div>
             </div>
             <div style={{ padding: "24px 18px 18px" }}>
               <div style={{ height: 180, display: "flex", alignItems: "flex-end", gap: 12, position: "relative", borderBottom: "1px solid var(--line)" }}>

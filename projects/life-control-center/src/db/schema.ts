@@ -4,7 +4,7 @@
  *
  * Only tables the code still reads/writes are declared here. Old tables that
  * still exist in the database (NextAuth accounts/sessions, workout v1, tasks,
- * goals) are left alone in Turso but no longer declared — nothing touches them.
+ * goals) are left alone in Turso but no longer declared · nothing touches them.
  *
  * Active:   users, user_settings, news_briefs, checklist_*, weekly_reviews
  * Archived: programs / workout_plans / exercise_db / plan_exercises /
@@ -55,11 +55,11 @@ export const userSettings = sqliteTable("user_settings", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-// ─── Train — kettlebell era (Phase 3) ─────────────────────────────────────────
+// ─── Train · kettlebell era (Phase 3) ─────────────────────────────────────────
 
 /**
  * Workout templates. Two rows per user: "w1" (AMRAP) and "w2" (straight sets).
- * `exercises` is JSON — see TrainExercise in src/lib/train/types.ts.
+ * `exercises` is JSON · see TrainExercise in src/lib/train/types.ts.
  * `assignedDays` is reserved for a future fixed schedule (JSON array of "mon".."sun"); null = alternate.
  */
 export const kbWorkouts = sqliteTable("kb_workouts", {
@@ -100,7 +100,7 @@ export const kbSessions = sqliteTable("kb_sessions", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-// ─── Books — the waiting list (Phase 4) ───────────────────────────────────────
+// ─── Books · the waiting list (Phase 4) ───────────────────────────────────────
 
 /** Physical books to read. Seeded from BOOK_SEED by slug; custom ones have slug "c:<clientId>". */
 export const readingQueue = sqliteTable("reading_queue", {
@@ -192,7 +192,7 @@ export const runLogs = sqliteTable("run_logs", {
 
 // ─── News ──────────────────────────────────────────────────────────────────────
 
-/** One daily news brief — generated once at 9 AM, cached here */
+/** One daily news brief · generated once at 9 AM, cached here */
 export const newsBriefs = sqliteTable("news_briefs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -230,7 +230,7 @@ export const books = sqliteTable("books", {
   // Path/key to uploaded PDF in storage
   pdfKey: text("pdf_key"),
   sortOrder: integer("sort_order").notNull().default(0),
-  // Reading period — set when user clicks Start / Finish
+  // Reading period · set when user clicks Start / Finish
   startedAt: integer("started_at", { mode: "timestamp_ms" }),
   finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
@@ -263,7 +263,7 @@ export const annotations = sqliteTable("annotations", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Reading sessions — one row per reading session for streak + habit tracking */
+/** Reading sessions · one row per reading session for streak + habit tracking */
 export const readingSessions = sqliteTable("reading_sessions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   bookId: integer("book_id")
@@ -275,14 +275,14 @@ export const readingSessions = sqliteTable("reading_sessions", {
   startPage: integer("start_page").notNull().default(1),
   endPage: integer("end_page").notNull().default(1),
   durationMinutes: integer("duration_minutes").notNull().default(0),
-  /** Europe/Madrid date YYYY-MM-DD — used for streak calculation */
+  /** Europe/Madrid date YYYY-MM-DD · used for streak calculation */
   date: text("date").notNull(),
   startedAt: integer("started_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Reading notes — things learned during reading, with SRS review */
+/** Reading notes · things learned during reading, with SRS review */
 export const readingNotes = sqliteTable("reading_notes", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -301,7 +301,7 @@ export const readingNotes = sqliteTable("reading_notes", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Raw PDF bytes stored as base64 — one row per uploaded book */
+/** Raw PDF bytes stored as base64 · one row per uploaded book */
 export const pdfBlobs = sqliteTable("pdf_blobs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   bookId: integer("book_id")
@@ -330,7 +330,7 @@ export const wordBankEntries = sqliteTable("word_bank_entries", {
   language: text("language").notNull().default("en"),
   // Source book ID (optional)
   bookId: integer("book_id").references(() => books.id, { onDelete: "set null" }),
-  // SM-2 fields kept for backwards compat — NOT used by new SRS logic
+  // SM-2 fields kept for backwards compat · NOT used by new SRS logic
   easeFactor: real("ease_factor").notNull().default(2.5),
   // Repurposed as step index (0–6) into the fixed-interval progression
   interval: integer("interval").notNull().default(0),
@@ -346,7 +346,7 @@ export const wordBankEntries = sqliteTable("word_bank_entries", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-// ─── Workouts (archived gym system — data kept) ───────────────────────────────
+// ─── Workouts (archived gym system · data kept) ───────────────────────────────
 
 /** Named training programs (e.g. "Beta", "Alpha") */
 export const programs = sqliteTable("programs", {
@@ -376,7 +376,7 @@ export const workoutPlans = sqliteTable("workout_plans", {
   targetMuscles: text("target_muscles"), // JSON array: ["chest","triceps"] or null
 });
 
-/** Master exercise library — one row per unique movement */
+/** Master exercise library · one row per unique movement */
 export const exerciseDb = sqliteTable("exercise_db", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -395,7 +395,7 @@ export const exerciseDb = sqliteTable("exercise_db", {
   // How sets are tracked in the active session
   // "reps_weight" | "reps_only" | "time_weight" | "time_only" | "distance"
   trackingType: text("tracking_type").notNull().default("reps_weight"),
-  // Alternative group ID — exercises with the same group are interchangeable
+  // Alternative group ID · exercises with the same group are interchangeable
   alternativeGroupId: text("alternative_group_id"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
@@ -453,7 +453,7 @@ export const gymSets = sqliteTable("gym_sets", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Personal records per exercise — updated by import + live logging */
+/** Personal records per exercise · updated by import + live logging */
 export const exercisePrs = sqliteTable("exercise_prs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -492,9 +492,9 @@ export const checklistItems = sqliteTable("checklist_items", {
   /** Optional note shown under the title in the item row */
   notes: text("notes"),
   /**
-   * routine — part of the fixed daily routine (stretch, breathe, supplements…)
-   * habit   — a habit being built; tracked, but not counted in the day's streak until promoted
-   * manual  — a regular checklist item
+   * routine · part of the fixed daily routine (stretch, breathe, supplements…)
+   * habit   · a habit being built; tracked, but not counted in the day's streak until promoted
+   * manual  · a regular checklist item
    */
   kind: text("kind").notNull().default("manual"),
   /** Stable id for built-in routine steps (stretch | breathe | supp-am | supp-pm | read). */
@@ -535,7 +535,7 @@ export const weeklyReviews = sqliteTable("weekly_reviews", {
 
 // ─── Mood ─────────────────────────────────────────────────────────────────────
 
-/** Daily mood entries — one per user per day */
+/** Daily mood entries · one per user per day */
 export const moodEntries = sqliteTable("mood_entries", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -552,7 +552,7 @@ export const moodEntries = sqliteTable("mood_entries", {
 
 // ─── Sleep ────────────────────────────────────────────────────────────────────
 
-/** Daily sleep entries — one per user per day */
+/** Daily sleep entries · one per user per day */
 export const sleepEntries = sqliteTable("sleep_entries", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")
@@ -580,7 +580,7 @@ export const sleepEntries = sqliteTable("sleep_entries", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-/** Weekly AI coach card for the workouts module — one per user per week */
+/** Weekly AI coach card for the workouts module · one per user per week */
 export const workoutCoach = sqliteTable("workout_coach", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")

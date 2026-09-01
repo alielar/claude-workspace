@@ -1,5 +1,5 @@
 /**
- * YouTube videos for the daily brief — no API key, just each channel's public RSS feed.
+ * YouTube videos for the daily brief · no API key, just each channel's public RSS feed.
  *
  * Channels are picked per interest (spec §8a: "Claude picks per topic, shows the list once
  * for adjustment"). Ali can switch any of them off in Settings → News → YouTube channels.
@@ -11,17 +11,17 @@ import type { NewsCategory } from "@/lib/news-brief";
 export type YtChannel = { id: string; name: string; category: NewsCategory; why: string };
 
 export const YT_CHANNELS: YtChannel[] = [
-  // Football — Real Madrid + tactics; the Moroccan team surfaces through keywords on all football channels
-  { id: "UCWV3obpZVGgJ3j9FVhEjF2Q", name: "Real Madrid",        category: "football",    why: "official club channel — highlights, press, behind the scenes" },
+  // Football · Real Madrid + tactics; the Moroccan team surfaces through keywords on all football channels
+  { id: "UCWV3obpZVGgJ3j9FVhEjF2Q", name: "Real Madrid",        category: "football",    why: "official club channel · highlights, press, behind the scenes" },
   { id: "UCGYYNGmyhZ_kwBF_lqqXdAQ", name: "Tifo Football",      category: "football",    why: "tactics explained in 10 minutes, no noise" },
-  // Geopolitics — Morocco / MENA / world
+  // Geopolitics · Morocco / MENA / world
   { id: "UCwnKziETDbHJtx78nIkfYug", name: "CaspianReport",      category: "geopolitics", why: "calm geopolitical analysis, strong on MENA and energy" },
   { id: "UC-uhvujip5deVcEtLxnW8qg", name: "TLDR News Global",   category: "geopolitics", why: "world politics explained in plain language" },
   { id: "UCNye-wNBqNL5ZzHSJj3l8Bg", name: "Al Jazeera English", category: "geopolitics", why: "MENA-first coverage, Morocco appears here more than anywhere" },
   { id: "UCmGSJVG3mCRXVOP4yZrU1Dw", name: "Johnny Harris",      category: "geopolitics", why: "maps and stories behind the headlines" },
   // Tech & AI
   { id: "UCNJ1Ymd5yFuUPtn21xtRbbw", name: "AI Explained",       category: "tech",        why: "the most careful weekly read on new AI models and papers" },
-  { id: "UCsBjURrPoezykLs9EqgamOA", name: "Fireship",           category: "tech",        why: "dev news in 100 seconds — what shipped this week" },
+  { id: "UCsBjURrPoezykLs9EqgamOA", name: "Fireship",           category: "tech",        why: "dev news in 100 seconds · what shipped this week" },
   { id: "UChpleBmo18P08aKCIgti38g", name: "Matt Wolfe",         category: "tech",        why: "practical AI tools roundup for builders" },
   { id: "UCrDwWp7EBBv4NwvScIpBDOA", name: "Anthropic",          category: "tech",        why: "the company behind the models this app is built with" },
   { id: "UCBJycsmduvYEL83R_U4JriQ", name: "Marques Brownlee",   category: "tech",        why: "product launches, honest reviews" },

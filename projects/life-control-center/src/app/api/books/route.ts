@@ -1,6 +1,6 @@
 /**
- * GET  /api/books — the reading list (seeds the researched books once, by slug)
- * POST /api/books — add a book { title, author, isbn?, covers?, payoff? } (cover from Open Library when an ISBN is given)
+ * GET  /api/books · the reading list (seeds the researched books once, by slug)
+ * POST /api/books · add a book { title, author, isbn?, covers?, payoff? } (cover from Open Library when an ISBN is given)
  */
 
 import { NextResponse } from "next/server";
@@ -24,7 +24,7 @@ async function seed(userId: string) {
         coverUrl: b.coverUrl, covers: b.covers, payoff: b.payoff, pages: b.pages, year: b.year,
         status: "queue", sortOrder: b.sortOrder,
       });
-    } catch { /* raced — fine */ }
+    } catch { /* raced · fine */ }
   }
 }
 

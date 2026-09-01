@@ -1,5 +1,5 @@
 /**
- * <Icon name="..." /> — the small set of icons the shell needs.
+ * <Icon name="..." /> · the small set of icons the shell needs.
  * Each icon is a named import so unused ones never ship.
  */
 

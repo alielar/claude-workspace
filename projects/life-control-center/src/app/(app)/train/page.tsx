@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /train — the Train tab.
+ * /train · the Train tab.
  *   hero: the next workout (alternates W1 / W2), one big Start
  *   the other workout, one tap away
  *   weekly bests for Workout 1 (the game), number to beat
@@ -33,7 +33,7 @@ function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[
         <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{when}{s.finishedAt === null ? " · not finished" : ""}</span>
       </span>
       <span style={{ fontSize: 15, color: "var(--ink-2)", textAlign: "right" }}>
-        {s.workoutKey === "w1" ? `${s.rounds ?? 0} rounds` : setsDone !== null ? `${setsDone} sets` : "—"}
+        {s.workoutKey === "w1" ? `${s.rounds ?? 0} rounds` : setsDone !== null ? `${setsDone} sets` : "…"}
         {s.durationSeconds ? <span style={{ color: "var(--ink-4)" }}> · {fmtClock(s.durationSeconds)}</span> : null}
       </span>
     </div>
@@ -96,7 +96,7 @@ export default function TrainPage() {
 
       {restToday && (
         <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>
-          🛌 Rest day today{sched?.next ? ` — ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} is ${fmtScheduleDate(sched.next.date, today)}` : ""}. Training anyway is fine.
+          🛌 Rest day today{sched?.next ? ` · ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} is ${fmtScheduleDate(sched.next.date, today)}` : ""}. Training anyway is fine.
         </div>
       )}
 

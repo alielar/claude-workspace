@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * /journal — Three-question nightly journal.
- * Layout: 1fr / 320px — left: writing area + history; right: stats + yearly progress.
+ * /journal · Three-question nightly journal.
+ * Layout: 1fr / 320px · left: writing area + history; right: stats + yearly progress.
  * Persisted in localStorage until a backend is added.
  */
 
@@ -138,7 +138,7 @@ export default function JournalPage({ embedded = false }: { embedded?: boolean }
         </div>
       )}
 
-      {/* Status banner — shows dynamic current-time and tonight's progress */}
+      {/* Status banner · shows dynamic current-time and tonight's progress */}
       <div style={{
         padding: "16px 22px", border: "1px solid rgba(100,255,218,0.20)", borderRadius: 12,
         background: "rgba(100,255,218,0.04)",
@@ -269,7 +269,7 @@ export default function JournalPage({ embedded = false }: { embedded?: boolean }
                           </span>
                         </div>
                         <div style={{ fontFamily: "'EB Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-2)", lineHeight: 1.5 }}>
-                          "{preview.length > 100 ? preview.slice(0, 100) + "…" : (preview || "—")}"
+                          "{preview.length > 100 ? preview.slice(0, 100) + "…" : (preview || "…")}"
                         </div>
                         {isExpanded && (
                           <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>

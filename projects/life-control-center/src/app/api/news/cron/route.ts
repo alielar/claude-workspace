@@ -3,7 +3,7 @@
  * Called by Vercel Cron Jobs at 06:00 UTC daily (07:00 Madrid winter / 08:00 summer).
  * Protected by CRON_SECRET to prevent unauthorized triggering.
  *
- * Generates today's brief for every user. Idempotent — safe to call multiple times.
+ * Generates today's brief for every user. Idempotent · safe to call multiple times.
  */
 
 export const maxDuration = 60;
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Prune briefs older than 30 days (all users) — runs after generation so today's data is safe
+  // Prune briefs older than 30 days (all users) · runs after generation so today's data is safe
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 30);
   await db.delete(newsBriefs).where(lt(newsBriefs.createdAt, cutoff));

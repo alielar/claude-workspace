@@ -3,7 +3,7 @@
 /**
  * Sound, voice and vibration cues for timers.
  * Everything here is offline and needs no permission. The AudioContext must
- * be created from a user tap (iOS rule) — call `cues.arm()` in the Start handler.
+ * be created from a user tap (iOS rule) · call `cues.arm()` in the Start handler.
  */
 
 type Tone = { freq: number; ms: number; gap?: number };
@@ -21,7 +21,7 @@ class Cues {
       if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
       // A silent blip keeps the context "used" so iOS lets us play later.
       this.play([{ freq: 440, ms: 1 }], 0.0001);
-    } catch { /* no audio — vibration still works */ }
+    } catch { /* no audio · vibration still works */ }
   }
 
   setVoice(on: boolean) { this.voiceOn = on; }
@@ -69,7 +69,7 @@ class Cues {
     if (name) this.say(name);
   }
 
-  /** Rest begins. The next movement's name is NOT spoken here — it is announced
+  /** Rest begins. The next movement's name is NOT spoken here · it is announced
    * once, when the move actually starts (Ali, 2026-09-01: it was said twice). */
   rest(nextName?: string) {
     this.play([{ freq: 523, ms: 180 }]);

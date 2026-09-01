@@ -1,7 +1,7 @@
 /**
- * GET    /api/workouts/plans/[id]  — get one plan with exercises
- * PATCH  /api/workouts/plans/[id]  — update name/type/sortOrder
- * DELETE /api/workouts/plans/[id]  — delete plan
+ * GET    /api/workouts/plans/[id]  · get one plan with exercises
+ * PATCH  /api/workouts/plans/[id]  · update name/type/sortOrder
+ * DELETE /api/workouts/plans/[id]  · delete plan
  */
 
 import { NextRequest, NextResponse } from "next/server";

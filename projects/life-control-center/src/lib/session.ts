@@ -1,9 +1,9 @@
 /**
- * Signed session cookie — works in the proxy (edge) and in route handlers.
+ * Signed session cookie · works in the proxy (edge) and in route handlers.
  *
  * Format: base64url(JSON payload) + "." + base64url(HMAC-SHA256(payload, AUTH_SECRET)).
  * Payload: { e: email, i: issued ms, x: expires ms }. Lives 400 days (the browser maximum),
- * re-issued by the proxy when it is older than 30 days — so one sign-in lasts for good on
+ * re-issued by the proxy when it is older than 30 days · so one sign-in lasts for good on
  * a phone that opens the app regularly.
  */
 

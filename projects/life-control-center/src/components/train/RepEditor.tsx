@@ -79,7 +79,7 @@ export function RepEditor({ exercise, showSets, kettlebellKg, isNew = false, onS
 
         {draft.kettlebell ? (
           <div style={{ fontSize: 15, color: "var(--ink-3)", minHeight: 36, display: "flex", alignItems: "center" }}>
-            Kettlebell: {kettlebellKg} kg — change it in Settings
+            Kettlebell: {kettlebellKg} kg · change it in Settings
           </div>
         ) : (
           <Stepper label="Weight" value={draft.weightKg ?? 0} min={0} max={100} step={0.5} suffix=" kg"

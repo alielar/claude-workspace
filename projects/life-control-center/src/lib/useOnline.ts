@@ -14,7 +14,7 @@ function subscribe(cb: () => void) {
 const getSnapshot = () => navigator.onLine !== false;
 const getServerSnapshot = () => true;
 
-/** true when the phone has a connection (best effort — the browser's own signal). */
+/** true when the phone has a connection (best effort · the browser's own signal). */
 export function useOnline(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

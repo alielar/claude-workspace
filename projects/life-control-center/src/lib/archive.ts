@@ -1,5 +1,5 @@
 /**
- * Archived modules — code and data kept, UI out of the navigation.
+ * Archived modules · code and data kept, UI out of the navigation.
  *
  * Restore any of them in ONE step: add an entry to NAV in src/lib/navigation.ts
  * (the pages, API routes and database tables are all still live).

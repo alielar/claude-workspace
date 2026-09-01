@@ -1,8 +1,8 @@
 /**
- * POST /api/workouts/run-ingest — receives running data from Apple Shortcut.
- * No authentication — same pattern as /api/sleep/ingest.
+ * POST /api/workouts/run-ingest · receives running data from Apple Shortcut.
+ * No authentication · same pattern as /api/sleep/ingest.
  *
- * GET /api/workouts/run-ingest — debug: shows recent ingested runs.
+ * GET /api/workouts/run-ingest · debug: shows recent ingested runs.
  */
 
 import { NextRequest, NextResponse } from "next/server";

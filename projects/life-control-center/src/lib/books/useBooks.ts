@@ -20,7 +20,7 @@ export function useBooks() {
       startedAt: status === "reading" ? (b.startedAt ?? now) : status === "queue" ? null : b.startedAt,
       finishedAt: status === "finished" ? now : null,
     };
-    // Only one book is "reading" at a time — starting one sends the current one back to the queue.
+    // Only one book is "reading" at a time · starting one sends the current one back to the queue.
     setData((prev) => ({
       books: (prev?.books ?? []).map((b) =>
         status === "reading" && b.status === "reading" && b.id !== book.id ? { ...b, status: "queue" as BookStatus } : patch(b)
@@ -32,7 +32,7 @@ export function useBooks() {
         sendOrQueue({ url: `/api/books/${book.id}`, method: "PATCH", body: { status, startedAt: now, finishedAt: now }, dedupeKey: `book:${book.id}:status` }),
         ...others.map((o) => sendOrQueue({ url: `/api/books/${o.id}`, method: "PATCH", body: { status: "queue" }, dedupeKey: `book:${o.id}:status` })),
       ]);
-    } catch { /* server refused — next refresh shows the truth */ }
+    } catch { /* server refused · next refresh shows the truth */ }
   }, [setData, q.data]);
 
   const moveToTop = useCallback(async (book: Book) => {

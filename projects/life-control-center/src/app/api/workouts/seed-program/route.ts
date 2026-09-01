@@ -30,7 +30,7 @@ interface ExerciseDef {
 }
 
 interface PlanExerciseDef {
-  /** Exercise name — must match an ExerciseDef name */
+  /** Exercise name · must match an ExerciseDef name */
   name: string;
   sets: { type: string; repMin: number; repMax: number; restS: number }[];
 }
@@ -604,7 +604,7 @@ export async function POST(request: Request) {
       }
       return NextResponse.json({ success: true, message: "4-Day Split program already exists", programId: existing.id });
     }
-    // Wrong plan structure — delete and re-create
+    // Wrong plan structure · delete and re-create
     await db.delete(programs).where(eq(programs.id, existing.id));
   }
 
@@ -625,7 +625,7 @@ export async function POST(request: Request) {
     .values({
       userId,
       name: "4-Day Split",
-      description: "Push / Pull / Legs / Upper — Mon, Tue, Thu, Fri",
+      description: "Push / Pull / Legs / Upper · Mon, Tue, Thu, Fri",
       cycles: 7,
       isActive: true,
     })

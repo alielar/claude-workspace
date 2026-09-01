@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * /mood — Daily mood tracker. V2 Ambient Futurism design.
- * Layout: 1fr / 360px — left: today's scale + note + heatmap; right: stats + history.
+ * /mood · Daily mood tracker. V2 Ambient Futurism design.
+ * Layout: 1fr / 360px · left: today's scale + note + heatmap; right: stats + history.
  * Persisted in database via /api/mood.
  */
 
@@ -151,7 +151,7 @@ export default function MoodPage({ embedded = false }: { embedded?: boolean }) {
 
   // Stats
   const scored    = entries.slice(0, 30);
-  const avgScore  = scored.length > 0 ? (scored.reduce((s, e) => s + e.score, 0) / scored.length).toFixed(1) : "—";
+  const avgScore  = scored.length > 0 ? (scored.reduce((s, e) => s + e.score, 0) / scored.length).toFixed(1) : "…";
   const streak    = (() => {
     let s = 0;
     for (let i = 0; i < 30; i++) {

@@ -1,12 +1,12 @@
 /**
- * <SvgDefs /> — shared SVG gradient definitions.
+ * <SvgDefs /> · shared SVG gradient definitions.
  * Rendered once at root level; referenced by id throughout the app.
  *
  * Available IDs:
- *   ccGradStroke  — horizontal violet→cyan (for strokes)
- *   ccGradFill    — vertical violet→transparent (for fills)
- *   ccGradFillCyan — vertical cyan→transparent (for fills)
- *   ccRingGrad    — diagonal violet→cyan (for rings/circles)
+ *   ccGradStroke  · horizontal violet→cyan (for strokes)
+ *   ccGradFill    · vertical violet→transparent (for fills)
+ *   ccGradFillCyan · vertical cyan→transparent (for fills)
+ *   ccRingGrad    · diagonal violet→cyan (for rings/circles)
  */
 
 export function SvgDefs() {

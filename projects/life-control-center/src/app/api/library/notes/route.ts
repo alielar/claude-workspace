@@ -1,9 +1,9 @@
 /**
- * GET /api/library/notes — list reading notes
- *   ?bookId=X — filter by book
- *   ?due=true — only notes due for review
+ * GET /api/library/notes · list reading notes
+ *   ?bookId=X · filter by book
+ *   ?due=true · only notes due for review
  *
- * POST /api/library/notes — create a reading note
+ * POST /api/library/notes · create a reading note
  *   Body: { bookId?, pageNumber?, content }
  */
 

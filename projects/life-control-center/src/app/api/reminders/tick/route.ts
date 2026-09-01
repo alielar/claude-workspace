@@ -7,11 +7,11 @@ import { checklistToday } from "@/lib/checklist/day";
 import { sendToUser } from "@/lib/push/server";
 
 /**
- * GET /api/reminders/tick?key=APP_KEY — "nag until done" (spec §7c item 3).
+ * GET /api/reminders/tick?key=APP_KEY · "nag until done" (spec §7c item 3).
  *
  * Called every 5 minutes by an external pinger (Vercel's free cron only runs daily).
  * Finds tasks that are due and not done, and re-sends one notification per list
- * (Personal / Work) at each task's own cadence (5/10/15/30 min — default 30) until ticked. Quiet 23:00–08:00 (Madrid).
+ * (Personal / Work) at each task's own cadence (5/10/15/30 min · default 30) until ticked. Quiet 23:00–08:00 (Madrid).
  *
  *  due = a date with a time → once the time has passed;
  *        a date with no time → from 14:00 that day ("evening" tasks from 19:00);

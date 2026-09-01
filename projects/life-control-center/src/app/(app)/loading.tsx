@@ -1,5 +1,5 @@
 /**
- * App-level loading skeleton — shown during page navigation suspense.
+ * App-level loading skeleton · shown during page navigation suspense.
  * Minimal shimmer to avoid jarring ghost cards on fast navigations.
  */
 export default function AppLoading() {

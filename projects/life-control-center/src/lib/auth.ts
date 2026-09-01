@@ -1,5 +1,5 @@
 /**
- * Auth — one user, optional Google sign-in.
+ * Auth · one user, optional Google sign-in.
  *
  * All API routes call `const session = await auth()` and read `session.user.id`.
  *  - Login off (AUTH_REQUIRED unset): always resolves to the one DB user (as before).
@@ -17,7 +17,7 @@ type Session = {
 
 export async function auth(): Promise<Session | null> {
   const userId = await getUserId();
-  if (!userId) return null; // no user in DB yet — graceful degradation
+  if (!userId) return null; // no user in DB yet · graceful degradation
   let email = (process.env.USER_EMAIL ?? "ali@control.center").split(",")[0].trim();
   if (authRequired()) {
     const h = await headers();

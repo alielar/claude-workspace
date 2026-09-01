@@ -31,7 +31,7 @@ export function useWorkouts() {
         body: { key: w.key, exercises: w.exercises, restSeconds: w.restSeconds, amrapMinutes: w.amrapMinutes, assignedDays: w.assignedDays ?? [] },
         dedupeKey: `train-workout:${w.key}`,
       });
-    } catch { /* server refused — next refresh shows the truth */ }
+    } catch { /* server refused · next refresh shows the truth */ }
   }, [setData]);
 
   return { workouts, loading, saveWorkout, refresh };
@@ -78,7 +78,7 @@ export async function saveSession(s: TrainSession) {
       body: s,
       dedupeKey: `train-session:${s.clientId}`,
     });
-  } catch { /* server refused — kept locally in the overview until next refresh */ }
+  } catch { /* server refused · kept locally in the overview until next refresh */ }
 }
 
 export function workoutByKey(workouts: TrainWorkout[], key: WorkoutKey): TrainWorkout {

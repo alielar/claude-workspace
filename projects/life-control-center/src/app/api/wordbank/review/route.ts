@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Word not found" }, { status: 404 });
   }
 
-  // Compute new SRS state — `interval` column stores step index (0–6)
+  // Compute new SRS state · `interval` column stores step index (0–6)
   const result = srsReview(
     button as SrsButton,
     entry.interval,           // step index

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Linkify — renders URLs inside any user text as real tappable links.
+ * Linkify · renders URLs inside any user text as real tappable links.
  * Used everywhere user-written text is displayed: to-do titles, list items,
  * checklist steps. Links always open externally (spec gate 6) and stop the
  * tap from also triggering the row underneath.
@@ -35,7 +35,7 @@ export function Linkify({ text }: { text: string }) {
   );
 }
 
-/** Compact tappable chips for every URL found in a block of text — shown under
+/** Compact tappable chips for every URL found in a block of text · shown under
  * textareas (task notes, docs), where the text itself cannot hold live links. */
 export function LinkChips({ text }: { text: string | null }) {
   const urls = Array.from(new Set((text ?? "").match(URL_RE) ?? [])).slice(0, 8);

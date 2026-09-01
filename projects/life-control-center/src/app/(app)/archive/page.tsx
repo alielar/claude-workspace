@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ARCHIVE } from "@/lib/archive";
 
-/** /archive — the old modules, still working, out of the way. */
+/** /archive · the old modules, still working, out of the way. */
 export default function ArchivePage() {
   return (
     <div style={{ display: "grid", gap: 18, maxWidth: 560 }}>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 /**
- * /login — the only page shown to someone who isn't signed in.
+ * /login · the only page shown to someone who isn't signed in.
  * One button. After a successful sign-in the cookie lasts 400 days and is renewed on use.
  */
 
@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </svg>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: "0.18em" }}>A L I</h1>
-          <p style={{ margin: "6px 0 0", fontSize: 15, color: "var(--ink-3)" }}>Private. Sign in once — it stays signed in.</p>
+          <p style={{ margin: "6px 0 0", fontSize: 15, color: "var(--ink-3)" }}>Private. Sign in once · it stays signed in.</p>
         </div>
         {error && <p role="alert" style={{ margin: 0, fontSize: 15, color: "var(--neg)", lineHeight: 1.45 }}>{ERRORS[error] ?? "Something went wrong. Please try again."}</p>}
         <a href="/api/auth/google" className="cc-btn cc-btn-primary" style={{ minHeight: 52, fontSize: 17, borderRadius: 14, textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10 }}>

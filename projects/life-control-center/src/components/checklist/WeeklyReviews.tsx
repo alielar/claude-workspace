@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WeeklyReviews — collapsible card showing past AI-generated weekly pattern observations.
+ * WeeklyReviews · collapsible card showing past AI-generated weekly pattern observations.
  * Fetches from /api/checklist/weekly-reviews on mount.
  */
 

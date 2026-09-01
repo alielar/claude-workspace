@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /knowledge — Knowledge Bank. Notes saved from reading sessions.
+ * /knowledge · Knowledge Bank. Notes saved from reading sessions.
  * Browsable, searchable reference material with SRS review drill.
  */
 
@@ -156,7 +156,7 @@ export default function KnowledgeBankPage({ embedded = false }: { embedded?: boo
           <div style={{ fontSize: 12, color: "var(--ink-4)" }}>
             {search
               ? "Try a different search term"
-              : "Open a book in the Library and save notes while reading — they'll appear here."}
+              : "Open a book in the Library and save notes while reading · they'll appear here."}
           </div>
         </div>
       ) : (
@@ -250,7 +250,7 @@ export default function KnowledgeBankPage({ embedded = false }: { embedded?: boo
               </div>
               <div style={{ fontSize: 12, color: "var(--ink-4)", marginBottom: 28 }}>
                 {dueNotes.length > 0
-                  ? `${dueNotes.length} note${dueNotes.length !== 1 ? "s" : ""} still due — some were marked "Again".`
+                  ? `${dueNotes.length} note${dueNotes.length !== 1 ? "s" : ""} still due · some were marked "Again".`
                   : "All caught up! Check back tomorrow."}
               </div>
               <button className="cc-btn cc-btn-primary" onClick={closeDrill} style={{ padding: "12px 28px", fontSize: 14 }}>

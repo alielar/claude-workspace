@@ -1,6 +1,6 @@
 /**
- * GET /api/news/archive          — list of saved briefs (last 30 days), newest first
- * GET /api/news/archive?date=... — full brief for a specific YYYY-MM-DD date
+ * GET /api/news/archive          · list of saved briefs (last 30 days), newest first
+ * GET /api/news/archive?date=... · full brief for a specific YYYY-MM-DD date
  *
  * DB-only reads. Zero Anthropic API calls.
  */

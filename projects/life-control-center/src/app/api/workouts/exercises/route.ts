@@ -1,6 +1,6 @@
 /**
- * GET  /api/workouts/exercises  — list all exercises in the library
- * POST /api/workouts/exercises  — add a new exercise
+ * GET  /api/workouts/exercises  · list all exercises in the library
+ * POST /api/workouts/exercises  · add a new exercise
  */
 
 import { NextRequest, NextResponse } from "next/server";

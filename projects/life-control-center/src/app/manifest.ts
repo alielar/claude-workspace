@@ -1,14 +1,14 @@
 import type { MetadataRoute } from "next";
 
 /**
- * Web app manifest — makes the app installable on the iPhone home screen.
+ * Web app manifest · makes the app installable on the iPhone home screen.
  * Icons are generated at build time by /icon-192.png and /icon-512.png routes.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "A L I",
     short_name: "A L I",
-    description: "Ali's day — routine, training, to-do, news",
+    description: "Ali's day · routine, training, to-do, news",
     id: "/today",
     start_url: "/today",
     scope: "/",

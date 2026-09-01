@@ -8,7 +8,7 @@
  *
  * Storage is localStorage for now: synchronous, tiny payloads, zero setup.
  * If a module ever needs more than a few hundred KB, swap the two functions
- * below for IndexedDB — nothing else changes.
+ * below for IndexedDB · nothing else changes.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,7 +30,7 @@ export function writeCache<T>(key: string, data: T): void {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify({ savedAt: Date.now(), data }));
   } catch {
-    /* storage full or unavailable — the app still works, just without offline data */
+    /* storage full or unavailable · the app still works, just without offline data */
   }
 }
 
@@ -50,7 +50,7 @@ type State<T> = {
 };
 
 /**
- * useCached — read the local copy instantly, then fetch fresh data.
+ * useCached · read the local copy instantly, then fetch fresh data.
  *
  *   const { data, setData, refresh } = useCached("checklist", () => fetchJson("/api/checklist"));
  *
@@ -133,7 +133,7 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
 export async function fetchJson<T>(url: string): Promise<T | null> {
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (res.status === 401 && typeof window !== "undefined" && !location.pathname.startsWith("/login")) {
-    // Signed out (login is on and the cookie is gone) — go sign in once.
+    // Signed out (login is on and the cookie is gone) · go sign in once.
     location.assign("/login");
   }
   if (!res.ok) return null;

@@ -18,10 +18,10 @@ function toStr(v: unknown): string | null {
 }
 
 /**
- * POST /api/sleep/ingest — receives sleep data from Apple Shortcut.
- * No authentication — security by obscurity (personal use only).
+ * POST /api/sleep/ingest · receives sleep data from Apple Shortcut.
+ * No authentication · security by obscurity (personal use only).
  *
- * GET /api/sleep/ingest — health check for debugging shortcut connectivity.
+ * GET /api/sleep/ingest · health check for debugging shortcut connectivity.
  */
 export async function GET() {
   // Show the most recent apple_health entries so you can verify the shortcut is working
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
   const raw = JSON.stringify(body);
 
-  // Extract and coerce fields — Apple Shortcuts can send numbers as strings
+  // Extract and coerce fields · Apple Shortcuts can send numbers as strings
   const date = toStr(body.date);
   const bedtime = toStr(body.bedtime);
   const wake_time = toStr(body.wake_time);
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   const blood_oxygen_avg = toNum(body.blood_oxygen_avg);
   const sleep_score = toNum(body.sleep_score);
 
-  // date is required — accept YYYY-MM-DD or other formats
+  // date is required · accept YYYY-MM-DD or other formats
   if (!date) {
     return NextResponse.json({ error: "date is required", received: body }, { status: 400 });
   }
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   if (date.includes("T")) {
     normalizedDate = date.split("T")[0];
   } else if (date.includes("/")) {
-    // Handle MM/DD/YYYY or DD/MM/YYYY — try to parse
+    // Handle MM/DD/YYYY or DD/MM/YYYY · try to parse
     const d = new Date(date);
     if (!isNaN(d.getTime())) {
       normalizedDate = d.toISOString().split("T")[0];

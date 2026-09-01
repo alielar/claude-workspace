@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /settings — the few things worth a setting.
+ * /settings · the few things worth a setting.
  *
  *  1. Appearance: follow phone / light / dark
  *  2. News topics
@@ -56,7 +56,7 @@ const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
   { key: "system", label: "Automatic", hint: "Follows the phone" },
   { key: "light",  label: "Light",     hint: "" },
   { key: "dark",   label: "Dark",      hint: "" },
-  { key: "night",  label: "Night",     hint: "Warm — less blue light" },
+  { key: "night",  label: "Night",     hint: "Warm · less blue light" },
 ];
 
 function parseTopics(s: string | undefined): string[] {
@@ -142,12 +142,12 @@ export default function SettingsPage() {
   const togglePush = async () => {
     setPushMsg(null);
     try { setPush(push === "on" ? await disablePush() : await enablePush()); }
-    catch { setPushMsg("Couldn't turn reminders on — try again in a moment."); }
+    catch { setPushMsg("Couldn't turn reminders on · try again in a moment."); }
   };
   const testPush = async () => {
     setPushMsg("Sending…");
     const r = await fetch("/api/push/test", { method: "POST" }).then((x) => x.json()).catch(() => null) as { sent?: number } | null;
-    setPushMsg(r?.sent ? "Sent — it should appear in a few seconds." : "Nothing sent — is this device subscribed?");
+    setPushMsg(r?.sent ? "Sent · it should appear in a few seconds." : "Nothing sent · is this device subscribed?");
   };
   const { data: me } = useCached<{ required: boolean; email: string | null }>("auth-me", () => fetchJson("/api/auth/me"));
 
@@ -252,7 +252,7 @@ export default function SettingsPage() {
 
       {/* News topics */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">News topics</span><span className="tail">{settings ? `${topics.length} on` : "—"}</span></div>
+        <div className="cc-card-head"><span className="title">News topics</span><span className="tail">{settings ? `${topics.length} on` : "…"}</span></div>
         <div style={{ padding: "4px 14px" }}>
           {NEWS_TOPICS.map((t, i) => {
             const on = topics.includes(t.key);
@@ -290,7 +290,7 @@ export default function SettingsPage() {
       <section className="cc-card">
         <button onClick={() => setShowChannels((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showChannels ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
           <span className="title">YouTube channels in the brief</span>
-          <span className="tail">{settings ? `${channels.filter((id) => YT_CHANNELS.some((c) => c.id === id)).length} of ${YT_CHANNELS.length} on` : "—"} {showChannels ? "▴" : "▾"}</span>
+          <span className="tail">{settings ? `${channels.filter((id) => YT_CHANNELS.some((c) => c.id === id)).length} of ${YT_CHANNELS.length} on` : "…"} {showChannels ? "▴" : "▾"}</span>
         </button>
         {showChannels && (
           <div style={{ padding: "4px 14px 10px" }}>
@@ -319,7 +319,7 @@ export default function SettingsPage() {
         )}
       </section>
 
-      {/* Stretching player — a second door, so it is reachable even when the Today row is ticked */}
+      {/* Stretching player · a second door, so it is reachable even when the Today row is ticked */}
       <Link href="/stretch" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
           <span>
@@ -355,10 +355,10 @@ export default function SettingsPage() {
 
       {/* Reminders */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "—" : "off"}</span></div>
+        <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "…" : "off"}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
           <p style={{ margin: 0 }}>A to-do that’s due and not ticked gets a notification every 30 minutes until you tick it. Quiet from 23:00 to 08:00. Personal and Work nag separately.</p>
-          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app — add A L I to the home screen first, then come back here.</p>}
+          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app · add A L I to the home screen first, then come back here.</p>}
           {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Notifications are blocked for this app in iOS Settings → Notifications → A L I.</p>}
           {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>This browser can’t receive notifications.</p>}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

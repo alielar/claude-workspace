@@ -6,7 +6,7 @@ import type { ChecklistData, ChecklistItem } from "@/lib/checklist/types";
 import { badgeCount, type Todo } from "@/lib/todo/types";
 
 /**
- * GET /api/widget — one small JSON for the home-screen widget (Scriptable).
+ * GET /api/widget · one small JSON for the home-screen widget (Scriptable).
  *
  * iOS gives widgets to native apps only, so a Scriptable script (public/widget.js)
  * fetches this every few minutes and draws a 2×2 tile. Kept tiny and flat on purpose:
@@ -42,7 +42,7 @@ export async function GET() {
     .map((i) => ({ title: i.title, emoji: i.emoji }));
 
   // Lock-screen widget (option 4 "List"): the three most urgent tasks.
-  // Overdue first (oldest first), then today's — timed by time, evening-untimed last.
+  // Overdue first (oldest first), then today's · timed by time, evening-untimed last.
   const urgent = todos
     .filter((t) => !t.deleted && !t.doneAt && !t.someday && (t.area ?? "personal") !== "list" && t.dueDate !== null && t.dueDate <= today)
     .sort((a, b) => {

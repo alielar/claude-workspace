@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * /news — Daily Brief, phone first (Phase 6 upgrade).
+ * /news · Daily Brief, phone first (Phase 6 upgrade).
  *
- *   WORTH YOUR TIME — the standout story of each interest (keyword-matched to Ali's interests)
- *   VIDEOS          — fresh uploads from the chosen YouTube channels (2 per interest), open in the YouTube app
- *   BY INTEREST     — Geopolitics · Business · Tech & AI · Football, 5 stories each, tap to expand
+ *   WORTH YOUR TIME · the standout story of each interest (keyword-matched to Ali's interests)
+ *   VIDEOS          · fresh uploads from the chosen YouTube channels (2 per interest), open in the YouTube app
+ *   BY INTEREST     · Geopolitics · Business · Tech & AI · Football, 5 stories each, tap to expand
  *
  * Generated once a day by the 06:00 cron (RSS + YouTube feeds, AI summaries). Cached on the phone:
  * the last brief shows instantly and offline; Refresh is the only manual trigger.
@@ -160,7 +160,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {/* Expanded: Summary + key points + deep dive + source */}
       {open && (
         <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
-          {/* Deep dive analysis — pre-generated or fetched on expand */}
+          {/* Deep dive analysis · pre-generated or fetched on expand */}
           {loadingDive && (
             <div style={{ fontSize: 13, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 14 }}>⟳</span>
@@ -373,7 +373,7 @@ function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
 
 export default function NewsPage() {
   // Local-first: the last brief shows instantly (also offline); a fresh copy
-  // is fetched in the background. Nothing is generated on open — the 06:00
+  // is fetched in the background. Nothing is generated on open · the 06:00
   // cron does that; the Refresh button is the only manual trigger.
   const { data: brief, loading, stale, setData: setBrief } = useCached<NewsBrief>(
     "news-brief",
@@ -554,7 +554,7 @@ export default function NewsPage() {
         <section key={col.id} className="cc-card">
           <div className="cc-card-head">
             <span className="title" style={{ color: col.color }}>{col.label}</span>
-            <span className="tail">{displayedLoading ? "—" : `${col.stories.length} stories`}</span>
+            <span className="tail">{displayedLoading ? "…" : `${col.stories.length} stories`}</span>
           </div>
           <div style={{ padding: "0 16px" }}>
             {displayedLoading ? <ColumnSkeleton /> : col.stories.length === 0 ? (

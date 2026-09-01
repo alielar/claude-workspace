@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { sleepEntries } from "@/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
-/** GET /api/sleep/logs — returns last 90 days of sleep records with all columns */
+/** GET /api/sleep/logs · returns last 90 days of sleep records with all columns */
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -21,7 +21,7 @@ export async function GET() {
   return NextResponse.json(rows);
 }
 
-/** POST /api/sleep/logs — quick manual log (bedtime + wake) */
+/** POST /api/sleep/logs · quick manual log (bedtime + wake) */
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {

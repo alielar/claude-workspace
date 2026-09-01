@@ -1,5 +1,5 @@
 /**
- * News Brief Generator — free RSS-based approach.
+ * News Brief Generator · free RSS-based approach.
  *
  * Fetches headlines from curated RSS feeds across 4 topic pillars,
  * filtered by Ali's interests. Zero API cost.
@@ -31,7 +31,7 @@ export type NewsStory = {
   category: NewsCategory | "ai" | "other";
   source?: string;
   deepDive?: DeepDive;
-  /** The standout item of its interest — shown first as "Worth your time". */
+  /** The standout item of its interest · shown first as "Worth your time". */
   featured?: boolean;
   /** Keyword relevance at generation time (higher = closer to Ali's interests). */
   score?: number;
@@ -52,12 +52,12 @@ export type NewsBrief = {
 type FeedConfig = {
   url: string;
   category: NewsCategory;
-  /** Keywords to boost relevance (optional — if empty, all items are included) */
+  /** Keywords to boost relevance (optional · if empty, all items are included) */
   keywords?: string[];
 };
 
 const FEEDS: FeedConfig[] = [
-  // Football — Real Madrid, Morocco national team, Champions League (World Cup coverage removed)
+  // Football · Real Madrid, Morocco national team, Champions League (World Cup coverage removed)
   { url: "https://www.goal.com/feeds/en/news", category: "football" },
   { url: "https://www.football-espana.net/feed", category: "football" },
   { url: "https://www.marca.com/en/rss/football.xml", category: "football" },
@@ -66,19 +66,19 @@ const FEEDS: FeedConfig[] = [
   { url: "https://www.reuters.com/sports/soccer/rss", category: "football", keywords: ["morocco", "atlas lions", "hakimi", "regragui", "real madrid", "africa cup", "afcon"] },
   { url: "https://www.skysports.com/rss/12040", category: "football" },
 
-  // Geopolitics — Morocco politics, MENA, world affairs
+  // Geopolitics · Morocco politics, MENA, world affairs
   { url: "https://moroccoworldnews.com/feed", category: "geopolitics", keywords: ["morocco", "rabat", "casablanca", "fes", "marrakech", "king mohammed", "atlas", "sahara", "mena", "government", "parliament", "minister"] },
   { url: "https://feeds.bbci.co.uk/news/world/africa/rss.xml", category: "geopolitics" },
   { url: "https://feeds.bbci.co.uk/news/world/rss.xml", category: "geopolitics" },
   { url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", category: "geopolitics" },
   { url: "https://www.aljazeera.com/xml/rss/all.xml", category: "geopolitics" },
 
-  // Business — markets, companies, economics
+  // Business · markets, companies, economics
   { url: "https://feeds.bbci.co.uk/news/business/rss.xml", category: "business" },
   { url: "https://www.cnbc.com/id/100003114/device/rss/rss.html", category: "business" },
   { url: "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", category: "business" },
 
-  // Tech & AI — product launches, AI research, industry shifts
+  // Tech & AI · product launches, AI research, industry shifts
   { url: "https://feeds.arstechnica.com/arstechnica/index", category: "tech" },
   { url: "https://www.theverge.com/rss/index.xml", category: "tech" },
   { url: "https://techcrunch.com/feed/", category: "tech" },
@@ -102,7 +102,7 @@ interface RSSItem {
   pubDate: string;
 }
 
-/** Minimal XML tag extractor — no dependency needed */
+/** Minimal XML tag extractor · no dependency needed */
 function extractTag(xml: string, tag: string): string {
   const re = new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>|<${tag}[^>]*>([\\s\\S]*?)</${tag}>`);
   const m = xml.match(re);
@@ -149,7 +149,7 @@ function stripHtml(s: string): string {
       .replace(/&apos;/g, "'")
       .replace(/&nbsp;/g, " ")
       .replace(/&ndash;/g, "–")
-      .replace(/&mdash;/g, "—")
+      .replace(/&mdash;/g, "…")
       .replace(/&lsquo;/g, "\u2018")
       .replace(/&rsquo;/g, "\u2019")
       .replace(/&ldquo;/g, "\u201C")
@@ -197,7 +197,7 @@ async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; cate
   }
 }
 
-/** Interests Ali removed — a story about these never makes the brief. */
+/** Interests Ali removed · a story about these never makes the brief. */
 const EXCLUDE_KEYWORDS = ["world cup"];
 
 function isExcluded(story: NewsStory): boolean {
@@ -218,7 +218,7 @@ export function relevanceScore(story: NewsStory): number {
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
-/** Generate a daily news brief from RSS feeds — zero API cost */
+/** Generate a daily news brief from RSS feeds · zero API cost */
 export async function generateNewsBrief(date: string): Promise<NewsBrief> {
   // Fetch all feeds in parallel
   const results = await Promise.all(FEEDS.map(fetchFeed));

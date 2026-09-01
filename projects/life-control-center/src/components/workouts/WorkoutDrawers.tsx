@@ -133,7 +133,7 @@ export default function WorkoutDrawers({ mode = "pills" }: { mode?: "pills" | "c
               </button>
             </div>
 
-            {/* Panel content — keep mounted panels alive for caching */}
+            {/* Panel content · keep mounted panels alive for caching */}
             <Suspense fallback={
               <div style={{ padding: "40px 24px", color: "var(--ink-4)", fontSize: 13, fontFamily: "var(--f-mono)" }}>
                 Loading {DRAWER_TITLES[open]}...

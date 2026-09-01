@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MobileNav — fixed bottom tab bar, phone only (hidden ≥768px via CSS).
+ * MobileNav · fixed bottom tab bar, phone only (hidden ≥768px via CSS).
  *
  * Feels instant: navigation fires on touchstart (not on the click that iOS
  * delivers ~later), and you can keep the finger down and SLIDE across the bar —
@@ -30,7 +30,7 @@ export function MobileNav() {
     const nav = navRef.current;
     if (!nav) return null;
     const r = nav.getBoundingClientRect();
-    if (clientY < r.top - 24) return null; // finger slid up and away — stop switching
+    if (clientY < r.top - 24) return null; // finger slid up and away · stop switching
     const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>("a[data-href]"));
     for (const a of links) {
       const b = a.getBoundingClientRect();
@@ -55,7 +55,7 @@ export function MobileNav() {
     go(hrefAt(t.clientX, t.clientY));
   };
   const onTouchEnd = (e: React.TouchEvent) => {
-    // We already navigated on touchstart/move — swallow the synthetic click.
+    // We already navigated on touchstart/move · swallow the synthetic click.
     e.preventDefault();
     lastHref.current = null;
   };

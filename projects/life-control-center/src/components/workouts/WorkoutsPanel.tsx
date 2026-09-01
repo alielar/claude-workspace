@@ -752,7 +752,7 @@ export default function WorkoutsPanel() {
         </div>
       )}
 
-      {/* ── Edit panel — full-panel overlay when editing ──────────────────── */}
+      {/* ── Edit panel · full-panel overlay when editing ──────────────────── */}
       {editingId !== null && (
         <div>
           {/* Back header */}
@@ -950,7 +950,7 @@ export default function WorkoutsPanel() {
         </div>
       )}
 
-      {/* ── Workout list — hidden when editing ────────────────────────────── */}
+      {/* ── Workout list · hidden when editing ────────────────────────────── */}
       {editingId === null && (loading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[1, 2].map((i) => (

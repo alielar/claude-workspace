@@ -25,7 +25,7 @@ interface RunLog {
 interface MonthCalendarProps {
   /** Sessions for the initial month (from server) */
   initialSessions: MonthSession[];
-  /** Days assigned to any template (["mon","thu"]) — for planned-day markers */
+  /** Days assigned to any template (["mon","thu"]) · for planned-day markers */
   assignedDays: string[];
   /** Today in Madrid timezone (YYYY-MM-DD) */
   today: string;
@@ -81,7 +81,7 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
 
   const [fetchError, setFetchError] = useState(false);
 
-  // Load run logs once on mount — we only need the dates
+  // Load run logs once on mount · we only need the dates
   useEffect(() => {
     fetch("/api/workouts/run-logs")
       .then((r) => r.json())
@@ -293,7 +293,7 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
                     <path d="M1 4L3.5 6.5L9 1" stroke="var(--pos)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
-                {/* Run tick (cyan) — only if no gym session on same day */}
+                {/* Run tick (cyan) · only if no gym session on same day */}
                 {hasRun && !hasSession && (
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none" style={{ flexShrink: 0 }}>
                     <path d="M1 4L3.5 6.5L9 1" stroke="var(--cyan)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -420,7 +420,7 @@ export default function MonthCalendar({ initialSessions, assignedDays, today, up
               </div>
             ) : (
               <div style={{ fontSize: 12, color: "var(--ink-4)", textAlign: "center", padding: "20px 0" }}>
-                —
+                …
               </div>
             )}
           </div>

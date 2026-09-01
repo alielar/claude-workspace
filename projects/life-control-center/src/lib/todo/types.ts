@@ -2,11 +2,11 @@
  * To-do (spec §4.5). Simple by default, personalisable when wanted.
  *
  * Borrowed ideas (researched: Things, Todoist, TickTick, Notion):
- *  - Things:  "Today / This evening / Anytime / Someday" — schedule by intent, not just by date.
+ *  - Things:  "Today / This evening / Anytime / Someday" · schedule by intent, not just by date.
  *  - Todoist: one quick-add line that understands dates ("tomorrow 9am", "fri", "next week"),
- *             "#project" and "!!" priority — nothing to tap through.
+ *             "#project" and "!!" priority · nothing to tap through.
  *  - TickTick: one-tap defer ("tomorrow", "weekend") from the list.
- *  Ignored on purpose: databases, sub-tasks, sharing, filters — convenience, not a database.
+ *  Ignored on purpose: databases, sub-tasks, sharing, filters · convenience, not a database.
  *
  * Reminders = a due date (+ optional time). The phone shows a home-screen badge with the
  * number due today (iOS 16.4+ web app badge). Push notifications come in Phase 7.
@@ -14,7 +14,7 @@
 
 export type Priority = 0 | 1 | 2; // none · important · urgent
 
-/** Work and Personal are tasks; "list" entries are kept things — running lists
+/** Work and Personal are tasks; "list" entries are kept things · running lists
  * and notes (spec §7c item 7): no buckets, no nagging unless given a reminder date. */
 export type Area = "work" | "personal" | "list";
 export const AREAS: { key: Area; label: string }[] = [
@@ -25,19 +25,19 @@ export const AREAS: { key: Area; label: string }[] = [
 export type Todo = {
   clientId: string;            // generated on the phone, makes every write idempotent
   title: string;
-  area: Area;                  // work | personal — each list has its own due counts and reminders
+  area: Area;                  // work | personal · each list has its own due counts and reminders
   notes: string | null;
   project: string | null;      // free-form "#tag", lower-case
-  dueDate: string | null;      // YYYY-MM-DD (Europe/Madrid day) — null = Anytime / Someday
+  dueDate: string | null;      // YYYY-MM-DD (Europe/Madrid day) · null = Anytime / Someday
   dueTime: string | null;      // HH:MM
-  evening: boolean;            // "This evening" (Things) — shown in the evening block of that day
+  evening: boolean;            // "This evening" (Things) · shown in the evening block of that day
   nagMinutes?: number | null;  // reminder nag cadence in minutes (5/10/15/30); empty = 30
   someday: boolean;            // parked, out of the way
   priority: Priority;
   sortOrder: number;
   doneAt: number | null;       // ms
   createdAt: number;           // ms
-  updatedAt: number;           // ms — last-writer-wins on the server
+  updatedAt: number;           // ms · last-writer-wins on the server
   deleted: boolean;            // soft delete so an offline replay never resurrects it
 };
 

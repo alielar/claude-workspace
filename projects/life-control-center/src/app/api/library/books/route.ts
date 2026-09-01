@@ -1,8 +1,8 @@
 /**
- * GET  /api/library/books — all books for the user, enriched with:
+ * GET  /api/library/books · all books for the user, enriched with:
  *   - currentPage + progress % from reading_progress
  *   - annotationCount from annotations
- * POST /api/library/books — create a new book
+ * POST /api/library/books · create a new book
  */
 
 import { NextRequest, NextResponse } from "next/server";

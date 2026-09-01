@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /train/w2 — Workout 2: straight sets, a checklist.
+ * /train/w2 · Workout 2: straight sets, a checklist.
  *
  *   - every exercise shows its sets as big bubbles; tap a bubble = set done
  *   - a set done starts the rest timer (sticky bar at the bottom, skip anytime)

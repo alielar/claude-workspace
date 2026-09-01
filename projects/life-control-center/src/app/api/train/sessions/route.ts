@@ -1,6 +1,6 @@
 /**
- * GET  /api/train/sessions — overview: recent sessions, weekly AMRAP bests, next workout, number to beat
- * POST /api/train/sessions — save a session (upsert by clientId → safe to replay offline)
+ * GET  /api/train/sessions · overview: recent sessions, weekly AMRAP bests, next workout, number to beat
+ * POST /api/train/sessions · save a session (upsert by clientId → safe to replay offline)
  */
 
 import { NextResponse } from "next/server";

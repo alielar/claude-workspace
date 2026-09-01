@@ -1,6 +1,6 @@
 /**
- * PATCH  /api/workouts/plan-exercises/[id]  — update sortOrder or setConfig
- * DELETE /api/workouts/plan-exercises/[id]  — remove exercise from plan
+ * PATCH  /api/workouts/plan-exercises/[id]  · update sortOrder or setConfig
+ * DELETE /api/workouts/plan-exercises/[id]  · remove exercise from plan
  */
 
 import { NextRequest, NextResponse } from "next/server";

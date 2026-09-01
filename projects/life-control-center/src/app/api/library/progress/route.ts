@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     .where(eq(readingProgress.bookId, bookId))
     .limit(1);
 
-  // Build the update payload — only include bookmark fields when provided
+  // Build the update payload · only include bookmark fields when provided
   const updatePayload: Record<string, unknown> = { currentPage, lastReadAt: new Date() };
   if (bookmarkText !== undefined) updatePayload.bookmarkText = bookmarkText;
   if (bookmarkPage !== undefined) updatePayload.bookmarkPage = bookmarkPage;

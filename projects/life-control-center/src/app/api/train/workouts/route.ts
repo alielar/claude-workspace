@@ -1,6 +1,6 @@
 /**
- * GET   /api/train/workouts — both templates (seeded from defaults on first call)
- * PATCH /api/train/workouts — body { key, exercises?, restSeconds?, amrapMinutes?, assignedDays? }
+ * GET   /api/train/workouts · both templates (seeded from defaults on first call)
+ * PATCH /api/train/workouts · body { key, exercises?, restSeconds?, amrapMinutes?, assignedDays? }
  *
  * Idempotent: PATCH sends the full desired template, so offline replays are safe.
  */

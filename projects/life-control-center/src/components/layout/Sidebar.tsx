@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Sidebar — desktop only (hidden <768px via CSS). 56px icon rail,
+ * Sidebar · desktop only (hidden <768px via CSS). 56px icon rail,
  * Settings sits at the BOTTOM of the rail (Ali, 2026-09-01);
  * expands to show labels on hover. Same NAV list as the phone tab bar.
  */

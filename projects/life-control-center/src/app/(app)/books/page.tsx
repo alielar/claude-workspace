@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * /books — the waiting list of physical books (spec §4.3).
+ * /books · the waiting list of physical books (spec §4.3).
  *
- *   READING NOW — one book at a time, cover + why I'm reading it, "Finished" button
- *   UP NEXT     — the queue in order; tap a book to see what it covers / what I get out of it,
+ *   READING NOW · one book at a time, cover + why I'm reading it, "Finished" button
+ *   UP NEXT     · the queue in order; tap a book to see what it covers / what I get out of it,
  *                 then Start reading · Move to top · Remove
- *   FINISHED    — collapsed
+ *   FINISHED    · collapsed
  *   + Add a book (title, author, optional ISBN for the cover)
  *
  * Reading itself is a habit on Today ("Read before sleep"); this page is the shelf.
@@ -194,7 +194,7 @@ export default function BooksPage() {
             <div style={{ fontSize: 18, fontWeight: 600 }}>Add a book</div>
             <input className="cc-input" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} autoFocus style={{ fontSize: 17, minHeight: 48 }} />
             <input className="cc-input" placeholder="Author" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} style={{ fontSize: 17, minHeight: 48 }} />
-            <input className="cc-input" placeholder="ISBN (optional — fetches the cover)" inputMode="numeric" value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} style={{ fontSize: 17, minHeight: 48 }} />
+            <input className="cc-input" placeholder="ISBN (optional · fetches the cover)" inputMode="numeric" value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} style={{ fontSize: 17, minHeight: 48 }} />
             <div style={{ fontSize: 14, color: "var(--ink-4)" }}>The 13-digit number above the barcode on the back of the book.</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, marginTop: 4 }}>
               <button className="cc-btn cc-btn-primary" onClick={submit} disabled={!form.title.trim()} style={{ minHeight: 52, borderRadius: 14, fontSize: 17 }}>Add to list</button>

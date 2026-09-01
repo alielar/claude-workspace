@@ -3,7 +3,7 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-/** The Scriptable widget script with this app's key filled in — only for the signed-in user. */
+/** The Scriptable widget script with this app's key filled in · only for the signed-in user. */
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -5,7 +5,7 @@ import { sleepEntries } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
-/** GET /api/sleep — list sleep entries for the authenticated user */
+/** GET /api/sleep · list sleep entries for the authenticated user */
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -22,7 +22,7 @@ export async function GET() {
   return NextResponse.json(rows);
 }
 
-/** POST /api/sleep — upsert a sleep entry by (user_id, date) */
+/** POST /api/sleep · upsert a sleep entry by (user_id, date) */
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {

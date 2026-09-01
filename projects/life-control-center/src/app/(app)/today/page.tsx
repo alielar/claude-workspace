@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /today — the home screen. Answers one question: what do I do right now?
+ * /today · the home screen. Answers one question: what do I do right now?
  *
  * Renders instantly from the phone's local copy, refreshes in the background,
  * and every tick works offline (queued and synced later).
@@ -11,12 +11,12 @@
  *
  * Sections, phone first, single column:
  *   greeting + date + streak · progress line
- *   NOW        — routine + items for this part of the day (+ anytime), not done
- *   STILL OPEN — items from earlier today that weren't ticked (compact)
- *   BUILDING   — habits being built, only in their part of the day
- *   UP NEXT    — the next part of the day (compact) — evening items stay hidden in the morning
- *   DONE       — ticked today, dimmed
- *   NEWS       — 4 headlines from the last brief (cached) → /news
+ *   NOW        · routine + items for this part of the day (+ anytime), not done
+ *   STILL OPEN · items from earlier today that weren't ticked (compact)
+ *   BUILDING   · habits being built, only in their part of the day
+ *   UP NEXT    · the next part of the day (compact) · evening items stay hidden in the morning
+ *   DONE       · ticked today, dimmed
+ *   NEWS       · 4 headlines from the last brief (cached) → /news
  */
 
 import { Linkify } from "@/components/Linkify";
@@ -100,13 +100,13 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
   const done = item.completedToday;
   const accent = itemColor(item.color);
   // The action stays after ticking (as a quiet "Again") so the stretch player is
-  // always one tap from home — before this, a ticked row hid the only way in.
+  // always one tap from home · before this, a ticked row hid the only way in.
   const action = routineAction(item);
   const actionClass = done ? "cc-btn cc-btn-ghost" : "cc-btn cc-btn-primary";
   const actionLabel = done ? "Again" : action?.label;
   const notes = compact ? null : displayNotes(item, currentBook);
 
-  // The workout row is not a tick box — it's a door to the Train tab.
+  // The workout row is not a tick box · it's a door to the Train tab.
   if (item.source === "workout") {
     const rest = item.title === "Rest day";
     return (
@@ -285,7 +285,7 @@ function NewsCard({ today }: { today: string }) {
       style={{ display: "block", textDecoration: "none", color: "inherit", overflow: "hidden" }}>
       <div className="cc-card-head">
         <span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span>
-        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : "") : loading ? "—" : "no brief yet"}</span>
+        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : "") : loading ? "…" : "no brief yet"}</span>
       </div>
       <div className="cc-card-body" style={{ display: "grid", gap: 8, minHeight: 96 }}>
         {!cur && (
@@ -338,7 +338,7 @@ function BooksCard() {
       </div>
       <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: show ? "44px 1fr" : "1fr", gap: 12, alignItems: "center", minHeight: 66 }}>
         {loading && !data && <div className="cc-skeleton" style={{ height: 44, gridColumn: "1 / -1" }} />}
-        {!loading && !show && <span style={{ fontSize: 15, color: "var(--ink-3)" }}>{data ? "The shelf is empty — add a book." : "Couldn't load the shelf — tap to open it."}</span>}
+        {!loading && !show && <span style={{ fontSize: 15, color: "var(--ink-3)" }}>{data ? "The shelf is empty · add a book." : "Couldn't load the shelf · tap to open it."}</span>}
         {show && (
           <>
             <BookCover b={show} width={44} />
@@ -380,7 +380,7 @@ function TodoCard({ today, part }: { today: string; part: DayPart }) {
           </Link>
         </div>
       ))}
-      {overdue > 0 && <div style={{ padding: "6px 4px 10px", fontSize: 14, color: "var(--ink-4)" }}>{overdue} overdue — open To-do to move or clear them.</div>}
+      {overdue > 0 && <div style={{ padding: "6px 4px 10px", fontSize: 14, color: "var(--ink-4)" }}>{overdue} overdue · open To-do to move or clear them.</div>}
     </Card>
   );
 }
@@ -409,7 +409,7 @@ export default function TodayPage() {
   // Make sure new database columns exist (once per session, fire-and-forget).
   useEffect(() => { ensureMigrate(); }, []);
 
-  // The book being read right now — from the phone's saved copy of /books (no extra request here).
+  // The book being read right now · from the phone's saved copy of /books (no extra request here).
   const [currentBook, setCurrentBook] = useState<string | null>(null);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
@@ -458,7 +458,7 @@ export default function TodayPage() {
         dedupeKey: `toggle:${item.id}:${today}`,
       });
     } catch {
-      setData(patch(!next)); // server refused — put it back
+      setData(patch(!next)); // server refused · put it back
     }
   }, [setData, today]);
 
@@ -509,7 +509,7 @@ export default function TodayPage() {
       {/* Progress */}
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontFamily: "var(--f-mono)", color: "var(--ink-3)", marginBottom: 6 }}>
-          <span>{loading && !data ? "—" : `${doneCount} / ${total} done`}</span>
+          <span>{loading && !data ? "…" : `${doneCount} / ${total} done`}</span>
           <span>{loading && !data ? "" : `${pct}%`}</span>
         </div>
         <div className="cc-progress-track" style={{ height: 4 }}>
@@ -540,7 +540,7 @@ export default function TodayPage() {
         {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
       </Card>
 
-      {/* NEWS — worth your time, rotating */}
+      {/* NEWS · worth your time, rotating */}
       <NewsCard today={today} />
 
       {/* TO-DO due today */}

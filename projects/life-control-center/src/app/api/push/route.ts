@@ -5,9 +5,9 @@ import { pushSubscriptions } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
 /**
- * GET    /api/push → { publicKey, count }  — VAPID public key + how many devices are subscribed
- * POST   /api/push { subscription }        — save this device (idempotent on endpoint)
- * DELETE /api/push { endpoint }            — remove this device
+ * GET    /api/push → { publicKey, count }  · VAPID public key + how many devices are subscribed
+ * POST   /api/push { subscription }        · save this device (idempotent on endpoint)
+ * DELETE /api/push { endpoint }            · remove this device
  */
 
 export async function GET() {

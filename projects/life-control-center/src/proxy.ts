@@ -1,5 +1,5 @@
 /**
- * Proxy (Next.js 16 middleware) — the login gate.
+ * Proxy (Next.js 16 middleware) · the login gate.
  *
  * Off by default (AUTH_REQUIRED unset): everything passes, as before.
  * On: pages without a valid session cookie go to /login; API calls get 401,

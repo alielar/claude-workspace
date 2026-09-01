@@ -1,6 +1,6 @@
 /**
- * POST /api/library/sessions — save a completed reading session
- * GET  /api/library/sessions — get sessions for streak + recent history
+ * POST /api/library/sessions · save a completed reading session
+ * GET  /api/library/sessions · get sessions for streak + recent history
  *
  * Body (POST): { bookId, startPage, endPage, durationMinutes }
  */

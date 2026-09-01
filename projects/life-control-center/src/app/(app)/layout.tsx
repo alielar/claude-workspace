@@ -1,5 +1,5 @@
 /**
- * Authenticated app layout — all protected routes live inside this group.
+ * Authenticated app layout · all protected routes live inside this group.
  * Single-user app: no auth check, no redirect. Just renders AppShell.
  */
 

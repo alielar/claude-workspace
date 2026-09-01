@@ -60,7 +60,7 @@ export async function GET(
     .where(eq(gymSessions.id, sessionId))
     .limit(1);
 
-  // Plan exercises (workout) — if plan exists
+  // Plan exercises (workout) · if plan exists
   let workoutExercises: {
     planExerciseId: number;
     exerciseId: number;
@@ -114,7 +114,7 @@ export async function GET(
     .where(eq(gymSets.sessionId, sessionId))
     .orderBy(gymSets.setNumber);
 
-  // Prefill: single query for all exercises — find last session's sets per exercise
+  // Prefill: single query for all exercises · find last session's sets per exercise
   const prefillMap: Record<number, Array<{ setNumber: number; weightKg: number | null; reps: number | null; setType: string }>> = {};
 
   if (workoutExercises.length > 0) {

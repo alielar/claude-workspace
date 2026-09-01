@@ -1,20 +1,18 @@
 "use client";
 
 /**
- * /breathe — Wim Hof breathing player (built 2026-09-02, replaces the YouTube video).
+ * /breathe · Wim Hof breathing player.
  *
- * Protocol (verified against the official method):
- *   3 rounds of: 30 deep breaths (~1.7 s in, ~2 s out, exhale relaxed)
- *   → retention hold on EMPTY lungs, 1:30 countdown — TAP ANYWHERE to end early
- *   → deep breath in, 15 s recovery hold → next round.
- * Finishing ticks the "Wim Hof breathing" routine item (offline-safe).
+ * 3 rounds of: 30 paced breaths → retention hold on empty lungs (1:30 countdown,
+ * TAP ANYWHERE to end early) → deep breath in, 15 s recovery hold. Finishing
+ * ticks the "Wim Hof breathing" routine item (offline-safe).
  *
- * All sound is synthesized (Web Audio, no assets, no voice — gamified):
- *   inhale = rising sweep · exhale = falling sweep · hold/release = woody pluck.
- * During retention a chosen "healing frequency" plays (pure detuned-sine pad,
- * generated live — no files). Frequencies are wellness lore, labelled as such;
- * they play ONLY during retention so the breathing itself stays clean.
- * Safety: sit or lie down. Never in water, never driving. Tingling is normal.
+ * Sound (all synthesized live, no assets, no voice):
+ *  · three breath-cue styles, picked + previewed on the idle screen, with volume:
+ *      waves (soft noise swell, default) · chime (one soft note) · sweep (pitch arc)
+ *  · retention plays the chosen frequency as a CONTINUOUS pad, tiny detune
+ *    (0.15 Hz) so it shimmers slowly instead of pulsing. Preview on tap.
+ * Frequencies only during the hold. Safety: sit or lie down, never in water.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -29,8 +27,8 @@ const ROUNDS = 3;
 const BREATHS = 30;
 const INHALE_MS = 1700;
 const EXHALE_MS = 2000;
-const RETENTION_S = 90;          // 1:30 default — tap anywhere ends it early
-const RECOVERY_IN_MS = 3500;     // "breathe in fully" lead-in
+const RETENTION_S = 90;
+const RECOVERY_IN_MS = 3500;
 const RECOVERY_HOLD_S = 15;
 
 const FREQS: { hz: number; label: string }[] = [
@@ -46,12 +44,20 @@ const FREQS: { hz: number; label: string }[] = [
   { hz: 963, label: "stillness" },
 ];
 
+type BreathStyle = "waves" | "chime" | "sweep";
+const STYLES: { key: BreathStyle; label: string; hint: string }[] = [
+  { key: "waves", label: "Waves", hint: "soft air swell" },
+  { key: "chime", label: "Chime", hint: "one quiet note" },
+  { key: "sweep", label: "Sweep", hint: "rising and falling tone" },
+];
+
 type Phase = "idle" | "breathing" | "retention" | "recoveryIn" | "recoveryHold" | "done";
 
-/** Tiny synth — sweeps for breaths, plucks for events, a soft pad for retention. */
+/** All sound, synthesized. Nothing downloaded, nothing licensed. */
 class BreathSynth {
   private ctx: AudioContext | null = null;
   private pad: { osc: OscillatorNode[]; gain: GainNode } | null = null;
+  private noiseBuf: AudioBuffer | null = null;
 
   arm() {
     try {
@@ -62,32 +68,83 @@ class BreathSynth {
     } catch { /* silent */ }
   }
 
-  /** Pitch sweep — up for inhale, down for exhale. */
-  sweep(from: number, to: number, ms: number, volume = 0.14) {
-    const ctx = this.ctx; if (!ctx) return;
-    const t = ctx.currentTime;
+  private noise(): AudioBuffer | null {
+    const ctx = this.ctx; if (!ctx) return null;
+    if (!this.noiseBuf) {
+      const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      this.noiseBuf = b;
+    }
+    return this.noiseBuf;
+  }
+
+  /** One breath cue. kind "in" rises, "out" falls. vol 0..1 from the slider. */
+  breath(kind: "in" | "out", style: BreathStyle, ms: number, vol: number) {
+    const ctx = this.ctx; if (!ctx || vol <= 0) return;
+    const t = ctx.currentTime, dur = ms / 1000;
+
+    if (style === "chime") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = kind === "in" ? 740 : 392;
+      gain.gain.setValueAtTime(0.16 * vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.55);
+      return;
+    }
+
+    if (style === "waves") {
+      const buf = this.noise(); if (!buf) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass"; filter.Q.value = 0.6;
+      const gain = ctx.createGain();
+      const peak = 0.10 * vol;
+      if (kind === "in") {
+        filter.frequency.setValueAtTime(240, t);
+        filter.frequency.linearRampToValueAtTime(850, t + dur);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(peak, t + dur * 0.7);
+        gain.gain.linearRampToValueAtTime(0.001, t + dur);
+      } else {
+        filter.frequency.setValueAtTime(850, t);
+        filter.frequency.linearRampToValueAtTime(240, t + dur);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(peak * 0.8, t + dur * 0.25);
+        gain.gain.linearRampToValueAtTime(0.001, t + dur);
+      }
+      src.connect(filter).connect(gain).connect(ctx.destination);
+      src.start(t); src.stop(t + dur + 0.05);
+      return;
+    }
+
+    // sweep
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = "triangle";
-    osc.frequency.setValueAtTime(from, t);
-    osc.frequency.exponentialRampToValueAtTime(to, t + ms / 1000);
+    const v = 0.12 * vol;
+    if (kind === "in") { osc.frequency.setValueAtTime(220, t); osc.frequency.exponentialRampToValueAtTime(470, t + dur); }
+    else { osc.frequency.setValueAtTime(470, t); osc.frequency.exponentialRampToValueAtTime(210, t + dur); }
     gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(volume, t + 0.12);
-    gain.gain.setValueAtTime(volume, t + ms / 1000 - 0.25);
-    gain.gain.linearRampToValueAtTime(0, t + ms / 1000);
+    gain.gain.linearRampToValueAtTime(v, t + 0.12);
+    gain.gain.setValueAtTime(v, t + dur - 0.25);
+    gain.gain.linearRampToValueAtTime(0, t + dur);
     osc.connect(gain).connect(ctx.destination);
-    osc.start(t); osc.stop(t + ms / 1000 + 0.05);
+    osc.start(t); osc.stop(t + dur + 0.05);
   }
 
-  /** Woody marimba-ish pluck for phase markers. */
-  pluck(freq: number, volume = 0.25) {
+  /** Woody pluck for phase markers (hold, release). */
+  pluck(freq: number, volume = 0.22) {
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
     for (const [f, v] of [[freq, volume], [freq * 4, volume * 0.15]] as const) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = f;
+      osc.type = "sine"; osc.frequency.value = f;
       gain.gain.setValueAtTime(v, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
       osc.connect(gain).connect(ctx.destination);
@@ -95,15 +152,17 @@ class BreathSynth {
     }
   }
 
-  /** Healing-frequency pad: two slightly detuned sines → slow natural shimmer. */
-  padStart(hz: number) {
-    const ctx = this.ctx; if (!ctx || this.pad) return;
+  /** Continuous frequency pad. 0.15 Hz detune = a slow shimmer over ~7 s,
+   * nothing that repeats like an alarm. */
+  padStart(hz: number, fadeIn = 2.5) {
+    const ctx = this.ctx; if (!ctx) return;
+    this.padStop(0.15);
     const gain = ctx.createGain();
     const t = ctx.currentTime;
     gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.11, t + 2.5);   // long fade-in, no click
+    gain.gain.linearRampToValueAtTime(0.11, t + fadeIn);
     gain.connect(ctx.destination);
-    const osc = [hz, hz + 1.2].map((f) => {
+    const osc = [hz, hz + 0.15].map((f) => {
       const o = ctx.createOscillator();
       o.type = "sine"; o.frequency.value = f;
       o.connect(gain); o.start(t);
@@ -112,16 +171,18 @@ class BreathSynth {
     this.pad = { osc, gain };
   }
 
-  padStop() {
+  padStop(fade = 1.2) {
     const ctx = this.ctx, pad = this.pad;
     if (!ctx || !pad) return;
     const t = ctx.currentTime;
     pad.gain.gain.cancelScheduledValues(t);
     pad.gain.gain.setValueAtTime(pad.gain.gain.value, t);
-    pad.gain.gain.linearRampToValueAtTime(0, t + 1.2);
-    for (const o of pad.osc) o.stop(t + 1.4);
+    pad.gain.gain.linearRampToValueAtTime(0, t + fade);
+    for (const o of pad.osc) o.stop(t + fade + 0.2);
     this.pad = null;
   }
+
+  padActive() { return this.pad !== null; }
 }
 
 const synth = new BreathSynth();
@@ -151,17 +212,33 @@ export default function BreathePage() {
   const [breath, setBreath] = useState(1);
   const [inhaling, setInhaling] = useState(true);
   const [remaining, setRemaining] = useState(RETENTION_S);
-  const [holds, setHolds] = useState<number[]>([]);       // seconds held per round
+  const [holds, setHolds] = useState<number[]>([]);
   const [freq, setFreq] = useState<number>(528);
+  const [style, setStyle] = useState<BreathStyle>("waves");
+  const [vol, setVol] = useState(50);
+  const [previewingFreq, setPreviewingFreq] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdown = useRef<ReturnType<typeof setInterval> | null>(null);
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdStart = useRef(0);
   const wakeLock = useRef<WakeLockSentinel | null>(null);
   const phaseRef = useRef<Phase>("idle");
+  const styleRef = useRef<BreathStyle>("waves");
+  const volRef = useRef(0.5);
   phaseRef.current = phase;
+  styleRef.current = style;
+  volRef.current = vol / 100;
 
-  useEffect(() => { try { const f = Number(localStorage.getItem("cc-breathe-freq")); if (FREQS.some((x) => x.hz === f)) setFreq(f); } catch { /* ignore */ } }, []);
-  const pickFreq = (hz: number) => { setFreq(hz); try { localStorage.setItem("cc-breathe-freq", String(hz)); } catch { /* ignore */ } };
+  useEffect(() => {
+    try {
+      const f = Number(localStorage.getItem("cc-breathe-freq"));
+      if (FREQS.some((x) => x.hz === f)) setFreq(f);
+      const s = localStorage.getItem("cc-breathe-sound") as BreathStyle | null;
+      if (s && STYLES.some((x) => x.key === s)) setStyle(s);
+      const v = Number(localStorage.getItem("cc-breathe-vol"));
+      if (Number.isFinite(v) && v >= 0 && v <= 100 && localStorage.getItem("cc-breathe-vol") !== null) setVol(v);
+    } catch { /* ignore */ }
+  }, []);
 
   const clearTimers = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -169,7 +246,36 @@ export default function BreathePage() {
     timer.current = null; countdown.current = null;
   }, []);
 
-  // ── Wake lock while a session runs ──────────────────────────────────────────
+  // ── Idle previews ───────────────────────────────────────────────────────────
+  const pickFreq = (hz: number) => {
+    setFreq(hz);
+    try { localStorage.setItem("cc-breathe-freq", String(hz)); } catch { /* ignore */ }
+    // preview the tone right away, a few seconds, so the choice is informed
+    synth.arm();
+    synth.padStart(hz, 0.6);
+    setPreviewingFreq(true);
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    previewTimer.current = setTimeout(() => { synth.padStop(); setPreviewingFreq(false); }, 4000);
+  };
+  const stopFreqPreview = () => {
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    synth.padStop(0.4); setPreviewingFreq(false);
+  };
+  const pickStyle = (s: BreathStyle) => {
+    setStyle(s);
+    try { localStorage.setItem("cc-breathe-sound", s); } catch { /* ignore */ }
+    // one demo breath cycle at the current volume
+    synth.arm();
+    synth.breath("in", s, 1100, vol / 100);
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    previewTimer.current = setTimeout(() => synth.breath("out", s, 1300, volRef.current), 1250);
+  };
+  const pickVol = (v: number) => {
+    setVol(v);
+    try { localStorage.setItem("cc-breathe-vol", String(v)); } catch { /* ignore */ }
+  };
+
+  // ── Wake lock ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const running = phase !== "idle" && phase !== "done";
     if (!running) { wakeLock.current?.release().catch(() => {}); wakeLock.current = null; return; }
@@ -180,14 +286,13 @@ export default function BreathePage() {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [phase]);
 
-  // ── Breathing: 30 paced breaths, sweep up / sweep down ─────────────────────
+  // ── Breathing ───────────────────────────────────────────────────────────────
   const runBreath = useCallback((n: number, r: number) => {
     setPhase("breathing"); setRound(r); setBreath(n); setInhaling(true);
-    synth.sweep(220, 470, INHALE_MS);
+    synth.breath("in", styleRef.current, INHALE_MS, volRef.current);
     timer.current = setTimeout(() => {
       setInhaling(false);
-      // last exhale of the round stays relaxed and unforced — softer sweep
-      synth.sweep(470, n === BREATHS ? 180 : 220, EXHALE_MS, n === BREATHS ? 0.1 : 0.14);
+      synth.breath("out", styleRef.current, EXHALE_MS, volRef.current * (n === BREATHS ? 0.7 : 1));
       timer.current = setTimeout(() => {
         if (n < BREATHS) runBreath(n + 1, r);
         else startRetention(r);
@@ -196,11 +301,11 @@ export default function BreathePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Retention: countdown from 1:30, tap anywhere ends it ───────────────────
+  // ── Retention ───────────────────────────────────────────────────────────────
   const startRetention = useCallback((r: number) => {
     setPhase("retention"); setRemaining(RETENTION_S);
     holdStart.current = Date.now();
-    synth.pluck(392);                       // "hold now"
+    synth.pluck(392);
     synth.padStart(freq);
     countdown.current = setInterval(() => {
       const left = RETENTION_S - Math.floor((Date.now() - holdStart.current) / 1000);
@@ -215,11 +320,9 @@ export default function BreathePage() {
     clearTimers();
     synth.padStop();
     setHolds((h) => [...h, Math.min(RETENTION_S, Math.round((Date.now() - holdStart.current) / 1000))]);
-    // Recovery: one deep breath in…
     setPhase("recoveryIn");
-    synth.sweep(220, 560, RECOVERY_IN_MS - 500, 0.18);
+    synth.breath("in", styleRef.current, RECOVERY_IN_MS - 700, Math.max(0.35, volRef.current));
     timer.current = setTimeout(() => {
-      // …hold 15 s
       setPhase("recoveryHold"); setRemaining(RECOVERY_HOLD_S);
       synth.pluck(523);
       const t0 = Date.now();
@@ -228,7 +331,7 @@ export default function BreathePage() {
         setRemaining(Math.max(0, left));
         if (left <= 0) {
           clearTimers();
-          synth.pluck(659);                 // release
+          synth.pluck(659);
           if (r < ROUNDS) {
             timer.current = setTimeout(() => runBreath(1, r + 1), 2200);
           } else {
@@ -241,11 +344,16 @@ export default function BreathePage() {
     }, RECOVERY_IN_MS);
   }, [clearTimers, runBreath]);
 
-  const start = () => { synth.arm(); setHolds([]); runBreath(1, 1); };
+  const start = () => { synth.arm(); stopFreqPreview(); setHolds([]); runBreath(1, 1); };
   const exit = () => { clearTimers(); synth.padStop(); setPhase("idle"); router.push("/today"); };
   useEffect(() => () => { clearTimers(); synth.padStop(); }, [clearTimers]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const chip = (on: boolean): React.CSSProperties => ({
+    minHeight: 44, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
+    border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`,
+    background: on ? "var(--accent-soft)" : "var(--fill-1)", color: "var(--ink)",
+  });
 
   // ── Idle ────────────────────────────────────────────────────────────────────
   if (phase === "idle") {
@@ -261,33 +369,51 @@ export default function BreathePage() {
         <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}>
           ▶ Start
         </button>
+        <div style={{ fontSize: 13, color: "var(--ink-4)", marginTop: -8 }}>
+          Sit or lie down. Never in water, never driving. During the hold, tap anywhere to breathe.
+        </div>
 
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">Hold frequency</span><span className="tail">{freq} Hz</span></div>
+          <div className="cc-card-head"><span className="title">Breath sound</span><span className="tail">{STYLES.find((s) => s.key === style)?.label}</span></div>
+          <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {STYLES.map((s) => (
+                <button key={s.key} onClick={() => pickStyle(s.key)} aria-pressed={style === s.key} style={chip(style === s.key)}>
+                  {s.label} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {s.hint}</span>
+                </button>
+              ))}
+            </div>
+            <label style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
+              Volume · {vol}%
+              <input type="range" min={0} max={100} step={5} value={vol}
+                onChange={(e) => pickVol(Number(e.target.value))}
+                onPointerUp={() => pickStyle(style)}
+                style={{ width: "100%", accentColor: "var(--violet)", minHeight: 32 }} />
+            </label>
+            <div style={{ fontSize: 13, color: "var(--ink-4)" }}>Tap a style to hear one breath at this volume.</div>
+          </div>
+        </section>
+
+        <section className="cc-card">
+          <div className="cc-card-head">
+            <span className="title">Hold frequency</span>
+            <span className="tail">
+              {previewingFreq
+                ? <button onClick={stopFreqPreview} style={{ background: "none", border: "none", color: "var(--violet)", font: "inherit", fontSize: 14, cursor: "pointer", padding: 0 }}>■ stop</button>
+                : `${freq} Hz`}
+            </span>
+          </div>
           <div className="cc-card-body">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {FREQS.map((f) => (
-                <button key={f.hz} onClick={() => pickFreq(f.hz)} aria-pressed={freq === f.hz}
-                  style={{ minHeight: 44, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
-                    border: `1px solid ${freq === f.hz ? "var(--violet)" : "var(--line-hi)"}`,
-                    background: freq === f.hz ? "var(--accent-soft)" : "var(--fill-1)", color: "var(--ink)" }}>
+                <button key={f.hz} onClick={() => pickFreq(f.hz)} aria-pressed={freq === f.hz} style={chip(freq === f.hz)}>
                   {f.hz} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {f.label}</span>
                 </button>
               ))}
             </div>
             <div style={{ fontSize: 13, color: "var(--ink-4)", paddingTop: 10 }}>
-              A pure tone plays only during the hold. The labels are wellness lore, not medicine — pick what feels calm.
+              Tap to hear it. The tone plays continuously during the hold, nowhere else. Labels are wellness lore, not medicine.
             </div>
-          </div>
-        </section>
-
-        <section className="cc-card">
-          <div className="cc-card-head"><span className="title">How it goes</span></div>
-          <div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.6, display: "grid", gap: 6 }}>
-            <div>1 · {BREATHS} deep breaths — rising sound in, falling sound out. Let the exhale go, don&rsquo;t push it.</div>
-            <div>2 · After the last exhale: hold. The tone plays. <b>Tap anywhere when you need to breathe</b> — no need to look.</div>
-            <div>3 · Big breath in, hold 15 s, release. {ROUNDS} rounds, then done.</div>
-            <div style={{ color: "var(--warn)", fontSize: 14 }}>Sit or lie down. Never in water, never driving.</div>
           </div>
         </section>
 
@@ -312,12 +438,12 @@ export default function BreathePage() {
     );
   }
 
-  // ── Running (full-screen) ───────────────────────────────────────────────────
+  // ── Running ─────────────────────────────────────────────────────────────────
   const isRetention = phase === "retention";
   const label =
     phase === "breathing" ? (inhaling ? "Breathe in" : "Let go") :
-    isRetention ? "Hold — empty lungs" :
-    phase === "recoveryIn" ? "Big breath in" : "Hold it in";
+    isRetention ? "Hold" :
+    phase === "recoveryIn" ? "Big breath in" : "Keep it in";
   const accent = isRetention ? "var(--violet)" : phase === "recoveryHold" || phase === "recoveryIn" ? "var(--warn)" : "var(--cyan)";
 
   return (
@@ -336,7 +462,6 @@ export default function BreathePage() {
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 18 }}>
-        {/* breathing circle — grows on the inhale, relaxes on the exhale */}
         <div aria-hidden style={{
           width: 190, height: 190, borderRadius: "50%",
           border: `3px solid ${accent}`,
@@ -362,7 +487,6 @@ export default function BreathePage() {
         )}
       </div>
 
-      {/* bottom hint keeps the thumb zone honest — the whole screen is the button during retention */}
       <div style={{ minHeight: 40, textAlign: "center", fontSize: 14, color: "var(--ink-4)" }}>
         {isRetention ? "the whole screen is the button" : ""}
       </div>

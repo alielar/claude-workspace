@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /library/read/[id] — In-app PDF reader. V2 Ambient Futurism.
+ * /library/read/[id] · In-app PDF reader. V2 Ambient Futurism.
  *
  * Features:
  *   - react-pdf renderer with text layer enabled
@@ -142,7 +142,7 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
     try {
       await fetch(`/api/library/notes?id=${noteId}`, { method: "DELETE" });
     } catch {
-      // Rollback on failure — refetch
+      // Rollback on failure · refetch
       fetch(`/api/library/notes?bookId=${bookId}`).then((r) => r.json()).then(setNotes).catch(() => {});
     }
   };
@@ -275,7 +275,7 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
 
           {notes.length === 0 && (
             <div style={{ padding: "24px 0", textAlign: "center", color: "var(--ink-4)", fontSize: 12 }}>
-              No notes yet. Write down what you&apos;re learning — they&apos;ll be saved to your Knowledge Bank.
+              No notes yet. Write down what you&apos;re learning · they&apos;ll be saved to your Knowledge Bank.
             </div>
           )}
 
@@ -283,7 +283,7 @@ function HighlightsPanel({ annotations, onGoToPage, onDelete, bookId, currentPag
             <div key={n.id} style={{ padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.012)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: "var(--cyan)", letterSpacing: "0.06em" }}>
-                  {n.pageNumber ? `p. ${n.pageNumber}` : "—"}
+                  {n.pageNumber ? `p. ${n.pageNumber}` : "…"}
                 </span>
                 <button onClick={() => deleteNote(n.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-4)", display: "flex", padding: 2 }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -384,7 +384,7 @@ export default function ReadPage() {
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
   const [addedWords, setAddedWords] = useState<Set<string>>(new Set());
 
-  // Bookmark — marks exact position where user stopped reading
+  // Bookmark · marks exact position where user stopped reading
   const [bookmark, setBookmark] = useState<{ text: string; page: number } | null>(null);
 
   // Notes state (lifted to parent so modal can access)
@@ -643,7 +643,7 @@ export default function ReadPage() {
           ref={containerRef}
           style={{ position: "relative", overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "16px 20px", background: "linear-gradient(180deg, #0A0A14, #060609)", minHeight: 0 }}
         >
-          {/* Bookmark banner — shows when on the bookmarked page */}
+          {/* Bookmark banner · shows when on the bookmarked page */}
           {bookmark && bookmark.page === currentPage && (
             <div style={{
               position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", zIndex: 10,
@@ -760,7 +760,7 @@ export default function ReadPage() {
         }} />
       )}
 
-      {/* Floating notes button — quick access when panel is closed */}
+      {/* Floating notes button · quick access when panel is closed */}
       {!panelOpen && (
         <button
           onClick={() => { setPanel(true); }}

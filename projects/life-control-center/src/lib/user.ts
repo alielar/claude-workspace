@@ -17,7 +17,7 @@ import { users } from "@/db/schema";
 let _cached: string | null = null;
 
 export async function getUserId(): Promise<string> {
-  // Env override — set USER_ID in Vercel to match existing Google OAuth user ID
+  // Env override · set USER_ID in Vercel to match existing Google OAuth user ID
   if (process.env.USER_ID) return process.env.USER_ID;
   if (_cached) return _cached;
 
