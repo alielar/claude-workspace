@@ -119,6 +119,7 @@ function useLockBodyScroll() {
 function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false, fill = false }: {
   value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean; fill?: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
   // Prefix the current line (dash / numbered list); pressing return inside a
   // list continues it, return on an empty item ends it.
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -150,10 +151,21 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
       <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
         <button type="button" title="Dash list" onClick={() => prefixLine("- ")} style={btn}>−</button>
         <button type="button" title="Numbered list" onClick={() => prefixLine("1. ")} style={btn}>1.</button>
+        <span style={{ flex: 1 }} />
+        <button type="button" title="Jump to the end" style={btn} onClick={() => {
+          const el = ref.current; if (!el) return;
+          el.focus(); const n = el.value.length; el.setSelectionRange(n, n); el.scrollTop = el.scrollHeight;
+        }}>⇣</button>
+        {!fill && (
+          <button type="button" title={expanded ? "Shrink" : "Expand"} style={btn} onClick={() => {
+            setExpanded(!expanded);
+            requestAnimationFrame(() => { const el = ref.current; if (el && !expanded) { el.focus(); const n = el.value.length; el.setSelectionRange(n, n); el.scrollTop = el.scrollHeight; } });
+          }}>{expanded ? "⤡" : "⤢"}</button>
+        )}
       </div>
       <textarea ref={ref} className="cc-input" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onEnter}
         placeholder={placeholder} rows={rows} autoFocus={autoFocus}
-        style={fill ? { fontSize: 16, resize: "none", lineHeight: 1.5, flex: 1, minHeight: 240, width: "100%", boxSizing: "border-box" } : { fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
+        style={fill ? { fontSize: 16, resize: "none", lineHeight: 1.5, flex: 1, minHeight: 240, width: "100%", boxSizing: "border-box" } : { fontSize: 16, resize: "vertical", lineHeight: 1.5, ...(expanded ? { minHeight: "45vh" } : {}) }} />
       <LinkChips text={value} />
     </div>
   );
@@ -239,6 +251,19 @@ const NAG_STEPS = [30, 15, 10, 5];
 const nextNag = (cur: number | null | undefined) => NAG_STEPS[(NAG_STEPS.indexOf(cur ?? 30) + 1) % NAG_STEPS.length];
 const nagChip: React.CSSProperties = { minHeight: 28, padding: "0 8px", borderRadius: 8, fontSize: 13, font: "inherit", cursor: "pointer", border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)" };
 
+// Title field that grows with its text — long titles wrap instead of hiding
+// their end behind horizontal scroll. Enter closes the keyboard.
+function TitleInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { const el = ref.current; if (el) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; } }, [value]);
+  return (
+    <textarea ref={ref} className="cc-input" rows={1} value={value} placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value.replace(/\n/g, " "))}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
+      style={{ fontSize: 18, fontWeight: 500, minHeight: 48, resize: "none", overflow: "hidden", lineHeight: 1.35, width: "100%", boxSizing: "border-box" }} />
+  );
+}
+
 // ─── Task detail sheet ────────────────────────────────────────────────────────
 
 function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }: {
@@ -263,7 +288,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div role="dialog" aria-label="Edit task" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
-        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What needs doing?" style={{ fontSize: 18, fontWeight: 500, minHeight: 48 }} />
+        <TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="What needs doing?" />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {AREAS.map((a) => <button key={a.key} onClick={() => set({ area: a.key })} style={chipStyle((d.area ?? "personal") === a.key)}>{a.label}</button>)}
@@ -368,7 +393,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "12px 18px calc(env(safe-area-inset-bottom) + 12px)", display: "flex", flexDirection: "column", gap: 12, maxWidth: 560, margin: "0 auto", height: "92dvh" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
-          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="Name" style={{ fontSize: 18, fontWeight: 500, minHeight: 48, minWidth: 0 }} />
+          <div style={{ minWidth: 0 }}><TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="Name" /></div>
           <div role="tablist" aria-label="Shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 3, borderRadius: 12, background: "var(--fill-1)", minWidth: 118 }}>
             <button role="tab" aria-selected={mode === "list"} onClick={toList} style={seg(mode === "list")}>List</button>
             <button role="tab" aria-selected={mode === "doc"} onClick={() => setMode("doc")} style={seg(mode === "doc")}>Doc</button>
