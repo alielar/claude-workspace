@@ -11,6 +11,7 @@
  * network to render (phone copy first), edits go through the outbox.
  */
 
+import { Linkify } from "@/components/Linkify";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
@@ -152,7 +153,7 @@ export default function ChecklistPage() {
                 <button key={i.id} onClick={() => setSheet({ open: true, item: i })} style={{ display: "grid", gridTemplateColumns: "32px 1fr auto", gap: 12, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 2px", background: "transparent", border: "none", borderBottom: idx < g.items.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
                   <span style={{ fontSize: 22, textAlign: "center" }}>{i.emoji ?? "•"}</span>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 17 }}>{i.title}</span>
+                    <span style={{ display: "block", fontSize: 17 }}><Linkify text={i.title} /></span>
                     <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {i.kind === "habit" ? "habit I'm building" : i.routineKey ? "routine" : "daily"}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]} link` : ""}
                     </span>

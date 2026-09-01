@@ -14,6 +14,7 @@
  * Works offline; the home-screen badge shows what's due today.
  */
 
+import { Linkify, LinkChips } from "@/components/Linkify";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
@@ -153,6 +154,7 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
       <textarea ref={ref} className="cc-input" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onEnter}
         placeholder={placeholder} rows={rows} autoFocus={autoFocus}
         style={fill ? { fontSize: 16, resize: "none", lineHeight: 1.5, flex: 1, minHeight: 240, width: "100%", boxSizing: "border-box" } : { fontSize: 16, resize: "vertical", lineHeight: 1.5 }} />
+      <LinkChips text={value} />
     </div>
   );
 }
@@ -187,7 +189,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
         <span style={{ display: "block", fontSize: 17, lineHeight: 1.3, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
           {t.priority === 2 && !done && <span style={{ color: "var(--neg)", marginRight: 6 }}>!!</span>}
           {t.priority === 1 && !done && <span style={{ color: "var(--warn)", marginRight: 6 }}>!</span>}
-          {t.title}
+          <Linkify text={t.title} />
         </span>
         {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
       </button>
@@ -382,7 +384,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
                   />
                 ) : (
                   <button onClick={() => { setEditIdx(i); setEditText(it); }} style={{ background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, lineHeight: 1.4, padding: "10px 0", cursor: "pointer", minWidth: 0, overflowWrap: "anywhere" }}>
-                    {it}
+                    <Linkify text={it} />
                   </button>
                 )}
                 <span style={{ display: "flex", gap: 2 }}>

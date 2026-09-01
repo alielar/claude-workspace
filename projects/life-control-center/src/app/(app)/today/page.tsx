@@ -19,6 +19,7 @@
  *   NEWS       — 4 headlines from the last brief (cached) → /news
  */
 
+import { Linkify } from "@/components/Linkify";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCached, fetchJson, readCache } from "@/lib/local/store";
@@ -179,7 +180,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
             textDecorationColor: "var(--ink-4)",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
-            {item.emoji ? `${item.emoji} ` : ""}{item.title}
+            {item.emoji ? `${item.emoji} ` : ""}<Linkify text={item.title} />
           </span>
           {notes && (
             <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
@@ -372,7 +373,7 @@ function TodoCard({ today, part }: { today: string; part: DayPart }) {
         <div key={t.clientId} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 50, padding: "6px 4px", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
           <button onClick={() => toggleDone(t)} aria-label="Mark done" style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: "var(--fill-1)", cursor: "pointer", padding: 0 }} />
           <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+            <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><Linkify text={t.title} /></span>
             <span style={{ display: "block", fontSize: 14, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
               {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}{t.project ? ` · #${t.project}` : ""}
             </span>
