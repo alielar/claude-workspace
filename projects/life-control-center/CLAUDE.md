@@ -43,7 +43,7 @@ src/app/offline           shown by the service worker only when nothing is cache
 Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/wordbank`, `/mood`, `/sleep`, `/journal`.
 
 ### Local-first data (`src/lib/local/`)
-- `store.ts` — `useCached(key, fetcher)`: paints the phone's saved copy instantly, refreshes in the background, `setData` for optimistic edits. Backed by localStorage (swap for IndexedDB in one file if a module outgrows it).
+- `store.ts` — `useCached(key, fetcher)`: paints the phone's saved copy instantly, refreshes in the background (on mount, on focus/foreground, after an outbox flush, and every 45 s while visible — cross-device sync), `setData` for optimistic edits. Backed by localStorage (swap for IndexedDB in one file if a module outgrows it).
 - `outbox.ts` — `sendOrQueue(...)`: writes go straight to the server; if offline they queue and replay in order on reconnect. Entries have a `dedupeKey` so repeated taps collapse to the final state. **Every endpoint used through the outbox must be idempotent** (send the desired final state, never "toggle").
 - `SyncOutbox` (in AppShell) replays on open / online / foreground and fires `cc:outbox-flushed`.
 
@@ -55,7 +55,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Flat solid surfaces (no blur/grain/gradients), **system font** (`-apple-system…`, no web fonts), body 17px, card titles 15/600, captions 13–14 sentence case. Mono (`ui-monospace`) only for clocks/counters. One accent (`--violet`: #8B7CF0 dark / #5B4BD6 light) + semantic pos/warn/neg. `--accent-soft` for selected chips, `--on-accent` for text on the accent.
 - Tokens in `globals.css` `:root` (dark). Light values under `:root[data-theme="light"]` and `@media (prefers-color-scheme: light) :root:not([data-theme="dark"])`.
 - Timer/workout screens keep the big high-contrast numerals — the one place the app may shout.
-- `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint.
+- `src/lib/theme.ts` reads/writes `localStorage["cc-theme"]`; the root layout applies it before first paint. Four choices: Automatic · Light · Dark · **Night** (`data-theme="night"` — warm dark palette, amber accent, low blue light; tokens under `:root[data-theme="night"]`).
 - **Never hardcode `rgba(255,255,255,…)` or `#E8E8F0` in new UI** — use `--fill-1/2/3`, `--ink*`, `--line*`, `--bg-chrome`.
 
 ### Routine engine (Phase 2)
@@ -105,7 +105,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - `auth()` resolves to the one user. With `AUTH_REQUIRED=1` (+ GOOGLE_CLIENT_ID/SECRET, AUTH_SECRET) it needs the `ali_session` cookie (`src/lib/session.ts`, HMAC, 400 days) or the `x-app-key: APP_KEY` header (widget, curl). `src/proxy.ts` redirects pages to `/login` and 401s APIs; public paths listed there. Cron/pinger routes check their own secrets. Migrate via curl: add `-H "x-app-key: $APP_KEY"`.
 
 ### Reminders (push)
-- `web-push` + VAPID env (`VAPID_PUBLIC_KEY/PRIVATE_KEY/SUBJECT`). `src/lib/push/server.ts` `sendToUser`; `src/lib/push/client.ts` subscribe/unsubscribe. `/api/reminders/tick?key=APP_KEY` is hit every 5 min by cron-job.org (Vercel Hobby cron is daily-only); nags per list every 30 min via `todos.last_nagged_at`; quiet 23:00–08:00.
+- `web-push` + VAPID env (`VAPID_PUBLIC_KEY/PRIVATE_KEY/SUBJECT`). `src/lib/push/server.ts` `sendToUser`; `src/lib/push/client.ts` subscribe/unsubscribe. `/api/reminders/tick?key=APP_KEY` is hit every 5 min by cron-job.org (Vercel Hobby cron is daily-only); nags per list at each task's own cadence (`todos.nag_minutes` 5/10/15/30, null = 30) via `todos.last_nagged_at`; quiet 23:00–08:00.
 
 ### Database
 - Drizzle + Turso. Client `src/db/index.ts`, schema `src/db/schema.ts` (only tables the code uses are declared; old tables stay in Turso untouched).
