@@ -94,6 +94,30 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
     refresh();
   }, [key, refresh]);
 
+  // Keep devices in step: refetch when the app returns to the foreground or the
+  // window regains focus (phone -> laptop and back), when queued writes finish
+  // replaying, and every 45 s while the screen stays open and visible.
+  useEffect(() => {
+    let last = 0;
+    const soon = () => {
+      const now = Date.now();
+      if (now - last < 3000) return; // collapse focus+visibility double fire
+      last = now;
+      refresh();
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") soon(); };
+    window.addEventListener("focus", soon);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("cc:outbox-flushed", soon);
+    const iv = setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 45_000);
+    return () => {
+      window.removeEventListener("focus", soon);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("cc:outbox-flushed", soon);
+      clearInterval(iv);
+    };
+  }, [refresh]);
+
   const setData = useCallback((updater: T | ((prev: T | null) => T)) => {
     setState((s) => {
       const next = typeof updater === "function" ? (updater as (p: T | null) => T)(s.data) : updater;
