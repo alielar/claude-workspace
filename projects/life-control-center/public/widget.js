@@ -5,7 +5,8 @@
 // then in Scriptable open the script named "ALI", select everything, paste over, Done.
 //
 // A progress ring around the ATE ligature. Bottom line: "3 of 5 | VI" —
-// items done today, then the current streak in Roman numerals. A violet dot
+// to-dos due today + someday backlog, then the streak in Roman numerals
+// (the "3 of 5" text was cut 2026-09-01 — the ring already shows it). A violet dot
 // sits at the numeral's top-right when the streak ties or beats the record.
 // Data from /api/widget; iOS refreshes widgets every 10–30 minutes on its own.
 
@@ -88,7 +89,10 @@ if (FAMILY.indexOf("accessory") === 0) {
   lw.url = BASE + "/todo";
   lw.addAccessoryWidgetBackground = true;
   lw.refreshAfterDate = new Date(Date.now() + 10 * 60 * 1000);
-  const urgent = (d && d.urgent) || [];
+  // Routine first, always: unfinished routine steps for this part of day,
+  // then the most urgent to-dos — capped at 3 rows.
+  const routine = ((d && d.next) || []).map((n) => ({ t: n.title, w: "routine" }));
+  const urgent = routine.concat((d && d.urgent) || []).slice(0, 3);
   const due = d ? d.todosDue || 0 : 0;
 
   if (FAMILY === "accessoryRectangular") {
@@ -167,9 +171,13 @@ if (!d) {
   const t = lineStack.addText("tap to open");
   t.font = Font.mediumSystemFont(13); t.textColor = INK3;
 } else {
-  const countTxt = lineStack.addText(`${d.done} of ${d.total}`);
+  const tCount = d.todosDue || 0, sCount = d.someday || 0;
+  const countTxt = lineStack.addText(`${tCount} today`);
   countTxt.font = Font.mediumSystemFont(13);
-  countTxt.textColor = d.done >= d.total && d.total > 0 ? VIOLET : INK3;
+  countTxt.textColor = tCount > 0 ? INK : INK3;
+  const sdTxt = lineStack.addText(` · ${sCount} someday`);
+  sdTxt.font = Font.mediumSystemFont(13);
+  sdTxt.textColor = INK3;
   const streak = d.streak ?? 0;
   if (streak >= 1) {
     // "|" as a drawn divider so it is a perfectly straight vertical line.

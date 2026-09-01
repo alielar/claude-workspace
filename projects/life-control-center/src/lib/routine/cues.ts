@@ -69,11 +69,13 @@ class Cues {
     if (name) this.say(name);
   }
 
-  /** Rest begins. */
+  /** Rest begins. The next movement's name is NOT spoken here — it is announced
+   * once, when the move actually starts (Ali, 2026-09-01: it was said twice). */
   rest(nextName?: string) {
     this.play([{ freq: 523, ms: 180 }]);
     this.vibrate(80);
-    if (nextName) this.say(`Rest. Next: ${nextName}`);
+    void nextName;
+    this.say("Rest");
   }
 
   /** Last three seconds of a phase. */

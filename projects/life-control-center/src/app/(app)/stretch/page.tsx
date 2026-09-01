@@ -17,6 +17,7 @@ import {
   STRETCH_MOVES, STRETCH_TOTAL_SECONDS, buildStretchPlan, type StretchPhase,
 } from "@/lib/routine/stretching";
 import { cues } from "@/lib/routine/cues";
+import { STRETCH_TRACKS, trackUrl } from "@/lib/routine/music";
 import { readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { checklistToday } from "@/lib/checklist/day";
@@ -58,6 +59,40 @@ export default function StretchPage() {
   const [step, setStep] = useState(0);                 // index into PLAN
   const [remainingMs, setRemainingMs] = useState(PLAN[0].seconds * 1000);
   const [voice, setVoice] = useState(true);
+  const [track, setTrack] = useState<string>("off");           // track slug | "off"
+  const [previewing, setPreviewing] = useState<string | null>(null);
+  const music = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t) setTrack(t); } catch { /* ignore */ } }, []);
+  const pickTrack = (slug: string) => {
+    setTrack(slug);
+    try { localStorage.setItem("cc-stretch-track", slug); } catch { /* ignore */ }
+  };
+  const stopMusic = useCallback(() => {
+    music.current?.pause();
+    if (music.current) music.current.currentTime = 0;
+    setPreviewing(null);
+  }, []);
+  const playTrack = useCallback((slug: string, volume: number) => {
+    if (!music.current) music.current = new Audio();
+    const el = music.current;
+    if (!el.src.endsWith(trackUrl(slug))) el.src = trackUrl(slug);
+    el.loop = true;
+    el.volume = volume;
+    el.play().catch(() => { /* autoplay refused — beeps and voice still work */ });
+  }, []);
+  const preview = (slug: string) => {
+    if (previewing === slug) { stopMusic(); return; }
+    playTrack(slug, 0.5);
+    setPreviewing(slug);
+  };
+  // Music follows the session: starts with Start, pauses with Pause, stops at the end.
+  useEffect(() => {
+    if (status === "running" && track !== "off") { setPreviewing(null); playTrack(track, 0.35); }
+    else if (status === "paused") music.current?.pause();
+    else stopMusic();
+  }, [status, track, playTrack, stopMusic]);
+  useEffect(() => () => stopMusic(), [stopMusic]);  // leaving the page stops everything
+
   const phaseEndsAt = useRef<number>(0);               // absolute ms
   const pausedRemaining = useRef<number>(0);
   const lastTickSecond = useRef<number>(-1);
@@ -156,7 +191,7 @@ export default function StretchPage() {
     cues.setVoice(voice);
     setStatus("running");
     enterStep(0, false);
-    cues.say(`Get ready. First: ${STRETCH_MOVES[0]}`);
+    cues.say("Get ready");  // the first move announces itself when it starts
   };
   const pause = () => {
     pausedRemaining.current = Math.max(0, phaseEndsAt.current - Date.now());
@@ -223,6 +258,26 @@ export default function StretchPage() {
           <span>Speak each movement name</span>
           <input type="checkbox" checked={voice} onChange={(e) => setVoice(e.target.checked)} style={{ width: 22, height: 22, accentColor: "var(--violet)" }} />
         </label>
+
+        <section className="cc-card">
+          <div className="cc-card-head"><span className="title">Music</span><span className="tail">{track === "off" ? "off" : STRETCH_TRACKS.find((m) => m.slug === track)?.title}</span></div>
+          <div className="cc-card-body" style={{ display: "grid", gap: 2 }}>
+            <button onClick={() => { pickTrack("off"); stopMusic(); }} style={{ display: "flex", alignItems: "center", minHeight: 46, padding: "0 10px", borderRadius: 10, border: `1px solid ${track === "off" ? "var(--violet)" : "transparent"}`, background: track === "off" ? "var(--accent-soft)" : "transparent", color: "var(--ink)", font: "inherit", fontSize: 16, cursor: "pointer", textAlign: "left" }}>No music</button>
+            {STRETCH_TRACKS.map((m) => {
+              const on = track === m.slug;
+              return (
+                <div key={m.slug} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 6 }}>
+                  <button onClick={() => pickTrack(m.slug)} style={{ display: "grid", textAlign: "left", padding: "6px 10px", minHeight: 52, borderRadius: 10, border: `1px solid ${on ? "var(--violet)" : "transparent"}`, background: on ? "var(--accent-soft)" : "transparent", color: "var(--ink)", font: "inherit", cursor: "pointer", alignContent: "center" }}>
+                    <span style={{ fontSize: 16 }}>{m.title}</span>
+                    <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{m.by}</span>
+                  </button>
+                  <button onClick={() => preview(m.slug)} aria-label={previewing === m.slug ? "Stop preview" : `Preview ${m.title}`} style={{ width: 48, minHeight: 52, borderRadius: 10, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: previewing === m.slug ? "var(--violet)" : "var(--ink-2)", fontSize: 16, cursor: "pointer" }}>{previewing === m.slug ? "■" : "▶"}</button>
+                </div>
+              );
+            })}
+            <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 10px 4px" }}>Music: Kevin MacLeod — incompetech.com · CC BY 4.0</div>
+          </div>
+        </section>
 
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Order</span></div>

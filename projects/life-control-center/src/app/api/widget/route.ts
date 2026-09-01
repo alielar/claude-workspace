@@ -69,6 +69,7 @@ export async function GET() {
       bestStreak: data.bestStreak30 ?? 0,
       next,
       todosDue: badgeCount(todos, today),
+      someday: todos.filter((t) => !t.deleted && !t.doneAt && (t.area ?? "personal") !== "list" && (t.someday || !t.dueDate)).length,
       urgent,
       todosWork: badgeCount(todos, today, "work"),
       trainedToday: items.some((i) => i.source === "workout" && i.completedToday),

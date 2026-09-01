@@ -86,6 +86,14 @@ phone in my pocket. Order:
 6. Alternating Cossack Squats
 7. Walk Outs
 8. Down Dog Calf Stretch
+9. **Flo integration — cycle awareness (recorded 2026-09-01, DON'T build yet).** Ali wants
+   the app to track his girlfriend's cycle (Flo is the source she uses) and, alongside the
+   dates, give him plain guidance on how to be supportive at each point of the month (energy,
+   mood, what helps, what to avoid). Notes for whoever builds it: Flo has no public API — the
+   likely shape is manual entry of the cycle start date (+ average length) and the app computes
+   the phases itself; a small card on Today ("Day 14 · around ovulation — energy usually high")
+   plus a Docs-style guidance sheet per phase. Privacy: this is her data on his phone — keep it
+   out of widgets and notifications by default. Build only when Ali says go.
 9. Cat Cow
 10. Push Up +
 11. Bootstrapper Squats
