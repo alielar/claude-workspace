@@ -235,6 +235,10 @@ const chipStyle = (on: boolean): React.CSSProperties => ({
   border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
 });
 
+const NAG_STEPS = [30, 15, 10, 5];
+const nextNag = (cur: number | null | undefined) => NAG_STEPS[(NAG_STEPS.indexOf(cur ?? 30) + 1) % NAG_STEPS.length];
+const nagChip: React.CSSProperties = { minHeight: 28, padding: "0 8px", borderRadius: 8, fontSize: 13, font: "inherit", cursor: "pointer", border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)" };
+
 // ─── Task detail sheet ────────────────────────────────────────────────────────
 
 function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }: {
@@ -274,7 +278,14 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Time (reminder)
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>Time (reminder)
+              {!!d.dueDate && !d.someday && (
+                <button type="button" onClick={(e) => { e.preventDefault(); set({ nagMinutes: nextNag(d.nagMinutes) }); }} style={nagChip} title="How often it nags until done">
+                  every {d.nagMinutes ?? 30}m
+                </button>
+              )}
+            </span>
             <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
           </label>
           <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Project
@@ -407,6 +418,9 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>
           <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)} aria-pressed={remind}>Remind me</button>
+          {remind && !!d.dueDate && (
+            <button onClick={() => set({ nagMinutes: nextNag(d.nagMinutes) })} style={nagChip} title="How often it nags until done">every {d.nagMinutes ?? 30}m</button>
+          )}
           <input className="cc-input" list="doc-tags" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="Tag" style={{ fontSize: 16, minHeight: 40, flex: 1, minWidth: 110, borderRadius: 10 }} />
           <datalist id="doc-tags">{tags.map((p) => <option key={p} value={p} />)}</datalist>
         </div>

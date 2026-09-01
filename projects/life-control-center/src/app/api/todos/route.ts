@@ -14,7 +14,7 @@ import type { Todo, Priority, Area } from "@/lib/todo/types";
 function rowToTodo(r: typeof todos.$inferSelect): Todo {
   return {
     clientId: r.clientId, title: r.title, area: (r.area === "work" || r.area === "list" ? r.area : "personal") as Area, notes: r.notes, project: r.project,
-    dueDate: r.dueDate, dueTime: r.dueTime, evening: r.evening, someday: r.someday,
+    dueDate: r.dueDate, dueTime: r.dueTime, evening: r.evening, someday: r.someday, nagMinutes: r.nagMinutes ?? null,
     priority: (r.priority as Priority) ?? 0, sortOrder: r.sortOrder,
     doneAt: r.doneAt ? r.doneAt.getTime() : null,
     createdAt: r.createdAt.getTime(), updatedAt: r.updatedAt.getTime(), deleted: r.deleted,
@@ -53,6 +53,7 @@ export async function PUT(req: Request) {
     dueTime: typeof b.dueTime === "string" && HM.test(b.dueTime) ? b.dueTime : null,
     evening: !!b.evening,
     someday: !!b.someday,
+    nagMinutes: [5, 10, 15, 30].includes(Number(b.nagMinutes)) ? Number(b.nagMinutes) : null,
     priority: b.priority === 2 ? 2 : b.priority === 1 ? 1 : 0,
     sortOrder: Number.isFinite(Number(b.sortOrder)) ? Math.round(Number(b.sortOrder)) : 0,
     doneAt: b.doneAt ? new Date(Number(b.doneAt)) : null,

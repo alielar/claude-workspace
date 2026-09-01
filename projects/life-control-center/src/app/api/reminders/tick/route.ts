@@ -11,7 +11,7 @@ import { sendToUser } from "@/lib/push/server";
  *
  * Called every 5 minutes by an external pinger (Vercel's free cron only runs daily).
  * Finds tasks that are due and not done, and re-sends one notification per list
- * (Personal / Work) every 30 minutes until they're ticked. Quiet 23:00–08:00 (Madrid).
+ * (Personal / Work) at each task's own cadence (5/10/15/30 min — default 30) until ticked. Quiet 23:00–08:00 (Madrid).
  *
  *  due = a date with a time → once the time has passed;
  *        a date with no time → from 14:00 that day ("evening" tasks from 19:00);
@@ -20,7 +20,7 @@ import { sendToUser } from "@/lib/push/server";
 
 export const dynamic = "force-dynamic";
 
-const NAG_EVERY_MS = 30 * 60 * 1000;
+const nagMs = (t: { nagMinutes: number | null }) => (t.nagMinutes ?? 30) * 60 * 1000;
 
 function madridHM(now: Date): string {
   return new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hour12: false }).format(now);
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     if (t.dueTime) return hm >= t.dueTime;
     return hm >= (t.evening ? "19:00" : "14:00");
   });
-  const toNag = due.filter((t) => !t.lastNaggedAt || now.getTime() - t.lastNaggedAt.getTime() >= NAG_EVERY_MS);
+  const toNag = due.filter((t) => !t.lastNaggedAt || now.getTime() - t.lastNaggedAt.getTime() >= nagMs(t));
   if (toNag.length === 0) return NextResponse.json({ due: due.length, sent: 0, hm });
 
   // One notification per list. Everything due in that list is mentioned, so a nag never

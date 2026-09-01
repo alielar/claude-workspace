@@ -31,6 +31,7 @@ export type Todo = {
   dueDate: string | null;      // YYYY-MM-DD (Europe/Madrid day) — null = Anytime / Someday
   dueTime: string | null;      // HH:MM
   evening: boolean;            // "This evening" (Things) — shown in the evening block of that day
+  nagMinutes?: number | null;  // reminder nag cadence in minutes (5/10/15/30); empty = 30
   someday: boolean;            // parked, out of the way
   priority: Priority;
   sortOrder: number;

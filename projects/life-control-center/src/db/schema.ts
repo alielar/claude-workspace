@@ -152,6 +152,7 @@ export const todos = sqliteTable("todos", {
   sortOrder: integer("sort_order").notNull().default(0),
   doneAt: integer("done_at", { mode: "timestamp_ms" }),
   lastNaggedAt: integer("last_nagged_at", { mode: "timestamp_ms" }),  // reminders: last "nag until done" push
+  nagMinutes: integer("nag_minutes"),  // per-task nag cadence 5/10/15/30; null = 30
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
