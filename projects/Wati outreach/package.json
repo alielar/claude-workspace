@@ -13,6 +13,7 @@
     "french-stalled": "node --env-file=.env french-stalled.mjs",
     "classify-stalled": "node classify-stalled.mjs",
     "find-missed": "node find-missed.mjs",
-    "slots-no-answer": "node --env-file=.env slots-no-answer.mjs"
+    "slots-no-answer": "node --env-file=.env slots-no-answer.mjs",
+    "check-601": "node --env-file=.env check-601.mjs"
   }
 }

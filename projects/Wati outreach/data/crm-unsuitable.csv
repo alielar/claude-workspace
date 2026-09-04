@@ -1,0 +1,6 @@
+phone,full_name,reason,recorded_on
+15485105216,Yacaca,"not in any CRM — unknown number, bot would stay silent; North-American, does not belong in this list",2026-09-04
+33644960403,Luc,"legacy:169935 — language IT + status Disinteressato; bot would reply in Italian via the IT tenant, and they already said not interested",2026-09-04
+33633961583,Beunet,legacy:227170 — terminal status Offerta rifiutata; bot forwards to the tutor number instead of conversing,2026-09-04
+33782103139,Marchal,legacy:224382 — terminal status,2026-09-04
+33625356253,Nadia,legacy:233021 — terminal status; already got a terminal forward on 2026-08-10,2026-09-04

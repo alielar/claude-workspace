@@ -1,0 +1,567 @@
+{
+ "taken": "2026-09-04T15:00:51.613Z",
+ "people": {
+  "32495438192": "Teme",
+  "33783404941": "Lisa",
+  "33616038498": "Audrey",
+  "33646501460": "Shahinaz",
+  "33616277667": "Mounia",
+  "33780156347": "Flora",
+  "33630245261": "Bulliat",
+  "33767981837": "Chahinez",
+  "33785030477": "Nirina",
+  "33140151159": "Manon",
+  "32465731494": "Sika",
+  "33620375977": "Patrice",
+  "33644305117": "Varin",
+  "33652914929": "Mahmoud",
+  "33616515883": "Causse",
+  "32485649011": "Kucuker",
+  "33695947248": "Sirine",
+  "33614654845": "Tchadirdjian",
+  "33749816409": "Bedir",
+  "33759316771": "Djonkamla",
+  "33646597724": "Coulibaly",
+  "33650003228": "Danielle",
+  "33611241310": "Sandral-Lasbordes",
+  "33647583749": "Soum",
+  "33651567623": "Harmouche",
+  "32470934111": "Bosonga",
+  "33651563871": "Azzaoui",
+  "33674831324": "Trojette",
+  "33758210169": "Guimouar",
+  "33641849994": "Mercinah",
+  "33759607509": "Farid",
+  "32472634253": "Gobey",
+  "33754207457": "Cheikh",
+  "33651325975": "Magouri",
+  "33769946244": "Nanguy",
+  "33745722841": "Mohamed",
+  "33666027633": "Farida",
+  "33764418353": "Omar",
+  "33767809357": "Corinne",
+  "33768756985": "Mane",
+  "33682482404": "Bosson",
+  "33749435193": "Rodrigo",
+  "33788625513": "Titouan",
+  "33767427109": "Clement",
+  "33753332653": "Hassina",
+  "61401706505": "Valli",
+  "33613751575": "Majida",
+  "32470496800": "Michel",
+  "33607460799": "Juan",
+  "33625701241": "Lalala",
+  "33783565836": "Ouena",
+  "33610750497": "Bouregba",
+  "33749404313": "Ophelie",
+  "33660086777": "Malik",
+  "33629397763": "Nadine",
+  "33660337452": "Manel",
+  "33650006143": "Sabrina",
+  "33769028560": "Yanis",
+  "33635797294": "Kylian",
+  "33614921090": "Christine",
+  "33620957675": "Stéphanie",
+  "33635895944": "Milca",
+  "33601444741": "Vildana",
+  "32465217561": "Traore",
+  "32492762975": "Mohammad",
+  "33752815816": "Fellas",
+  "33649806526": "Béatrice",
+  "32473649363": "Meftah",
+  "33769370906": "Gomez",
+  "33605888316": "Maache",
+  "33766124314": "Salou",
+  "32465832052": "Marie",
+  "33749191649": "Cedric",
+  "33785133329": "Philippe",
+  "33644312877": "Jouini",
+  "33605658392": "Abla",
+  "33759763627": "Mahamat",
+  "33751493784": "Ibou",
+  "32487594550": "Maca",
+  "33644950009": "Filsan"
+ },
+ "state": {
+  "32495438192": {
+   "last_updated": "2026-03-04T18:43:20.275Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Telemarketing only"
+  },
+  "33783404941": {
+   "last_updated": "2026-01-29T14:21:55.846Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33616038498": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33646501460": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33616277667": {
+   "last_updated": "2026-01-29T14:21:55.846Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33780156347": {
+   "last_updated": "2026-09-04T14:01:26.95Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33630245261": {
+   "last_updated": "2026-01-29T14:21:55.845Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33767981837": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33785030477": {
+   "last_updated": "2026-09-04T14:01:32.106Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33140151159": {
+   "last_updated": "2026-09-04T14:01:28.038Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32465731494": {
+   "last_updated": "2026-01-29T14:21:55.845Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33620375977": {
+   "last_updated": "2026-01-29T14:21:55.845Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33644305117": {
+   "last_updated": "2026-09-04T14:01:32.323Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33652914929": {
+   "last_updated": "2026-01-29T14:21:55.844Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33616515883": {
+   "last_updated": "2026-01-29T14:21:55.844Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32485649011": {
+   "last_updated": "2026-02-05T13:10:17.481Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Telemarketing only"
+  },
+  "33695947248": {
+   "last_updated": "2026-01-29T14:21:55.843Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33614654845": {
+   "last_updated": "2026-01-29T14:21:55.841Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33749816409": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33759316771": {
+   "last_updated": "2026-09-04T14:01:34.919Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33646597724": {
+   "last_updated": "2026-01-29T14:21:55.836Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33650003228": {
+   "last_updated": "2026-01-29T14:21:55.836Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33611241310": {
+   "last_updated": "2026-01-29T14:21:55.842Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33647583749": {
+   "last_updated": "2026-01-29T14:21:55.835Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33651567623": {
+   "last_updated": "2026-09-04T14:57:29.299Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32470934111": {
+   "last_updated": "2026-05-23T20:40:38.426Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Telemarketing only"
+  },
+  "33651563871": {
+   "last_updated": "2026-01-29T14:21:55.841Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33674831324": {
+   "last_updated": "2026-01-29T14:21:55.841Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33758210169": {
+   "last_updated": "2026-01-29T14:21:55.833Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33641849994": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing|Telemarketing only"
+  },
+  "33759607509": {
+   "last_updated": "2026-01-29T14:21:55.834Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32472634253": {
+   "last_updated": "2026-01-29T14:21:52.439Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33754207457": {
+   "last_updated": "2026-01-29T14:21:52.441Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33651325975": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33769946244": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33745722841": {
+   "last_updated": "2026-01-29T14:21:52.442Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33666027633": {
+   "last_updated": "2026-02-05T13:10:54.577Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33764418353": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33767809357": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33768756985": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33682482404": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33749435193": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33788625513": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33767427109": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33753332653": {
+   "last_updated": "2026-01-29T14:21:52.442Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "61401706505": {
+   "last_updated": "2026-01-29T14:21:55.84Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33613751575": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32470496800": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33607460799": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33625701241": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33783565836": {
+   "last_updated": "2026-09-04T14:43:45.293Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33610750497": {
+   "last_updated": "2026-01-29T14:21:55.831Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33749404313": {
+   "last_updated": "2026-09-04T14:43:45.293Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33660086777": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33629397763": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33660337452": {
+   "last_updated": "2026-01-29T14:21:55.839Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33650006143": {
+   "last_updated": "2026-09-04T14:54:06.478Z",
+   "stage": "Meeting scheduled",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing|Telemarketing only|Default Spain Sales Team|Default New Germany telemarketing Team|Default New France TM Team|Default Germany Sales Team|Default Team Instagram|Default Team Messenger|Default Team Instagram|Default Team Messenger|Default Team WA|Default Team WA2|Default Team WA3|English Travel"
+  },
+  "33769028560": {
+   "last_updated": "2026-05-23T17:20:20.242Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Telemarketing only"
+  },
+  "33635797294": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33614921090": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33620957675": {
+   "last_updated": "2026-09-04T14:59:25.819Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33635895944": {
+   "last_updated": "2026-01-29T14:21:55.836Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33601444741": {
+   "last_updated": "2026-01-29T14:21:52.442Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32465217561": {
+   "last_updated": "2026-05-24T08:00:29.754Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32492762975": {
+   "last_updated": "2026-01-29T14:21:52.443Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33752815816": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33649806526": {
+   "last_updated": "2026-01-29T14:21:52.444Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32473649363": {
+   "last_updated": "2026-01-29T14:21:52.444Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33769370906": {
+   "last_updated": "2026-01-29T14:21:48.232Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33605888316": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33766124314": {
+   "last_updated": "2026-05-22T12:40:36.728Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Telemarketing only"
+  },
+  "32465832052": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33749191649": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33785133329": {
+   "last_updated": "2026-01-29T14:21:55.838Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33644312877": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33605658392": {
+   "last_updated": "2026-01-29T14:21:52.441Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33759763627": {
+   "last_updated": "2026-09-04T14:59:40.323Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33751493784": {
+   "last_updated": "2026-09-04T14:59:35.685Z",
+   "stage": "To be converted",
+   "status": "invalid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "32487594550": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  },
+  "33644950009": {
+   "last_updated": "2026-01-29T14:21:55.837Z",
+   "stage": "To be converted",
+   "status": "valid",
+   "teams": "Default Team|Telemarketing"
+  }
+ }
+}

@@ -15,9 +15,12 @@
 //   --track <t>      no_meeting | had_meeting
 //   --limit <n>      only the first n people
 //   --dry-run        print what would happen, send nothing
-//   --gap <seconds>  wait between the 1st and 2nd message (default 5)
+//   --gap <seconds>  wait between the 1st and 2nd message (default 10)
+//   --channel <n>    send from a specific WhatsApp number, e.g. 33671283778
+//                    (the telemarketing line). Omit to use the default channel.
 //   --batch <n>      people per batch (default 10)
 //   --every <min>    minutes from the start of one batch to the next (default 10)
+//   --until <HH:MM>  start no new batch at or after this time (Europe/Madrid)
 
 import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
 import { checkKeys, wati } from './wati.mjs';
@@ -62,10 +65,20 @@ function firstName(full) {
 }
 
 const DRY = flag('dry-run');
-const GAP = Number(arg('gap', 5)) * 1000;
+const GAP = Number(arg('gap', 10)) * 1000;
 const BATCH = Number(arg('batch', 10));
 const EVERY = Number(arg('every', 10)) * 60 * 1000;
 const LOG = 'logs/sent.jsonl';
+
+// A hard stop, so an evening run cannot spill past a sensible hour.
+// --until 21:00 means "start no new batch at or after 21:00 Europe/Madrid".
+const UNTIL = arg('until');
+function pastDeadline() {
+  if (!UNTIL) return false;
+  const [h, m] = String(UNTIL).split(':').map(Number);
+  const local = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
+  return local.getHours() * 60 + local.getMinutes() >= h * 60 + (m || 0);
+}
 
 const problems = checkKeys();
 if (problems.length) {
@@ -138,6 +151,28 @@ if (existsSync(MR_FILE)) {
     if (!line.trim()) continue;
     const phone = (line.match(/^"([^"]*)"/) || [])[1];
     if (phone) blocked.set(phone.replace(/[^\d]/g, ''), 'asked to be removed / called it harassment');
+  }
+}
+
+// Leads whose CSV track turned out to be wrong — their Wati history shows a
+// meeting already happened, or a sequence already ran. Found by check-601.mjs.
+const WT_FILE = 'data/wrong-track.csv';
+if (existsSync(WT_FILE)) {
+  for (const line of readFileSync(WT_FILE, 'utf8').split('\n').slice(1)) {
+    if (!line.trim()) continue;
+    const phone = (line.match(/^"?([\d+]+)"?/) || [])[1];
+    if (phone) blocked.set(phone.replace(/[^\d]/g, ''), 'wrong track — see data/wrong-track.csv');
+  }
+}
+
+// Numbers Ali ruled out from the CRM: unknown to the CRM, wrong language
+// tenant, or a terminal status where the bot forwards instead of talking.
+const CU_FILE = 'data/crm-unsuitable.csv';
+if (existsSync(CU_FILE)) {
+  for (const line of readFileSync(CU_FILE, 'utf8').split('\n').slice(1)) {
+    if (!line.trim()) continue;
+    const phone = (line.match(/^"?(\d+)"?/) || [])[1];
+    if (phone) blocked.set(phone, 'ruled out from the CRM — see data/crm-unsuitable.csv');
   }
 }
 
@@ -288,8 +323,55 @@ const record = (entry) => {
 
 // ── Sending ──────────────────────────────────────────────────────────────────
 
+// Sending from a specific number needs the v3 API, which lives on the bare
+// host with no tenant in the path — and resolves the channel by NAME OR NUMBER,
+// never by its id. Passing an id silently sends on the default channel instead.
+const CHANNEL = arg('channel');
+const V3_SEND = 'https://eu-api.wati.io/api/ext/v3/messageTemplates/send';
+const RAW_TOKEN = (process.env.WATI_TOKEN || '').replace(/^Bearer\s+/i, '');
+
+// One person per call. Sending a whole batch in a single call would be fewer
+// requests, but the per-recipient name substitution has never been verified on
+// this endpoint — and because the telemarketing channel cannot be read back,
+// a mistake there would be invisible. One name per request removes the doubt.
+async function sendOneV3(template, person) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(V3_SEND, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RAW_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template_name: template,
+          broadcast_name: `${template}_${new Date().toISOString().slice(0, 10)}`,
+          channel: String(CHANNEL),
+          recipients: [{ phone_number: person.phone, custom_params: [{ name: 'name', value: person.name }] }],
+        }),
+      });
+      const text = await res.text();
+      if (!res.ok) return { ok: false, error: `HTTP ${res.status} ${text.slice(0, 160)}` };
+      const data = JSON.parse(text);
+      if (data.success !== true) return { ok: false, error: text.slice(0, 160) };
+      const errs = (data.recipients || [])[0]?.errors || [];
+      return errs.length ? { ok: false, error: JSON.stringify(errs).slice(0, 160) } : { ok: true };
+    } catch (err) {
+      if (attempt === 2) return { ok: false, error: err.message };
+      await new Promise((r) => setTimeout(r, 800 * 2 ** attempt));
+    }
+  }
+}
+
+async function sendToBatchV3(template, people) {
+  const out = [];
+  for (const person of people) out.push(await sendOneV3(template, person));
+  return out;
+}
+
 // One API call carries a whole batch, each person with their own name.
 async function sendToBatch(template, people) {
+  if (CHANNEL) {
+    if (DRY) return people.map(() => ({ ok: true }));
+    return sendToBatchV3(template, people);
+  }
   const receivers = people.map((p) => ({
     whatsappNumber: p.phone,
     customParams: [{ name: 'name', value: p.name }],
@@ -328,11 +410,18 @@ const estimateMin = Math.round(((batches.length - 1) * EVERY + GAP) / 60000);
 console.log(`\n  ${DRY ? 'DRY RUN — nothing will be sent.' : 'Sending for real.'}`);
 console.log(`  ${audience.length} people · ${totalMessages} messages · ${batches.length} batch(es)`);
 if (!testPhone) console.log(`  ${BATCH} people per batch, a new batch every ${EVERY / 60000} min → about ${estimateMin} min total`);
-console.log(`  ${GAP / 1000}s between each person's first and second message\n`);
+console.log(`  ${GAP / 1000}s between each person's first and second message`);
+console.log(`  sending from: ${CHANNEL ? `+${CHANNEL}` : 'the default channel (France Sales)'}\n`);
 
 let sent = 0, failed = 0, skipped = 0;
 
+let stoppedEarly = 0;
 for (const [n, batch] of batches.entries()) {
+  if (pastDeadline()) {
+    stoppedEarly = batches.length - n;
+    console.log(`\n  Reached ${UNTIL} Europe/Madrid — stopping. ${stoppedEarly} batch(es) not sent; they stay in the queue for next time.`);
+    break;
+  }
   const startedAt = Date.now();
 
   // Both messages of a pair use the same track, so group by it.
@@ -349,7 +438,7 @@ for (const [n, batch] of batches.entries()) {
       todo.forEach((p, i) => {
         const r = results[i];
         if (r.ok) sent++; else failed++;
-        record({ leadId: p.leadId, phone: p.phone, name: p.name, template, ok: r.ok, error: r.error });
+        record({ leadId: p.leadId, phone: p.phone, name: p.name, template, channel: CHANNEL || 'default', ok: r.ok, error: r.error });
         if (testPhone || batches.length === 1) {
           const status = r.ok ? 'sent' : `FAILED — ${r.error}`;
           console.log(`   ${template.padEnd(20)} → +${p.phone}  (${p.name})  ${status}`);
