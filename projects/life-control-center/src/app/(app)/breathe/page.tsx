@@ -31,22 +31,36 @@ const RETENTION_S = 90;
 const RECOVERY_IN_MS = 3500;
 const RECOVERY_HOLD_S = 15;
 
-const FREQS: { hz: number; label: string }[] = [
-  { hz: 174, label: "grounding" },
-  { hz: 285, label: "restoring" },
-  { hz: 396, label: "release" },
-  { hz: 417, label: "reset" },
-  { hz: 432, label: "natural calm" },
-  { hz: 528, label: "the classic" },
-  { hz: 639, label: "connection" },
-  { hz: 741, label: "clarity" },
-  { hz: 852, label: "intuition" },
-  { hz: 963, label: "stillness" },
+/** Hold-tone options in two honest groups: brainwave "beats" with some published
+ * evidence (they need headphones · each ear gets a slightly different pitch and the
+ * brain hears the difference as a slow pulse), and the traditional solfeggio tones
+ * (pleasant, zero evidence · labels are lore). */
+type FreqOpt = { id: string; hz: number; beatHz?: number; label: string; sub: string };
+const FREQS_EVIDENCE: FreqOpt[] = [
+  { id: "theta6",  hz: 200, beatHz: 6,  label: "6 Hz theta",  sub: "deep relaxation · best-studied" },
+  { id: "alpha10", hz: 220, beatHz: 10, label: "10 Hz alpha", sub: "calm, relaxed focus" },
+  { id: "gamma40", hz: 240, beatHz: 40, label: "40 Hz gamma", sub: "alertness · early research" },
 ];
+const FREQS_TRADITION: FreqOpt[] = [
+  { id: "t174", hz: 174, label: "174 Hz", sub: "grounding" },
+  { id: "t285", hz: 285, label: "285 Hz", sub: "restoring" },
+  { id: "t396", hz: 396, label: "396 Hz", sub: "release" },
+  { id: "t417", hz: 417, label: "417 Hz", sub: "reset" },
+  { id: "t432", hz: 432, label: "432 Hz", sub: "natural calm" },
+  { id: "t528", hz: 528, label: "528 Hz", sub: "the classic" },
+  { id: "t639", hz: 639, label: "639 Hz", sub: "connection" },
+  { id: "t741", hz: 741, label: "741 Hz", sub: "clarity" },
+  { id: "t852", hz: 852, label: "852 Hz", sub: "intuition" },
+  { id: "t963", hz: 963, label: "963 Hz", sub: "stillness" },
+];
+const ALL_FREQS = [...FREQS_EVIDENCE, ...FREQS_TRADITION];
 
-type BreathStyle = "waves" | "chime" | "sweep";
+type BreathStyle = "waves" | "ocean" | "bowl" | "hum" | "chime" | "sweep";
 const STYLES: { key: BreathStyle; label: string; hint: string }[] = [
   { key: "waves", label: "Waves", hint: "soft air swell" },
+  { key: "ocean", label: "Ocean", hint: "deep, slow surf" },
+  { key: "bowl",  label: "Bowl",  hint: "singing bowl" },
+  { key: "hum",   label: "Hum",   hint: "low voice-like tone" },
   { key: "chime", label: "Chime", hint: "one quiet note" },
   { key: "sweep", label: "Sweep", hint: "rising and falling tone" },
 ];
@@ -96,29 +110,66 @@ class BreathSynth {
       return;
     }
 
-    if (style === "waves") {
+    if (style === "waves" || style === "ocean") {
       const buf = this.noise(); if (!buf) return;
       const src = ctx.createBufferSource();
       src.buffer = buf; src.loop = true;
       const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass"; filter.Q.value = 0.6;
+      filter.type = "lowpass"; filter.Q.value = style === "ocean" ? 0.9 : 0.6;
       const gain = ctx.createGain();
-      const peak = 0.10 * vol;
+      // Ocean sits much lower in pitch and swells later · reads as distant surf.
+      const [lo, hi] = style === "ocean" ? [90, 380] : [240, 850];
+      const peak = (style === "ocean" ? 0.14 : 0.10) * vol;
       if (kind === "in") {
-        filter.frequency.setValueAtTime(240, t);
-        filter.frequency.linearRampToValueAtTime(850, t + dur);
+        filter.frequency.setValueAtTime(lo, t);
+        filter.frequency.linearRampToValueAtTime(hi, t + dur);
         gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(peak, t + dur * 0.7);
+        gain.gain.linearRampToValueAtTime(peak, t + dur * (style === "ocean" ? 0.85 : 0.7));
         gain.gain.linearRampToValueAtTime(0.001, t + dur);
       } else {
-        filter.frequency.setValueAtTime(850, t);
-        filter.frequency.linearRampToValueAtTime(240, t + dur);
+        filter.frequency.setValueAtTime(hi, t);
+        filter.frequency.linearRampToValueAtTime(lo, t + dur);
         gain.gain.setValueAtTime(0, t);
         gain.gain.linearRampToValueAtTime(peak * 0.8, t + dur * 0.25);
         gain.gain.linearRampToValueAtTime(0.001, t + dur);
       }
       src.connect(filter).connect(gain).connect(ctx.destination);
       src.start(t); src.stop(t + dur + 0.05);
+      return;
+    }
+
+    if (style === "bowl") {
+      // Struck singing bowl: a base note + two soft inharmonic partials, long ring.
+      const base = kind === "in" ? 329.6 : 246.9;   // E4 in · B3 out
+      const ring = Math.min(dur + 0.6, 2.6);
+      for (const [mult, amp] of [[1, 0.14], [2.71, 0.05], [5.4, 0.018]] as const) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine"; osc.frequency.value = base * mult;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(amp * vol, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + ring);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t); osc.stop(t + ring + 0.05);
+      }
+      return;
+    }
+
+    if (style === "hum") {
+      // A low voice-like hum: fundamental + quiet 2nd and 3rd harmonics,
+      // slow attack and release so it breathes rather than beeps.
+      const base = kind === "in" ? 146.8 : 110;     // D3 in · A2 out
+      for (const [mult, amp] of [[1, 0.14], [2, 0.05], [3, 0.02]] as const) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine"; osc.frequency.value = base * mult;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(amp * vol, t + dur * 0.4);
+        gain.gain.setValueAtTime(amp * vol, t + dur * 0.7);
+        gain.gain.linearRampToValueAtTime(0, t + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t); osc.stop(t + dur + 0.05);
+      }
       return;
     }
 
@@ -152,9 +203,11 @@ class BreathSynth {
     }
   }
 
-  /** Continuous frequency pad. 0.15 Hz detune = a slow shimmer over ~7 s,
-   * nothing that repeats like an alarm. */
-  padStart(hz: number, fadeIn = 2.5) {
+  /** Continuous frequency pad.
+   * Plain tone: ONE oscillator, constant volume after a short fade-in.
+   * beatHz set (binaural): left ear hz, right ear hz+beatHz · steady in each ear,
+   * the "beat" happens in the brain, so it needs headphones. */
+  padStart(hz: number, fadeIn = 2.5, beatHz?: number) {
     const ctx = this.ctx; if (!ctx) return;
     this.padStop(0.15);
     const gain = ctx.createGain();
@@ -162,12 +215,22 @@ class BreathSynth {
     gain.gain.setValueAtTime(0, t);
     gain.gain.linearRampToValueAtTime(0.11, t + fadeIn);
     gain.connect(ctx.destination);
-    const osc = [hz, hz + 0.15].map((f) => {
+    let osc: OscillatorNode[];
+    if (beatHz) {
+      osc = [[hz, -1], [hz + beatHz, 1]].map(([f, side]) => {
+        const o = ctx.createOscillator();
+        o.type = "sine"; o.frequency.value = f;
+        const pan = ctx.createStereoPanner();
+        pan.pan.value = side;
+        o.connect(pan).connect(gain); o.start(t);
+        return o;
+      });
+    } else {
       const o = ctx.createOscillator();
-      o.type = "sine"; o.frequency.value = f;
+      o.type = "sine"; o.frequency.value = hz;
       o.connect(gain); o.start(t);
-      return o;
-    });
+      osc = [o];
+    }
     this.pad = { osc, gain };
   }
 
@@ -213,7 +276,7 @@ export default function BreathePage() {
   const [inhaling, setInhaling] = useState(true);
   const [remaining, setRemaining] = useState(RETENTION_S);
   const [holds, setHolds] = useState<number[]>([]);
-  const [freq, setFreq] = useState<number>(528);
+  const [freqId, setFreqId] = useState<string>("t528");
   const [style, setStyle] = useState<BreathStyle>("waves");
   const [vol, setVol] = useState(50);
   const [previewingFreq, setPreviewingFreq] = useState(false);
@@ -225,14 +288,20 @@ export default function BreathePage() {
   const phaseRef = useRef<Phase>("idle");
   const styleRef = useRef<BreathStyle>("waves");
   const volRef = useRef(0.5);
+  const freqRef = useRef<FreqOpt>(FREQS_TRADITION[5]);
   phaseRef.current = phase;
   styleRef.current = style;
   volRef.current = vol / 100;
 
+  const freqOpt = ALL_FREQS.find((f) => f.id === freqId) ?? FREQS_TRADITION[5];
+  freqRef.current = freqOpt;
+
   useEffect(() => {
     try {
-      const f = Number(localStorage.getItem("cc-breathe-freq"));
-      if (FREQS.some((x) => x.hz === f)) setFreq(f);
+      const raw = localStorage.getItem("cc-breathe-freq");
+      // Old versions stored the plain number (e.g. "528") · map it to the tone id.
+      if (raw && ALL_FREQS.some((x) => x.id === raw)) setFreqId(raw);
+      else if (raw && ALL_FREQS.some((x) => x.id === `t${raw}`)) setFreqId(`t${raw}`);
       const s = localStorage.getItem("cc-breathe-sound") as BreathStyle | null;
       if (s && STYLES.some((x) => x.key === s)) setStyle(s);
       const v = Number(localStorage.getItem("cc-breathe-vol"));
@@ -247,12 +316,12 @@ export default function BreathePage() {
   }, []);
 
   // ── Idle previews ───────────────────────────────────────────────────────────
-  const pickFreq = (hz: number) => {
-    setFreq(hz);
-    try { localStorage.setItem("cc-breathe-freq", String(hz)); } catch { /* ignore */ }
+  const pickFreq = (f: FreqOpt) => {
+    setFreqId(f.id);
+    try { localStorage.setItem("cc-breathe-freq", f.id); } catch { /* ignore */ }
     // preview the tone right away, a few seconds, so the choice is informed
     synth.arm();
-    synth.padStart(hz, 0.6);
+    synth.padStart(f.hz, 0.6, f.beatHz);
     setPreviewingFreq(true);
     if (previewTimer.current) clearTimeout(previewTimer.current);
     previewTimer.current = setTimeout(() => { synth.padStop(); setPreviewingFreq(false); }, 4000);
@@ -306,14 +375,15 @@ export default function BreathePage() {
     setPhase("retention"); setRemaining(RETENTION_S);
     holdStart.current = Date.now();
     synth.pluck(392);
-    synth.padStart(freq);
+    const f = freqRef.current;
+    synth.padStart(f.hz, 2.5, f.beatHz);
     countdown.current = setInterval(() => {
       const left = RETENTION_S - Math.floor((Date.now() - holdStart.current) / 1000);
       setRemaining(Math.max(0, left));
       if (left <= 0) endRetention(r);
     }, 250);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [freq]);
+  }, []);
 
   const endRetention = useCallback((r: number) => {
     if (phaseRef.current !== "retention") return;
@@ -400,19 +470,28 @@ export default function BreathePage() {
             <span className="tail">
               {previewingFreq
                 ? <button onClick={stopFreqPreview} style={{ background: "none", border: "none", color: "var(--violet)", font: "inherit", fontSize: 14, cursor: "pointer", padding: 0 }}>■ stop</button>
-                : `${freq} Hz`}
+                : freqOpt.label}
             </span>
           </div>
-          <div className="cc-card-body">
+          <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
+            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Brainwave beats · some real studies behind these · headphones needed</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {FREQS.map((f) => (
-                <button key={f.hz} onClick={() => pickFreq(f.hz)} aria-pressed={freq === f.hz} style={chip(freq === f.hz)}>
-                  {f.hz} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {f.label}</span>
+              {FREQS_EVIDENCE.map((f) => (
+                <button key={f.id} onClick={() => pickFreq(f)} aria-pressed={freqId === f.id} style={chip(freqId === f.id)}>
+                  {f.label} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {f.sub}</span>
                 </button>
               ))}
             </div>
-            <div style={{ fontSize: 13, color: "var(--ink-4)", paddingTop: 10 }}>
-              Tap to hear it. The tone plays continuously during the hold, nowhere else. Labels are wellness lore, not medicine.
+            <div style={{ fontSize: 13, color: "var(--ink-3)", paddingTop: 2 }}>Solfeggio tones · calming but no evidence · labels are lore</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {FREQS_TRADITION.map((f) => (
+                <button key={f.id} onClick={() => pickFreq(f)} aria-pressed={freqId === f.id} style={chip(freqId === f.id)}>
+                  {f.hz} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {f.sub}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--ink-4)" }}>
+              Tap to hear it. The tone plays continuously during the hold, nowhere else.
             </div>
           </div>
         </section>
@@ -480,7 +559,7 @@ export default function BreathePage() {
 
         <div style={{ fontSize: 20, fontWeight: 600, color: "var(--ink)" }}>{label}</div>
         {isRetention && (
-          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{freq} Hz playing · tap anywhere to breathe</div>
+          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{freqOpt.label} playing · tap anywhere to breathe</div>
         )}
         {phase === "breathing" && (
           <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{BREATHS - breath} to go{round > 1 ? ` · last hold ${fmt(holds[holds.length - 1] ?? 0)}` : ""}</div>
