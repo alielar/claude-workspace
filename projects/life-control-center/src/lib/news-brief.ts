@@ -22,6 +22,9 @@ export type DeepDive = {
   /** Knock-on effects: who wins/loses, what changes next (added 2026-08-30). */
   implications?: string;
   whatsNext: string;
+  /** Advanced (C1/C2) words the analysis avoided, each with the simpler word it
+   * used instead · a small vocabulary lesson at the end of every story (2026-09-06). */
+  vocabulary?: { advanced: string; simple: string }[];
 };
 
 export type NewsStory = {

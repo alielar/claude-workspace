@@ -14,29 +14,19 @@ HEADLINE: ${headline}
 SUMMARY: ${summary}
 SOURCE: ${source}
 
-Write a deep analysis in this exact format:
+Write a deep analysis with five parts, each separated by a blank line, no headers or labels:
+1. What happened · 2-3 sentences on the core event, who did what, when, key numbers.
+2. Why it matters · 2-3 sentences on who is affected and what changes for them.
+3. Context · 2-3 sentences of background: what led here, relevant history or trend.
+4. Implications · 2-3 sentences on knock-on effects: who gains, who loses, what becomes more or less likely.
+5. What's next · 1-2 sentences on what to watch for, with dates or triggers when known.
 
-WHAT HAPPENED
-2-3 sentences explaining the core event or announcement in plain language.
-
-WHY IT MATTERS
-2-3 sentences on the broader significance · who is affected, what changes, why people should care.
-
-CONTEXT
-2-3 sentences of background · what led to this, relevant history, how it connects to bigger trends.
-
-IMPLICATIONS
-2-3 sentences on the knock-on effects · who gains, who loses, what becomes more or less likely.
-
-WHAT'S NEXT
-1-2 sentences on likely next steps or what to watch for.
-
-Rules:
-- Write in plain, direct language · no jargon
-- Be factual and specific, not vague
-- Each section should add NEW information, don't repeat yourself
-- Total length: 200-320 words
-- Do NOT include any headers or labels · just the text for each section separated by a blank line`;
+LANGUAGE RULES (important):
+- Simple, everyday English (CEFR B1-B2). Short sentences. Common words.
+- Keep ALL the information · simplify the wording, never the content. Keep every name, number and fact.
+- Whenever an advanced (C1/C2) word would have been the natural choice, use a simpler word instead.
+- After the five parts, add a final block starting with the exact line "VOCAB:" followed by 3-6 lines, each "advanced word = simple word you used instead". Only real, useful C1/C2 words.
+- Each section adds NEW information, no repetition. Total 200-320 words before the VOCAB block.`;
 
   // Try Gemini first (free)
   if (process.env.GEMINI_API_KEY) {
@@ -80,14 +70,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const analysis = await generateDeepDive(headline, summary ?? "", source ?? "");
-    // Split into 4 paragraphs
-    const paragraphs = analysis.split(/\n\s*\n/).filter(Boolean);
+    // The VOCAB block at the end becomes the advanced-word → simple-word list.
+    const [body, vocabBlock] = analysis.split(/\nVOCAB:\s*\n?/);
+    const vocabulary = (vocabBlock ?? "")
+      .split("\n")
+      .map((l) => l.replace(/^[-·*\s]+/, "").split(/\s*=\s*/))
+      .filter((p) => p.length === 2 && p[0] && p[1])
+      .slice(0, 6)
+      .map(([advanced, simple]) => ({ advanced, simple }));
+    const paragraphs = body.split(/\n\s*\n/).filter(Boolean);
     return NextResponse.json({
       whatHappened: paragraphs[0] ?? "",
       whyItMatters: paragraphs[1] ?? "",
       context: paragraphs[2] ?? "",
       implications: paragraphs[3] ?? "",
       whatsNext: paragraphs[4] ?? "",
+      vocabulary,
       raw: analysis,
     });
   } catch (err) {

@@ -118,20 +118,26 @@ async function deepDiveBatch(stories: NewsStory[]): Promise<void> {
     .join("\n\n");
 
   // One batched call for all stories · the same call that has always run, asked for more depth.
-  const prompt = `You are a senior news analyst writing for one busy reader who wants to genuinely understand each story, not skim it. For each story write five parts, each 2-3 full sentences, plain direct language, specific facts (names, numbers, places) · never vague filler, never repeat the headline:
+  const prompt = `You are a senior news analyst writing for one busy reader who wants to genuinely understand each story, not skim it. For each story write five parts, each 2-3 full sentences, with specific facts (names, numbers, places) · never vague filler, never repeat the headline:
 1. WHAT HAPPENED · the core event, who did what, when, and the key numbers.
 2. WHY IT MATTERS · who is affected and what actually changes for them.
 3. CONTEXT · the background that explains it: what led here, the relevant history or trend.
 4. IMPLICATIONS · the knock-on effects: who gains, who loses, what this makes more or less likely; where relevant, what it means for Europe, Morocco / MENA, markets, or the AI industry.
 5. WHATS NEXT · concrete things to watch for, with dates or triggers when known.
 
-Return ONLY valid JSON · an array of objects with "index" (number), "whatHappened", "whyItMatters", "context", "implications", "whatsNext" (all strings).
+LANGUAGE RULES (important):
+- Write in simple, everyday English (CEFR B1-B2). Short sentences. Common words.
+- Keep ALL the information · simplify the wording, never the content. Keep every name, number and fact.
+- Whenever an advanced (C1/C2) word would have been the natural choice, use a simpler word instead, and record the pair.
+6. VOCABULARY · for each story, 3-6 pairs: the advanced word you avoided and the simpler word you used instead. Only real, useful C1/C2 words (e.g. "curtail" → "cut back", "precarious" → "unstable").
+
+Return ONLY valid JSON · an array of objects with "index" (number), "whatHappened", "whyItMatters", "context", "implications", "whatsNext" (all strings), and "vocabulary" (array of {"advanced": string, "simple": string}).
 No markdown fences, no extra text.
 
 Stories:
 ${storyList}`;
 
-  type Item = { index: number; whatHappened: string; whyItMatters: string; context: string; implications?: string; whatsNext: string };
+  type Item = { index: number; whatHappened: string; whyItMatters: string; context: string; implications?: string; whatsNext: string; vocabulary?: { advanced: string; simple: string }[] };
   try {
     const text = await askAI(prompt, 4000);
     if (!text) return;
@@ -145,6 +151,7 @@ ${storyList}`;
           context: item.context ?? "",
           implications: item.implications ?? "",
           whatsNext: item.whatsNext ?? "",
+          vocabulary: (item.vocabulary ?? []).filter((v) => v?.advanced && v?.simple).slice(0, 6),
         };
       }
     }

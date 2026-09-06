@@ -43,6 +43,7 @@ type DeepDive = {
   context: string;
   implications?: string;
   whatsNext: string;
+  vocabulary?: { advanced: string; simple: string }[];
 };
 
 function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColor: string; index: number }) {
@@ -185,6 +186,21 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
                   </div>
                 );
               })}
+              {!!deepDive.vocabulary?.length && (
+                <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+                  <div style={{ fontSize: 13, color: accentColor, fontWeight: 600, marginBottom: 5, fontFamily: "var(--f-mono)" }}>
+                    📚 Words worth knowing
+                  </div>
+                  <div style={{ display: "grid", gap: 4 }}>
+                    {deepDive.vocabulary.map((v, i) => (
+                      <div key={i} style={{ fontSize: 14, lineHeight: 1.5, color: "var(--ink-2)" }}>
+                        <span style={{ fontWeight: 600, color: "var(--ink)" }}>{v.advanced}</span>
+                        <span style={{ color: "var(--ink-4)" }}> · here: </span>{v.simple}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
