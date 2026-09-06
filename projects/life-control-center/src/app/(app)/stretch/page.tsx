@@ -62,6 +62,23 @@ export default function StretchPage() {
   const [track, setTrack] = useState<string>("off");           // track slug | "off"
   const [previewing, setPreviewing] = useState<string | null>(null);
   const music = useRef<HTMLAudioElement | null>(null);
+  // Movement names are editable · overrides live on the phone (cc-stretch-names).
+  const [moves, setMoves] = useState<string[]>(STRETCH_MOVES);
+  const movesRef = useRef<string[]>(STRETCH_MOVES);
+  movesRef.current = moves;
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cc-stretch-names") ?? "null");
+      if (Array.isArray(saved)) setMoves(STRETCH_MOVES.map((m, i) => (typeof saved[i] === "string" && saved[i].trim() ? saved[i] : m)));
+    } catch { /* ignore */ }
+  }, []);
+  const renameMove = (i: number, name: string) => {
+    const next = moves.map((m, j) => (j === i ? (name.trim() || STRETCH_MOVES[i]) : m));
+    setMoves(next);
+    try { localStorage.setItem("cc-stretch-names", JSON.stringify(next)); } catch { /* ignore */ }
+  };
   useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t) setTrack(t); } catch { /* ignore */ } }, []);
   const pickTrack = (slug: string) => {
     setTrack(slug);
@@ -99,13 +116,13 @@ export default function StretchPage() {
   const wakeLock = useRef<WakeLockSentinel | null>(null);
 
   const phase: StretchPhase = PLAN[step];
-  const moveName = phase.kind === "leadin" ? STRETCH_MOVES[0] : STRETCH_MOVES[phase.index];
+  const moveName = phase.kind === "leadin" ? moves[0] : moves[phase.index];
   const nextName = useMemo(() => {
-    if (phase.kind === "leadin") return STRETCH_MOVES[1] ?? null;
-    if (phase.kind === "work") return STRETCH_MOVES[phase.index + 1] ?? null;
-    if (phase.kind === "rest") return STRETCH_MOVES[phase.index + 1] ?? null;
+    if (phase.kind === "leadin") return moves[1] ?? null;
+    if (phase.kind === "work") return moves[phase.index + 1] ?? null;
+    if (phase.kind === "rest") return moves[phase.index + 1] ?? null;
     return null;
-  }, [phase]);
+  }, [phase, moves]);
 
   // elapsed seconds across the whole routine (for the top progress bar)
   const elapsedBefore = useMemo(() => PLAN.slice(0, step).reduce((s, p) => s + p.seconds, 0), [step]);
@@ -145,8 +162,8 @@ export default function StretchPage() {
     phaseEndsAt.current = Date.now() + p.seconds * 1000;
     setRemainingMs(p.seconds * 1000);
     if (!announce) return;
-    if (p.kind === "work") cues.work(STRETCH_MOVES[p.index]);
-    else if (p.kind === "rest") cues.rest(STRETCH_MOVES[p.index + 1]);
+    if (p.kind === "work") cues.work(movesRef.current[p.index]);
+    else if (p.kind === "rest") cues.rest(movesRef.current[p.index + 1]);
   }, []);
 
   // ── Ticker ────────────────────────────────────────────────────────────────
@@ -167,8 +184,8 @@ export default function StretchPage() {
             phaseEndsAt.current = now + p.seconds * 1000 - overshoot;
             setStep(s);
             lastTickSecond.current = -1;
-            if (p.kind === "work") cues.work(STRETCH_MOVES[p.index]);
-            else cues.rest(STRETCH_MOVES[p.index + 1]);
+            if (p.kind === "work") cues.work(movesRef.current[p.index]);
+            else cues.rest(movesRef.current[p.index + 1]);
             rem = phaseEndsAt.current - now;
             break;
           }
@@ -262,30 +279,68 @@ export default function StretchPage() {
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Music</span><span className="tail">{track === "off" ? "off" : STRETCH_TRACKS.find((m) => m.slug === track)?.title}</span></div>
           <div className="cc-card-body" style={{ display: "grid", gap: 2 }}>
-            <button onClick={() => { pickTrack("off"); stopMusic(); }} style={{ display: "flex", alignItems: "center", minHeight: 46, padding: "0 10px", borderRadius: 10, border: `1px solid ${track === "off" ? "var(--violet)" : "transparent"}`, background: track === "off" ? "var(--accent-soft)" : "transparent", color: "var(--ink)", font: "inherit", fontSize: 16, cursor: "pointer", textAlign: "left" }}>No music</button>
-            {STRETCH_TRACKS.map((m) => {
+            <div style={{ fontSize: 14, color: "var(--ink-3)", padding: "2px 10px 8px" }}>
+              Tap a track to choose it. The small ▶ only previews the sound.
+            </div>
+            {[{ slug: "off", title: "No music", by: "" }, ...STRETCH_TRACKS].map((m) => {
               const on = track === m.slug;
+              const isOff = m.slug === "off";
               return (
                 <div key={m.slug} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 6 }}>
-                  <button onClick={() => pickTrack(m.slug)} style={{ display: "grid", textAlign: "left", padding: "6px 10px", minHeight: 52, borderRadius: 10, border: `1px solid ${on ? "var(--violet)" : "transparent"}`, background: on ? "var(--accent-soft)" : "transparent", color: "var(--ink)", font: "inherit", cursor: "pointer", alignContent: "center" }}>
-                    <span style={{ fontSize: 16 }}>{m.title}</span>
-                    <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{m.by}</span>
+                  <button
+                    onClick={() => { pickTrack(m.slug); if (isOff) stopMusic(); }}
+                    aria-pressed={on}
+                    style={{ display: "grid", gridTemplateColumns: "26px 1fr", alignItems: "center", textAlign: "left", padding: "6px 10px", minHeight: 52, borderRadius: 10, border: `1px solid ${on ? "var(--violet)" : "var(--line)"}`, background: on ? "var(--accent-soft)" : "transparent", color: "var(--ink)", font: "inherit", cursor: "pointer" }}
+                  >
+                    <span aria-hidden style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                      {on && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--violet)" }} />}
+                    </span>
+                    <span style={{ display: "grid", alignContent: "center" }}>
+                      <span style={{ fontSize: 16 }}>{m.title}{on && !isOff ? " · chosen" : ""}</span>
+                      {m.by && <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{m.by}</span>}
+                    </span>
                   </button>
-                  <button onClick={() => preview(m.slug)} aria-label={previewing === m.slug ? "Stop preview" : `Preview ${m.title}`} style={{ width: 48, minHeight: 52, borderRadius: 10, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: previewing === m.slug ? "var(--violet)" : "var(--ink-2)", fontSize: 16, cursor: "pointer" }}>{previewing === m.slug ? "■" : "▶"}</button>
+                  {!isOff && (
+                    <button onClick={() => preview(m.slug)} aria-label={previewing === m.slug ? "Stop preview" : `Preview ${m.title}`} style={{ width: 48, minHeight: 52, borderRadius: 10, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: previewing === m.slug ? "var(--violet)" : "var(--ink-2)", fontSize: 16, cursor: "pointer" }}>{previewing === m.slug ? "■" : "▶"}</button>
+                  )}
                 </div>
               );
             })}
+            <button
+              className="cc-btn cc-btn-primary"
+              onClick={start}
+              style={{ minHeight: 54, fontSize: 17, borderRadius: 14, width: "100%", marginTop: 8 }}
+            >
+              Next · start{track === "off" ? " in silence" : ` with ${STRETCH_TRACKS.find((m) => m.slug === track)?.title}`}
+            </button>
             <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 10px 4px" }}>Music: Kevin MacLeod · incompetech.com · CC BY 4.0</div>
           </div>
         </section>
 
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">Order</span></div>
+          <div className="cc-card-head"><span className="title">Order</span><span className="tail">tap a name to rename</span></div>
           <ol style={{ padding: "4px 16px 8px", margin: 0, listStyle: "none" }}>
-            {STRETCH_MOVES.map((m, i) => (
-              <li key={m} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 8, minHeight: 40, alignItems: "center", fontSize: 16, borderBottom: i < STRETCH_MOVES.length - 1 ? "1px solid var(--line)" : "none" }}>
+            {moves.map((m, i) => (
+              <li key={i} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 8, minHeight: 40, alignItems: "center", fontSize: 16, borderBottom: i < moves.length - 1 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
-                <span>{m}</span>
+                {editIdx === i ? (
+                  <input
+                    className="cc-input"
+                    autoFocus
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={() => { renameMove(i, editText); setEditIdx(null); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEditIdx(null); }}
+                    style={{ fontSize: 16, minHeight: 38, width: "100%", boxSizing: "border-box" }}
+                  />
+                ) : (
+                  <button
+                    onClick={() => { setEditIdx(i); setEditText(m); }}
+                    style={{ background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, padding: "8px 0", cursor: "pointer", minWidth: 0, overflowWrap: "anywhere" }}
+                  >
+                    {m}{m !== STRETCH_MOVES[i] && <span style={{ fontSize: 12, color: "var(--ink-4)" }}> · renamed</span>}
+                  </button>
+                )}
               </li>
             ))}
           </ol>
