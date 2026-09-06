@@ -371,6 +371,9 @@ export default function BreathePage() {
   // ── Breathing ───────────────────────────────────────────────────────────────
   const runBreath = useCallback((n: number, r: number) => {
     setPhase("breathing"); setRound(r); setBreath(n); setInhaling(true);
+    // Eyes-closed cue: the last three breaths of a round each start with a clear
+    // bell, rising in pitch (G5 → A5 → B5), so the hold never comes as a surprise.
+    if (n > BREATHS - 3) synth.pluck(n === BREATHS ? 987.8 : n === BREATHS - 1 ? 880 : 784, 0.2);
     synth.breath("in", styleRef.current, INHALE_MS, volRef.current);
     timer.current = setTimeout(() => {
       setInhaling(false);
