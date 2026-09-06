@@ -187,18 +187,20 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
 }) {
   const done = t.doneAt !== null;
   const swipe = useSwipeDelete(onDelete);
+  // Quick peek: tap the ⓘ dot (hover shows it on desktop too) to read the notes
+  // right in the list, without opening the task.
+  const [peek, setPeek] = useState(false);
   const sub = [
     showDate && t.dueDate ? fmtDue(t.dueDate, today) : null,
     t.dueTime,
     t.evening && !showDate && t.dueDate === today ? null : t.evening && t.dueDate ? "evening" : null,
     t.project ? `#${t.project}` : null,
-    t.notes ? "has notes" : null,
   ].filter(Boolean).join(" · ");
 
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
     <div className="todo-row" {...swipe.handlers}
-      style={{ display: "grid", gridTemplateColumns: onDefer ? "auto 1fr auto" : "auto 1fr", alignItems: "center", ...swipe.style }}>
+      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes ? " auto" : ""}${onDefer ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
       <button onClick={onToggle} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={done}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, border: `2px solid ${done ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: done ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -213,10 +215,26 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
         </span>
         {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
       </button>
+      {t.notes && (
+        <button
+          onClick={(e) => { e.stopPropagation(); if (!window.matchMedia?.("(hover: hover)").matches) setPeek((p) => !p); }}
+          onMouseEnter={() => { if (window.matchMedia?.("(hover: hover)").matches) setPeek(true); }}
+          onMouseLeave={() => { if (window.matchMedia?.("(hover: hover)").matches) setPeek(false); }}
+          aria-label={peek ? "Hide notes" : "Show notes"} aria-expanded={peek} title="Notes"
+          style={{ width: 40, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
+        >
+          <span aria-hidden style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
+        </button>
+      )}
       {onDefer && !done && (
         <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
       )}
     </div>
+    {peek && t.notes && (
+      <div onClick={() => setPeek(false)} style={{ padding: "0 12px 12px 48px", fontSize: 14.5, lineHeight: 1.5, color: "var(--ink-2)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", background: "var(--bg-card)" }}>
+        <Linkify text={t.notes} />
+      </div>
+    )}
     </SwipeWrap>
   );
 }
