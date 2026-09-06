@@ -11,7 +11,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { NAV, isNavActive } from "@/lib/navigation";
 
@@ -20,6 +20,10 @@ export function MobileNav() {
   const router = useRouter();
   const navRef = useRef<HTMLElement | null>(null);
   const lastHref = useRef<string | null>(null);
+  // The tapped tab lights up the instant the finger lands · the route change can
+  // take a beat, and without this the tap felt ignored.
+  const [pending, setPending] = useState<string | null>(null);
+  useEffect(() => { setPending(null); }, [pathname]);
 
   // Warm every tab once so a slide lands on an already-loaded screen.
   useEffect(() => {
@@ -42,7 +46,10 @@ export function MobileNav() {
   const go = (href: string | null) => {
     if (!href || href === lastHref.current) return;
     lastHref.current = href;
-    if (!isNavActive(NAV.find((n) => n.href === href)!, pathname) || href !== pathname) router.push(href);
+    if (!isNavActive(NAV.find((n) => n.href === href)!, pathname) || href !== pathname) {
+      setPending(href);
+      router.push(href);
+    }
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -71,7 +78,7 @@ export function MobileNav() {
       onTouchCancel={() => (lastHref.current = null)}
     >
       {NAV.map((item) => {
-        const active = isNavActive(item, pathname);
+        const active = pending ? pending === item.href : isNavActive(item, pathname);
         return (
           <Link
             key={item.href}

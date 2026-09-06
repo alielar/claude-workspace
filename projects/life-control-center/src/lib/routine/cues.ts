@@ -83,6 +83,12 @@ class Cues {
     this.play([{ freq: 660, ms: 60 }], 0.12);
   }
 
+  /** Stop anything still talking · call when leaving a timer screen, otherwise a
+   * queued phrase can come out seconds later with no visible cause. */
+  silence() {
+    try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
+  }
+
   /** Whole routine finished. */
   done() {
     this.play([{ freq: 784, ms: 140 }, { freq: 988, ms: 140 }, { freq: 1318, ms: 260 }]);

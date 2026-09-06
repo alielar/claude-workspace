@@ -37,6 +37,9 @@ export default function SetsPage() {
   const [now, setNow] = useState(() => Date.now());
   const restDone = useRef(false);
 
+  // Leaving the page must never leave a spoken cue playing.
+  useEffect(() => () => cues.silence(), []);
+
   // Resume
   useEffect(() => {
     const a = readActiveSession();

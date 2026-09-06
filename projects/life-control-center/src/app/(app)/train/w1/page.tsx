@@ -65,6 +65,9 @@ export default function AmrapPage() {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [status]);
 
+  // Leaving the page must never leave a spoken cue playing.
+  useEffect(() => () => cues.silence(), []);
+
   const elapsedMs = session ? Math.min(totalMs, now - session.startedAt) : 0;
   const remainingMs = Math.max(0, totalMs - elapsedMs);
   const rounds = session?.rounds ?? 0;

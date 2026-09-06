@@ -108,7 +108,7 @@ export default function StretchPage() {
     else if (status === "paused") music.current?.pause();
     else stopMusic();
   }, [status, track, playTrack, stopMusic]);
-  useEffect(() => () => stopMusic(), [stopMusic]);  // leaving the page stops everything
+  useEffect(() => () => { stopMusic(); cues.silence(); }, [stopMusic]);  // leaving the page stops everything
 
   const phaseEndsAt = useRef<number>(0);               // absolute ms
   const pausedRemaining = useRef<number>(0);
@@ -240,6 +240,7 @@ export default function StretchPage() {
     enterStep(s);
   };
   const exit = () => {
+    cues.silence();
     setStatus("idle");
     setStep(0);
     setRemainingMs(PLAN[0].seconds * 1000);

@@ -104,6 +104,14 @@ function SwipeWrap({ swipe, onDelete, children }: { swipe: ReturnType<typeof use
   );
 }
 
+// One tap must open a date/time picker. Left alone, the first tap on iOS often
+// only moves focus (or dismisses the keyboard) and the wheel needs a second or
+// third tap · showPicker() opens it straight from the tap.
+function openPicker(e: React.SyntheticEvent<HTMLInputElement>) {
+  const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+  try { el.focus(); el.showPicker?.(); } catch { /* focus alone still works */ }
+}
+
 // While a sheet is open, the page behind it must not scroll (iOS otherwise keeps
 // scrolling the background and gets stuck until the app is reopened).
 function useLockBodyScroll() {
@@ -298,7 +306,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           {chips.map((c) => <button key={c.label} onClick={c.go} style={chipStyle(c.on)}>{c.label}</button>)}
           <label style={{ ...chipStyle(!!d.dueDate && !chips.slice(0, 4).some((c) => c.on)), display: "inline-flex", alignItems: "center", gap: 6, position: "relative" }}>
             {d.dueDate && !chips.slice(0, 4).some((c) => c.on) ? fmtDue(d.dueDate, today) : "Pick a date"}
-            <input type="date" value={d.dueDate ?? ""} min={today} onChange={(e) => e.target.value && when(e.target.value, d.evening)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", fontSize: 17 }} />
+            <input type="date" value={d.dueDate ?? ""} min={today} onClick={openPicker} onChange={(e) => e.target.value && when(e.target.value, d.evening)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", fontSize: 17 }} />
           </label>
         </div>
 
@@ -311,7 +319,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
                 </button>
               )}
             </span>
-            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onClick={openPicker} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
           </label>
           <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Project
             <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
@@ -456,7 +464,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
               <input type="date" className="cc-input" value={d.dueDate ?? ""} min={today} onChange={(e) => set({ dueDate: e.target.value || null })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
             </label>
             <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Time (optional)
-              <input type="time" className="cc-input" value={d.dueTime ?? ""} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+              <input type="time" className="cc-input" value={d.dueTime ?? ""} onClick={openPicker} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
             </label>
           </div>
         )}

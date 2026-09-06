@@ -845,6 +845,10 @@ html, body {
   .cc-btn, .cc-mobile-tab, button { min-height: 44px; }
 }
 
+/* Taps fire immediately · without this iOS holds every tap back while it decides
+   whether the gesture might be a double-tap zoom. */
+button, a, label, input, select, textarea, [role="button"] { touch-action: manipulation; }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Light theme
    Default follows the phone (prefers-color-scheme). A manual choice sets
