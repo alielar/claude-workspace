@@ -338,6 +338,9 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
               )}
             </span>
             <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onClick={openPicker} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            {!!d.dueDate && !d.dueTime && !d.someday && (
+              <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>no time = reminds from 9:00</span>
+            )}
           </label>
           <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Project
             <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box" }} />

@@ -13,9 +13,13 @@ import { sendToUser } from "@/lib/push/server";
  * Finds tasks that are due and not done, and re-sends one notification per list
  * (Personal / Work) at each task's own cadence (5/10/15/30 min · default 30) until ticked. Quiet 23:00–08:00 (Madrid).
  *
- *  due = a date with a time → once the time has passed;
- *        a date with no time → from 14:00 that day ("evening" tasks from 19:00);
- *        overdue → timed tasks from 09:00, untimed from 14:00.
+ *  due = a date with a time → once the time has passed · nags at the task's own
+ *        cadence until done (Ali's explicit choice, untouched);
+ *        a date with no time → DEFAULT REMINDER (2026-09-06): from 09:00 that day
+ *        ("evening" tasks from 19:00), every 30 min for the first 2 hours, then
+ *        hourly, and untimed tasks go silent from 21:00 until the next morning ·
+ *        all-day 30-min nagging trains you to ignore the notifications;
+ *        overdue → from 09:00 with the same backoff.
  */
 
 export const dynamic = "force-dynamic";
@@ -42,13 +46,29 @@ export async function GET(req: NextRequest) {
     eq(todos.userId, userId), eq(todos.deleted, false), eq(todos.someday, false), isNull(todos.doneAt), lte(todos.dueDate, today),
   ));
 
-  const due = rows.filter((t) => {
-    if (!t.dueDate) return false;
-    if (t.dueDate < today) return hm >= (t.dueTime ? "09:00" : "14:00");
-    if (t.dueTime) return hm >= t.dueTime;
-    return hm >= (t.evening ? "19:00" : "14:00");
+  const hmToMin = (x: string) => Number(x.slice(0, 2)) * 60 + Number(x.slice(3, 5));
+  const nowMin = hmToMin(hm);
+
+  const dueFrom = (t: typeof rows[number]) => {
+    if (t.dueDate! < today) return "09:00";
+    if (t.dueTime) return t.dueTime;
+    return t.evening ? "19:00" : "09:00";
+  };
+  const due = rows.filter((t) => t.dueDate && hm >= dueFrom(t));
+
+  // Untimed tasks: 30 min cadence for the first 2 hours, hourly after, silent from
+  // 21:00. Tasks with an explicit time keep their chosen cadence all day.
+  const nagIntervalMs = (t: typeof rows[number]): number => {
+    if (t.dueTime) return nagMs(t);
+    if (hm >= "21:00") return Infinity;
+    const sinceDue = nowMin - hmToMin(dueFrom(t));
+    return sinceDue > 120 ? Math.max(nagMs(t), 60 * 60 * 1000) : nagMs(t);
+  };
+  const toNag = due.filter((t) => {
+    const interval = nagIntervalMs(t);
+    if (!Number.isFinite(interval)) return false;
+    return !t.lastNaggedAt || now.getTime() - t.lastNaggedAt.getTime() >= interval;
   });
-  const toNag = due.filter((t) => !t.lastNaggedAt || now.getTime() - t.lastNaggedAt.getTime() >= nagMs(t));
   if (toNag.length === 0) return NextResponse.json({ due: due.length, sent: 0, hm });
 
   // One notification per list. Everything due in that list is mentioned, so a nag never
