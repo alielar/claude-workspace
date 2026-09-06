@@ -10,8 +10,11 @@
  * Sound (all synthesized live, no assets, no voice):
  *  · three breath-cue styles, picked + previewed on the idle screen, with volume:
  *      waves (soft noise swell, default) · chime (one soft note) · sweep (pitch arc)
- *  · retention plays the chosen frequency as a CONTINUOUS pad, tiny detune
- *    (0.15 Hz) so it shimmers slowly instead of pulsing. Preview on tap.
+ *  · retention plays the chosen frequency as ONE continuous, constant-volume
+ *    oscillator (never two detuned ones · equal tones 0.15 Hz apart beat against
+ *    each other and fade to silence every ~7 s, which is why the old pad pulsed).
+ *    Binaural options play a steady tone per ear (headphones). A 1 s watchdog
+ *    resumes the AudioContext if iOS interrupts it mid-hold. Preview on tap.
  * Frequencies only during the hold. Safety: sit or lie down, never in water.
  */
 
@@ -72,6 +75,10 @@ class BreathSynth {
   private ctx: AudioContext | null = null;
   private pad: { osc: OscillatorNode[]; gain: GainNode } | null = null;
   private noiseBuf: AudioBuffer | null = null;
+  // While the pad plays, a watchdog re-resumes the AudioContext if iOS
+  // suspends/"interrupts" it (notification, Siri, app switch) · otherwise the
+  // hold tone dies silently and never comes back.
+  private watchdog: ReturnType<typeof setInterval> | null = null;
 
   arm() {
     try {
@@ -232,9 +239,15 @@ class BreathSynth {
       osc = [o];
     }
     this.pad = { osc, gain };
+    this.watchdog = setInterval(() => {
+      const c = this.ctx;
+      if (!c || !this.pad) return;
+      if (c.state !== "running") c.resume().catch(() => { /* retry next second */ });
+    }, 1000);
   }
 
   padStop(fade = 1.2) {
+    if (this.watchdog) { clearInterval(this.watchdog); this.watchdog = null; }
     const ctx = this.ctx, pad = this.pad;
     if (!ctx || !pad) return;
     const t = ctx.currentTime;
