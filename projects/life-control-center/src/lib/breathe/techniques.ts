@@ -1,9 +1,10 @@
 /**
  * Breathing techniques (2026-09-07, spec: batch "ALSO" item).
  * Six paced techniques next to Wim Hof, each driven by the same generic player:
- * a cycle of steps, repeated N times. Evidence ratings are honest (1-3 dots) and
- * come from the 2026-09-06 research pass: coherent breathing has the strongest
- * backing, 4-7-8 is tradition with a plausible mechanism.
+ * a cycle of steps, repeated N times. Evidence is stated in prose (evidenceNote,
+ * shown on the detail screen · no rating dots, Ali 2026-09-08) from the 2026-09-06
+ * research pass: coherent breathing has the strongest backing, 4-7-8 is tradition
+ * with a plausible mechanism. The list is ordered strongest evidence first.
  */
 
 export type PaceStep = {
@@ -28,8 +29,6 @@ export type Technique = {
   evidenceNote: string;
   what: string;
   effect: string;
-  /** Shown as a prominent warning before starting · dizziness/fainting risk. */
-  danger?: boolean;
   durations: { label: string; cycles: number }[];
   steps: PaceStep[];
 };
@@ -153,8 +152,7 @@ export const TECHNIQUES: Technique[] = [
     evidence: 1,
     evidenceNote: "Traditional yogic 'breath of fire' · the research is thin, but the immediate wake-up effect is real. The opposite of everything else on this list.",
     what: "Sharp, quick exhales through the nose · one per beat, the belly snaps in, the inhale happens by itself. 30 exhales, then rest and breathe normally for 30 seconds. Two or three rounds.",
-    effect: "Energizing like a cold splash · clears morning fog in under three minutes. Expect a light buzz.",
-    danger: true,
+    effect: "Energizing like a cold splash · clears morning fog in under three minutes. Expect a light buzz · ease off if you feel dizzy.",
     durations: [
       { label: "2 rounds", cycles: 2 },
       { label: "3 rounds", cycles: 3 },
@@ -172,8 +170,7 @@ export const cycleSeconds = (t: Technique) => t.steps.reduce((s, x) => s + x.sec
 
 export function totalLabel(t: Technique, cycles: number): string {
   const s = Math.round(cycleSeconds(t) * cycles);
-  const m = Math.round(s / 60);
-  return m >= 2 ? `~${m} min` : `~${s} s`;
+  if (s < 45) return `~${s} s`;
+  const m = s / 60;
+  return `~${m < 3 ? Math.round(m * 2) / 2 : Math.round(m)} min`;
 }
-
-export const DANGER_TEXT = "Can cause dizziness or fainting. Sit or lie down first. Never in or near water, never while driving.";

@@ -4,17 +4,19 @@
  * /breathe · technique picker + players (2026-09-07).
  *
  * Opens on a picker: Wim Hof (the daily, first and biggest) + six paced
- * techniques from src/lib/breathe/techniques.ts, each showing goal, duration and
- * an honest 1-3 evidence rating. One tap deeper = full detail + duration choice +
- * Start. Any finished session ticks the "breathe" routine item (offline-safe).
+ * techniques from src/lib/breathe/techniques.ts, each showing goal and duration
+ * (evidence stated in prose on the detail screen · no rating dots, Ali 2026-09-08).
+ * One tap deeper = full detail + duration choice + Start. Any finished session
+ * ticks the "breathe" routine item (offline-safe).
  *
  * Wim Hof player: 3 rounds of 30 paced breaths → retention hold on empty lungs
  * (1:30 countdown, TAP ANYWHERE to end early) → deep breath in, 15 s recovery.
  * The others run through GenericPlayer (steps × cycles, same sounds and circle).
  *
  * Sound (all synthesized live, no assets, no voice):
- *  · three breath-cue styles, picked + previewed on the idle screen, with volume:
- *      waves (soft noise swell, default) · chime (one soft note) · sweep (pitch arc)
+ *  · six breath-cue styles with volume; every style SUSTAINS for the whole
+ *    inhale/exhale (Ali 2026-09-08: the sound ending must mean the phase ended) ·
+ *    Chime and Hum are the pure held-note "monotone" options
  *  · retention plays the chosen frequency as ONE continuous, constant-volume
  *    oscillator (never two detuned ones · equal tones 0.15 Hz apart beat against
  *    each other and fade to silence every ~7 s, which is why the old pad pulsed).
@@ -30,7 +32,7 @@ import { readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { checklistToday } from "@/lib/checklist/day";
 import type { ChecklistData } from "@/lib/checklist/types";
-import { TECHNIQUES, techniqueById, totalLabel, DANGER_TEXT, type Technique, type PaceStep } from "@/lib/breathe/techniques";
+import { TECHNIQUES, techniqueById, totalLabel, type Technique, type PaceStep } from "@/lib/breathe/techniques";
 
 const ROUNDS = 3;
 const BREATHS = 30;
@@ -124,14 +126,20 @@ class BreathSynth {
     const out = this.dest(pan);
 
     if (style === "chime") {
+      // A held note for the WHOLE phase (Ali, 2026-09-08): soft attack, steady
+      // level, gentle release · eyes closed, the note ending = the phase ending.
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.value = kind === "in" ? 740 : 392;
-      gain.gain.setValueAtTime(0.16 * vol, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      osc.frequency.value = kind === "in" ? 587.3 : 392;   // D5 in · G4 out
+      const v = 0.13 * vol;
+      const release = Math.min(0.4, dur * 0.2);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(v, t + 0.15);
+      gain.gain.setValueAtTime(v, t + dur - release);
+      gain.gain.linearRampToValueAtTime(0, t + dur);
       osc.connect(gain).connect(out);
-      osc.start(t); osc.stop(t + 0.55);
+      osc.start(t); osc.stop(t + dur + 0.05);
       return;
     }
 
@@ -164,9 +172,10 @@ class BreathSynth {
     }
 
     if (style === "bowl") {
-      // Struck singing bowl: a base note + two soft inharmonic partials, long ring.
+      // Struck singing bowl: a base note + two soft inharmonic partials. The ring
+      // lasts the whole phase, so a long exhale keeps its sound to the end.
       const base = kind === "in" ? 329.6 : 246.9;   // E4 in · B3 out
-      const ring = Math.min(dur + 0.6, 2.6);
+      const ring = dur;
       for (const [mult, amp] of [[1, 0.14], [2.71, 0.05], [5.4, 0.018]] as const) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -315,16 +324,6 @@ async function completeBreatheItem() {
       dedupeKey: `toggle:${item.id}:${today}`,
     });
   } catch { /* replayed later */ }
-}
-
-/** Shared, prominent dizziness warning (Wim Hof + Kapalabhati). */
-function DangerBox() {
-  return (
-    <div role="alert" style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "12px 14px", borderRadius: 12, border: "1px solid var(--warn)", background: "color-mix(in srgb, var(--warn) 10%, transparent)", fontSize: 14.5, lineHeight: 1.5, color: "var(--ink)" }}>
-      <span aria-hidden style={{ fontSize: 16 }}>⚠️</span>
-      <span>{DANGER_TEXT}</span>
-    </div>
-  );
 }
 
 /** Breath-cue style + volume, shared by every player (same localStorage keys). */
@@ -521,8 +520,6 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        <DangerBox />
-
         <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}>
           ▶ Start
         </button>
@@ -662,14 +659,6 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
 
 // ═══ Technique picker + generic paced player (2026-09-07) ═════════════════════
 
-function EvidenceDots({ n }: { n: 1 | 2 | 3 }) {
-  return (
-    <span aria-label={`evidence ${n} of 3`} style={{ fontSize: 10, letterSpacing: 2, color: "var(--violet)" }}>
-      {"●".repeat(n)}<span style={{ color: "var(--line-strong)" }}>{"●".repeat(3 - n)}</span>
-    </span>
-  );
-}
-
 /** "~5 min" or "~5-15 min" from a technique's duration options. */
 function durationRange(t: Technique): string {
   const first = totalLabel(t, t.durations[0].cycles).replace("~", "");
@@ -797,7 +786,7 @@ function GenericPlayer({ t, cycles, style, vol, onExit }: {
           width: 190, height: 190, borderRadius: "50%",
           border: `3px solid ${accent}`,
           background: "color-mix(in srgb, var(--bg-card) 70%, transparent)",
-          transform: step.kind === "fire" ? (fireCount % 2 ? "scale(0.94)" : "scale(1.0)") : grow ? "scale(1.22)" : step.kind === "out" ? "scale(0.86)" : "scale(1.0)",
+          transform: step.kind === "fire" ? (fireCount % 2 ? "scale(0.94)" : "scale(1.0)") : step.kind === "in2" ? "scale(1.32)" : grow ? "scale(1.22)" : step.kind === "out" ? "scale(0.86)" : "scale(1.0)",
           transition: step.kind === "fire" ? "transform 0.25s ease" : `transform ${step.seconds}s cubic-bezier(.45,0,.55,1)`,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
@@ -838,8 +827,6 @@ function TechniqueScreen({ t, onBack }: { t: Technique; onBack: () => void }) {
         </div>
       </div>
 
-      {t.danger && <DangerBox />}
-
       <button className="cc-btn cc-btn-primary" onClick={() => { synth.arm(); setPlaying(true); }} style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}>
         ▶ Start · {totalLabel(t, cycles).replace("~", "")}
       </button>
@@ -856,7 +843,7 @@ function TechniqueScreen({ t, onBack }: { t: Technique; onBack: () => void }) {
           <p style={{ margin: 0, color: "var(--ink)", fontFamily: "var(--f-mono)", fontSize: 14 }}>{t.patternWords}</p>
           <p style={{ margin: 0 }}>{t.what}</p>
           <p style={{ margin: 0 }}>{t.effect}</p>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}><EvidenceDots n={t.evidence} /> &nbsp;{t.evidenceNote}</p>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}>{t.evidenceNote}</p>
         </div>
       </section>
 
@@ -868,7 +855,7 @@ function TechniqueScreen({ t, onBack }: { t: Technique; onBack: () => void }) {
               <button key={s.key} onClick={() => { pickStyle(s.key); synth.arm(); synth.breath("in", s.key, 1100, vol / 100); }} aria-pressed={style === s.key} style={chip(style === s.key)}>{s.label}</button>
             ))}
           </div>
-          <input type="range" min={0} max={100} step={5} value={vol} onChange={(e) => pickVol(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--violet)", minHeight: 32 }} />
+          <input type="range" min={0} max={100} step={5} value={vol} onChange={(e) => pickVol(Number(e.target.value))} onPointerUp={() => { synth.arm(); synth.breath("in", style, 1100, vol / 100); }} style={{ width: "100%", accentColor: "var(--violet)", minHeight: 32 }} />
         </div>
       </section>
 
@@ -897,10 +884,7 @@ export default function BreathePage() {
 
       {/* Wim Hof · the daily one, first and biggest */}
       <button onClick={() => setView("wimhof")} className="cc-card" style={{ display: "grid", gap: 4, padding: "16px 18px", textAlign: "left", border: "1px solid var(--violet)", cursor: "pointer", font: "inherit", color: "var(--ink)", width: "100%" }}>
-        <span style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ fontSize: 18, fontWeight: 600 }}>Wim Hof <span style={{ fontSize: 13, color: "var(--violet)", fontWeight: 500 }}>· your daily</span></span>
-          <EvidenceDots n={2} />
-        </span>
+        <span style={{ fontSize: 18, fontWeight: 600 }}>Wim Hof <span style={{ fontSize: 13, color: "var(--violet)", fontWeight: 500 }}>· your daily</span></span>
         <span style={{ fontSize: 14.5, color: "var(--ink-3)" }}>energy + stress reset · 3 rounds · ~12 min · <span style={{ color: GOAL_COLOR.Energy }}>Energy</span></span>
       </button>
 
@@ -912,19 +896,17 @@ export default function BreathePage() {
               style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", minHeight: 62, padding: "8px 16px", background: "transparent", border: "none", borderBottom: i < TECHNIQUES.length - 1 ? "1px solid var(--line)" : "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }}>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 16.5, fontWeight: 600 }}>{t.name}</span>
-                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{t.tagline}{t.danger ? " · ⚠️" : ""}</span>
+                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{t.tagline}</span>
               </span>
               <span style={{ display: "grid", justifyItems: "end", gap: 3 }}>
                 <span style={{ fontSize: 13, color: GOAL_COLOR[t.goal] }}>{t.goal}</span>
                 <span style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{durationRange(t)}</span>
-                <EvidenceDots n={t.evidence} />
               </span>
             </button>
           ))}
         </div>
       </section>
 
-      <div style={{ fontSize: 13, color: "var(--ink-4)" }}>● dots = how solid the research is. ⚠️ = can cause dizziness · read the warning before starting.</div>
 
       <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center" }}>← Back to Today</Link>
     </div>
