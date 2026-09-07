@@ -1,0 +1,155 @@
+/**
+ * Google Calendar → tickable blocks (2026-09-08, server only).
+ *
+ * Feeds are the calendars' SECRET iCAL ADDRESSES (Google Calendar → settings →
+ * "Secret address in iCal format") stored in user_settings.calendar_feeds as
+ * JSON [{ name: "Work" | "Personal", url }]. No OAuth, read-only, one-way.
+ *
+ * Work feed: same-day meetings with gaps ≤ 30 min merge into one block
+ * ("Work block · 9:30-12:30 · 4 meetings") so a sales day is 2-3 ticks, not 8 rows.
+ * Personal feed: rare, important → each event stays its own row.
+ * node-ical (lazy import) handles ICS + recurring events (RRULE).
+ */
+
+import { db } from "@/db";
+import { calendarCache, userSettings } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
+
+const TZ = "Europe/Madrid";
+const MERGE_GAP_MS = 30 * 60 * 1000;
+const CACHE_TTL_MS = 10 * 60 * 1000;
+
+export type CalBlock = {
+  key: string;                 // stable within the day: source + start-end
+  source: "work" | "personal";
+  start: string;               // HH:MM (Madrid)
+  end: string;                 // HH:MM
+  startMin: number;            // minutes since midnight, for timeline ordering
+  count: number;               // merged meetings in the block
+  title: string;               // "4 meetings" / the event's name
+};
+
+export type CalFeed = { name: string; url: string };
+
+const hm = (d: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
+const ymdOf = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
+const toMin = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
+
+type RawEvent = { start: Date; end: Date; summary: string };
+
+/** All of `day`'s (YYYY-MM-DD, Madrid) timed events from one ICS feed. */
+async function fetchDayEvents(url: string, day: string): Promise<RawEvent[]> {
+  const ical = await import("node-ical");
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { "user-agent": "ali-control-center" } });
+  if (!res.ok) throw new Error(`ics ${res.status}`);
+  const data = ical.sync.parseICS(await res.text());
+
+  // Recurrence window: generous bounds around the day, then filter by Madrid date.
+  const dayMs = new Date(`${day}T12:00:00Z`).getTime();
+  const winStart = new Date(dayMs - 48 * 3600_000);
+  const winEnd = new Date(dayMs + 48 * 3600_000);
+
+  const out: RawEvent[] = [];
+  for (const k of Object.keys(data)) {
+    const ev = data[k] as import("node-ical").VEvent;
+    if (ev.type !== "VEVENT" || !ev.start) continue;
+    if (String(ev.status ?? "").toUpperCase() === "CANCELLED") continue;
+    if ((ev.datetype as string) === "date") continue;                    // all-day
+    const durMs = Math.max(0, (ev.end?.getTime() ?? ev.start.getTime()) - ev.start.getTime());
+    const push = (s: Date, e: Date, summary: string) => {
+      if (ymdOf(s) === day) out.push({ start: s, end: e, summary });
+    };
+
+    if (ev.rrule) {
+      const exdates = ev.exdate ? Object.values(ev.exdate as Record<string, Date>).map((x) => x.getTime()) : [];
+      for (const s of ev.rrule.between(winStart, winEnd, true)) {
+        if (exdates.some((x) => Math.abs(x - s.getTime()) < 60_000)) continue;
+        // An overridden instance (moved/renamed) is keyed by its original date.
+        const ovr = ev.recurrences?.[s.toISOString().slice(0, 10)] as import("node-ical").VEvent | undefined;
+        if (ovr) {
+          if (String(ovr.status ?? "").toUpperCase() !== "CANCELLED" && ovr.start) {
+            push(ovr.start, ovr.end ?? new Date(ovr.start.getTime() + durMs), String(ovr.summary ?? ev.summary ?? "busy"));
+          }
+          continue;
+        }
+        push(s, new Date(s.getTime() + durMs), String(ev.summary ?? "busy"));
+      }
+    } else {
+      push(ev.start, ev.end ?? new Date(ev.start.getTime() + durMs), String(ev.summary ?? "busy"));
+    }
+  }
+  return out;
+}
+
+function toBlocks(events: RawEvent[], source: "work" | "personal"): CalBlock[] {
+  const sorted = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
+  const blocks: CalBlock[] = [];
+
+  if (source === "personal") {
+    // Personal events are rare and each one matters · no merging.
+    for (const e of sorted) {
+      const s = hm(e.start), en = hm(e.end);
+      blocks.push({ key: `personal:${s}-${en}`, source, start: s, end: en, startMin: toMin(s), count: 1, title: e.summary });
+    }
+    return blocks;
+  }
+
+  let cur: { start: Date; end: Date; count: number } | null = null;
+  const flush = () => {
+    if (!cur) return;
+    const s = hm(cur.start), en = hm(cur.end);
+    blocks.push({
+      key: `work:${s}-${en}`, source, start: s, end: en, startMin: toMin(s),
+      count: cur.count, title: cur.count === 1 ? "1 meeting" : `${cur.count} meetings`,
+    });
+    cur = null;
+  };
+  for (const e of sorted) {
+    if (cur && e.start.getTime() - cur.end.getTime() <= MERGE_GAP_MS) {
+      cur.end = new Date(Math.max(cur.end.getTime(), e.end.getTime()));
+      cur.count += 1;
+    } else {
+      flush();
+      cur = { start: e.start, end: e.end, count: 1 };
+    }
+  }
+  flush();
+  return blocks;
+}
+
+export function parseFeeds(json: string | null): CalFeed[] {
+  try {
+    const arr = JSON.parse(json ?? "null");
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((f): f is CalFeed => typeof f?.url === "string" && /^https:\/\//.test(f.url) && typeof f?.name === "string");
+  } catch { return []; }
+}
+
+/** Today's blocks for a user · DB-cached 10 min, stale cache served on fetch errors. */
+export async function blocksForDay(userId: string, day: string): Promise<{ blocks: CalBlock[]; configured: boolean; fetchedAt: number | null }> {
+  const [settings] = await db.select({ feeds: userSettings.calendarFeeds }).from(userSettings).where(eq(userSettings.userId, userId));
+  const feeds = parseFeeds(settings?.feeds ?? null);
+  if (feeds.length === 0) return { blocks: [], configured: false, fetchedAt: null };
+
+  const [cached] = await db.select().from(calendarCache)
+    .where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))).catch(() => []);
+  if (cached && Date.now() - cached.fetchedAt.getTime() < CACHE_TTL_MS) {
+    return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime() };
+  }
+
+  try {
+    const perFeed = await Promise.all(feeds.map(async (f) => {
+      const source = /personal/i.test(f.name) ? "personal" as const : "work" as const;
+      return toBlocks(await fetchDayEvents(f.url, day), source);
+    }));
+    const blocks = perFeed.flat().sort((a, b) => a.startMin - b.startMin);
+    const now = new Date();
+    try { await db.insert(calendarCache).values({ userId, date: day, payload: JSON.stringify(blocks), fetchedAt: now }); }
+    catch { await db.update(calendarCache).set({ payload: JSON.stringify(blocks), fetchedAt: now }).where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))); }
+    return { blocks, configured: true, fetchedAt: now.getTime() };
+  } catch {
+    // Google unreachable · the saved copy is better than an error.
+    if (cached) return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime() };
+    return { blocks: [], configured: true, fetchedAt: null };
+  }
+}

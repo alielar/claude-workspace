@@ -10,7 +10,7 @@
  *  5. App: version, force-update
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
@@ -28,6 +28,7 @@ type UserSettings = {
   newsEmailTime: string;
   newsChannels?: string | null;
   kettlebellKg?: number;
+  calendarFeeds?: string | null;
 };
 
 const CHANNEL_GROUPS: { category: string; label: string }[] = [
@@ -179,6 +180,32 @@ export default function SettingsPage() {
     setPushMsg(r?.sent ? "Sent · it should appear in a few seconds." : "Nothing sent · is this device subscribed?");
   };
   const { data: me } = useCached<{ required: boolean; email: string | null }>("auth-me", () => fetchJson("/api/auth/me"));
+
+  // Calendars · two secret iCal URLs (Work / Personal), saved on blur.
+  const [calWork, setCalWork] = useState("");
+  const [calPersonal, setCalPersonal] = useState("");
+  const calLoaded = useRef(false);
+  useEffect(() => {
+    if (calLoaded.current || !settings) return;
+    calLoaded.current = true;
+    try {
+      const feeds = JSON.parse(settings.calendarFeeds ?? "null") as { name: string; url: string }[] | null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrating inputs once from the server copy
+      setCalWork(feeds?.find((f) => f.name === "Work")?.url ?? "");
+      setCalPersonal(feeds?.find((f) => f.name === "Personal")?.url ?? "");
+    } catch { /* ignore */ }
+  }, [settings]);
+  const saveCalendars = async (work: string, personal: string) => {
+    const feeds = [
+      work.trim() ? { name: "Work", url: work.trim() } : null,
+      personal.trim() ? { name: "Personal", url: personal.trim() } : null,
+    ].filter(Boolean);
+    const json = feeds.length ? JSON.stringify(feeds) : null;
+    if (settings) setData({ ...settings, calendarFeeds: json });
+    try {
+      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { calendarFeeds: json }, dedupeKey: "settings:calendarFeeds" });
+    } catch { /* replayed later */ }
+  };
 
   // One-tap schema update · the migrate route is idempotent, safe to tap any time.
   const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
@@ -389,6 +416,25 @@ export default function SettingsPage() {
           </div>
         </section>
       )}
+
+      {/* Calendars */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Calendars</span><span className="tail">{[calWork && "work", calPersonal && "personal"].filter(Boolean).join(" + ") || "off"}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
+          <p style={{ margin: 0 }}>Paste each calendar&rsquo;s <b>secret iCal address</b> (Google Calendar &rarr; gear &rarr; the calendar &rarr; &ldquo;Secret address in iCal format&rdquo;). Meetings become tickable blocks on Today · back-to-back work meetings merge into one block. Read-only, nothing is written to Google.</p>
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Work (ali@easypeasyfluent.com)
+            <input className="cc-input" type="url" inputMode="url" autoComplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+              value={calWork} onChange={(e) => setCalWork(e.target.value)} onBlur={() => saveCalendars(calWork, calPersonal)}
+              style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
+          </label>
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Personal (al.elaraki@elaraki.ac.ma)
+            <input className="cc-input" type="url" inputMode="url" autoComplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+              value={calPersonal} onChange={(e) => setCalPersonal(e.target.value)} onBlur={() => saveCalendars(calWork, calPersonal)}
+              style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
+          </label>
+          <p style={{ margin: 0, fontSize: 13, color: "var(--ink-4)" }}>Work meetings merge (gaps up to 30 min) · personal events show one by one. Saved when you leave the field.</p>
+        </div>
+      </section>
 
       {/* Reminders */}
       <section className="cc-card">

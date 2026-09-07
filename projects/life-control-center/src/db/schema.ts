@@ -52,6 +52,8 @@ export const userSettings = sqliteTable("user_settings", {
   kettlebellKg: real("kettlebell_kg").notNull().default(12),
   /** Heartbeat: when /api/reminders/tick last ran · stale means the external pinger died. */
   lastReminderTickAt: integer("last_reminder_tick_at", { mode: "timestamp_ms" }),
+  /** Google Calendar secret iCal feeds as JSON: [{name:"Work",url},{name:"Personal",url}]. */
+  calendarFeeds: text("calendar_feeds"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
@@ -159,6 +161,26 @@ export const todos = sqliteTable("todos", {
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+// ─── Calendar (Google iCal feeds → tickable work blocks on Today) ─────────────
+
+/** One tick = "I was productive in this block". Unique per user+day+block. */
+export const calendarTicks = sqliteTable("calendar_ticks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),        // YYYY-MM-DD (Europe/Madrid)
+  blockKey: text("block_key").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
+});
+
+/** Parsed blocks cached per day so Today never waits on Google (10 min TTL). */
+export const calendarCache = sqliteTable("calendar_cache", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),
+  payload: text("payload").notNull(),  // JSON: CalBlock[]
+  fetchedAt: integer("fetched_at", { mode: "timestamp_ms" }).notNull(),
 });
 
 // ─── Push subscriptions (reminders) ──────────────────────────────────────────

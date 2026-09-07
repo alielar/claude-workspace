@@ -158,6 +158,24 @@ export async function POST() {
     `ALTER TABLE todos ADD COLUMN nag_minutes INTEGER`,
     `ALTER TABLE user_settings ADD COLUMN last_reminder_tick_at INTEGER`,
     `ALTER TABLE todos ADD COLUMN wake_date TEXT`,
+    // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────
+    `ALTER TABLE user_settings ADD COLUMN calendar_feeds TEXT`,
+    `CREATE TABLE IF NOT EXISTS calendar_ticks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      block_key TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_calendar_tick ON calendar_ticks(user_id, date, block_key)`,
+    `CREATE TABLE IF NOT EXISTS calendar_cache (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      fetched_at INTEGER NOT NULL
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_calendar_cache ON calendar_cache(user_id, date)`,
     `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
