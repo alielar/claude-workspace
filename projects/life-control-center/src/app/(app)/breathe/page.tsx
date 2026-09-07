@@ -1,11 +1,16 @@
 "use client";
 
 /**
- * /breathe · Wim Hof breathing player.
+ * /breathe · technique picker + players (2026-09-07).
  *
- * 3 rounds of: 30 paced breaths → retention hold on empty lungs (1:30 countdown,
- * TAP ANYWHERE to end early) → deep breath in, 15 s recovery hold. Finishing
- * ticks the "Wim Hof breathing" routine item (offline-safe).
+ * Opens on a picker: Wim Hof (the daily, first and biggest) + six paced
+ * techniques from src/lib/breathe/techniques.ts, each showing goal, duration and
+ * an honest 1-3 evidence rating. One tap deeper = full detail + duration choice +
+ * Start. Any finished session ticks the "breathe" routine item (offline-safe).
+ *
+ * Wim Hof player: 3 rounds of 30 paced breaths → retention hold on empty lungs
+ * (1:30 countdown, TAP ANYWHERE to end early) → deep breath in, 15 s recovery.
+ * The others run through GenericPlayer (steps × cycles, same sounds and circle).
  *
  * Sound (all synthesized live, no assets, no voice):
  *  · three breath-cue styles, picked + previewed on the idle screen, with volume:
@@ -651,6 +656,277 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
       <div style={{ minHeight: 40, textAlign: "center", fontSize: 14, color: "var(--ink-4)" }}>
         {isRetention ? "the whole screen is the button" : ""}
       </div>
+    </div>
+  );
+}
+
+// ═══ Technique picker + generic paced player (2026-09-07) ═════════════════════
+
+function EvidenceDots({ n }: { n: 1 | 2 | 3 }) {
+  return (
+    <span aria-label={`evidence ${n} of 3`} style={{ fontSize: 10, letterSpacing: 2, color: "var(--violet)" }}>
+      {"●".repeat(n)}<span style={{ color: "var(--line-strong)" }}>{"●".repeat(3 - n)}</span>
+    </span>
+  );
+}
+
+/** "~5 min" or "~5-15 min" from a technique's duration options. */
+function durationRange(t: Technique): string {
+  const first = totalLabel(t, t.durations[0].cycles).replace("~", "");
+  const last = totalLabel(t, t.durations[t.durations.length - 1].cycles).replace("~", "");
+  return first === last ? first : `${first.replace(/ (min|s)$/, "")}-${last}`;
+}
+
+const GOAL_COLOR: Record<string, string> = {
+  Calm: "var(--cyan)", Sleep: "var(--violet)", Reset: "var(--pos)", Focus: "var(--warn)", Energy: "var(--neg)",
+};
+
+// ─── Generic paced player · runs any Technique's step cycle ───────────────────
+
+function GenericPlayer({ t, cycles, style, vol, onExit }: {
+  t: Technique; cycles: number; style: BreathStyle; vol: number; onExit: () => void;
+}) {
+  const router = useRouter();
+  const [cycle, setCycle] = useState(1);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [fireCount, setFireCount] = useState(0);
+  const [done, setDone] = useState(false);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const intervals = useRef<ReturnType<typeof setInterval>[]>([]);
+  const stopped = useRef(false);
+  const wakeLock = useRef<WakeLockSentinel | null>(null);
+  const volRef = useRef(vol / 100); volRef.current = vol / 100;
+  const styleRef = useRef(style); styleRef.current = style;
+
+  const clearAll = useCallback(() => {
+    timers.current.forEach(clearTimeout); intervals.current.forEach(clearInterval);
+    timers.current = []; intervals.current = [];
+  }, []);
+
+  const finish = useCallback(() => {
+    if (stopped.current) return;
+    clearAll();
+    setDone(true);
+    synth.pluck(659); synth.pluck(784);
+    completeBreatheItem();
+  }, [clearAll]);
+
+  const runStep = useCallback(function run(c: number, i: number) {
+    if (stopped.current) return;
+    const step: PaceStep = t.steps[i];
+    // Kapalabhati: the trailing rest of the final round is pointless · finish instead.
+    if (c === cycles && step.kind === "rest" && i === t.steps.length - 1) { finish(); return; }
+    setCycle(c); setStepIdx(i); setFireCount(0);
+    const ms = step.seconds * 1000;
+    if (step.kind === "in" || step.kind === "in2") synth.breath("in", styleRef.current, step.kind === "in2" ? Math.min(ms, 900) : ms, volRef.current, step.pan);
+    else if (step.kind === "out") synth.breath("out", styleRef.current, ms, volRef.current, step.pan);
+    else if (step.kind === "hold") synth.pluck(392, 0.2);
+    else if (step.kind === "rest") synth.pluck(523, 0.16);
+    if (step.kind === "hold" || step.kind === "rest" || step.kind === "fire") {
+      const t0 = Date.now();
+      setRemaining(step.seconds);
+      intervals.current.push(setInterval(() => {
+        setRemaining(Math.max(0, Math.ceil(step.seconds - (Date.now() - t0) / 1000)));
+      }, 200));
+      if (step.kind === "fire") {
+        synth.snap(volRef.current); setFireCount(1);
+        let n = 1;
+        intervals.current.push(setInterval(() => {
+          n += 1;
+          if (n <= step.seconds) { synth.snap(volRef.current); setFireCount(n); }
+        }, 1000));
+      }
+    } else setRemaining(null);
+    timers.current.push(setTimeout(() => {
+      clearAll();
+      if (i + 1 < t.steps.length) run(c, i + 1);
+      else if (c < cycles) run(c + 1, 0);
+      else finish();
+    }, ms));
+  }, [t, cycles, clearAll, finish]);
+
+  useEffect(() => {
+    stopped.current = false;
+    synth.arm();
+    runStep(1, 0);
+    return () => { stopped.current = true; clearAll(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Screen stays awake for the whole session.
+  useEffect(() => {
+    if (done) { wakeLock.current?.release().catch(() => {}); wakeLock.current = null; return; }
+    const req = async () => { try { if ("wakeLock" in navigator) wakeLock.current = await navigator.wakeLock.request("screen"); } catch { /* ok */ } };
+    req();
+    const onVis = () => { if (document.visibilityState === "visible") req(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [done]);
+
+  const step = t.steps[stepIdx];
+  const grow = step.kind === "in" || step.kind === "in2";
+  const accent = step.kind === "fire" ? "var(--neg)" : step.kind === "hold" || step.kind === "rest" ? "var(--violet)" : "var(--cyan)";
+
+  if (done) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 64 }}>✓</div>
+        <h1 style={{ fontSize: 28, fontWeight: 600 }}>{t.name} done</h1>
+        <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{cycles} {t.id === "kapalabhati" ? "rounds" : "cycles"} · {totalLabel(t, cycles).replace("~", "")} · ticked on today&rsquo;s list</p>
+        <button className="cc-btn cc-btn-primary" onClick={() => router.push("/today")} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
+          Back to Today
+        </button>
+        <button className="cc-btn cc-btn-ghost" onClick={onExit} style={{ minHeight: 48, borderRadius: 12 }}>Pick another</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-3)" }}>
+          {t.name} · {t.id === "kapalabhati" ? "round" : "cycle"} {cycle} of {cycles}
+        </span>
+        <span style={{ flex: 1 }} />
+        <button onClick={onExit} aria-label="Exit" className="cc-btn cc-btn-ghost" style={{ minWidth: 44, minHeight: 44, padding: 0, borderRadius: 12 }}>✕</button>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 18 }}>
+        <div aria-hidden style={{
+          width: 190, height: 190, borderRadius: "50%",
+          border: `3px solid ${accent}`,
+          background: "color-mix(in srgb, var(--bg-card) 70%, transparent)",
+          transform: step.kind === "fire" ? (fireCount % 2 ? "scale(0.94)" : "scale(1.0)") : grow ? "scale(1.22)" : step.kind === "out" ? "scale(0.86)" : "scale(1.0)",
+          transition: step.kind === "fire" ? "transform 0.25s ease" : `transform ${step.seconds}s cubic-bezier(.45,0,.55,1)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <span className="tabular-nums" style={{ fontSize: 64, fontWeight: 200, lineHeight: 1, color: "var(--ink)" }}>
+            {step.kind === "fire" ? fireCount : remaining !== null ? remaining : ""}
+          </span>
+        </div>
+        <div style={{ fontSize: 20, fontWeight: 600, color: "var(--ink)" }}>{step.label}</div>
+        <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{t.patternWords}</div>
+      </div>
+
+      <div style={{ minHeight: 40 }} />
+    </div>
+  );
+}
+
+// ─── Technique detail · info + duration + start ───────────────────────────────
+
+function TechniqueScreen({ t, onBack }: { t: Technique; onBack: () => void }) {
+  const { style, vol, pickStyle, pickVol } = useSoundPrefs();
+  const [cycles, setCycles] = useState(t.durations[0].cycles);
+  const [playing, setPlaying] = useState(false);
+
+  const chip = (on: boolean): React.CSSProperties => ({
+    minHeight: 44, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
+    border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`,
+    background: on ? "var(--accent-soft)" : "var(--fill-1)", color: "var(--ink)",
+  });
+
+  if (playing) return <GenericPlayer t={t} cycles={cycles} style={style} vol={vol} onExit={() => setPlaying(false)} />;
+
+  return (
+    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%" }}>
+      <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 600 }}>{t.name}</h1>
+          <div className="sub">{t.tagline} · <span style={{ color: GOAL_COLOR[t.goal] }}>{t.goal}</span></div>
+        </div>
+      </div>
+
+      {t.danger && <DangerBox />}
+
+      <button className="cc-btn cc-btn-primary" onClick={() => { synth.arm(); setPlaying(true); }} style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}>
+        ▶ Start · {totalLabel(t, cycles).replace("~", "")}
+      </button>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {t.durations.map((d) => (
+          <button key={d.label} onClick={() => setCycles(d.cycles)} aria-pressed={cycles === d.cycles} style={chip(cycles === d.cycles)}>{d.label}</button>
+        ))}
+      </div>
+
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">The pattern</span><span className="tail" style={{ fontFamily: "var(--f-mono)" }}>{t.pattern}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, lineHeight: 1.55, color: "var(--ink-2)" }}>
+          <p style={{ margin: 0, color: "var(--ink)", fontFamily: "var(--f-mono)", fontSize: 14 }}>{t.patternWords}</p>
+          <p style={{ margin: 0 }}>{t.what}</p>
+          <p style={{ margin: 0 }}>{t.effect}</p>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}><EvidenceDots n={t.evidence} /> &nbsp;{t.evidenceNote}</p>
+        </div>
+      </section>
+
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Breath sound</span><span className="tail">{STYLES.find((s) => s.key === style)?.label} · {vol}%</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {STYLES.map((s) => (
+              <button key={s.key} onClick={() => { pickStyle(s.key); synth.arm(); synth.breath("in", s.key, 1100, vol / 100); }} aria-pressed={style === s.key} style={chip(style === s.key)}>{s.label}</button>
+            ))}
+          </div>
+          <input type="range" min={0} max={100} step={5} value={vol} onChange={(e) => pickVol(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--violet)", minHeight: 32 }} />
+        </div>
+      </section>
+
+      <button onClick={onBack} style={{ fontSize: 15, color: "var(--ink-3)", background: "transparent", border: "none", font: "inherit", cursor: "pointer", textAlign: "left", padding: 0, minHeight: 44 }}>← All techniques</button>
+    </div>
+  );
+}
+
+// ─── The picker · default view of /breathe ────────────────────────────────────
+
+export default function BreathePage() {
+  const [view, setView] = useState<string>("pick");
+
+  if (view === "wimhof") return <WimHofScreen onBack={() => setView("pick")} />;
+  const chosen = techniqueById(view);
+  if (chosen) return <TechniqueScreen t={chosen} onBack={() => setView("pick")} />;
+
+  return (
+    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%" }}>
+      <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 600 }}>Breathing</h1>
+          <div className="sub">pick for how you feel right now</div>
+        </div>
+      </div>
+
+      {/* Wim Hof · the daily one, first and biggest */}
+      <button onClick={() => setView("wimhof")} className="cc-card" style={{ display: "grid", gap: 4, padding: "16px 18px", textAlign: "left", border: "1px solid var(--violet)", cursor: "pointer", font: "inherit", color: "var(--ink)", width: "100%" }}>
+        <span style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+          <span style={{ fontSize: 18, fontWeight: 600 }}>Wim Hof <span style={{ fontSize: 13, color: "var(--violet)", fontWeight: 500 }}>· your daily</span></span>
+          <EvidenceDots n={2} />
+        </span>
+        <span style={{ fontSize: 14.5, color: "var(--ink-3)" }}>energy + stress reset · 3 rounds · ~12 min · <span style={{ color: GOAL_COLOR.Energy }}>Energy</span></span>
+      </button>
+
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Techniques</span><span className="tail">strongest evidence first</span></div>
+        <div className="cc-card-body" style={{ display: "grid", padding: "0 0 6px" }}>
+          {TECHNIQUES.map((t, i) => (
+            <button key={t.id} onClick={() => setView(t.id)}
+              style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", minHeight: 62, padding: "8px 16px", background: "transparent", border: "none", borderBottom: i < TECHNIQUES.length - 1 ? "1px solid var(--line)" : "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }}>
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 16.5, fontWeight: 600 }}>{t.name}</span>
+                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{t.tagline}{t.danger ? " · ⚠️" : ""}</span>
+              </span>
+              <span style={{ display: "grid", justifyItems: "end", gap: 3 }}>
+                <span style={{ fontSize: 13, color: GOAL_COLOR[t.goal] }}>{t.goal}</span>
+                <span style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{durationRange(t)}</span>
+                <EvidenceDots n={t.evidence} />
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <div style={{ fontSize: 13, color: "var(--ink-4)" }}>● dots = how solid the research is. ⚠️ = can cause dizziness · read the warning before starting.</div>
+
+      <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center" }}>← Back to Today</Link>
     </div>
   );
 }
