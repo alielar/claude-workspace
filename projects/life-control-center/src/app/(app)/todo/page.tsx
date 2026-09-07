@@ -20,7 +20,7 @@ import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
 import {
-  addDays, AREAS, badgeCount, bucketOf, fmtDue, nextWeekend, parseQuickAdd, sortTodos,
+  addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, nextWeekend, parseQuickAdd, sortTodos,
   type Area, type Bucket, type Priority, type Todo,
 } from "@/lib/todo/types";
 
@@ -356,6 +356,14 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
 
         <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
 
+        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>
+          <span>🗄 Vault · sleep until {d.wakeDate ? `(hidden everywhere until ${fmtDue(d.wakeDate, today)})` : "(for far-future things)"}</span>
+          <div style={{ display: "grid", gridTemplateColumns: d.wakeDate ? "1fr auto" : "1fr", gap: 8 }}>
+            <input type="date" className="cc-input" value={d.wakeDate ?? ""} min={addDays(today, 1)} onClick={openPicker} onChange={(e) => set({ wakeDate: e.target.value || null })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            {d.wakeDate && <button type="button" onClick={() => set({ wakeDate: null })} className="cc-btn cc-btn-ghost" style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Wake now</button>}
+          </div>
+        </label>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
@@ -490,6 +498,14 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
           </div>
         )}
 
+        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>
+          <span>🗄 Vault · sleep until {d.wakeDate ? `(hidden everywhere until ${fmtDue(d.wakeDate, today)})` : "(for far-future things)"}</span>
+          <div style={{ display: "grid", gridTemplateColumns: d.wakeDate ? "1fr auto" : "1fr", gap: 8 }}>
+            <input type="date" className="cc-input" value={d.wakeDate ?? ""} min={addDays(today, 1)} onClick={openPicker} onChange={(e) => set({ wakeDate: e.target.value || null })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            {d.wakeDate && <button type="button" onClick={() => set({ wakeDate: null })} className="cc-btn cc-btn-ghost" style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Wake now</button>}
+          </div>
+        </label>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, borderRadius: 14, padding: "0 16px", color: "var(--neg)", fontSize: 15 }}>{isNew ? "Discard" : "Delete"}</button>
@@ -523,6 +539,7 @@ export default function TodoPage() {
   const [open, setOpen] = useState<Todo | null>(null);
   const [draft, setDraft] = useState<Todo | null>(null); // new entry being composed in a sheet
   const [showDone, setShowDone] = useState(false);
+  const [showVault, setShowVault] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = useMemo(() => (!isLists && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists]);
@@ -546,7 +563,9 @@ export default function TodoPage() {
     });
   };
 
-  const inArea = all.filter((t) => (t.area ?? "personal") === area);
+  // The Vault: items sleeping until a future wake date · out of every list, one place to browse.
+  const sleeping = all.filter((t) => !t.doneAt && isSleeping(t, today)).sort((a, b) => (a.wakeDate ?? "").localeCompare(b.wakeDate ?? ""));
+  const inArea = all.filter((t) => (t.area ?? "personal") === area && !isSleeping(t, today));
   const visible = filter ? inArea.filter((t) => t.project === filter) : inArea;
 
   // Tasks (Personal / Work)
@@ -667,6 +686,32 @@ export default function TodoPage() {
             </section>
           )}
         </>
+      )}
+
+      {/* Vault · far-future items, all areas together */}
+      {sleeping.length > 0 && (
+        <section className="cc-card">
+          <button onClick={() => setShowVault((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showVault ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+            <span className="title">🗄 Vault</span><span className="tail">{sleeping.length} sleeping {showVault ? "▴" : "▾"}</span>
+          </button>
+          {showVault && (
+            <div style={{ padding: "0 0 6px" }}>
+              {sleeping.map((t) => (
+                <button key={t.clientId} onClick={() => setOpen(t)}
+                  style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 16px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }}>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+                    <span style={{ display: "block", fontSize: 13.5, color: "var(--ink-3)", marginTop: 1 }}>
+                      {(t.area ?? "personal") === "list" ? "doc" : t.area === "work" ? "work" : "personal"} · wakes {new Date(`${t.wakeDate}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
+                  </span>
+                  <span style={{ fontSize: 13, color: "var(--ink-4)" }}>›</span>
+                </button>
+              ))}
+              <div style={{ padding: "10px 16px 4px", fontSize: 13, color: "var(--ink-4)" }}>On its wake day an item comes back to your normal lists with one notification.</div>
+            </div>
+          )}
+        </section>
       )}
 
       {/* Quick add · pinned above the tab bar */}

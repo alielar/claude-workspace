@@ -32,6 +32,7 @@ export type Todo = {
   dueTime: string | null;      // HH:MM
   evening: boolean;            // "This evening" (Things) · shown in the evening block of that day
   nagMinutes?: number | null;  // reminder nag cadence in minutes (5/10/15/30); empty = 30
+  wakeDate?: string | null;    // YYYY-MM-DD · Vault (far-future items): hidden from every list until this day
   someday: boolean;            // parked, out of the way
   priority: Priority;
   sortOrder: number;
@@ -202,7 +203,12 @@ export function sortTodos(a: Todo, b: Todo): number {
   return a.createdAt - b.createdAt;
 }
 
+/** Sleeping in the Vault: hidden from every list, badge, nag until the wake day. */
+export function isSleeping(t: Todo, today: string): boolean {
+  return !!t.wakeDate && t.wakeDate > today;
+}
+
 /** Number to put on the home-screen badge: open tasks due today or earlier. */
 export function badgeCount(todos: Todo[], today: string, area?: Area): number {
-  return todos.filter((t) => !t.deleted && !t.doneAt && !t.someday && t.dueDate !== null && t.dueDate <= today && (!area || (t.area ?? "personal") === area)).length;
+  return todos.filter((t) => !t.deleted && !t.doneAt && !t.someday && !isSleeping(t, today) && t.dueDate !== null && t.dueDate <= today && (!area || (t.area ?? "personal") === area)).length;
 }

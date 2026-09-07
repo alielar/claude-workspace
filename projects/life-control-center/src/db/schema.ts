@@ -155,6 +155,7 @@ export const todos = sqliteTable("todos", {
   doneAt: integer("done_at", { mode: "timestamp_ms" }),
   lastNaggedAt: integer("last_nagged_at", { mode: "timestamp_ms" }),  // reminders: last "nag until done" push
   nagMinutes: integer("nag_minutes"),  // per-task nag cadence 5/10/15/30; null = 30
+  wakeDate: text("wake_date"),         // YYYY-MM-DD · Vault: hidden everywhere until this day, then promoted + one push
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),

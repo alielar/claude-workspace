@@ -45,6 +45,20 @@ export async function GET(req: NextRequest) {
   if (hm >= "23:00" || hm < "08:00") return NextResponse.json({ quiet: true, hm });
   const today = checklistToday(now);
 
+  // Vault (far-future items): the wake day has come · one push, then the item
+  // simply becomes a normal task/doc again (wakeDate cleared = promoted).
+  const waking = await db.select().from(todos).where(and(
+    eq(todos.userId, userId), eq(todos.deleted, false), isNull(todos.doneAt), lte(todos.wakeDate, today),
+  ));
+  if (waking.length) {
+    const titles = waking.map((t) => t.title).slice(0, 3).join(" · ") + (waking.length > 3 ? ` +${waking.length - 3}` : "");
+    await sendToUser(userId, {
+      title: waking.length === 1 ? "Back from the Vault" : `${waking.length} back from the Vault`,
+      body: titles, tag: "vault", url: "/todo",
+    });
+    await db.update(todos).set({ wakeDate: null }).where(inArray(todos.id, waking.map((t) => t.id)));
+  }
+
   const rows = await db.select().from(todos).where(and(
     eq(todos.userId, userId), eq(todos.deleted, false), eq(todos.someday, false), isNull(todos.doneAt), lte(todos.dueDate, today),
   ));
@@ -57,7 +71,8 @@ export async function GET(req: NextRequest) {
     if (t.dueTime) return t.dueTime;
     return t.evening ? "19:00" : "09:00";
   };
-  const due = rows.filter((t) => t.dueDate && hm >= dueFrom(t));
+  // Sleeping items (a future wakeDate) never nag, whatever their due date.
+  const due = rows.filter((t) => t.dueDate && hm >= dueFrom(t) && !(t.wakeDate && t.wakeDate > today));
 
   // Untimed tasks: 30 min cadence for the first 2 hours, hourly after, silent from
   // 21:00. Tasks with an explicit time keep their chosen cadence all day.

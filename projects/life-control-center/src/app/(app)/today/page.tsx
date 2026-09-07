@@ -361,7 +361,7 @@ function TodoCard({ today, part }: { today: string; part: DayPart }) {
   const { data, toggleDone } = useTodos(today); // also keeps the home-screen badge current
   const open = useMemo(() => {
     type Due = Todo & { dueDate: string };
-    const list = (data?.todos ?? []).filter((t): t is Due => !t.deleted && !t.doneAt && !t.someday && t.dueDate !== null && t.dueDate <= today);
+    const list = (data?.todos ?? []).filter((t): t is Due => !t.deleted && !t.doneAt && !t.someday && !(t.wakeDate && t.wakeDate > today) && t.dueDate !== null && t.dueDate <= today);
     // in the morning/afternoon, evening tasks wait their turn
     return list.filter((t) => part === "evening" || !t.evening || t.dueDate < today).sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : sortTodos(a, b)));
   }, [data, today, part]);
