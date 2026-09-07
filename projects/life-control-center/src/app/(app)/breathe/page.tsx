@@ -25,6 +25,7 @@ import { readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { checklistToday } from "@/lib/checklist/day";
 import type { ChecklistData } from "@/lib/checklist/types";
+import { TECHNIQUES, techniqueById, totalLabel, DANGER_TEXT, type Technique, type PaceStep } from "@/lib/breathe/techniques";
 
 const ROUNDS = 3;
 const BREATHS = 30;
@@ -100,10 +101,22 @@ class BreathSynth {
     return this.noiseBuf;
   }
 
+  /** Where a cue's audio goes: the speakers, or one side of the headphones
+   * (alternate nostril pans the sound to the breathing side). */
+  private dest(pan?: -1 | 1): AudioNode {
+    const ctx = this.ctx!;
+    if (!pan) return ctx.destination;
+    const p = ctx.createStereoPanner();
+    p.pan.value = pan;
+    p.connect(ctx.destination);
+    return p;
+  }
+
   /** One breath cue. kind "in" rises, "out" falls. vol 0..1 from the slider. */
-  breath(kind: "in" | "out", style: BreathStyle, ms: number, vol: number) {
+  breath(kind: "in" | "out", style: BreathStyle, ms: number, vol: number, pan?: -1 | 1) {
     const ctx = this.ctx; if (!ctx || vol <= 0) return;
     const t = ctx.currentTime, dur = ms / 1000;
+    const out = this.dest(pan);
 
     if (style === "chime") {
       const osc = ctx.createOscillator();
@@ -112,7 +125,7 @@ class BreathSynth {
       osc.frequency.value = kind === "in" ? 740 : 392;
       gain.gain.setValueAtTime(0.16 * vol, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
-      osc.connect(gain).connect(ctx.destination);
+      osc.connect(gain).connect(out);
       osc.start(t); osc.stop(t + 0.55);
       return;
     }
@@ -140,7 +153,7 @@ class BreathSynth {
         gain.gain.linearRampToValueAtTime(peak * 0.8, t + dur * 0.25);
         gain.gain.linearRampToValueAtTime(0.001, t + dur);
       }
-      src.connect(filter).connect(gain).connect(ctx.destination);
+      src.connect(filter).connect(gain).connect(out);
       src.start(t); src.stop(t + dur + 0.05);
       return;
     }
@@ -156,7 +169,7 @@ class BreathSynth {
         gain.gain.setValueAtTime(0, t);
         gain.gain.linearRampToValueAtTime(amp * vol, t + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, t + ring);
-        osc.connect(gain).connect(ctx.destination);
+        osc.connect(gain).connect(out);
         osc.start(t); osc.stop(t + ring + 0.05);
       }
       return;
@@ -174,7 +187,7 @@ class BreathSynth {
         gain.gain.linearRampToValueAtTime(amp * vol, t + dur * 0.4);
         gain.gain.setValueAtTime(amp * vol, t + dur * 0.7);
         gain.gain.linearRampToValueAtTime(0, t + dur);
-        osc.connect(gain).connect(ctx.destination);
+        osc.connect(gain).connect(out);
         osc.start(t); osc.stop(t + dur + 0.05);
       }
       return;
@@ -191,8 +204,24 @@ class BreathSynth {
     gain.gain.linearRampToValueAtTime(v, t + 0.12);
     gain.gain.setValueAtTime(v, t + dur - 0.25);
     gain.gain.linearRampToValueAtTime(0, t + dur);
-    osc.connect(gain).connect(ctx.destination);
+    osc.connect(gain).connect(out);
     osc.start(t); osc.stop(t + dur + 0.05);
+  }
+
+  /** Kapalabhati exhale snap · a short breathy burst, one per beat. */
+  snap(vol: number) {
+    const ctx = this.ctx; if (!ctx || vol <= 0) return;
+    const buf = this.noise(); if (!buf) return;
+    const t = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass"; filter.frequency.value = 900; filter.Q.value = 1.1;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.55 * vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    src.connect(filter).connect(gain).connect(ctx.destination);
+    src.start(t); src.stop(t + 0.15);
   }
 
   /** Woody pluck for phase markers (hold, release). */
@@ -283,7 +312,40 @@ async function completeBreatheItem() {
   } catch { /* replayed later */ }
 }
 
-export default function BreathePage() {
+/** Shared, prominent dizziness warning (Wim Hof + Kapalabhati). */
+function DangerBox() {
+  return (
+    <div role="alert" style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "12px 14px", borderRadius: 12, border: "1px solid var(--warn)", background: "color-mix(in srgb, var(--warn) 10%, transparent)", fontSize: 14.5, lineHeight: 1.5, color: "var(--ink)" }}>
+      <span aria-hidden style={{ fontSize: 16 }}>⚠️</span>
+      <span>{DANGER_TEXT}</span>
+    </div>
+  );
+}
+
+/** Breath-cue style + volume, shared by every player (same localStorage keys). */
+function useSoundPrefs() {
+  const [style, setStyle] = useState<BreathStyle>("waves");
+  const [vol, setVol] = useState(50);
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem("cc-breathe-sound") as BreathStyle | null;
+      if (s && STYLES.some((x) => x.key === s)) setStyle(s);
+      const v = Number(localStorage.getItem("cc-breathe-vol"));
+      if (Number.isFinite(v) && v >= 0 && v <= 100 && localStorage.getItem("cc-breathe-vol") !== null) setVol(v);
+    } catch { /* ignore */ }
+  }, []);
+  const pickStyle = (s: BreathStyle) => {
+    setStyle(s);
+    try { localStorage.setItem("cc-breathe-sound", s); } catch { /* ignore */ }
+  };
+  const pickVol = (v: number) => {
+    setVol(v);
+    try { localStorage.setItem("cc-breathe-vol", String(v)); } catch { /* ignore */ }
+  };
+  return { style, vol, pickStyle, pickVol };
+}
+
+function WimHofScreen({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [round, setRound] = useState(1);
@@ -449,16 +511,18 @@ export default function BreathePage() {
       <div style={{ display: "grid", gap: 18, maxWidth: 560, margin: "0 auto", width: "100%" }}>
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 600 }}>Breathing</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 600 }}>Wim Hof</h1>
             <div className="sub">{ROUNDS} rounds · {BREATHS} breaths · hold up to {fmt(RETENTION_S)} · ~12 min</div>
           </div>
         </div>
+
+        <DangerBox />
 
         <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}>
           ▶ Start
         </button>
         <div style={{ fontSize: 13, color: "var(--ink-4)", marginTop: -8 }}>
-          Sit or lie down. Never in water, never driving. During the hold, tap anywhere to breathe.
+          During the hold, tap anywhere to breathe.
         </div>
 
         <section className="cc-card">
@@ -514,7 +578,7 @@ export default function BreathePage() {
           </div>
         </section>
 
-        <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back to Today</Link>
+        <button onClick={onBack} style={{ fontSize: 15, color: "var(--ink-3)", background: "transparent", border: "none", font: "inherit", cursor: "pointer", textAlign: "left", padding: 0, minHeight: 44 }}>← All techniques</button>
       </div>
     );
   }
