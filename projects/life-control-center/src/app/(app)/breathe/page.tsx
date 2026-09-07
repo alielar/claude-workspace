@@ -213,14 +213,16 @@ class BreathSynth {
   /** Continuous frequency pad.
    * Plain tone: ONE oscillator, constant volume after a short fade-in.
    * beatHz set (binaural): left ear hz, right ear hz+beatHz · steady in each ear,
-   * the "beat" happens in the brain, so it needs headphones. */
-  padStart(hz: number, fadeIn = 2.5, beatHz?: number) {
+   * the "beat" happens in the brain, so it needs headphones.
+   * vol 0..1 from the volume slider · was a hardcoded 0.11 (~a tenth of maximum),
+   * which is why the hold tone stayed quiet at full phone volume (Ali, 2026-09-07). */
+  padStart(hz: number, fadeIn = 2.5, beatHz?: number, vol = 0.5) {
     const ctx = this.ctx; if (!ctx) return;
     this.padStop(0.15);
     const gain = ctx.createGain();
     const t = ctx.currentTime;
     gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.11, t + fadeIn);
+    gain.gain.linearRampToValueAtTime(0.18 + 0.55 * vol, t + fadeIn);
     gain.connect(ctx.destination);
     let osc: OscillatorNode[];
     if (beatHz) {
@@ -334,7 +336,7 @@ export default function BreathePage() {
     try { localStorage.setItem("cc-breathe-freq", f.id); } catch { /* ignore */ }
     // preview the tone right away, a few seconds, so the choice is informed
     synth.arm();
-    synth.padStart(f.hz, 0.6, f.beatHz);
+    synth.padStart(f.hz, 0.6, f.beatHz, volRef.current);
     setPreviewingFreq(true);
     if (previewTimer.current) clearTimeout(previewTimer.current);
     previewTimer.current = setTimeout(() => { synth.padStop(); setPreviewingFreq(false); }, 4000);
@@ -392,7 +394,7 @@ export default function BreathePage() {
     holdStart.current = Date.now();
     synth.pluck(392);
     const f = freqRef.current;
-    synth.padStart(f.hz, 2.5, f.beatHz);
+    synth.padStart(f.hz, 2.5, f.beatHz, volRef.current);
     countdown.current = setInterval(() => {
       const left = RETENTION_S - Math.floor((Date.now() - holdStart.current) / 1000);
       setRemaining(Math.max(0, left));

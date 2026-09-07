@@ -22,7 +22,7 @@
 //   --every <min>    minutes from the start of one batch to the next (default 10)
 //   --until <HH:MM>  start no new batch at or after this time (Europe/Madrid)
 
-import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, appendFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { checkKeys, wati } from './wati.mjs';
 
 const arg = (name, fallback = null) => {
@@ -110,6 +110,12 @@ const STAGES = {
   reengage2: {
     stalled: ['reschedule_followup_1_fr'],
   },
+};
+
+// Follow-up 1 for the telemarketing batch. Audience comes from
+// data/tm-followup-eligible.csv (built fresh by build-tm-followup.mjs).
+STAGES.tm_followup1 = {
+  tm: ['followup_text_1_fra_v2', 'followup_text_2_fra'],
 };
 
 // Stages whose audience is the stalled list rather than the campaign plan.
@@ -214,6 +220,35 @@ if (testPhone) {
     phone: String(testPhone).replace(/[^\d]/g, ''),
     track,
   }];
+} else if (STAGE === 'tm_followup1') {
+  const EF = 'data/tm-followup-eligible.csv';
+  if (!existsSync(EF)) {
+    console.log(`\n  Refusing to send: ${EF} is missing. Run build-tm-followup.mjs first.\n`);
+    process.exit(1);
+  }
+  // The list must be fresh — eligibility decays as replies come in.
+  const ageMin = (Date.now() - statSync(EF).mtimeMs) / 60000;
+  if (ageMin > 90 && !DRY) {
+    console.log(`\n  Refusing to send: the eligibility list is ${Math.round(ageMin)} minutes old.`);
+    console.log('  Rebuild it with build-tm-followup.mjs so nobody who just replied gets a follow-up.\n');
+    process.exit(1);
+  }
+  audience = readFileSync(EF, 'utf8').split('\n').slice(1).filter((l) => l.trim()).map((l) => {
+    const m = l.match(/^(\d+),"?(.*?)"?$/);
+    return m ? { leadId: m[1], phone: m[1], name: m[2].replace(/""/g, '"'), track: 'tm' } : null;
+  }).filter(Boolean);
+
+  const excluded = audience.filter((l) => blocked.has(l.phone));
+  audience = audience.filter((l) => !blocked.has(l.phone));
+  if (excluded.length) {
+    console.log(`\n  Excluded ${excluded.length} on the blocked lists:`);
+    for (const l of excluded) console.log(`   • ${l.name} +${l.phone} — ${blocked.get(l.phone)}`);
+  }
+  const before = audience.length;
+  audience = audience.filter((l) => !tracks.tm.every((t) => done.has(`${l.phone}:${t}`)));
+  if (before - audience.length) console.log(`\n  Skipping ${before - audience.length} already sent this follow-up.`);
+  const limit = arg('limit');
+  if (limit) audience = audience.slice(0, Number(limit));
 } else if (STALLED_STAGES.has(STAGE)) {
   // People who showed interest and then went silent. Built by french-stalled.mjs.
   const SF = 'data/french/stalled.csv';
@@ -415,8 +450,42 @@ console.log(`  sending from: ${CHANNEL ? `+${CHANNEL}` : 'the default channel (F
 
 let sent = 0, failed = 0, skipped = 0;
 
+// The webhook sees every reply on the telemarketing number the moment it
+// arrives. Between batches, drop anyone from the remaining queue who has
+// written to us — they need a human or the bot, not a "you didn't reply".
+const HOOK_KEY_FILE = '.wati-webhook-secret';
+const seenHookUrls = new Set();
+async function phonesWhoReplied() {
+  if (!existsSync(HOOK_KEY_FILE)) return new Set();
+  const replied = new Set();
+  try {
+    const key = readFileSync(HOOK_KEY_FILE, 'utf8').trim();
+    const d = await (await fetch(`https://life-control-center-eta.vercel.app/api/wati?key=${key}`)).json();
+    for (const ev of d.events || []) {
+      if (seenHookUrls.has(ev.url)) continue;
+      seenHookUrls.add(ev.url);
+      try {
+        const b = await (await fetch(ev.url)).json();
+        if (b.eventType === 'message' && b.owner === false && b.waId) replied.add(String(b.waId));
+      } catch { /* one unreadable event must not stop the check */ }
+    }
+  } catch { /* webhook briefly unreachable — send continues on the last list */ }
+  return replied;
+}
+
 let stoppedEarly = 0;
+const dropped = new Set();
 for (const [n, batch] of batches.entries()) {
+  if (STAGE === 'tm_followup1' && !DRY) {
+    const replied = await phonesWhoReplied();
+    for (const p of replied) dropped.add(p);
+    const drop = batch.filter((b) => dropped.has(b.phone));
+    if (drop.length) {
+      console.log(`   pulled out mid-run, they replied: ${drop.map((d) => `${d.name} +${d.phone}`).join(', ')}`);
+      batch.splice(0, batch.length, ...batch.filter((b) => !dropped.has(b.phone)));
+    }
+    if (!batch.length) continue;
+  }
   if (pastDeadline()) {
     stoppedEarly = batches.length - n;
     console.log(`\n  Reached ${UNTIL} Europe/Madrid — stopping. ${stoppedEarly} batch(es) not sent; they stay in the queue for next time.`);
