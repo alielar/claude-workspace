@@ -16,12 +16,21 @@ import { and, eq } from "drizzle-orm";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const rows = await db.select({ endpoint: pushSubscriptions.endpoint }).from(pushSubscriptions).where(eq(pushSubscriptions.userId, session.user.id)).catch(() => []);
+  const rows = await db.select({
+    endpoint: pushSubscriptions.endpoint,
+    userAgent: pushSubscriptions.userAgent,
+    lastUsedAt: pushSubscriptions.lastUsedAt,
+  }).from(pushSubscriptions).where(eq(pushSubscriptions.userId, session.user.id)).catch(() => []);
   const [settings] = await db.select({ lastTickAt: userSettings.lastReminderTickAt }).from(userSettings).where(eq(userSettings.userId, session.user.id)).catch(() => []);
   return NextResponse.json({
     publicKey: process.env.VAPID_PUBLIC_KEY ?? null,
     count: rows.length,
     endpoints: rows.map((r) => r.endpoint),
+    devices: rows.map((r) => ({
+      endpoint: r.endpoint,
+      userAgent: r.userAgent ?? "",
+      lastUsedAt: r.lastUsedAt?.getTime?.() ?? null,
+    })),
     lastTickAt: settings?.lastTickAt?.getTime() ?? null,
   });
 }

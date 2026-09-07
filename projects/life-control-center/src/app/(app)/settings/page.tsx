@@ -138,14 +138,36 @@ export default function SettingsPage() {
   // Reminders (push) on this device
   const [push, setPush] = useState<PushState | "loading">("loading");
   const [pushMsg, setPushMsg] = useState<string | null>(null);
-  const [pushInfo, setPushInfo] = useState<{ count: number; lastTickAt: number | null } | null>(null);
+  type PushDevice = { endpoint: string; userAgent: string; lastUsedAt: number | null };
+  const [pushInfo, setPushInfo] = useState<{ count: number; lastTickAt: number | null; devices: PushDevice[] } | null>(null);
+  const [myEndpoint, setMyEndpoint] = useState<string | null>(null);
   useEffect(() => { pushState().then(setPush).catch(() => setPush("unsupported")); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker?.getRegistration();
+        const sub = await reg?.pushManager.getSubscription();
+        setMyEndpoint(sub?.endpoint ?? null);
+      } catch { /* not available */ }
+    })();
+  }, [push]);
   const loadPushInfo = () => {
     fetch("/api/push").then((r) => r.json())
-      .then((d) => setPushInfo({ count: d.count ?? 0, lastTickAt: d.lastTickAt ?? null }))
+      .then((d) => setPushInfo({ count: d.count ?? 0, lastTickAt: d.lastTickAt ?? null, devices: d.devices ?? [] }))
       .catch(() => {});
   };
   useEffect(loadPushInfo, []);
+  const removeDevice = async (endpoint: string) => {
+    if (!confirm("Remove this device from reminders?")) return;
+    await fetch("/api/push", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint }) }).catch(() => {});
+    loadPushInfo();
+  };
+  // "iPhone · A L I app" from a user-agent string · enough to tell devices apart.
+  const deviceName = (ua: string) => {
+    const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Macintosh|Mac OS/.test(ua) ? "Mac" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : "Device";
+    const br = /CriOS|Chrome/.test(ua) ? "Chrome" : /FxiOS|Firefox/.test(ua) ? "Firefox" : /Safari/.test(ua) ? "Safari" : "";
+    return br ? `${os} · ${br}` : os;
+  };
   const togglePush = async () => {
     setPushMsg(null);
     try { setPush(push === "on" ? await disablePush() : await enablePush()); loadPushInfo(); }
@@ -381,11 +403,26 @@ export default function SettingsPage() {
             const stale = mins === null || mins > 30;
             return (
               <p style={{ margin: 0, fontSize: 14, color: stale ? "var(--warn)" : "var(--ink-3)" }}>
-                {pushInfo.count} device{pushInfo.count === 1 ? "" : "s"} registered · nag service {mins === null ? "has not run yet" : `last ran ${mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`} ago`}
+                Nag service {mins === null ? "has not run yet" : `last ran ${mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`} ago`}
                 {stale && " · the every-5-min pinger (cron-job.org) looks down"}
               </p>
             );
           })()}
+          {pushInfo && pushInfo.devices.length > 0 && (
+            <div style={{ display: "grid", gap: 2 }}>
+              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>Registered devices · a stale one is removed automatically the first time a send to it fails</div>
+              {pushInfo.devices.map((d) => (
+                <div key={d.endpoint} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 8, minHeight: 44 }}>
+                  <span style={{ fontSize: 14, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {deviceName(d.userAgent)}
+                    {d.endpoint === myEndpoint && <span style={{ color: "var(--violet)" }}> · this device</span>}
+                    {d.lastUsedAt && <span style={{ color: "var(--ink-4)" }}> · added {new Date(d.lastUsedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>}
+                  </span>
+                  <button onClick={() => removeDevice(d.endpoint)} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13, color: "var(--neg)" }}>Remove</button>
+                </div>
+              ))}
+            </div>
+          )}
           {push === "on" && pushInfo?.count === 0 && (
             <p style={{ margin: 0, fontSize: 14, color: "var(--warn)" }}>This phone thinks reminders are on but the server has no registered device · turn them off and on again below.</p>
           )}
