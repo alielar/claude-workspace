@@ -158,6 +158,14 @@ export default function SettingsPage() {
   };
   const { data: me } = useCached<{ required: boolean; email: string | null }>("auth-me", () => fetchJson("/api/auth/me"));
 
+  // One-tap schema update · the migrate route is idempotent, safe to tap any time.
+  const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
+  const runMigrate = async () => {
+    setMigrateMsg("Updating…");
+    const r = await fetch("/api/admin/migrate", { method: "POST" }).then((x) => x.json()).catch(() => null);
+    setMigrateMsg(r ? "Database is up to date." : "Failed · try again in a moment.");
+  };
+
   const kettlebell = String(settings?.kettlebellKg ?? 12);
   const setKettlebell = async (key: string) => {
     if (!settings) return;
@@ -404,10 +412,14 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-08-30</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-09-07</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>
+        </div>
+        <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, borderTop: "1px solid var(--line)" }}>
+          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>{migrateMsg ?? "After an update that adds features:"}</span>
+          <button className="cc-btn cc-btn-ghost" onClick={runMigrate}>Update database</button>
         </div>
       </section>
     </div>
