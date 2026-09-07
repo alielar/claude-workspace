@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/db";
-import { todos } from "@/db/schema";
+import { todos, userSettings } from "@/db/schema";
 import { and, eq, inArray, isNull, lte } from "drizzle-orm";
 import { getUserId } from "@/lib/user";
 import { checklistToday } from "@/lib/checklist/day";
@@ -36,10 +36,13 @@ export async function GET(req: NextRequest) {
 
   const now = new Date();
   const hm = madridHM(now);
-  if (hm >= "23:00" || hm < "08:00") return NextResponse.json({ quiet: true, hm });
 
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "no user" }, { status: 500 });
+  // Heartbeat · Settings shows "service last ran Xm ago", so a dead pinger is visible.
+  await db.update(userSettings).set({ lastReminderTickAt: now }).where(eq(userSettings.userId, userId)).catch(() => {});
+
+  if (hm >= "23:00" || hm < "08:00") return NextResponse.json({ quiet: true, hm });
   const today = checklistToday(now);
 
   const rows = await db.select().from(todos).where(and(

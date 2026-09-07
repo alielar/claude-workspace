@@ -50,6 +50,8 @@ export const userSettings = sqliteTable("user_settings", {
   newsChannels: text("news_channels"),
   /** Current kettlebell weight. 12 until every movement is mastered, then 16. */
   kettlebellKg: real("kettlebell_kg").notNull().default(12),
+  /** Heartbeat: when /api/reminders/tick last ran · stale means the external pinger died. */
+  lastReminderTickAt: integer("last_reminder_tick_at", { mode: "timestamp_ms" }),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

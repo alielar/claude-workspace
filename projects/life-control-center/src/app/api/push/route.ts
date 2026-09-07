@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { pushSubscriptions } from "@/db/schema";
+import { pushSubscriptions, userSettings } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
 /**
- * GET    /api/push → { publicKey, count }  · VAPID public key + how many devices are subscribed
+ * GET    /api/push → { publicKey, count, endpoints, lastTickAt }
+ *          VAPID public key, this user's subscribed devices (endpoints let a phone
+ *          verify the server still knows IT), and when the nag service last ran
+ *          (stale = the external pinger is down, not the subscription).
  * POST   /api/push { subscription }        · save this device (idempotent on endpoint)
  * DELETE /api/push { endpoint }            · remove this device
  */
@@ -13,8 +16,14 @@ import { and, eq } from "drizzle-orm";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const rows = await db.select({ id: pushSubscriptions.id }).from(pushSubscriptions).where(eq(pushSubscriptions.userId, session.user.id)).catch(() => []);
-  return NextResponse.json({ publicKey: process.env.VAPID_PUBLIC_KEY ?? null, count: rows.length });
+  const rows = await db.select({ endpoint: pushSubscriptions.endpoint }).from(pushSubscriptions).where(eq(pushSubscriptions.userId, session.user.id)).catch(() => []);
+  const [settings] = await db.select({ lastTickAt: userSettings.lastReminderTickAt }).from(userSettings).where(eq(userSettings.userId, session.user.id)).catch(() => []);
+  return NextResponse.json({
+    publicKey: process.env.VAPID_PUBLIC_KEY ?? null,
+    count: rows.length,
+    endpoints: rows.map((r) => r.endpoint),
+    lastTickAt: settings?.lastTickAt?.getTime() ?? null,
+  });
 }
 
 export async function POST(req: Request) {

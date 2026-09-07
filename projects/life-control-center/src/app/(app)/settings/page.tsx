@@ -138,10 +138,17 @@ export default function SettingsPage() {
   // Reminders (push) on this device
   const [push, setPush] = useState<PushState | "loading">("loading");
   const [pushMsg, setPushMsg] = useState<string | null>(null);
+  const [pushInfo, setPushInfo] = useState<{ count: number; lastTickAt: number | null } | null>(null);
   useEffect(() => { pushState().then(setPush).catch(() => setPush("unsupported")); }, []);
+  const loadPushInfo = () => {
+    fetch("/api/push").then((r) => r.json())
+      .then((d) => setPushInfo({ count: d.count ?? 0, lastTickAt: d.lastTickAt ?? null }))
+      .catch(() => {});
+  };
+  useEffect(loadPushInfo, []);
   const togglePush = async () => {
     setPushMsg(null);
-    try { setPush(push === "on" ? await disablePush() : await enablePush()); }
+    try { setPush(push === "on" ? await disablePush() : await enablePush()); loadPushInfo(); }
     catch { setPushMsg("Couldn't turn reminders on · try again in a moment."); }
   };
   const testPush = async () => {
@@ -361,6 +368,19 @@ export default function SettingsPage() {
           {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app · add A L I to the home screen first, then come back here.</p>}
           {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Notifications are blocked for this app in iOS Settings → Notifications → A L I.</p>}
           {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>This browser can’t receive notifications.</p>}
+          {pushInfo && (() => {
+            const mins = pushInfo.lastTickAt ? Math.round((Date.now() - pushInfo.lastTickAt) / 60000) : null;
+            const stale = mins === null || mins > 30;
+            return (
+              <p style={{ margin: 0, fontSize: 14, color: stale ? "var(--warn)" : "var(--ink-3)" }}>
+                {pushInfo.count} device{pushInfo.count === 1 ? "" : "s"} registered · nag service {mins === null ? "has not run yet" : `last ran ${mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`} ago`}
+                {stale && " · the every-5-min pinger (cron-job.org) looks down"}
+              </p>
+            );
+          })()}
+          {push === "on" && pushInfo?.count === 0 && (
+            <p style={{ margin: 0, fontSize: 14, color: "var(--warn)" }}>This phone thinks reminders are on but the server has no registered device · turn them off and on again below.</p>
+          )}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
               {push === "on" ? "Turn off on this device" : "Turn on reminders"}

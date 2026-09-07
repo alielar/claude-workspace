@@ -156,6 +156,7 @@ export async function POST() {
     `ALTER TABLE todos ADD COLUMN last_nagged_at INTEGER`,
     // Reminder frequency (per task; null = 30 min)
     `ALTER TABLE todos ADD COLUMN nag_minutes INTEGER`,
+    `ALTER TABLE user_settings ADD COLUMN last_reminder_tick_at INTEGER`,
     `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
