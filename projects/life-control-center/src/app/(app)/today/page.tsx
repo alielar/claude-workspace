@@ -9,14 +9,16 @@
  * The day is the spine (spec §6): wake → stretch → breathe → supplements →
  * day → evening → magnesium → reading habit.
  *
- * Sections, phone first, single column:
+ * Layout (redesigned 2026-09-08, Ali's order with two agreed amendments):
  *   greeting + date + streak · progress line
- *   NOW        · routine + items for this part of the day (+ anytime), not done
- *   STILL OPEN · items from earlier today that weren't ticked (compact)
- *   BUILDING   · habits being built, only in their part of the day
- *   UP NEXT    · the next part of the day (compact) · evening items stay hidden in the morning
- *   DONE       · ticked today, dimmed
- *   NEWS       · 4 headlines from the last brief (cached) → /news
+ *   HEADLINES  · 3 one-line featured stories (strip, not the old rotating card) → /news
+ *   TODAY      · ONE timeline card merging checklist, to-dos and calendar blocks:
+ *                earlier/overdue on top → current part routine → timed (work blocks,
+ *                personal events, timed to-dos) → anytime → next part → evening
+ *                (folded in, dimmed until the evening). The read row doubles as
+ *                "Reading now" (book title inline · the Books card is gone).
+ *   BUILDING   · habits being built
+ *   DONE       · one collapsed line, expandable
  */
 
 import { Linkify } from "@/components/Linkify";
@@ -32,6 +34,7 @@ import type { NewsBrief } from "@/lib/news-brief";
 import type { Book, BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
+import type { CalBlock } from "@/lib/calendar/server";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -47,7 +50,6 @@ const PART_LABEL: Record<DayPart, string> = {
   afternoon: "This afternoon",
   evening: "This evening",
 };
-const NEXT_PART: Record<DayPart, DayPart | null> = { morning: "afternoon", afternoon: "evening", evening: null };
 const PART_ORDER: Record<DayPart, number> = { morning: 0, afternoon: 1, evening: 2 };
 
 function longDate(d: Date): string {
@@ -243,145 +245,100 @@ const NEWS_CATS: { label: string; match: string[]; color: string }[] = [
   { label: "Tech & AI",   match: ["tech", "ai"],   color: "#2E9E8F" },
 ];
 
-function firstLine(text: string, max = 120): string {
-  const t = text.replace(/\s+/g, " ").trim();
-  const dot = t.search(/[.!?](\s|$)/);
-  const cut = dot > 40 && dot < max ? t.slice(0, dot + 1) : t.slice(0, max);
-  return cut.length < t.length && !/[.!?]$/.test(cut) ? cut.replace(/\s\S*$/, "") + "…" : cut;
-}
-
-function NewsCard({ today }: { today: string }) {
+function HeadlinesCard({ today }: { today: string }) {
   const { data: brief, loading } = useCached<NewsBrief>("news-brief", () => fetchJson<NewsBrief>("/api/news/generate"));
   const picks = useMemo(() => {
     if (!brief) return [];
     return NEWS_CATS.flatMap((c) => {
-      const s = brief.stories.find((st) => c.match.includes(st.category) && st.featured) ?? brief.stories.find((st) => c.match.includes(st.category));
-      return s ? [{ ...c, headline: s.headline, line: firstLine(s.summary || "") }] : [];
-    });
+      const st = brief.stories.find((x) => c.match.includes(x.category) && x.featured) ?? brief.stories.find((x) => c.match.includes(x.category));
+      return st ? [{ label: c.label, color: c.color, headline: st.headline }] : [];
+    }).slice(0, 3);
   }, [brief]);
-
-  const [i, setI] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const touchX = useRef<number | null>(null);
-  const n = picks.length;
-  useEffect(() => {
-    if (n < 2 || paused) return;
-    const t = setInterval(() => setI((x) => (x + 1) % n), 6000);
-    return () => clearInterval(t);
-  }, [n, paused]);
-  const cur = picks[Math.min(i, Math.max(0, n - 1))];
   const isOld = brief && brief.date !== today;
+  return (
+    <Link href="/news" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      <div className="cc-card-head">
+        <span className="title" style={{ color: "var(--warn)" }}>★ Headlines</span>
+        <span className="tail">{brief ? (isOld ? `from ${brief.date} ›` : "News ›") : loading ? "…" : "no brief yet ›"}</span>
+      </div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 8, padding: "10px 14px" }}>
+        {picks.length === 0 && <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{loading ? "Loading the last brief…" : "The brief arrives every morning."}</span>}
+        {picks.map((p) => (
+          <span key={p.label} style={{ display: "grid", gridTemplateColumns: "8px 1fr", gap: 10, alignItems: "center", minWidth: 0 }}>
+            <span aria-hidden style={{ width: 8, height: 8, borderRadius: "50%", background: p.color }} />
+            <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.headline}</span>
+          </span>
+        ))}
+      </div>
+    </Link>
+  );
+}
 
-  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; setPaused(true); };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const dx = touchX.current === null ? 0 : e.changedTouches[0].clientX - touchX.current;
-    touchX.current = null;
-    if (Math.abs(dx) > 40 && n > 1) setI((x) => (x + (dx < 0 ? 1 : n - 1)) % n);
-    setTimeout(() => setPaused(false), 400);
+// ─── Timeline pieces (calendar blocks + to-dos inside the TODAY card) ─────────
+
+type CalData = { date: string; configured: boolean; blocks: (CalBlock & { ticked: boolean })[] };
+
+function useCalendarDay(today: string) {
+  const { data, setData } = useCached<CalData>("cal-today", () => fetchJson<CalData>("/api/calendar/today"));
+  const blocks = data && data.date === today ? data.blocks : [];
+  const tick = async (b: CalBlock & { ticked: boolean }) => {
+    const next = !b.ticked;
+    if (data) setData({ ...data, blocks: data.blocks.map((x) => x.key === b.key ? { ...x, ticked: next } : x) });
+    try {
+      await sendOrQueue({
+        url: "/api/calendar/tick", method: "POST",
+        body: { date: today, key: b.key, ticked: next },
+        dedupeKey: `caltick:${today}:${b.key}`,
+      });
+    } catch { /* replayed later */ }
   };
+  return { blocks, configured: data?.configured ?? false, tick };
+}
 
+/** A calendar block: tick = "I was productive in this block". */
+function CalRow({ b, onTick }: { b: CalBlock & { ticked: boolean }; onTick: () => void }) {
+  const work = b.source === "work";
   return (
-    <Link href="/news" className="cc-card" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchCancel={() => { touchX.current = null; setPaused(false); }}
-      style={{ display: "block", textDecoration: "none", color: "inherit", overflow: "hidden" }}>
-      <div className="cc-card-head">
-        <span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span>
-        <span className="tail">{brief ? (isOld ? `from ${brief.date}` : "") : loading ? "…" : "no brief yet"}</span>
-      </div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 8, minHeight: 96 }}>
-        {!cur && (
-          <span style={{ fontSize: 15, color: "var(--ink-3)" }}>{loading ? "Loading the last brief…" : "The brief arrives every morning. Tap to open News."}</span>
-        )}
-        {cur && (
-          <div key={cur.label} className="news-rotate" style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, color: cur.color }}>{cur.label}</span>
-            <span style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em" }}>{cur.headline}</span>
-            {cur.line && <span style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.45 }}>{cur.line}</span>}
-          </div>
-        )}
-        {n > 1 && (
-          <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
-            {picks.map((p, k) => (
-              <span key={p.label} style={{ height: 4, borderRadius: 99, flex: k === i ? 3 : 1, background: k === i ? p.color : "var(--fill-3)", transition: "flex .3s, background .3s" }} />
-            ))}
-            {brief?.videos?.length ? <span style={{ fontSize: 13, color: "var(--ink-4)", marginLeft: 6, whiteSpace: "nowrap" }}>▶ {brief.videos.length} videos</span> : null}
-          </div>
-        )}
-      </div>
-      <style>{`@keyframes news-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } } .news-rotate { animation: news-in .35s var(--easeOut); }`}</style>
-    </Link>
+    <div className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 52, padding: "8px 4px", borderBottom: "1px solid var(--line)", opacity: b.ticked ? 0.55 : 1 }}>
+      <button onClick={onTick} aria-pressed={b.ticked} aria-label={b.ticked ? "Mark block not done" : "Mark block productive"}
+        style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${b.ticked ? "transparent" : "var(--line-strong)"}`, background: b.ticked ? "var(--cyan)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        {b.ticked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+      </button>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: b.ticked ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {work ? "Work block" : b.title}
+        </span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1, fontFamily: "var(--f-mono)" }}>
+          {b.start}–{b.end}{work ? ` · ${b.title}` : " · personal"}
+        </span>
+      </span>
+      <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{work ? "🗓" : "⭐"}</span>
+    </div>
   );
 }
 
-// ─── Books card ───────────────────────────────────────────────────────────────
-// Current book (cover + title) and what's next. Tap → /books. Phone copy first.
-
-function BookCover({ b, width }: { b: Book; width: number }) {
-  const [failed, setFailed] = useState(false);
-  const h = Math.round(width * 1.5);
-  if (!b.coverUrl || failed) return <span aria-hidden style={{ width, height: h, borderRadius: 5, background: "var(--grad-soft)", border: "1px solid var(--line)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(width / 3), flexShrink: 0 }}>📖</span>;
-  // eslint-disable-next-line @next/next/no-img-element -- external cover, plain <img> keeps the bundle small
-  return <img src={b.coverUrl} alt="" width={width} height={h} loading="lazy" decoding="async" onError={() => setFailed(true)} style={{ width, height: h, objectFit: "cover", borderRadius: 5, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.3)", background: "var(--fill-2)" }} />;
-}
-
-function BooksCard() {
-  const { data, loading } = useCached<BooksData>("books", () => fetchJson<BooksData>("/api/books"));
-  const books = data?.books ?? [];
-  const reading = books.find((b) => b.status === "reading") ?? null;
-  const queue = books.filter((b) => b.status === "queue");
-  const next = queue[0] ?? null;
-  const show = reading ?? next;
+/** One to-do inside the timeline. */
+function TodoRow({ t, today, toggleDone }: { t: Todo; today: string; toggleDone: (t: Todo) => void }) {
   return (
-    <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-      <div className="cc-card-head">
-        <span className="title">{reading ? "Reading now" : "Next book"}</span>
-        <span className="tail">{queue.length ? `${queue.length} waiting ›` : "shelf ›"}</span>
-      </div>
-      <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: show ? "44px 1fr" : "1fr", gap: 12, alignItems: "center", minHeight: 66 }}>
-        {loading && !data && <div className="cc-skeleton" style={{ height: 44, gridColumn: "1 / -1" }} />}
-        {!loading && !show && <span style={{ fontSize: 15, color: "var(--ink-3)" }}>{data ? "The shelf is empty · add a book." : "Couldn't load the shelf · tap to open it."}</span>}
-        {show && (
-          <>
-            <BookCover b={show} width={44} />
-            <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{show.title}</span>
-              <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {show.author}{reading && next ? ` · next: ${next.title}` : !reading ? " · tap to start" : ""}
-              </span>
-            </span>
-          </>
-        )}
-      </div>
-    </Link>
+    <div className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 48, padding: "6px 4px", borderBottom: "1px solid var(--line)" }}>
+      <button onClick={() => toggleDone(t)} aria-label="Mark done" style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: "var(--fill-1)", cursor: "pointer", padding: 0 }} />
+      <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><Linkify text={t.title} /></span>
+        <span style={{ display: "block", fontSize: 14, color: t.dueDate && t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+          {t.dueDate && t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}{t.project ? ` · #${t.project}` : ""}
+        </span>
+      </Link>
+    </div>
   );
 }
 
-// ─── To-do card ───────────────────────────────────────────────────────────────
-
-function TodoCard({ today, part }: { today: string; part: DayPart }) {
-  const { data, toggleDone } = useTodos(today); // also keeps the home-screen badge current
-  const open = useMemo(() => {
-    type Due = Todo & { dueDate: string };
-    const list = (data?.todos ?? []).filter((t): t is Due => !t.deleted && !t.doneAt && !t.someday && !(t.wakeDate && t.wakeDate > today) && t.dueDate !== null && t.dueDate <= today);
-    // in the morning/afternoon, evening tasks wait their turn
-    return list.filter((t) => part === "evening" || !t.evening || t.dueDate < today).sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : sortTodos(a, b)));
-  }, [data, today, part]);
-  if (!data || open.length === 0) return null;
-  const overdue = open.filter((t) => t.dueDate < today).length;
+/** Small divider inside the timeline ("Anytime", "This evening"…). */
+function SubHead({ children }: { children: React.ReactNode }) {
   return (
-    <Card title="To-do" tail={<Link href="/todo" style={{ textDecoration: "none", color: "var(--ink-3)" }}>{open.length > 4 ? `+${open.length - 4} more ›` : "All ›"}</Link>}>
-      {open.slice(0, 4).map((t, i, arr) => (
-        <div key={t.clientId} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 50, padding: "6px 4px", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
-          <button onClick={() => toggleDone(t)} aria-label="Mark done" style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: "var(--fill-1)", cursor: "pointer", padding: 0 }} />
-          <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><Linkify text={t.title} /></span>
-            <span style={{ display: "block", fontSize: 14, color: t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-              {t.dueDate < today ? fmtDue(t.dueDate, today) : t.dueTime ?? (t.evening ? "this evening" : "today")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}{t.project ? ` · #${t.project}` : ""}
-            </span>
-          </Link>
-        </div>
-      ))}
-      {overdue > 0 && <div style={{ padding: "6px 4px 10px", fontSize: 14, color: "var(--ink-4)" }}>{overdue} overdue · open To-do to move or clear them.</div>}
-    </Card>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 4px 2px" }}>
+      <span style={{ fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", whiteSpace: "nowrap" }}>{children}</span>
+      <span aria-hidden style={{ flex: 1, height: 1, background: "var(--line)" }} />
+    </div>
   );
 }
 
@@ -472,17 +429,41 @@ export default function TodayPage() {
   const partOf = (i: ChecklistItem): DayPart | "anytime" => i.timeOfDay === "anytime" ? "anytime" : i.timeOfDay;
   const isNow = (i: ChecklistItem) => partOf(i) === part || partOf(i) === "anytime";
   const isEarlier = (i: ChecklistItem) => partOf(i) !== "anytime" && PART_ORDER[partOf(i) as DayPart] < PART_ORDER[part];
-  const isNext = (i: ChecklistItem) => NEXT_PART[part] !== null && partOf(i) === NEXT_PART[part];
 
   const open = items.filter((i) => !i.completedToday);
-  // The workout row lands after the routine steps in NOW.
+  // The workout row lands after the routine steps.
   const nowItems   = open.filter((i) => i.kind !== "habit" && isNow(i)).sort((a, b) => (a.source === "workout" ? 1 : 0) - (b.source === "workout" ? 1 : 0));
   const earlier    = open.filter((i) => i.kind !== "habit" && isEarlier(i));
   const building   = open.filter((i) => i.kind === "habit" && (isNow(i) || isEarlier(i)));
-  const upNext     = open.filter((i) => isNext(i));
+  const afternoonItems = part === "morning" ? open.filter((i) => i.kind !== "habit" && partOf(i) === "afternoon") : [];
+  const eveningItems   = part !== "evening" ? open.filter((i) => i.kind !== "habit" && partOf(i) === "evening") : [];
   const doneItems  = items.filter((i) => i.completedToday);
+  const [showDone, setShowDone] = useState(false);
 
-  const allNowDone = data && total > 0 && nowItems.length === 0;
+  // ── To-dos due today / overdue, merged into the timeline ──────────────────
+  const { data: todoData, toggleDone } = useTodos(today); // also keeps the home-screen badge current
+  const dueList = useMemo(() => {
+    type Due = Todo & { dueDate: string };
+    return (todoData?.todos ?? []).filter((t): t is Due =>
+      !t.deleted && !t.doneAt && !t.someday && !(t.wakeDate && t.wakeDate > today) && t.dueDate !== null && t.dueDate <= today
+    ).sort(sortTodos);
+  }, [todoData, today]);
+  const overdueTodos = dueList.filter((t) => t.dueDate < today);
+  const todayTodos   = dueList.filter((t) => t.dueDate === today);
+  const timedTodos   = todayTodos.filter((t) => t.dueTime && !t.evening);
+  const eveningTodos = todayTodos.filter((t) => t.evening);
+  const anytimeTodos = todayTodos.filter((t) => !t.dueTime && !t.evening).concat(part === "evening" ? eveningTodos : []);
+
+  // ── Calendar blocks + timed to-dos, one time-ordered sequence ─────────────
+  const { blocks, tick } = useCalendarDay(today);
+  const toMinHM = (x: string) => Number(x.slice(0, 2)) * 60 + Number(x.slice(3, 5));
+  const timed: { min: number; node: React.ReactNode }[] = [
+    ...blocks.map((b) => ({ min: b.startMin, node: <CalRow key={`cal-${b.key}`} b={b} onTick={() => tick(b)} /> })),
+    ...timedTodos.map((t) => ({ min: toMinHM(t.dueTime!), node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} /> })),
+  ].sort((a, b) => a.min - b.min);
+
+  const eveningSection = eveningItems.length + (part !== "evening" ? eveningTodos.length : 0);
+  const allNowDone = data && total > 0 && nowItems.length === 0 && earlier.length === 0 && overdueTodos.length === 0;
 
   return (
     <div className="today-page" style={{ display: "grid", gap: 18 }}>
@@ -517,9 +498,12 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* NOW */}
+      {/* HEADLINES · compact strip, full news lives in the tab */}
+      <HeadlinesCard today={today} />
+
+      {/* TODAY · one timeline: checklist + calendar blocks + to-dos */}
       <Card
-        title={PART_LABEL[part]}
+        title="Today"
         tail={<Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
       >
         {loading && !data && (
@@ -532,49 +516,67 @@ export default function TodayPage() {
             No items yet. <Link href="/checklist" style={{ color: "var(--violet)" }}>Set up your checklist →</Link>
           </div>
         )}
-        {allNowDone && (
+
+        {/* Earlier + overdue float to the top · they need attention first */}
+        {(earlier.length > 0 || overdueTodos.length > 0) && (
+          <>
+            <SubHead>Still open</SubHead>
+            {earlier.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
+            {overdueTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} />)}
+          </>
+        )}
+
+        {allNowDone && timed.length === 0 && anytimeTodos.length === 0 && (
           <div style={{ padding: "18px 0", fontSize: 15, color: "var(--pos)" }}>
             ✓ Nothing left for {PART_LABEL[part].toLowerCase()}.
           </div>
         )}
+
+        {/* This part of the day · routine first */}
         {nowItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
+
+        {/* Timed · work blocks, personal events, timed to-dos in clock order */}
+        {timed.map((e) => e.node)}
+
+        {/* Anytime to-dos */}
+        {anytimeTodos.length > 0 && (
+          <>
+            <SubHead>Anytime</SubHead>
+            {anytimeTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} />)}
+          </>
+        )}
+
+        {/* Later parts of the day, folded into the same timeline */}
+        {afternoonItems.length > 0 && (
+          <>
+            <SubHead>This afternoon</SubHead>
+            {afternoonItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
+          </>
+        )}
+        {eveningSection > 0 && (
+          <div style={{ opacity: 0.65 }}>
+            <SubHead>This evening</SubHead>
+            {eveningItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
+            {part !== "evening" && eveningTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} />)}
+          </div>
+        )}
       </Card>
 
-      {/* NEWS · worth your time, rotating */}
-      <NewsCard today={today} />
-
-      {/* TO-DO due today */}
-      <TodoCard today={today} part={part} />
-
-      {/* BOOKS */}
-      <BooksCard />
-
-      {/* STILL OPEN (earlier today) */}
-      {earlier.length > 0 && (
-        <Card title="Still open from earlier" tail={earlier.length}>
-          {earlier.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
-        </Card>
-      )}
-
-      {/* BUILDING */}
+      {/* BUILDING · habits with their own streak (the read row carries the current book) */}
       {building.length > 0 && (
-        <Card title="Building" tail="habits, own streak">
+        <Card title="In the building" tail="habits, own streak">
           {building.map((item) => <Row key={item.id} item={item} onToggle={toggle} currentBook={currentBook} />)}
         </Card>
       )}
 
-      {/* UP NEXT */}
-      {upNext.length > 0 && (
-        <Card title={NEXT_PART[part] === "evening" ? "This evening" : "This afternoon"} tail={upNext.length}>
-          {upNext.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
-        </Card>
-      )}
-
-      {/* DONE */}
+      {/* DONE · one quiet line, expandable */}
       {doneItems.length > 0 && (
-        <Card title="Done" tail={doneItems.length}>
-          {doneItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}
-        </Card>
+        <section className="cc-card">
+          <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+            <span className="title">Done</span><span className="tail">{doneItems.length} {showDone ? "▴" : "▾"}</span>
+          </button>
+          {showDone && <div style={{ padding: "0 14px" }}>{doneItems.map((item) => <Row key={item.id} item={item} onToggle={toggle} compact />)}</div>}
+        </section>
       )}
 
       <style>{`
