@@ -47,7 +47,7 @@ export default function TrainPage() {
 
   const nextKey: WorkoutKey = ov?.next ?? "w1";
   const next = workouts.find((w) => w.key === nextKey);
-  const other = workouts.find((w) => w.key !== nextKey);
+  const others = workouts.filter((w) => w.key !== nextKey);
   const kg = ov?.kettlebellKg ?? 12;
   const loading = wLoading && oLoading && !ov;
   const target = ov?.target ?? SESSIONS_PER_WEEK;
@@ -130,9 +130,9 @@ export default function TrainPage() {
         </div>
       </section>
 
-      {/* The other one */}
-      {other && (
-        <Link href={`/train/${other.key}`} className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      {/* The other options */}
+      {others.map((other) => (
+        <Link key={other.key} href={`/train/${other.key}`} className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
           <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center" }}>
             <span>
               <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>{other.name}</span>
@@ -141,7 +141,7 @@ export default function TrainPage() {
             <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Start instead ›</span>
           </div>
         </Link>
-      )}
+      ))}
 
       {/* Weekly bests */}
       <section className="cc-card">

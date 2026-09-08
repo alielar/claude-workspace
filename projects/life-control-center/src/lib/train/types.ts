@@ -2,7 +2,7 @@
  * Train · kettlebell era. Types, defaults and pure helpers shared by API + screens.
  */
 
-export type WorkoutKey = "w1" | "w2";
+export type WorkoutKey = "w1" | "w2" | "w3";
 export type WorkoutFormat = "amrap" | "sets";
 
 export type TrainExercise = {
@@ -140,7 +140,54 @@ export const DEFAULT_WORKOUTS: TrainWorkout[] = [
       db("wrist-curl",    "Wrist curls",                 15, 3, true),
     ],
   },
+  // W3 (2026-09-08) · 6-round kettlebell circuit from Ali's reel, played as the same
+  // 30-min AMRAP game (6 rounds is the reel's target, shown on the page). The reel
+  // uses 20 kg; Ali lifts his 12 kg until the movements are mastered (spec rule).
+  {
+    key: "w3",
+    name: "Workout 3 · Circuit",
+    format: "amrap",
+    amrapMinutes: 30,
+    restSeconds: 0,
+    assignedDays: null,
+    exercises: [
+      { id: "goblet-curl",    name: "Goblet squat + deep curl",    reps: 10, sets: 1, perSide: false, kettlebell: true,  weightKg: null, videoUrl: null },
+      { id: "crush-thruster", name: "Crush press hold thrusters",  reps: 10, sets: 1, perSide: false, kettlebell: true,  weightKg: null, videoUrl: null },
+      { id: "w3-swing",       name: "Swings",                      reps: 10, sets: 1, perSide: false, kettlebell: true,  weightKg: null, videoUrl: null },
+      { id: "ballistic-row",  name: "Ballistic rows",              reps: 8,  sets: 1, perSide: true,  kettlebell: true,  weightKg: null, videoUrl: null },
+      { id: "w3-pushup",      name: "Push-ups",                    reps: 10, sets: 1, perSide: false, kettlebell: false, weightKg: null, videoUrl: null },
+    ],
+  },
 ];
+
+/** W3 reference details (from the reel) · rendered on /train/w3, kept out of the DB. */
+export const W3_DETAILS = {
+  targetRounds: 6,
+  referenceWeightKg: 20,
+  weightGuide: "Beginner 8–12 kg · Intermediate 16–20 kg · Advanced 20–28 kg+. Ali: 12 kg until the movements are mastered, then increase.",
+  easier: [
+    "Complete 3–4 rounds instead of 6.",
+    "Standard overhead press instead of thrusters.",
+    "Incline or knee push-ups.",
+  ],
+  harder: [
+    "Increase the kettlebell weight.",
+    "Slow the lowering phase on goblet squats and ballistic rows.",
+    "Rest only as needed while keeping great form.",
+  ],
+  cues: [
+    ["Goblet squat + deep curl", "Squat deep, curl under control, then drive explosively through the floor."],
+    ["Crush press hold thrusters", "Crush the sides for full-body tension from start to finish."],
+    ["Swings", "Snap the hips and let the bell float."],
+    ["Ballistic rows", "Explode the weight up, then control the lowering."],
+    ["Push-ups", "Rigid from head to heel."],
+  ] as [string, string][],
+  reel: {
+    id: "workout-w3",
+    label: "W3 circuit · full reel",
+    url: "https://www.instagram.com/reel/DagDlAyBf6e/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
+  },
+};
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -175,13 +222,13 @@ export function weekLabel(week: string, todayWeek: string, prevWeek: string): st
   return week.replace("-W", " · wk ");
 }
 
-/** Best AMRAP rounds per ISO week, newest first. */
-export function weeklyBests(sessions: TrainSession[], today: string): WeeklyBest[] {
+/** Best AMRAP rounds per ISO week for one workout, newest first. */
+export function weeklyBests(sessions: TrainSession[], today: string, key: WorkoutKey = "w1"): WeeklyBest[] {
   const todayWeek = isoWeekKey(today);
   const prevWeek = previousWeekKey(today);
   const map = new Map<string, WeeklyBest>();
   for (const s of sessions) {
-    if (s.workoutKey !== "w1" || s.rounds === null || s.finishedAt === null) continue;
+    if (s.workoutKey !== key || s.rounds === null || s.finishedAt === null) continue;
     const week = isoWeekKey(s.date);
     const cur = map.get(week) ?? { week, label: weekLabel(week, todayWeek, prevWeek), best: 0, sessions: 0 };
     cur.best = Math.max(cur.best, s.rounds);
@@ -243,7 +290,9 @@ export function fmtScheduleDate(ymd: string, today: string): string {
   return new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(new Date(ymd + "T12:00:00Z"));
 }
 
-/** Alternate W1 / W2 based on the last finished session. W1 first. */
+/** Alternate W1 / W2 based on the last finished session. W1 first.
+ * W3 (the 6-round circuit) is an extra option, not part of the rotation ·
+ * after a W3 day the rotation resumes at W1. */
 export function nextWorkoutKey(sessions: TrainSession[]): WorkoutKey {
   const last = sessions.find((s) => s.finishedAt !== null);
   if (!last) return "w1";

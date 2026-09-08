@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   const b = await req.json();
 
   if (typeof b?.clientId !== "string" || !b.clientId) return NextResponse.json({ error: "clientId required" }, { status: 400 });
-  if (b.workoutKey !== "w1" && b.workoutKey !== "w2") return NextResponse.json({ error: "bad workoutKey" }, { status: 400 });
+  if (b.workoutKey !== "w1" && b.workoutKey !== "w2" && b.workoutKey !== "w3") return NextResponse.json({ error: "bad workoutKey" }, { status: 400 });
   if (typeof b.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return NextResponse.json({ error: "bad date" }, { status: 400 });
 
   const values = {
