@@ -132,9 +132,13 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   // list continues it, return on an empty item ends it.
   const ref = useRef<HTMLTextAreaElement>(null);
   const apply = (v: string, selStart: number, selEnd: number) => {
+    const scrollTop = ref.current?.scrollTop ?? 0;
     onChange(v);
-    requestAnimationFrame(() => { const el = ref.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); } });
+    requestAnimationFrame(() => { const el = ref.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); el.scrollTop = scrollTop; } });
   };
+  // Toolbar taps must not steal focus from the textarea · on iOS a focus change
+  // closes and reopens the keyboard and the whole sheet jumps, losing the caret.
+  const keepFocus = (e: React.SyntheticEvent) => e.preventDefault();
   const prefixLine = (prefix: string) => {
     const el = ref.current; if (!el) return;
     const v = el.value, a = el.selectionStart;
@@ -157,15 +161,15 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   return (
     <div style={fill ? { display: "flex", flexDirection: "column", gap: 6, height: "100%" } : { display: "grid", gap: 6 }}>
       <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
-        <button type="button" title="Dash list" onClick={() => prefixLine("- ")} style={btn}>−</button>
-        <button type="button" title="Numbered list" onClick={() => prefixLine("1. ")} style={btn}>1.</button>
+        <button type="button" title="Dash list" onMouseDown={keepFocus} onClick={() => prefixLine("- ")} style={btn}>−</button>
+        <button type="button" title="Numbered list" onMouseDown={keepFocus} onClick={() => prefixLine("1. ")} style={btn}>1.</button>
         <span style={{ flex: 1 }} />
-        <button type="button" title="Jump to the end" style={btn} onClick={() => {
+        <button type="button" title="Jump to the end" onMouseDown={keepFocus} style={btn} onClick={() => {
           const el = ref.current; if (!el) return;
           el.focus(); const n = el.value.length; el.setSelectionRange(n, n); el.scrollTop = el.scrollHeight;
         }}>⇣</button>
         {!fill && (
-          <button type="button" title={expanded ? "Shrink" : "Expand"} style={btn} onClick={() => {
+          <button type="button" title={expanded ? "Shrink" : "Expand"} onMouseDown={keepFocus} style={btn} onClick={() => {
             setExpanded(!expanded);
             requestAnimationFrame(() => { const el = ref.current; if (el && !expanded) { el.focus(); const n = el.value.length; el.setSelectionRange(n, n); el.scrollTop = el.scrollHeight; } });
           }}>{expanded ? "⤡" : "⤢"}</button>
