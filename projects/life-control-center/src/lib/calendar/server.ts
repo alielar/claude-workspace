@@ -37,8 +37,12 @@ const toMin = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
 
 type RawEvent = { start: Date; end: Date; summary: string };
 
+/** node-ical summaries can be plain strings or { params, val } objects. */
+const summaryText = (s: unknown): string =>
+  typeof s === "string" ? s : (s && typeof s === "object" && "val" in s ? String((s as { val: unknown }).val) : "busy");
+
 /** All of `day`'s (YYYY-MM-DD, Madrid) timed events from one ICS feed. */
-async function fetchDayEvents(url: string, day: string): Promise<RawEvent[]> {
+export async function fetchDayEvents(url: string, day: string): Promise<RawEvent[]> {
   const ical = await import("node-ical");
   const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { "user-agent": "ali-control-center" } });
   if (!res.ok) throw new Error(`ics ${res.status}`);
@@ -54,28 +58,21 @@ async function fetchDayEvents(url: string, day: string): Promise<RawEvent[]> {
     const ev = data[k] as import("node-ical").VEvent;
     if (ev.type !== "VEVENT" || !ev.start) continue;
     if (String(ev.status ?? "").toUpperCase() === "CANCELLED") continue;
-    if ((ev.datetype as string) === "date") continue;                    // all-day
-    const durMs = Math.max(0, (ev.end?.getTime() ?? ev.start.getTime()) - ev.start.getTime());
-    const push = (s: Date, e: Date, summary: string) => {
-      if (ymdOf(s) === day) out.push({ start: s, end: e, summary });
-    };
 
     if (ev.rrule) {
-      const exdates = ev.exdate ? Object.values(ev.exdate as Record<string, Date>).map((x) => x.getTime()) : [];
-      for (const s of ev.rrule.between(winStart, winEnd, true)) {
-        if (exdates.some((x) => Math.abs(x - s.getTime()) < 60_000)) continue;
-        // An overridden instance (moved/renamed) is keyed by its original date.
-        const ovr = ev.recurrences?.[s.toISOString().slice(0, 10)] as import("node-ical").VEvent | undefined;
-        if (ovr) {
-          if (String(ovr.status ?? "").toUpperCase() !== "CANCELLED" && ovr.start) {
-            push(ovr.start, ovr.end ?? new Date(ovr.start.getTime() + durMs), String(ovr.summary ?? ev.summary ?? "busy"));
-          }
-          continue;
+      // node-ical's own expander · handles EXDATE, RECURRENCE-ID overrides and DST.
+      for (const inst of ical.expandRecurringEvent(ev, { from: winStart, to: winEnd })) {
+        if (inst.isFullDay) continue;
+        if (ymdOf(inst.start) === day) {
+          out.push({ start: inst.start, end: inst.end ?? inst.start, summary: summaryText(inst.summary) });
         }
-        push(s, new Date(s.getTime() + durMs), String(ev.summary ?? "busy"));
       }
     } else {
-      push(ev.start, ev.end ?? new Date(ev.start.getTime() + durMs), String(ev.summary ?? "busy"));
+      const dateOnly = (ev.datetype as string) === "date" || (ev.start as Date & { dateOnly?: boolean }).dateOnly === true;
+      if (dateOnly) continue; // all-day
+      if (ymdOf(ev.start) === day) {
+        out.push({ start: ev.start, end: ev.end ?? ev.start, summary: summaryText(ev.summary) });
+      }
     }
   }
   return out;
@@ -126,30 +123,39 @@ export function parseFeeds(json: string | null): CalFeed[] {
 }
 
 /** Today's blocks for a user · DB-cached 10 min, stale cache served on fetch errors. */
-export async function blocksForDay(userId: string, day: string): Promise<{ blocks: CalBlock[]; configured: boolean; fetchedAt: number | null }> {
+export async function blocksForDay(userId: string, day: string, fresh = false): Promise<{ blocks: CalBlock[]; configured: boolean; fetchedAt: number | null; errors: string[] }> {
   const [settings] = await db.select({ feeds: userSettings.calendarFeeds }).from(userSettings).where(eq(userSettings.userId, userId));
   const feeds = parseFeeds(settings?.feeds ?? null);
-  if (feeds.length === 0) return { blocks: [], configured: false, fetchedAt: null };
+  if (feeds.length === 0) return { blocks: [], configured: false, fetchedAt: null, errors: [] };
 
   const [cached] = await db.select().from(calendarCache)
     .where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))).catch(() => []);
-  if (cached && Date.now() - cached.fetchedAt.getTime() < CACHE_TTL_MS) {
-    return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime() };
+  if (!fresh && cached && Date.now() - cached.fetchedAt.getTime() < CACHE_TTL_MS) {
+    return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime(), errors: [] };
   }
 
-  try {
-    const perFeed = await Promise.all(feeds.map(async (f) => {
-      const source = /personal/i.test(f.name) ? "personal" as const : "work" as const;
-      return toBlocks(await fetchDayEvents(f.url, day), source);
-    }));
-    const blocks = perFeed.flat().sort((a, b) => a.startMin - b.startMin);
-    const now = new Date();
-    try { await db.insert(calendarCache).values({ userId, date: day, payload: JSON.stringify(blocks), fetchedAt: now }); }
-    catch { await db.update(calendarCache).set({ payload: JSON.stringify(blocks), fetchedAt: now }).where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))); }
-    return { blocks, configured: true, fetchedAt: now.getTime() };
-  } catch {
+  // One broken feed must not hide the other one's blocks.
+  const perFeed = await Promise.allSettled(feeds.map(async (f) => {
+    const source = /personal/i.test(f.name) ? "personal" as const : "work" as const;
+    return toBlocks(await fetchDayEvents(f.url, day), source);
+  }));
+  const ok = perFeed.filter((r): r is PromiseFulfilledResult<CalBlock[]> => r.status === "fulfilled");
+  const errors = perFeed.flatMap((r, i) =>
+    r.status === "rejected" ? [`${feeds[i].name}: ${String((r.reason as Error)?.message ?? r.reason).slice(0, 80)}`] : []);
+
+  if (ok.length === 0) {
     // Google unreachable · the saved copy is better than an error.
-    if (cached) return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime() };
-    return { blocks: [], configured: true, fetchedAt: null };
+    if (cached) return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime(), errors };
+    return { blocks: [], configured: true, fetchedAt: null, errors };
   }
+
+  const blocks = ok.flatMap((r) => r.value).sort((a, b) => a.startMin - b.startMin);
+  const now = new Date();
+  // Cache write is best-effort · a missing table or race must never hide fetched blocks.
+  try { await db.insert(calendarCache).values({ userId, date: day, payload: JSON.stringify(blocks), fetchedAt: now }); }
+  catch {
+    try { await db.update(calendarCache).set({ payload: JSON.stringify(blocks), fetchedAt: now }).where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))); }
+    catch { /* cache only */ }
+  }
+  return { blocks, configured: true, fetchedAt: now.getTime(), errors };
 }

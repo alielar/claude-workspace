@@ -184,6 +184,20 @@ export default function SettingsPage() {
   // Calendars · two secret iCal URLs (Work / Personal), saved on blur.
   const [calWork, setCalWork] = useState("");
   const [calPersonal, setCalPersonal] = useState("");
+  const [showCal, setShowCal] = useState(false);
+  const [calCheck, setCalCheck] = useState<string | null>(null);
+  const checkCalendars = async () => {
+    setCalCheck("Checking…");
+    try {
+      const r = await fetchJson<{ blocks: { source: string }[]; errors?: string[] }>("/api/calendar/today?fresh=1");
+      if (!r) { setCalCheck("Could not reach the server."); return; }
+      const work = r.blocks.filter((b) => b.source === "work").length;
+      const personal = r.blocks.filter((b) => b.source === "personal").length;
+      const parts = [`Work: ${work} block${work === 1 ? "" : "s"} today`, `Personal: ${personal} event${personal === 1 ? "" : "s"} today`];
+      if (r.errors?.length) parts.push(`⚠ ${r.errors.join(" · ")}`);
+      setCalCheck(parts.join(" · "));
+    } catch { setCalCheck("Could not reach the server."); }
+  };
   const calLoaded = useRef(false);
   useEffect(() => {
     if (calLoaded.current || !settings) return;
@@ -417,23 +431,31 @@ export default function SettingsPage() {
         </section>
       )}
 
-      {/* Calendars */}
+      {/* Calendars · feeds are set once, so the fields stay folded away */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Calendars</span><span className="tail">{[calWork && "work", calPersonal && "personal"].filter(Boolean).join(" + ") || "off"}</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          <p style={{ margin: 0 }}>Paste each calendar&rsquo;s <b>secret iCal address</b> (Google Calendar &rarr; gear &rarr; the calendar &rarr; &ldquo;Secret address in iCal format&rdquo;). Meetings become tickable blocks on Today · back-to-back work meetings merge into one block. Read-only, nothing is written to Google.</p>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Work (ali@easypeasyfluent.com)
-            <input className="cc-input" type="url" inputMode="url" autoComplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
-              value={calWork} onChange={(e) => setCalWork(e.target.value)} onBlur={() => saveCalendars(calWork, calPersonal)}
-              style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
-          </label>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Personal (al.elaraki@elaraki.ac.ma)
-            <input className="cc-input" type="url" inputMode="url" autoComplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
-              value={calPersonal} onChange={(e) => setCalPersonal(e.target.value)} onBlur={() => saveCalendars(calWork, calPersonal)}
-              style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
-          </label>
-          <p style={{ margin: 0, fontSize: 13, color: "var(--ink-4)" }}>Work meetings merge (gaps up to 30 min) · personal events show one by one. Saved when you leave the field.</p>
-        </div>
+        <button onClick={() => setShowCal((v) => !v)} aria-expanded={showCal}
+          style={{ all: "unset", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", minHeight: 44, padding: "10px 16px" }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>Calendars</span>
+          <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{[calWork && "work", calPersonal && "personal"].filter(Boolean).join(" + ") || "off"} {showCal ? "▴" : "▾"}</span>
+        </button>
+        {showCal && (
+          <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
+            <p style={{ margin: 0 }}>Paste each calendar&rsquo;s <b>secret iCal address</b> (Google Calendar &rarr; gear &rarr; the calendar &rarr; &ldquo;Secret address in iCal format&rdquo;). Meetings become tickable blocks on Today · back-to-back work meetings merge into one block. Read-only, nothing is written to Google.</p>
+            <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Work (ali@easypeasyfluent.com)
+              <input className="cc-input" type="url" inputMode="url" autoComplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+                value={calWork} onChange={(e) => setCalWork(e.target.value)} onBlur={() => saveCalendars(calWork, calPersonal)}
+                style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
+            </label>
+            <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Personal (al.elaraki@elaraki.ac.ma)
+              <input className="cc-input" type="url" inputMode="url" autoComplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+                value={calPersonal} onChange={(e) => setCalPersonal(e.target.value)} onBlur={() => saveCalendars(calWork, calPersonal)}
+                style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
+            </label>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ink-4)" }}>Work meetings merge (gaps up to 30 min) · personal events show one by one. Saved when you leave the field.</p>
+            <button className="cc-btn" onClick={checkCalendars} style={{ minHeight: 44 }}>Check connection</button>
+            {calCheck && <p style={{ margin: 0, fontSize: 13, color: calCheck.includes("⚠") ? "var(--warn)" : "var(--ink-3)" }}>{calCheck}</p>}
+          </div>
+        )}
       </section>
 
       {/* Reminders */}
