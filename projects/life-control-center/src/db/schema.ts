@@ -54,6 +54,8 @@ export const userSettings = sqliteTable("user_settings", {
   lastReminderTickAt: integer("last_reminder_tick_at", { mode: "timestamp_ms" }),
   /** Google Calendar secret iCal feeds as JSON: [{name:"Work",url},{name:"Personal",url}]. */
   calendarFeeds: text("calendar_feeds"),
+  // Morning routine plan (2026-09-08) · JSON { trainWake, restWake, callsAt, steps: [{id,label,minutes,trainOnly?}] }
+  morningPlan: text("morning_plan"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
@@ -219,6 +221,19 @@ export const runLogs = sqliteTable("run_logs", {
 // ─── News ──────────────────────────────────────────────────────────────────────
 
 /** One daily news brief · generated once at 9 AM, cached here */
+/** Daily news podcast (2026-09-08) · script written once per day, audio retried until ready. */
+export const podcastEpisodes = sqliteTable("podcast_episodes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),                    // YYYY-MM-DD (Madrid)
+  script: text("script"),                          // the spoken text · written once, reused across audio retries
+  audioUrl: text("audio_url"),                     // Vercel Blob public URL when ready
+  status: text("status").notNull().default("pending"), // pending | ready | failed
+  attempts: integer("attempts").notNull().default(0),
+  lastAttemptAt: integer("last_attempt_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
+});
+
 export const newsBriefs = sqliteTable("news_briefs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id")

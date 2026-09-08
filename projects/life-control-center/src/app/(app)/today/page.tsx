@@ -34,6 +34,9 @@ import type { NewsBrief } from "@/lib/news-brief";
 import type { Book, BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
+import { PodcastCard } from "@/components/PodcastCard";
+import { parseMorningPlan, computeMorning } from "@/lib/morning/plan";
+import { useOverview } from "@/lib/train/useTrain";
 import { fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
 import type { CalBlock } from "@/lib/calendar/server";
 
@@ -245,6 +248,45 @@ const NEWS_CATS: { label: string; match: string[]; color: string }[] = [
   { label: "Business",    match: ["business"],     color: "#3E9A63" },
   { label: "Tech & AI",   match: ["tech", "ai"],   color: "#2E9E8F" },
 ];
+
+/**
+ * Morning plan (2026-09-08, Ali-approved) · wake time + sequence, driven by whether
+ * today is a training day (Settings → Training days). Minutes edited in Settings.
+ */
+function MorningCard({ today }: { today: string }) {
+  void today;
+  const { data: settings } = useCached<{ morningPlan?: string | null }>("settings", () => fetchJson("/api/settings"));
+  const { data: ov } = useOverview();
+  const plan = parseMorningPlan(settings?.morningPlan);
+  const sched = ov?.schedule ?? null;
+  const isTraining = sched ? sched.todayKey !== null : true;
+  const { wake, rows, bufferMin } = computeMorning(plan, isTraining);
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="cc-card">
+      <button onClick={() => setOpen((v) => !v)} aria-expanded={open}
+        style={{ all: "unset", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", minHeight: 46, padding: "10px 16px" }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Morning · wake {wake}</span>
+        <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{isTraining ? "training day" : "rest day"} · calls {plan.callsAt} {open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 12px" }}>
+          {rows.map((r) => (
+            <div key={r.id} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, minHeight: 36, alignItems: "center", borderBottom: "1px solid var(--line)" }}>
+              <span style={{ fontFamily: "var(--f-mono)", fontSize: 13.5, color: "var(--ink-3)" }}>{r.start}–{r.end}</span>
+              <span style={{ fontSize: 15 }}>{r.label}</span>
+            </div>
+          ))}
+          <div style={{ paddingTop: 8, fontSize: 13.5, color: bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>
+            {bufferMin >= 0 ? `${bufferMin} min spare before calls` : `${-bufferMin} min OVER · trim a step in Settings`}
+            {!sched && " · set your training days in Settings so the wake time follows them"}
+            {" · "}<Link href="/settings" style={{ color: "var(--violet)" }}>edit</Link>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function HeadlinesCard({ today }: { today: string }) {
   const { data: brief, loading } = useCached<NewsBrief>("news-brief", () => fetchJson<NewsBrief>("/api/news/generate"));
@@ -510,6 +552,9 @@ export default function TodayPage() {
       </div>
 
       {/* HEADLINES · compact strip, full news lives in the tab */}
+      {part === "morning" && <MorningCard today={today} />}
+      {part === "morning" && <PodcastCard today={today} />}
+
       <HeadlinesCard today={today} />
 
       {/* TODAY · one timeline: checklist + calendar blocks + to-dos */}

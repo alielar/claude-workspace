@@ -114,6 +114,28 @@ function toBlocks(events: RawEvent[], source: "work" | "personal"): CalBlock[] {
   return blocks;
 }
 
+/**
+ * Externally ingested blocks (2026-09-08): the work calendar's ICS is blocked by
+ * the Workspace admin, so a scheduled Claude routine reads it through Ali's
+ * claude.ai Google Calendar connector and POSTs the day's blocks to
+ * /api/calendar/ingest. They live in calendar_cache under date "ing:<day>" and are
+ * merged into every read; the feed fetch (personal calendar) never overwrites them.
+ */
+export async function ingestedBlocks(userId: string, day: string): Promise<CalBlock[]> {
+  try {
+    const [row] = await db.select().from(calendarCache)
+      .where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, `ing:${day}`)));
+    return row ? (JSON.parse(row.payload) as CalBlock[]) : [];
+  } catch { return []; }
+}
+
+function mergeBlocks(a: CalBlock[], b: CalBlock[]): CalBlock[] {
+  const seen = new Set<string>();
+  return [...a, ...b]
+    .filter((x) => (seen.has(x.key) ? false : (seen.add(x.key), true)))
+    .sort((x, y) => x.startMin - y.startMin);
+}
+
 export function parseFeeds(json: string | null): CalFeed[] {
   try {
     const arr = JSON.parse(json ?? "null");
@@ -126,12 +148,13 @@ export function parseFeeds(json: string | null): CalFeed[] {
 export async function blocksForDay(userId: string, day: string, fresh = false): Promise<{ blocks: CalBlock[]; configured: boolean; fetchedAt: number | null; errors: string[] }> {
   const [settings] = await db.select({ feeds: userSettings.calendarFeeds }).from(userSettings).where(eq(userSettings.userId, userId));
   const feeds = parseFeeds(settings?.feeds ?? null);
-  if (feeds.length === 0) return { blocks: [], configured: false, fetchedAt: null, errors: [] };
+  const ingested = await ingestedBlocks(userId, day);
+  if (feeds.length === 0) return { blocks: ingested, configured: ingested.length > 0, fetchedAt: null, errors: [] };
 
   const [cached] = await db.select().from(calendarCache)
     .where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))).catch(() => []);
   if (!fresh && cached && Date.now() - cached.fetchedAt.getTime() < CACHE_TTL_MS) {
-    return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime(), errors: [] };
+    return { blocks: mergeBlocks(JSON.parse(cached.payload) as CalBlock[], ingested), configured: true, fetchedAt: cached.fetchedAt.getTime(), errors: [] };
   }
 
   // One broken feed must not hide the other one's blocks.
@@ -145,17 +168,18 @@ export async function blocksForDay(userId: string, day: string, fresh = false): 
 
   if (ok.length === 0) {
     // Google unreachable · the saved copy is better than an error.
-    if (cached) return { blocks: JSON.parse(cached.payload) as CalBlock[], configured: true, fetchedAt: cached.fetchedAt.getTime(), errors };
-    return { blocks: [], configured: true, fetchedAt: null, errors };
+    if (cached) return { blocks: mergeBlocks(JSON.parse(cached.payload) as CalBlock[], ingested), configured: true, fetchedAt: cached.fetchedAt.getTime(), errors };
+    return { blocks: ingested, configured: true, fetchedAt: null, errors };
   }
 
-  const blocks = ok.flatMap((r) => r.value).sort((a, b) => a.startMin - b.startMin);
+  // Cache only the feed-fetched blocks · ingested ones live in their own row and are
+  // merged on every read, so a routine update never fights a stale feed cache.
+  const feedBlocks = ok.flatMap((r) => r.value).sort((a, b) => a.startMin - b.startMin);
   const now = new Date();
-  // Cache write is best-effort · a missing table or race must never hide fetched blocks.
-  try { await db.insert(calendarCache).values({ userId, date: day, payload: JSON.stringify(blocks), fetchedAt: now }); }
+  try { await db.insert(calendarCache).values({ userId, date: day, payload: JSON.stringify(feedBlocks), fetchedAt: now }); }
   catch {
-    try { await db.update(calendarCache).set({ payload: JSON.stringify(blocks), fetchedAt: now }).where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))); }
+    try { await db.update(calendarCache).set({ payload: JSON.stringify(feedBlocks), fetchedAt: now }).where(and(eq(calendarCache.userId, userId), eq(calendarCache.date, day))); }
     catch { /* cache only */ }
   }
-  return { blocks, configured: true, fetchedAt: now.getTime(), errors };
+  return { blocks: mergeBlocks(feedBlocks, ingested), configured: true, fetchedAt: now.getTime(), errors };
 }

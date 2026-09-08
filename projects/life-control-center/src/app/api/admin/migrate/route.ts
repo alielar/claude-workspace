@@ -160,6 +160,22 @@ export async function POST() {
     `ALTER TABLE todos ADD COLUMN wake_date TEXT`,
     `ALTER TABLE todos ADD COLUMN notify_target TEXT`,
 
+    `ALTER TABLE user_settings ADD COLUMN morning_plan TEXT`,
+
+    // ── Daily news podcast (2026-09-08) ──
+    `CREATE TABLE IF NOT EXISTS podcast_episodes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      script TEXT,
+      audio_url TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      last_attempt_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_podcast_episode ON podcast_episodes(user_id, date)`,
+
     // ── Stretch routine replaced 2026-09-08 (20 moves / 4 blocks) · refresh the stale note ──
     `UPDATE checklist_items SET notes = '20 moves · 4 blocks · 12 minutes, continuous'
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,

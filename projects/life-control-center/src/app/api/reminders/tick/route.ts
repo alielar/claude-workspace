@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
+import { ensureTodaysPodcast, todaysEpisode } from "@/lib/podcast/generate";
 import { db } from "@/db";
 import { todos, userSettings } from "@/db/schema";
 import { and, eq, inArray, isNull, lte } from "drizzle-orm";
@@ -41,6 +42,18 @@ export async function GET(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "no user" }, { status: 500 });
   // Heartbeat · Settings shows "service last ran Xm ago", so a dead pinger is visible.
   await db.update(userSettings).set({ lastReminderTickAt: now }).where(eq(userSettings.userId, userId)).catch(() => {});
+
+  // Podcast self-healing: if this morning's episode isn't ready yet (Vercel cron
+  // missed, or the free voice failed), retry in the background — spacing and the
+  // attempt cap live inside ensureTodaysPodcast. Never a silent morning.
+  if (hm >= "06:30" && hm <= "10:30") {
+    after(async () => {
+      try {
+        const ep = await todaysEpisode(userId);
+        if (!ep || (ep.status !== "ready")) await ensureTodaysPodcast(userId);
+      } catch { /* next tick retries */ }
+    });
+  }
 
   if (hm >= "23:00" || hm < "08:00") return NextResponse.json({ quiet: true, hm });
   const today = checklistToday(now);

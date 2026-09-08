@@ -47,7 +47,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const allowed = ["timezone", "newsTopics", "newsEmailEnabled", "newsEmailTime", "newsChannels", "calendarFeeds"];
+  const allowed = ["timezone", "newsTopics", "newsEmailEnabled", "newsEmailTime", "newsChannels", "calendarFeeds", "morningPlan"];
   const updates: Record<string, unknown> = { updatedAt: new Date() };
 
   for (const key of allowed) {

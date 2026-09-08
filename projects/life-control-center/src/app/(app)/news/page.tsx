@@ -16,6 +16,8 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
 import type { NewsBrief, NewsStory, NewsVideo } from "@/lib/news-brief";
+import { PodcastCard } from "@/components/PodcastCard";
+import { checklistToday } from "@/lib/checklist/day";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -473,6 +475,8 @@ export default function NewsPage() {
 
   return (
     <div style={{ display: "grid", gap: 18, paddingBottom: 24, maxWidth: "100%", minWidth: 0, overflowX: "hidden" }}>
+
+      {!isViewingPast && <PodcastCard today={checklistToday()} />}
 
       {/* Page title */}
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>

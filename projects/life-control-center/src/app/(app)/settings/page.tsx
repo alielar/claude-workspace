@@ -20,6 +20,7 @@ import { YT_CHANNELS } from "@/lib/news/youtube";
 import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
+import { parseMorningPlan, computeMorning, type MorningPlan } from "@/lib/morning/plan";
 
 type UserSettings = {
   timezone: string;
@@ -29,6 +30,7 @@ type UserSettings = {
   newsChannels?: string | null;
   kettlebellKg?: number;
   calendarFeeds?: string | null;
+  morningPlan?: string | null;
 };
 
 const CHANNEL_GROUPS: { category: string; label: string }[] = [
@@ -220,6 +222,20 @@ export default function SettingsPage() {
       await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { calendarFeeds: json }, dedupeKey: "settings:calendarFeeds" });
     } catch { /* replayed later */ }
   };
+
+  // Morning routine · wake times + minutes per step, all editable and sticky.
+  const plan = parseMorningPlan(settings?.morningPlan);
+  const savePlan = async (next: MorningPlan) => {
+    const json = JSON.stringify(next);
+    if (settings) setData({ ...settings, morningPlan: json });
+    try {
+      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { morningPlan: json }, dedupeKey: "settings:morningPlan" });
+    } catch { /* replayed later */ }
+  };
+  const setStepMinutes = (id: string, minutes: number) =>
+    savePlan({ ...plan, steps: plan.steps.map((s) => (s.id === id ? { ...s, minutes: Math.max(0, Math.min(180, Math.round(minutes))) } : s)) });
+  const trainDay = computeMorning(plan, true);
+  const restDay = computeMorning(plan, false);
 
   // One-tap schema update · the migrate route is idempotent, safe to tap any time.
   const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
@@ -430,6 +446,38 @@ export default function SettingsPage() {
           </div>
         </section>
       )}
+
+      {/* Morning routine · Ali-approved sequence, every number editable */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Morning routine</span><span className="tail">before calls at {plan.callsAt}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 12, fontSize: 15, color: "var(--ink-2)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            {([["Wake · training", plan.trainWake, (v: string) => savePlan({ ...plan, trainWake: v })],
+               ["Wake · rest", plan.restWake, (v: string) => savePlan({ ...plan, restWake: v })],
+               ["Calls start", plan.callsAt, (v: string) => savePlan({ ...plan, callsAt: v })]] as const).map(([label, value, save]) => (
+              <label key={label} style={{ display: "grid", gap: 4, fontSize: 13, color: "var(--ink-3)", minWidth: 0 }}>{label}
+                <input type="time" className="cc-input" value={value} onChange={(e) => e.target.value && save(e.target.value)}
+                  style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+              </label>
+            ))}
+          </div>
+          <div style={{ display: "grid", gap: 2 }}>
+            {plan.steps.map((s) => (
+              <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center", minHeight: 44, borderBottom: "1px solid var(--line)" }}>
+                <span style={{ fontSize: 15 }}>{s.label}{s.trainOnly ? <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}> · training days</span> : null}</span>
+                <input className="cc-input" type="number" inputMode="numeric" min={0} max={180} value={s.minutes}
+                  onChange={(e) => setStepMinutes(s.id, Number(e.target.value))}
+                  style={{ fontSize: 16, minHeight: 40, width: 64, boxSizing: "border-box", textAlign: "right" }} />
+                <span style={{ fontSize: 13, color: "var(--ink-4)" }}>min</span>
+              </div>
+            ))}
+          </div>
+          <p style={{ margin: 0, fontSize: 13.5, color: trainDay.bufferMin < 0 || restDay.bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>
+            Training day ends {trainDay.rows.at(-1)?.end ?? "—"} · {trainDay.bufferMin} min spare. Rest day ends {restDay.rows.at(-1)?.end ?? "—"} · {restDay.bufferMin} min spare.
+          </p>
+          <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-4)" }}>Which days are training days comes from the Training days card above · the wake time and sequence follow automatically.</p>
+        </div>
+      </section>
 
       {/* Calendars · feeds are set once, so the fields stay folded away */}
       <section className="cc-card">
