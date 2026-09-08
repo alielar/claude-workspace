@@ -82,7 +82,8 @@ export default function StretchPage() {
     setMoves(next);
     try { localStorage.setItem("cc-stretch-names-v2", JSON.stringify(next)); } catch { /* ignore */ }
   };
-  useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t) setTrack(t); } catch { /* ignore */ } }, []);
+  // A previously chosen track may have been removed from the library · fall back to off.
+  useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t && (t === "off" || STRETCH_TRACKS.some((x) => x.slug === t))) setTrack(t); } catch { /* ignore */ } }, []);
   const pickTrack = (slug: string) => {
     setTrack(slug);
     try { localStorage.setItem("cc-stretch-track", slug); } catch { /* ignore */ }
@@ -328,7 +329,7 @@ export default function StretchPage() {
             >
               Next · start{track === "off" ? " in silence" : ` with ${STRETCH_TRACKS.find((m) => m.slug === track)?.title}`}
             </button>
-            <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 10px 4px" }}>Music: Kevin MacLeod · incompetech.com · CC BY 4.0</div>
+            <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 10px 4px" }}>All tracks are Creative Commons · the artist and license are shown under each title.</div>
           </div>
         </section>
 
