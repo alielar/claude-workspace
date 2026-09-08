@@ -15,7 +15,7 @@
 
 import { db } from "@/db";
 import { podcastEpisodes } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
@@ -30,6 +30,8 @@ export type Episode = {
   script: string | null;
   audioUrl: string | null;
   attempts: number;
+  /** transient · last failure reason, for diagnostics only */
+  lastError?: string;
 };
 
 const rowToEpisode = (r: typeof podcastEpisodes.$inferSelect): Episode => ({
@@ -42,9 +44,14 @@ const rowToEpisode = (r: typeof podcastEpisodes.$inferSelect): Episode => ({
 
 export async function todaysEpisode(userId: string): Promise<Episode | null> {
   const date = checklistToday();
-  const [row] = await db.select().from(podcastEpisodes)
+  // Never select audio_b64 here · it's megabytes and this runs on every Today load.
+  const [row] = await db.select({
+    date: podcastEpisodes.date, status: podcastEpisodes.status, script: podcastEpisodes.script,
+    audioUrl: podcastEpisodes.audioUrl, attempts: podcastEpisodes.attempts,
+  }).from(podcastEpisodes)
     .where(and(eq(podcastEpisodes.userId, userId), eq(podcastEpisodes.date, date)));
-  return row ? rowToEpisode(row) : null;
+  if (!row) return null;
+  return { date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts };
 }
 
 /** The one Haiku call of the day: brief → spoken script. */
@@ -92,20 +99,58 @@ ${stories}`;
   } catch { return null; }
 }
 
-/** Script → MP3 buffer via the free Microsoft neural voice. Throws on failure. */
-async function synthesize(script: string): Promise<Buffer> {
+/** Split on sentence ends into pieces the voice service reliably finishes (~1 min each). */
+function splitScript(script: string, max = 380): string[] {
+  const sentences = script.split(/(?<=[.!?])\s+/);
+  const parts: string[] = [];
+  let cur = "";
+  for (const s of sentences) {
+    if (cur && cur.length + s.length + 1 > max) { parts.push(cur); cur = s; }
+    else cur = cur ? `${cur} ${s}` : s;
+  }
+  if (cur) parts.push(cur);
+  return parts;
+}
+
+/** One piece → MP3 buffer. */
+async function synthesizePiece(text: string): Promise<Buffer> {
   const { MsEdgeTTS, OUTPUT_FORMAT } = await import("msedge-tts");
   const tts = new MsEdgeTTS();
   await tts.setMetadata(VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-  const { audioStream } = await tts.toStream(script);
+  const { audioStream } = await tts.toStream(text);
   const chunks: Buffer[] = [];
   await new Promise<void>((resolve, reject) => {
-    const guard = setTimeout(() => reject(new Error("tts timeout")), 120_000);
+    const guard = setTimeout(() => reject(new Error("tts timeout")), 60_000);
     audioStream.on("data", (c: Buffer) => chunks.push(c));
     audioStream.on("end", () => { clearTimeout(guard); resolve(); });
+    audioStream.on("close", () => { clearTimeout(guard); resolve(); });
     audioStream.on("error", (e: Error) => { clearTimeout(guard); reject(e); });
   });
   const buf = Buffer.concat(chunks);
+  if (buf.length < 5_000) throw new Error(`piece too small (${buf.length} bytes)`);
+  return buf;
+}
+
+/**
+ * Script → MP3 via the free Microsoft neural voice. The service never finishes one
+ * long request, so the script is synthesized in ~1200-char sentence chunks and the
+ * MP3 frames concatenated (same codec/bitrate throughout · players handle it).
+ */
+async function synthesize(script: string): Promise<Buffer> {
+  const pieces = splitScript(script);
+  const buffers: Buffer[] = new Array(pieces.length);
+  // Three at a time, one retry each · the service reliably finishes ~400-char pieces
+  // but sometimes drops a stream; a retry almost always lands.
+  let i = 0;
+  const worker = async () => {
+    while (i < pieces.length) {
+      const idx = i++;
+      try { buffers[idx] = await synthesizePiece(pieces[idx]); }
+      catch { buffers[idx] = await synthesizePiece(pieces[idx]); }
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+  const buf = Buffer.concat(buffers);
   if (buf.length < 50_000) throw new Error(`suspiciously small audio (${buf.length} bytes)`);
   return buf;
 }
@@ -142,24 +187,27 @@ export async function ensureTodaysPodcast(userId: string, force = false): Promis
     script = await writeScript(brief, date);
     if (!script) {
       await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
-      return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1 };
+      return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, lastError: "script generation failed" };
     }
     await db.update(podcastEpisodes).set({ script }).where(eq(podcastEpisodes.id, row.id));
   }
 
-  // 2 · Voice + upload.
+  // 2 · Voice + store. The MP3 lives base64 in the DB (Ali's Vercel Blob store is
+  // suspended; ~3 MB/day in Turso is free) and is served by /api/podcast/audio.
   try {
     const audio = await synthesize(script);
-    const { put } = await import("@vercel/blob");
-    const blob = await put(`podcast/${date}.mp3`, audio, {
-      access: "public",
-      contentType: "audio/mpeg",
-      addRandomSuffix: true,
-    });
-    await db.update(podcastEpisodes).set({ status: "ready", audioUrl: blob.url }).where(eq(podcastEpisodes.id, row.id));
-    return { date, status: "ready", script, audioUrl: blob.url, attempts: row.attempts + 1 };
-  } catch {
+    const audioUrl = `/api/podcast/audio?date=${date}`;
+    await db.update(podcastEpisodes)
+      .set({ status: "ready", audioUrl, audioB64: audio.toString("base64") })
+      .where(eq(podcastEpisodes.id, row.id));
+    // Keep a week of episodes · yesterday's audio has no second life.
+    try {
+      const cutoff = new Date(Date.now() - 7 * 86400_000).toISOString().slice(0, 10);
+      await db.update(podcastEpisodes).set({ audioB64: null }).where(lt(podcastEpisodes.date, cutoff));
+    } catch { /* pruning is best-effort */ }
+    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1 };
+  } catch (e) {
     await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
-    return { date, status: "failed", script, audioUrl: null, attempts: row.attempts + 1 };
+    return { date, status: "failed", script, audioUrl: null, attempts: row.attempts + 1, lastError: `audio: ${String((e as Error).message).slice(0, 150)}` };
   }
 }

@@ -227,7 +227,8 @@ export const podcastEpisodes = sqliteTable("podcast_episodes", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   date: text("date").notNull(),                    // YYYY-MM-DD (Madrid)
   script: text("script"),                          // the spoken text · written once, reused across audio retries
-  audioUrl: text("audio_url"),                     // Vercel Blob public URL when ready
+  audioUrl: text("audio_url"),                     // where the play card points (app route or blob URL)
+  audioB64: text("audio_b64"),                     // the MP3 itself, base64 (Vercel Blob store is suspended · DB is the free store)
   status: text("status").notNull().default("pending"), // pending | ready | failed
   attempts: integer("attempts").notNull().default(0),
   lastAttemptAt: integer("last_attempt_at", { mode: "timestamp_ms" }),
