@@ -108,6 +108,9 @@ phone in my pocket. Order:
    Today's breathe row now says Start): 3 rounds × 30 paced breaths (synth sweeps, no voice),
    1:30 retention with tap-anywhere-to-end + chosen healing-frequency tone (synthesized live,
    only during the hold), 15 s recovery hold, ticks the breathe item. Wake lock, offline-safe.
+   **Deliberate deviation (2026-09-08, Ali's preference):** after the 15 s recovery hold there is
+   an 8 s long controlled exhale before the next round. The official Wim Hof method goes straight
+   on and does not specify this exhale — Ali wants it this way. Do NOT "correct" it back.
 13. **Exercise demo animations (PARKED, paid).** Free tier was built 2026-09-02 (photo pairs from
    free-exercise-db) and removed the same day at Ali's call: static photos are not precise enough,
    he wants real motion or nothing. Checked wger's 78 real videos: all gym-machine lifts, zero

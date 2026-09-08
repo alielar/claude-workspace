@@ -10,7 +10,9 @@
  * ticks the "breathe" routine item (offline-safe).
  *
  * Wim Hof player: 3 rounds of 30 paced breaths → retention hold on empty lungs
- * (1:30 countdown, TAP ANYWHERE to end early) → deep breath in, 15 s recovery.
+ * (1:30 countdown, TAP ANYWHERE to end early) → deep breath in, 15 s recovery,
+ * then an 8 s long controlled exhale before the next round (Ali's deliberate
+ * preference · not part of the standard protocol · keep it).
  * The others run through GenericPlayer (steps × cycles, same sounds and circle).
  *
  * Sound (all synthesized live, no assets, no voice):
@@ -41,6 +43,10 @@ const EXHALE_MS = 2000;
 const RETENTION_S = 90;
 const RECOVERY_IN_MS = 3500;
 const RECOVERY_HOLD_S = 15;
+// Ali's deliberate choice (2026-09-08, spec §4.x Breathe): a long controlled exhale
+// after the 15 s recovery hold, before the next round. NOT part of the standard
+// Wim Hof protocol (which goes straight on) · do not "fix" this back.
+const RECOVERY_OUT_MS = 8000;
 
 /** Hold-tone options in two honest groups: brainwave "beats" with some published
  * evidence (they need headphones · each ear gets a slightly different pitch and the
@@ -76,7 +82,7 @@ const STYLES: { key: BreathStyle; label: string; hint: string }[] = [
   { key: "sweep", label: "Sweep", hint: "rising and falling tone" },
 ];
 
-type Phase = "idle" | "breathing" | "retention" | "recoveryIn" | "recoveryHold" | "done";
+type Phase = "idle" | "breathing" | "retention" | "recoveryIn" | "recoveryHold" | "recoveryOut" | "done";
 
 /** All sound, synthesized. Nothing downloaded, nothing licensed. */
 class BreathSynth {
@@ -486,13 +492,24 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
         if (left <= 0) {
           clearTimers();
           synth.pluck(659);
-          if (r < ROUNDS) {
-            timer.current = setTimeout(() => runBreath(1, r + 1), 2200);
-          } else {
-            setPhase("done");
-            synth.pluck(784); synth.pluck(988);
-            completeBreatheItem();
-          }
+          // Long controlled exhale before moving on (Ali's choice · see RECOVERY_OUT_MS).
+          setPhase("recoveryOut"); setRemaining(Math.round(RECOVERY_OUT_MS / 1000));
+          synth.breath("out", styleRef.current, RECOVERY_OUT_MS - 300, volRef.current);
+          const t1 = Date.now();
+          countdown.current = setInterval(() => {
+            const outLeft = Math.round(RECOVERY_OUT_MS / 1000) - Math.floor((Date.now() - t1) / 1000);
+            setRemaining(Math.max(0, outLeft));
+            if (outLeft <= 0) {
+              clearTimers();
+              if (r < ROUNDS) {
+                runBreath(1, r + 1);
+              } else {
+                setPhase("done");
+                synth.pluck(784); synth.pluck(988);
+                completeBreatheItem();
+              }
+            }
+          }, 250);
         }
       }, 250);
     }, RECOVERY_IN_MS);
@@ -606,8 +623,9 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
   const label =
     phase === "breathing" ? (inhaling ? "Breathe in" : "Let go") :
     isRetention ? "Hold" :
-    phase === "recoveryIn" ? "Big breath in" : "Keep it in";
-  const accent = isRetention ? "var(--violet)" : phase === "recoveryHold" || phase === "recoveryIn" ? "var(--warn)" : "var(--cyan)";
+    phase === "recoveryIn" ? "Big breath in" :
+    phase === "recoveryOut" ? "Long breath out · slow" : "Keep it in";
+  const accent = isRetention ? "var(--violet)" : phase === "recoveryHold" || phase === "recoveryIn" || phase === "recoveryOut" ? "var(--warn)" : "var(--cyan)";
 
   return (
     <div
@@ -630,9 +648,11 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
           border: `3px solid ${accent}`,
           background: "color-mix(in srgb, var(--bg-card) 70%, transparent)",
           transform: phase === "breathing" ? (inhaling ? "scale(1.22)" : "scale(0.86)") :
-                     phase === "recoveryIn" ? "scale(1.25)" : isRetention ? "scale(0.82)" : "scale(1.1)",
+                     phase === "recoveryIn" ? "scale(1.25)" : phase === "recoveryOut" ? "scale(0.8)" : isRetention ? "scale(0.82)" : "scale(1.1)",
           transition: phase === "breathing"
             ? `transform ${(inhaling ? INHALE_MS : EXHALE_MS) / 1000}s cubic-bezier(.45,0,.55,1)`
+            : phase === "recoveryOut"
+            ? `transform ${RECOVERY_OUT_MS / 1000}s cubic-bezier(.45,0,.55,1)`
             : "transform 2s cubic-bezier(.45,0,.55,1)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
