@@ -159,6 +159,10 @@ export async function POST() {
     `ALTER TABLE user_settings ADD COLUMN last_reminder_tick_at INTEGER`,
     `ALTER TABLE todos ADD COLUMN wake_date TEXT`,
     `ALTER TABLE todos ADD COLUMN notify_target TEXT`,
+
+    // ── Stretch routine replaced 2026-09-08 (20 moves / 4 blocks) · refresh the stale note ──
+    `UPDATE checklist_items SET notes = '20 moves · 4 blocks · 12 minutes, continuous'
+      WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────
     `ALTER TABLE user_settings ADD COLUMN calendar_feeds TEXT`,
     `CREATE TABLE IF NOT EXISTS calendar_ticks (

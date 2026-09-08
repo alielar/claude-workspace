@@ -73,19 +73,17 @@ phase is not done.
 
 ### 4.1 Morning routine — on waking, in this order
 
-**a) Stretching** — 16 movements, **30 seconds work, 10 seconds rest** between each.
-Needs a guided timer: current movement, next movement, countdown, audio or vibration
-cue on each change, pause/skip, and it must keep running with the screen locked or the
-phone in my pocket. Order:
-
-1. Bouncing on Toes
-2. Torso Rotations
-3. Hip Circles
-4. Lateral Arm Swings
-5. Alternating Windmills
-6. Alternating Cossack Squats
-7. Walk Outs
-8. Down Dog Calf Stretch
+**a) Stretching** — REPLACED 2026-09-08 with a 20-movement, 4-block routine from Ali's
+reel: **continuous flow, no rest gaps, variable durations** (30 s dynamic moves, 40 s
+floor/hip holds, 50 s grounded finish) so the block markers land exactly · 12:00 total.
+Same guided-timer requirements as before (cues, pause/skip, screen locked, pocket).
+Blocks: 1 Wake-up and spine 0:00–2:30 (Bouncing on toes · Neck twists · Torso twists ·
+Squat hold · Seated toe stretch) · 2 Standing to floor 2:30–5:00 (Lateral arm swings ·
+Down dog + calf pedal · World's greatest L/R · Toe touches) · 3 Floor and hips 5:00–9:30
+(90/90 switches · Pigeon L/R · Frog · Seiza · Kneeling hamstring · Forearm) · 4 Grounded
+finish 9:30–12:00 (Cat cow · Cobra · Child's pose). Two dismissible Instagram reels
+(toe touches + full routine) on the idle screen — once dismissed they never return.
+The old 16-move 30/10 list is superseded; historical items below keep their numbering.
 9. **Flo integration — cycle awareness (recorded 2026-09-01, DON'T build yet).** Ali wants
    the app to track his girlfriend's cycle (Flo is the source she uses) and, alongside the
    dates, give him plain guidance on how to be supportive at each point of the month (energy,
@@ -118,15 +116,6 @@ phone in my pocket. Order:
    (~$15 one-time for the 16, ~$1/move later for kettlebell), converted to small looping WebM,
    bundled offline, shown big on the timer. Alternative free idea worth testing someday: muted
    YouTube embeds per move (online-only, heavier).
-9. Cat Cow
-10. Push Up +
-11. Bootstrapper Squats
-12. World's Greatest Stretch — Left Leg Forward
-13. Around the World
-14. World's Greatest Stretch — Right Leg Forward
-15. 90/90
-16. Hindu Squats
-
 **b) Wim Hof breathing** — straight after stretching. For now I follow this video:
 `https://youtu.be/tybOi4hjZFQ?si=sFm7xUpv-9VcY--k`
 

@@ -67,7 +67,7 @@ export const ROUTINE_SEED: {
   notes: string | null;
   sortOrder: number;
 }[] = [
-  { routineKey: "stretch", title: "Stretching",          emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "16 moves · 30s on, 10s off · about 11 minutes", sortOrder: -50 },
+  { routineKey: "stretch", title: "Stretching",          emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "20 moves · 4 blocks · 12 minutes, continuous", sortOrder: -50 },
   { routineKey: "breathe", title: "Wim Hof breathing",   emoji: "🫁", timeOfDay: "morning", kind: "routine", color: "cyan",   notes: `30 breaths · ${BREATHING_VIDEO_URL}`, sortOrder: -40 },
   { routineKey: "supp-am", title: "Morning supplements", emoji: "💊", timeOfDay: "morning", kind: "routine", color: "green",  notes: "Zinc · Omega-3 · Creatine", sortOrder: -30 },
   { routineKey: "supp-pm", title: "Magnesium",           emoji: "🌙", timeOfDay: "evening", kind: "routine", color: "violet", notes: "Night supplement", sortOrder: -20 },
