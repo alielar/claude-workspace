@@ -290,6 +290,25 @@ function TitleInput({ value, onChange, placeholder }: { value: string; onChange:
   );
 }
 
+// One discreet line · tap to open the sleep-until date, tap again to fold it away.
+function VaultField({ wakeDate, setWake, today }: { wakeDate: string | null | undefined; setWake: (v: string | null) => void; today: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 4 }}>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
+        style={{ all: "unset", cursor: "pointer", fontSize: 13.5, color: wakeDate ? "var(--ink-3)" : "var(--ink-4)", minHeight: 32, display: "flex", alignItems: "center", gap: 6 }}>
+        🗄 {wakeDate ? `Sleeping until ${fmtDue(wakeDate, today)}` : "Vault"} <span aria-hidden>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ display: "grid", gridTemplateColumns: wakeDate ? "1fr auto" : "1fr", gap: 8 }}>
+          <input type="date" className="cc-input" value={wakeDate ?? ""} min={addDays(today, 1)} onClick={openPicker} onChange={(e) => setWake(e.target.value || null)} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+          {wakeDate && <button type="button" onClick={() => setWake(null)} className="cc-btn cc-btn-ghost" style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Wake now</button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Task detail sheet ────────────────────────────────────────────────────────
 
 function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }: {
@@ -366,13 +385,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
 
         <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
 
-        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>
-          <span>🗄 Vault · sleep until {d.wakeDate ? `(hidden everywhere until ${fmtDue(d.wakeDate, today)})` : "(for far-future things)"}</span>
-          <div style={{ display: "grid", gridTemplateColumns: d.wakeDate ? "1fr auto" : "1fr", gap: 8 }}>
-            <input type="date" className="cc-input" value={d.wakeDate ?? ""} min={addDays(today, 1)} onClick={openPicker} onChange={(e) => set({ wakeDate: e.target.value || null })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
-            {d.wakeDate && <button type="button" onClick={() => set({ wakeDate: null })} className="cc-btn cc-btn-ghost" style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Wake now</button>}
-          </div>
-        </label>
+        <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
@@ -508,13 +521,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
           </div>
         )}
 
-        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>
-          <span>🗄 Vault · sleep until {d.wakeDate ? `(hidden everywhere until ${fmtDue(d.wakeDate, today)})` : "(for far-future things)"}</span>
-          <div style={{ display: "grid", gridTemplateColumns: d.wakeDate ? "1fr auto" : "1fr", gap: 8 }}>
-            <input type="date" className="cc-input" value={d.wakeDate ?? ""} min={addDays(today, 1)} onClick={openPicker} onChange={(e) => set({ wakeDate: e.target.value || null })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
-            {d.wakeDate && <button type="button" onClick={() => set({ wakeDate: null })} className="cc-btn cc-btn-ghost" style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Wake now</button>}
-          </div>
-        </label>
+        <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
