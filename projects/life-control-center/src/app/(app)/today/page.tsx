@@ -33,6 +33,7 @@ import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem 
 import type { NewsBrief } from "@/lib/news-brief";
 import type { Book, BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
+import { playDoneSound } from "@/lib/todo/celebrate";
 import { fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
 import type { CalBlock } from "@/lib/calendar/server";
 
@@ -317,11 +318,21 @@ function CalRow({ b, onTick }: { b: CalBlock & { ticked: boolean }; onTick: () =
   );
 }
 
-/** One to-do inside the timeline. */
+/** One to-do inside the timeline · ticking chimes, pops and folds the row away. */
 function TodoRow({ t, today, toggleDone }: { t: Todo; today: string; toggleDone: (t: Todo) => void }) {
+  const [celebrating, setCelebrating] = useState(false);
+  const tick = () => {
+    if (celebrating) return;
+    setCelebrating(true);
+    playDoneSound();
+    window.setTimeout(() => { setCelebrating(false); toggleDone(t); }, 900);
+  };
   return (
-    <div className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 48, padding: "6px 4px", borderBottom: "1px solid var(--line)" }}>
-      <button onClick={() => toggleDone(t)} aria-label="Mark done" style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: "var(--fill-1)", cursor: "pointer", padding: 0 }} />
+    <div className={`today-row${celebrating ? " cc-done-row" : ""}`} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 48, padding: "6px 4px", borderBottom: "1px solid var(--line)" }}>
+      <button onClick={tick} aria-label="Mark done" className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 28, height: 28, borderRadius: 9, border: `2px solid ${celebrating ? "transparent" : t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: celebrating ? "var(--pos)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        {celebrating && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+        {celebrating && <span className="cc-done-ring" />}
+      </button>
       <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><Linkify text={t.title} /></span>
         <span style={{ display: "block", fontSize: 14, color: t.dueDate && t.dueDate < today ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>

@@ -1004,3 +1004,34 @@ button, a, label, input, select, textarea, [role="button"] { touch-action: manip
   }
   :root:not([data-theme="dark"]) ::-webkit-scrollbar-thumb { background: rgba(20,20,40,0.15); }
 }
+
+/* ── To-do completion (2026-09-08) · quiet reward: pop, ring, sweep, collapse ── */
+@keyframes cc-done-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+@keyframes cc-done-ring {
+  0% { transform: scale(0.6); opacity: 0.5; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes cc-done-collapse {
+  0% { opacity: 1; transform: translateX(0); max-height: 120px; }
+  60% { opacity: 0.35; transform: translateX(6px); max-height: 120px; }
+  100% { opacity: 0; transform: translateX(10px); max-height: 0; }
+}
+.cc-done-pop { animation: cc-done-pop 0.35s cubic-bezier(.34,1.56,.64,1); }
+.cc-done-ring {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  border: 2px solid var(--pos);
+  animation: cc-done-ring 0.5s ease-out forwards;
+}
+.cc-done-row { animation: cc-done-collapse 0.45s ease-in 0.45s forwards; overflow: hidden; }
+.cc-done-strike { position: relative; }
+.cc-done-strike::after {
+  content: ""; position: absolute; left: 0; top: 50%; height: 1.5px; width: 100%;
+  background: var(--ink-3); transform-origin: left center; transform: scaleX(0);
+  animation: cc-done-sweep 0.3s ease-out 0.1s forwards;
+}
+@keyframes cc-done-sweep { to { transform: scaleX(1); } }

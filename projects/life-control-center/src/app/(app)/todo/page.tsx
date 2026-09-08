@@ -19,6 +19,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
+import { playDoneSound } from "@/lib/todo/celebrate";
 import {
   addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, nextWeekend, parseQuickAdd, sortTodos,
   type Area, type Bucket, type Priority, type Todo,
@@ -191,6 +192,19 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
 }) {
   const done = t.doneAt !== null;
   const swipe = useSwipeDelete(onDelete);
+  // Ticking should feel rewarding: chime + pop + strike-through sweep, then the
+  // row folds away and the real state change lands. Un-ticking stays instant.
+  const [celebrating, setCelebrating] = useState(false);
+  const celebrateTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (celebrateTimer.current) clearTimeout(celebrateTimer.current); }, []);
+  const tick = () => {
+    if (done) { onToggle(); return; }
+    if (celebrating) return;
+    setCelebrating(true);
+    playDoneSound();
+    celebrateTimer.current = window.setTimeout(() => { setCelebrating(false); onToggle(); }, 900);
+  };
+  const showDone = done || celebrating;
   // Quick peek: tap the ⓘ dot (hover shows it on desktop too) to read the notes
   // right in the list, without opening the task.
   const [peek, setPeek] = useState(false);
@@ -203,16 +217,17 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
 
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
-    <div className="todo-row" {...swipe.handlers}
+    <div className={`todo-row${celebrating ? " cc-done-row" : ""}`} {...swipe.handlers}
       style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes ? " auto" : ""}${onDefer ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
-      <button onClick={onToggle} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={done}
+      <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, border: `2px solid ${done ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: done ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
-          {done && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+        <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
+          {showDone && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+          {celebrating && <span className="cc-done-ring" />}
         </span>
       </button>
       <button onClick={onOpen} style={{ minHeight: 54, padding: "8px 4px 8px 0", background: "transparent", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", minWidth: 0, WebkitTapHighlightColor: "transparent" }}>
-        <span style={{ display: "block", fontSize: 17, lineHeight: 1.3, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
+        <span className={celebrating ? "cc-done-strike" : undefined} style={{ display: "inline-block", fontSize: 17, lineHeight: 1.3, color: showDone ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
           {t.priority === 2 && !done && <span style={{ color: "var(--neg)", marginRight: 6 }}>!!</span>}
           {t.priority === 1 && !done && <span style={{ color: "var(--warn)", marginRight: 6 }}>!</span>}
           <Linkify text={t.title} />
