@@ -3,7 +3,8 @@
 /**
  * /stretch · guided morning stretching timer.
  *
- * 16 movements · 30 s work · 10 s rest · 5 s lead-in. Full-screen while running.
+ * 20 movements in 4 blocks · continuous flow, variable durations (30/40/50 s),
+ * no rest gaps, 12:00 total + 5 s lead-in. Full-screen while running.
  * Time is computed from timestamps (not tick counts) so it stays correct if the
  * phone sleeps briefly or the app is backgrounded. Screen stays awake (Wake Lock),
  * every change beeps + vibrates, the movement name is spoken so it works from a pocket.
@@ -14,8 +15,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_TOTAL_SECONDS, buildStretchPlan, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_TOTAL_SECONDS, buildStretchPlan, type StretchPhase,
 } from "@/lib/routine/stretching";
+import { ReelRow, useReelDismissals } from "@/components/ReelLink";
 import { cues } from "@/lib/routine/cues";
 import { STRETCH_TRACKS, trackUrl } from "@/lib/routine/music";
 import { readCache, writeCache } from "@/lib/local/store";
@@ -63,21 +65,22 @@ export default function StretchPage() {
   const [previewing, setPreviewing] = useState<string | null>(null);
   const music = useRef<HTMLAudioElement | null>(null);
   // Movement names are editable · overrides live on the phone (cc-stretch-names).
-  const [moves, setMoves] = useState<string[]>(STRETCH_MOVES);
-  const movesRef = useRef<string[]>(STRETCH_MOVES);
+  const MOVE_NAMES = STRETCH_MOVES.map((m) => m.name);
+  const [moves, setMoves] = useState<string[]>(MOVE_NAMES);
+  const movesRef = useRef<string[]>(MOVE_NAMES);
   movesRef.current = moves;
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("cc-stretch-names") ?? "null");
-      if (Array.isArray(saved)) setMoves(STRETCH_MOVES.map((m, i) => (typeof saved[i] === "string" && saved[i].trim() ? saved[i] : m)));
+      const saved = JSON.parse(localStorage.getItem("cc-stretch-names-v2") ?? "null");
+      if (Array.isArray(saved)) setMoves(MOVE_NAMES.map((m, i) => (typeof saved[i] === "string" && saved[i].trim() ? saved[i] : m)));
     } catch { /* ignore */ }
   }, []);
   const renameMove = (i: number, name: string) => {
-    const next = moves.map((m, j) => (j === i ? (name.trim() || STRETCH_MOVES[i]) : m));
+    const next = moves.map((m, j) => (j === i ? (name.trim() || MOVE_NAMES[i]) : m));
     setMoves(next);
-    try { localStorage.setItem("cc-stretch-names", JSON.stringify(next)); } catch { /* ignore */ }
+    try { localStorage.setItem("cc-stretch-names-v2", JSON.stringify(next)); } catch { /* ignore */ }
   };
   useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t) setTrack(t); } catch { /* ignore */ } }, []);
   const pickTrack = (slug: string) => {
@@ -247,6 +250,7 @@ export default function StretchPage() {
     router.push("/today");
   };
 
+  const reels = useReelDismissals();
   const seconds = Math.ceil(remainingMs / 1000);
   const isRest = phase.kind === "rest";
   const isLead = phase.kind === "leadin";
@@ -260,7 +264,7 @@ export default function StretchPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>Stretching</h1>
-            <div className="sub">{STRETCH_MOVES.length} moves · 30 s on, 10 s off · {fmt(STRETCH_TOTAL_SECONDS)}</div>
+            <div className="sub">{STRETCH_MOVES.length} moves · 4 blocks · continuous · {fmt(STRETCH_TOTAL_SECONDS)}</div>
           </div>
         </div>
 
@@ -271,6 +275,16 @@ export default function StretchPage() {
         >
           ▶ Start
         </button>
+
+        {/* Learning reels · gone forever once dismissed */}
+        {reels.ready && STRETCH_REELS.some((r) => !reels.isDismissed(r.id)) && (
+          <div style={{ display: "grid", gap: 6 }}>
+            {STRETCH_REELS.map((r) => (
+              <ReelRow key={r.id} id={r.id} label={r.label} url={r.url} dismissed={reels.isDismissed(r.id)} onDismiss={reels.dismiss} />
+            ))}
+            <div style={{ fontSize: 12.5, color: "var(--ink-4)" }}>✕ removes a reel forever once you know the move.</div>
+          </div>
+        )}
 
         <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44, fontSize: 15, color: "var(--ink-2)" }}>
           <span>Speak each movement name</span>
@@ -322,7 +336,14 @@ export default function StretchPage() {
           <div className="cc-card-head"><span className="title">Order</span><span className="tail">tap a name to rename</span></div>
           <ol style={{ padding: "4px 16px 8px", margin: 0, listStyle: "none" }}>
             {moves.map((m, i) => (
-              <li key={i} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 8, minHeight: 40, alignItems: "center", fontSize: 16, borderBottom: i < moves.length - 1 ? "1px solid var(--line)" : "none" }}>
+              <li key={i}>
+              {(i === 0 || STRETCH_MOVES[i].block !== STRETCH_MOVES[i - 1].block) && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0 2px" }}>
+                  <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{STRETCH_BLOCKS[STRETCH_MOVES[i].block]}</span>
+                  <span aria-hidden style={{ flex: 1, height: 1, background: "var(--line)" }} />
+                </div>
+              )}
+              <div style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 8, minHeight: 40, alignItems: "center", fontSize: 16, borderBottom: i < moves.length - 1 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-4)" }}>{String(i + 1).padStart(2, "0")}</span>
                 {editIdx === i ? (
                   <input
@@ -339,9 +360,11 @@ export default function StretchPage() {
                     onClick={() => { setEditIdx(i); setEditText(m); }}
                     style={{ background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, padding: "8px 0", cursor: "pointer", minWidth: 0, overflowWrap: "anywhere" }}
                   >
-                    {m}{m !== STRETCH_MOVES[i] && <span style={{ fontSize: 12, color: "var(--ink-4)" }}> · renamed</span>}
+                    {m}{m !== MOVE_NAMES[i] && <span style={{ fontSize: 12, color: "var(--ink-4)" }}> · renamed</span>}
                   </button>
                 )}
+                <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-4)" }}>{STRETCH_MOVES[i].seconds}s</span>
+              </div>
               </li>
             ))}
           </ol>
@@ -387,7 +410,7 @@ export default function StretchPage() {
       {/* Middle: phase, name, countdown */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 8 }}>
         <div style={{ fontFamily: "var(--f-mono)", fontSize: 14, letterSpacing: "0.18em", textTransform: "uppercase", color: accent }}>
-          {isLead ? "Get ready" : isRest ? "Rest" : `Move ${moveNumber} of ${STRETCH_MOVES.length}`}
+          {isLead ? "Get ready" : isRest ? "Rest" : `Move ${moveNumber} of ${STRETCH_MOVES.length} · ${STRETCH_BLOCKS[STRETCH_MOVES[Math.min(phase.index, STRETCH_MOVES.length - 1)].block]}`}
         </div>
         <div style={{ fontSize: "clamp(24px, 7vw, 34px)", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em", minHeight: "2.4em", display: "flex", alignItems: "center" }}>
           {isRest ? (nextName ?? "") : moveName}
