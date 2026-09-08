@@ -301,7 +301,7 @@ function VaultField({ wakeDate, setWake, today }: { wakeDate: string | null | un
     <div style={{ display: "grid", gap: 4 }}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
         style={{ all: "unset", cursor: "pointer", fontSize: 13.5, color: wakeDate ? "var(--ink-3)" : "var(--ink-4)", minHeight: 32, display: "flex", alignItems: "center", gap: 6 }}>
-        🗄 {wakeDate ? `Sleeping until ${fmtDue(wakeDate, today)}` : "Vault"} <span aria-hidden>{open ? "▴" : "▾"}</span>
+        {wakeDate ? `Sleeping until ${fmtDue(wakeDate, today)}` : "Vault"} <span aria-hidden>{open ? "▴" : "▾"}</span>
       </button>
       {open && (
         <div style={{ display: "grid", gridTemplateColumns: wakeDate ? "1fr auto" : "1fr", gap: 8 }}>
@@ -374,7 +374,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
         {!!d.dueTime && !d.someday && (
           <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Notify on
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-              {([["phone", "📱 Phone"], ["laptop", "💻 Laptop"], [null, "Both"]] as const).map(([key, label]) => (
+              {([["phone", "Phone"], ["laptop", "Laptop"], [null, "Both"]] as const).map(([key, label]) => (
                 <button key={label} onClick={() => set({ notifyTarget: key })} style={chipStyle((d.notifyTarget ?? null) === key)}>{label}</button>
               ))}
             </div>
@@ -713,7 +713,7 @@ export default function TodoPage() {
       {sleeping.length > 0 && (
         <section className="cc-card">
           <button onClick={() => setShowVault((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showVault ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-            <span className="title">🗄 Vault</span><span className="tail">{sleeping.length} sleeping {showVault ? "▴" : "▾"}</span>
+            <span className="title">Vault</span><span className="tail">{sleeping.length} sleeping {showVault ? "▴" : "▾"}</span>
           </button>
           {showVault && (
             <div style={{ padding: "0 0 6px" }}>
