@@ -33,6 +33,7 @@ export type Todo = {
   evening: boolean;            // "This evening" (Things) · shown in the evening block of that day
   nagMinutes?: number | null;  // reminder nag cadence in minutes (5/10/15/30); empty = 30
   wakeDate?: string | null;    // YYYY-MM-DD · Vault (far-future items): hidden from every list until this day
+  notifyTarget?: "phone" | "laptop" | null; // where the reminder push goes · null = both
   someday: boolean;            // parked, out of the way
   priority: Priority;
   sortOrder: number;

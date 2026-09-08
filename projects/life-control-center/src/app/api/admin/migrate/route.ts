@@ -158,6 +158,7 @@ export async function POST() {
     `ALTER TABLE todos ADD COLUMN nag_minutes INTEGER`,
     `ALTER TABLE user_settings ADD COLUMN last_reminder_tick_at INTEGER`,
     `ALTER TABLE todos ADD COLUMN wake_date TEXT`,
+    `ALTER TABLE todos ADD COLUMN notify_target TEXT`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────
     `ALTER TABLE user_settings ADD COLUMN calendar_feeds TEXT`,
     `CREATE TABLE IF NOT EXISTS calendar_ticks (

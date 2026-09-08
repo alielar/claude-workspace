@@ -348,6 +348,16 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           </label>
         </div>
 
+        {!!d.dueTime && !d.someday && (
+          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Notify on
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+              {([["phone", "📱 Phone"], ["laptop", "💻 Laptop"], [null, "Both"]] as const).map(([key, label]) => (
+                <button key={label} onClick={() => set({ notifyTarget: key })} style={chipStyle((d.notifyTarget ?? null) === key)}>{label}</button>
+              ))}
+            </div>
+          </label>
+        )}
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
           {([0, 1, 2] as Priority[]).map((p) => (
             <button key={p} onClick={() => set({ priority: p })} style={chipStyle(d.priority === p)}>{p === 0 ? "Normal" : p === 1 ? "! Important" : "!! Urgent"}</button>

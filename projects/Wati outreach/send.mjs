@@ -31,6 +31,21 @@ const arg = (name, fallback = null) => {
 };
 const flag = (name) => process.argv.includes(`--${name}`);
 
+// Any flag this script does not know must abort the run. On 2026-09-08 a
+// mistyped --dry (instead of --dry-run) was silently ignored and a test
+// became a real send. Never again.
+const KNOWN_ARGS = new Set(['stage', 'track', 'channel', 'batch', 'every', 'gap', 'until', 'limit', 'test', 'name']);
+const KNOWN_FLAGS = new Set(['dry-run', 'dry']);
+for (let i = 2; i < process.argv.length; i++) {
+  const a = process.argv[i];
+  if (!a.startsWith('--')) continue;
+  const name = a.slice(2);
+  if (KNOWN_FLAGS.has(name)) continue;
+  if (KNOWN_ARGS.has(name)) { i++; continue; }
+  console.log(`\n  Unknown option "--${name}" — refusing to run. Known: ${[...KNOWN_ARGS].map((x) => '--' + x).join(', ')}, --dry-run (alias --dry)\n`);
+  process.exit(1);
+}
+
 // Minimal quoted-CSV reader — the stalled list contains commas inside messages.
 function parseCsv(text) {
   const rows = [];
@@ -64,7 +79,28 @@ function firstName(full) {
   return '';
 }
 
-const DRY = flag('dry-run');
+const DRY = flag('dry-run') || flag('dry');
+
+// Only one sender may run at a time. Two concurrent copies each load the
+// sent-log before the other writes, so the dedupe guard cannot see the other
+// — that is how 19 people got a duplicate pair on 2026-09-08.
+import { openSync, closeSync, unlinkSync, writeSync } from 'node:fs';
+const LOCK = 'logs/send.lock';
+if (!DRY) {
+  try {
+    const fd = openSync(LOCK, 'wx');
+    writeSync(fd, `pid ${process.pid} started ${new Date().toISOString()}\n`);
+    closeSync(fd);
+  } catch {
+    console.log(`\n  Refusing to run: ${LOCK} exists — another sender is (or was) running.`);
+    console.log('  If you are sure nothing is running (check with: pgrep -fl send.mjs), delete the lock file and retry.\n');
+    process.exit(1);
+  }
+  const releaseLock = () => { try { unlinkSync(LOCK); } catch {} };
+  process.on('exit', releaseLock);
+  process.on('SIGINT', () => { releaseLock(); process.exit(130); });
+  process.on('SIGTERM', () => { releaseLock(); process.exit(143); });
+}
 const GAP = Number(arg('gap', 10)) * 1000;
 const BATCH = Number(arg('batch', 10));
 const EVERY = Number(arg('every', 10)) * 60 * 1000;
@@ -116,6 +152,18 @@ const STAGES = {
 // data/tm-followup-eligible.csv (built fresh by build-tm-followup.mjs).
 STAGES.tm_followup1 = {
   tm: ['followup_text_1_fra_v2', 'followup_text_2_fra'],
+};
+
+// Follow-up 2 ("can we cancel your request?"), 48h after follow-up 1 with no
+// reply. Audience comes from data/tm-followup2-eligible.csv.
+STAGES.tm_followup2 = {
+  tm: ['followup_text_3_fra', 'followup_text_4_fra'],
+};
+
+// Per-stage eligibility files for the telemarketing follow-ups.
+const TM_ELIGIBLE = {
+  tm_followup1: 'data/tm-followup-eligible.csv',
+  tm_followup2: 'data/tm-followup2-eligible.csv',
 };
 
 // Stages whose audience is the stalled list rather than the campaign plan.
@@ -220,8 +268,8 @@ if (testPhone) {
     phone: String(testPhone).replace(/[^\d]/g, ''),
     track,
   }];
-} else if (STAGE === 'tm_followup1') {
-  const EF = 'data/tm-followup-eligible.csv';
+} else if (TM_ELIGIBLE[STAGE]) {
+  const EF = TM_ELIGIBLE[STAGE];
   if (!existsSync(EF)) {
     console.log(`\n  Refusing to send: ${EF} is missing. Run build-tm-followup.mjs first.\n`);
     process.exit(1);
@@ -454,20 +502,21 @@ let sent = 0, failed = 0, skipped = 0;
 // arrives. Between batches, drop anyone from the remaining queue who has
 // written to us — they need a human or the bot, not a "you didn't reply".
 const HOOK_KEY_FILE = '.wati-webhook-secret';
-const seenHookUrls = new Set();
+// Start the reply-watch 2h back, covering the gap between the eligibility
+// build and the moment the run starts.
+let hookSince = new Date(Date.now() - 2 * 3600e3).toISOString();
 async function phonesWhoReplied() {
   if (!existsSync(HOOK_KEY_FILE)) return new Set();
   const replied = new Set();
   try {
     const key = readFileSync(HOOK_KEY_FILE, 'utf8').trim();
-    const d = await (await fetch(`https://life-control-center-eta.vercel.app/api/wati?key=${key}`)).json();
+    // Events now come back with their content inline; `since` keeps each poll
+    // to just what arrived after the previous one.
+    const d = await (await fetch(`https://life-control-center-eta.vercel.app/api/wati?key=${key}&limit=5000&since=${encodeURIComponent(hookSince)}`)).json();
     for (const ev of d.events || []) {
-      if (seenHookUrls.has(ev.url)) continue;
-      seenHookUrls.add(ev.url);
-      try {
-        const b = await (await fetch(ev.url)).json();
-        if (b.eventType === 'message' && b.owner === false && b.waId) replied.add(String(b.waId));
-      } catch { /* one unreadable event must not stop the check */ }
+      if (ev.at > hookSince) hookSince = ev.at;
+      const b = ev.event || {};
+      if (b.eventType === 'message' && b.owner === false && b.waId) replied.add(String(b.waId));
     }
   } catch { /* webhook briefly unreachable — send continues on the last list */ }
   return replied;
@@ -476,7 +525,7 @@ async function phonesWhoReplied() {
 let stoppedEarly = 0;
 const dropped = new Set();
 for (const [n, batch] of batches.entries()) {
-  if (STAGE === 'tm_followup1' && !DRY) {
+  if (TM_ELIGIBLE[STAGE] && !DRY) {
     const replied = await phonesWhoReplied();
     for (const p of replied) dropped.add(p);
     const drop = batch.filter((b) => dropped.has(b.phone));

@@ -89,25 +89,29 @@ export async function GET(req: NextRequest) {
   });
   if (toNag.length === 0) return NextResponse.json({ due: due.length, sent: 0, hm });
 
-  // One notification per list. Everything due in that list is mentioned, so a nag never
-  // makes you forget the task it isn't about.
+  // One notification per list and device class. Everything due in that list (for that
+  // device) is mentioned, so a nag never makes you forget the task it isn't about.
+  // A task's notify_target ("phone" / "laptop" / null = both) decides where it nags.
   let sent = 0;
   const stamped: number[] = [];
+  const areaOf = (t: typeof rows[number]) => ((t.area === "work" || t.area === "list") ? t.area : "personal");
   for (const area of ["personal", "work", "list"] as const) {
-    const mine = due.filter((t) => ((t.area === "work" || t.area === "list") ? t.area : "personal") === area);
-    if (mine.length === 0 || !toNag.some((t) => ((t.area === "work" || t.area === "list") ? t.area : "personal") === area)) continue;
-    const titles = mine.map((t) => t.title).slice(0, 3).join(" · ") + (mine.length > 3 ? ` +${mine.length - 3}` : "");
-    const r = await sendToUser(userId, {
-      title: area === "list" ? (mine.length === 1 ? `Reminder · ${mine[0].title}` : `${mine.length} doc reminders`)
-        : area === "work" ? `Work · ${mine.length} to-do${mine.length === 1 ? "" : "s"} due` : `${mine.length} to-do${mine.length === 1 ? "" : "s"} due`,
-      body: titles,
-      tag: `nag-${area}`,
-      url: "/todo",
-    });
-    sent += r.sent;
-    // The 30-minute clock only starts when a push was actually delivered —
-    // a failed send must not silence the task.
-    if (r.sent > 0) stamped.push(...mine.map((t) => t.id));
+    for (const target of ["phone", "laptop"] as const) {
+      const mine = due.filter((t) => areaOf(t) === area && (!t.notifyTarget || t.notifyTarget === target));
+      if (mine.length === 0 || !toNag.some((t) => areaOf(t) === area && (!t.notifyTarget || t.notifyTarget === target))) continue;
+      const titles = mine.map((t) => t.title).slice(0, 3).join(" · ") + (mine.length > 3 ? ` +${mine.length - 3}` : "");
+      const r = await sendToUser(userId, {
+        title: area === "list" ? (mine.length === 1 ? `Reminder · ${mine[0].title}` : `${mine.length} doc reminders`)
+          : area === "work" ? `Work · ${mine.length} to-do${mine.length === 1 ? "" : "s"} due` : `${mine.length} to-do${mine.length === 1 ? "" : "s"} due`,
+        body: titles,
+        tag: `nag-${area}`,
+        url: "/todo",
+      }, target);
+      sent += r.sent;
+      // The 30-minute clock only starts when a push was actually delivered —
+      // a failed send must not silence the task.
+      if (r.sent > 0) stamped.push(...mine.map((t) => t.id));
+    }
   }
   if (stamped.length) await db.update(todos).set({ lastNaggedAt: now }).where(inArray(todos.id, stamped));
   return NextResponse.json({ due: due.length, nagged: toNag.length, sent, hm });
