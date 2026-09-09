@@ -260,10 +260,13 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
     await db.update(podcastEpisodes)
       .set({ status: "ready", audioUrl, audioB64: audio.toString("base64"), chapters: JSON.stringify(chapters), durationSec })
       .where(eq(podcastEpisodes.id, row.id));
-    // Keep a week of episodes · yesterday's audio has no second life.
+    // Retention: audio survives 2 days (today + one late catch-up), then the ~3 MB
+    // blob is dropped; the tiny script rows are removed entirely after 30 days.
     try {
-      const cutoff = new Date(Date.now() - 7 * 86400_000).toISOString().slice(0, 10);
-      await db.update(podcastEpisodes).set({ audioB64: null }).where(lt(podcastEpisodes.date, cutoff));
+      const audioCutoff = new Date(Date.now() - 2 * 86400_000).toISOString().slice(0, 10);
+      await db.update(podcastEpisodes).set({ audioB64: null }).where(lt(podcastEpisodes.date, audioCutoff));
+      const rowCutoff = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
+      await db.delete(podcastEpisodes).where(lt(podcastEpisodes.date, rowCutoff));
     } catch { /* pruning is best-effort */ }
     return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1, chapters, durationSec };
   } catch (e) {
