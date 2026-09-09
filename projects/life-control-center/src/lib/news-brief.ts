@@ -38,6 +38,8 @@ export type NewsStory = {
   featured?: boolean;
   /** Keyword relevance at generation time (higher = closer to Ali's interests). */
   score?: number;
+  /** ISO publish time from the feed · missing when the feed didn't say. */
+  publishedAt?: string;
 };
 
 export type { NewsVideo } from "@/lib/news/youtube";
@@ -186,13 +188,17 @@ async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; cate
     const xml = await res.text();
     const items = parseRSSItems(xml);
 
-    const stories: NewsStory[] = items.slice(0, 15).map((item) => ({
-      headline: item.title,
-      summary: item.description || item.title,
-      keyPoints: [],
-      category: feed.category,
-      source: item.link,
-    }));
+    const stories: NewsStory[] = items.slice(0, 15).map((item) => {
+      const t = item.pubDate ? Date.parse(item.pubDate) : NaN;
+      return {
+        headline: item.title,
+        summary: item.description || item.title,
+        keyPoints: [],
+        category: feed.category,
+        source: item.link,
+        publishedAt: Number.isFinite(t) ? new Date(t).toISOString() : undefined,
+      };
+    });
 
     return { stories, category: feed.category };
   } catch {
@@ -239,10 +245,14 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
   }
 
   // Deduplicate by headline similarity within each category; drop removed interests
+  // and anything older than 36 h · a Tuesday match preview must not air on Wednesday.
+  const MAX_AGE_MS = 36 * 3600_000;
+  const now = Date.now();
   for (const cat of Object.keys(byCategory)) {
     const seen = new Set<string>();
     byCategory[cat] = byCategory[cat].filter((s) => {
       if (isExcluded(s)) return false;
+      if (s.publishedAt && now - Date.parse(s.publishedAt) > MAX_AGE_MS) return false;
       const key = s.headline.toLowerCase().slice(0, 40);
       if (seen.has(key)) return false;
       seen.add(key);
@@ -250,9 +260,11 @@ export async function generateNewsBrief(date: string): Promise<NewsBrief> {
     });
   }
 
-  // Sort each category by relevance, take top 5 → 20 total
+  // Sort each category by relevance, then freshness (undated items rank below dated ones)
   for (const cat of Object.keys(byCategory)) {
-    byCategory[cat].sort((a, b) => relevanceScore(b) - relevanceScore(a));
+    byCategory[cat].sort((a, b) =>
+      (relevanceScore(b) - relevanceScore(a)) ||
+      ((b.publishedAt ? Date.parse(b.publishedAt) : 0) - (a.publishedAt ? Date.parse(a.publishedAt) : 0)));
   }
 
   const selected: NewsStory[] = [];
