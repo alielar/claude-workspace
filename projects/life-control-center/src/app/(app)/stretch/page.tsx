@@ -3,8 +3,8 @@
 /**
  * /stretch · guided morning stretching timer.
  *
- * 20 movements in 4 blocks · continuous flow, variable durations (30/40/50 s),
- * no rest gaps, 12:00 total + 5 s lead-in. Full-screen while running.
+ * 20 movements in 4 blocks · per-move durations (20–50 s, deep holds get more),
+ * 10 s rest between every movement, 14:40 total incl. 5 s lead-in. Full-screen while running.
  * Time is computed from timestamps (not tick counts) so it stays correct if the
  * phone sleeps briefly or the app is backgrounded. Screen stays awake (Wake Lock),
  * every change beeps + vibrates, the movement name is spoken so it works from a pocket.
@@ -265,7 +265,7 @@ export default function StretchPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>Stretching</h1>
-            <div className="sub">{STRETCH_MOVES.length} moves · 4 blocks · continuous · {fmt(STRETCH_TOTAL_SECONDS)}</div>
+            <div className="sub">{STRETCH_MOVES.length} moves · 4 blocks · 10 s rests · {fmt(STRETCH_TOTAL_SECONDS)}</div>
           </div>
         </div>
 

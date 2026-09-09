@@ -1,16 +1,18 @@
 /**
- * Morning stretching routine · 20 movements in 4 blocks, 12:00 total (2026-09-08).
+ * Morning stretching routine · 20 movements in 4 blocks, 14:40 total (2026-09-10).
  *
- * Continuous flow, NO rest gaps — durations vary per movement so the block
- * markers land exactly (Ali's reel): dynamic standing moves 30 s, floor/hip
- * holds 40 s, the grounded finish 50 s. 5 s lead-in on top.
- *   Block 1 · wake-up and spine     0:00–2:30 (5 × 30 s) · Cossack squats in, seated toe stretch out (2026-09-09)
- *   Block 2 · standing to floor     2:30–5:00 (5 × 30 s)
- *   Block 3 · floor and hips        5:00–9:30 (6 × 40 s + 30 s)
- *   Block 4 · grounded finish       9:30–12:00 (3 × 50 s)
+ * Every movement gets the duration it actually needs (Ali's rule 2026-09-10:
+ * my judgement per move, 10 s rest between EVERY movement, total under 15:00):
+ * dynamic warm-ups 20–35 s, deep floor holds 40–45 s, the closing pose 50 s.
+ * 5 s lead-in, 19 × 10 s rests. Work 11:25 + rest 3:10 + lead-in 0:05 = 14:40.
+ *   Block 1 · wake-up and spine     starts 0:05
+ *   Block 2 · standing to floor     starts 3:15
+ *   Block 3 · floor and hips        starts 6:45
+ *   Block 4 · grounded finish       starts 12:15 · ends 14:40
  */
 
 export const STRETCH_LEADIN_SECONDS = 5;
+export const STRETCH_REST_SECONDS = 10;
 
 export type StretchMove = { name: string; seconds: number; block: number };
 
@@ -22,33 +24,33 @@ export const STRETCH_BLOCKS = [
 ];
 
 export const STRETCH_MOVES: StretchMove[] = [
-  // Block 1 · 0:00–2:30
-  { name: "Bouncing on Toes",                    seconds: 30, block: 0 },
-  { name: "Neck Twists",                         seconds: 30, block: 0 },
-  { name: "Torso Twists",                        seconds: 30, block: 0 },
-  { name: "Squat Hold",                          seconds: 30, block: 0 },
+  // Block 1 · dynamic wake-up: short and lively, the holds come later.
+  { name: "Bouncing on Toes",                    seconds: 20, block: 0 },
+  { name: "Neck Twists",                         seconds: 25, block: 0 },
+  { name: "Torso Twists",                        seconds: 25, block: 0 },
+  { name: "Squat Hold",                          seconds: 35, block: 0 },
   // Cossack squats replaced the seated toe stretch (2026-09-09, Ali) · dynamic
   // side-to-side squat, fits the standing wake-up block.
-  { name: "Cossack Squats",                      seconds: 30, block: 0 },
-  // Block 2 · 2:30–5:00
-  { name: "Lateral Arm Swings",                  seconds: 30, block: 1 },
-  { name: "Down Dog + Calf Pedal",               seconds: 30, block: 1 },
-  { name: "World's Greatest Stretch · Left",     seconds: 30, block: 1 },
-  { name: "World's Greatest Stretch · Right",    seconds: 30, block: 1 },
+  { name: "Cossack Squats",                      seconds: 35, block: 0 },
+  // Block 2 · standing to floor
+  { name: "Lateral Arm Swings",                  seconds: 25, block: 1 },
+  { name: "Down Dog + Calf Pedal",               seconds: 35, block: 1 },
+  { name: "World's Greatest Stretch · Left",     seconds: 35, block: 1 },
+  { name: "World's Greatest Stretch · Right",    seconds: 35, block: 1 },
   { name: "Toe Touches",                         seconds: 30, block: 1 },
-  // Block 3 · 5:00–9:30
-  { name: "90/90 Switches",                      seconds: 40, block: 2 },
-  { name: "Pigeon · Left",                       seconds: 40, block: 2 },
-  { name: "Pigeon · Right",                      seconds: 40, block: 2 },
+  // Block 3 · deep hip holds need real time to release · the longest block.
+  { name: "90/90 Switches",                      seconds: 35, block: 2 },
+  { name: "Pigeon · Left",                       seconds: 45, block: 2 },
+  { name: "Pigeon · Right",                      seconds: 45, block: 2 },
   // Butterfly replaced frog pose (2026-09-09, Ali wanted easier) · same target
   // (adductors / groin / hip opening), seated and far gentler on the knees.
-  { name: "Butterfly Stretch",                   seconds: 40, block: 2 },
-  { name: "Seiza",                               seconds: 40, block: 2 },
+  { name: "Butterfly Stretch",                   seconds: 45, block: 2 },
+  { name: "Seiza",                               seconds: 30, block: 2 },
   { name: "Kneeling Hamstring",                  seconds: 40, block: 2 },
-  { name: "Forearm Stretch",                     seconds: 30, block: 2 },
-  // Block 4 · 9:30–12:00
-  { name: "Cat Cow",                             seconds: 50, block: 3 },
-  { name: "Cobra",                               seconds: 50, block: 3 },
+  { name: "Forearm Stretch",                     seconds: 20, block: 2 },
+  // Block 4 · grounded finish · child's pose stays the long calm ending.
+  { name: "Cat Cow",                             seconds: 35, block: 3 },
+  { name: "Cobra",                               seconds: 40, block: 3 },
   { name: "Child's Pose",                        seconds: 50, block: 3 },
 ];
 
@@ -77,13 +79,16 @@ export function reelForMove(index: number): StretchReel {
 export type StretchPhase =
   | { kind: "leadin"; index: 0; seconds: number }
   | { kind: "work"; index: number; seconds: number }
-  | { kind: "rest"; index: number; seconds: number }   // kept in the type for compat · the plan no longer produces rests
+  | { kind: "rest"; index: number; seconds: number }   // rest[i] sits after move i, announcing move i+1
   | { kind: "done"; index: number; seconds: 0 };
 
-/** The full, flat sequence of phases · continuous, no rests. */
+/** The full, flat sequence of phases · 10 s rest between every movement. */
 export function buildStretchPlan(): StretchPhase[] {
   const plan: StretchPhase[] = [{ kind: "leadin", index: 0, seconds: STRETCH_LEADIN_SECONDS }];
-  STRETCH_MOVES.forEach((m, i) => plan.push({ kind: "work", index: i, seconds: m.seconds }));
+  STRETCH_MOVES.forEach((m, i) => {
+    plan.push({ kind: "work", index: i, seconds: m.seconds });
+    if (i < STRETCH_MOVES.length - 1) plan.push({ kind: "rest", index: i, seconds: STRETCH_REST_SECONDS });
+  });
   plan.push({ kind: "done", index: STRETCH_MOVES.length - 1, seconds: 0 });
   return plan;
 }
