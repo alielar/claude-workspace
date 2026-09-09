@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_TOTAL_SECONDS, buildStretchPlan, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_TOTAL_SECONDS, buildStretchPlan, reelForMove, type StretchPhase,
 } from "@/lib/routine/stretching";
 import { ReelRow, useReelDismissals } from "@/components/ReelLink";
 import { cues } from "@/lib/routine/cues";
@@ -424,6 +424,15 @@ export default function StretchPage() {
         </div>
         {!isRest && nextName && (
           <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Next: {nextName}</div>
+        )}
+        {/* Form check mid-session (2026-09-09): the reel for THIS movement, one tap.
+            Opening it pauses the timer so nothing runs on while he watches. */}
+        {!isLead && phase.kind === "work" && reels.ready && !reels.isDismissed(reelForMove(phase.index).id) && (
+          <a href={reelForMove(phase.index).url} target="_blank" rel="noopener noreferrer"
+            onClick={() => { if (status === "running") pause(); }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44, padding: "0 16px", borderRadius: 12, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", textDecoration: "none", fontSize: 14, marginTop: 4 }}>
+            <span aria-hidden style={{ color: "var(--violet)" }}>▶</span> Check the form · pauses the timer
+          </a>
         )}
         {isRest && <div style={{ fontSize: 15, color: "var(--ink-3)" }}>coming up</div>}
         {status === "paused" && <div className="cc-pill cc-pill-warn" style={{ marginTop: 8 }}>Paused</div>}

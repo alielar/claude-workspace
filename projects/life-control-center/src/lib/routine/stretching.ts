@@ -4,7 +4,7 @@
  * Continuous flow, NO rest gaps — durations vary per movement so the block
  * markers land exactly (Ali's reel): dynamic standing moves 30 s, floor/hip
  * holds 40 s, the grounded finish 50 s. 5 s lead-in on top.
- *   Block 1 · wake-up and spine     0:00–2:30 (5 × 30 s)
+ *   Block 1 · wake-up and spine     0:00–2:30 (5 × 30 s) · Cossack squats in, seated toe stretch out (2026-09-09)
  *   Block 2 · standing to floor     2:30–5:00 (5 × 30 s)
  *   Block 3 · floor and hips        5:00–9:30 (6 × 40 s + 30 s)
  *   Block 4 · grounded finish       9:30–12:00 (3 × 50 s)
@@ -27,7 +27,9 @@ export const STRETCH_MOVES: StretchMove[] = [
   { name: "Neck Twists",                         seconds: 30, block: 0 },
   { name: "Torso Twists",                        seconds: 30, block: 0 },
   { name: "Squat Hold",                          seconds: 30, block: 0 },
-  { name: "Seated Toe Stretch",                  seconds: 30, block: 0 },
+  // Cossack squats replaced the seated toe stretch (2026-09-09, Ali) · dynamic
+  // side-to-side squat, fits the standing wake-up block.
+  { name: "Cossack Squats",                      seconds: 30, block: 0 },
   // Block 2 · 2:30–5:00
   { name: "Lateral Arm Swings",                  seconds: 30, block: 1 },
   { name: "Down Dog + Calf Pedal",               seconds: 30, block: 1 },
@@ -38,7 +40,9 @@ export const STRETCH_MOVES: StretchMove[] = [
   { name: "90/90 Switches",                      seconds: 40, block: 2 },
   { name: "Pigeon · Left",                       seconds: 40, block: 2 },
   { name: "Pigeon · Right",                      seconds: 40, block: 2 },
-  { name: "Frog Pose",                           seconds: 40, block: 2 },
+  // Butterfly replaced frog pose (2026-09-09, Ali wanted easier) · same target
+  // (adductors / groin / hip opening), seated and far gentler on the knees.
+  { name: "Butterfly Stretch",                   seconds: 40, block: 2 },
   { name: "Seiza",                               seconds: 40, block: 2 },
   { name: "Kneeling Hamstring",                  seconds: 40, block: 2 },
   { name: "Forearm Stretch",                     seconds: 30, block: 2 },
@@ -64,6 +68,11 @@ export const STRETCH_REELS: StretchReel[] = [
     url: "https://www.instagram.com/reel/Dc57ksLtnVD/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
   },
 ];
+
+/** The reel that demonstrates a given movement: its own if it has one, else the full-routine reel. */
+export function reelForMove(index: number): StretchReel {
+  return STRETCH_REELS.find((r) => r.moveIndex === index) ?? STRETCH_REELS.find((r) => r.moveIndex === undefined)!;
+}
 
 export type StretchPhase =
   | { kind: "leadin"; index: 0; seconds: number }
