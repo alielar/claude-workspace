@@ -30,7 +30,6 @@ import { ensureMigrate } from "@/lib/ensureMigrate";
 import { useOnline } from "@/lib/useOnline";
 import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
 import { itemColor, BREATHING_VIDEO_URL, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
-import type { NewsBrief } from "@/lib/news-brief";
 import type { Book, BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
@@ -105,6 +104,16 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
   const auto = item.source === "workout" || item.autoSource !== null;
   const done = item.completedToday;
   const accent = itemColor(item.color);
+  // Ticking chimes and pops here too · same reward as the to-do list. Un-ticking stays instant.
+  const [celebrating, setCelebrating] = useState(false);
+  const tickItem = () => {
+    if (auto || celebrating) return;
+    if (done) { onToggle(item); return; }
+    setCelebrating(true);
+    playDoneSound();
+    window.setTimeout(() => { setCelebrating(false); onToggle(item); }, 700);
+  };
+  const showDone = done || celebrating;
   // The action stays after ticking (as a quiet "Again") so the stretch player is
   // always one tap from home · before this, a ticked row hid the only way in.
   const action = routineAction(item);
@@ -139,7 +148,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
     >
       <button
         type="button"
-        onClick={() => !auto && onToggle(item)}
+        onClick={tickItem}
         disabled={auto}
         aria-pressed={done}
         style={{
@@ -162,20 +171,23 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
       >
         <span
           aria-hidden
+          className={celebrating ? "cc-done-pop" : undefined}
           style={{
+            position: "relative",
             width: 28, height: 28, borderRadius: 9,
-            border: `2px solid ${done ? "transparent" : auto ? `${accent}66` : "var(--line-strong)"}`,
-            background: done ? accent : "var(--fill-1)",
+            border: `2px solid ${showDone ? "transparent" : auto ? `${accent}66` : "var(--line-strong)"}`,
+            background: showDone ? accent : "var(--fill-1)",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             transition: "background 0.15s, border-color 0.15s",
             flexShrink: 0,
           }}
         >
-          {done && (
+          {showDone && (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           )}
+          {celebrating && <span className="cc-done-ring" />}
         </span>
 
         <span style={{ minWidth: 0 }}>
@@ -238,17 +250,6 @@ function Card({ title, tail, children }: { title: string; tail?: React.ReactNode
   );
 }
 
-// ─── News: rotating "Worth your time" card ────────────────────────────────────
-// One featured story at a time (one per interest), auto-advances every 6 s, pauses while
-// touched, swipes left/right, tap opens News. Reads the phone's copy of the brief.
-
-const NEWS_CATS: { label: string; match: string[]; color: string }[] = [
-  { label: "Football",    match: ["football"],     color: "#D97A2B" },
-  { label: "Geopolitics", match: ["geopolitics"],  color: "#D05A5A" },
-  { label: "Business",    match: ["business"],     color: "#3E9A63" },
-  { label: "Tech & AI",   match: ["tech", "ai"],   color: "#2E9E8F" },
-];
-
 /**
  * Morning plan (2026-09-08, Ali-approved) · wake time + sequence, driven by whether
  * today is a training day (Settings → Training days). Minutes edited in Settings.
@@ -288,35 +289,6 @@ function MorningCard({ today }: { today: string }) {
   );
 }
 
-function HeadlinesCard({ today }: { today: string }) {
-  const { data: brief, loading } = useCached<NewsBrief>("news-brief", () => fetchJson<NewsBrief>("/api/news/generate"));
-  const picks = useMemo(() => {
-    if (!brief) return [];
-    return NEWS_CATS.flatMap((c) => {
-      const st = brief.stories.find((x) => c.match.includes(x.category) && x.featured) ?? brief.stories.find((x) => c.match.includes(x.category));
-      return st ? [{ label: c.label, color: c.color, headline: st.headline }] : [];
-    }).slice(0, 3);
-  }, [brief]);
-  const isOld = brief && brief.date !== today;
-  return (
-    <Link href="/news" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-      <div className="cc-card-head">
-        <span className="title" style={{ color: "var(--warn)" }}>★ Headlines</span>
-        <span className="tail">{brief ? (isOld ? `from ${brief.date} ›` : "News ›") : loading ? "…" : "no brief yet ›"}</span>
-      </div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 8, padding: "10px 14px" }}>
-        {picks.length === 0 && <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{loading ? "Loading the last brief…" : "The brief arrives every morning."}</span>}
-        {picks.map((p) => (
-          <span key={p.label} style={{ display: "grid", gridTemplateColumns: "8px 1fr", gap: 10, alignItems: "center", minWidth: 0 }}>
-            <span aria-hidden style={{ width: 8, height: 8, borderRadius: "50%", background: p.color }} />
-            <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.headline}</span>
-          </span>
-        ))}
-      </div>
-    </Link>
-  );
-}
-
 // ─── Timeline pieces (calendar blocks + to-dos inside the TODAY card) ─────────
 
 type CalData = { date: string; configured: boolean; blocks: (CalBlock & { ticked: boolean })[] };
@@ -341,11 +313,21 @@ function useCalendarDay(today: string) {
 /** A calendar block: tick = "I was productive in this block". */
 function CalRow({ b, onTick }: { b: CalBlock & { ticked: boolean }; onTick: () => void }) {
   const work = b.source === "work";
+  const [celebrating, setCelebrating] = useState(false);
+  const tick = () => {
+    if (celebrating) return;
+    if (b.ticked) { onTick(); return; }
+    setCelebrating(true);
+    playDoneSound();
+    window.setTimeout(() => { setCelebrating(false); onTick(); }, 700);
+  };
+  const showTicked = b.ticked || celebrating;
   return (
     <div className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 52, padding: "8px 4px", borderBottom: "1px solid var(--line)", opacity: b.ticked ? 0.55 : 1 }}>
-      <button onClick={onTick} aria-pressed={b.ticked} aria-label={b.ticked ? "Mark block not done" : "Mark block productive"}
-        style={{ width: 28, height: 28, borderRadius: 9, border: `2px solid ${b.ticked ? "transparent" : "var(--line-strong)"}`, background: b.ticked ? "var(--cyan)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-        {b.ticked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+      <button onClick={tick} aria-pressed={showTicked} aria-label={b.ticked ? "Mark block not done" : "Mark block productive"} className={celebrating ? "cc-done-pop" : undefined}
+        style={{ position: "relative", width: 28, height: 28, borderRadius: 9, border: `2px solid ${showTicked ? "transparent" : "var(--line-strong)"}`, background: showTicked ? "var(--cyan)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        {showTicked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+        {celebrating && <span className="cc-done-ring" />}
       </button>
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: b.ticked ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -553,9 +535,10 @@ export default function TodayPage() {
 
       {/* HEADLINES · compact strip, full news lives in the tab */}
       {part === "morning" && <MorningCard today={today} />}
-      {part === "morning" && <PodcastCard today={today} />}
 
-      <HeadlinesCard today={today} />
+      {/* The podcast replaced the headlines strip (2026-09-09) · it stays until listened,
+          then Today is just the checklist and the day's to-dos. Full news lives on /news. */}
+      <PodcastCard today={today} hideWhenHeard />
 
       {/* TODAY · one timeline: checklist + calendar blocks + to-dos */}
       <Card
