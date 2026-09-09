@@ -20,9 +20,12 @@ import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
 
-const VOICE = "en-US-AndrewMultilingualNeural";
+// Brian: calm, low-key, sincere · early-morning listenable but still a serious news read.
+const VOICE = "en-US-BrianMultilingualNeural";
 const MAX_ATTEMPTS = 8;
 const RETRY_SPACING_MS = 10 * 60 * 1000;
+
+export type Chapter = { title: string; startSec: number };
 
 export type Episode = {
   date: string;
@@ -30,8 +33,14 @@ export type Episode = {
   script: string | null;
   audioUrl: string | null;
   attempts: number;
+  chapters: Chapter[];
+  durationSec: number | null;
   /** transient · last failure reason, for diagnostics only */
   lastError?: string;
+};
+
+const parseChaptersJson = (json: string | null): Chapter[] => {
+  try { const v = JSON.parse(json ?? "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
 };
 
 const rowToEpisode = (r: typeof podcastEpisodes.$inferSelect): Episode => ({
@@ -40,6 +49,8 @@ const rowToEpisode = (r: typeof podcastEpisodes.$inferSelect): Episode => ({
   script: r.script,
   audioUrl: r.audioUrl,
   attempts: r.attempts,
+  chapters: parseChaptersJson(r.chapters),
+  durationSec: r.durationSec ?? null,
 });
 
 export async function todaysEpisode(userId: string): Promise<Episode | null> {
@@ -48,40 +59,51 @@ export async function todaysEpisode(userId: string): Promise<Episode | null> {
   const [row] = await db.select({
     date: podcastEpisodes.date, status: podcastEpisodes.status, script: podcastEpisodes.script,
     audioUrl: podcastEpisodes.audioUrl, attempts: podcastEpisodes.attempts,
+    chapters: podcastEpisodes.chapters, durationSec: podcastEpisodes.durationSec,
   }).from(podcastEpisodes)
     .where(and(eq(podcastEpisodes.userId, userId), eq(podcastEpisodes.date, date)));
   if (!row) return null;
-  return { date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts };
+  return { date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts, chapters: parseChaptersJson(row.chapters), durationSec: row.durationSec ?? null };
 }
 
-/** The one Haiku call of the day: brief → spoken script. */
+/** The one Haiku call of the day: brief → spoken script, split into titled chapters. */
 async function writeScript(brief: NewsBrief, date: string): Promise<string | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
+  const now = Date.now();
+  const age = (iso?: string) => {
+    if (!iso) return "publish time unknown";
+    const h = Math.round((now - Date.parse(iso)) / 3600_000);
+    return h <= 1 ? "published within the last hour" : h < 24 ? `published ${h} hours ago` : `published ${Math.round(h / 24)} day(s) ago`;
+  };
   const stories = [...brief.stories]
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || (b.score ?? 0) - (a.score ?? 0))
     .slice(0, 16)
-    .map((s) => `[${s.category}${s.featured ? " · featured" : ""}] ${s.headline}\n${s.summary}\n${(s.keyPoints ?? []).join(" · ")}`)
+    .map((s) => `[${s.category}${s.featured ? " · featured" : ""} · ${age(s.publishedAt)}] ${s.headline}\n${s.summary}\n${(s.keyPoints ?? []).join(" · ")}`)
     .join("\n\n");
 
   const day = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date(`${date}T12:00:00Z`));
 
-  const prompt = `You write Ali's private morning news podcast. He listens over breakfast, alone, on his phone.
+  const prompt = `You write Ali's private morning news podcast. He listens over breakfast at about 07:30 Madrid time, before a day of sales calls. Calm, precise, zero fluff.
 
-ABOUT ALI (weave this in naturally, never as a list): lives on Madrid time; mornings start with a 12-minute stretch routine and Wim Hof breathing; trains with a 12 kg kettlebell several days a week; runs easypeasy, a company teaching languages, with sales calls starting 8:30; follows Real Madrid and the Morocco national team closely; deep into AI and tech, also geopolitics and business.
+ABOUT ALI (weave in naturally when a story has a real angle for him): runs easypeasy, a company teaching languages; deep into AI and tech; follows business and geopolitics; follows Real Madrid and the Morocco national team.
 
-TODAY: ${day}.
+TODAY: ${day} morning. Every story below carries its publish age.
 
-WRITE A SPOKEN SCRIPT covering ALL the main stories below, in this shape:
-- Cold open: one warm line, date, straight in. No "welcome to the show" boilerplate.
-- Stories grouped naturally (football together, then tech/AI, then geopolitics/business). Featured stories get the most depth.
-- Per story: what happened, why it matters to Ali specifically when there's a real angle, one wry observation where it's earned. A story worth 20 seconds gets 20 seconds.
-- Sign-off: one short line sending him into his day.
+ACCURACY — ABSOLUTE RULES:
+- Never present something that already happened as upcoming. If a story previews an event whose date/time has already passed by this morning, either skip it or, if another story carries the outcome, report the outcome.
+- Never guess results or facts not in the stories. If the stories don't say who won, do not say who won.
 
-HARD RULES:
-- 900 to 1400 words. The length must come from covering more stories, never from padding. No filler phrases ("it's worth noting", "in other news", "interestingly"), no throat-clearing, no recaps.
-- Warm, dry-witted, likeable. A sharp friend who read everything, not a news anchor.
-- Plain spoken English, short sentences. Numbers written for the ear (say "two billion", not "2B").
-- Output ONLY the script text. No headings, no markdown, no stage directions.
+STRUCTURE — output as chapters, each starting with a line "### <short chapter title>" (2-4 words):
+- "### Top story" · the single most important non-football story, opened with one calm good-morning line and the date. 40-60 seconds.
+- Then 3-5 chapters covering business, AI/tech, geopolitics and anything else important. Group related stories. This is the body: roughly four minutes ALL TOGETHER.
+- "### Football" · LAST chapter, about 30 seconds only: Real Madrid and Morocco essentials, results and confirmed news only.
+- End the football chapter with one short send-off line into his day.
+
+LENGTH — HARD CAP: 700 words total (about 5 minutes spoken). Aim 600-700. The way to use the budget is more stories told tightly, never one story padded. No filler phrases, no "it's worth noting", no throat-clearing, no recaps, no headlines-style teasers.
+
+TONE: calm and steady for early morning, but serious - he is genuinely listening for the news. Dry warmth allowed, jokes rationed.
+
+Plain spoken English, short sentences, numbers written for the ear. Output ONLY the chapter lines and script text. No markdown besides the ### chapter lines, no stage directions.
 
 THE STORIES:
 ${stories}`;
@@ -91,7 +113,7 @@ ${stories}`;
     const client = new Anthropic();
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 3000,
+      max_tokens: 2200,
       messages: [{ role: "user", content: prompt }],
     });
     const text = (message.content[0] as { type: string; text: string }).text?.trim();
@@ -131,16 +153,23 @@ async function synthesizePiece(text: string): Promise<Buffer> {
   return buf;
 }
 
-/**
- * Script → MP3 via the free Microsoft neural voice. The service never finishes one
- * long request, so the script is synthesized in ~1200-char sentence chunks and the
- * MP3 frames concatenated (same codec/bitrate throughout · players handle it).
- */
-async function synthesize(script: string): Promise<Buffer> {
-  const pieces = splitScript(script);
+/** The script's "### Title" lines split it into chapters; the titles are never spoken. */
+function parseScriptChapters(script: string): { title: string; text: string }[] {
+  const parts = script.split(/^###\s*(.+)$/m);
+  // parts = [preamble, title1, text1, title2, text2, ...]
+  const out: { title: string; text: string }[] = [];
+  if (parts[0].trim()) out.push({ title: "Morning brief", text: parts[0].trim() });
+  for (let i = 1; i < parts.length - 1; i += 2) {
+    const text = (parts[i + 1] ?? "").trim();
+    if (text) out.push({ title: parts[i].trim().slice(0, 40), text });
+  }
+  return out.length ? out : [{ title: "Morning brief", text: script.trim() }];
+}
+
+/** ~400-char pieces, 3 workers, one retry each (the service drops long/occasional streams). */
+async function synthesizeText(text: string): Promise<Buffer> {
+  const pieces = splitScript(text);
   const buffers: Buffer[] = new Array(pieces.length);
-  // Three at a time, one retry each · the service reliably finishes ~400-char pieces
-  // but sometimes drops a stream; a retry almost always lands.
   let i = 0;
   const worker = async () => {
     while (i < pieces.length) {
@@ -150,9 +179,30 @@ async function synthesize(script: string): Promise<Buffer> {
     }
   };
   await Promise.all([worker(), worker(), worker()]);
-  const buf = Buffer.concat(buffers);
-  if (buf.length < 50_000) throw new Error(`suspiciously small audio (${buf.length} bytes)`);
-  return buf;
+  return Buffer.concat(buffers);
+}
+
+const CBR_BYTES_PER_SEC = 6000; // 48 kbps constant-bitrate mono
+
+/**
+ * Script → MP3 + chapter start times. Each chapter is synthesized separately and the
+ * constant bitrate makes byte offsets map linearly to seconds, so chapter markers
+ * are exact without any audio analysis.
+ */
+async function synthesize(script: string): Promise<{ audio: Buffer; chapters: Chapter[]; durationSec: number }> {
+  const parts = parseScriptChapters(script);
+  const buffers: Buffer[] = [];
+  const chapters: Chapter[] = [];
+  let bytes = 0;
+  for (const part of parts) {
+    chapters.push({ title: part.title, startSec: Math.round(bytes / CBR_BYTES_PER_SEC) });
+    const buf = await synthesizeText(part.text);
+    buffers.push(buf);
+    bytes += buf.length;
+  }
+  const audio = Buffer.concat(buffers);
+  if (audio.length < 50_000) throw new Error(`suspiciously small audio (${audio.length} bytes)`);
+  return { audio, chapters, durationSec: Math.round(audio.length / CBR_BYTES_PER_SEC) };
 }
 
 /**
@@ -187,7 +237,7 @@ export async function ensureTodaysPodcast(userId: string, force = false): Promis
     script = await writeScript(brief, date);
     if (!script) {
       await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
-      return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, lastError: "script generation failed" };
+      return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: "script generation failed" };
     }
     await db.update(podcastEpisodes).set({ script }).where(eq(podcastEpisodes.id, row.id));
   }
@@ -195,19 +245,19 @@ export async function ensureTodaysPodcast(userId: string, force = false): Promis
   // 2 · Voice + store. The MP3 lives base64 in the DB (Ali's Vercel Blob store is
   // suspended; ~3 MB/day in Turso is free) and is served by /api/podcast/audio.
   try {
-    const audio = await synthesize(script);
+    const { audio, chapters, durationSec } = await synthesize(script);
     const audioUrl = `/api/podcast/audio?date=${date}`;
     await db.update(podcastEpisodes)
-      .set({ status: "ready", audioUrl, audioB64: audio.toString("base64") })
+      .set({ status: "ready", audioUrl, audioB64: audio.toString("base64"), chapters: JSON.stringify(chapters), durationSec })
       .where(eq(podcastEpisodes.id, row.id));
     // Keep a week of episodes · yesterday's audio has no second life.
     try {
       const cutoff = new Date(Date.now() - 7 * 86400_000).toISOString().slice(0, 10);
       await db.update(podcastEpisodes).set({ audioB64: null }).where(lt(podcastEpisodes.date, cutoff));
     } catch { /* pruning is best-effort */ }
-    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1 };
+    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1, chapters, durationSec };
   } catch (e) {
     await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
-    return { date, status: "failed", script, audioUrl: null, attempts: row.attempts + 1, lastError: `audio: ${String((e as Error).message).slice(0, 150)}` };
+    return { date, status: "failed", script, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: `audio: ${String((e as Error).message).slice(0, 150)}` };
   }
 }

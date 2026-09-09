@@ -31,6 +31,8 @@ async function ensureTable() {
   } catch { /* already there */ }
   try { await db.run(sql.raw(`ALTER TABLE user_settings ADD COLUMN morning_plan TEXT`)); } catch { /* already there */ }
   try { await db.run(sql.raw(`ALTER TABLE podcast_episodes ADD COLUMN audio_b64 TEXT`)); } catch { /* already there */ }
+  try { await db.run(sql.raw(`ALTER TABLE podcast_episodes ADD COLUMN chapters TEXT`)); } catch { /* already there */ }
+  try { await db.run(sql.raw(`ALTER TABLE podcast_episodes ADD COLUMN duration_sec INTEGER`)); } catch { /* already there */ }
 }
 
 const CRON_KEY = "a019090fd3263431b3f1b99f0b1e1884";

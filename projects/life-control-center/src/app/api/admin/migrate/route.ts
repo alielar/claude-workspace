@@ -176,6 +176,8 @@ export async function POST() {
     )`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_podcast_episode ON podcast_episodes(user_id, date)`,
     `ALTER TABLE podcast_episodes ADD COLUMN audio_b64 TEXT`,
+    `ALTER TABLE podcast_episodes ADD COLUMN chapters TEXT`,
+    `ALTER TABLE podcast_episodes ADD COLUMN duration_sec INTEGER`,
 
     // ── Stretch routine replaced 2026-09-08 (20 moves / 4 blocks) · refresh the stale note ──
     `UPDATE checklist_items SET notes = '20 moves · 4 blocks · 12 minutes, continuous'
