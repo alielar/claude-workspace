@@ -209,10 +209,20 @@ async function synthesize(script: string): Promise<{ audio: Buffer; chapters: Ch
  * Generate (or finish generating) today's episode. Idempotent; safe to call from
  * the cron, the reminders tick and the manual retry button. Returns the episode.
  */
-export async function ensureTodaysPodcast(userId: string, force = false): Promise<Episode> {
+export async function ensureTodaysPodcast(userId: string, force = false, rebuild = false): Promise<Episode> {
   const date = checklistToday();
   let [row] = await db.select().from(podcastEpisodes)
     .where(and(eq(podcastEpisodes.userId, userId), eq(podcastEpisodes.date, date)));
+
+  // rebuild (cron-only, manual) wipes today's episode and regenerates from scratch ·
+  // used when the script format or voice changes mid-day.
+  if (rebuild && row) {
+    await db.update(podcastEpisodes)
+      .set({ script: null, audioB64: null, audioUrl: null, chapters: null, durationSec: null, status: "pending" })
+      .where(eq(podcastEpisodes.id, row.id));
+    [row] = await db.select().from(podcastEpisodes)
+      .where(and(eq(podcastEpisodes.userId, userId), eq(podcastEpisodes.date, date)));
+  }
 
   if (row?.status === "ready" && row.audioUrl) return rowToEpisode(row);
   if (!force && row && row.attempts >= MAX_ATTEMPTS) return rowToEpisode(row);

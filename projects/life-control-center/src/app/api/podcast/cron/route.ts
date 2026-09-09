@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
   const keyOk = req.nextUrl.searchParams.get("key") === CRON_KEY;
   if (!bearerOk && !keyOk) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const force = req.nextUrl.searchParams.get("force") === "1";
+  const rebuild = req.nextUrl.searchParams.get("rebuild") === "1";
 
   // TEMP diagnostic: &tts_test=1 synthesizes one short line and reports the outcome.
   if (req.nextUrl.searchParams.get("tts_test") === "1") {
@@ -72,8 +73,8 @@ export async function GET(req: NextRequest) {
   const results: Record<string, string> = {};
   for (const u of allUsers) {
     try {
-      const ep = await ensureTodaysPodcast(u.id, force);
-      results[u.id] = `${ep.status}${ep.audioUrl ? " · audio ok" : ""} · attempts ${ep.attempts}${ep.lastError ? ` · ${ep.lastError}` : ""}${ep.script ? ` · script ${ep.script.length} chars` : " · no script"}`;
+      const ep = await ensureTodaysPodcast(u.id, force || rebuild, rebuild);
+      results[u.id] = `${ep.status}${ep.audioUrl ? " · audio ok" : ""} · attempts ${ep.attempts}${ep.lastError ? ` · ${ep.lastError}` : ""}${ep.script ? ` · script ${ep.script.length} chars` : " · no script"} · ${ep.chapters.length} chapters [${ep.chapters.map((c) => `${c.title}@${c.startSec}s`).join(", ")}] · ${ep.durationSec ?? "?"}s total`;
     } catch (e) {
       results[u.id] = `error: ${String((e as Error).message).slice(0, 120)}`;
     }
