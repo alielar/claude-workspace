@@ -45,7 +45,6 @@ export function PushHealth() {
       background: "var(--bg-chrome)", borderBottom: "1px solid var(--warn)",
       display: "flex", alignItems: "center", gap: 10,
     }}>
-      <span aria-hidden style={{ fontSize: 16 }}>🔕</span>
       <Link href="/settings" onClick={() => setBroken(false)} style={{ flex: 1, fontSize: 14.5, lineHeight: 1.35, color: "var(--ink)", textDecoration: "none" }}>
         Reminders stopped working on this phone · <span style={{ color: "var(--warn)", fontWeight: 600 }}>fix in Settings</span>
       </Link>

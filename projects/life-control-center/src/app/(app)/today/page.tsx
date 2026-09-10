@@ -126,7 +126,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
     const rest = item.title === "Rest day";
     return (
       <Link href="/train" className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 56, padding: "12px 4px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
-        <span aria-hidden style={{ fontSize: 22, textAlign: "center" }}>{done ? "✅" : rest ? "🛌" : "🏋️"}</span>
+        <span aria-hidden style={{ fontSize: 18, textAlign: "center", color: done ? "var(--pos)" : "var(--ink-3)" }}>{done ? "✓" : "▶"}</span>
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 500, color: done ? "var(--ink-3)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title.replace(/^Train · /, "")}</span>
           {item.notes && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{item.notes}</span>}
@@ -198,7 +198,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
             textDecorationColor: "var(--ink-4)",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
-            {item.emoji ? `${item.emoji} ` : ""}<Linkify text={item.title} />
+            <Linkify text={item.title} />
           </span>
           {notes && (
             <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
@@ -209,7 +209,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
 
         <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-3)" }}>
           {auto && <span className="cc-pill" style={{ fontSize: 13, padding: "2px 6px" }}>auto</span>}
-          {item.streak >= 2 && <span title={`${item.streak}-day streak`}>🔥 {item.streak}</span>}
+          {item.streak >= 2 && <span title={`${item.streak}-day streak`}>{item.streak}d</span>}
         </span>
       </button>
 
@@ -337,7 +337,6 @@ function CalRow({ b, onTick }: { b: CalBlock & { ticked: boolean }; onTick: () =
           {b.start}–{b.end}{work ? ` · ${b.title}` : " · personal"}
         </span>
       </span>
-      <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{work ? "🗓" : "⭐"}</span>
     </div>
   );
 }
@@ -517,7 +516,7 @@ export default function TodayPage() {
         </div>
         {data && data.overallStreak > 0 && (
           <div className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>
-            🔥 {data.overallStreak} day{data.overallStreak === 1 ? "" : "s"}
+            {data.overallStreak} day{data.overallStreak === 1 ? "" : "s"}
           </div>
         )}
       </header>

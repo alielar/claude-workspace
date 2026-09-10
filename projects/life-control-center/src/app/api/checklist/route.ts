@@ -177,7 +177,7 @@ export async function GET() {
       : restDay
         ? "Rest day"
         : `Train · ${nextKey === "w1" ? "Workout 1 (AMRAP)" : "Workout 2 (sets)"}`,
-    emoji: "🏋️",
+    emoji: null,
     sortOrder: -5,
     timeOfDay: "anytime" as TimeOfDay,
     kind: "manual" as ItemKind,

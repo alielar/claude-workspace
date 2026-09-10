@@ -68,11 +68,11 @@ export default function TrainPage() {
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {ov && ov.weekStreak > 0 && (
             <span className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }} title="weeks in a row with 4 sessions">
-              🔥 {ov.weekStreak} wk
+              {ov.weekStreak} wk
             </span>
           )}
           <Link href="/settings" className="cc-pill" style={{ textDecoration: "none", fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>
-            🏋️ {kg} kg
+            {kg} kg
           </Link>
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function TrainPage() {
 
       {restToday && (
         <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>
-          🛌 Rest day today{sched?.next ? ` · ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} is ${fmtScheduleDate(sched.next.date, today)}` : ""}. Training anyway is fine.
+          Rest day today{sched?.next ? ` · ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} is ${fmtScheduleDate(sched.next.date, today)}` : ""}. Training anyway is fine.
         </div>
       )}
 

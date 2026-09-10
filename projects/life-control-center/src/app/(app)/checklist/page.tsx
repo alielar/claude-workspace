@@ -26,7 +26,6 @@ const TIMES: { key: TimeOfDay; label: string; hint: string }[] = [
   { key: "anytime",   label: "Anytime",   hint: "" },
 ];
 
-const EMOJIS = ["🤸","🫁","💊","🌙","📚","💧","☀️","🧘","💪","🏃","🥗","☕","🦷","✍️","🧠","📝","🎯","🌿","😴","🔥","⭐","✅"];
 
 const URL_RE = /https?:\/\/\S+/;
 
@@ -56,15 +55,8 @@ function Sheet({ item, onClose, onSave, onDelete }: {
       <div role="dialog" aria-label={item ? "Edit item" : "New item"} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
         <div style={{ fontSize: 18, fontWeight: 600 }}>{item ? "Edit" : "New item"}</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "56px 1fr", gap: 10 }}>
-          <input className="cc-input" value={d.emoji} onChange={(e) => set({ emoji: [...e.target.value].slice(-1).join("") })} placeholder="" aria-label="Emoji" style={{ fontSize: 22, textAlign: "center", minHeight: 48, padding: 0 }} />
-          <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 17, minHeight: 48 }} />
-        </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {EMOJIS.map((e) => (
-            <button key={e} onClick={() => set({ emoji: e })} aria-label={e} style={{ width: 40, height: 40, borderRadius: 10, fontSize: 20, border: `1px solid ${d.emoji === e ? "var(--violet)" : "var(--line)"}`, background: d.emoji === e ? "var(--accent-soft)" : "var(--fill-1)", cursor: "pointer" }}>{e}</button>
-          ))}
-        </div>
+        {/* Emojis were removed from the whole app (Ali, 2026-09-10) · items are plain text. */}
+        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 17, minHeight: 48 }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
           {TIMES.map((t) => {
@@ -151,7 +143,7 @@ export default function ChecklistPage() {
               const link = linkOf(i);
               return (
                 <button key={i.id} onClick={() => setSheet({ open: true, item: i })} style={{ display: "grid", gridTemplateColumns: "32px 1fr auto", gap: 12, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 2px", background: "transparent", border: "none", borderBottom: idx < g.items.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-                  <span style={{ fontSize: 22, textAlign: "center" }}>{i.emoji ?? "•"}</span>
+                  <span style={{ fontSize: 18, textAlign: "center", color: "var(--ink-4)" }}>•</span>
                   <span style={{ minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 17 }}><Linkify text={i.title} /></span>
                     <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

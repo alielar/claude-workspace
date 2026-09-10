@@ -90,11 +90,11 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
   };
 
   const DIVE_SECTIONS = [
-    { key: "whatHappened", label: "What happened", icon: "📰" },
-    { key: "whyItMatters", label: "Why it matters", icon: "💡" },
-    { key: "context", label: "Context", icon: "🔗" },
-    { key: "implications", label: "Implications", icon: "🧭" },
-    { key: "whatsNext", label: "What's next", icon: "👉" },
+    { key: "whatHappened", label: "What happened" },
+    { key: "whyItMatters", label: "Why it matters" },
+    { key: "context", label: "Context" },
+    { key: "implications", label: "Implications" },
+    { key: "whatsNext", label: "What's next" },
   ] as const;
 
   return (
@@ -176,13 +176,13 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
               background: `${accentColor}06`, border: `1px solid ${accentColor}15`,
               display: "flex", flexDirection: "column", gap: 10,
             }}>
-              {DIVE_SECTIONS.map(({ key, label, icon }) => {
+              {DIVE_SECTIONS.map(({ key, label }) => {
                 const text = deepDive[key];
                 if (!text) return null;
                 return (
                   <div key={key}>
                     <div style={{ fontSize: 13, color: accentColor, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)" }}>
-                      {icon} {label}
+                      {label}
                     </div>
                     <div style={{ fontSize: 15, lineHeight: 1.6, color: "var(--ink-2)" }}>{text}</div>
                   </div>
@@ -191,7 +191,7 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
               {!!deepDive.vocabulary?.length && (
                 <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
                   <div style={{ fontSize: 13, color: accentColor, fontWeight: 600, marginBottom: 5, fontFamily: "var(--f-mono)" }}>
-                    📚 Words worth knowing
+                    Words worth knowing
                   </div>
                   <div style={{ display: "grid", gap: 4 }}>
                     {deepDive.vocabulary.map((v, i) => (
