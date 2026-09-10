@@ -355,6 +355,27 @@ Any future session picks these up from here; Ali should not have to repeat them.
    stamped by iOS — both unfixable without a native WidgetKit wrapper.
 8. **Word bank / spaced repetition revival.** Archived at `/wordbank`, restorable in one line
    (see CLAUDE.md §4).
+9. **Project rename → "ali-app" / ali-app.vercel.app (deferred 2026-09-10, Ali: significant
+   manual work on his side, not a priority).** Full audit done 2026-09-09; execute in this order
+   so nothing breaks: (1) Ali adds `ali-app.vercel.app` as an ADDITIONAL Vercel domain (old URL
+   keeps working) and adds `https://ali-app.vercel.app/api/auth/callback/google` to the Google
+   OAuth client; (2) repoint clients: `public/widget.js` BASE, the calendar-sync cloud routine's
+   prompt (trigger trig_015iKVEuyadsVXBc6mu6VPYz), cron-job.org pinger URL, then Ali reinstalls
+   the PWA from the new domain and re-enables push on phone + laptop (origin change = PWA
+   reinstall, localStorage lost, push re-subscription; server data is safe); (3) only then
+   optionally rename the Vercel project + local folder (`projects/life-control-center` → update
+   Vercel Root Directory + workspace `.vercel/project.json`) and the cosmetics (package.json
+   name, two User-Agent strings, email footer, docs). Click-by-click doc for Ali's steps to be
+   written when he says go.
+10. **Speediance Gym Monster 2 integration (waiting on Ali's input, 2026-09-10).** Research done
+   2026-09-09: no official API (Apple Health export only); active unofficial cloud CLI
+   (stozo04/speediance-cli — reads sessions, pushes programs) but Speediance has already broken
+   one such tool with security changes, so anything built on it can die without notice. Ballistic
+   kettlebell moves (swings/snatches) are physically impossible on motorized cables → keep W1/W3
+   on kettlebells, move W2-style strength to the machine. Ali is learning the machine and
+   building his own program in the Speediance app first; he comes back with what he decided.
+   Then, if wanted: phase 1 = nightly cloud routine pulling finished sessions into the app as
+   training sessions; phase 2 = pushing A/B programs to the machine.
 
 ## 7b. Stop conditions
 

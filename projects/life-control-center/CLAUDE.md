@@ -30,7 +30,8 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 ### Screens
 ```
 src/app/(app)/today       home screen — what to do right now (client, local-first)
-src/app/(app)/stretch     guided stretching timer (20 moves in 4 blocks, continuous 30/40/50s, 12:00, wake lock, voice + beeps)
+src/app/(app)/stretch     guided stretching timer (20 moves in 4 blocks, per-move 20-50s + 10s rests, 14:40, wake lock, voice + beeps)
+src/app/(app)/podcast     morning-brief full-screen player (chapters, synced captions, speed, lock-screen controls) — reached from the Today/News launcher card
 src/app/(app)/train       Train tab: next workout, weekly bests, recent · /train/w1 AMRAP · /train/w2 sets
 src/app/(app)/books       reading waiting list (Phase 4) — reached from Today's read row and Settings, not a tab
 src/app/(app)/todo        to-do list (Phase 5) — quick add with natural-language dates, intent buckets, badge
