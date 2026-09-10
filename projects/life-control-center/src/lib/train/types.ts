@@ -123,7 +123,9 @@ export const DEFAULT_WORKOUTS: TrainWorkout[] = [
     format: "amrap",
     amrapMinutes: 60,
     restSeconds: 0,
-    assignedDays: null,
+    // Saturdays (Ali, 2026-09-11) · Mon/Wed/Fri are Speediance machine days,
+    // which live as checklist rows, not Train workouts.
+    assignedDays: ["sat"],
     exercises: [
       kb("swing",          "Swings",                     5),
       kb("goblet-curl",    "Goblet squat + deep curl",   5),

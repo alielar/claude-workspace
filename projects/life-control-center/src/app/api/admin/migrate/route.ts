@@ -72,6 +72,8 @@ export async function POST() {
     // ── Checklist: routine engine (Phase 2) ─────────────────────────────────
     `ALTER TABLE checklist_items ADD COLUMN kind TEXT NOT NULL DEFAULT 'manual'`,
     `ALTER TABLE checklist_items ADD COLUMN routine_key TEXT`,
+    `ALTER TABLE checklist_items ADD COLUMN weekdays TEXT`,
+    `ALTER TABLE checklist_items ADD COLUMN start_date TEXT`,
 
     // ── Train · kettlebell era (Phase 3) ────────────────────────────────────
     `ALTER TABLE user_settings ADD COLUMN kettlebell_kg REAL NOT NULL DEFAULT 12`,

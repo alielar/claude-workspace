@@ -18,7 +18,7 @@ import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
 import { checklistToday } from "@/lib/checklist/day";
 import { ROUTINE_SEED, type ItemKind, type RoutineKey, type TimeOfDay } from "@/lib/checklist/types";
-import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK, hasSchedule, scheduledFor, nextScheduled, fmtScheduleDate } from "@/lib/train/types";
+import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK, hasSchedule, scheduledFor, nextScheduled, fmtScheduleDate, dayCode } from "@/lib/train/types";
 import { loadOrSeedWorkouts } from "@/lib/train/workoutRows";
 import { rowToSession } from "@/lib/train/rows";
 
@@ -99,6 +99,21 @@ function getThirtyDayStats(byDate: Map<string, Set<number>>, total: number, toda
   return { avg: Math.round((totalPct / 30) * 100), bestStreak: best };
 }
 
+// Self-migration (the admin migrate route needs a key the phone has to send; this
+// is the same pattern as the podcast cron's ensureTable): run the ALTERs once per
+// server instance, silently no-op when the columns already exist.
+let columnsEnsured = false;
+async function ensureColumns() {
+  if (columnsEnsured) return;
+  columnsEnsured = true;
+  const { sql } = await import("drizzle-orm");
+  try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN weekdays TEXT`)); } catch { /* already there */ }
+  try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN start_date TEXT`)); } catch { /* already there */ }
+  // KB Hour → Saturdays (Ali, 2026-09-11) · fills only an unset schedule, so a
+  // later manual change in Settings is never overwritten.
+  try { await db.run(sql.raw(`UPDATE kb_workouts SET assigned_days = '["sat"]' WHERE key = 'kb1' AND assigned_days IS NULL`)); } catch { /* table may not exist yet */ }
+}
+
 /** Insert any built-in routine step that doesn't exist yet (matched by routine_key). */
 async function seedRoutine(userId: string) {
   const existing = await db
@@ -120,6 +135,8 @@ async function seedRoutine(userId: string) {
         color: s.color,
         notes: s.notes,
         sortOrder: s.sortOrder,
+        weekdays: s.weekdays ? JSON.stringify(s.weekdays) : null,
+        startDate: s.startDate ?? null,
       });
     } catch { /* raced with another request · fine */ }
   }
@@ -135,6 +152,7 @@ export async function GET() {
 
   // The routine columns may not exist on a database that hasn't run the migration yet.
   // Seeding is best-effort; the list still loads without it.
+  try { await ensureColumns(); } catch { /* best-effort */ }
   try { await seedRoutine(userId); } catch { /* migration pending */ }
 
   const [items, allCompletions, trainRows, workouts] = await Promise.all([
@@ -200,7 +218,16 @@ export async function GET() {
     href: "/train",
   };
 
-  const enriched = items.map((item) => {
+  // Weekday-scheduled items (the machine training days) only exist on their day,
+  // and not before their start date.
+  const todayCode = dayCode(today);
+  const visible = items.filter((item) => {
+    if (item.startDate && today < item.startDate) return false;
+    if (!item.weekdays) return true;
+    try { return (JSON.parse(item.weekdays) as string[]).includes(todayCode); } catch { return true; }
+  });
+
+  const enriched = visible.map((item) => {
     const itemDates = allCompletions
       .filter((c) => c.itemId === item.id)
       .map((c) => c.date)
@@ -224,14 +251,19 @@ export async function GET() {
     };
   });
 
-  // Day-level stats: everything except habits still being built.
-  const counted = new Set(enriched.filter((i) => i.kind !== "habit").map((i) => i.id));
+  // Day-level stats: everything except habits still being built and the machine
+  // training days (gym-*) · a skipped gym morning must never break the streak.
+  const counted = new Set(enriched.filter((i) => i.kind !== "habit" && !i.routineKey?.startsWith("gym-")).map((i) => i.id));
   const byDate = groupByDate(allCompletions, counted);
   const total = counted.size;
   const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
 
+  // On a machine day the gym row IS the training row · "Rest day" would be wrong.
+  const machineToday = enriched.some((i) => i.routineKey?.startsWith("gym-") ?? false);
+  const showWorkoutRow = !(restDay && machineToday);
+
   return NextResponse.json({
-    items: [workoutRow, ...enriched],
+    items: showWorkoutRow ? [workoutRow, ...enriched] : enriched,
     overallStreak: calcOverallStreak(byDate, total, today),
     monthlyPct: getMonthlyPct(byDate, total, today),
     thirtyDayAvg,

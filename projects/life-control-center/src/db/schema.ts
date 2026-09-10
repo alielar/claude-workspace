@@ -541,8 +541,12 @@ export const checklistItems = sqliteTable("checklist_items", {
    * manual  · a regular checklist item
    */
   kind: text("kind").notNull().default("manual"),
-  /** Stable id for built-in routine steps (stretch | breathe | supp-am | supp-pm | read). */
+  /** Stable id for built-in routine steps (stretch | breathe | supp-am | supp-pm | read | gym-*). */
   routineKey: text("routine_key"),
+  /** JSON array of day codes (["mon","fri"]) · null = shown every day (2026-09-11, machine training days). */
+  weekdays: text("weekdays"),
+  /** YYYY-MM-DD · the item is hidden before this date; null = always. */
+  startDate: text("start_date"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

@@ -33,7 +33,7 @@ export async function loadOrSeedWorkouts(userId: string): Promise<TrainWorkout[]
       await db.insert(kbWorkouts).values({
         userId, key: w.key, name: w.name, format: w.format,
         amrapMinutes: w.amrapMinutes, restSeconds: w.restSeconds,
-        exercises: JSON.stringify(w.exercises), assignedDays: null,
+        exercises: JSON.stringify(w.exercises), assignedDays: w.assignedDays ? JSON.stringify(w.assignedDays) : null,
       });
     } catch { /* raced · fine */ }
   }
