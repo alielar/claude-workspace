@@ -99,7 +99,7 @@ STRUCTURE — output as chapters, each starting with a line "### <short chapter 
 - "### Football" · LAST chapter, about 30 seconds only: Real Madrid and Morocco essentials, results and confirmed news only.
 - End the football chapter with one short send-off line into his day.
 
-LENGTH — HARD CAP: 700 words total (about 5 minutes spoken). Aim 600-700. The way to use the budget is more stories told tightly, never one story padded. No filler phrases, no "it's worth noting", no throat-clearing, no recaps, no headlines-style teasers.
+LENGTH — HARD REQUIREMENT: the episode must run between 4 and 6 minutes spoken, which at this reading pace means 640-820 words total. Write inside that band. The way to use the budget is more stories told tightly, never one story padded. No filler phrases, no "it's worth noting", no throat-clearing, no recaps, no headlines-style teasers.
 
 TONE: calm and steady for early morning, but serious - he is genuinely listening for the news. Dry warmth allowed, jokes rationed.
 
@@ -118,6 +118,42 @@ ${stories}`;
     });
     const text = (message.content[0] as { type: string; text: string }).text?.trim();
     return text && text.length > 200 ? text : null;
+  } catch { return null; }
+}
+
+// ── 4-6 minute guard ─────────────────────────────────────────────────────────
+// Ali's hard rule (2026-09-10): every episode runs 4:00-6:00, never outside.
+// Enforced twice: on the script's word count BEFORE voicing (Brian reads ~145
+// words/min, so 620-850 words lands safely inside 4-6 min), and on the measured
+// audio duration after voicing, with one revise-and-revoice if it still missed.
+const MIN_WORDS = 620;
+const MAX_WORDS = 850;
+const MIN_SEC = 240;
+const MAX_SEC = 360;
+const wordCount = (s: string) => s.replace(/^###.*$/gm, "").split(/\s+/).filter(Boolean).length;
+
+/** Ask Haiku to stretch or trim an out-of-range script without touching facts or structure. */
+async function reviseScriptLength(script: string, targetWords: number): Promise<string | null> {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  const current = wordCount(script);
+  const direction = current > targetWords
+    ? "Trim it: cut the least important sentences and tighten wording. Never cut a whole chapter."
+    : "Extend it: give the existing stories more precise detail already implied by the script's facts, or split a dense sentence into two. NEVER invent facts, names, numbers or outcomes that are not already in the script.";
+  const prompt = `This podcast script is ${current} words; it must be about ${targetWords} words (hard range ${MIN_WORDS}-${MAX_WORDS}). ${direction}
+
+Keep EXACTLY the same chapter structure and "### Title" lines, the same order, the same tone, football last and short. Output only the revised script.
+
+${script}`;
+  try {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic();
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2600,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const text = (message.content[0] as { type: string; text: string }).text?.trim();
+    return text && text.length > 200 && /^###/m.test(text) ? text : null;
   } catch { return null; }
 }
 
@@ -249,13 +285,39 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
       await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
       return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: "script generation failed" };
     }
+    // 4-6 min gate, BEFORE voicing: fix an out-of-range script, up to twice.
+    for (let pass = 0; pass < 2; pass++) {
+      const words = wordCount(script);
+      if (words >= MIN_WORDS && words <= MAX_WORDS) break;
+      const revised = await reviseScriptLength(script, Math.round((MIN_WORDS + MAX_WORDS) / 2));
+      if (!revised) break; // reviser down · voice the original rather than ship nothing
+      script = revised;
+    }
     await db.update(podcastEpisodes).set({ script }).where(eq(podcastEpisodes.id, row.id));
   }
 
   // 2 · Voice + store. The MP3 lives base64 in the DB (Ali's Vercel Blob store is
   // suspended; ~3 MB/day in Turso is free) and is served by /api/podcast/audio.
   try {
-    const { audio, chapters, durationSec } = await synthesize(script);
+    let { audio, chapters, durationSec } = await synthesize(script);
+    // 4-6 min gate, AFTER voicing: the measured duration is the truth. If the
+    // word estimate missed, revise toward the right length and voice once more.
+    if (durationSec < MIN_SEC || durationSec > MAX_SEC) {
+      const targetWords = Math.min(MAX_WORDS - 30, Math.max(MIN_WORDS + 30, Math.round(wordCount(script) * (300 / durationSec))));
+      const revised = await reviseScriptLength(script, targetWords);
+      if (revised) {
+        try {
+          const second = await synthesize(revised);
+          // Keep whichever attempt is closer to the 4-6 window.
+          const miss = (s: number) => (s < MIN_SEC ? MIN_SEC - s : s > MAX_SEC ? s - MAX_SEC : 0);
+          if (miss(second.durationSec) <= miss(durationSec)) {
+            script = revised;
+            ({ audio, chapters, durationSec } = second);
+            await db.update(podcastEpisodes).set({ script }).where(eq(podcastEpisodes.id, row.id));
+          }
+        } catch { /* second voicing failed · ship the first */ }
+      }
+    }
     const audioUrl = `/api/podcast/audio?date=${date}`;
     await db.update(podcastEpisodes)
       .set({ status: "ready", audioUrl, audioB64: audio.toString("base64"), chapters: JSON.stringify(chapters), durationSec })
