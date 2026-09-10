@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { sql } from "drizzle-orm";
-import { ensureTodaysPodcast } from "@/lib/podcast/generate";
+import { ensureTodaysPodcast, todaysEpisode } from "@/lib/podcast/generate";
 
 /** The cron must never fail on a missing table (idempotent, same DDL as migrate). */
 async function ensureTable() {
@@ -78,6 +78,12 @@ export async function GET(req: NextRequest) {
     } catch (e) {
       results[u.id] = `error: ${String((e as Error).message).slice(0, 120)}`;
     }
+  }
+  // ?script=1 · echo today's script for verification (the route is already key-gated).
+  if (req.nextUrl.searchParams.get("script") === "1") {
+    const scripts: Record<string, string | null> = {};
+    for (const u of allUsers) scripts[u.id] = (await todaysEpisode(u.id))?.script ?? null;
+    return NextResponse.json({ ok: true, results, scripts });
   }
   return NextResponse.json({ ok: true, results });
 }
