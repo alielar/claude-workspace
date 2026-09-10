@@ -49,7 +49,7 @@ export async function PATCH(req: Request) {
   const userId = session.user.id;
   const body = await req.json();
   const key = body?.key;
-  if (key !== "w1" && key !== "w2" && key !== "w3") return NextResponse.json({ error: "key must be w1, w2 or w3" }, { status: 400 });
+  if (key !== "kb1" && key !== "w1" && key !== "w2" && key !== "w3") return NextResponse.json({ error: "bad workout key" }, { status: 400 });
 
   await loadOrSeed(userId);
   const updates: Partial<typeof kbWorkouts.$inferInsert> = { updatedAt: new Date() };

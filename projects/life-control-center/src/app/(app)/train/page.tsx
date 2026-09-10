@@ -2,16 +2,15 @@
 
 /**
  * /train · the Train tab.
- *   hero: the next workout (alternates W1 / W2), one big Start
- *   the other workout, one tap away
- *   weekly bests for Workout 1 (the game), number to beat
+ *   hero: the KB Hour (the one workout since 2026-09-10), one big Start
+ *   weekly bests (rounds of the KB Hour), number to beat
  *   recent sessions
  * Everything renders from the phone's copy first; works offline.
  */
 
 import Link from "next/link";
 import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrain";
-import { fmtClock, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
+import { fmtClock, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { useClientValue } from "@/lib/useClientValue";
 
@@ -33,7 +32,7 @@ function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[
         <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{when}{s.finishedAt === null ? " · not finished" : ""}</span>
       </span>
       <span style={{ fontSize: 15, color: "var(--ink-2)", textAlign: "right" }}>
-        {s.workoutKey === "w1" ? `${s.rounds ?? 0} rounds` : setsDone !== null ? `${setsDone} sets` : "…"}
+        {s.workoutKey !== "w2" ? `${s.rounds ?? 0} rounds` : setsDone !== null ? `${setsDone} sets` : "…"}
         {s.durationSeconds ? <span style={{ color: "var(--ink-4)" }}> · {fmtClock(s.durationSeconds)}</span> : null}
       </span>
     </div>
@@ -45,7 +44,7 @@ export default function TrainPage() {
   const { data: ov, loading: oLoading } = useOverview();
   const active = useClientValue(readActiveSession, null);
 
-  const nextKey: WorkoutKey = ov?.next ?? "w1";
+  const nextKey: WorkoutKey = ov?.next ?? PRIMARY_KEY;
   const next = workouts.find((w) => w.key === nextKey);
   const others = workouts.filter((w) => w.key !== nextKey);
   const kg = ov?.kettlebellKg ?? 12;
@@ -62,7 +61,7 @@ export default function TrainPage() {
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Train</h1>
           <div className="sub">
-            {ov ? `${ov.thisWeekSessions} of ${target} this week` : `${target} a week`} · {sched ? planned : "any days, alternating"}
+            {ov ? `${ov.thisWeekSessions} of ${target} this week` : `${target} a week`} · {sched ? planned : "any days"}
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -104,7 +103,7 @@ export default function TrainPage() {
       <section className="cc-card" style={{ overflow: "hidden" }}>
         <div className="cc-card-head">
           <span className="title">{sched?.next ? `Up next · ${fmtScheduleDate(sched.next.date, today)}` : "Up next"}</span>
-          <span className="tail">{ov?.toBeat && nextKey === "w1" ? `to beat: ${ov.toBeat.rounds}` : nextKey === "w1" ? "set the bar" : "checklist"}</span>
+          <span className="tail">{ov?.toBeat ? `to beat: ${ov.toBeat.rounds}` : "set the bar"}</span>
         </div>
         <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
           {loading || !next ? (
@@ -146,7 +145,7 @@ export default function TrainPage() {
       {/* Weekly bests */}
       <section className="cc-card">
         <div className="cc-card-head">
-          <span className="title">Workout 1 · weekly bests</span>
+          <span className="title">Weekly bests</span>
           <span className="tail">{ov?.thisWeekBest !== null && ov?.thisWeekBest !== undefined ? `this week: ${ov.thisWeekBest}` : ""}</span>
         </div>
         <div style={{ padding: "4px 14px" }}>

@@ -32,7 +32,7 @@ Ali's private daily dashboard, used on an **iPhone, installed as a PWA**, every 
 src/app/(app)/today       home screen — what to do right now (client, local-first)
 src/app/(app)/stretch     guided stretching timer (20 moves in 4 blocks, per-move 20-50s + 10s rests, 14:40, wake lock, voice + beeps)
 src/app/(app)/podcast     morning-brief full-screen player (chapters, synced captions, speed, lock-screen controls) — reached from the Today/News launcher card
-src/app/(app)/train       Train tab: next workout, weekly bests, recent · /train/w1 AMRAP · /train/w2 sets
+src/app/(app)/train       Train tab: ONE workout since 2026-09-10 — the KB Hour (/train/kb1, AMRAP 60 min, 13 KB moves × 5 reps) · weekly bests, recent
 src/app/(app)/books       reading waiting list (Phase 4) — reached from Today's read row and Settings, not a tab
 src/app/(app)/todo        to-do list (Phase 5) — quick add with natural-language dates, intent buckets, badge
 src/app/(app)/news        daily brief: Worth your time · Videos · by interest (client, local-first, cron-generated)
@@ -71,9 +71,9 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 
 ### Train (Phase 3 — kettlebell era)
 - Tables `kb_workouts` (two templates per user, `exercises` JSON, `assignedDays` reserved for a future fixed schedule) and `kb_sessions` (`clientId` unique → offline replays upsert). Kettlebell weight is `user_settings.kettlebell_kg` (12 → 16 later, changed in Settings).
-- `src/lib/train/types.ts` — defaults from spec §4.2, ISO-week helpers, `weeklyBests`, `numberToBeat` (last week's best, else most recent earlier week), `nextWorkoutKey` (alternate W1/W2).
+- `src/lib/train/types.ts` — one default workout (key `kb1` "KB Hour": every KB move from the old W1/W2/W3, 5 reps each, AMRAP 60), ISO-week helpers, `weeklyBests` (default key kb1), `numberToBeat`, `nextWorkoutKey` (always kb1). Old w1/w2/w3 DB rows + sessions kept for history, filtered out by `loadOrSeedWorkouts`.
 - `src/lib/train/useTrain.ts` — cached templates + overview, active session persisted in localStorage on every tap, `saveSession` through the outbox.
-- `/train` hub · `/train/w1` AMRAP game (whole middle = +1 round, 700 ms double-tap guard, undo, pace projection, record flash, no pause — it's a race) · `/train/w2` straight sets with set bubbles, sticky rest bar, inline rep/set/weight editor (`RepEditor`).
+- `/train` hub · `/train/kb1` AMRAP game (whole middle = +1 round, 700 ms double-tap guard, undo, pace projection, record flash, no pause — it's a race; `RepEditor` inline). The w1/w2/w3 pages were removed 2026-09-10.
 - Today shows a virtual "Train" row from today's `kb_sessions` (source `workout`): informational, **never counted** toward the daily streak.
 - Fixed days (opt-in, Settings → Training days): `kb_workouts.assignedDays` = `["mon","wed",…]`. Helpers `hasSchedule/scheduledFor/nextScheduled` in `types.ts`; `loadOrSeedWorkouts` in `src/lib/train/workoutRows.ts` (server). Overview carries `target` + `schedule`; the checklist workout row becomes "Rest day" on unplanned days.
 - Old gym system stays at `/workouts` (archive).

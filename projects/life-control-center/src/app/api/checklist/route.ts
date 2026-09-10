@@ -169,14 +169,14 @@ export async function GET() {
   const thisWeekCount = sessionsPerWeek(trainSessions).get(isoWeekKey(today)) ?? 0;
   const target = scheduled ? workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0) : SESSIONS_PER_WEEK;
   const restDay = scheduled && !todayTrain && todayKey === null;
-  const workoutName = (k: string) => (k === "w1" ? "Workout 1" : "Workout 2");
+  const workoutName = (k: string) => (k === "kb1" ? "KB Hour" : k === "w1" ? "Workout 1" : k === "w3" ? "Workout 3" : "Workout 2");
   const workoutRow = {
     id: -1,
     title: todayTrain
       ? `${workoutName(todayTrain.workoutKey)} done${todayTrain.rounds ? ` · ${todayTrain.rounds} rounds` : ""}`
       : restDay
         ? "Rest day"
-        : `Train · ${nextKey === "w1" ? "Workout 1 (AMRAP)" : "Workout 2 (sets)"}`,
+        : `Train · ${workoutName(nextKey)} (AMRAP 60)`,
     emoji: null,
     sortOrder: -5,
     timeOfDay: "anytime" as TimeOfDay,

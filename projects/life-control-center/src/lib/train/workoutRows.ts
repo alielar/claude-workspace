@@ -20,10 +20,13 @@ export function rowToWorkout(r: typeof kbWorkouts.$inferSelect): TrainWorkout {
   };
 }
 
-/** Both templates, seeding the defaults on first call. */
+/** The live templates, seeding the defaults on first call. Rows for retired keys
+ * (w1/w2/w3, replaced by the KB Hour 2026-09-10) stay in the DB for session
+ * history but are not returned or playable. */
 export async function loadOrSeedWorkouts(userId: string): Promise<TrainWorkout[]> {
   const rows = await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));
   const have = new Set(rows.map((r) => r.key));
+  const seededAll = DEFAULT_WORKOUTS.every((w) => have.has(w.key));
   for (const w of DEFAULT_WORKOUTS) {
     if (have.has(w.key)) continue;
     try {
@@ -34,6 +37,7 @@ export async function loadOrSeedWorkouts(userId: string): Promise<TrainWorkout[]
       });
     } catch { /* raced · fine */ }
   }
-  const fresh = have.size === DEFAULT_WORKOUTS.length ? rows : await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));
-  return fresh.map(rowToWorkout).sort((a, b) => (a.key < b.key ? -1 : 1));
+  const fresh = seededAll ? rows : await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));
+  const live = new Set(DEFAULT_WORKOUTS.map((w) => w.key as string));
+  return fresh.filter((r) => live.has(r.key)).map(rowToWorkout).sort((a, b) => (a.key < b.key ? -1 : 1));
 }

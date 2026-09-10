@@ -2,7 +2,10 @@
  * Train · kettlebell era. Types, defaults and pure helpers shared by API + screens.
  */
 
-export type WorkoutKey = "w1" | "w2" | "w3";
+// "kb1" (the KB Hour) is the one live workout since 2026-09-10; the old keys stay
+// in the type so session history keeps rendering.
+export type WorkoutKey = "w1" | "w2" | "w3" | "kb1";
+export const PRIMARY_KEY: WorkoutKey = "kb1";
 export type WorkoutFormat = "amrap" | "sets";
 
 export type TrainExercise = {
@@ -99,95 +102,45 @@ export function weekStreak(sessions: TrainSession[], today: string): number {
   return count;
 }
 
-// ─── Defaults (spec §4.2) ─────────────────────────────────────────────────────
+// ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const kb = (id: string, name: string, reps: number, sets = 1, perSide = true): TrainExercise =>
-  ({ id, name, reps, sets, perSide, kettlebell: true, weightKg: null, videoUrl: null });
-const db = (id: string, name: string, reps: number, sets = 3, perSide = false): TrainExercise =>
-  ({ id, name, reps, sets, perSide, kettlebell: false, weightKg: null, videoUrl: null });
+const kb = (id: string, name: string, reps: number, perSide = false): TrainExercise =>
+  ({ id, name, reps, sets: 1, perSide, kettlebell: true, weightKg: null, videoUrl: null });
 
+/**
+ * The KB Hour (2026-09-10, Ali) · the ONE workout on Train. Every kettlebell
+ * movement from the old W1 + W2 + W3, deduped (13 moves), 5 reps each (per side
+ * where marked), as many rounds as possible in 60 minutes — the same AMRAP game
+ * as the old 30-minute W1. Order alternates hinge / squat / press / pull with a
+ * lighter "breather" move every few slots; the snatches sit mid-round, warm
+ * enough to be safe, not yet grip-fried. Old w1/w2/w3 rows stay in the DB and
+ * old sessions keep their keys; only "kb1" is listed and playable.
+ */
 export const DEFAULT_WORKOUTS: TrainWorkout[] = [
   {
-    key: "w1",
-    name: "Workout 1",
+    key: "kb1",
+    name: "KB Hour",
     format: "amrap",
-    amrapMinutes: 30,
+    amrapMinutes: 60,
     restSeconds: 0,
     assignedDays: null,
     exercises: [
-      kb("snatch",   "Snatches",   5),
-      kb("thruster", "Thrusters",  5),
-      kb("highpull", "High pulls", 5),
-      kb("press",    "Presses",    5),
-      kb("swing",    "Swings",     5),
-      kb("squat",    "Squats",     5),
-    ],
-  },
-  {
-    key: "w2",
-    name: "Workout 2",
-    format: "sets",
-    amrapMinutes: null,
-    restSeconds: 90,
-    assignedDays: null,
-    exercises: [
-      { ...kb("tri-press",  "Triceps overhead press", 12, 3, false) },
-      { ...kb("halo",       "Halos",                  12, 3, false) },
-      { ...kb("pullover",   "Pullovers",              12, 3, false) },
-      { ...kb("helicopter", "Helicopters",            12, 3, false) },
-      db("incline-press", "Dumbbell incline chest press", 20, 3, false),
-      db("curl",          "Biceps curls",                12, 3, true),
-      db("wrist-curl",    "Wrist curls",                 15, 3, true),
-    ],
-  },
-  // W3 (2026-09-08) · 6-round kettlebell circuit from Ali's reel, played as the same
-  // 30-min AMRAP game (6 rounds is the reel's target, shown on the page). The reel
-  // uses 20 kg; Ali lifts his 12 kg until the movements are mastered (spec rule).
-  {
-    key: "w3",
-    name: "Workout 3 · Circuit",
-    format: "amrap",
-    amrapMinutes: 30,
-    restSeconds: 0,
-    assignedDays: null,
-    exercises: [
-      { id: "goblet-curl",    name: "Goblet squat + deep curl",    reps: 10, sets: 1, perSide: false, kettlebell: true,  weightKg: null, videoUrl: null },
-      { id: "crush-thruster", name: "Crush press hold thrusters",  reps: 10, sets: 1, perSide: false, kettlebell: true,  weightKg: null, videoUrl: null },
-      { id: "w3-swing",       name: "Swings",                      reps: 10, sets: 1, perSide: false, kettlebell: true,  weightKg: null, videoUrl: null },
-      { id: "ballistic-row",  name: "Ballistic rows",              reps: 8,  sets: 1, perSide: true,  kettlebell: true,  weightKg: null, videoUrl: null },
-      { id: "w3-pushup",      name: "Push-ups",                    reps: 10, sets: 1, perSide: false, kettlebell: false, weightKg: null, videoUrl: null },
+      kb("swing",          "Swings",                     5),
+      kb("goblet-curl",    "Goblet squat + deep curl",   5),
+      kb("press",          "Presses",                    5, true),
+      kb("ballistic-row",  "Ballistic rows",             5, true),
+      kb("thruster",       "Thrusters",                  5),
+      kb("highpull",       "High pulls",                 5),
+      kb("halo",           "Halos",                      5),
+      kb("snatch",         "Snatches",                   5, true),
+      kb("squat",          "Squats",                     5),
+      kb("pullover",       "Pullovers",                  5),
+      kb("crush-thruster", "Crush press hold thrusters", 5),
+      kb("helicopter",     "Helicopters",                5),
+      kb("tri-press",      "Triceps overhead press",     5),
     ],
   },
 ];
-
-/** W3 reference details (from the reel) · rendered on /train/w3, kept out of the DB. */
-export const W3_DETAILS = {
-  targetRounds: 6,
-  referenceWeightKg: 20,
-  weightGuide: "Beginner 8–12 kg · Intermediate 16–20 kg · Advanced 20–28 kg+. Ali: 12 kg until the movements are mastered, then increase.",
-  easier: [
-    "Complete 3–4 rounds instead of 6.",
-    "Standard overhead press instead of thrusters.",
-    "Incline or knee push-ups.",
-  ],
-  harder: [
-    "Increase the kettlebell weight.",
-    "Slow the lowering phase on goblet squats and ballistic rows.",
-    "Rest only as needed while keeping great form.",
-  ],
-  cues: [
-    ["Goblet squat + deep curl", "Squat deep, curl under control, then drive explosively through the floor."],
-    ["Crush press hold thrusters", "Crush the sides for full-body tension from start to finish."],
-    ["Swings", "Snap the hips and let the bell float."],
-    ["Ballistic rows", "Explode the weight up, then control the lowering."],
-    ["Push-ups", "Rigid from head to heel."],
-  ] as [string, string][],
-  reel: {
-    id: "workout-w3",
-    label: "W3 circuit · full reel",
-    url: "https://www.instagram.com/reel/DagDlAyBf6e/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
-  },
-};
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -223,7 +176,7 @@ export function weekLabel(week: string, todayWeek: string, prevWeek: string): st
 }
 
 /** Best AMRAP rounds per ISO week for one workout, newest first. */
-export function weeklyBests(sessions: TrainSession[], today: string, key: WorkoutKey = "w1"): WeeklyBest[] {
+export function weeklyBests(sessions: TrainSession[], today: string, key: WorkoutKey = PRIMARY_KEY): WeeklyBest[] {
   const todayWeek = isoWeekKey(today);
   const prevWeek = previousWeekKey(today);
   const map = new Map<string, WeeklyBest>();
@@ -290,13 +243,9 @@ export function fmtScheduleDate(ymd: string, today: string): string {
   return new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(new Date(ymd + "T12:00:00Z"));
 }
 
-/** Alternate W1 / W2 based on the last finished session. W1 first.
- * W3 (the 6-round circuit) is an extra option, not part of the rotation ·
- * after a W3 day the rotation resumes at W1. */
-export function nextWorkoutKey(sessions: TrainSession[]): WorkoutKey {
-  const last = sessions.find((s) => s.finishedAt !== null);
-  if (!last) return "w1";
-  return last.workoutKey === "w1" ? "w2" : "w1";
+/** One workout since 2026-09-10: the next session is always the KB Hour. */
+export function nextWorkoutKey(_sessions: TrainSession[]): WorkoutKey {
+  return PRIMARY_KEY;
 }
 
 export function fmtClock(totalSeconds: number): string {

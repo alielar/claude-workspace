@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AmrapGame · the AMRAP race screen, shared by /train/w1 and /train/w3.
+ * AmrapGame · the AMRAP race screen (the KB Hour lives at /train/kb1).
  *
  *   - 30:00 counts down from the moment you press Start (no pause: it's a race)
  *   - the whole middle of the screen is the +1 ROUND button · one thumb, sweaty hands,
@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useOverview, useWorkouts, readActiveSession, writeActiveSession, saveSession, workoutByKey } from "@/lib/train/useTrain";
-import { newExerciseId, fmtClock, newClientId, type TrainSession } from "@/lib/train/types";
+import { newExerciseId, fmtClock, newClientId, type TrainSession, PRIMARY_KEY } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { cues } from "@/lib/routine/cues";
 import { RepEditor } from "@/components/train/RepEditor";
@@ -38,11 +38,11 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   // compute theirs from the same session history, filtered to their own key.
   const today = checklistToday();
   const ownBests = useMemo(
-    () => (ov && workoutKey !== "w1" ? weeklyBests(ov.sessions, today, workoutKey) : null),
+    () => (ov && workoutKey !== PRIMARY_KEY ? weeklyBests(ov.sessions, today, workoutKey) : null),
     [ov, workoutKey, today]);
-  const toBeatObj = workoutKey === "w1" ? ov?.toBeat ?? null : ownBests ? numberToBeat(ownBests, today) : null;
+  const toBeatObj = workoutKey === PRIMARY_KEY ? ov?.toBeat ?? null : ownBests ? numberToBeat(ownBests, today) : null;
   const toBeat = toBeatObj?.rounds ?? null;
-  const thisWeekBest = workoutKey === "w1"
+  const thisWeekBest = workoutKey === PRIMARY_KEY
     ? ov?.thisWeekBest ?? null
     : ownBests?.find((b) => b.week === isoWeekKey(today))?.best ?? null;
 
