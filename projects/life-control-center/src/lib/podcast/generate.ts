@@ -99,7 +99,7 @@ STRUCTURE — output as chapters, each starting with a line "### <short chapter 
 - "### Football" · LAST chapter, about 30 seconds only: Real Madrid and Morocco essentials, results and confirmed news only.
 - End the football chapter with one short send-off line into his day.
 
-LENGTH — HARD REQUIREMENT: the episode must run between 4 and 6 minutes spoken, which at this reading pace means 640-820 words total. Write inside that band. The way to use the budget is more stories told tightly, never one story padded. No filler phrases, no "it's worth noting", no throat-clearing, no recaps, no headlines-style teasers.
+LENGTH — HARD REQUIREMENT: the episode must run between 4 and 6 minutes spoken, which at this reading pace means 760-980 words total. Write inside that band. The way to use the budget is more stories told tightly, never one story padded. No filler phrases, no "it's worth noting", no throat-clearing, no recaps, no headlines-style teasers.
 
 TONE: calm and steady for early morning, but serious - he is genuinely listening for the news. Dry warmth allowed, jokes rationed.
 
@@ -123,11 +123,13 @@ ${stories}`;
 
 // ── 4-6 minute guard ─────────────────────────────────────────────────────────
 // Ali's hard rule (2026-09-10): every episode runs 4:00-6:00, never outside.
-// Enforced twice: on the script's word count BEFORE voicing (Brian reads ~145
-// words/min, so 620-850 words lands safely inside 4-6 min), and on the measured
-// audio duration after voicing, with one revise-and-revoice if it still missed.
-const MIN_WORDS = 620;
-const MAX_WORDS = 850;
+// Enforced twice: on the script's word count BEFORE voicing (Brian measures at
+// ~175 words/min on real episodes — 2026-09-10 calibration: 157 s and 229 s
+// episodes both ≈ 17.5 chars/s — so 760-1000 words lands safely inside 4-6 min),
+// and on the measured audio duration after voicing, with one revise-and-revoice
+// if it still missed.
+const MIN_WORDS = 760;
+const MAX_WORDS = 1000;
 const MIN_SEC = 240;
 const MAX_SEC = 360;
 const wordCount = (s: string) => s.replace(/^###.*$/gm, "").split(/\s+/).filter(Boolean).length;
