@@ -87,7 +87,9 @@ const FAMILY = config.widgetFamily || "";
 if (FAMILY.indexOf("accessory") === 0) {
   const lw = new ListWidget();
   lw.url = BASE + "/todo";
-  lw.addAccessoryWidgetBackground = true;
+  // No frosted box behind the widget (Ali 2026-09-10): the wallpaper shows
+  // through and iOS still renders the text in its vibrant lock-screen material.
+  lw.addAccessoryWidgetBackground = false;
   lw.refreshAfterDate = new Date(Date.now() + 10 * 60 * 1000);
   // Routine first, always: unfinished routine steps for this part of day,
   // then the most urgent to-dos — capped at 3 rows.
