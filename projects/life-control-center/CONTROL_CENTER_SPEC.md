@@ -346,6 +346,10 @@ Any future session picks these up from here; Ali should not have to repeat them.
    *notifications* wait for item 3.
 5. **Apple Watch sync — sleep and workout data.** The old Apple Shortcut posting sleep data
    was unreliable; needs a new approach (`/api/sleep/ingest` still accepts it, don't trust it).
+   **2026-09-12: Ali deleted the Shortcuts for good** and wants a direct connection instead,
+   "better than shortcuts" — research the options (Health Auto Export app → webhook, a tiny native
+   companion, or a Shortcuts automation that is actually reliable) and report cost + reliability
+   before building. Next candidate after the address move.
 6. ~~**Fixed workout day scheduling.**~~ Built 2026-08-30, **opt-in**: Settings → Training days
    (Mon–Sun per workout; a day belongs to one workout). Off = the old "4 a week, any days,
    alternating". On = Today shows the planned workout or a quiet "Rest day · next: …" row, Train
