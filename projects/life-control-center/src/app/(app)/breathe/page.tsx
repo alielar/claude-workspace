@@ -80,15 +80,28 @@ const FREQS_TRADITION: FreqOpt[] = [
 ];
 const ALL_FREQS = [...FREQS_EVIDENCE, ...FREQS_TRADITION];
 
-type BreathStyle = "waves" | "ocean" | "bowl" | "hum" | "chime" | "sweep";
+// 2026-09-12 (Ali): a real range of inhale/exhale sounds, and a "top 5" he manages
+// himself (star = favourite). Session screens show only the top 5; "All sounds"
+// opens the full list to swap favourites. Keys: cc-breathe-sound (current),
+// cc-breathe-favs (JSON array of ≤ 5 style keys).
+type BreathStyle = "waves" | "ocean" | "rain" | "wind" | "bowl" | "hum" | "chime" | "sweep" | "flute" | "strings" | "piano" | "drone";
 const STYLES: { key: BreathStyle; label: string; hint: string }[] = [
-  { key: "waves", label: "Waves", hint: "soft air swell" },
-  { key: "ocean", label: "Ocean", hint: "deep, slow surf" },
-  { key: "bowl",  label: "Bowl",  hint: "singing bowl" },
-  { key: "hum",   label: "Hum",   hint: "low voice-like tone" },
-  { key: "chime", label: "Chime", hint: "one quiet note" },
-  { key: "sweep", label: "Sweep", hint: "rising and falling tone" },
+  { key: "waves",   label: "Waves",   hint: "soft air swell" },
+  { key: "ocean",   label: "Ocean",   hint: "deep, slow surf" },
+  { key: "rain",    label: "Rain",    hint: "light rain, swells with the breath" },
+  { key: "wind",    label: "Wind",    hint: "a gust that rises and falls" },
+  { key: "bowl",    label: "Bowl",    hint: "singing bowl" },
+  { key: "hum",     label: "Hum",     hint: "low voice-like tone" },
+  { key: "chime",   label: "Chime",   hint: "one quiet note" },
+  { key: "sweep",   label: "Sweep",   hint: "rising and falling tone" },
+  { key: "flute",   label: "Flute",   hint: "breathy note with a slow waver" },
+  { key: "strings", label: "Strings", hint: "warm string pad" },
+  { key: "piano",   label: "Piano",   hint: "two soft notes, in and out" },
+  { key: "drone",   label: "Drone",   hint: "deep swell, almost felt" },
 ];
+const DEFAULT_FAVS: BreathStyle[] = ["waves", "ocean", "bowl", "hum", "chime"];
+const MAX_FAVS = 5;
+const isStyle = (k: unknown): k is BreathStyle => typeof k === "string" && STYLES.some((x) => x.key === k);
 
 type Phase = "idle" | "countdown" | "breathing" | "retention" | "recoveryIn" | "recoveryHold" | "recoveryOut" | "done";
 
@@ -221,6 +234,107 @@ class BreathSynth {
       return;
     }
 
+    if (style === "rain" || style === "wind") {
+      // Filtered noise shaped like the breath. Rain sits high and light (bandpass
+      // around 3 kHz); wind is a broad band that climbs on the inhale.
+      const buf = this.noise(); if (!buf) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.Q.value = style === "rain" ? 0.7 : 1.4;
+      const [lo, hi] = style === "rain" ? [2600, 3400] : [300, 1400];
+      const peak = (style === "rain" ? 0.07 : 0.09) * vol;
+      const gain = ctx.createGain();
+      if (kind === "in") {
+        filter.frequency.setValueAtTime(lo, t); filter.frequency.linearRampToValueAtTime(hi, t + dur);
+        gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(peak, t + dur * 0.75); gain.gain.linearRampToValueAtTime(0.001, t + dur);
+      } else {
+        filter.frequency.setValueAtTime(hi, t); filter.frequency.linearRampToValueAtTime(lo, t + dur);
+        gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(peak * 0.85, t + dur * 0.2); gain.gain.linearRampToValueAtTime(0.001, t + dur);
+      }
+      src.connect(filter).connect(gain).connect(out);
+      src.start(t); src.stop(t + dur + 0.05);
+      return;
+    }
+
+    if (style === "flute") {
+      // Breathy note: sine + faint 2nd harmonic, slow vibrato, a whisper of air.
+      const base = kind === "in" ? 523.3 : 392;      // C5 in · G4 out
+      const vib = ctx.createOscillator(); const vibGain = ctx.createGain();
+      vib.frequency.value = 4.5; vibGain.gain.value = 3;
+      vib.connect(vibGain);
+      for (const [mult, amp] of [[1, 0.11], [2, 0.03]] as const) {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = "sine"; osc.frequency.value = base * mult;
+        vibGain.connect(osc.frequency);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(amp * vol, t + Math.min(0.5, dur * 0.3));
+        gain.gain.setValueAtTime(amp * vol, t + dur - Math.min(0.4, dur * 0.2));
+        gain.gain.linearRampToValueAtTime(0, t + dur);
+        osc.connect(gain).connect(out); osc.start(t); osc.stop(t + dur + 0.05);
+      }
+      vib.start(t); vib.stop(t + dur + 0.05);
+      const buf = this.noise();
+      if (buf) {
+        const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+        const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = base * 2; f.Q.value = 6;
+        const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.02 * vol, t + 0.3); g.gain.linearRampToValueAtTime(0, t + dur);
+        src.connect(f).connect(g).connect(out); src.start(t); src.stop(t + dur + 0.05);
+      }
+      return;
+    }
+
+    if (style === "strings") {
+      // Warm pad: three slightly detuned sawtooths through a soft lowpass, slow swell.
+      const base = kind === "in" ? 220 : 164.8;      // A3 in · E3 out
+      const filter = ctx.createBiquadFilter(); filter.type = "lowpass"; filter.Q.value = 0.5;
+      filter.frequency.setValueAtTime(kind === "in" ? 500 : 1400, t);
+      filter.frequency.linearRampToValueAtTime(kind === "in" ? 1400 : 500, t + dur);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.06 * vol, t + dur * 0.45);
+      gain.gain.setValueAtTime(0.06 * vol, t + dur * 0.75);
+      gain.gain.linearRampToValueAtTime(0, t + dur);
+      for (const det of [-4, 0, 5]) {
+        const osc = ctx.createOscillator(); osc.type = "sawtooth"; osc.frequency.value = base; osc.detune.value = det;
+        osc.connect(filter); osc.start(t); osc.stop(t + dur + 0.05);
+      }
+      filter.connect(gain).connect(out);
+      return;
+    }
+
+    if (style === "piano") {
+      // Two soft piano-like notes: struck at the phase start, ringing through it.
+      const notes = kind === "in" ? [261.6, 392] : [329.6, 196];   // C4+G4 in · E4+G3 out
+      notes.forEach((f, i) => {
+        const at = t + i * 0.18;
+        for (const [mult, amp] of [[1, 0.12], [2, 0.04], [3, 0.015]] as const) {
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.value = f * mult;
+          gain.gain.setValueAtTime(0, at);
+          gain.gain.linearRampToValueAtTime(amp * vol, at + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, at + Math.max(0.8, dur));
+          osc.connect(gain).connect(out); osc.start(at); osc.stop(at + Math.max(0.8, dur) + 0.05);
+        }
+      });
+      return;
+    }
+
+    if (style === "drone") {
+      // Deep swell you feel more than hear: two low sines a fifth apart.
+      const base = kind === "in" ? 82.4 : 65.4;      // E2 in · C2 out
+      for (const [mult, amp] of [[1, 0.2], [1.5, 0.08], [2, 0.04]] as const) {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = "sine"; osc.frequency.value = base * mult;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(amp * vol, t + dur * (kind === "in" ? 0.7 : 0.25));
+        gain.gain.linearRampToValueAtTime(0, t + dur);
+        osc.connect(gain).connect(out); osc.start(t); osc.stop(t + dur + 0.05);
+      }
+      return;
+    }
+
     // sweep
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -340,14 +454,69 @@ async function completeBreatheItem() {
   } catch { /* replayed later */ }
 }
 
+/** The "top 5" favourites · shared by every screen (localStorage cc-breathe-favs). */
+function useSoundFavs() {
+  const [favs, setFavs] = useState<BreathStyle[]>(DEFAULT_FAVS);
+  useEffect(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem("cc-breathe-favs") ?? "null");
+      if (Array.isArray(raw)) { const ok = raw.filter(isStyle).slice(0, MAX_FAVS); if (ok.length) setFavs(ok); }
+    } catch { /* ignore */ }
+  }, []);
+  const save = (next: BreathStyle[]) => { setFavs(next); try { localStorage.setItem("cc-breathe-favs", JSON.stringify(next)); } catch { /* ignore */ } };
+  const toggleFav = (k: BreathStyle) => {
+    if (favs.includes(k)) { if (favs.length > 1) save(favs.filter((x) => x !== k)); return; }
+    if (favs.length >= MAX_FAVS) return; // full · remove one first (the UI says so)
+    save([...favs, k]);
+  };
+  return { favs, toggleFav, full: favs.length >= MAX_FAVS };
+}
+
+/**
+ * Sound chips. Default: only the top 5, one tap = pick + hear one breath.
+ * "All sounds" unfolds the full list where ★ adds/removes a favourite.
+ */
+function SoundPicker({ style, onPick, chip }: { style: BreathStyle; onPick: (s: BreathStyle) => void; chip: (on: boolean) => React.CSSProperties }) {
+  const { favs, toggleFav, full } = useSoundFavs();
+  const [all, setAll] = useState(false);
+  const shown = all ? STYLES : STYLES.filter((s) => favs.includes(s.key) || s.key === style);
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {shown.map((s) => {
+          const fav = favs.includes(s.key);
+          return (
+            <span key={s.key} style={{ display: "inline-flex", alignItems: "stretch" }}>
+              <button onClick={() => onPick(s.key)} aria-pressed={style === s.key} style={{ ...chip(style === s.key), ...(all ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : {}) }}>
+                {s.label} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {s.hint}</span>
+              </button>
+              {all && (
+                <button onClick={() => toggleFav(s.key)} aria-pressed={fav} aria-label={fav ? `Remove ${s.label} from top 5` : `Add ${s.label} to top 5`}
+                  title={!fav && full ? "Top 5 is full · remove one first" : undefined}
+                  style={{ minWidth: 44, minHeight: 44, borderRadius: "0 10px 10px 0", border: "1px solid var(--line-hi)", borderLeft: "none", background: fav ? "var(--accent-soft)" : "var(--fill-1)", color: fav ? "var(--violet)" : !fav && full ? "var(--ink-4)" : "var(--ink-3)", font: "inherit", fontSize: 16, cursor: "pointer" }}>
+                  {fav ? "★" : "☆"}
+                </button>
+              )}
+            </span>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-4)" }}>
+        <span>{all ? `★ = in your top 5 (${favs.length}/${MAX_FAVS})${full ? " · full, remove one to add another" : ""}` : "Your top 5 · tap to hear one breath"}</span>
+        <button onClick={() => setAll((v) => !v)} style={{ background: "none", border: "none", color: "var(--violet)", font: "inherit", fontSize: 13, cursor: "pointer", padding: "6px 0", minHeight: 32, whiteSpace: "nowrap" }}>{all ? "Done" : "All sounds ›"}</button>
+      </div>
+    </div>
+  );
+}
+
 /** Breath-cue style + volume, shared by every player (same localStorage keys). */
 function useSoundPrefs() {
   const [style, setStyle] = useState<BreathStyle>("waves");
   const [vol, setVol] = useState(50);
   useEffect(() => {
     try {
-      const s = localStorage.getItem("cc-breathe-sound") as BreathStyle | null;
-      if (s && STYLES.some((x) => x.key === s)) setStyle(s);
+      const s = localStorage.getItem("cc-breathe-sound");
+      if (isStyle(s)) setStyle(s);
       const v = Number(localStorage.getItem("cc-breathe-vol"));
       if (Number.isFinite(v) && v >= 0 && v <= 100 && localStorage.getItem("cc-breathe-vol") !== null) setVol(v);
     } catch { /* ignore */ }
@@ -583,13 +752,7 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Breath sound</span><span className="tail">{STYLES.find((s) => s.key === style)?.label}</span></div>
           <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {STYLES.map((s) => (
-                <button key={s.key} onClick={() => pickStyle(s.key)} aria-pressed={style === s.key} style={chip(style === s.key)}>
-                  {s.label} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {s.hint}</span>
-                </button>
-              ))}
-            </div>
+            <SoundPicker style={style} onPick={pickStyle} chip={chip} />
             <label style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
               Volume · {vol}%
               <input type="range" min={0} max={100} step={5} value={vol}
@@ -597,7 +760,6 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
                 onPointerUp={() => pickStyle(style)}
                 style={{ width: "100%", accentColor: "var(--violet)", minHeight: 32 }} />
             </label>
-            <div style={{ fontSize: 13, color: "var(--ink-4)" }}>Tap a style to hear one breath at this volume.</div>
           </div>
         </section>
 
@@ -938,11 +1100,7 @@ function TechniqueScreen({ t, onBack }: { t: Technique; onBack: () => void }) {
       <section className="cc-card">
         <div className="cc-card-head"><span className="title">Breath sound</span><span className="tail">{STYLES.find((s) => s.key === style)?.label} · {vol}%</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {STYLES.map((s) => (
-              <button key={s.key} onClick={() => { pickStyle(s.key); synth.arm(); synth.breath("in", s.key, 1100, vol / 100); }} aria-pressed={style === s.key} style={chip(style === s.key)}>{s.label}</button>
-            ))}
-          </div>
+          <SoundPicker style={style} onPick={(k) => { pickStyle(k); synth.arm(); synth.breath("in", k, 1100, vol / 100); }} chip={chip} />
           <input type="range" min={0} max={100} step={5} value={vol} onChange={(e) => pickVol(Number(e.target.value))} onPointerUp={() => { synth.arm(); synth.breath("in", style, 1100, vol / 100); }} style={{ width: "100%", accentColor: "var(--violet)", minHeight: 32 }} />
         </div>
       </section>
