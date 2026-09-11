@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { userSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { ensureSettingsColumns } from "@/lib/db/ensureColumns";
 
 const DEFAULTS = {
   timezone: "Africa/Casablanca",
@@ -21,6 +22,7 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  await ensureSettingsColumns();
 
   const [settings] = await db
     .select()
@@ -45,9 +47,10 @@ export async function PATCH(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  await ensureSettingsColumns();
 
   const body = await req.json();
-  const allowed = ["timezone", "newsTopics", "newsEmailEnabled", "newsEmailTime", "newsChannels", "calendarFeeds", "morningPlan"];
+  const allowed = ["timezone", "newsTopics", "newsEmailEnabled", "newsEmailTime", "newsChannels", "newsCustomChannels", "calendarFeeds", "morningPlan"];
   const updates: Record<string, unknown> = { updatedAt: new Date() };
 
   for (const key of allowed) {

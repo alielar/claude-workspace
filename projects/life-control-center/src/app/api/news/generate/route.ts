@@ -12,6 +12,7 @@ import { newsBriefs, userSettings } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { todayInTz } from "@/lib/utils";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
+import { ensureSettingsColumns } from "@/lib/db/ensureColumns";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -44,6 +45,7 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  await ensureSettingsColumns();
   const userId = session.user.id;
 
   const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));

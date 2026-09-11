@@ -10,13 +10,14 @@
  *  5. App: version, force-update
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
-import { useCached, fetchJson, readCache, writeCache } from "@/lib/local/store";
+import { useCached, fetchJson, readCache, writeCache, isOnline } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
-import { YT_CHANNELS } from "@/lib/news/youtube";
+import { VIDEO_CATEGORIES, allChannels, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
+import type { ChannelHit } from "@/lib/news/youtubeSearch";
 import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
@@ -28,18 +29,17 @@ type UserSettings = {
   newsEmailEnabled: boolean;
   newsEmailTime: string;
   newsChannels?: string | null;
+  newsCustomChannels?: string | null;
   kettlebellKg?: number;
   calendarFeeds?: string | null;
   morningPlan?: string | null;
 };
 
-const CHANNEL_GROUPS: { category: string; label: string }[] = [
-  { category: "football",    label: "Football" },
-  { category: "geopolitics", label: "Geopolitics" },
-  { category: "tech",        label: "Tech & AI" },
-  { category: "business",    label: "Business" },
-  { category: "tools",       label: "Claude & AI tools" },
-];
+/** Browser online/offline as an external store (search box disables itself offline). */
+function subscribeOnline(cb: () => void) {
+  window.addEventListener("online", cb); window.addEventListener("offline", cb);
+  return () => { window.removeEventListener("online", cb); window.removeEventListener("offline", cb); };
+}
 
 const KETTLEBELLS = [
   { key: "12", label: "12 kg" },
@@ -259,21 +259,62 @@ export default function SettingsPage() {
     } catch { /* keep optimistic state */ }
   };
 
-  // YouTube channels for the brief: null = all on.
+  // YouTube channels for the brief: built-ins + Ali's additions; newsChannels = enabled ids, null = all on.
+  const custom = parseCustomChannels(settings?.newsCustomChannels);
+  const channelList = allChannels(custom);
   const channels: string[] = (() => {
-    try { return settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : YT_CHANNELS.map((c) => c.id); }
-    catch { return YT_CHANNELS.map((c) => c.id); }
+    try { return settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : channelList.map((c) => c.id); }
+    catch { return channelList.map((c) => c.id); }
   })();
   const [showChannels, setShowChannels] = useState(false);
-  const toggleChannel = async (id: string) => {
+  const saveChannels = async (enabled: string[] | null, nextCustom: CustomChannel[]) => {
     if (!settings) return;
-    const next = channels.includes(id) ? channels.filter((c) => c !== id) : [...channels, id];
-    const json = JSON.stringify(next);
-    setData({ ...settings, newsChannels: json });
+    const body = { newsChannels: enabled ? JSON.stringify(enabled) : null, newsCustomChannels: JSON.stringify(nextCustom) };
+    setData({ ...settings, ...body });
     try {
-      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { newsChannels: json }, dedupeKey: "settings:newsChannels" });
+      await sendOrQueue({ url: "/api/settings", method: "PATCH", body, dedupeKey: "settings:channels" });
     } catch { /* keep optimistic state */ }
   };
+  const toggleChannel = (id: string) =>
+    saveChannels(channels.includes(id) ? channels.filter((c) => c !== id) : [...channels, id], custom);
+  const addChannel = (hit: ChannelHit, category: VideoCategory) => {
+    const entry: CustomChannel = { id: hit.id, name: hit.name, category, handle: hit.handle, subs: hit.subs };
+    const nextCustom = [...custom.filter((c) => c.id !== hit.id), entry];
+    // null = "all on" stays null (the new one is on too); an explicit list gets the new id.
+    const enabled = settings?.newsChannels ? Array.from(new Set([...channels, hit.id])) : null;
+    void saveChannels(enabled, nextCustom);
+  };
+  const removeChannel = (id: string) =>
+    saveChannels(settings?.newsChannels ? channels.filter((c) => c !== id) : null, custom.filter((c) => c.id !== id));
+
+  // Live channel search (needs a connection · offline the box is disabled, the list above still shows).
+  const online = useSyncExternalStore(subscribeOnline, isOnline, () => true);
+  const [query, setQuery] = useState("");
+  const [topic, setTopic] = useState<VideoCategory>("tech");
+  const [hits, setHits] = useState<ChannelHit[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const searchActive = query.trim().length >= 2 && online;
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2 || !online) return;
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      setSearching(true); setSearchError(null);
+      try {
+        const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const json = (await res.json()) as { hits: ChannelHit[] };
+        setHits(json.hits);
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return;
+        setHits(null); setSearchError("Could not reach YouTube. Check the connection and try again.");
+      } finally {
+        if (!ctrl.signal.aborted) setSearching(false);
+      }
+    }, 350);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [query, online]);
 
   const hardRefresh = async () => {
     try {
@@ -381,35 +422,89 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* YouTube channels */}
+      {/* YouTube channels · built-ins per topic + live search to add your own (2026-09-12) */}
       <section className="cc-card">
         <button onClick={() => setShowChannels((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showChannels ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
           <span className="title">YouTube channels in the brief</span>
-          <span className="tail">{settings ? `${channels.filter((id) => YT_CHANNELS.some((c) => c.id === id)).length} of ${YT_CHANNELS.length} on` : "…"} {showChannels ? "▴" : "▾"}</span>
+          <span className="tail">{settings ? `${channels.filter((id) => channelList.some((c) => c.id === id)).length} of ${channelList.length} on` : "…"} {showChannels ? "▴" : "▾"}</span>
         </button>
         {showChannels && (
           <div style={{ padding: "4px 14px 10px" }}>
-            {CHANNEL_GROUPS.map((g) => (
-              <div key={g.category}>
-                <div style={{ fontSize: 13, color: "var(--ink-3)", padding: "12px 2px 4px" }}>{g.label}</div>
-                {YT_CHANNELS.filter((c) => c.category === g.category).map((c) => {
-                  const on = channels.includes(c.id);
-                  return (
-                    <button key={c.id} onClick={() => toggleChannel(c.id)} disabled={!settings} role="switch" aria-checked={on}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%", minHeight: 52, padding: "6px 2px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-                      <span style={{ minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 16 }}>{c.name}</span>
-                        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{c.why}</span>
-                      </span>
-                      <span aria-hidden style={{ width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0, background: on ? "var(--violet)" : "var(--fill-3)", transition: "background 0.15s" }}>
-                        <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
-                      </span>
-                    </button>
-                  );
-                })}
+            {/* Search · add a channel to a topic */}
+            <div style={{ display: "grid", gap: 8, padding: "10px 0 6px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                <input
+                  type="search" value={query} onChange={(e) => setQuery(e.target.value)} disabled={!online || !settings}
+                  placeholder={online ? "Search YouTube channels or paste a link" : "Search needs a connection"}
+                  autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="search"
+                  style={{ minHeight: 44, fontSize: 16, padding: "0 12px", borderRadius: 10, border: "1px solid var(--line)", background: "var(--fill-1)", color: "var(--ink)", font: "inherit", minWidth: 0, width: "100%", opacity: online ? 1 : 0.6 }}
+                />
+                <select value={topic} onChange={(e) => setTopic(e.target.value as VideoCategory)} aria-label="Topic for added channels" disabled={!online || !settings}
+                  style={{ minHeight: 44, fontSize: 16, padding: "0 10px", borderRadius: 10, border: "1px solid var(--line)", background: "var(--fill-1)", color: "var(--ink)", font: "inherit", maxWidth: 150 }}>
+                  {VIDEO_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </select>
               </div>
-            ))}
-            <div style={{ fontSize: 14, color: "var(--ink-4)", padding: "10px 2px 0", lineHeight: 1.5 }}>Changes apply to the next morning&rsquo;s brief (or tap Refresh on News).</div>
+              {!online && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Offline. Your channels below still work; search comes back with the connection.</div>}
+              {searchActive && searchError && <div style={{ fontSize: 14, color: "var(--warn)" }}>{searchError}</div>}
+              {searchActive && searching && !hits && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Searching…</div>}
+              {searchActive && hits && hits.length === 0 && !searching && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>No channels found.</div>}
+              {searchActive && hits && hits.length > 0 && (
+                <div style={{ display: "grid", borderTop: "1px solid var(--line)" }}>
+                  {hits.map((h) => {
+                    const have = channelList.some((c) => c.id === h.id);
+                    return (
+                      <div key={h.id} style={{ display: "grid", gridTemplateColumns: "36px 1fr auto", gap: 10, alignItems: "center", minHeight: 52, padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- YouTube avatar, plain <img> keeps the bundle small */}
+                        {h.thumb ? <img src={h.thumb} alt="" loading="lazy" style={{ width: 36, height: 36, borderRadius: 99, background: "var(--fill-2)" }} /> : <span style={{ width: 36, height: 36, borderRadius: 99, background: "var(--fill-2)" }} />}
+                        <span style={{ minWidth: 0 }}>
+                          <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.name}</span>
+                          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[h.handle, h.subs].filter(Boolean).join(" · ") || h.about || "YouTube channel"}</span>
+                        </span>
+                        {have
+                          ? <span style={{ fontSize: 14, color: "var(--ink-4)", padding: "0 6px" }}>Added</span>
+                          : <button onClick={() => addChannel(h, topic)} style={{ minHeight: 44, padding: "0 12px", borderRadius: 10, border: "none", background: "var(--accent-soft)", color: "var(--violet)", font: "inherit", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>Add</button>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Current selection, per topic */}
+            {VIDEO_CATEGORIES.map((g) => {
+              const rows = channelList.filter((c) => c.category === g.key);
+              const onCount = rows.filter((c) => channels.includes(c.id)).length;
+              return (
+                <div key={g.key}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--ink-3)", padding: "12px 2px 4px" }}>
+                    <span>{g.label}</span><span>{onCount} of {rows.length} on</span>
+                  </div>
+                  {rows.map((c) => {
+                    const on = channels.includes(c.id);
+                    return (
+                      <div key={c.id} style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid var(--line)" }}>
+                        <button onClick={() => toggleChannel(c.id)} disabled={!settings} role="switch" aria-checked={on}
+                          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flex: 1, minWidth: 0, minHeight: 52, padding: "6px 2px", background: "transparent", border: "none", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+                          <span style={{ minWidth: 0 }}>
+                            <span style={{ display: "block", fontSize: 16 }}>{c.name}</span>
+                            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{c.why}</span>
+                          </span>
+                          <span aria-hidden style={{ width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0, background: on ? "var(--violet)" : "var(--fill-3)", transition: "background 0.15s" }}>
+                            <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+                          </span>
+                        </button>
+                        {c.custom && (
+                          <button onClick={() => removeChannel(c.id)} disabled={!settings} aria-label={`Remove ${c.name}`}
+                            style={{ minWidth: 44, padding: "0 4px 0 12px", background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>Remove</button>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {rows.length === 0 && <div style={{ fontSize: 14, color: "var(--ink-4)", padding: "6px 2px" }}>No channels yet. Search above and add one.</div>}
+                </div>
+              );
+            })}
+            <div style={{ fontSize: 14, color: "var(--ink-4)", padding: "10px 2px 0", lineHeight: 1.5 }}>Built-in channels can be switched off; channels you added can be removed. Videos update on the next News refresh.</div>
           </div>
         )}
       </section>

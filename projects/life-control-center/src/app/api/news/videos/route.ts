@@ -10,16 +10,18 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { userSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { fetchBriefVideos } from "@/lib/news/youtube";
+import { fetchBriefVideos, parseCustomChannels } from "@/lib/news/youtube";
+import { ensureSettingsColumns } from "@/lib/db/ensureColumns";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const [settings] = await db.select({ newsChannels: userSettings.newsChannels }).from(userSettings).where(eq(userSettings.userId, session.user.id)).catch(() => []);
+  await ensureSettingsColumns();
+  const [settings] = await db.select({ newsChannels: userSettings.newsChannels, newsCustomChannels: userSettings.newsCustomChannels }).from(userSettings).where(eq(userSettings.userId, session.user.id)).catch(() => []);
   let enabled: string[] | null = null;
   try { enabled = settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : null; } catch { enabled = null; }
-  const videos = await fetchBriefVideos(enabled);
+  const videos = await fetchBriefVideos(enabled, parseCustomChannels(settings?.newsCustomChannels));
   return NextResponse.json({ videos, fetchedAt: Date.now() }, { headers: { "Cache-Control": "no-store" } });
 }

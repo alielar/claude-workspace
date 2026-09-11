@@ -48,6 +48,8 @@ export const userSettings = sqliteTable("user_settings", {
   newsEmailTime: text("news_email_time").notNull().default("09:00"),
   /** Enabled YouTube channel ids for the brief as a JSON array; null = all of YT_CHANNELS. */
   newsChannels: text("news_channels"),
+  /** Channels Ali added from Settings via live YouTube search (2026-09-12), JSON array of {id,name,category,handle,subs}. */
+  newsCustomChannels: text("news_custom_channels"),
   /** Current kettlebell weight. 12 until every movement is mastered, then 16. */
   kettlebellKg: real("kettlebell_kg").notNull().default(12),
   /** Heartbeat: when /api/reminders/tick last ran · stale means the external pinger died. */

@@ -10,7 +10,41 @@ import type { NewsCategory } from "@/lib/news-brief";
 
 /** Video categories = the four news interests + "tools" (Claude / AI tooling, 2026-09-12). */
 export type VideoCategory = NewsCategory | "tools";
-export type YtChannel = { id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number };
+export type YtChannel = { id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number; custom?: boolean };
+export const VIDEO_CATEGORIES: { key: VideoCategory; label: string }[] = [
+  { key: "football",    label: "Football" },
+  { key: "geopolitics", label: "Geopolitics" },
+  { key: "tech",        label: "Tech & AI" },
+  { key: "business",    label: "Business" },
+  { key: "tools",       label: "Claude & AI tools" },
+];
+
+/**
+ * A channel Ali added himself from Settings (live YouTube search, 2026-09-12). Stored as a JSON
+ * array in `user_settings.news_custom_channels`; `news_channels` (enabled ids) covers these too.
+ */
+export type CustomChannel = { id: string; name: string; category: VideoCategory; handle?: string; subs?: string };
+
+export function parseCustomChannels(json: string | null | undefined): CustomChannel[] {
+  try {
+    const v: unknown = json ? JSON.parse(json) : [];
+    if (!Array.isArray(v)) return [];
+    const cats = new Set<string>(VIDEO_CATEGORIES.map((c) => c.key));
+    return v.filter((c): c is CustomChannel =>
+      !!c && typeof c === "object" && typeof (c as CustomChannel).id === "string" && typeof (c as CustomChannel).name === "string" && cats.has((c as CustomChannel).category));
+  } catch { return []; }
+}
+
+/** Built-in channels plus Ali's own additions (an addition that reuses a built-in id wins, so a built-in can be re-homed to another topic). */
+export function allChannels(custom: CustomChannel[] = []): YtChannel[] {
+  const own: YtChannel[] = custom.map((c) => ({
+    id: c.id, name: c.name, category: c.category, custom: true,
+    why: [c.handle, c.subs].filter(Boolean).join(" · ") || "added by you",
+    maxAgeHours: c.category === "tools" ? 240 : undefined,
+  }));
+  const ownIds = new Set(own.map((c) => c.id));
+  return [...YT_CHANNELS.filter((c) => !ownIds.has(c.id)), ...own];
+}
 
 export const YT_CHANNELS: YtChannel[] = [
   // Football · Real Madrid + tactics; the Moroccan team surfaces through keywords on all football channels
@@ -106,8 +140,8 @@ export async function fetchChannelVideos(ch: YtChannel, maxAgeHours = ch.maxAgeH
  * Up to `perCategory` fresh videos per interest across the enabled channels,
  * newest first but never two from the same channel when another has something.
  */
-export async function fetchBriefVideos(enabledIds: string[] | null, perCategory = 2): Promise<NewsVideo[]> {
-  const channels = YT_CHANNELS.filter((c) => !enabledIds || enabledIds.includes(c.id));
+export async function fetchBriefVideos(enabledIds: string[] | null, custom: CustomChannel[] = [], perCategory = 2): Promise<NewsVideo[]> {
+  const channels = allChannels(custom).filter((c) => !enabledIds || enabledIds.includes(c.id));
   const lists = await Promise.all(channels.map((c) => fetchChannelVideos(c)));
   const all = lists.flat().sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
   const picked: NewsVideo[] = [];

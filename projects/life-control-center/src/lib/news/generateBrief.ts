@@ -11,9 +11,11 @@ import { eq, and } from "drizzle-orm";
 import { generateNewsBrief, type NewsBrief } from "@/lib/news-brief";
 import { todayInTz } from "@/lib/utils";
 import { enhanceStoriesWithAI, generateDeepDives } from "@/lib/news/summarize";
-import { fetchBriefVideos } from "@/lib/news/youtube";
+import { fetchBriefVideos, parseCustomChannels } from "@/lib/news/youtube";
+import { ensureSettingsColumns } from "@/lib/db/ensureColumns";
 
 export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
+  await ensureSettingsColumns();
   const [settings] = await db
     .select()
     .from(userSettings)
@@ -33,7 +35,7 @@ export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
   // Generate (articles + YouTube videos in parallel), enhance with AI summaries + deep dives, and save
   let enabledChannels: string[] | null = null;
   try { enabledChannels = settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : null; } catch { enabledChannels = null; }
-  const [brief, videos] = await Promise.all([generateNewsBrief(today), fetchBriefVideos(enabledChannels)]);
+  const [brief, videos] = await Promise.all([generateNewsBrief(today), fetchBriefVideos(enabledChannels, parseCustomChannels(settings?.newsCustomChannels))]);
   brief.videos = videos;
   // Summaries and the deeper analysis run side by side (both read the RSS text), in small
   // concurrent batches · same number of tokens as before, a fraction of the wall time.

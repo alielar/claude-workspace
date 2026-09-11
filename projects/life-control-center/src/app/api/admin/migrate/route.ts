@@ -131,6 +131,7 @@ export async function POST() {
 
     // ── News: YouTube channel choice (Phase 6) ─────────────────────────────
     `ALTER TABLE user_settings ADD COLUMN news_channels TEXT`,
+    `ALTER TABLE user_settings ADD COLUMN news_custom_channels TEXT`,
 
     // ── To-do (Phase 5) ─────────────────────────────────────────────────────
     `CREATE TABLE IF NOT EXISTS todos (
