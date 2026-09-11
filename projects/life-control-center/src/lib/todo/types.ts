@@ -187,14 +187,36 @@ export function parseQuickAdd(input: string, today: string): QuickParse {
 
 // ─── Grouping for the list ────────────────────────────────────────────────────
 
-export type Bucket = "overdue" | "today" | "evening" | "upcoming" | "someday";
+export type Bucket = "overdue" | "today" | "evening" | "tomorrow" | "week" | "nextWeek" | "nextMonth" | "later" | "someday";
 
+/** Sunday (YYYY-MM-DD) of the week `today` falls in · weeks run Monday → Sunday. */
+export function endOfWeek(today: string): string {
+  const dow = new Date(`${today}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+  return addDays(today, (7 - dow) % 7);
+}
+
+/** Last day of NEXT calendar month, YYYY-MM-DD. */
+export function endOfNextMonth(today: string): string {
+  const d = new Date(`${today}T12:00:00Z`);
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 2, 0, 12)).toISOString().slice(0, 10);
+}
+
+/**
+ * Where a task shows on /todo. The far buckets (2026-09-11, Ali: "Upcoming" split
+ * into folded sections) graduate automatically as the date approaches:
+ * later → nextMonth → nextWeek → week → tomorrow → today.
+ */
 export function bucketOf(t: Todo, today: string, isEveningNow: boolean): Bucket {
   // No date = Someday (the "Anytime" bucket was retired 2026-08-31).
   if (t.someday || !t.dueDate) return "someday";
   if (t.dueDate < today) return "overdue";
   if (t.dueDate === today) return t.evening && !isEveningNow ? "evening" : "today";
-  return "upcoming";
+  if (t.dueDate === addDays(today, 1)) return "tomorrow";
+  const eow = endOfWeek(today);
+  if (t.dueDate <= eow) return "week";
+  if (t.dueDate <= addDays(eow, 7)) return "nextWeek";
+  if (t.dueDate <= endOfNextMonth(today)) return "nextMonth";
+  return "later";
 }
 
 export function sortTodos(a: Todo, b: Todo): number {

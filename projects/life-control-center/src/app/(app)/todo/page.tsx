@@ -4,7 +4,8 @@
  * /todo · the To-do tab (spec §4.5 + §7c item 7).
  *
  * Three segments at the top, remembered on the phone:
- *   Personal · Work · tasks: buckets (Overdue · Today · Evening · Upcoming · Anytime · Someday),
+ *   Personal · Work · tasks: buckets (Overdue · Today · Evening · Tomorrow · This week · then folded
+ *     Next week · Next month · Later · Someday),
  *     one-line quick add with natural-language dates, detail sheet, one-tap defer, swipe to delete.
  *   Docs · things to KEEP, not do (spec §7c item 7): notes and running lists.
  *     No checkboxes, no buckets, no nagging. Type a name → straight into the editor. Pin the ones
@@ -27,12 +28,18 @@ import {
 
 const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Docs" }];
 
-const BUCKETS: { key: Bucket; label: string; color: string }[] = [
-  { key: "overdue",  label: "Overdue",      color: "var(--neg)" },
-  { key: "today",    label: "Today",        color: "var(--violet)" },
-  { key: "evening",  label: "This evening", color: "var(--cyan)" },
-  { key: "upcoming", label: "Upcoming",     color: "var(--ink-2)" },
-  { key: "someday",  label: "Someday",      color: "var(--ink-3)" },
+// Far buckets are folded by default (Ali 2026-09-11: "Upcoming" was one lump);
+// a task moves up into This week → Tomorrow → Today on its own as the date nears.
+const BUCKETS: { key: Bucket; label: string; color: string; folded?: boolean; dated?: boolean }[] = [
+  { key: "overdue",   label: "Overdue",      color: "var(--neg)",    dated: true },
+  { key: "today",     label: "Today",        color: "var(--violet)" },
+  { key: "evening",   label: "This evening", color: "var(--cyan)" },
+  { key: "tomorrow",  label: "Tomorrow",     color: "var(--ink-2)" },
+  { key: "week",      label: "This week",    color: "var(--ink-2)",  dated: true },
+  { key: "nextWeek",  label: "Next week",    color: "var(--ink-3)",  dated: true, folded: true },
+  { key: "nextMonth", label: "Next month",   color: "var(--ink-3)",  dated: true, folded: true },
+  { key: "later",     label: "Later",        color: "var(--ink-3)",  dated: true, folded: true },
+  { key: "someday",   label: "Someday",      color: "var(--ink-3)" },
 ];
 
 const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)", 2: "var(--neg)" };
@@ -124,71 +131,179 @@ function useLockBodyScroll() {
 }
 
 // ─── Notes editor (tasks + lists) ─────────────────────────────────────────────
+//
+// Google-Docs feel (Ali 2026-09-11): the textarea grows with its text and never
+// scrolls inside itself; after every keystroke the caret line is scrolled into view
+// above the keyboard. Textareas expose no caret coordinates, so the caret is
+// measured with a hidden mirror element carrying the same font and width.
+// Structure: headings (# ), bullets (- ), numbers (1. ), checkboxes (- [ ] / - [x]),
+// indent/outdent · return continues a list, return on an empty item ends it.
+
+function caretLine(el: HTMLTextAreaElement): { top: number; height: number } {
+  const cs = getComputedStyle(el);
+  const m = document.createElement("div");
+  for (const prop of ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "wordSpacing", "textIndent", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "boxSizing", "width"] as const) {
+    m.style[prop] = cs[prop];
+  }
+  Object.assign(m.style, { position: "absolute", top: "0", left: "-9999px", visibility: "hidden", whiteSpace: "pre-wrap", overflowWrap: "break-word", height: "auto" });
+  m.textContent = el.value.slice(0, el.selectionStart);
+  const mark = document.createElement("span");
+  mark.textContent = "\u200b";
+  m.appendChild(mark);
+  document.body.appendChild(m);
+  const out = { top: mark.offsetTop, height: mark.offsetHeight || parseFloat(cs.lineHeight) || 24 };
+  document.body.removeChild(m);
+  return out;
+}
+
+function scrollCaretIntoView(el: HTMLTextAreaElement) {
+  const { top, height } = caretLine(el);
+  const y = el.getBoundingClientRect().top + top; // the textarea never scrolls itself
+  const vv = window.visualViewport;
+  const vTop = vv?.offsetTop ?? 0;
+  const vBottom = vTop + (vv?.height ?? window.innerHeight);
+  const margin = 72;
+  let sc: HTMLElement | null = el.parentElement;
+  while (sc && !(/(auto|scroll)/.test(getComputedStyle(sc).overflowY) && sc.scrollHeight > sc.clientHeight + 1)) sc = sc.parentElement;
+  const target = sc ?? (document.scrollingElement as HTMLElement | null);
+  if (!target) return;
+  if (y + height > vBottom - margin) target.scrollTop += y + height - (vBottom - margin);
+  else if (y < vTop + margin) target.scrollTop -= vTop + margin - y;
+}
+
+const LIST_PREFIX = /^(\s*)(- \[[ xX]\] |- |(\d+)\. )/;
 
 function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false, fill = false }: {
   value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean; fill?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  // Prefix the current line (dash / numbered list); pressing return inside a
-  // list continues it, return on an empty item ends it.
   const ref = useRef<HTMLTextAreaElement>(null);
+  const minHeight = fill ? 240 : rows * 24 + 24;
+
+  const grow = () => {
+    const el = ref.current; if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.max(minHeight, el.scrollHeight + 2)}px`;
+  };
+  const follow = () => { const el = ref.current; if (el && document.activeElement === el) scrollCaretIntoView(el); };
+  useEffect(() => { grow(); }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // The keyboard opening shrinks the visual viewport · re-check the caret then.
+    const vv = window.visualViewport; if (!vv) return;
+    vv.addEventListener("resize", follow);
+    return () => vv.removeEventListener("resize", follow);
+  }, []);
+
   const apply = (v: string, selStart: number, selEnd: number) => {
-    const scrollTop = ref.current?.scrollTop ?? 0;
     onChange(v);
-    requestAnimationFrame(() => { const el = ref.current; if (el) { el.focus(); el.setSelectionRange(selStart, selEnd); el.scrollTop = scrollTop; } });
+    requestAnimationFrame(() => {
+      const el = ref.current; if (!el) return;
+      el.focus(); el.setSelectionRange(selStart, selEnd); grow(); scrollCaretIntoView(el);
+    });
   };
   // Toolbar taps must not steal focus from the textarea · on iOS a focus change
   // closes and reopens the keyboard and the whole sheet jumps, losing the caret.
   const keepFocus = (e: React.SyntheticEvent) => e.preventDefault();
-  const prefixLine = (prefix: string) => {
+  const lineBounds = (v: string, a: number) => {
+    const ls = v.lastIndexOf("\n", a - 1) + 1;
+    const leRaw = v.indexOf("\n", a);
+    return { ls, le: leRaw === -1 ? v.length : leRaw };
+  };
+  /** Put a list/heading marker on the current line (replacing any existing marker). */
+  const setMarker = (marker: string) => {
     const el = ref.current; if (!el) return;
     const v = el.value, a = el.selectionStart;
-    const ls = v.lastIndexOf("\n", a - 1) + 1;
-    apply(v.slice(0, ls) + prefix + v.slice(ls), a + prefix.length, a + prefix.length);
+    const { ls, le } = lineBounds(v, a);
+    const line = v.slice(ls, le);
+    const m = line.match(/^(\s*)(- \[[ xX]\] |- |\d+\. |#{1,3} )?/);
+    const indent = m?.[1] ?? "", old = m?.[2] ?? "";
+    const same = old === marker;
+    const next = indent + (same ? "" : marker) + line.slice(indent.length + old.length);
+    const shift = (same ? 0 : marker.length) - old.length;
+    apply(v.slice(0, ls) + next + v.slice(le), Math.max(ls, a + shift), Math.max(ls, a + shift));
   };
-  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  /** Tick / untick the checkbox on the current line (adds one if there is none). */
+  const toggleCheck = () => {
+    const el = ref.current; if (!el) return;
+    const v = el.value, a = el.selectionStart;
+    const { ls, le } = lineBounds(v, a);
+    const line = v.slice(ls, le);
+    let next: string;
+    if (/^\s*- \[ \] /.test(line)) next = line.replace("- [ ] ", "- [x] ");
+    else if (/^\s*- \[[xX]\] /.test(line)) next = line.replace(/- \[[xX]\] /, "- [ ] ");
+    else if (/^\s*- /.test(line)) next = line.replace("- ", "- [ ] ");
+    else next = line.replace(/^(\s*)/, "$1- [ ] ");
+    const shift = next.length - line.length;
+    apply(v.slice(0, ls) + next + v.slice(le), a + shift, a + shift);
+  };
+  const indent = (dir: 1 | -1) => {
+    const el = ref.current; if (!el) return;
+    const v = el.value, a = el.selectionStart;
+    const { ls, le } = lineBounds(v, a);
+    const line = v.slice(ls, le);
+    const next = dir === 1 ? `  ${line}` : line.replace(/^ {1,2}/, "");
+    const shift = next.length - line.length;
+    apply(v.slice(0, ls) + next + v.slice(le), Math.max(ls, a + shift), Math.max(ls, a + shift));
+  };
+  const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab") { e.preventDefault(); indent(e.shiftKey ? -1 : 1); return; }
     if (e.key !== "Enter") return;
     const el = e.currentTarget, v = el.value, a = el.selectionStart;
     const ls = v.lastIndexOf("\n", a - 1) + 1;
     const line = v.slice(ls, a);
-    const m = line.match(/^(- |(\d+)\. )/);
+    const m = line.match(LIST_PREFIX);
     if (!m) return;
     e.preventDefault();
-    if (line === m[1]) { apply(v.slice(0, ls) + v.slice(a), ls, ls); return; } // empty item ends the list
-    const next = m[2] ? `${Number(m[2]) + 1}. ` : m[1];
+    if (line === m[0]) { apply(v.slice(0, ls) + v.slice(a), ls, ls); return; } // empty item ends the list
+    const marker = m[3] ? `${Number(m[3]) + 1}. ` : m[2].startsWith("- [") ? "- [ ] " : m[2];
+    const next = m[1] + marker;
     apply(v.slice(0, a) + "\n" + next + v.slice(el.selectionEnd), a + 1 + next.length, a + 1 + next.length);
   };
-  const btn: React.CSSProperties = { minWidth: 40, minHeight: 36, borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
+  const btn: React.CSSProperties = { minWidth: 38, minHeight: 36, padding: "0 6px", borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
   return (
-    <div style={fill ? { display: "flex", flexDirection: "column", gap: 6, height: "100%" } : { display: "grid", gap: 6 }}>
-      <div style={{ display: "flex", gap: 6 }} aria-label="Formatting">
-        <button type="button" title="Dash list" onMouseDown={keepFocus} onClick={() => prefixLine("- ")} style={btn}>−</button>
-        <button type="button" title="Numbered list" onMouseDown={keepFocus} onClick={() => prefixLine("1. ")} style={btn}>1.</button>
+    <div style={fill ? { display: "flex", flexDirection: "column", gap: 6 } : { display: "grid", gap: 6 }}>
+      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }} aria-label="Formatting">
+        <button type="button" title="Heading" onMouseDown={keepFocus} onClick={() => setMarker("# ")} style={{ ...btn, fontWeight: 700 }}>H</button>
+        <button type="button" title="Bullet list" onMouseDown={keepFocus} onClick={() => setMarker("- ")} style={btn}>•</button>
+        <button type="button" title="Numbered list" onMouseDown={keepFocus} onClick={() => setMarker("1. ")} style={btn}>1.</button>
+        <button type="button" title="Checklist" onMouseDown={keepFocus} onClick={() => setMarker("- [ ] ")} style={btn}>☐</button>
+        <button type="button" title="Tick / untick this line" onMouseDown={keepFocus} onClick={toggleCheck} style={btn}>✓</button>
+        <button type="button" title="Indent" onMouseDown={keepFocus} onClick={() => indent(1)} style={btn}>⇥</button>
+        <button type="button" title="Outdent" onMouseDown={keepFocus} onClick={() => indent(-1)} style={btn}>⇤</button>
         <span style={{ flex: 1 }} />
         <button type="button" title="Jump to the end" onMouseDown={keepFocus} style={btn} onClick={() => {
           const el = ref.current; if (!el) return;
-          el.focus(); const n = el.value.length; el.setSelectionRange(n, n); el.scrollTop = el.scrollHeight;
+          const n = el.value.length; apply(el.value, n, n);
         }}>⇣</button>
-        {!fill && (
-          <button type="button" title={expanded ? "Shrink" : "Expand"} onMouseDown={keepFocus} style={btn} onClick={() => {
-            setExpanded(!expanded);
-            requestAnimationFrame(() => { const el = ref.current; if (el && !expanded) { el.focus(); const n = el.value.length; el.setSelectionRange(n, n); el.scrollTop = el.scrollHeight; } });
-          }}>{expanded ? "⤡" : "⤢"}</button>
-        )}
       </div>
-      <textarea ref={ref} className="cc-input" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onEnter}
-        placeholder={placeholder} rows={rows} autoFocus={autoFocus}
-        style={fill ? { fontSize: 16, resize: "none", lineHeight: 1.5, flex: 1, minHeight: 240, width: "100%", boxSizing: "border-box" } : { fontSize: 16, resize: "vertical", lineHeight: 1.5, ...(expanded ? { minHeight: "45vh" } : {}) }} />
+      <textarea ref={ref} className="cc-input" value={value} onChange={(e) => { onChange(e.target.value); requestAnimationFrame(() => { grow(); follow(); }); }}
+        onKeyDown={onKey} onKeyUp={(e) => { if (e.key.startsWith("Arrow")) follow(); }} onClick={follow} onFocus={() => requestAnimationFrame(follow)}
+        placeholder={placeholder} rows={rows} autoFocus={autoFocus} spellCheck
+        style={{ fontSize: 16, lineHeight: 1.5, resize: "none", overflow: "hidden", minHeight, width: "100%", boxSizing: "border-box" }} />
       <LinkChips text={value} />
     </div>
   );
 }
 
+/** Notes as shown in the row preview: list markers become glyphs, nothing else changes. */
+function prettyNotes(notes: string): string {
+  return notes
+    .replace(/^(\s*)- \[ \] /gm, "$1☐ ")
+    .replace(/^(\s*)- \[[xX]\] /gm, "$1☑ ")
+    .replace(/^(\s*)- /gm, "$1• ")
+    .replace(/^#{1,3} (.*)$/gm, "$1");
+}
+
 // ─── Task row ─────────────────────────────────────────────────────────────────
 
-function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
+/** "HH:00" one hour from now (23:30 late at night) · the Later picker's starting value. */
+function nextFullHour(): string {
+  const h = new Date().getHours() + 1;
+  return h > 23 ? "23:30" : `${String(h).padStart(2, "0")}:00`;
+}
+
+function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete }: {
   t: Todo; today: string; showDate: boolean;
-  onToggle: () => void; onOpen: () => void; onDefer?: () => void; onDelete: () => void;
+  onToggle: () => void; onOpen: () => void; onDefer?: () => void; onLater?: (time: string) => void; onDelete: () => void;
 }) {
   const done = t.doneAt !== null;
   const swipe = useSwipeDelete(onDelete);
@@ -218,7 +333,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
     <div className={`todo-row${celebrating ? " cc-done-row" : ""}`} {...swipe.handlers}
-      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes ? " auto" : ""}${onDefer ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
+      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
       <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -245,13 +360,22 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onDelete }: {
           <span aria-hidden style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
         </button>
       )}
+      {onLater && !done && (
+        // "Later today" (Ali 2026-09-11): opens the native time wheel; the reminder
+        // comes back at that time, same day.
+        <label className="cc-btn cc-btn-ghost" aria-label="Later today" style={{ minHeight: 40, padding: "0 9px", fontSize: 14, borderRadius: 10, marginRight: 4, position: "relative", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
+          Later
+          <input type="time" defaultValue={nextFullHour()} onClick={openPicker} onChange={(e) => { if (e.target.value) onLater(e.target.value); }}
+            aria-label="Pick a time for later today" style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", fontSize: 17 }} />
+        </label>
+      )}
       {onDefer && !done && (
         <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
       )}
     </div>
     {peek && t.notes && (
       <div onClick={() => setPeek(false)} style={{ padding: "0 12px 12px 48px", fontSize: 14.5, lineHeight: 1.5, color: "var(--ink-2)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", background: "var(--bg-card)" }}>
-        <Linkify text={t.notes} />
+        <Linkify text={prettyNotes(t.notes)} />
       </div>
     )}
     </SwipeWrap>
@@ -292,9 +416,40 @@ const chipStyle = (on: boolean): React.CSSProperties => ({
   border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
 });
 
-const NAG_STEPS = [30, 15, 10, 5];
-const nextNag = (cur: number | null | undefined) => NAG_STEPS[(NAG_STEPS.indexOf(cur ?? 30) + 1) % NAG_STEPS.length];
-const nagChip: React.CSSProperties = { minHeight: 28, padding: "0 8px", borderRadius: 8, fontSize: 13, font: "inherit", cursor: "pointer", border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)" };
+// Reminder cadence · a real picker (Ali 2026-09-11: the tap-to-cycle chip is gone).
+// A <select> opens the same native wheel iOS uses for the date and time fields.
+const NAG_OPTIONS = [5, 10, 15, 30, 60];
+function NagSelect({ value, onChange }: { value: number | null | undefined; onChange: (m: number) => void }) {
+  const cur = value ?? 30;
+  return (
+    <select className="cc-input" value={NAG_OPTIONS.includes(cur) ? cur : 30} onChange={(e) => onChange(Number(e.target.value))} aria-label="How often it reminds until done"
+      style={{ fontSize: 15, minHeight: 36, padding: "0 8px", borderRadius: 9, width: "auto", color: "var(--ink-2)", WebkitAppearance: "menulist", appearance: "auto" }}>
+      {NAG_OPTIONS.map((m) => <option key={m} value={m}>every {m} min</option>)}
+    </select>
+  );
+}
+
+// Project · rarely used, so one quiet line (Ali 2026-09-11: it was a full-size
+// field). Tap to reveal a compact input with the known projects as suggestions.
+function ProjectField({ value, onChange, projects, listId, label = "project" }: { value: string | null | undefined; onChange: (v: string | null) => void; projects: string[]; listId: string; label?: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
+        style={{ all: "unset", cursor: "pointer", fontSize: 13.5, color: value ? "var(--ink-3)" : "var(--ink-4)", minHeight: 32, display: "flex", alignItems: "center", gap: 6 }}>
+        {value ? `#${value}` : `+ ${label}`} <span aria-hidden>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <>
+          <input className="cc-input" list={listId} value={value ?? ""} autoFocus onChange={(e) => onChange(e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null)} placeholder="none"
+            style={{ fontSize: 16, minHeight: 36, width: 150, padding: "0 10px", borderRadius: 9 }} />
+          <datalist id={listId}>{projects.map((p) => <option key={p} value={p} />)}</datalist>
+          {value && <button type="button" onClick={() => onChange(null)} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13 }}>Clear</button>}
+        </>
+      )}
+    </div>
+  );
+}
 
 // Title field that grows with its text · long titles wrap instead of hiding
 // their end behind horizontal scroll. Enter closes the keyboard.
@@ -366,24 +521,15 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           </label>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>
-            <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>Time (reminder)
-              {!!d.dueDate && !d.someday && (
-                <button type="button" onClick={(e) => { e.preventDefault(); set({ nagMinutes: nextNag(d.nagMinutes) }); }} style={nagChip} title="How often it nags until done">
-                  every {d.nagMinutes ?? 30}m
-                </button>
-              )}
-            </span>
+        <div style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>
+          <span>Time (reminder)</span>
+          <div style={{ display: "grid", gridTemplateColumns: !!d.dueDate && !d.someday ? "minmax(0, 1fr) auto" : "1fr", gap: 8, alignItems: "center" }}>
             <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onClick={openPicker} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
-            {!!d.dueDate && !d.dueTime && !d.someday && (
-              <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>no time = reminds from 9:00</span>
-            )}
-          </label>
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>Project
-            <input className="cc-input" list="todo-projects" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="none" style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box" }} />
-            <datalist id="todo-projects">{projects.map((p) => <option key={p} value={p} />)}</datalist>
-          </label>
+            {!!d.dueDate && !d.someday && <NagSelect value={d.nagMinutes} onChange={(m) => set({ nagMinutes: m })} />}
+          </div>
+          {!!d.dueDate && !d.dueTime && !d.someday && (
+            <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>no time = reminds from 9:00</span>
+          )}
         </div>
 
         {!!d.dueTime && !d.someday && (
@@ -404,6 +550,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
 
         <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
 
+        <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
         <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
@@ -522,11 +669,8 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>
           <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)} aria-pressed={remind}>Remind me</button>
-          {remind && !!d.dueDate && (
-            <button onClick={() => set({ nagMinutes: nextNag(d.nagMinutes) })} style={nagChip} title="How often it nags until done">every {d.nagMinutes ?? 30}m</button>
-          )}
-          <input className="cc-input" list="doc-tags" value={d.project ?? ""} onChange={(e) => set({ project: e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null })} placeholder="Tag" style={{ fontSize: 16, minHeight: 40, flex: 1, minWidth: 110, borderRadius: 10 }} />
-          <datalist id="doc-tags">{tags.map((p) => <option key={p} value={p} />)}</datalist>
+          {remind && !!d.dueDate && <NagSelect value={d.nagMinutes} onChange={(m) => set({ nagMinutes: m })} />}
+          <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={tags} listId="doc-tags" label="tag" />
         </div>
 
         {remind && (
@@ -576,6 +720,7 @@ export default function TodoPage() {
   const [draft, setDraft] = useState<Todo | null>(null); // new entry being composed in a sheet
   const [showDone, setShowDone] = useState(false);
   const [showVault, setShowVault] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({}); // folded far buckets, collapsed by default
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = useMemo(() => (!isLists && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists]);
@@ -700,18 +845,32 @@ export default function TodoPage() {
             </div></div>
           )}
 
-          {groups.filter((g) => g.items.length > 0).map((g) => (
-            <section key={g.key} className="cc-card">
-              <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
-              <div style={{ padding: "0 8px 0 0" }}>
-                {g.items.map((t) => (
-                  <Row key={t.clientId} t={t} today={today} showDate={g.key === "upcoming" || g.key === "overdue"}
-                    onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)}
-                    onDefer={g.key === "overdue" || g.key === "today" || g.key === "evening" ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined} />
-                ))}
-              </div>
-            </section>
-          ))}
+          {groups.filter((g) => g.items.length > 0).map((g) => {
+            const folded = !!g.folded && !openGroups[g.key];
+            const nowish = g.key === "overdue" || g.key === "today" || g.key === "evening";
+            return (
+              <section key={g.key} className="cc-card">
+                {g.folded ? (
+                  <button onClick={() => setOpenGroups((o) => ({ ...o, [g.key]: !o[g.key] }))} className="cc-card-head" aria-expanded={!folded}
+                    style={{ width: "100%", background: "transparent", border: "none", borderBottom: folded ? "none" : undefined, color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+                    <span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length} {folded ? "▾" : "▴"}</span>
+                  </button>
+                ) : (
+                  <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
+                )}
+                {!folded && (
+                  <div style={{ padding: "0 8px 0 0" }}>
+                    {g.items.map((t) => (
+                      <Row key={t.clientId} t={t} today={today} showDate={!!g.dated}
+                        onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)}
+                        onDefer={nowish ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined}
+                        onLater={nowish ? (time) => upsert({ ...t, dueDate: today, dueTime: time, evening: false }) : undefined} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })}
 
           {doneToday.length > 0 && (
             <section className="cc-card">
