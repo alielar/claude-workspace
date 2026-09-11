@@ -200,6 +200,7 @@ export const highlights = sqliteTable("highlights", {
   context: text("context").notNull(),        // "Serie A · Matchday 3"
   publishedAt: integer("published_at", { mode: "timestamp_ms" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
+  watchedAt: integer("watched_at", { mode: "timestamp_ms" }),   // set when Ali taps it (any device)
 });
 
 // ─── Push subscriptions (reminders) ──────────────────────────────────────────

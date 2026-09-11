@@ -34,10 +34,30 @@ import type { Book, BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import { PodcastCard } from "@/components/PodcastCard";
+import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import { parseMorningPlan, computeMorning } from "@/lib/morning/plan";
 import { useOverview } from "@/lib/train/useTrain";
 import { fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
 import type { CalBlock } from "@/lib/calendar/server";
+
+// ─── One highlight suggestion (News keeps the rest) ──────────────────────────
+
+function HighlightSuggestion() {
+  const { unwatched, markWatched } = useHighlights();
+  const h = unwatched[0];
+  if (!h) return null;
+  return (
+    <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => markWatched(h.videoId)} className="cc-card"
+      style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: "12px 16px", textDecoration: "none", color: "inherit" }}>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 13, color: "var(--ink-3)", marginBottom: 2 }}>Highlight to watch{unwatched.length > 1 ? ` · ${unwatched.length - 1} more on News` : ""}</span>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}</span>
+      </span>
+      <span aria-hidden style={{ width: 34, height: 34, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 14, paddingLeft: 2 }}>▶</span>
+    </a>
+  );
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -538,6 +558,9 @@ export default function TodayPage() {
       {/* The podcast replaced the headlines strip (2026-09-09) · it stays until listened,
           then Today is just the checklist and the day's to-dos. Full news lives on /news. */}
       <PodcastCard today={today} hideWhenHeard />
+
+      {/* ONE spoiler-free highlight to watch (2026-09-12) · gone once tapped, the next unwatched takes its place */}
+      <HighlightSuggestion />
 
       {/* TODAY · one timeline: checklist + calendar blocks + to-dos */}
       <Card

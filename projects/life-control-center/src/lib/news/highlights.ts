@@ -26,7 +26,7 @@
 
 import { db } from "@/db";
 import { highlights } from "@/db/schema";
-import { desc, lt, sql } from "drizzle-orm";
+import { desc, eq, lt, sql } from "drizzle-orm";
 
 export type Competition = "Champions League" | "La Liga" | "Premier League" | "Bundesliga" | "Serie A" | "Ligue 1";
 type League = "ESP" | "GER" | "ITA" | "FRA" | "ENG" | "OTHER";
@@ -38,6 +38,7 @@ export type Highlight = {
   competition: Competition;
   context: string;       // "Champions League · League phase, round 1" / "Serie A · Matchday 3"
   publishedAt: number;   // ms
+  watched?: boolean;     // Ali tapped it (stored server-side, so phone and laptop agree)
 };
 
 type Source = { id: string; channelId: string; kind: "bein" | "latin" };
@@ -398,6 +399,7 @@ async function ensureTable() {
       home TEXT NOT NULL, away TEXT NOT NULL, competition TEXT NOT NULL, context TEXT NOT NULL,
       published_at INTEGER NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`));
   } catch { /* exists */ }
+  try { await db.run(sql.raw(`ALTER TABLE highlights ADD COLUMN watched_at INTEGER`)); } catch { /* exists */ }
 }
 
 export type Candidate = Highlight & { source: string; title: string };
@@ -452,5 +454,11 @@ export async function pollHighlights(): Promise<{ added: number; seen: number; e
 
 export async function listHighlights(limit = 40): Promise<Highlight[]> {
   const rows = await db.select().from(highlights).orderBy(desc(highlights.publishedAt)).limit(limit);
-  return rows.map((r) => ({ videoId: r.videoId, home: r.home, away: r.away, competition: r.competition as Competition, context: r.context, publishedAt: r.publishedAt.getTime() }));
+  return rows.map((r) => ({ videoId: r.videoId, home: r.home, away: r.away, competition: r.competition as Competition, context: r.context, publishedAt: r.publishedAt.getTime(), watched: r.watchedAt !== null }));
+}
+
+/** Mark watched / unwatched · sends the desired final state, so outbox replays are safe. */
+export async function setWatched(videoId: string, watched: boolean): Promise<void> {
+  await ensureTable();
+  await db.update(highlights).set({ watchedAt: watched ? new Date() : null }).where(eq(highlights.videoId, videoId));
 }

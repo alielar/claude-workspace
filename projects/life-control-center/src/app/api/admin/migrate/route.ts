@@ -218,6 +218,7 @@ export async function POST() {
       published_at INTEGER NOT NULL,
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
+    `ALTER TABLE highlights ADD COLUMN watched_at INTEGER`,
     `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
