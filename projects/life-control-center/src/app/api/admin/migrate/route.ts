@@ -184,9 +184,9 @@ export async function POST() {
     // ── Stretch routine replaced 2026-09-08 (20 moves / 4 blocks) · refresh the stale note ──
     `UPDATE checklist_items SET notes = '20 moves · 4 blocks · 12 minutes, continuous'
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
-    // ── 2026-09-11: 21 moves, 14:55 ──
-    `UPDATE checklist_items SET notes = '21 moves · 4 blocks · 15 minutes, 10 s rests'
-      WHERE routine_key = 'stretch' AND notes LIKE '20 moves%'`,
+    // ── 2026-09-12: 22 moves, 14:40 · any older note text is refreshed ──
+    `UPDATE checklist_items SET notes = '22 moves · 4 blocks · 15 minutes, 10 s rests'
+      WHERE routine_key = 'stretch' AND notes NOT LIKE '22 moves%'`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────
     `ALTER TABLE user_settings ADD COLUMN calendar_feeds TEXT`,
     `CREATE TABLE IF NOT EXISTS calendar_ticks (
@@ -205,6 +205,19 @@ export async function POST() {
       fetched_at INTEGER NOT NULL
     )`,
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_calendar_cache ON calendar_cache(user_id, date)`,
+    // ── Football highlights (2026-09-12) ──
+    `CREATE TABLE IF NOT EXISTS highlights (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      video_id TEXT NOT NULL UNIQUE,
+      source TEXT NOT NULL,
+      title TEXT NOT NULL,
+      home TEXT NOT NULL,
+      away TEXT NOT NULL,
+      competition TEXT NOT NULL,
+      context TEXT NOT NULL,
+      published_at INTEGER NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )`,
     `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -3,8 +3,8 @@
 /**
  * /stretch · guided morning stretching timer.
  *
- * 21 movements in 4 blocks · per-move durations (20–50 s, deep holds get more),
- * 10 s rest between every movement, 14:55 total incl. 5 s lead-in. Full-screen while running.
+ * 22 movements in 4 blocks · per-move durations (20–50 s, deep holds get more),
+ * 10 s rest between every movement, 14:40 total incl. 5 s lead-in. Full-screen while running.
  * Time is computed from timestamps (not tick counts) so it stays correct if the
  * phone sleeps briefly or the app is backgrounded. Screen stays awake (Wake Lock),
  * every change beeps + vibrates, the movement name is spoken so it works from a pocket.
@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_TOTAL_SECONDS, buildStretchPlan, reelForMove, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_TOTAL_SECONDS, buildStretchPlan, isDefaultName, reelForMove, type StretchPhase,
 } from "@/lib/routine/stretching";
 import { ReelRow, useReelDismissals } from "@/components/ReelLink";
 import { cues } from "@/lib/routine/cues";
@@ -64,23 +64,41 @@ export default function StretchPage() {
   const [track, setTrack] = useState<string>("off");           // track slug | "off"
   const [previewing, setPreviewing] = useState<string | null>(null);
   const music = useRef<HTMLAudioElement | null>(null);
-  // Movement names are editable · overrides live on the phone (cc-stretch-names).
+  // Movement names are editable · renames live on the phone BY MOVE KEY
+  // (cc-stretch-names-v3). The older cc-stretch-names-v2 stored the whole list by
+  // position, so every code change to the list was painted over by the snapshot
+  // (Ali's screen on 2026-09-11 still showed "Seated Toe Stretch" and "Frog Pose").
+  // It is migrated once: only names that were never a default survive as renames.
   const MOVE_NAMES = STRETCH_MOVES.map((m) => m.name);
-  const [moves, setMoves] = useState<string[]>(MOVE_NAMES);
+  const [renames, setRenames] = useState<Record<string, string>>({});
+  const moves = STRETCH_MOVES.map((m) => renames[m.key]?.trim() || m.name);
   const movesRef = useRef<string[]>(MOVE_NAMES);
   movesRef.current = moves;
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("cc-stretch-names-v2") ?? "null");
-      if (Array.isArray(saved)) setMoves(MOVE_NAMES.map((m, i) => (typeof saved[i] === "string" && saved[i].trim() ? saved[i] : m)));
+      const v3 = JSON.parse(localStorage.getItem("cc-stretch-names-v3") ?? "null");
+      if (v3 && typeof v3 === "object" && !Array.isArray(v3)) { setRenames(v3 as Record<string, string>); return; }
+      const v2 = JSON.parse(localStorage.getItem("cc-stretch-names-v2") ?? "null");
+      if (Array.isArray(v2)) {
+        const migrated: Record<string, string> = {};
+        v2.forEach((n, i) => {
+          const m = STRETCH_MOVES[i];
+          if (m && typeof n === "string" && n.trim() && !isDefaultName(n)) migrated[m.key] = n.trim();
+        });
+        setRenames(migrated);
+        localStorage.setItem("cc-stretch-names-v3", JSON.stringify(migrated));
+        localStorage.removeItem("cc-stretch-names-v2");
+      }
     } catch { /* ignore */ }
   }, []);
   const renameMove = (i: number, name: string) => {
-    const next = moves.map((m, j) => (j === i ? (name.trim() || MOVE_NAMES[i]) : m));
-    setMoves(next);
-    try { localStorage.setItem("cc-stretch-names-v2", JSON.stringify(next)); } catch { /* ignore */ }
+    const key = STRETCH_MOVES[i].key;
+    const next = { ...renames };
+    if (name.trim() && name.trim() !== MOVE_NAMES[i]) next[key] = name.trim(); else delete next[key];
+    setRenames(next);
+    try { localStorage.setItem("cc-stretch-names-v3", JSON.stringify(next)); } catch { /* ignore */ }
   };
   // A previously chosen track may have been removed from the library · fall back to off.
   useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t && (t === "off" || STRETCH_TRACKS.some((x) => x.slug === t))) setTrack(t); } catch { /* ignore */ } }, []);

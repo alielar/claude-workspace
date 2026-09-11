@@ -69,7 +69,7 @@ export const ROUTINE_SEED: {
   weekdays?: string[];   // day codes · the item only shows on these days
   startDate?: string;    // hidden before this date
 }[] = [
-  { routineKey: "stretch", title: "Stretching",          emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "21 moves · 4 blocks · 15 minutes, 10 s rests", sortOrder: -50 },
+  { routineKey: "stretch", title: "Stretching",          emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "22 moves · 4 blocks · 15 minutes, 10 s rests", sortOrder: -50 },
   // Speediance machine days (Ali, 2026-09-11): push Mon · pull Wed · legs+core Fri,
   // from 2026-09-14. Tickable morning rows, NOT counted in the day streak
   // (excluded in the checklist route by the gym- prefix); Saturday's kettlebell

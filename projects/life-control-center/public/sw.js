@@ -13,7 +13,7 @@
  * (see src/lib/local/outbox.ts) and replays when back online.
  */
 
-const VERSION = "cc-v15";
+const VERSION = "cc-v16";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const API = `${VERSION}-api`;

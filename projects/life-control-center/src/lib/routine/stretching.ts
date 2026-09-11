@@ -1,26 +1,30 @@
 /**
- * Morning stretching routine · 21 movements in 4 blocks, 14:55 total (2026-09-11).
+ * Morning stretching routine · 22 movements in 4 blocks, 14:40 total (2026-09-12).
  *
  * Every movement gets the duration it actually needs (Ali's rule 2026-09-10:
  * my judgement per move, 10 s rest between EVERY movement, total under 15:00):
- * dynamic warm-ups 20–35 s, deep floor holds 30–45 s, the closing pose 50 s.
- * 5 s lead-in, 20 × 10 s rests. Work 11:30 + rest 3:20 + lead-in 0:05 = 14:55.
+ * dynamic warm-ups 20–30 s, deep floor holds 40–45 s, the closing pose 50 s.
+ * 5 s lead-in, 21 × 10 s rests. Work 11:05 + rest 3:30 + lead-in 0:05 = 14:40.
  *   Block 1 · wake-up and spine     starts 0:05
- *   Block 2 · standing to floor     starts 3:05
- *   Block 3 · floor and hips        starts 6:35
- *   Block 4 · grounded finish       starts 12:35 · ends 14:55
+ *   Block 2 · standing to floor     starts 3:30
+ *   Block 3 · floor and hips        starts 6:45
+ *   Block 4 · grounded finish       starts 12:30 · ends 14:40
  *
- * 2026-09-11 changes (Ali): Hindu squats are back (they take the old seated-toe /
- * Cossack slot · dynamic and satisfying, 21 moves total was the cleanest count),
- * Happy Baby replaces Butterfly/Frog (same groin + inner-thigh + hip target, lying
- * on the back so nothing presses into the knees), Kneeling Hamstring is now a
- * proper Left / Right pair like World's Greatest Stretch.
+ * Every move has a stable `key`. Ali's renames on the phone are stored BY KEY
+ * (localStorage cc-stretch-names-v3) · the old positional snapshot (v2) is what
+ * painted "Seated Toe Stretch" / "Frog Pose" over the new list on 2026-09-11 and
+ * is migrated once (genuine renames kept, stale defaults dropped) in /stretch.
+ *
+ * 2026-09-12 (Ali): Hindu squats AND Cossack squats both in block 1 (Cossack takes
+ * the seated-toe slot: dynamic and satisfying), Happy Baby replaces Frog/Butterfly
+ * (same groin + inner-thigh + hip target, on the back, no knee pressure), Kneeling
+ * Hamstring is a Left / Right pair, Child's Pose once at the end.
  */
 
 export const STRETCH_LEADIN_SECONDS = 5;
 export const STRETCH_REST_SECONDS = 10;
 
-export type StretchMove = { name: string; seconds: number; block: number };
+export type StretchMove = { key: string; name: string; seconds: number; block: number };
 
 export const STRETCH_BLOCKS = [
   "Wake-up and spine",
@@ -31,46 +35,51 @@ export const STRETCH_BLOCKS = [
 
 export const STRETCH_MOVES: StretchMove[] = [
   // Block 1 · dynamic wake-up: short and lively, the holds come later.
-  { name: "Bouncing on Toes",                    seconds: 20, block: 0 },
-  { name: "Neck Twists",                         seconds: 25, block: 0 },
-  { name: "Torso Twists",                        seconds: 25, block: 0 },
-  { name: "Squat Hold",                          seconds: 30, block: 0 },
-  // Hindu squats (2026-09-11, back from the old routine) · deep rhythmic squats
-  // with the arm swing, heels lifting · replaces the seated toe stretch / Cossack slot.
-  { name: "Hindu Squats",                        seconds: 30, block: 0 },
+  { key: "bounce",     name: "Bouncing on Toes",                  seconds: 20, block: 0 },
+  { key: "neck",       name: "Neck Twists",                       seconds: 20, block: 0 },
+  { key: "torso",      name: "Torso Twists",                      seconds: 20, block: 0 },
+  { key: "squat-hold", name: "Squat Hold",                        seconds: 25, block: 0 },
+  { key: "hindu",      name: "Hindu Squats",                      seconds: 30, block: 0 },
+  { key: "cossack",    name: "Cossack Squats",                    seconds: 30, block: 0 },
   // Block 2 · standing to floor
-  { name: "Lateral Arm Swings",                  seconds: 25, block: 1 },
-  { name: "Down Dog + Calf Pedal",               seconds: 35, block: 1 },
-  { name: "World's Greatest Stretch · Left",     seconds: 35, block: 1 },
-  { name: "World's Greatest Stretch · Right",    seconds: 35, block: 1 },
-  { name: "Toe Touches",                         seconds: 30, block: 1 },
+  { key: "arm-swings", name: "Lateral Arm Swings",                seconds: 20, block: 1 },
+  { key: "down-dog",   name: "Down Dog + Calf Pedal",             seconds: 35, block: 1 },
+  { key: "wgs-l",      name: "World's Greatest Stretch · Left",   seconds: 30, block: 1 },
+  { key: "wgs-r",      name: "World's Greatest Stretch · Right",  seconds: 30, block: 1 },
+  { key: "toe-touch",  name: "Toe Touches",                       seconds: 30, block: 1 },
   // Block 3 · deep hip holds need real time to release · the longest block.
-  { name: "90/90 Switches",                      seconds: 35, block: 2 },
-  { name: "Pigeon · Left",                       seconds: 45, block: 2 },
-  { name: "Pigeon · Right",                      seconds: 45, block: 2 },
-  // Happy Baby replaced Butterfly (2026-09-11; Butterfly had replaced Frog on
-  // 2026-09-09 and was still awful) · on the back, knees to armpits, holding the
-  // feet · same adductor / groin / hip-opening target, zero knee pressure, restful.
-  { name: "Happy Baby",                          seconds: 45, block: 2 },
-  { name: "Seiza",                               seconds: 30, block: 2 },
-  { name: "Kneeling Hamstring · Left",           seconds: 30, block: 2 },
-  { name: "Kneeling Hamstring · Right",          seconds: 30, block: 2 },
-  { name: "Forearm Stretch",                     seconds: 20, block: 2 },
+  { key: "9090",       name: "90/90 Switches",                    seconds: 30, block: 2 },
+  { key: "pigeon-l",   name: "Pigeon · Left",                     seconds: 45, block: 2 },
+  { key: "pigeon-r",   name: "Pigeon · Right",                    seconds: 45, block: 2 },
+  { key: "happy-baby", name: "Happy Baby",                        seconds: 40, block: 2 },
+  { key: "seiza",      name: "Seiza",                             seconds: 25, block: 2 },
+  { key: "kneel-ham-l", name: "Kneeling Hamstring · Left",        seconds: 30, block: 2 },
+  { key: "kneel-ham-r", name: "Kneeling Hamstring · Right",       seconds: 30, block: 2 },
+  { key: "forearm",    name: "Forearm Stretch",                   seconds: 20, block: 2 },
   // Block 4 · grounded finish · child's pose stays the long calm ending.
-  { name: "Cat Cow",                             seconds: 35, block: 3 },
-  { name: "Cobra",                               seconds: 35, block: 3 },
-  { name: "Child's Pose",                        seconds: 50, block: 3 },
+  { key: "cat-cow",    name: "Cat Cow",                           seconds: 30, block: 3 },
+  { key: "cobra",      name: "Cobra",                             seconds: 30, block: 3 },
+  { key: "child",      name: "Child's Pose",                      seconds: 50, block: 3 },
 ];
+
+/** Every name that has ever been a DEFAULT (current list + retired moves). A saved
+ * name equal to one of these is a stale snapshot entry, never one of Ali's renames. */
+export const DEFAULT_NAMES_EVER = new Set<string>([
+  ...STRETCH_MOVES.map((m) => m.name),
+  "Seated Toe Stretch", "Frog Pose", "Frog", "Butterfly Stretch", "Kneeling Hamstring",
+  "World's Greatest Stretch", "Pigeon", "Down Dog", "Calf Pedal", "Torso Twists",
+].map((n) => n.toLowerCase()));
+export const isDefaultName = (n: string) => DEFAULT_NAMES_EVER.has(n.trim().toLowerCase());
 
 // Instagram reels · learning aids, dismissible forever once a move is mastered
 // (dismissals live in localStorage["cc-reels-dismissed"], see src/components/ReelLink.tsx).
-export type StretchReel = { id: string; label: string; url: string; moveIndex?: number };
+export type StretchReel = { id: string; label: string; url: string; moveKey?: string };
 export const STRETCH_REELS: StretchReel[] = [
   {
     id: "stretch-toe-touches",
     label: "Toe touches · how-to reel",
     url: "https://www.instagram.com/reel/DdB9heostpA/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
-    moveIndex: 9,
+    moveKey: "toe-touch",
   },
   {
     id: "stretch-routine",
@@ -81,7 +90,8 @@ export const STRETCH_REELS: StretchReel[] = [
 
 /** The reel that demonstrates a given movement: its own if it has one, else the full-routine reel. */
 export function reelForMove(index: number): StretchReel {
-  return STRETCH_REELS.find((r) => r.moveIndex === index) ?? STRETCH_REELS.find((r) => r.moveIndex === undefined)!;
+  const key = STRETCH_MOVES[index]?.key;
+  return STRETCH_REELS.find((r) => r.moveKey === key) ?? STRETCH_REELS.find((r) => r.moveKey === undefined)!;
 }
 
 export type StretchPhase =
