@@ -379,7 +379,7 @@ export default function StretchPage() {
                     onClick={() => { setEditIdx(i); setEditText(m); }}
                     style={{ background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, padding: "8px 0", cursor: "pointer", minWidth: 0, overflowWrap: "anywhere" }}
                   >
-                    {m}{m !== MOVE_NAMES[i] && <span style={{ fontSize: 12, color: "var(--ink-4)" }}> · renamed</span>}
+                    {m}
                   </button>
                 )}
                 <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-4)" }}>{STRETCH_MOVES[i].seconds}s</span>
