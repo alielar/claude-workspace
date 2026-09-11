@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
   for (const u of allUsers) {
     try {
       const ep = await ensureTodaysPodcast(u.id, force || rebuild, rebuild);
-      results[u.id] = `${ep.status}${ep.audioUrl ? " · audio ok" : ""} · attempts ${ep.attempts}${ep.lastError ? ` · ${ep.lastError}` : ""}${ep.script ? ` · script ${ep.script.length} chars` : " · no script"} · ${ep.chapters.length} chapters [${ep.chapters.map((c) => `${c.title}@${c.startSec}s`).join(", ")}] · ${ep.durationSec ?? "?"}s total`;
+      results[u.id] = `${ep.status}${ep.audioUrl ? " · audio ok" : ""} · attempts ${ep.attempts}${ep.lastError ? ` · ${ep.lastError}` : ""}${ep.script ? ` · script ${ep.script.length} chars` : " · no script"}${ep.dateFlags ? ` · date flags [${ep.dateFlags.join(", ")}]` : ""} · ${ep.chapters.length} chapters [${ep.chapters.map((c) => `${c.title}@${c.startSec}s`).join(", ")}] · ${ep.durationSec ?? "?"}s total`;
     } catch (e) {
       results[u.id] = `error: ${String((e as Error).message).slice(0, 120)}`;
     }

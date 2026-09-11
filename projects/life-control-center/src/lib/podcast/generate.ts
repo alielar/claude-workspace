@@ -1,8 +1,10 @@
 /**
  * Daily news podcast (2026-09-08) · server only.
  *
- * Pipeline: ensure today's brief exists → Haiku writes a tight, personal 5–10 min
- * script (ONCE per day, cached in podcast_episodes.script across audio retries) →
+ * Pipeline: ensure today's brief exists → Haiku writes the script as a friend
+ * explaining the day (ONCE per day, cached in podcast_episodes.script across audio
+ * retries; ~5 min guide, longer when the day earns it) → a deterministic date lint
+ * (no "yesterday"/"last night" about events · see auditDates) →
  * Microsoft neural voice via msedge-tts (free, unofficial — can break; that's why
  * the app falls back to showing the script and keeps retrying) → MP3 in Vercel Blob.
  *
@@ -22,6 +24,8 @@ import type { NewsBrief } from "@/lib/news-brief";
 
 // Brian: calm, low-key, sincere · early-morning listenable but still a serious news read.
 const VOICE = "en-US-BrianMultilingualNeural";
+// Ali (2026-09-11): slow the narration down slightly · SSML prosody rate, relative.
+const SPEAKING_RATE = "-8%";
 const MAX_ATTEMPTS = 8;
 const RETRY_SPACING_MS = 10 * 60 * 1000;
 
@@ -37,6 +41,8 @@ export type Episode = {
   durationSec: number | null;
   /** transient · last failure reason, for diagnostics only */
   lastError?: string;
+  /** transient · relative day words still in the script after the date audit (should be []) */
+  dateFlags?: string[];
 };
 
 const parseChaptersJson = (json: string | null): Chapter[] => {
@@ -66,54 +72,57 @@ export async function todaysEpisode(userId: string): Promise<Episode | null> {
   return { date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts, chapters: parseChaptersJson(row.chapters), durationSec: row.durationSec ?? null };
 }
 
-/** The one Haiku call of the day: brief → spoken script, split into titled chapters. */
-async function writeScript(brief: NewsBrief, date: string): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
+// ── Dates ─────────────────────────────────────────────────────────────────────
+// ROOT CAUSE of the "yesterday" bug (Wed 9 + Thu 10 Sep 2026): the writer only saw
+// a coarse relative age per story ("published 1 day(s) ago" covered anything from
+// 24 to 36 hours), had no calendar at all, and story text written on Tuesday night
+// says "tonight" / "last night" in its own frame. Haiku collapsed all of that into
+// "yesterday". Fix: every story carries its absolute publish weekday + time, the
+// prompt carries today's / yesterday's dates and forbids relative day words for
+// events (weekdays only), and a deterministic lint re-checks the finished script.
+const TZ = "Europe/Madrid";
+const longDay = (d: Date) => new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: TZ }).format(d);
+const weekdayTime = (d: Date) => new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ }).format(d);
+
+/** Relative day words the script must not use for events (the lint · case-insensitive). */
+const RELATIVE_DAY_RE = /\b(yesterday|last night|this morning|earlier today|later today|tonight|this evening|this afternoon|overnight)\b/gi;
+export const relativeDayWords = (script: string): string[] => {
+  const seen = new Set<string>();
+  for (const m of script.matchAll(RELATIVE_DAY_RE)) seen.add(m[1].toLowerCase());
+  return [...seen];
+};
+
+function dayContext(date: string) {
+  const noon = new Date(`${date}T12:00:00Z`);
+  const minus = (n: number) => new Date(noon.getTime() - n * 86400_000);
+  return { today: longDay(noon), yesterday: longDay(minus(1)), dayBefore: longDay(minus(2)) };
+}
+
+/** Stories → the text block the writer (and the date auditor) see, with absolute publish stamps. */
+function storiesBlock(brief: NewsBrief, max = 20): string {
   const now = Date.now();
-  const age = (iso?: string) => {
+  const stamp = (iso?: string) => {
     if (!iso) return "publish time unknown";
-    const h = Math.round((now - Date.parse(iso)) / 3600_000);
-    return h <= 1 ? "published within the last hour" : h < 24 ? `published ${h} hours ago` : `published ${Math.round(h / 24)} day(s) ago`;
+    const t = Date.parse(iso);
+    if (!Number.isFinite(t)) return "publish time unknown";
+    const h = Math.max(0, Math.round((now - t) / 3600_000));
+    return `published ${weekdayTime(new Date(t))} Madrid time · about ${h} hour${h === 1 ? "" : "s"} before this episode`;
   };
-  const stories = [...brief.stories]
+  return [...brief.stories]
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, 16)
-    .map((s) => `[${s.category}${s.featured ? " · featured" : ""} · ${age(s.publishedAt)}] ${s.headline}\n${s.summary}\n${(s.keyPoints ?? []).join(" · ")}`)
+    .slice(0, max)
+    .map((s) => `[${s.category}${s.featured ? " · featured" : ""} · ${stamp(s.publishedAt)}]\n${s.headline}\n${s.summary}\n${(s.keyPoints ?? []).join(" · ")}`)
     .join("\n\n");
+}
 
-  const day = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date(`${date}T12:00:00Z`));
-
-  const prompt = `You write Ali's private morning news podcast. He listens over breakfast at about 07:30 Madrid time, before a day of sales calls. Calm, precise, zero fluff.
-
-ABOUT ALI (weave in naturally when a story has a real angle for him): runs easypeasy, a company teaching languages; deep into AI and tech; follows business and geopolitics; follows Real Madrid and the Morocco national team.
-
-TODAY: ${day} morning. Every story below carries its publish age.
-
-ACCURACY — ABSOLUTE RULES:
-- Never present something that already happened as upcoming. If a story previews an event whose date/time has already passed by this morning, either skip it or, if another story carries the outcome, report the outcome.
-- Never guess results or facts not in the stories. If the stories don't say who won, do not say who won.
-
-STRUCTURE — output as chapters, each starting with a line "### <short chapter title>" (2-4 words):
-- "### Top story" · the single most important non-football story, opened with one calm good-morning line and the date. 40-60 seconds.
-- Then 3-5 chapters covering business, AI/tech, geopolitics and anything else important. Group related stories. This is the body: roughly four minutes ALL TOGETHER.
-- "### Football" · LAST chapter, about 30 seconds only: Real Madrid and Morocco essentials, results and confirmed news only.
-- End the football chapter with one short send-off line into his day.
-
-LENGTH — HARD REQUIREMENT: the episode must run between 4 and 6 minutes spoken, which at this reading pace means 760-980 words total. Write inside that band. The way to use the budget is more stories told tightly, never one story padded. No filler phrases, no "it's worth noting", no throat-clearing, no recaps, no headlines-style teasers.
-
-TONE: calm and steady for early morning, but serious - he is genuinely listening for the news. Dry warmth allowed, jokes rationed.
-
-Plain spoken English, short sentences, numbers written for the ear. Output ONLY the chapter lines and script text. No markdown besides the ### chapter lines, no stage directions.
-
-THE STORIES:
-${stories}`;
-
+async function haiku(prompt: string, maxTokens: number): Promise<string | null> {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
   try {
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
     const client = new Anthropic();
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 2200,
+      max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     });
     const text = (message.content[0] as { type: string; text: string }).text?.trim();
@@ -121,42 +130,91 @@ ${stories}`;
   } catch { return null; }
 }
 
-// ── 4-6 minute guard ─────────────────────────────────────────────────────────
-// Ali's hard rule (2026-09-10): every episode runs 4:00-6:00, never outside.
-// Enforced twice: on the script's word count BEFORE voicing (Brian measures at
-// ~175 words/min on real episodes — 2026-09-10 calibration: 157 s and 229 s
-// episodes both ≈ 17.5 chars/s — so 760-1000 words lands safely inside 4-6 min),
-// and on the measured audio duration after voicing, with one revise-and-revoice
-// if it still missed.
-const MIN_WORDS = 760;
-const MAX_WORDS = 1000;
-const MIN_SEC = 240;
-const MAX_SEC = 360;
+// ── Length ────────────────────────────────────────────────────────────────────
+// Ali (2026-09-11): five minutes is a guide, not a cap. Cover what matters, never
+// pad, never truncate a story worth hearing. So: a wide sanity band instead of the
+// old 4-6 min gate. Brian at the slower rate (-8 %) runs ≈ 160 words/min.
+const MIN_WORDS = 650;
+const MAX_WORDS = 1550;
+const MIN_SEC = 240;   // 4 min · below this the day was under-told
+const MAX_SEC = 600;   // 10 min · above this it stops being a breakfast brief
 const wordCount = (s: string) => s.replace(/^###.*$/gm, "").split(/\s+/).filter(Boolean).length;
+
+const TONE_RULES = `TONE AND LANGUAGE (Ali's brief, 2026-09-11):
+- You are a smart friend who follows the news closely, sitting across the breakfast table, explaining what is going on in the world to someone who has the basics but is NOT an expert in geopolitics, AI or finance. Friendly, transparent, plain words.
+- Every story follows the same three beats in plain words: here is what happened · here is why it happened · here is what it means (for the world, for Europe, sometimes for Ali).
+- Explain names, places and terms in a few words the first time ("Enflame, a Chinese company that makes the chips AI runs on"). Assume he does not know the background; give it in one or two sentences.
+- Simple vocabulary. Short sentences. The words you would say out loud. No jargon and no business-speak: never "leverage", "headwinds", "stakeholders", "ecosystem", "calculus", "signals", "narrative", "paradigm", "unprecedented", "dynamics", "geopolitical landscape". If a technical word is unavoidable, say it, then say what it means.
+- Numbers written for the ear ("two hundred million", "about a third"). No filler ("it's worth noting", "interestingly", "notably"). No headline-style teasers, no recaps.
+- Transitions: when the topic changes, one natural linking sentence so it never feels like a jump ("That's the money side. Now to something closer to home for you: AI." · "Leaving politics for a moment..."). Every chapter after the first opens with such a bridge.`;
+
+/** The one Haiku call of the day: brief → spoken script, split into titled chapters. */
+async function writeScript(brief: NewsBrief, date: string): Promise<string | null> {
+  const ctx = dayContext(date);
+  const prompt = `You write Ali's private morning news podcast. He listens over breakfast at about 07:30 Madrid time. The whole point: give him a clear overview of what is going on in the world. Simple. Nothing cleverer than that.
+
+ABOUT ALI (mention only when a story genuinely touches him): runs easypeasy, a small company teaching languages; loves AI and tech; follows business and geopolitics; follows Real Madrid and the Morocco national team.
+
+${TONE_RULES}
+
+DATES AND TIMING — ABSOLUTE RULES (a past episode called a Tuesday match "yesterday" on a Thursday; that must never happen again):
+- TODAY is ${ctx.today}. Yesterday was ${ctx.yesterday}. The day before was ${ctx.dayBefore}.
+- Every story below shows WHEN IT WAS PUBLISHED (weekday, date, time). That is when the article was written, NOT necessarily when the event happened. An article written on Wednesday about a match can describe a Tuesday game.
+- Words like "yesterday", "last night", "today", "this morning", "tonight" INSIDE a story's text are relative to that story's publish date, not to this morning. Translate them: a story published Wednesday that says "last night" means Tuesday night.
+- When you say when something happened, NAME THE WEEKDAY: "on Tuesday night", "on Wednesday". Never use "yesterday", "last night", "this morning", "tonight" or "today" for events. The only "today" allowed is the greeting and the closing chapter.
+- If you are not sure when something happened, leave the timing out. Never guess.
+- Never present something that already happened as upcoming. Never invent results, numbers or facts that are not in the stories. If the stories do not say who won, do not say who won.
+
+STRUCTURE — chapters, each starting with a line "### <short title>" (2-4 words):
+- First chapter: one warm good-morning line with the weekday and date, then straight into the most important story of the day (not football).
+- Then chapters by theme (the world and politics, AI and tech, business and money, anything else that matters). Group related stories. Cover the stories that matter; skip the trivial ones.
+- "### Football": Real Madrid and Morocco only, results and confirmed news, near the end and short.
+- Last chapter, "### For the day": two or three sentences to start the day well. General and human, about the day itself, NOT about sales, work, clients or productivity. Then a simple goodbye.
+
+LENGTH: five minutes is the guide, not the cap. Aim for roughly 800-1000 words. Go longer, up to ${MAX_WORDS} words, when there are genuinely that many stories worth telling (four in geopolitics and five in AI is a real morning). Never pad a thin day; never cut a story worth hearing to fit. Under ${MIN_WORDS} words is too short.
+
+Output ONLY the chapter lines and the spoken text. No markdown besides the ### lines, no stage directions.
+
+THE STORIES:
+${storiesBlock(brief)}`;
+  return haiku(prompt, 3200);
+}
+
+/**
+ * Deterministic second line of defence: if the finished script still uses a
+ * relative day word, one Haiku pass rewrites ONLY those time references into
+ * weekdays (or removes them), using the stories' absolute publish stamps.
+ */
+async function auditDates(script: string, brief: NewsBrief, date: string): Promise<string | null> {
+  const ctx = dayContext(date);
+  const prompt = `You are checking a morning podcast script for date mistakes. TODAY is ${ctx.today}; yesterday was ${ctx.yesterday}; the day before was ${ctx.dayBefore}.
+
+The script uses relative day words (yesterday, last night, this morning, tonight, this evening, overnight...) for events. That is forbidden: events must be placed by WEEKDAY ("on Tuesday night"), or the timing removed when unsure.
+
+For every such phrase: work out the real day from the matching story below (its publish stamp is when the article was written; words like "last night" inside the story are relative to that publish date) and replace the phrase with the correct weekday. If you cannot be sure, delete the time reference. Leave the greeting and the closing "For the day" chapter alone. Change NOTHING else: same chapters, same "### Title" lines, same wording everywhere else. Output the full corrected script only.
+
+THE STORIES:
+${storiesBlock(brief)}
+
+THE SCRIPT:
+${script}`;
+  const out = await haiku(prompt, 3400);
+  return out && /^###/m.test(out) ? out : null;
+}
 
 /** Ask Haiku to stretch or trim an out-of-range script without touching facts or structure. */
 async function reviseScriptLength(script: string, targetWords: number): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
   const current = wordCount(script);
   const direction = current > targetWords
     ? "Trim it: cut the least important sentences and tighten wording. Never cut a whole chapter."
-    : "Extend it: give the existing stories more precise detail already implied by the script's facts, or split a dense sentence into two. NEVER invent facts, names, numbers or outcomes that are not already in the script.";
+    : "Extend it: give the existing stories more of the plain-words explanation (what happened, why, what it means) already implied by the script's facts, or split a dense sentence into two. NEVER invent facts, names, numbers or outcomes that are not already in the script.";
   const prompt = `This podcast script is ${current} words; it must be about ${targetWords} words (hard range ${MIN_WORDS}-${MAX_WORDS}). ${direction}
 
-Keep EXACTLY the same chapter structure and "### Title" lines, the same order, the same tone, football last and short. Output only the revised script.
+Keep EXACTLY the same chapter structure and "### Title" lines, the same order, the same friendly plain-words tone, football near the end and short, the "For the day" closing last. Keep every weekday reference exactly as it is and do not introduce "yesterday", "last night" or "today" for events. Output only the revised script.
 
 ${script}`;
-  try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic();
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 2600,
-      messages: [{ role: "user", content: prompt }],
-    });
-    const text = (message.content[0] as { type: string; text: string }).text?.trim();
-    return text && text.length > 200 && /^###/m.test(text) ? text : null;
-  } catch { return null; }
+  const out = await haiku(prompt, 3400);
+  return out && /^###/m.test(out) ? out : null;
 }
 
 /** Split on sentence ends into pieces the voice service reliably finishes (~1 min each). */
@@ -177,7 +235,7 @@ async function synthesizePiece(text: string): Promise<Buffer> {
   const { MsEdgeTTS, OUTPUT_FORMAT } = await import("msedge-tts");
   const tts = new MsEdgeTTS();
   await tts.setMetadata(VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-  const { audioStream } = await tts.toStream(text);
+  const { audioStream } = await tts.toStream(text, { rate: SPEAKING_RATE });
   const chunks: Buffer[] = [];
   await new Promise<void>((resolve, reject) => {
     const guard = setTimeout(() => reject(new Error("tts timeout")), 60_000);
@@ -287,7 +345,13 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
       await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
       return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: "script generation failed" };
     }
-    // 4-6 min gate, BEFORE voicing: fix an out-of-range script, up to twice.
+    // Date lint (the "yesterday" bug): relative day words about events → one
+    // corrective pass with the absolute publish stamps, then re-check.
+    if (relativeDayWords(script).length) {
+      const fixed = await auditDates(script, brief, date);
+      if (fixed) script = fixed;
+    }
+    // Length sanity band, BEFORE voicing: fix an out-of-range script, up to twice.
     for (let pass = 0; pass < 2; pass++) {
       const words = wordCount(script);
       if (words >= MIN_WORDS && words <= MAX_WORDS) break;
@@ -302,15 +366,15 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
   // suspended; ~3 MB/day in Turso is free) and is served by /api/podcast/audio.
   try {
     let { audio, chapters, durationSec } = await synthesize(script);
-    // 4-6 min gate, AFTER voicing: the measured duration is the truth. If the
+    // Length band, AFTER voicing: the measured duration is the truth. If the
     // word estimate missed, revise toward the right length and voice once more.
     if (durationSec < MIN_SEC || durationSec > MAX_SEC) {
-      const targetWords = Math.min(MAX_WORDS - 30, Math.max(MIN_WORDS + 30, Math.round(wordCount(script) * (300 / durationSec))));
+      const targetWords = Math.min(MAX_WORDS - 50, Math.max(MIN_WORDS + 50, Math.round(wordCount(script) * (360 / durationSec))));
       const revised = await reviseScriptLength(script, targetWords);
       if (revised) {
         try {
           const second = await synthesize(revised);
-          // Keep whichever attempt is closer to the 4-6 window.
+          // Keep whichever attempt is closer to the 4-10 min window.
           const miss = (s: number) => (s < MIN_SEC ? MIN_SEC - s : s > MAX_SEC ? s - MAX_SEC : 0);
           if (miss(second.durationSec) <= miss(durationSec)) {
             script = revised;
@@ -332,7 +396,7 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
       const rowCutoff = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
       await db.delete(podcastEpisodes).where(lt(podcastEpisodes.date, rowCutoff));
     } catch { /* pruning is best-effort */ }
-    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1, chapters, durationSec };
+    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1, chapters, durationSec, dateFlags: relativeDayWords(script) };
   } catch (e) {
     await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
     return { date, status: "failed", script, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: `audio: ${String((e as Error).message).slice(0, 150)}` };
