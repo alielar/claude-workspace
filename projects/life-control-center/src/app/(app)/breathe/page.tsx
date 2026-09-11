@@ -47,6 +47,14 @@ const RECOVERY_HOLD_S = 15;
 // after the 15 s recovery hold, before the next round. NOT part of the standard
 // Wim Hof protocol (which goes straight on) · do not "fix" this back.
 const RECOVERY_OUT_MS = 8000;
+// 2026-09-11 (Ali): a 3-2-1 countdown after Start so the first inhale never
+// catches him off guard; the rising bell now covers the LAST 10 breaths of each
+// round (was 3), one scale step per breath; and each round's hold gets its own
+// frequency, chosen before the session (key cc-breathe-freqs, JSON array of 3).
+const COUNTDOWN_S = 3;
+const BELL_BREATHS = 10;
+// Major scale from G4 up to B5, one step per breath: G A B C D E F# G A B.
+const BELL_SEMITONES = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16];
 
 /** Hold-tone options in two honest groups: brainwave "beats" with some published
  * evidence (they need headphones · each ear gets a slightly different pitch and the
@@ -82,7 +90,7 @@ const STYLES: { key: BreathStyle; label: string; hint: string }[] = [
   { key: "sweep", label: "Sweep", hint: "rising and falling tone" },
 ];
 
-type Phase = "idle" | "breathing" | "retention" | "recoveryIn" | "recoveryHold" | "recoveryOut" | "done";
+type Phase = "idle" | "countdown" | "breathing" | "retention" | "recoveryIn" | "recoveryHold" | "recoveryOut" | "done";
 
 /** All sound, synthesized. Nothing downloaded, nothing licensed. */
 class BreathSynth {
@@ -363,7 +371,10 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
   const [inhaling, setInhaling] = useState(true);
   const [remaining, setRemaining] = useState(RETENTION_S);
   const [holds, setHolds] = useState<number[]>([]);
-  const [freqId, setFreqId] = useState<string>("t528");
+  const [count, setCount] = useState(COUNTDOWN_S);
+  // One hold frequency per round · editRound = which round the chips below assign to.
+  const [freqIds, setFreqIds] = useState<string[]>(["t528", "t528", "t528"]);
+  const [editRound, setEditRound] = useState(0);
   const [style, setStyle] = useState<BreathStyle>("waves");
   const [vol, setVol] = useState(50);
   const [previewingFreq, setPreviewingFreq] = useState(false);
@@ -375,20 +386,29 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
   const phaseRef = useRef<Phase>("idle");
   const styleRef = useRef<BreathStyle>("waves");
   const volRef = useRef(0.5);
-  const freqRef = useRef<FreqOpt>(FREQS_TRADITION[5]);
+  const freqsRef = useRef<FreqOpt[]>([FREQS_TRADITION[5], FREQS_TRADITION[5], FREQS_TRADITION[5]]);
   phaseRef.current = phase;
   styleRef.current = style;
   volRef.current = vol / 100;
 
-  const freqOpt = ALL_FREQS.find((f) => f.id === freqId) ?? FREQS_TRADITION[5];
-  freqRef.current = freqOpt;
+  const freqById = (id: string) => ALL_FREQS.find((f) => f.id === id) ?? FREQS_TRADITION[5];
+  const freqOpts = freqIds.map(freqById);
+  freqsRef.current = freqOpts;
+  const freqOpt = freqOpts[editRound];
+  const freqFor = (r: number) => freqsRef.current[Math.min(ROUNDS, Math.max(1, r)) - 1];
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("cc-breathe-freq");
-      // Old versions stored the plain number (e.g. "528") · map it to the tone id.
-      if (raw && ALL_FREQS.some((x) => x.id === raw)) setFreqId(raw);
-      else if (raw && ALL_FREQS.some((x) => x.id === `t${raw}`)) setFreqId(`t${raw}`);
+      const rawList = localStorage.getItem("cc-breathe-freqs");
+      const list = rawList ? (JSON.parse(rawList) as unknown) : null;
+      if (Array.isArray(list) && list.length === ROUNDS && list.every((x) => typeof x === "string" && ALL_FREQS.some((f) => f.id === x))) {
+        setFreqIds(list as string[]);
+      } else {
+        // Older versions kept ONE tone (id, or the plain number like "528") · use it for all rounds.
+        const raw = localStorage.getItem("cc-breathe-freq");
+        const one = raw && ALL_FREQS.some((x) => x.id === raw) ? raw : raw && ALL_FREQS.some((x) => x.id === `t${raw}`) ? `t${raw}` : null;
+        if (one) setFreqIds([one, one, one]);
+      }
       const s = localStorage.getItem("cc-breathe-sound") as BreathStyle | null;
       if (s && STYLES.some((x) => x.key === s)) setStyle(s);
       const v = Number(localStorage.getItem("cc-breathe-vol"));
@@ -403,9 +423,12 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
   }, []);
 
   // ── Idle previews ───────────────────────────────────────────────────────────
+  const saveFreqs = (ids: string[]) => {
+    setFreqIds(ids);
+    try { localStorage.setItem("cc-breathe-freqs", JSON.stringify(ids)); localStorage.setItem("cc-breathe-freq", ids[0]); } catch { /* ignore */ }
+  };
   const pickFreq = (f: FreqOpt) => {
-    setFreqId(f.id);
-    try { localStorage.setItem("cc-breathe-freq", f.id); } catch { /* ignore */ }
+    saveFreqs(freqIds.map((id, i) => (i === editRound ? f.id : id)));
     // preview the tone right away, a few seconds, so the choice is informed
     synth.arm();
     synth.padStart(f.hz, 0.6, f.beatHz, volRef.current);
@@ -445,9 +468,10 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
   // ── Breathing ───────────────────────────────────────────────────────────────
   const runBreath = useCallback((n: number, r: number) => {
     setPhase("breathing"); setRound(r); setBreath(n); setInhaling(true);
-    // Eyes-closed cue: the last three breaths of a round each start with a clear
-    // bell, rising in pitch (G5 → A5 → B5), so the hold never comes as a surprise.
-    if (n > BREATHS - 3) synth.pluck(n === BREATHS ? 987.8 : n === BREATHS - 1 ? 880 : 784, 0.2);
+    // Eyes-closed cue: each of the last ten breaths of a round starts with a bell,
+    // one scale step higher each time (G4 → B5), so the hold never comes as a surprise.
+    const k = n - (BREATHS - BELL_BREATHS);
+    if (k >= 1) synth.pluck(392 * 2 ** (BELL_SEMITONES[k - 1] / 12), 0.1 + 0.012 * k);
     synth.breath("in", styleRef.current, INHALE_MS, volRef.current);
     timer.current = setTimeout(() => {
       setInhaling(false);
@@ -465,7 +489,7 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
     setPhase("retention"); setRemaining(RETENTION_S);
     holdStart.current = Date.now();
     synth.pluck(392);
-    const f = freqRef.current;
+    const f = freqFor(r);
     synth.padStart(f.hz, 2.5, f.beatHz, volRef.current);
     countdown.current = setInterval(() => {
       const left = RETENTION_S - Math.floor((Date.now() - holdStart.current) / 1000);
@@ -515,7 +539,19 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
     }, RECOVERY_IN_MS);
   }, [clearTimers, runBreath]);
 
-  const start = () => { synth.arm(); stopFreqPreview(); setHolds([]); runBreath(1, 1); };
+  const start = () => {
+    synth.arm(); stopFreqPreview(); setHolds([]);
+    // 3-2-1 before the first inhale (Ali 2026-09-11) · a soft tick each second.
+    setPhase("countdown"); setRound(1); setCount(COUNTDOWN_S);
+    let n = COUNTDOWN_S;
+    synth.pluck(523, 0.14);
+    countdown.current = setInterval(() => {
+      n -= 1;
+      if (n >= 1) { setCount(n); synth.pluck(523, 0.14); return; }
+      clearTimers();
+      runBreath(1, 1);
+    }, 1000);
+  };
   const exit = () => { clearTimers(); synth.padStop(); setPhase("idle"); router.push("/today"); };
   useEffect(() => () => { clearTimers(); synth.padStop(); }, [clearTimers]);
 
@@ -571,14 +607,31 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
             <span className="tail">
               {previewingFreq
                 ? <button onClick={stopFreqPreview} style={{ background: "none", border: "none", color: "var(--violet)", font: "inherit", fontSize: 14, cursor: "pointer", padding: 0 }}>■ stop</button>
-                : freqOpt.label}
+                : "one per round"}
             </span>
           </div>
           <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
+            {/* Which round the chips below set · each shows its current tone */}
+            <div role="tablist" aria-label="Round" style={{ display: "grid", gridTemplateColumns: `repeat(${ROUNDS}, 1fr)`, gap: 4, padding: 4, borderRadius: 12, background: "var(--fill-1)" }}>
+              {freqOpts.map((f, i) => {
+                const on = editRound === i;
+                return (
+                  <button key={i} role="tab" aria-selected={on} onClick={() => setEditRound(i)}
+                    style={{ minHeight: 52, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", background: on ? "var(--bg-card)" : "transparent", color: on ? "var(--ink)" : "var(--ink-3)", display: "grid", gap: 2, alignContent: "center", WebkitTapHighlightColor: "transparent" }}>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>Round {i + 1}</span>
+                    <span style={{ fontSize: 13, fontFamily: "var(--f-mono)", color: on ? "var(--violet)" : "var(--ink-3)" }}>{f.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-3)" }}>
+              <span>Tap a tone below to set it for round {editRound + 1}.</span>
+              <button onClick={() => saveFreqs([freqIds[editRound], freqIds[editRound], freqIds[editRound]])} style={{ background: "none", border: "none", color: "var(--violet)", font: "inherit", fontSize: 13, cursor: "pointer", padding: "6px 0", minHeight: 32 }}>Use for all rounds</button>
+            </div>
             <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Brainwave beats · some real studies behind these · headphones needed</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {FREQS_EVIDENCE.map((f) => (
-                <button key={f.id} onClick={() => pickFreq(f)} aria-pressed={freqId === f.id} style={chip(freqId === f.id)}>
+                <button key={f.id} onClick={() => pickFreq(f)} aria-pressed={freqOpt.id === f.id} style={chip(freqOpt.id === f.id)}>
                   {f.label} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {f.sub}</span>
                 </button>
               ))}
@@ -586,13 +639,13 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
             <div style={{ fontSize: 13, color: "var(--ink-3)", paddingTop: 2 }}>Solfeggio tones · calming but no evidence · labels are lore</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {FREQS_TRADITION.map((f) => (
-                <button key={f.id} onClick={() => pickFreq(f)} aria-pressed={freqId === f.id} style={chip(freqId === f.id)}>
+                <button key={f.id} onClick={() => pickFreq(f)} aria-pressed={freqOpt.id === f.id} style={chip(freqOpt.id === f.id)}>
                   {f.hz} <span style={{ color: "var(--ink-3)", fontSize: 13 }}>· {f.sub}</span>
                 </button>
               ))}
             </div>
             <div style={{ fontSize: 13, color: "var(--ink-4)" }}>
-              Tap to hear it. The tone plays continuously during the hold, nowhere else.
+              Tap to hear it. Each round&rsquo;s tone plays continuously during that round&rsquo;s hold, nowhere else.
             </div>
           </div>
         </section>
@@ -621,6 +674,7 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
   // ── Running ─────────────────────────────────────────────────────────────────
   const isRetention = phase === "retention";
   const label =
+    phase === "countdown" ? "Get ready" :
     phase === "breathing" ? (inhaling ? "Breathe in" : "Let go") :
     isRetention ? "Hold" :
     phase === "recoveryIn" ? "Big breath in" :
@@ -656,14 +710,17 @@ function WimHofScreen({ onBack }: { onBack: () => void }) {
             : "transform 2s cubic-bezier(.45,0,.55,1)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <span className="tabular-nums" style={{ fontSize: phase === "breathing" ? 72 : 64, fontWeight: 200, lineHeight: 1, color: "var(--ink)" }}>
-            {phase === "breathing" ? breath : phase === "recoveryIn" ? "↑" : fmt(remaining)}
+          <span className="tabular-nums" style={{ fontSize: phase === "breathing" || phase === "countdown" ? 72 : 64, fontWeight: 200, lineHeight: 1, color: "var(--ink)" }}>
+            {phase === "countdown" ? count : phase === "breathing" ? breath : phase === "recoveryIn" ? "↑" : fmt(remaining)}
           </span>
         </div>
 
         <div style={{ fontSize: 20, fontWeight: 600, color: "var(--ink)" }}>{label}</div>
         {isRetention && (
-          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{freqOpt.label} playing · tap anywhere to breathe</div>
+          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{freqOpts[Math.min(ROUNDS, round) - 1].label} playing · tap anywhere to breathe</div>
+        )}
+        {phase === "countdown" && (
+          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>breathe normally · first breath in on zero</div>
         )}
         {phase === "breathing" && (
           <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{BREATHS - breath} to go{round > 1 ? ` · last hold ${fmt(holds[holds.length - 1] ?? 0)}` : ""}</div>
@@ -700,6 +757,7 @@ function GenericPlayer({ t, cycles, style, vol, onExit }: {
   const [stepIdx, setStepIdx] = useState(0);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [fireCount, setFireCount] = useState(0);
+  const [count, setCount] = useState<number | null>(COUNTDOWN_S);
   const [done, setDone] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const intervals = useRef<ReturnType<typeof setInterval>[]>([]);
@@ -758,7 +816,17 @@ function GenericPlayer({ t, cycles, style, vol, onExit }: {
   useEffect(() => {
     stopped.current = false;
     synth.arm();
-    runStep(1, 0);
+    // 3-2-1 before the first step (Ali 2026-09-11) · soft tick each second.
+    let n = COUNTDOWN_S;
+    synth.pluck(523, 0.14);
+    const cd = setInterval(() => {
+      n -= 1;
+      if (n >= 1) { setCount(n); synth.pluck(523, 0.14); return; }
+      clearInterval(cd);
+      setCount(null);
+      runStep(1, 0);
+    }, 1000);
+    intervals.current.push(cd);
     return () => { stopped.current = true; clearAll(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -811,11 +879,11 @@ function GenericPlayer({ t, cycles, style, vol, onExit }: {
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <span className="tabular-nums" style={{ fontSize: 64, fontWeight: 200, lineHeight: 1, color: "var(--ink)" }}>
-            {step.kind === "fire" ? fireCount : remaining !== null ? remaining : ""}
+            {count !== null ? count : step.kind === "fire" ? fireCount : remaining !== null ? remaining : ""}
           </span>
         </div>
-        <div style={{ fontSize: 20, fontWeight: 600, color: "var(--ink)" }}>{step.label}</div>
-        <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{t.patternWords}</div>
+        <div style={{ fontSize: 20, fontWeight: 600, color: "var(--ink)" }}>{count !== null ? "Get ready" : step.label}</div>
+        <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{count !== null ? "breathe normally · we start on zero" : t.patternWords}</div>
       </div>
 
       <div style={{ minHeight: 40 }} />
