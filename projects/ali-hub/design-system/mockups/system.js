@@ -1,5 +1,5 @@
 /* ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-   CONTROL CENTER Â· system.js
+   A L I Â· system.js
    Shared SVG <defs>, icon set (Lucide-style line), nav renderer.
    ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 
@@ -93,7 +93,7 @@
       const cur = el.getAttribute('data-cc-nav');
       const dateStr = el.getAttribute('data-date') || 'Wed Â· May 13 Â· 2026';
       el.innerHTML = `
-        <div class="brand"><span class="dot"></span>Control Center</div>
+        <div class="brand"><span class="dot"></span>A L I</div>
         <nav class="nav">
           ${NAV.map(n => `<a href="${n.href}" class="${n.k===cur?'cur':''}">${svg(n.k)}<span>${n.label}</span></a>`).join('')}
         </nav>

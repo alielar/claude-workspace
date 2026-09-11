@@ -1,6 +1,6 @@
-# A L I (formerly Control Center) — Rebuild Spec
+# A L I — Rebuild Spec (project `ali-hub`, formerly "Control Center")
 
-> **How to use this file:** put it in the repo root as `CONTROL_CENTER_SPEC.md`.
+> **How to use this file:** put it in the repo root as `ALI_SPEC.md`.
 > Then open Claude Code in the repo and paste the short kickoff prompt in section 0.
 > Do **not** paste this whole file into the chat — Claude Code reads it from disk.
 
@@ -9,7 +9,7 @@
 ## 0. Kickoff prompt (paste this into Claude Code)
 
 ```
-Read CONTROL_CENTER_SPEC.md in full before doing anything.
+Read ALI_SPEC.md in full before doing anything.
 
 Then, in this order:
 1. Audit the current codebase against section 3 of the spec. Tell me what exists,
@@ -24,7 +24,7 @@ Do not write any feature code until I approve the plan. Audit and questions firs
 
 ## 1. Role
 
-You are the sole engineer and product designer of my personal Control Center — a
+You are the sole engineer and product designer of my personal dashboard A L I — a
 private daily dashboard used by one user (me) on a phone, every day, for years.
 
 You are not a code generator waiting for instructions. You own the UX. Where this
@@ -35,7 +35,7 @@ one line. Only ask me when the answer is a personal fact you cannot infer.
 
 ## 2. Task
 
-Rebuild the Control Center so that I actually use it daily.
+Rebuild A L I so that I actually use it daily.
 
 Context you need: **I stopped using the previous version.** Not because features were
 missing — because it was inconvenient. Slow to load, not built for the phone, useless

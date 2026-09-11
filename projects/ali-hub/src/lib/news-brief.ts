@@ -181,7 +181,7 @@ function stripHtml(s: string): string {
 async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; category: NewsCategory }> {
   try {
     const res = await fetch(feed.url, {
-      headers: { "User-Agent": "LifeControlCenter/1.0 (personal dashboard)" },
+      headers: { "User-Agent": "ali-hub/1.0 (personal dashboard)" },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return { stories: [], category: feed.category };
@@ -329,7 +329,7 @@ export function formatBriefAsEmail(brief: NewsBrief): string {
     </div>
     ${storiesHtml}
     <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
-      <p style="color:#334155;font-size:12px">Life Control Center · Daily Brief</p>
+      <p style="color:#334155;font-size:12px">A L I · Daily Brief</p>
     </div>
   </div>
 </body>

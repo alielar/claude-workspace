@@ -1,5 +1,5 @@
 /**
- * Single-user identity for Control Center.
+ * Single-user identity for A L I.
  *
  * This app belongs to one person: Ali. No multi-user, no auth flow.
  *

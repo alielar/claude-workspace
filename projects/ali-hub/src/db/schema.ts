@@ -1,5 +1,5 @@
 /**
- * Database schema for Control Center
+ * Database schema for A L I
  * Drizzle ORM + Turso (SQLite)
  *
  * Only tables the code still reads/writes are declared here. Old tables that

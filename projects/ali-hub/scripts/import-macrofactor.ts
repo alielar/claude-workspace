@@ -1,5 +1,5 @@
 /**
- * MacroFactor → Life Control Center import script
+ * MacroFactor → A L I import script
  *
  * Reads:  data/workout-log.csv
  * Writes: programs, workout_plans, exercise_db, plan_exercises, gym_sessions, gym_sets, exercise_prs

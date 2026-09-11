@@ -106,7 +106,7 @@ function decode(s: string): string {
 export async function fetchChannelVideos(ch: YtChannel, maxAgeHours = ch.maxAgeHours ?? 48): Promise<NewsVideo[]> {
   try {
     const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`, {
-      headers: { "User-Agent": "LifeControlCenter/1.0 (personal dashboard)" },
+      headers: { "User-Agent": "ali-hub/1.0 (personal dashboard)" },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return [];

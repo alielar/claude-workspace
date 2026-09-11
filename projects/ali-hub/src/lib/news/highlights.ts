@@ -353,7 +353,7 @@ export function parseLatin(title: string): Parsed | null {
 type FeedEntry = { videoId: string; title: string; publishedAt: number };
 async function fetchFeed(channelId: string): Promise<FeedEntry[]> {
   const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
-    headers: { "user-agent": "ali-control-center" }, signal: AbortSignal.timeout(8000),
+    headers: { "user-agent": "ali-hub/1.0 (personal dashboard)" }, signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) throw new Error(`feed ${res.status}`);
   const xml = await res.text();

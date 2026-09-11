@@ -1,4 +1,4 @@
-/* Control Center service worker.
+/* A L I service worker.
  *
  * Goal: the app opens instantly and works offline.
  *

@@ -49,7 +49,7 @@ const summaryText = (s: unknown): string =>
 /** All of `day`'s (YYYY-MM-DD, Madrid) timed events from one ICS feed. */
 export async function fetchDayEvents(url: string, day: string): Promise<RawEvent[]> {
   const ical = await import("node-ical");
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { "user-agent": "ali-control-center" } });
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { "user-agent": "ali-hub/1.0 (personal dashboard)" } });
   if (!res.ok) throw new Error(`ics ${res.status}`);
   const data = ical.sync.parseICS(await res.text());
 
