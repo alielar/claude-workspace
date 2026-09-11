@@ -38,6 +38,7 @@ const CHANNEL_GROUPS: { category: string; label: string }[] = [
   { category: "geopolitics", label: "Geopolitics" },
   { category: "tech",        label: "Tech & AI" },
   { category: "business",    label: "Business" },
+  { category: "tools",       label: "Claude & AI tools" },
 ];
 
 const KETTLEBELLS = [
@@ -423,6 +424,17 @@ export default function SettingsPage() {
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>
       </Link>
+
+      {/* Home-screen widget · the Scriptable script with this app's key already filled in */}
+      <a href="/api/widget/script" target="_blank" rel="noopener noreferrer" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+          <span>
+            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Home-screen widget</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Open the script, select all, copy, paste over &ldquo;ALI&rdquo; in Scriptable</span>
+          </span>
+          <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
+        </div>
+      </a>
 
       {/* Books */}
       <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>

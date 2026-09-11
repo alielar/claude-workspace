@@ -8,7 +8,9 @@
 
 import type { NewsCategory } from "@/lib/news-brief";
 
-export type YtChannel = { id: string; name: string; category: NewsCategory; why: string };
+/** Video categories = the four news interests + "tools" (Claude / AI tooling, 2026-09-12). */
+export type VideoCategory = NewsCategory | "tools";
+export type YtChannel = { id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number };
 
 export const YT_CHANNELS: YtChannel[] = [
   // Football · Real Madrid + tactics; the Moroccan team surfaces through keywords on all football channels
@@ -29,14 +31,28 @@ export const YT_CHANNELS: YtChannel[] = [
   { id: "UCIALMKvObZNtJ6AmdCLP7Lg", name: "Bloomberg Television", category: "business", why: "markets and companies, daily" },
   { id: "UCASM0cgfkJxQ1ICmRilfHLw", name: "Patrick Boyle",      category: "business",    why: "finance professor, dry humour, explains what actually happened" },
   { id: "UCFCEuCsyWP0YkP3CZ3Mr01Q", name: "The Plain Bagel",    category: "business",    why: "personal finance and markets without hype" },
+  // Claude & AI tools (2026-09-12, Ali: get better at Claude Code / Claude / Cowork, quality over
+  // volume). These channels post weekly, so the window is 10 days and titles are filtered
+  // (TOOLS_INCLUDE / TOOLS_EXCLUDE below) · beginner overviews and product-drama never show.
+  { id: "UC_x36zCEGilGpB1m-V4gmjg", name: "IndyDevDan",         category: "tools", maxAgeHours: 240, why: "agentic engineering: how to structure work for coding agents, deep and practical" },
+  { id: "UCswG6FSbgZjbWtdf_hMLaow", name: "Matt Pocock",        category: "tools", maxAgeHours: 240, why: "Claude Code skills and workflows (/wayfinder, /grill-me), planning with agents" },
+  { id: "UCMwVTLZIRRUyyVrkjDpn4pA", name: "Cole Medin",         category: "tools", maxAgeHours: 240, why: "AI coding workflows, context and safety for agents that touch real systems" },
+  { id: "UCrXSVX9a1mj8l0CMLwKgMVw", name: "AI Jason",           category: "tools", maxAgeHours: 240, why: "context engineering and agent loops, tested hands-on" },
+  { id: "UCelfWQr9sXVMTvBzviPGlFw", name: "AI LABS",            category: "tools", maxAgeHours: 240, why: "Claude skills, rules and tools, week by week" },
 ];
+
+/** Tools videos must be about the craft · one of these words in the title … */
+const TOOLS_INCLUDE = /\b(claude|cowork|anthropic|fable|opus|agent|agentic|agents|context|skill|skills|workflow|workflows|mcp|prompt|prompting|harness|coding|codebase|sandbox|plan|planning|spec|specs|memory|subagent|hooks?)\b/i;
+/** … and none of these (beginner overviews, hype, money talk). */
+const TOOLS_EXCLUDE = /\b(beginner|beginners|getting started|intro|introduction|explained in|in 10 minutes|for dummies|make money|\$\d|insane|shocking|it's over|debate|vs\.?|versus|review|unboxing)\b/i;
+export const passesToolsFilter = (title: string) => TOOLS_INCLUDE.test(title) && !TOOLS_EXCLUDE.test(title);
 
 export type NewsVideo = {
   id: string;               // YouTube video id
   title: string;
   channel: string;
   channelId: string;
-  category: NewsCategory;
+  category: VideoCategory;
   url: string;              // https://www.youtube.com/watch?v=…
   thumbnail: string;
   publishedAt: string;      // ISO
@@ -53,7 +69,7 @@ function decode(s: string): string {
 }
 
 /** Fetch one channel's latest uploads (published within `maxAgeHours`). */
-export async function fetchChannelVideos(ch: YtChannel, maxAgeHours = 48): Promise<NewsVideo[]> {
+export async function fetchChannelVideos(ch: YtChannel, maxAgeHours = ch.maxAgeHours ?? 48): Promise<NewsVideo[]> {
   try {
     const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`, {
       headers: { "User-Agent": "LifeControlCenter/1.0 (personal dashboard)" },
@@ -73,6 +89,7 @@ export async function fetchChannelVideos(ch: YtChannel, maxAgeHours = 48): Promi
       const title = decode(tag(e, "title"));
       // Skip shorts / live placeholders by title convention
       if (/#shorts?\b/i.test(title)) continue;
+      if (ch.category === "tools" && !passesToolsFilter(title)) continue;
       const thumb = e.match(/<media:thumbnail url="([^"]+)"/)?.[1] ?? `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
       out.push({
         id, title, channel: ch.name, channelId: ch.id, category: ch.category,
@@ -94,17 +111,18 @@ export async function fetchBriefVideos(enabledIds: string[] | null, perCategory 
   const lists = await Promise.all(channels.map((c) => fetchChannelVideos(c)));
   const all = lists.flat().sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
   const picked: NewsVideo[] = [];
-  for (const cat of ["football", "geopolitics", "business", "tech"] as NewsCategory[]) {
+  for (const cat of ["tools", "tech", "geopolitics", "business", "football"] as VideoCategory[]) {
     const pool = all.filter((v) => v.category === cat);
+    const want = cat === "tools" ? 4 : perCategory;
     const usedChannels = new Set<string>();
     const chosen: NewsVideo[] = [];
     for (const v of pool) {
-      if (chosen.length >= perCategory) break;
+      if (chosen.length >= want) break;
       if (usedChannels.has(v.channelId)) continue;
       chosen.push(v); usedChannels.add(v.channelId);
     }
     for (const v of pool) {
-      if (chosen.length >= perCategory) break;
+      if (chosen.length >= want) break;
       if (!chosen.includes(v)) chosen.push(v);
     }
     picked.push(...chosen);
