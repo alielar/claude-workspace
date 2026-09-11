@@ -39,7 +39,9 @@ const BUCKETS: { key: Bucket; label: string; color: string; folded?: boolean; da
   { key: "nextWeek",  label: "Next week",    color: "var(--ink-3)",  dated: true, folded: true },
   { key: "nextMonth", label: "Next month",   color: "var(--ink-3)",  dated: true, folded: true },
   { key: "later",     label: "Later",        color: "var(--ink-3)",  dated: true, folded: true },
-  { key: "someday",   label: "Someday",      color: "var(--ink-3)" },
+  // Someday folds too (Ali 2026-09-12) · closed by default, and once opened it stays
+  // open until closed again (openGroups is remembered on the phone).
+  { key: "someday",   label: "Someday",      color: "var(--ink-3)",  folded: true },
 ];
 
 const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)", 2: "var(--neg)" };
@@ -720,7 +722,16 @@ export default function TodoPage() {
   const [draft, setDraft] = useState<Todo | null>(null); // new entry being composed in a sheet
   const [showDone, setShowDone] = useState(false);
   const [showVault, setShowVault] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({}); // folded far buckets, collapsed by default
+  // Folded buckets (Next week · Next month · Later · Someday): closed by default, an
+  // opened one stays open across visits until closed (localStorage cc-todo-open-groups).
+  const [openGroups, setOpenGroupsState] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    try { const raw = JSON.parse(localStorage.getItem("cc-todo-open-groups") ?? "null"); if (raw && typeof raw === "object") setOpenGroupsState(raw); } catch { /* ignore */ }
+  }, []);
+  const setOpenGroups = (fn: (o: Record<string, boolean>) => Record<string, boolean>) => {
+    setOpenGroupsState((o) => { const next = fn(o); try { localStorage.setItem("cc-todo-open-groups", JSON.stringify(next)); } catch { /* ignore */ } return next; });
+  };
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = useMemo(() => (!isLists && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists]);
