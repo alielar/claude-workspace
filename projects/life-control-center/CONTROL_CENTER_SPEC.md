@@ -319,7 +319,8 @@ Any future session picks these up from here; Ali should not have to repeat them.
    `ali_session` (HMAC with AUTH_SECRET, 400 days, re-issued monthly by the proxy — sign in once).
    `src/proxy.ts` gates pages (→ `/login`) and APIs (401) **only when `AUTH_REQUIRED=1`** is set in
    Vercel; widget + pinger pass with the `x-app-key` header/`?key=`. Google Cloud OAuth client must
-   list `https://life-control-center-eta.vercel.app/api/auth/callback/google` as a redirect URI.
+   list `https://ali-hub.vercel.app/api/auth/callback/google` as a redirect URI (added 2026-09-12; the
+   old `life-control-center-eta` URI stays listed too).
 3. **Phone notifications for to-do reminders.** Ali wants a notification that stays visible
    until dismissed by hand — not one that disappears on unlock. **Before building, report
    honestly what iOS actually allows a web app (PWA) to do**; if a truly persistent
@@ -358,18 +359,19 @@ Any future session picks these up from here; Ali should not have to repeat them.
    stamped by iOS — both unfixable without a native WidgetKit wrapper.
 8. **Word bank / spaced repetition revival.** Archived at `/wordbank`, restorable in one line
    (see CLAUDE.md §4).
-9. **Project rename → "ali-app" / ali-app.vercel.app (deferred 2026-09-10, Ali: significant
-   manual work on his side, not a priority).** Full audit done 2026-09-09; execute in this order
-   so nothing breaks: (1) Ali adds `ali-app.vercel.app` as an ADDITIONAL Vercel domain (old URL
-   keeps working) and adds `https://ali-app.vercel.app/api/auth/callback/google` to the Google
-   OAuth client; (2) repoint clients: `public/widget.js` BASE, the calendar-sync cloud routine's
-   prompt (trigger trig_015iKVEuyadsVXBc6mu6VPYz), cron-job.org pinger URL, then Ali reinstalls
-   the PWA from the new domain and re-enables push on phone + laptop (origin change = PWA
-   reinstall, localStorage lost, push re-subscription; server data is safe); (3) only then
-   optionally rename the Vercel project + local folder (`projects/life-control-center` → update
-   Vercel Root Directory + workspace `.vercel/project.json`) and the cosmetics (package.json
-   name, two User-Agent strings, email footer, docs). Click-by-click doc for Ali's steps to be
-   written when he says go.
+9. **Address change → ali-hub.vercel.app (started 2026-09-12).** "ali-app" was taken (someone's
+   starter page), so Ali picked `ali-hub.vercel.app`. Done that day: added as an ADDITIONAL Vercel
+   domain (the old `life-control-center-eta.vercel.app` stays attached and working, on purpose),
+   Google OAuth redirect URI added, sign-in verified; repointed `public/widget.js` BASE, the docs
+   and the Wati outreach scripts. Still open, in order: (a) Ali allows `ali-hub.vercel.app` in the
+   cloud environment "Default" network list, THEN the calendar-sync routine prompt is switched
+   (trigger trig_015iKVEuyadsVXBc6mu6VPYz, next runs 05/08/11/15 UTC); (b) cron-job.org pinger URL;
+   (c) re-paste the Scriptable widget from Settings; (d) Apple Shortcut URLs (sleep/run ingest);
+   (e) reinstall the PWA on phone + laptop from the new address and re-enable push (origin change =
+   localStorage lost, server data safe). Later, optional cosmetics: Vercel project name, local
+   folder (`projects/life-control-center` → change Vercel Root Directory + both `.vercel/project.json`
+   in the same minute), package.json name, User-Agent strings, email footer. The old domain can stay
+   forever at no cost; remove it only after two quiet weeks and a re-check of every caller above.
 11. **Football highlights, no spoilers** — ~~researched 2026-09-11~~ **built 2026-09-12** (Ali: go). Card on News: matchup + context only, tap → YouTube app. Sources: beIN (CL, La Liga, PL, Ligue 1), Serie A official channel, FC Bayern / BVB / RB Leipzig club channels; gap = VfB Stuttgart league games. Details in CLAUDE.md §3 News. Research notes kept below: Source checked:
    the official beIN SPORTS channel (YouTube id `UCJUCcJUeh0Cz2xyKwkw5Q1w`, Arabic). Findings: (a) every
    highlight thumbnail shows the FINAL SCORE in big digits plus celebrating players → a blank placeholder

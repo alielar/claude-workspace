@@ -9,7 +9,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 const TOKEN = process.env.WATI_TOKEN.replace(/^Bearer\s+/i, '');
 const H = { Authorization: `Bearer ${TOKEN}` };
-const HOOK = 'https://life-control-center-eta.vercel.app/api/wati?key=' +
+const HOOK = 'https://ali-hub.vercel.app/api/wati?key=' +
   readFileSync('.wati-webhook-secret', 'utf8').trim() + '&limit=5000';
 
 const STAGE_N = process.argv.includes('--stage') ? Number(process.argv[process.argv.indexOf('--stage') + 1]) : 1;

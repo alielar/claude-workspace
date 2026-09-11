@@ -512,7 +512,7 @@ async function phonesWhoReplied() {
     const key = readFileSync(HOOK_KEY_FILE, 'utf8').trim();
     // Events now come back with their content inline; `since` keeps each poll
     // to just what arrived after the previous one.
-    const d = await (await fetch(`https://life-control-center-eta.vercel.app/api/wati?key=${key}&limit=5000&since=${encodeURIComponent(hookSince)}`)).json();
+    const d = await (await fetch(`https://ali-hub.vercel.app/api/wati?key=${key}&limit=5000&since=${encodeURIComponent(hookSince)}`)).json();
     for (const ev of d.events || []) {
       if (ev.at > hookSince) hookSince = ev.at;
       const b = ev.event || {};

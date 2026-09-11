@@ -6,7 +6,9 @@
 
 > App name on the phone is **A L I** (picked 2026-08-30, after a brief stop at "Helm"; manifest + iOS title + icon in `src/lib/appIcon.tsx` — white A, violet sun rising behind the crossbar). The repo, spec and this file keep "Control Center" as the project name. Deferred work lives in the spec §7c — read it before proposing new features.
 
-> Last updated: 2026-09-11. Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
+> **Address (2026-09-12):** https://ali-hub.vercel.app is the new home. https://life-control-center-eta.vercel.app stays attached to the same Vercel project (`life-control-center`) and keeps working; never remove it without re-checking the widget, the cron-job.org pinger, the calendar routine and the Shortcuts. Status of the move: spec §7c item 9.
+
+> Last updated: 2026-09-12. Read `CONTROL_CENTER_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 
 ## 1. What this is
 

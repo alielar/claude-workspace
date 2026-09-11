@@ -13,7 +13,7 @@
 // sits at the numeral's top-right when the streak ties or beats the record.
 // Data from /api/widget; iOS refreshes widgets every 10–30 minutes on its own.
 
-const BASE = "https://life-control-center-eta.vercel.app";
+const BASE = "https://ali-hub.vercel.app";   // new address since 2026-09-12 (the old life-control-center-eta one still answers)
 const KEY = "";   // filled in automatically when you copy the script from Settings
 
 const INK = new Color("#F2F2F7");

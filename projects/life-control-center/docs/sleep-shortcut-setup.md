@@ -9,7 +9,7 @@ This guide helps you connect your Apple Watch data (sleep + running) to your Lif
 Open this URL in your phone's browser to verify the endpoint is alive:
 
 ```
-https://life-control-center-eta.vercel.app/api/sleep/ingest
+https://ali-hub.vercel.app/api/sleep/ingest
 ```
 
 You should see a JSON response with `"ok": true`. If you see an error, the platform isn't deployed properly.
@@ -42,7 +42,7 @@ You should see a JSON response with `"ok": true`. If you see an error, the platf
 
 **Action 3 — Send to Control Center**
 - Search for: **Get Contents of URL**
-- URL: `https://life-control-center-eta.vercel.app/api/sleep/ingest`
+- URL: `https://ali-hub.vercel.app/api/sleep/ingest`
 - Method: **POST**
 - Request Body: **JSON**
 - Add these fields one by one (tap "Add new field"):
@@ -116,7 +116,7 @@ Then add these extra fields to the JSON body:
 
 **Action 3 — Send to Control Center**
 - Search for: **Get Contents of URL**
-- URL: `https://life-control-center-eta.vercel.app/api/workouts/run-ingest`
+- URL: `https://ali-hub.vercel.app/api/workouts/run-ingest`
 - Method: **POST**
 - Request Body: **JSON**
 - Add these fields:
@@ -148,8 +148,8 @@ If you run regularly, set up a daily automation like the sleep one (e.g., at 9 P
 1. **Run the shortcut manually** — open Shortcuts app, tap the shortcut. Watch for the notification.
 2. **Check the notification** — it should say `{"success": true, ...}`. If it shows an error, the issue is in the data being sent.
 3. **Check the debug endpoint** — open this in your browser:
-   - Sleep: `https://life-control-center-eta.vercel.app/api/sleep/ingest`
-   - Running: `https://life-control-center-eta.vercel.app/api/workouts/run-ingest`
+   - Sleep: `https://ali-hub.vercel.app/api/sleep/ingest`
+   - Running: `https://ali-hub.vercel.app/api/workouts/run-ingest`
    
    These show the most recent data received. If your data isn't there, the shortcut isn't sending correctly.
 
