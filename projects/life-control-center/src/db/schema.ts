@@ -186,6 +186,22 @@ export const calendarCache = sqliteTable("calendar_cache", {
   fetchedAt: integer("fetched_at", { mode: "timestamp_ms" }).notNull(),
 });
 
+// ─── Football highlights (spoiler-free · src/lib/news/highlights.ts) ─────────
+// Global content (one user), not per user. video_id unique → polls are idempotent.
+
+export const highlights = sqliteTable("highlights", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  videoId: text("video_id").notNull().unique(),
+  source: text("source").notNull(),          // bein | seriea | bayern | bvb | leipzig
+  title: text("title").notNull(),            // original title · never shown (scores!)
+  home: text("home").notNull(),
+  away: text("away").notNull(),
+  competition: text("competition").notNull(),
+  context: text("context").notNull(),        // "Serie A · Matchday 3"
+  publishedAt: integer("published_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
+});
+
 // ─── Push subscriptions (reminders) ──────────────────────────────────────────
 
 export const pushSubscriptions = sqliteTable("push_subscriptions", {

@@ -15,6 +15,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
+import type { Highlight } from "@/lib/news/highlights";
 import type { NewsBrief, NewsStory, NewsVideo } from "@/lib/news-brief";
 import { PodcastCard } from "@/components/PodcastCard";
 import { checklistToday } from "@/lib/checklist/day";
@@ -387,6 +388,55 @@ function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
   );
 }
 
+// ─── Football highlights · spoiler-free (2026-09-12) ─────────────────────────
+// Matchup + context only. No thumbnail (beIN's carry the score), no title. The
+// tap opens the YouTube app; the video's own page is Ali's responsibility.
+
+function dayLabel(ms: number): string {
+  const d = new Date(ms), now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const yesterday = new Date(now.getTime() - 86400_000).toDateString() === d.toDateString();
+  if (sameDay) return "Today";
+  if (yesterday) return "Yesterday";
+  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function HighlightsCard() {
+  const { data } = useCached<{ items: Highlight[] }>("highlights", () => fetchJson<{ items: Highlight[] }>("/api/highlights"));
+  const [showAll, setShowAll] = useState(false);
+  const items = data?.items ?? [];
+  if (items.length === 0) return null;
+  const shown = showAll ? items : items.slice(0, 8);
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">Highlights</span><span className="tail">no scores · opens YouTube</span></div>
+      <div>
+        {shown.map((h, i) => {
+          const newDay = i === 0 || dayLabel(shown[i - 1].publishedAt) !== dayLabel(h.publishedAt);
+          return (
+            <div key={h.videoId}>
+              {newDay && <div style={{ padding: "10px 16px 2px", fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{dayLabel(h.publishedAt)}</div>}
+              <a href={`https://www.youtube.com/watch?v=${h.videoId}`} target="_blank" rel="noopener noreferrer"
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
+                  <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}</span>
+                </span>
+                <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 13, paddingLeft: 2 }}>▶</span>
+              </a>
+            </div>
+          );
+        })}
+        {items.length > 8 && (
+          <button onClick={() => setShowAll((v) => !v)} style={{ width: "100%", minHeight: 44, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>
+            {showAll ? "Show fewer" : `Show all ${items.length}`}
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function NewsPage() {
@@ -557,6 +607,9 @@ export default function NewsPage() {
           </div>
         </section>
       )}
+
+      {/* Football highlights · spoiler-free */}
+      {!generating && <HighlightsCard />}
 
       {/* Interest chips */}
       {!generating && columns.length > 1 && (
