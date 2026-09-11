@@ -87,8 +87,11 @@ const weekdayTime = (d: Date) => new Intl.DateTimeFormat("en-GB", { weekday: "lo
 /** Relative day words the script must not use for events (the lint · case-insensitive). */
 const RELATIVE_DAY_RE = /\b(yesterday|last night|this morning|earlier today|later today|tonight|this evening|this afternoon|overnight)\b/gi;
 export const relativeDayWords = (script: string): string[] => {
+  // The greeting line and the closing "For the day" chapter legitimately say
+  // "this morning" · only the news body is checked.
+  const body = script.replace(/^###\s*For the day[\s\S]*$/im, "").replace(/^Good morning[^\n]*$/im, "");
   const seen = new Set<string>();
-  for (const m of script.matchAll(RELATIVE_DAY_RE)) seen.add(m[1].toLowerCase());
+  for (const m of body.matchAll(RELATIVE_DAY_RE)) seen.add(m[1].toLowerCase());
   return [...seen];
 };
 
