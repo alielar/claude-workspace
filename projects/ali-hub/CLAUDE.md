@@ -6,7 +6,7 @@
 
 > App name on the phone is **A L I** (picked 2026-08-30, after a brief stop at "Helm"; manifest + iOS title + icon in `src/lib/appIcon.tsx` — white A, violet sun rising behind the crossbar). Folder, Vercel project and package are all `ali-hub` since 2026-09-12 (before that: "Life Control Center"). Deferred work lives in the spec §7c — read it before proposing new features.
 
-> **Address (2026-09-12):** https://ali-hub.vercel.app is the new home. https://life-control-center-eta.vercel.app stays attached to the same Vercel project (`life-control-center`) and keeps working; never remove it without re-checking the widget, the cron-job.org pinger, the calendar routine and the Shortcuts. Status of the move: spec §7c item 9.
+> **Address:** https://ali-hub.vercel.app (since 2026-09-12). The former life-control-center-eta address is gone: removed from Vercel, the project, folder and package are all `ali-hub`. Every caller (phone PWA, Scriptable widget, cron-job.org pinger, calendar routine, Wati webhook, Google OAuth) was repointed the same day. History of the move: spec §7c item 9.
 
 > Last updated: 2026-09-12. Read `ALI_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 

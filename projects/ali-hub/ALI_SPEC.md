@@ -363,19 +363,17 @@ Any future session picks these up from here; Ali should not have to repeat them.
    stamped by iOS — both unfixable without a native WidgetKit wrapper.
 8. **Word bank / spaced repetition revival.** Archived at `/wordbank`, restorable in one line
    (see CLAUDE.md §4).
-9. **Address change → ali-hub.vercel.app (started 2026-09-12).** "ali-app" was taken (someone's
-   starter page), so Ali picked `ali-hub.vercel.app`. Done that day: added as an ADDITIONAL Vercel
-   domain (the old `life-control-center-eta.vercel.app` stays attached and working, on purpose),
-   Google OAuth redirect URI added, sign-in verified; repointed `public/widget.js` BASE, the docs
-   and the Wati outreach scripts. Still open, in order: (a) Ali allows `ali-hub.vercel.app` in the
-   cloud environment "Default" network list, THEN the calendar-sync routine prompt is switched
-   (trigger trig_015iKVEuyadsVXBc6mu6VPYz, next runs 05/08/11/15 UTC); (b) cron-job.org pinger URL;
-   (c) re-paste the Scriptable widget from Settings; (d) Apple Shortcut URLs (sleep/run ingest);
-   (e) reinstall the PWA on phone + laptop from the new address and re-enable push (origin change =
-   localStorage lost, server data safe). Later, optional cosmetics: Vercel project name, local
-   folder (`projects/life-control-center` → change Vercel Root Directory + both `.vercel/project.json`
-   in the same minute), package.json name, User-Agent strings, email footer. The old domain can stay
-   forever at no cost; remove it only after two quiet weeks and a re-check of every caller above.
+9. ~~**Address change → ali-hub.vercel.app**~~ **Completed 2026-09-12.** "ali-app" was taken (someone's
+   starter page), so Ali picked `ali-hub`. Done in one evening, nothing broke: new domain added
+   alongside the old one → Google OAuth redirect URI + sign-in verified → every caller repointed
+   (widget.js BASE, cron-job.org pinger, calendar-sync routine trig_015iKVEuyadsVXBc6mu6VPYz,
+   Wati webhook + outreach scripts, Scriptable re-pasted, PWA reinstalled on phone + laptop with
+   push re-enabled) → Vercel project renamed `ali-hub` + Root Directory `projects/ali-hub` in the
+   same minute as the folder rename commit → old domain released, leftover NEXTAUTH_* env vars
+   deleted, package name / user-agents / email footer / spec filename (`ALI_SPEC.md`) updated.
+   Apple Shortcuts were deleted instead of repointed (see item 5). Lesson kept: renaming a Vercel
+   project releases its old `.vercel.app` domain automatically; a failed build never touches the
+   live site, so the folder/Root Directory swap is low-risk.
 11. **Football highlights, no spoilers** — ~~researched 2026-09-11~~ **built 2026-09-12** (Ali: go). Card on News: matchup + context only, tap → YouTube app. Sources: beIN (CL, La Liga, PL, Ligue 1), Serie A official channel, FC Bayern / BVB / RB Leipzig club channels; gap = VfB Stuttgart league games. Details in CLAUDE.md §3 News. Research notes kept below: Source checked:
    the official beIN SPORTS channel (YouTube id `UCJUCcJUeh0Cz2xyKwkw5Q1w`, Arabic). Findings: (a) every
    highlight thumbnail shows the FINAL SCORE in big digits plus celebrating players → a blank placeholder
