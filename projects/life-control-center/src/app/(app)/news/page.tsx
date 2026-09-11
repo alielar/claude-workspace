@@ -15,7 +15,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
-import type { Highlight } from "@/lib/news/highlights";
+import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import type { NewsBrief, NewsStory, NewsVideo } from "@/lib/news-brief";
 import { PodcastCard } from "@/components/PodcastCard";
 import { checklistToday } from "@/lib/checklist/day";
@@ -368,6 +368,8 @@ function ago(iso: string): string {
   return `${Math.round(h / 24)}d ago`;
 }
 
+const VIDEO_COLOR: Record<string, string> = { tools: "var(--violet)", tech: "#2E9E8F", ai: "#2E9E8F", geopolitics: "#D05A5A", business: "#3E9A63", football: "#D97A2B" };
+
 function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
   return (
     <a href={v.url} target="_blank" rel="noopener noreferrer" className="news-video" style={{ display: "grid", gap: 8, alignContent: "start", width: 180, flexShrink: 0, scrollSnapAlign: "start", textDecoration: "none", color: "inherit" }}>
@@ -402,27 +404,27 @@ function dayLabel(ms: number): string {
 }
 
 function HighlightsCard() {
-  const { data } = useCached<{ items: Highlight[] }>("highlights", () => fetchJson<{ items: Highlight[] }>("/api/highlights"));
+  const { items, unwatched, markWatched } = useHighlights();
   const [showAll, setShowAll] = useState(false);
-  const items = data?.items ?? [];
   if (items.length === 0) return null;
   const shown = showAll ? items : items.slice(0, 8);
   return (
     <section className="cc-card">
-      <div className="cc-card-head"><span className="title">Highlights</span><span className="tail">no scores · opens YouTube</span></div>
+      <div className="cc-card-head"><span className="title">Highlights</span><span className="tail">{unwatched.length === 0 ? "all watched" : `${unwatched.length} to watch`} · opens YouTube</span></div>
       <div>
         {shown.map((h, i) => {
           const newDay = i === 0 || dayLabel(shown[i - 1].publishedAt) !== dayLabel(h.publishedAt);
           return (
             <div key={h.videoId}>
               {newDay && <div style={{ padding: "10px 16px 2px", fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{dayLabel(h.publishedAt)}</div>}
-              <a href={`https://www.youtube.com/watch?v=${h.videoId}`} target="_blank" rel="noopener noreferrer"
-                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
+              {/* Tap = watched (server-side, every device agrees) + opens YouTube. Watched rows dim and get a tick. */}
+              <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => { if (!h.watched) markWatched(h.videoId); }}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)", opacity: h.watched ? 0.45 : 1 }}>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
-                  <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}</span>
+                  <span style={{ display: "block", fontSize: 16, fontWeight: h.watched ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: h.watched ? "var(--ink-3)" : "var(--ink)" }}>{h.home} vs {h.away}</span>
+                  <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}{h.watched ? " · watched" : ""}</span>
                 </span>
-                <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 13, paddingLeft: 2 }}>▶</span>
+                <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: h.watched ? "transparent" : "var(--fill-2)", border: h.watched ? "1px solid var(--line-strong)" : "none", display: "flex", alignItems: "center", justifyContent: "center", color: h.watched ? "var(--ink-4)" : "var(--ink-2)", fontSize: 13, paddingLeft: h.watched ? 0 : 2 }}>{h.watched ? "✓" : "▶"}</span>
               </a>
             </div>
           );
@@ -447,6 +449,7 @@ export default function NewsPage() {
     "news-brief",
     () => fetchJson<NewsBrief>("/api/news/generate")
   );
+  const { data: liveVideos } = useCached<{ videos: NewsVideo[] }>("news-videos", () => fetchJson<{ videos: NewsVideo[] }>("/api/news/videos"));
   const [generating, setGenerating] = useState(false);
   const [confirmRefresh, setConfirmRefresh] = useState(false);
   const [section, setSection] = useState<string | null>(null); // interest filter chip
@@ -520,7 +523,9 @@ export default function NewsPage() {
     const s = col.stories.find(x => x.featured) ?? col.stories[0];
     return s ? [{ story: s, col }] : [];
   });
-  const videos = displayedBrief?.videos ?? [];
+  // Videos come from their own live endpoint (2026-09-12) · the brief's copy is frozen
+  // at 06:00 and a device with a stale saved brief showed none (Ali's laptop).
+  const videos = liveVideos?.videos?.length ? liveVideos.videos : (displayedBrief?.videos ?? []);
   const shown = section ? columns.filter(c => c.id === section) : columns;
 
   return (
@@ -599,11 +604,11 @@ export default function NewsPage() {
       )}
 
       {/* Videos */}
-      {!generating && !displayedLoading && videos.length > 0 && (
+      {!generating && !isViewingPast && videos.length > 0 && (
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">▶ Videos</span><span className="tail">opens YouTube</span></div>
           <div className="news-videos" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "12px 16px 14px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
-            {videos.map(v => <VideoCard key={v.id} v={v} color={COLUMNS.find(c => c.categories.includes(v.category))?.color ?? "var(--ink-2)"} />)}
+            {videos.map(v => <VideoCard key={v.id} v={v} color={VIDEO_COLOR[v.category] ?? "var(--ink-2)"} />)}
           </div>
         </section>
       )}
