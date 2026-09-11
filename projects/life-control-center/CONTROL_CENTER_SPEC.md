@@ -74,8 +74,8 @@ phase is not done.
 ### 4.1 Morning routine — on waking, in this order
 
 **a) Stretching** — REPLACED 2026-09-08 with a 20-movement, 4-block routine from Ali's
-(**2026-09-11: now 21 movements, 14:55** · Hindu squats back in block 1 replacing the seated toe stretch /
-Cossack slot, Happy Baby replaces Butterfly/Frog, Kneeling hamstring split Left/Right; list in
+(**2026-09-12: now 22 movements, 14:40** · Hindu squats AND Cossack squats in block 1 (Cossack in the seated-toe
+slot), Happy Baby replaces Butterfly/Frog, Kneeling hamstring split Left/Right, Child's Pose once; list in
 `src/lib/routine/stretching.ts` is the truth.) Original description follows:
 reel: **continuous flow, no rest gaps, variable durations** (30 s dynamic moves, 40 s
 floor/hip holds, 50 s grounded finish) so the block markers land exactly · 12:00 total.
@@ -370,7 +370,7 @@ Any future session picks these up from here; Ali should not have to repeat them.
    Vercel Root Directory + workspace `.vercel/project.json`) and the cosmetics (package.json
    name, two User-Agent strings, email footer, docs). Click-by-click doc for Ali's steps to be
    written when he says go.
-11. **Football highlights, no spoilers (researched 2026-09-11, waiting on Ali's call).** Source checked:
+11. **Football highlights, no spoilers** — ~~researched 2026-09-11~~ **built 2026-09-12** (Ali: go). Card on News: matchup + context only, tap → YouTube app. Sources: beIN (CL, La Liga, PL, Ligue 1), Serie A official channel, FC Bayern / BVB / RB Leipzig club channels; gap = VfB Stuttgart league games. Details in CLAUDE.md §3 News. Research notes kept below: Source checked:
    the official beIN SPORTS channel (YouTube id `UCJUCcJUeh0Cz2xyKwkw5Q1w`, Arabic). Findings: (a) every
    highlight thumbnail shows the FINAL SCORE in big digits plus celebrating players → a blank placeholder
    with only "Team A vs Team B" is mandatory (titles "ملخص مباراة X وY" carry no score, but old ones

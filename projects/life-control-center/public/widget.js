@@ -83,6 +83,11 @@ try {
   req.timeoutInterval = 8;
   d = await req.loadJSON();
 } catch (e) { d = null; }
+// A pasted script with an empty KEY gets {"error":"Unauthorized"} back · that must
+// read as "no key", never as zero to-dos.
+let keyProblem = false;
+if (!d || typeof d.total !== "number") { keyProblem = !!(d && d.error) || !KEY; d = null; }
+const NO_DATA = keyProblem ? "KEY missing · copy from Settings" : "tap to open";
 
 // ─── Lock Screen widgets ──────────────────────────────────────────────────────
 // iOS repaints these frosted white — no colors survive, so it's shapes + text only.
@@ -106,7 +111,7 @@ if (FAMILY.indexOf("accessory") === 0) {
     if (!urgent.length) {
       lw.addSpacer();
       const row = lw.addStack();
-      const t = row.addText(d ? "✓ All clear" : "A L I — tap to open");
+      const t = row.addText(d ? "✓ All clear" : keyProblem ? "KEY missing · Settings" : "A L I — tap to open");
       t.font = Font.semiboldSystemFont(14);
       lw.addSpacer();
     } else {
@@ -198,8 +203,8 @@ const lineStack = w.addStack();
 lineStack.centerAlignContent();
 lineStack.addSpacer();
 if (!d) {
-  const t = lineStack.addText("tap to open");
-  t.font = Font.mediumSystemFont(13); t.textColor = INK3;
+  const t = lineStack.addText(NO_DATA);
+  t.font = Font.mediumSystemFont(12); t.textColor = INK3; t.lineLimit = 1; t.minimumScaleFactor = 0.7;
 } else {
   const tCount = d.todosDue || 0, sCount = d.someday || 0;
   const countTxt = lineStack.addText(`${tCount} TD`);
