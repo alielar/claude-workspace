@@ -74,6 +74,9 @@ phase is not done.
 ### 4.1 Morning routine — on waking, in this order
 
 **a) Stretching** — REPLACED 2026-09-08 with a 20-movement, 4-block routine from Ali's
+(**2026-09-11: now 21 movements, 14:55** · Hindu squats back in block 1 replacing the seated toe stretch /
+Cossack slot, Happy Baby replaces Butterfly/Frog, Kneeling hamstring split Left/Right; list in
+`src/lib/routine/stretching.ts` is the truth.) Original description follows:
 reel: **continuous flow, no rest gaps, variable durations** (30 s dynamic moves, 40 s
 floor/hip holds, 50 s grounded finish) so the block markers land exactly · 12:00 total.
 Same guided-timer requirements as before (cues, pause/skip, screen locked, pocket).
@@ -367,6 +370,18 @@ Any future session picks these up from here; Ali should not have to repeat them.
    Vercel Root Directory + workspace `.vercel/project.json`) and the cosmetics (package.json
    name, two User-Agent strings, email footer, docs). Click-by-click doc for Ali's steps to be
    written when he says go.
+11. **Football highlights, no spoilers (researched 2026-09-11, waiting on Ali's call).** Source checked:
+   the official beIN SPORTS channel (YouTube id `UCJUCcJUeh0Cz2xyKwkw5Q1w`, Arabic). Findings: (a) every
+   highlight thumbnail shows the FINAL SCORE in big digits plus celebrating players → a blank placeholder
+   with only "Team A vs Team B" is mandatory (titles "ملخص مباراة X وY" carry no score, but old ones
+   sometimes do, so titles stay hidden too); (b) videos play in Spain but embedding is disabled
+   (`playableInEmbed: false`) → a tap must open the YouTube app, whose "up next" rail shows OTHER beIN
+   thumbnails with scores — the one leak we cannot close; (c) coverage: Champions League, La Liga,
+   Premier League, Ligue 1 yes · Bundesliga and Serie A LEAGUE matches are not on the channel (beIN
+   MENA has no rights), their clubs appear only in CL games; (d) the channel's public feed holds only
+   the last 15 videos and it posts 15+/day → a 5-min poller (reminders tick) must store new highlights.
+   Build plan if wanted: table of highlights (videoId unique), poller, Arabic→English club map, "Highlights"
+   card on News showing matchups only, tap → YouTube with the warning that the app's own rail may spoil.
 10. **Speediance Gym Monster 2 integration (waiting on Ali's input, 2026-09-10).** Research done
    2026-09-09: no official API (Apple Health export only); active unofficial cloud CLI
    (stozo04/speediance-cli — reads sessions, pushes programs) but Speediance has already broken
