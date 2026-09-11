@@ -1,4 +1,7 @@
-// A L I — Scriptable widget. Home screen: design 3 "The Ring".
+// A L I — Scriptable widget. Home screen: design 3 "The Ring" + the motivator
+// top strip (option C, 2026-09-11): two short uppercase lines along the top edge,
+// "12 SOMEDAYS WAITING" / "20 MIN KILLS ONE" — the number is live, the strip hides
+// itself when the someday list is empty.
 // Lock Screen (rectangular): design "List" — the three most urgent to-dos.
 //
 // Install: in A L I → Settings → Home-screen widget → "Open the script", select all, copy;
@@ -157,12 +160,37 @@ w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
 w.setPadding(10, 10, 12, 10);
 
 const pct = d && d.total ? d.done / d.total : 0;
+const somedays = d ? d.someday || 0 : 0;
+const isMedium = config.widgetFamily === "medium";
+
+// ─── Motivator strip · two sentences, one per line so neither gets cut ────────
+if (somedays > 0) {
+  const strip = w.addStack();
+  strip.layoutVertically();
+  strip.setPadding(2, 0, 0, 0);
+  const line = (txt, dim) => {
+    const row = strip.addStack();
+    row.addSpacer();
+    const t = row.addText(txt);
+    t.font = Font.mediumMonospacedSystemFont(isMedium ? 11 : 10);
+    t.textColor = INK3; void dim;
+    t.lineLimit = 1;
+    t.minimumScaleFactor = 0.8;
+    row.addSpacer();
+    return t;
+  };
+  line(`${somedays} SOMEDAY${somedays === 1 ? "" : "S"} WAITING`, false);
+  strip.addSpacer(2);
+  line("20 MIN KILLS ONE", true);
+}
 
 w.addSpacer();
 const mid = w.addStack();
 mid.addSpacer();
 const img = mid.addImage(drawRing(300, pct));
-img.imageSize = new Size(config.widgetFamily === "medium" ? 104 : 96, config.widgetFamily === "medium" ? 104 : 96);
+// The ring gives up a little size when the strip is showing.
+const ringPt = isMedium ? 100 : somedays > 0 ? 84 : 96;
+img.imageSize = new Size(ringPt, ringPt);
 mid.addSpacer();
 w.addSpacer(8);
 
