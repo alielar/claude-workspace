@@ -559,8 +559,6 @@ export default function TodayPage() {
           then Today is just the checklist and the day's to-dos. Full news lives on /news. */}
       <PodcastCard today={today} hideWhenHeard />
 
-      {/* ONE spoiler-free highlight to watch (2026-09-12) · gone once tapped, the next unwatched takes its place */}
-      <HighlightSuggestion />
 
       {/* TODAY · one timeline: checklist + calendar blocks + to-dos */}
       <Card
@@ -640,10 +638,16 @@ export default function TodayPage() {
         </section>
       )}
 
+      {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose
+          (Ali: a quiet reminder, not the star of the page) · gone once tapped, the next
+          unwatched takes its place. The rest live on News. */}
+      <HighlightSuggestion />
+
       <style>{`
         .today-row:last-child { border-bottom: none !important; }
         .today-row > button:active:not(:disabled) { background: var(--fill-1); }
       `}</style>
+
     </div>
   );
 }
