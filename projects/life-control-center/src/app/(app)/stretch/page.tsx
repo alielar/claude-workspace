@@ -3,8 +3,8 @@
 /**
  * /stretch · guided morning stretching timer.
  *
- * 20 movements in 4 blocks · per-move durations (20–50 s, deep holds get more),
- * 10 s rest between every movement, 14:40 total incl. 5 s lead-in. Full-screen while running.
+ * 21 movements in 4 blocks · per-move durations (20–50 s, deep holds get more),
+ * 10 s rest between every movement, 14:55 total incl. 5 s lead-in. Full-screen while running.
  * Time is computed from timestamps (not tick counts) so it stays correct if the
  * phone sleeps briefly or the app is backgrounded. Screen stays awake (Wake Lock),
  * every change beeps + vibrates, the movement name is spoken so it works from a pocket.

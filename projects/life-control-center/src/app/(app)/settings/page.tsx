@@ -418,7 +418,7 @@ export default function SettingsPage() {
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
           <span>
             <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Stretching</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>20 moves · 10 s rests · 14:40</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>21 moves · 10 s rests · 14:55</span>
           </span>
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>

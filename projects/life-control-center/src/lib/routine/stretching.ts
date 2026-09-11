@@ -1,14 +1,20 @@
 /**
- * Morning stretching routine · 20 movements in 4 blocks, 14:40 total (2026-09-10).
+ * Morning stretching routine · 21 movements in 4 blocks, 14:55 total (2026-09-11).
  *
  * Every movement gets the duration it actually needs (Ali's rule 2026-09-10:
  * my judgement per move, 10 s rest between EVERY movement, total under 15:00):
- * dynamic warm-ups 20–35 s, deep floor holds 40–45 s, the closing pose 50 s.
- * 5 s lead-in, 19 × 10 s rests. Work 11:25 + rest 3:10 + lead-in 0:05 = 14:40.
+ * dynamic warm-ups 20–35 s, deep floor holds 30–45 s, the closing pose 50 s.
+ * 5 s lead-in, 20 × 10 s rests. Work 11:30 + rest 3:20 + lead-in 0:05 = 14:55.
  *   Block 1 · wake-up and spine     starts 0:05
- *   Block 2 · standing to floor     starts 3:15
- *   Block 3 · floor and hips        starts 6:45
- *   Block 4 · grounded finish       starts 12:15 · ends 14:40
+ *   Block 2 · standing to floor     starts 3:05
+ *   Block 3 · floor and hips        starts 6:35
+ *   Block 4 · grounded finish       starts 12:35 · ends 14:55
+ *
+ * 2026-09-11 changes (Ali): Hindu squats are back (they take the old seated-toe /
+ * Cossack slot · dynamic and satisfying, 21 moves total was the cleanest count),
+ * Happy Baby replaces Butterfly/Frog (same groin + inner-thigh + hip target, lying
+ * on the back so nothing presses into the knees), Kneeling Hamstring is now a
+ * proper Left / Right pair like World's Greatest Stretch.
  */
 
 export const STRETCH_LEADIN_SECONDS = 5;
@@ -28,10 +34,10 @@ export const STRETCH_MOVES: StretchMove[] = [
   { name: "Bouncing on Toes",                    seconds: 20, block: 0 },
   { name: "Neck Twists",                         seconds: 25, block: 0 },
   { name: "Torso Twists",                        seconds: 25, block: 0 },
-  { name: "Squat Hold",                          seconds: 35, block: 0 },
-  // Cossack squats replaced the seated toe stretch (2026-09-09, Ali) · dynamic
-  // side-to-side squat, fits the standing wake-up block.
-  { name: "Cossack Squats",                      seconds: 35, block: 0 },
+  { name: "Squat Hold",                          seconds: 30, block: 0 },
+  // Hindu squats (2026-09-11, back from the old routine) · deep rhythmic squats
+  // with the arm swing, heels lifting · replaces the seated toe stretch / Cossack slot.
+  { name: "Hindu Squats",                        seconds: 30, block: 0 },
   // Block 2 · standing to floor
   { name: "Lateral Arm Swings",                  seconds: 25, block: 1 },
   { name: "Down Dog + Calf Pedal",               seconds: 35, block: 1 },
@@ -42,15 +48,17 @@ export const STRETCH_MOVES: StretchMove[] = [
   { name: "90/90 Switches",                      seconds: 35, block: 2 },
   { name: "Pigeon · Left",                       seconds: 45, block: 2 },
   { name: "Pigeon · Right",                      seconds: 45, block: 2 },
-  // Butterfly replaced frog pose (2026-09-09, Ali wanted easier) · same target
-  // (adductors / groin / hip opening), seated and far gentler on the knees.
-  { name: "Butterfly Stretch",                   seconds: 45, block: 2 },
+  // Happy Baby replaced Butterfly (2026-09-11; Butterfly had replaced Frog on
+  // 2026-09-09 and was still awful) · on the back, knees to armpits, holding the
+  // feet · same adductor / groin / hip-opening target, zero knee pressure, restful.
+  { name: "Happy Baby",                          seconds: 45, block: 2 },
   { name: "Seiza",                               seconds: 30, block: 2 },
-  { name: "Kneeling Hamstring",                  seconds: 40, block: 2 },
+  { name: "Kneeling Hamstring · Left",           seconds: 30, block: 2 },
+  { name: "Kneeling Hamstring · Right",          seconds: 30, block: 2 },
   { name: "Forearm Stretch",                     seconds: 20, block: 2 },
   // Block 4 · grounded finish · child's pose stays the long calm ending.
   { name: "Cat Cow",                             seconds: 35, block: 3 },
-  { name: "Cobra",                               seconds: 40, block: 3 },
+  { name: "Cobra",                               seconds: 35, block: 3 },
   { name: "Child's Pose",                        seconds: 50, block: 3 },
 ];
 
