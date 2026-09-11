@@ -3,8 +3,10 @@
  *
  * The work Google Workspace blocks its secret ICS, so a scheduled Claude routine
  * reads Ali's work calendar through his claude.ai Google Calendar connector a few
- * times a day and posts the day's merged blocks here. Replaces that day's ingested
- * set atomically; blocksForDay merges them with the personal ICS feed on every read.
+ * times a day and posts the day's events here · every meeting as its own item PLUS
+ * Ali's time-blocking markers ("Lunch block", "Evening block") which set the two
+ * day halves. Replaces that day's ingested set atomically; blocksForDay collapses
+ * the work items into Morning + Afternoon (collapseWorkDay) on every read.
  *
  * Auth: x-ingest-key header (long random, checked in constant fashion; not APP_KEY
  * so the routine never holds the app's master key). Body:

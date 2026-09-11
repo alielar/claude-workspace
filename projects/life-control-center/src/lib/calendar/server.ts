@@ -5,8 +5,13 @@
  * "Secret address in iCal format") stored in user_settings.calendar_feeds as
  * JSON [{ name: "Work" | "Personal", url }]. No OAuth, read-only, one-way.
  *
- * Work feed: same-day meetings with gaps ≤ 30 min merge into one block
- * ("Work block · 9:30-12:30 · 4 meetings") so a sales day is 2-3 ticks, not 8 rows.
+ * Work: the whole day collapses into AT MOST TWO blocks (Ali, 2026-09-11 · the old
+ * "merge meetings ≤ 30 min apart" rule produced 5-6 rows on a sales day):
+ *   · Morning   = first meeting of the morning → start of Ali's "Lunch block"
+ *   · Afternoon = end of the "Lunch block"     → start of his "Evening block"
+ * The boundaries come from Ali's own time-blocking events in the work calendar
+ * (titles containing "block"); they are never meetings themselves. Without a lunch
+ * marker the day splits at 14:00 (his usual lunch). See collapseWorkDay().
  * Personal feed: rare, important → each event stays its own row.
  * node-ical (lazy import) handles ICS + recurring events (RRULE).
  */
@@ -16,7 +21,7 @@ import { calendarCache, userSettings } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
 const TZ = "Europe/Madrid";
-const MERGE_GAP_MS = 30 * 60 * 1000;
+const DEFAULT_LUNCH_MIN = 14 * 60; // fallback split when no "Lunch block" event exists
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
 export type CalBlock = {
@@ -80,38 +85,61 @@ export async function fetchDayEvents(url: string, day: string): Promise<RawEvent
 
 function toBlocks(events: RawEvent[], source: "work" | "personal"): CalBlock[] {
   const sorted = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
-  const blocks: CalBlock[] = [];
+  // Personal events are rare and each one matters · no merging. Work events are
+  // returned one per row too (count 1, real title) · collapseWorkDay() folds them
+  // into the two day halves on every read, together with the ingested ones.
+  return sorted.map((e) => {
+    const s = hm(e.start), en = hm(e.end);
+    return { key: `${source}:${s}-${en}`, source, start: s, end: en, startMin: toMin(s), count: 1, title: e.summary };
+  });
+}
 
-  if (source === "personal") {
-    // Personal events are rare and each one matters · no merging.
-    for (const e of sorted) {
-      const s = hm(e.start), en = hm(e.end);
-      blocks.push({ key: `personal:${s}-${en}`, source, start: s, end: en, startMin: toMin(s), count: 1, title: e.summary });
-    }
-    return blocks;
-  }
+const minToHm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+const endMin = (b: CalBlock) => { const e = toMin(b.end); return e < b.startMin ? e + 24 * 60 : e; };
+/** Ali's time-blocking placeholders ("Morning block", "Lunch block", "Evening block") · never meetings. */
+const isMarker = (b: CalBlock) => /\bblock\b/i.test(b.title);
 
-  let cur: { start: Date; end: Date; count: number } | null = null;
-  const flush = () => {
-    if (!cur) return;
-    const s = hm(cur.start), en = hm(cur.end);
-    blocks.push({
-      key: `work:${s}-${en}`, source, start: s, end: en, startMin: toMin(s),
-      count: cur.count, title: cur.count === 1 ? "1 meeting" : `${cur.count} meetings`,
-    });
-    cur = null;
-  };
-  for (const e of sorted) {
-    if (cur && e.start.getTime() - cur.end.getTime() <= MERGE_GAP_MS) {
-      cur.end = new Date(Math.max(cur.end.getTime(), e.end.getTime()));
-      cur.count += 1;
-    } else {
-      flush();
-      cur = { start: e.start, end: e.end, count: 1 };
-    }
+/**
+ * All of the day's work items (meetings + Ali's time-block markers, from the ICS
+ * feed and/or the ingest routine, possibly already partly merged) → at most two
+ * tickable blocks: Morning and Afternoon. Counts are summed, so pre-merged input
+ * ("4 meetings") and raw events both work.
+ */
+export function collapseWorkDay(items: CalBlock[]): CalBlock[] {
+  const work = items.filter((b) => b.source === "work");
+  if (work.length === 0) return [];
+  const lunch = work.find((b) => isMarker(b) && /lunch/i.test(b.title));
+  const evening = work.find((b) => isMarker(b) && /evening/i.test(b.title));
+  const meetings = work.filter((b) => !isMarker(b)).sort((a, b) => a.startMin - b.startMin);
+  if (meetings.length === 0) return [];
+
+  const lunchStart = lunch ? lunch.startMin : DEFAULT_LUNCH_MIN;
+  const lunchEnd = lunch ? endMin(lunch) : DEFAULT_LUNCH_MIN;
+  const morning = meetings.filter((m) => m.startMin < lunchStart);
+  const afternoon = meetings.filter((m) => m.startMin >= lunchStart);
+  const sum = (xs: CalBlock[]) => xs.reduce((n, x) => n + Math.max(1, x.count), 0);
+  const label = (n: number) => (n === 1 ? "1 meeting" : `${n} meetings`);
+
+  const out: CalBlock[] = [];
+  if (morning.length) {
+    const startMin = morning[0].startMin;
+    // Morning runs until lunch starts (or until the last morning meeting ends if there
+    // is no lunch marker, or if a meeting spills past the lunch start).
+    const lastEnd = Math.max(...morning.map(endMin));
+    const end = lunch ? Math.max(lunchStart, lastEnd) : lastEnd;
+    const s = minToHm(startMin), en = minToHm(Math.min(end, 24 * 60 - 1));
+    out.push({ key: `work:${s}-${en}`, source: "work", start: s, end: en, startMin, count: sum(morning), title: `Morning · ${label(sum(morning))}` });
   }
-  flush();
-  return blocks;
+  if (afternoon.length) {
+    // Afternoon starts when lunch ends (or at the first meeting if that is later) and
+    // runs until the evening block starts, or the last meeting ends.
+    const startMin = lunch ? Math.min(lunchEnd, afternoon[0].startMin) : afternoon[0].startMin;
+    const lastEnd = Math.max(...afternoon.map(endMin));
+    const end = evening ? Math.max(evening.startMin, lastEnd) : lastEnd;
+    const s = minToHm(startMin), en = minToHm(Math.min(end, 24 * 60 - 1));
+    out.push({ key: `work:${s}-${en}`, source: "work", start: s, end: en, startMin, count: sum(afternoon), title: `Afternoon · ${label(sum(afternoon))}` });
+  }
+  return out;
 }
 
 /**
@@ -129,10 +157,11 @@ export async function ingestedBlocks(userId: string, day: string): Promise<CalBl
   } catch { return []; }
 }
 
+/** Feed + ingested items → personal rows as they are, work items collapsed into ≤ 2 blocks. */
 function mergeBlocks(a: CalBlock[], b: CalBlock[]): CalBlock[] {
   const seen = new Set<string>();
-  return [...a, ...b]
-    .filter((x) => (seen.has(x.key) ? false : (seen.add(x.key), true)))
+  const all = [...a, ...b].filter((x) => (seen.has(x.key) ? false : (seen.add(x.key), true)));
+  return [...all.filter((x) => x.source === "personal"), ...collapseWorkDay(all)]
     .sort((x, y) => x.startMin - y.startMin);
 }
 
