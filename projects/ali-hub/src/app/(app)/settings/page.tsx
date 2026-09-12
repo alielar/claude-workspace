@@ -99,6 +99,78 @@ function Segmented<T extends string>({ value, options, onChange }: {
   );
 }
 
+
+type HealthStatus = {
+  lastSleep: { date: string; totalMin: number | null; score: number | null; receivedAt: number } | null;
+  lastWorkout: { date: string; type: string; receivedAt: number } | null;
+  lastPost: { receivedAt: number; automation: string | null; summary: string } | null;
+  nights: number;
+  workouts: number;
+  setup: { url: string; header: string; key: string };
+};
+
+const HAE_STEPS = [
+  "App Store → Health Auto Export (JSON+CSV) → install, allow Health access (Sleep, Workouts, Heart Rate, Resting Heart Rate, HRV, Respiratory Rate, Blood Oxygen).",
+  "Inside the app: Premium → yearly plan (7-day trial). Only Premium runs automations in the background.",
+  "Automations → + → REST API · name “ALI sleep” · URL below · Add header: key x-app-key, value = the key below · JSON · Summarize on · group by day · date range Default · metrics: Sleep Analysis, Resting Heart Rate, Heart Rate Variability, Heart Rate, Respiratory Rate, Blood Oxygen · every 1 hour · Save.",
+  "Automations → + → REST API · name “ALI workouts” · same URL and header · metrics none, Workouts on · date range Previous 7 days · every 1 hour · Save.",
+  "Tap Run on each automation once, then come back here: the two lines above should show today’s stamp.",
+  "iPhone Settings → Apps → Health Auto Export → Background App Refresh on. Add its “Automations” widget to a home screen: one tap = sync now.",
+];
+
+function AppleWatchCard() {
+  const { data } = useCached<HealthStatus>("health-status", () => fetchJson<HealthStatus>("/api/health/ingest"));
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState<"url" | "key" | null>(null);
+  const now = useClientValue(() => Date.now(), 0);
+  const copy = async (what: "url" | "key", text: string) => {
+    try { await navigator.clipboard.writeText(text); setCopied(what); setTimeout(() => setCopied(null), 1500); } catch { /* show it, user copies by hand */ }
+  };
+  const stamp = (ms: number | null | undefined) => {
+    if (!ms) return "nothing yet";
+    const d = new Date(ms), today = new Date();
+    const sameDay = d.toDateString() === today.toDateString();
+    return `${sameDay ? "today" : d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+  };
+  const fmtMin = (m: number | null) => (m === null ? "" : ` · ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")}`);
+  const staleDays = data?.lastPost && now ? (now - data.lastPost.receivedAt) / 86400000 : null;
+  const tail = !data ? "…" : !data.lastPost ? "not connected" : staleDays !== null && staleDays > 2 ? "quiet for days" : "connected";
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">Apple Watch</span><span className="tail" style={tail === "quiet for days" ? { color: "var(--warn)" } : undefined}>{tail}</span></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 8, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
+        <p style={{ margin: 0 }}>Sleep, workouts and heart data arrive from the Health Auto Export app whenever the phone is unlocked · not at a fixed time.</p>
+        <div style={{ display: "grid", gap: 2, fontSize: 14, color: "var(--ink-3)" }}>
+          <span>Sleep · {data ? (data.lastSleep ? `night of ${data.lastSleep.date}${fmtMin(data.lastSleep.totalMin)} · received ${stamp(data.lastSleep.receivedAt)}` : "nothing yet") : "—"}</span>
+          <span>Workouts · {data ? (data.lastWorkout ? `${data.lastWorkout.type} on ${data.lastWorkout.date} · received ${stamp(data.lastWorkout.receivedAt)}` : "nothing yet") : "—"}</span>
+          <span>Last post · {data ? (data.lastPost ? `${stamp(data.lastPost.receivedAt)}${data.lastPost.automation ? ` · ${data.lastPost.automation}` : ""} · ${data.lastPost.summary}` : "nothing yet") : "—"}</span>
+        </div>
+        {data?.setup && (
+          <div style={{ display: "grid", gap: 6 }}>
+            {(["url", "key"] as const).map((what) => {
+              const val = what === "url" ? data.setup.url : data.setup.key;
+              return (
+                <div key={what} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 8, minHeight: 44 }}>
+                  <span style={{ minWidth: 0, fontSize: 13, fontFamily: "ui-monospace, monospace", color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ color: "var(--ink-4)" }}>{what === "url" ? "URL " : `${data.setup.header} `}</span>{what === "key" && !open ? "••••••••" : val}
+                  </span>
+                  <button className="cc-btn cc-btn-ghost" onClick={() => copy(what, val)} disabled={!val} style={{ minHeight: 36, padding: "0 10px", fontSize: 13 }}>{copied === what ? "Copied" : "Copy"}</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <button className="cc-btn cc-btn-ghost" onClick={() => setOpen((v) => !v)} style={{ minHeight: 44, justifySelf: "start" }}>{open ? "Hide the setup steps" : "Setup steps"}</button>
+        {open && (
+          <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
+            {HAE_STEPS.map((t) => <li key={t}>{t}</li>)}
+          </ol>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function SettingsPage() {
   const [theme, setTheme] = useTheme();
   const standalone = useClientValue(
@@ -613,6 +685,9 @@ export default function SettingsPage() {
         )}
       </section>
 
+      {/* Apple Watch · Health Auto Export (spec §7c item 5) */}
+      <AppleWatchCard />
+
       {/* Reminders */}
       <section className="cc-card">
         <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "…" : "off"}</span></div>
@@ -672,7 +747,7 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-09-07</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-09-12</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
           <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>

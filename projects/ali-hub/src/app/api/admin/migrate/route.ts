@@ -9,6 +9,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { HEALTH_DDL } from "@/lib/health/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
@@ -389,31 +390,8 @@ export async function POST() {
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_mood_entry ON mood_entries(user_id, date)`,
 
     // ── Sleep entries ───────────────────────────────────────────────────────
-    `CREATE TABLE IF NOT EXISTS sleep_entries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      date TEXT NOT NULL,
-      bedtime TEXT NOT NULL,
-      wake TEXT NOT NULL,
-      hours REAL NOT NULL,
-      quality INTEGER NOT NULL,
-      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
-    )`,
-    `CREATE UNIQUE INDEX IF NOT EXISTS ux_sleep_entry ON sleep_entries(user_id, date)`,
-
-    // ── Sleep entries · Apple Health columns ────────────────────────────────
-    `ALTER TABLE sleep_entries ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'`,
-    `ALTER TABLE sleep_entries ADD COLUMN stage_deep_minutes INTEGER`,
-    `ALTER TABLE sleep_entries ADD COLUMN stage_core_minutes INTEGER`,
-    `ALTER TABLE sleep_entries ADD COLUMN stage_rem_minutes INTEGER`,
-    `ALTER TABLE sleep_entries ADD COLUMN stage_awake_minutes INTEGER`,
-    `ALTER TABLE sleep_entries ADD COLUMN heart_rate_avg REAL`,
-    `ALTER TABLE sleep_entries ADD COLUMN heart_rate_min REAL`,
-    `ALTER TABLE sleep_entries ADD COLUMN heart_rate_max REAL`,
-    `ALTER TABLE sleep_entries ADD COLUMN respiratory_rate_avg REAL`,
-    `ALTER TABLE sleep_entries ADD COLUMN blood_oxygen_avg REAL`,
-    `ALTER TABLE sleep_entries ADD COLUMN raw_payload TEXT`,
-    `ALTER TABLE sleep_entries ADD COLUMN sleep_score INTEGER`,
+    // Apple Watch (Health Auto Export → /api/health/ingest) · same DDL as src/lib/health/server.ts
+    ...HEALTH_DDL,
 
     // ── Reading progress · bookmark columns ─────────────────────────────────
     `ALTER TABLE reading_progress ADD COLUMN bookmark_text TEXT`,

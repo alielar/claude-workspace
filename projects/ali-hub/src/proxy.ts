@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { authRequired, SESSION_COOKIE, sessionCookie, shouldReissue, signSession, verifySession } from "@/lib/session";
 
-const PUBLIC_PREFIXES = ["/login", "/api/auth/", "/offline", "/api/reminders/tick", "/api/news/cron", "/api/checklist/suggestions/cron", "/api/workouts/coach-cron", "/api/sleep/ingest", "/api/wati", "/api/calendar/ingest", "/api/podcast/cron"];
+const PUBLIC_PREFIXES = ["/login", "/api/auth/", "/offline", "/api/reminders/tick", "/api/news/cron", "/api/checklist/suggestions/cron", "/api/workouts/coach-cron", "/api/health/ingest", "/api/wati", "/api/calendar/ingest", "/api/podcast/cron"];
 const PUBLIC_EXACT = new Set(["/sw.js", "/widget.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/favicon.ico", "/robots.txt"]);
 
 export default async function proxy(req: NextRequest) {

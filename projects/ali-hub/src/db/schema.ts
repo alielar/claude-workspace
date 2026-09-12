@@ -10,7 +10,8 @@
  * Archived: programs / workout_plans / exercise_db / plan_exercises /
  *           gym_sessions / gym_sets / exercise_prs / workout_coach / run_logs,
  *           books / reading_* / annotations / pdf_blobs, word_bank_entries,
- *           mood_entries, sleep_entries (data kept, UI out of navigation)
+ *           mood_entries (data kept, UI out of navigation). sleep_entries (old Shortcut) is no
+ *           longer declared · rows stay in Turso; Apple Watch data now lives in health_* tables.
  */
 
 import { sql } from "drizzle-orm";
@@ -617,34 +618,64 @@ export const moodEntries = sqliteTable("mood_entries", {
     .default(sql`(unixepoch() * 1000)`),
 });
 
-// ─── Sleep ────────────────────────────────────────────────────────────────────
+// ─── Apple Watch (Health Auto Export → /api/health/ingest, 2026-09-12) ────────
 
-/** Daily sleep entries · one per user per day */
-export const sleepEntries = sqliteTable("sleep_entries", {
+/** One row per night, keyed by the wake day (Europe/Madrid). Minutes; score = A L I score 0–100. */
+export const healthSleep = sqliteTable("health_sleep", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  date: text("date").notNull(), // "YYYY-MM-DD" Europe/Madrid
-  bedtime: text("bedtime").notNull(), // "HH:MM"
-  wake: text("wake").notNull(), // "HH:MM"
-  hours: real("hours").notNull(), // decimal hours
-  quality: integer("quality").notNull(), // 1–10
-  source: text("source").notNull().default("manual"), // "manual" | "apple_health"
-  stageDeepMinutes: integer("stage_deep_minutes"),
-  stageCoreMinutes: integer("stage_core_minutes"),
-  stageRemMinutes: integer("stage_rem_minutes"),
-  stageAwakeMinutes: integer("stage_awake_minutes"),
-  heartRateAvg: real("heart_rate_avg"),
-  heartRateMin: real("heart_rate_min"),
-  heartRateMax: real("heart_rate_max"),
-  respiratoryRateAvg: real("respiratory_rate_avg"),
-  bloodOxygenAvg: real("blood_oxygen_avg"),
-  sleepScore: integer("sleep_score"), // 0–100, from Apple Health
-  rawPayload: text("raw_payload"), // full JSON from Apple Shortcut
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch() * 1000)`),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),
+  sleepStart: integer("sleep_start"),
+  sleepEnd: integer("sleep_end"),
+  inBedStart: integer("in_bed_start"),
+  inBedEnd: integer("in_bed_end"),
+  totalMin: integer("total_min"),
+  coreMin: integer("core_min"),
+  deepMin: integer("deep_min"),
+  remMin: integer("rem_min"),
+  awakeMin: integer("awake_min"),
+  inBedMin: integer("in_bed_min"),
+  score: integer("score"),
+  source: text("source"),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
+});
+
+/** Every Apple Watch workout · hk_id is HealthKit's UUID, so repeated exports upsert. */
+export const healthWorkouts = sqliteTable("health_workouts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  hkId: text("hk_id").notNull().unique(),
+  date: text("date").notNull(),
+  type: text("type").notNull(),
+  startMs: integer("start_ms").notNull(),
+  endMs: integer("end_ms"),
+  durationSec: integer("duration_sec"),
+  distanceKm: real("distance_km"),
+  activeKcal: integer("active_kcal"),
+  totalKcal: integer("total_kcal"),
+  hrAvg: integer("hr_avg"),
+  hrMin: integer("hr_min"),
+  hrMax: integer("hr_max"),
+  steps: integer("steps"),
+  elevationM: integer("elevation_m"),
+  intensityMet: real("intensity_met"),
+  source: text("source"),
+  raw: text("raw").notNull().default("{}"),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
+});
+
+/** Daily metrics as HAE names them (resting_heart_rate, heart_rate_variability, …) · one row per day + metric. */
+export const healthMetrics = sqliteTable("health_metrics", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),
+  metric: text("metric").notNull(),
+  qty: real("qty"),
+  min: real("min"),
+  avg: real("avg"),
+  max: real("max"),
+  units: text("units"),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
 });
 
 /** Weekly AI coach card for the workouts module · one per user per week */

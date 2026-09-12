@@ -19,6 +19,5 @@ export const ARCHIVE: ArchivedModule[] = [
   { href: "/knowledge", label: "Knowledge",       what: "Review drill for the notes captured while reading." },
   { href: "/wordbank",  label: "Word bank",       what: "Spaced-repetition flashcards for words. All words kept.", comeback: "Phase 7 (optional)" },
   { href: "/mood",      label: "Mood",            what: "Daily mood scores and heatmap.", comeback: "Apple Watch phase" },
-  { href: "/sleep",     label: "Sleep",           what: "Sleep stages and scores from the Apple Shortcut (data still arrives silently).", comeback: "Apple Watch phase" },
   { href: "/journal",   label: "Journal",         what: "Three-question nightly journal (stored on this device only).", comeback: "Apple Watch phase" },
 ];

@@ -349,7 +349,14 @@ Any future session picks these up from here; Ali should not have to repeat them.
    **2026-09-12: Ali deleted the Shortcuts for good** and wants a direct connection instead,
    "better than shortcuts" — research the options (Health Auto Export app → webhook, a tiny native
    companion, or a Shortcuts automation that is actually reliable) and report cost + reliability
-   before building. Next candidate after the address move.
+   before building. **Researched + receiving end built 2026-09-12** (`docs/apple-watch-sync-research.md`):
+   root cause of the old failure = iOS blocks Health reads while the phone is locked, so a timed
+   Shortcut read nothing; aggregators cost 300–500 $/month; a native app needs 99 $/yr + a Mac for the
+   same locked-phone limit. Chosen: **Health Auto Export Premium (7,99 €/yr)** REST automations →
+   `POST /api/health/ingest` (key header, idempotent upserts into `health_sleep` / `health_workouts` /
+   `health_metrics`), Settings → Apple Watch card with status + copy buttons + steps. Old `/sleep` page and
+   the Shortcut endpoints deleted. Ali buys HAE 2026-09-13 and activates. Where the data shows (Train →
+   "Fitness" merge) and kettlebell demo clips: proposals pending Ali's pick.
 6. ~~**Fixed workout day scheduling.**~~ Built 2026-08-30, **opt-in**: Settings → Training days
    (Mon–Sun per workout; a day belongs to one workout). Off = the old "4 a week, any days,
    alternating". On = Today shows the planned workout or a quiet "Rest day · next: …" row, Train
@@ -432,7 +439,7 @@ at a time where possible. I need to understand the question to give you a useful
 - **Football news:** keep Real Madrid + Moroccan national team. Remove World Cup coverage.
 - **YouTube channels:** Claude picks per topic, shows the list once for adjustment.
 - **To-do reminders:** home-screen badge only. Push notifications → Phase 7.
-- **Sleep webhook:** keep `/api/sleep/ingest` running silently; incoming data is not reliable.
+- **Sleep webhook:** ~~keep `/api/sleep/ingest` running silently~~ deleted 2026-09-12, replaced by Health Auto Export → `/api/health/ingest` (item 5).
 
 ## 9. Output format for every reply
 

@@ -8,7 +8,7 @@
 
 > **Address:** https://ali-hub.vercel.app (since 2026-09-12). The former life-control-center-eta address is gone: removed from Vercel, the project, folder and package are all `ali-hub`. Every caller (phone PWA, Scriptable widget, cron-job.org pinger, calendar routine, Wati webhook, Google OAuth) was repointed the same day. History of the move: spec §7c item 9.
 
-> Last updated: 2026-09-12. Read `ALI_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
+> Last updated: 2026-09-12 (evening: Apple Watch receiving end). Read `ALI_SPEC.md` first — it is the product brief and phase plan. This file is the engineering map.
 
 ## 1. What this is
 
@@ -43,7 +43,7 @@ src/app/(app)/archive     index of archived modules
 src/app/(app)/checklist   checklist editor (add/edit items) — reached from Today → Edit
 src/app/offline           shown by the service worker only when nothing is cached
 ```
-Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/wordbank`, `/mood`, `/sleep`, `/journal`.
+Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/wordbank`, `/mood`, `/journal`. (`/sleep` and the Shortcut endpoints `/api/sleep/*`, `/api/workouts/run-ingest` were deleted 2026-09-12 — replaced by the Apple Watch pipe below.)
 
 ### Local-first data (`src/lib/local/`)
 - `store.ts` — `useCached(key, fetcher)`: paints the phone's saved copy instantly, refreshes in the background (on mount, on focus/foreground, after an outbox flush, and every 45 s while visible — cross-device sync), `setData` for optimistic edits. Backed by localStorage (swap for IndexedDB in one file if a module outgrows it).
@@ -70,6 +70,13 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Stretch/breathe rows get an action button (`/stretch`, or the YouTube link opening externally). Finishing the timer ticks the item via the outbox.
 - `src/lib/routine/stretching.ts` holds the movement list/timings; `cues.ts` the beep/vibration/voice cues (AudioContext must be armed from a tap).
 - `/breathe` (2026-09-07) = technique picker + players. Picker: Wim Hof hero card (the daily) + 6 paced techniques from `src/lib/breathe/techniques.ts` (coherent, cyclic sighing, box, 4-7-8, alternate nostril, Kapalabhati), each row = goal · duration · honest 1-3 evidence dots; detail one tap deeper (pattern, copy, duration chips, Start). Generic player runs any step cycle (breath cues, hold countdowns, Kapalabhati snap-per-beat, nostril cues panned L/R); every finished session ticks the `breathe` item. Dizziness warning box (`DANGER_TEXT`) shows on Wim Hof + Kapalabhati before start. Wim Hof player: 3×30 breaths, 1:30 retention (tap ends it), 15 s recovery hold then an 8 s long exhale before the next round (Ali's deliberate deviation from the standard protocol, 2026-09-08 — never "fix" it back), hold tone = ONE constant oscillator (never two detuned — equal tones beat to silence) + 1 s watchdog against iOS audio interruptions, volume follows the slider; hold tones split into brainwave beats (6/10/40 Hz, headphones, some evidence) vs solfeggio lore, key `cc-breathe-freq`. Breath sound: 12 synthesized styles (waves/ocean/rain/wind/bowl/hum/chime/sweep/flute/strings/piano/drone) + volume, keys `cc-breathe-sound`/`cc-breathe-vol`; session screens show only Ali's top 5 (`cc-breathe-favs`, ★ in "All sounds", `SoundPicker`). Rising bell on the last 10 breaths of each round (one scale step per breath, G4 → B5). 3-2-1 countdown after Start (all players). Hold tone chosen PER ROUND (key `cc-breathe-freqs`, JSON array of 3; legacy `cc-breathe-freq` migrates to all rounds). Exercise demos: none (Ali wants precise motion or nothing, spec §7c item 13). UI copy rule: no em dashes, use `·` or a period.
+
+### Apple Watch (spec §7c item 5 — receiving end built 2026-09-12, UI pending)
+- Source = **Health Auto Export** (HAE) Premium, REST API automations → `POST /api/health/ingest` (public in the proxy, checks `x-app-key: APP_KEY` itself, `?key=` fallback). iOS lets HAE read Health only while the phone is unlocked, so posts arrive at odd times and repeat the last days: **every write is an upsert** (night by wake day, workout by HealthKit `hk_id`, metric by day+name). The old Shortcut failed for exactly this reason (timed automation on a locked phone → empty data) — see `docs/apple-watch-sync-research.md`.
+- `src/lib/health/types.ts` = pure parser (`parseHaePayload`, HAE dates "yyyy-MM-dd HH:mm:ss ±HHMM", mi→km, kJ→kcal, HR derived from a per-minute series when the summary is missing, empty nights dropped, `sleepScore` = A L I's own 0–100 since Apple has none). `src/lib/health/server.ts` = `HEALTH_DDL` (self-creating tables, also spread into the migrate route), `storeParsed`, `healthStatus`, `logRaw` (last 30 raw posts in `health_raw` for checking the real payload shape).
+- Tables: `health_sleep` (minutes + stage minutes + score, UNIQUE user+date), `health_workouts` (type, duration, distance, kcal, hr avg/min/max, raw minus route/HR series), `health_metrics` (any HAE metric: resting_heart_rate, heart_rate_variability, heart_rate min/avg/max, respiratory_rate, blood_oxygen_saturation…).
+- Settings → Apple Watch card: connection status (last sleep / workout / post), URL + key copy buttons, the setup steps. `GET /api/health/ingest` (signed in) feeds it.
+- Where the data is shown (Fitness merge of Train + health) is being decided — do not add a sixth tab.
 
 ### Train (Phase 3 — kettlebell era)
 - Tables `kb_workouts` (two templates per user, `exercises` JSON, `assignedDays` reserved for a future fixed schedule) and `kb_sessions` (`clientId` unique → offline replays upsert). Kettlebell weight is `user_settings.kettlebell_kg` (12 → 16 later, changed in Settings).
@@ -131,9 +138,9 @@ Each archived module is one line away from the main navigation:
 | Gym workouts | `/workouts`, `/workouts/session/*` | add `{ href: "/workouts", label: "Gym", icon: "train" }` to `NAV` in `src/lib/navigation.ts` |
 | Library & notes | `/library`, `/library/read/[id]`, `/knowledge` | add `{ href: "/library", … }` to `NAV` |
 | Word bank | `/wordbank` | add `{ href: "/wordbank", … }` to `NAV` |
-| Mood / Sleep / Journal | `/mood`, `/sleep`, `/journal` | add the href(s) to `NAV` |
+| Mood / Journal | `/mood`, `/journal` | add the href(s) to `NAV` |
 
-Icons for new nav entries go in `src/components/Icon.tsx`. All API routes and tables behind these pages are still live. `/api/sleep/ingest` keeps accepting the Apple Shortcut (data is unreliable — don't trust it yet).
+Icons for new nav entries go in `src/components/Icon.tsx`. All API routes and tables behind these pages are still live. The old `sleep_entries` table stays in Turso but is no longer declared or read.
 
 ## 5. Rules
 
