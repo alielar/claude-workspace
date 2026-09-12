@@ -15,15 +15,18 @@
  * Works offline; the home-screen badge shows what's due today.
  */
 
+import Link from "next/link";
 import { Linkify, LinkChips } from "@/components/Linkify";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { NotesPreview, SubtaskList, SubtaskEditor, SectionsView } from "./notes";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import {
   addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, nextWeekend, parseQuickAdd, sortTodos,
-  type Area, type Bucket, type Priority, type Todo,
+  docFormat, taskFormat, parseSubtasks, parseSections, DOC_FORMATS, TASK_FORMATS,
+  type Area, type Bucket, type Format, type Priority, type Todo,
 } from "@/lib/todo/types";
 
 const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Docs" }];
@@ -286,15 +289,6 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   );
 }
 
-/** Notes as shown in the row preview: list markers become glyphs, nothing else changes. */
-function prettyNotes(notes: string): string {
-  return notes
-    .replace(/^(\s*)- \[ \] /gm, "$1☐ ")
-    .replace(/^(\s*)- \[[xX]\] /gm, "$1☑ ")
-    .replace(/^(\s*)- /gm, "$1• ")
-    .replace(/^#{1,3} (.*)$/gm, "$1");
-}
-
 // ─── Task row ─────────────────────────────────────────────────────────────────
 
 /** "HH:00" one hour from now (23:30 late at night) · the Later picker's starting value. */
@@ -303,9 +297,9 @@ function nextFullHour(): string {
   return h > 23 ? "23:30" : `${String(h).padStart(2, "0")}:00`;
 }
 
-function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete }: {
+function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, onDelete }: {
   t: Todo; today: string; showDate: boolean;
-  onToggle: () => void; onOpen: () => void; onDefer?: () => void; onLater?: (time: string) => void; onDelete: () => void;
+  onToggle: () => void; onOpen: () => void; onNotes: (notes: string | null) => void; onDefer?: () => void; onLater?: (time: string) => void; onDelete: () => void;
 }) {
   const done = t.doneAt !== null;
   const swipe = useSwipeDelete(onDelete);
@@ -322,12 +316,13 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete 
     celebrateTimer.current = window.setTimeout(() => { setCelebrating(false); onToggle(); }, 900);
   };
   const showDone = done || celebrating;
-  // Quick peek: tap the ⓘ dot (hover shows it on desktop too) to read the notes
-  // right in the list, without opening the task.
-  const [peek, setPeek] = useState(false);
+  // Notes live under the row (Ali 2026-09-12): the first three lines, tap for all of it;
+  // or, when the task's notes are Subtasks, real tick boxes right here.
+  const subtasks = taskFormat(t) === "checklist" && t.notes ? parseSubtasks(t.notes) : null;
   const sub = [
     showDate && t.dueDate ? fmtDue(t.dueDate, today) : null,
     t.dueTime,
+    subtasks && subtasks.length ? `${subtasks.filter((s) => s.done).length}/${subtasks.length}` : null,
     t.evening && !showDate && t.dueDate === today ? null : t.evening && t.dueDate ? "evening" : null,
     t.project ? `#${t.project}` : null,
   ].filter(Boolean).join(" · ");
@@ -335,7 +330,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete 
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
     <div className={`todo-row${celebrating ? " cc-done-row" : ""}`} {...swipe.handlers}
-      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
+      style={{ display: "grid", gridTemplateColumns: `auto 1fr${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
       <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -351,17 +346,6 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete 
         </span>
         {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
       </button>
-      {t.notes && (
-        <button
-          onClick={(e) => { e.stopPropagation(); if (!window.matchMedia?.("(hover: hover)").matches) setPeek((p) => !p); }}
-          onMouseEnter={() => { if (window.matchMedia?.("(hover: hover)").matches) setPeek(true); }}
-          onMouseLeave={() => { if (window.matchMedia?.("(hover: hover)").matches) setPeek(false); }}
-          aria-label={peek ? "Hide notes" : "Show notes"} aria-expanded={peek} title="Notes"
-          style={{ width: 40, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
-        >
-          <span aria-hidden style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
-        </button>
-      )}
       {onLater && !done && (
         // "Later today" (Ali 2026-09-11): opens the native time wheel; the reminder
         // comes back at that time, same day.
@@ -375,9 +359,9 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete 
         <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
       )}
     </div>
-    {peek && t.notes && (
-      <div onClick={() => setPeek(false)} style={{ padding: "0 12px 12px 48px", fontSize: 14.5, lineHeight: 1.5, color: "var(--ink-2)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", background: "var(--bg-card)" }}>
-        <Linkify text={prettyNotes(t.notes)} />
+    {t.notes && !done && !celebrating && (
+      <div style={{ background: "var(--bg-card)", transform: `translateX(${swipe.offset}px)` }}>
+        {subtasks ? <SubtaskList notes={t.notes} onChange={onNotes} /> : <NotesPreview notes={t.notes} />}
       </div>
     )}
     </SwipeWrap>
@@ -389,11 +373,17 @@ function Row({ t, today, showDate, onToggle, onOpen, onDefer, onLater, onDelete 
 function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelete: () => void }) {
   const swipe = useSwipeDelete(onDelete);
   const preview = firstLine(t.notes);
-  const items = (t.notes?.match(/^- (\[[ xX]\] )?/gm) ?? []).length;
+  const fmt = docFormat(t);
+  const shape = (() => {
+    if (fmt === "checklist") { const s = parseSubtasks(t.notes); return s.length ? `${s.filter((x) => x.done).length}/${s.length} ticked` : null; }
+    if (fmt === "sections" || fmt === "accordion") { const n = parseSections(t.notes).filter((s) => s.title !== null).length; return n ? `${n} section${n === 1 ? "" : "s"}` : preview; }
+    if (fmt === "list") { const n = (t.notes?.match(/^- /gm) ?? []).length; return n ? `${n} item${n === 1 ? "" : "s"}` : null; }
+    return preview;
+  })();
   const sub = [
     t.dueDate ? `remind ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
     t.project ? `#${t.project}` : null,
-    items > 0 ? `${items} item${items === 1 ? "" : "s"}` : preview,
+    shape,
     fmtAgo(t.updatedAt),
   ].filter(Boolean).join(" · ");
 
@@ -550,7 +540,15 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           ))}
         </div>
 
-        <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
+        {/* Notes or Subtasks (Ali 2026-09-12) · same text underneath, so switching loses nothing. */}
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {TASK_FORMATS.map((f) => <button key={f.key} onClick={() => set({ format: f.key })} style={chipStyle(taskFormat(d) === f.key)} aria-pressed={taskFormat(d) === f.key}>{f.label}</button>)}
+          </div>
+          {taskFormat(d) === "checklist"
+            ? <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} />
+            : <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />}
+        </div>
 
         <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
         <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
@@ -576,16 +574,17 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
   const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
   const [remind, setRemind] = useState(!!t.dueDate);
 
-  // Two shapes for the same stored text: a LIST (each line "- item", shown as real
-  // rows) or a DOC (free text). Detected from the content; switchable any time.
-  const looksLikeList = (notes: string | null) => {
-    const lines = (notes ?? "").split("\n").filter((l) => l.trim());
-    return lines.length === 0 || lines.every((l) => /^- /.test(l));
-  };
-  const [mode, setMode] = useState<"list" | "doc">(isNew || looksLikeList(t.notes) ? "list" : "doc");
-  const items = (d.notes ?? "").split("\n").map((l) => l.replace(/^- /, "")).filter((l) => l.trim());
+  // Five shapes for the same stored text (Ali 2026-09-12): List, Checklist, Document,
+  // Sections, Accordion. Saved on the doc (`format`); older docs are detected from the text.
+  const mode: Format = docFormat(d);
+  const [editingDoc, setEditingDoc] = useState(isNew); // Sections / Accordion: read view by default, Edit to write
+  const items = (d.notes ?? "").split("\n").map((l) => l.replace(/^- (\[[ xX]\] )?/, "")).filter((l) => l.trim());
   const writeItems = (list: string[]) => set({ notes: list.length ? list.map((i) => `- ${i.trim()}`).join("\n") : null });
-  const toList = () => { writeItems((d.notes ?? "").split("\n").map((l) => l.replace(/^- /, "").replace(/^\d+\. /, "")).filter((l) => l.trim())); setMode("list"); };
+  const setFormat = (f: Format) => {
+    if (f === "list") set({ format: f, notes: (d.notes ?? "").split("\n").map((l) => l.replace(/^- (\[[ xX]\] )?/, "").replace(/^\d+\. /, "")).filter((l) => l.trim()).map((l) => `- ${l.trim()}`).join("\n") || null });
+    else set({ format: f });
+    if (f === "sections" || f === "accordion") setEditingDoc(!(d.notes ?? "").trim());
+  };
 
   const [newItem, setNewItem] = useState("");
   const [editIdx, setEditIdx] = useState<number | null>(null);
@@ -611,27 +610,34 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
     if (editIdx === i) setEditIdx(j);
   };
 
-  const seg = (on: boolean): React.CSSProperties => ({
-    minHeight: 40, borderRadius: 10, border: "none", font: "inherit", fontSize: 15, fontWeight: on ? 600 : 500,
-    color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", cursor: "pointer",
-  });
-
   return (
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "12px 18px calc(env(safe-area-inset-bottom) + 12px)", display: "flex", flexDirection: "column", gap: 12, maxWidth: 560, margin: "0 auto", height: "92dvh" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
           <div style={{ minWidth: 0 }}><TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="Name" /></div>
-          <div role="tablist" aria-label="Shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, padding: 3, borderRadius: 12, background: "var(--fill-1)", minWidth: 118 }}>
-            <button role="tab" aria-selected={mode === "list"} onClick={toList} style={seg(mode === "list")}>List</button>
-            <button role="tab" aria-selected={mode === "doc"} onClick={() => setMode("doc")} style={seg(mode === "doc")}>Doc</button>
-          </div>
+          <select className="cc-input" value={mode} onChange={(e) => setFormat(e.target.value as Format)} aria-label="How this doc displays"
+            style={{ minHeight: 44, fontSize: 15, padding: "0 8px", borderRadius: 12, width: "auto", maxWidth: 132, color: "var(--ink-2)", WebkitAppearance: "menulist", appearance: "auto" }}>
+            {DOC_FORMATS.map((f) => <option key={f.key} value={f.key}>{f.label}</option>)}
+          </select>
           <button onClick={close} aria-label="Close" style={{ width: 44, height: 44, borderRadius: 12, border: "none", background: "var(--fill-1)", color: "var(--ink-2)", fontSize: 17, cursor: "pointer" }}>✕</button>
         </div>
 
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
         {mode === "doc" ? (
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
+        ) : mode === "checklist" ? (
+          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} showReset />
+        ) : mode === "sections" || mode === "accordion" ? (
+          <div style={{ display: "grid", gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>{editingDoc ? "Start each section with a # heading (the H button)." : DOC_FORMATS.find((f) => f.key === mode)?.hint}</span>
+              <button type="button" onClick={() => setEditingDoc((v) => !v)} className="cc-btn cc-btn-ghost" style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>{editingDoc ? "Read" : "Edit"}</button>
+            </div>
+            {editingDoc
+              ? <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="# First section" fill />
+              : <SectionsView notes={d.notes ?? ""} single={mode === "accordion"} />}
+          </div>
         ) : (
           <div style={{ display: "grid", gap: 2 }}>
             {items.length === 0 && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet · add the first item below.</div>}
@@ -823,6 +829,17 @@ export default function TodoPage() {
       {/* ── Docs segment ── */}
       {isLists && (
         <>
+          {/* Passwords · a doc type of its own: end-to-end encrypted, its own page (2026-09-12) */}
+          <Link href="/vault" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+            <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Passwords</span>
+                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Logins, API keys, recovery codes · encrypted on this phone</span>
+              </span>
+              <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
+            </div>
+          </Link>
           {inArea.length > 3 && (
             <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
           )}
@@ -873,7 +890,7 @@ export default function TodoPage() {
                   <div style={{ padding: "0 8px 0 0" }}>
                     {g.items.map((t) => (
                       <Row key={t.clientId} t={t} today={today} showDate={!!g.dated}
-                        onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)}
+                        onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)}
                         onDefer={nowish ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined}
                         onLater={nowish ? (time) => upsert({ ...t, dueDate: today, dueTime: time, evening: false }) : undefined} />
                     ))}
@@ -888,7 +905,7 @@ export default function TodoPage() {
               <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
                 <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
               </button>
-              {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}</div>}
+              {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)} />)}</div>}
             </section>
           )}
         </>

@@ -13,12 +13,12 @@
  * (see src/lib/local/outbox.ts) and replays when back online.
  */
 
-const VERSION = "cc-v16";
+const VERSION = "cc-v17";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const API = `${VERSION}-api`;
 
-const PRECACHE_PAGES = ["/today", "/stretch", "/checklist", "/train", "/train/w1", "/train/w2", "/books", "/todo", "/news", "/settings", "/offline"];
+const PRECACHE_PAGES = ["/today", "/stretch", "/breathe", "/checklist", "/train", "/train/kb1", "/books", "/todo", "/news", "/settings", "/offline"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -94,6 +94,9 @@ self.addEventListener("fetch", (event) => {
 
   // RSC payloads / prefetches for pages: let them go to the network, fall back to nothing.
   if (req.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) return;
+
+  // The vault is never cached here · not even ciphertext (2026-09-12).
+  if (url.pathname.startsWith("/api/vault")) return;
 
   // API reads: network-first (3s), then cache.
   if (url.pathname.startsWith("/api/")) {

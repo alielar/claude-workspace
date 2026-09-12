@@ -10,18 +10,19 @@
  *  5. App: version, force-update
  */
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
 import { useCached, fetchJson, readCache, writeCache, isOnline } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
-import { VIDEO_CATEGORIES, allChannels, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
+import { VIDEO_CATEGORIES, allChannels, isBuiltIn, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
 import type { ChannelHit } from "@/lib/news/youtubeSearch";
 import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 import { parseMorningPlan, computeMorning, type MorningPlan } from "@/lib/morning/plan";
+import { STRETCH_MOVES, STRETCH_TOTAL_SECONDS } from "@/lib/routine/stretching";
 
 type UserSettings = {
   timezone: string;
@@ -356,8 +357,28 @@ export default function SettingsPage() {
     const enabled = settings?.newsChannels ? Array.from(new Set([...channels, hit.id])) : null;
     void saveChannels(enabled, nextCustom);
   };
-  const removeChannel = (id: string) =>
-    saveChannels(settings?.newsChannels ? channels.filter((c) => c !== id) : null, custom.filter((c) => c.id !== id));
+  // Remove: a custom channel is dropped; a built-in gets a `removed` marker (restorable).
+  const removeChannel = (id: string) => {
+    const enabled = settings?.newsChannels ? channels.filter((c) => c !== id) : null;
+    const rest = custom.filter((c) => c.id !== id);
+    const ch = channelList.find((c) => c.id === id);
+    void saveChannels(enabled, isBuiltIn(id) && ch ? [...rest, { id, name: ch.name, category: ch.category, removed: true }] : rest);
+    setEditing(null);
+  };
+  // Edit name / topic: custom rows change in place, built-ins get an override entry with the same id.
+  const editChannel = (id: string, name: string, category: VideoCategory) => {
+    const clean = name.trim();
+    if (!clean) return;
+    const prev = custom.find((c) => c.id === id);
+    const entry: CustomChannel = { ...(prev ?? {}), id, name: clean, category, removed: false };
+    void saveChannels(settings?.newsChannels ? channels : null, [...custom.filter((c) => c.id !== id), entry]);
+    setEditing(null);
+  };
+  // Restore one built-in (or all) to how the app shipped it.
+  const restoreChannel = (id: string) => { void saveChannels(settings?.newsChannels ? channels : null, custom.filter((c) => c.id !== id)); setEditing(null); };
+  const builtInOverrides = custom.filter((c) => isBuiltIn(c.id));
+  const restoreAll = () => { if (confirm("Put every built-in channel back the way it shipped? Channels you added stay.")) void saveChannels(settings?.newsChannels ? channels : null, custom.filter((c) => !isBuiltIn(c.id))); };
+  const [editing, setEditing] = useState<{ id: string; name: string; category: VideoCategory } | null>(null);
 
   // Live channel search (needs a connection · offline the box is disabled, the list above still shows).
   const online = useSyncExternalStore(subscribeOnline, isOnline, () => true);
@@ -554,7 +575,8 @@ export default function SettingsPage() {
                   {rows.map((c) => {
                     const on = channels.includes(c.id);
                     return (
-                      <div key={c.id} style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid var(--line)" }}>
+                      <React.Fragment key={c.id}>
+                      <div style={{ display: "flex", alignItems: "stretch", borderBottom: editing?.id === c.id ? "none" : "1px solid var(--line)" }}>
                         <button onClick={() => toggleChannel(c.id)} disabled={!settings} role="switch" aria-checked={on}
                           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flex: 1, minWidth: 0, minHeight: 52, padding: "6px 2px", background: "transparent", border: "none", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
                           <span style={{ minWidth: 0 }}>
@@ -565,28 +587,48 @@ export default function SettingsPage() {
                             <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
                           </span>
                         </button>
-                        {c.custom && (
-                          <button onClick={() => removeChannel(c.id)} disabled={!settings} aria-label={`Remove ${c.name}`}
-                            style={{ minWidth: 44, padding: "0 4px 0 12px", background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>Remove</button>
-                        )}
+                        <button onClick={() => setEditing(editing?.id === c.id ? null : { id: c.id, name: c.name, category: c.category })} disabled={!settings} aria-label={`Edit ${c.name}`} aria-expanded={editing?.id === c.id}
+                          style={{ minWidth: 44, padding: "0 4px 0 12px", background: "transparent", border: "none", color: editing?.id === c.id ? "var(--violet)" : "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>{editing?.id === c.id ? "Close" : "Edit"}</button>
                       </div>
+                      {editing?.id === c.id && (
+                        <div style={{ display: "grid", gap: 8, padding: "10px 0 12px", borderBottom: "1px solid var(--line)" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                            <input className="cc-input" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} aria-label="Channel name" style={{ fontSize: 16, minHeight: 44, minWidth: 0 }} />
+                            <select className="cc-input" value={editing.category} onChange={(e) => setEditing({ ...editing, category: e.target.value as VideoCategory })} aria-label="Topic"
+                              style={{ minHeight: 44, fontSize: 16, padding: "0 10px", maxWidth: 150, WebkitAppearance: "menulist", appearance: "auto" }}>
+                              {VIDEO_CATEGORIES.map((g2) => <option key={g2.key} value={g2.key}>{g2.label}</option>)}
+                            </select>
+                          </div>
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            <button className="cc-btn cc-btn-primary" onClick={() => editChannel(c.id, editing.name, editing.category)} disabled={!editing.name.trim()} style={{ minHeight: 44, padding: "0 16px", fontSize: 15 }}>Save</button>
+                            {c.edited && <button className="cc-btn cc-btn-ghost" onClick={() => restoreChannel(c.id)} style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Restore default</button>}
+                            <span style={{ flex: 1 }} />
+                            <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Remove ${c.name} from the brief?`)) removeChannel(c.id); }} style={{ minHeight: 44, padding: "0 12px", fontSize: 14, color: "var(--neg)" }}>Remove</button>
+                          </div>
+                          <div style={{ fontSize: 13, color: "var(--ink-4)" }}>{c.custom ? "Added by you." : c.edited ? "A built-in channel, edited by you." : "A built-in channel. Edit, move it to another topic or remove it · all reversible."}</div>
+                        </div>
+                      )}
+                    </React.Fragment>
                     );
                   })}
                   {rows.length === 0 && <div style={{ fontSize: 14, color: "var(--ink-4)", padding: "6px 2px" }}>No channels yet. Search above and add one.</div>}
                 </div>
               );
             })}
-            <div style={{ fontSize: 14, color: "var(--ink-4)", padding: "10px 2px 0", lineHeight: 1.5 }}>Built-in channels can be switched off; channels you added can be removed. Videos update on the next News refresh.</div>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", padding: "10px 2px 0" }}>
+              <span style={{ flex: 1, fontSize: 14, color: "var(--ink-4)", lineHeight: 1.5, minWidth: 200 }}>Every channel here is yours: switch off, edit, move to another topic or remove · the built-ins too. Videos update on the next News refresh.</span>
+              {builtInOverrides.length > 0 && <button className="cc-btn cc-btn-ghost" onClick={restoreAll} style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>Restore built-ins ({builtInOverrides.length})</button>}
+            </div>
           </div>
         )}
       </section>
 
-      {/* Stretching player · a second door, so it is reachable even when the Today row is ticked */}
+      {/* Mobility player (route /stretch) · a second door, so it is reachable even when the Today row is ticked */}
       <Link href="/stretch" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
           <span>
-            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Stretching</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>22 moves · 10 s rests · 14:40</span>
+            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Mobility</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{STRETCH_MOVES.length} moves · 10 s rests · {Math.floor(STRETCH_TOTAL_SECONDS / 60)}:{String(STRETCH_TOTAL_SECONDS % 60).padStart(2, "0")}</span>
           </span>
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>

@@ -34,6 +34,7 @@ export type Todo = {
   nagMinutes?: number | null;  // reminder nag cadence in minutes (5/10/15/30); empty = 30
   wakeDate?: string | null;    // YYYY-MM-DD · Vault (far-future items): hidden from every list until this day
   notifyTarget?: "phone" | "laptop" | null; // where the reminder push goes · null = both
+  format?: Format | null;      // how the notes display · see FORMATS (null = detected from the text)
   someday: boolean;            // parked, out of the way
   priority: Priority;
   sortOrder: number;
@@ -44,6 +45,76 @@ export type Todo = {
 };
 
 export type TodosData = { todos: Todo[] };
+
+// ─── Notes formats (2026-09-12) ───────────────────────────────────────────────
+//
+// One stored text (`notes`), several ways to show it. Tasks: "doc" (free text) or
+// "checklist" (subtasks, ticked one by one). Docs add "list" (plain items),
+// "sections" (headings you open and close, several at once) and "accordion"
+// (headings, one open at a time). Sections come from `# Heading` lines, list
+// items from `- ` lines and subtasks from `- [ ] ` / `- [x] ` lines · so any
+// format can be switched to any other without losing the words.
+
+export const FORMATS = ["doc", "checklist", "list", "sections", "accordion"] as const;
+export type Format = (typeof FORMATS)[number];
+export const TASK_FORMATS: { key: Format; label: string }[] = [{ key: "doc", label: "Notes" }, { key: "checklist", label: "Subtasks" }];
+export const DOC_FORMATS: { key: Format; label: string; hint: string }[] = [
+  { key: "list",      label: "List",      hint: "plain items, reorder by hand" },
+  { key: "checklist", label: "Checklist", hint: "items you tick · reset to reuse" },
+  { key: "doc",       label: "Document",  hint: "free text with headings and lists" },
+  { key: "sections",  label: "Sections",  hint: "# headings fold · open several" },
+  { key: "accordion", label: "Accordion", hint: "# headings fold · one open at a time" },
+];
+
+/** The task's notes format: the saved choice, else Subtasks when every line is a checkbox. */
+export function taskFormat(t: Pick<Todo, "format" | "notes">): "doc" | "checklist" {
+  if (t.format === "checklist") return "checklist";
+  if (t.format) return "doc";
+  const lines = (t.notes ?? "").split("\n").filter((l) => l.trim());
+  return lines.length > 0 && lines.every((l) => /^\s*- \[[ xX]\] /.test(l)) ? "checklist" : "doc";
+}
+
+/** The doc's format: the saved choice, else List when every line is an item, else Document. */
+export function docFormat(t: Pick<Todo, "format" | "notes">): Format {
+  if (t.format) return t.format;
+  const lines = (t.notes ?? "").split("\n").filter((l) => l.trim());
+  if (lines.length === 0) return "list";
+  if (lines.every((l) => /^\s*- \[[ xX]\] /.test(l))) return "checklist";
+  if (lines.every((l) => /^- /.test(l))) return "list";
+  return "doc";
+}
+
+export type SubTask = { text: string; done: boolean };
+
+/** Every non-empty line is an item; `- [x]` marks it done, other markers are stripped. */
+export function parseSubtasks(notes: string | null | undefined): SubTask[] {
+  return (notes ?? "").split("\n").map((raw) => {
+    const m = raw.match(/^\s*- \[([ xX])\] ?(.*)$/);
+    if (m) return { text: m[2].trim(), done: m[1] !== " " };
+    const text = raw.replace(/^\s*(- |\d+\. |#{1,3} )/, "").trim();
+    return { text, done: false };
+  }).filter((s) => s.text);
+}
+
+export function serializeSubtasks(items: SubTask[]): string | null {
+  return items.length ? items.map((s) => `- [${s.done ? "x" : " "}] ${s.text.trim()}`).join("\n") : null;
+}
+
+export type DocSection = { title: string | null; body: string };
+
+/** Split notes at `# Heading` lines (levels 1–3). Text before the first heading is an untitled intro. */
+export function parseSections(notes: string | null | undefined): DocSection[] {
+  const out: DocSection[] = [];
+  let cur: DocSection | null = null;
+  for (const raw of (notes ?? "").split("\n")) {
+    const m = raw.match(/^#{1,3} (.*)$/);
+    if (m) { if (cur) out.push(cur); cur = { title: m[1].trim(), body: "" }; continue; }
+    if (!cur) cur = { title: null, body: "" };
+    cur.body += (cur.body ? "\n" : "") + raw;
+  }
+  if (cur) out.push(cur);
+  return out.map((s) => ({ ...s, body: s.body.replace(/^\n+|\n+$/g, "") })).filter((s) => s.title !== null || s.body.trim());
+}
 
 export function newTodoId(): string {
   try { return crypto.randomUUID(); } catch { return `${Date.now()}-${Math.random().toString(36).slice(2)}`; }

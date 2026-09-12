@@ -1,5 +1,5 @@
 /**
- * Stretching music · 10 tracks, self-hosted in /public/music.
+ * Mobility (stretch) music · 10 tracks, self-hosted in /public/music.
  * 2026-09-11 (Ali): "Embracing the Sunrise" is the reference sound · epic, melodic,
  * neoclassical, made for a morning. Four calm/bland Kevin MacLeod tracks (Calmant,
  * Meditation Impromptu 01, Frozen Star, Ashton Manor) are out; in their place four

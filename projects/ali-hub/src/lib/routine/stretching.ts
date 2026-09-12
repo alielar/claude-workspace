@@ -1,14 +1,17 @@
 /**
- * Morning stretching routine · 22 movements in 4 blocks, 14:40 total (2026-09-12).
+ * Morning mobility routine · 21 movements in 4 blocks, 12:00 total (2026-09-12, evening).
+ * (Shown as "Mobility" everywhere since 2026-09-12; the route stays /stretch and the
+ * checklist routineKey stays "stretch" so nothing installed on the phone breaks.)
  *
- * Every movement gets the duration it actually needs (Ali's rule 2026-09-10:
- * my judgement per move, 10 s rest between EVERY movement, total under 15:00):
- * dynamic warm-ups 20–30 s, deep floor holds 40–45 s, the closing pose 50 s.
- * 5 s lead-in, 21 × 10 s rests. Work 11:05 + rest 3:30 + lead-in 0:05 = 14:40.
+ * Every movement gets the duration it actually needs (Ali's rule 2026-09-10: my
+ * judgement per move, 10 s rest between EVERY movement) and the whole thing fits
+ * 12 minutes including rests (Ali 2026-09-12): dynamic warm-ups 15–25 s, deep floor
+ * holds 30–35 s, the closing pose 30 s. Forearm Stretch removed the same day.
+ * 5 s lead-in, 20 × 10 s rests. Work 8:35 + rest 3:20 + lead-in 0:05 = 12:00.
  *   Block 1 · wake-up and spine     starts 0:05
- *   Block 2 · standing to floor     starts 3:30
- *   Block 3 · floor and hips        starts 6:45
- *   Block 4 · grounded finish       starts 12:30 · ends 14:40
+ *   Block 2 · standing to floor     starts 3:10
+ *   Block 3 · floor and hips        starts 6:00
+ *   Block 4 · grounded finish       starts 10:25 · ends 12:00
  *
  * Every move has a stable `key`. Ali's renames on the phone are stored BY KEY
  * (localStorage cc-stretch-names-v3) · the old positional snapshot (v2) is what
@@ -34,39 +37,38 @@ export const STRETCH_BLOCKS = [
 ];
 
 export const STRETCH_MOVES: StretchMove[] = [
-  // Block 1 · dynamic wake-up: short and lively, the holds come later.
-  { key: "bounce",     name: "Bouncing on Toes",                  seconds: 20, block: 0 },
+  // Block 1 · dynamic wake-up: short and lively, the holds come later.        125 s
+  { key: "bounce",     name: "Bouncing on Toes",                  seconds: 15, block: 0 },
   { key: "neck",       name: "Neck Twists",                       seconds: 20, block: 0 },
   { key: "torso",      name: "Torso Twists",                      seconds: 20, block: 0 },
-  { key: "squat-hold", name: "Squat Hold",                        seconds: 25, block: 0 },
-  { key: "hindu",      name: "Hindu Squats",                      seconds: 30, block: 0 },
-  { key: "cossack",    name: "Cossack Squats",                    seconds: 30, block: 0 },
-  // Block 2 · standing to floor
-  { key: "arm-swings", name: "Lateral Arm Swings",                seconds: 20, block: 1 },
-  { key: "down-dog",   name: "Down Dog + Calf Pedal",             seconds: 35, block: 1 },
-  { key: "wgs-l",      name: "World's Greatest Stretch · Left",   seconds: 30, block: 1 },
-  { key: "wgs-r",      name: "World's Greatest Stretch · Right",  seconds: 30, block: 1 },
-  { key: "toe-touch",  name: "Toe Touches",                       seconds: 30, block: 1 },
-  // Block 3 · deep hip holds need real time to release · the longest block.
-  { key: "9090",       name: "90/90 Switches",                    seconds: 30, block: 2 },
-  { key: "pigeon-l",   name: "Pigeon · Left",                     seconds: 45, block: 2 },
-  { key: "pigeon-r",   name: "Pigeon · Right",                    seconds: 45, block: 2 },
-  { key: "happy-baby", name: "Happy Baby",                        seconds: 40, block: 2 },
-  { key: "seiza",      name: "Seiza",                             seconds: 25, block: 2 },
-  { key: "kneel-ham-l", name: "Kneeling Hamstring · Left",        seconds: 30, block: 2 },
-  { key: "kneel-ham-r", name: "Kneeling Hamstring · Right",       seconds: 30, block: 2 },
-  { key: "forearm",    name: "Forearm Stretch",                   seconds: 20, block: 2 },
-  // Block 4 · grounded finish · child's pose stays the long calm ending.
-  { key: "cat-cow",    name: "Cat Cow",                           seconds: 30, block: 3 },
-  { key: "cobra",      name: "Cobra",                             seconds: 30, block: 3 },
-  { key: "child",      name: "Child's Pose",                      seconds: 50, block: 3 },
+  { key: "squat-hold", name: "Squat Hold",                        seconds: 20, block: 0 },
+  { key: "hindu",      name: "Hindu Squats",                      seconds: 25, block: 0 },
+  { key: "cossack",    name: "Cossack Squats",                    seconds: 25, block: 0 },
+  // Block 2 · standing to floor                                                120 s
+  { key: "arm-swings", name: "Lateral Arm Swings",                seconds: 15, block: 1 },
+  { key: "down-dog",   name: "Down Dog + Calf Pedal",             seconds: 30, block: 1 },
+  { key: "wgs-l",      name: "World's Greatest Stretch · Left",   seconds: 25, block: 1 },
+  { key: "wgs-r",      name: "World's Greatest Stretch · Right",  seconds: 25, block: 1 },
+  { key: "toe-touch",  name: "Toe Touches",                       seconds: 25, block: 1 },
+  // Block 3 · deep hip holds keep the most time · still the longest block.    195 s
+  { key: "9090",       name: "90/90 Switches",                    seconds: 25, block: 2 },
+  { key: "pigeon-l",   name: "Pigeon · Left",                     seconds: 35, block: 2 },
+  { key: "pigeon-r",   name: "Pigeon · Right",                    seconds: 35, block: 2 },
+  { key: "happy-baby", name: "Happy Baby",                        seconds: 30, block: 2 },
+  { key: "seiza",      name: "Seiza",                             seconds: 20, block: 2 },
+  { key: "kneel-ham-l", name: "Kneeling Hamstring · Left",        seconds: 25, block: 2 },
+  { key: "kneel-ham-r", name: "Kneeling Hamstring · Right",       seconds: 25, block: 2 },
+  // Block 4 · grounded finish · a calm, not long, ending.                       75 s
+  { key: "cat-cow",    name: "Cat Cow",                           seconds: 25, block: 3 },
+  { key: "cobra",      name: "Cobra",                             seconds: 20, block: 3 },
+  { key: "child",      name: "Child's Pose",                      seconds: 30, block: 3 },
 ];
 
 /** Every name that has ever been a DEFAULT (current list + retired moves). A saved
  * name equal to one of these is a stale snapshot entry, never one of Ali's renames. */
 export const DEFAULT_NAMES_EVER = new Set<string>([
   ...STRETCH_MOVES.map((m) => m.name),
-  "Seated Toe Stretch", "Frog Pose", "Frog", "Butterfly Stretch", "Kneeling Hamstring",
+  "Seated Toe Stretch", "Frog Pose", "Frog", "Butterfly Stretch", "Kneeling Hamstring", "Forearm Stretch",
   "World's Greatest Stretch", "Pigeon", "Down Dog", "Calf Pedal", "Torso Twists",
 ].map((n) => n.toLowerCase()));
 export const isDefaultName = (n: string) => DEFAULT_NAMES_EVER.has(n.trim().toLowerCase());

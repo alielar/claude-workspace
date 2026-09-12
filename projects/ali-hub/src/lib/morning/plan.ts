@@ -20,7 +20,7 @@ export const DEFAULT_MORNING_PLAN: MorningPlan = {
   callsAt: "08:30",
   steps: [
     { id: "wake",      label: "Wake up · water · bathroom", minutes: 10 },
-    { id: "stretch",   label: "Stretch",                    minutes: 12 },
+    { id: "stretch",   label: "Mobility",                   minutes: 12 },
     { id: "breathe",   label: "Wim Hof",                    minutes: 12 },
     { id: "train",     label: "Train",                      minutes: 36, trainOnly: true },
     { id: "shower",    label: "Shower",                     minutes: 15 },
@@ -34,7 +34,10 @@ export function parseMorningPlan(json: string | null | undefined): MorningPlan {
   try {
     const p = JSON.parse(json ?? "null") as MorningPlan | null;
     if (!p || !HM.test(p.trainWake) || !HM.test(p.restWake) || !HM.test(p.callsAt) || !Array.isArray(p.steps)) return DEFAULT_MORNING_PLAN;
-    const steps = p.steps.filter((s) => s && typeof s.label === "string" && Number.isFinite(s.minutes) && s.minutes >= 0);
+    const steps = p.steps
+      .filter((s) => s && typeof s.label === "string" && Number.isFinite(s.minutes) && s.minutes >= 0)
+      // "Stretching" became "Mobility" on 2026-09-12 · a saved plan still carrying the old default label follows.
+      .map((s) => (s.id === "stretch" && /^stretch(ing)?$/i.test(s.label) ? { ...s, label: "Mobility" } : s));
     return steps.length ? { ...p, steps } : DEFAULT_MORNING_PLAN;
   } catch { return DEFAULT_MORNING_PLAN; }
 }

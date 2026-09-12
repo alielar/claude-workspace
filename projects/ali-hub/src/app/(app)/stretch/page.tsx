@@ -282,7 +282,7 @@ export default function StretchPage() {
       <div style={{ display: "grid", gap: 18, maxWidth: 560 }}>
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 600 }}>Stretching</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility</h1>
             <div className="sub">{STRETCH_MOVES.length} moves · 4 blocks · 10 s rests · {fmt(STRETCH_TOTAL_SECONDS)}</div>
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function StretchPage() {
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
         <div style={{ fontSize: 64 }}>✓</div>
-        <h1 style={{ fontSize: 28, fontWeight: 600 }}>Stretching done</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility done</h1>
         <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{STRETCH_MOVES.length} moves · {fmt(STRETCH_TOTAL_SECONDS)} · ticked on today&rsquo;s list</p>
         <button className="cc-btn cc-btn-primary" onClick={exit} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
           Back to Today

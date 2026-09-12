@@ -11,14 +11,21 @@ import { sql } from "drizzle-orm";
 const LATE_COLUMNS = [
   `ALTER TABLE user_settings ADD COLUMN news_custom_channels TEXT`,
 ];
+const TODO_COLUMNS = [
+  `ALTER TABLE todos ADD COLUMN format TEXT`,
+];
 
-let done: Promise<void> | null = null;
-
-export function ensureSettingsColumns(): Promise<void> {
-  done ??= (async () => {
-    for (const ddl of LATE_COLUMNS) {
-      try { await db.run(sql.raw(ddl)); } catch { /* already there */ }
-    }
-  })();
-  return done;
+function once(ddls: string[]) {
+  let done: Promise<void> | null = null;
+  return () => {
+    done ??= (async () => {
+      for (const ddl of ddls) {
+        try { await db.run(sql.raw(ddl)); } catch { /* already there */ }
+      }
+    })();
+    return done;
+  };
 }
+
+export const ensureSettingsColumns = once(LATE_COLUMNS);
+export const ensureTodoColumns = once(TODO_COLUMNS);

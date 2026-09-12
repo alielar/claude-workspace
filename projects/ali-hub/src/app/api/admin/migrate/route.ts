@@ -10,6 +10,7 @@
 
 import { NextResponse } from "next/server";
 import { HEALTH_DDL } from "@/lib/health/server";
+import { VAULT_DDL } from "@/lib/vault/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
@@ -163,6 +164,7 @@ export async function POST() {
     `ALTER TABLE user_settings ADD COLUMN last_reminder_tick_at INTEGER`,
     `ALTER TABLE todos ADD COLUMN wake_date TEXT`,
     `ALTER TABLE todos ADD COLUMN notify_target TEXT`,
+    `ALTER TABLE todos ADD COLUMN format TEXT`,
 
     `ALTER TABLE user_settings ADD COLUMN morning_plan TEXT`,
 
@@ -186,9 +188,10 @@ export async function POST() {
     // ── Stretch routine replaced 2026-09-08 (20 moves / 4 blocks) · refresh the stale note ──
     `UPDATE checklist_items SET notes = '20 moves · 4 blocks · 12 minutes, continuous'
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
-    // ── 2026-09-12: 22 moves, 14:40 · any older note text is refreshed ──
-    `UPDATE checklist_items SET notes = '22 moves · 4 blocks · 15 minutes, 10 s rests'
-      WHERE routine_key = 'stretch' AND notes NOT LIKE '22 moves%'`,
+    // ── 2026-09-12 evening: "Mobility", 21 moves, 12:00 · title and note refreshed ──
+    `UPDATE checklist_items SET title = 'Mobility' WHERE routine_key = 'stretch' AND title = 'Stretching'`,
+    `UPDATE checklist_items SET notes = '21 moves · 4 blocks · 12 minutes, 10 s rests'
+      WHERE routine_key = 'stretch' AND (notes IS NULL OR notes NOT LIKE '21 moves%')`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────
     `ALTER TABLE user_settings ADD COLUMN calendar_feeds TEXT`,
     `CREATE TABLE IF NOT EXISTS calendar_ticks (
@@ -392,6 +395,8 @@ export async function POST() {
     // ── Sleep entries ───────────────────────────────────────────────────────
     // Apple Watch (Health Auto Export → /api/health/ingest) · same DDL as src/lib/health/server.ts
     ...HEALTH_DDL,
+    // ── Password vault (2026-09-12) · blind storage, same DDL as src/lib/vault/server.ts
+    ...VAULT_DDL,
 
     // ── Reading progress · bookmark columns ─────────────────────────────────
     `ALTER TABLE reading_progress ADD COLUMN bookmark_text TEXT`,

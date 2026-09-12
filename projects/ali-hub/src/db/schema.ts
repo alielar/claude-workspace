@@ -164,6 +164,8 @@ export const todos = sqliteTable("todos", {
   nagMinutes: integer("nag_minutes"),  // per-task nag cadence 5/10/15/30; null = 30
   wakeDate: text("wake_date"),         // YYYY-MM-DD · Vault: hidden everywhere until this day, then promoted + one push
   notifyTarget: text("notify_target"), // "phone" | "laptop" · null = both (where reminder pushes go)
+  /** How the notes display (2026-09-12): tasks "doc" | "checklist" (subtasks) · docs "doc" | "list" | "checklist" | "sections" | "accordion". null = detected from the text. */
+  format: text("format"),
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),

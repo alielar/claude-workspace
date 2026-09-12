@@ -10,7 +10,7 @@ import type { NewsCategory } from "@/lib/news-brief";
 
 /** Video categories = the four news interests + "tools" (Claude / AI tooling, 2026-09-12). */
 export type VideoCategory = NewsCategory | "tools";
-export type YtChannel = { id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number; custom?: boolean };
+export type YtChannel = { id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number; custom?: boolean; edited?: boolean };
 export const VIDEO_CATEGORIES: { key: VideoCategory; label: string }[] = [
   { key: "football",    label: "Football" },
   { key: "geopolitics", label: "Geopolitics" },
@@ -20,10 +20,15 @@ export const VIDEO_CATEGORIES: { key: VideoCategory; label: string }[] = [
 ];
 
 /**
- * A channel Ali added himself from Settings (live YouTube search, 2026-09-12). Stored as a JSON
- * array in `user_settings.news_custom_channels`; `news_channels` (enabled ids) covers these too.
+ * Ali's own changes to the channel list (Settings, 2026-09-12). Stored as a JSON array in
+ * `user_settings.news_custom_channels`; `news_channels` (enabled ids) covers these too.
+ * Three shapes share the array:
+ *   - a channel Ali added from the live search (id not in YT_CHANNELS)
+ *   - an EDIT of a built-in (same id as a built-in · its name/category replace the default)
+ *   - a REMOVAL of a built-in (`removed: true` · the built-in disappears until restored)
+ * The built-ins are a starting list Ali owns, not a fixed one.
  */
-export type CustomChannel = { id: string; name: string; category: VideoCategory; handle?: string; subs?: string };
+export type CustomChannel = { id: string; name: string; category: VideoCategory; handle?: string; subs?: string; removed?: boolean };
 
 export function parseCustomChannels(json: string | null | undefined): CustomChannel[] {
   try {
@@ -35,15 +40,27 @@ export function parseCustomChannels(json: string | null | undefined): CustomChan
   } catch { return []; }
 }
 
-/** Built-in channels plus Ali's own additions (an addition that reuses a built-in id wins, so a built-in can be re-homed to another topic). */
+/** Is this id one of the shipped defaults? */
+export const isBuiltIn = (id: string) => YT_CHANNELS.some((c) => c.id === id);
+
+/**
+ * The list as Ali sees it: built-ins (minus the removed ones, with his edits applied)
+ * plus his own additions.
+ */
 export function allChannels(custom: CustomChannel[] = []): YtChannel[] {
-  const own: YtChannel[] = custom.map((c) => ({
+  const byId = new Map(custom.map((c) => [c.id, c]));
+  const builtIns: YtChannel[] = [];
+  for (const c of YT_CHANNELS) {
+    const o = byId.get(c.id);
+    if (o?.removed) continue;
+    builtIns.push(o ? { ...c, name: o.name, category: o.category, edited: true, maxAgeHours: o.category === "tools" ? 240 : c.maxAgeHours } : c);
+  }
+  const own: YtChannel[] = custom.filter((c) => !c.removed && !isBuiltIn(c.id)).map((c) => ({
     id: c.id, name: c.name, category: c.category, custom: true,
     why: [c.handle, c.subs].filter(Boolean).join(" · ") || "added by you",
     maxAgeHours: c.category === "tools" ? 240 : undefined,
   }));
-  const ownIds = new Set(own.map((c) => c.id));
-  return [...YT_CHANNELS.filter((c) => !ownIds.has(c.id)), ...own];
+  return [...builtIns, ...own];
 }
 
 export const YT_CHANNELS: YtChannel[] = [
