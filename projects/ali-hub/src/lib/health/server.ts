@@ -8,7 +8,7 @@
 import { db } from "@/db";
 import { healthMetrics, healthSleep, healthWorkouts } from "@/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
-import type { Parsed } from "./types";
+import { sleepScore, type Parsed, type SleepNight } from "./types";
 
 export const HEALTH_DDL = [
   `CREATE TABLE IF NOT EXISTS health_sleep (
@@ -55,10 +55,31 @@ export function ensureHealthTables(): Promise<void> {
 
 export type IngestResult = { sleep: number; workouts: number; metrics: number; skipped: number };
 
+/** `COALESCE(excluded.x, x)` · a later, thinner post (HAE "since last sync") never blanks a value we already have. */
+function keepKnown<T extends Record<string, unknown>>(row: T, skip: string[]): Record<string, unknown> {
+  const set: Record<string, unknown> = {};
+  for (const k of Object.keys(row)) {
+    if (skip.includes(k)) continue;
+    const col = k.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase());
+    set[k] = k === "updatedAt" ? row[k] : sql.raw(`COALESCE(excluded.${col}, ${col})`);
+  }
+  return set;
+}
+
 export async function storeParsed(userId: string, p: Parsed): Promise<IngestResult> {
   await ensureHealthTables();
   const now = Date.now();
-  for (const n of p.sleep) {
+  for (const n0 of p.sleep) {
+    // Merge with the stored night first so the score is computed from everything known
+    // (a thin repost without stages must not overwrite a fuller night's score).
+    const [prev] = await db.select().from(healthSleep).where(and(eq(healthSleep.userId, userId), eq(healthSleep.date, n0.date))).limit(1);
+    const n: SleepNight = { ...n0 };
+    if (prev) {
+      for (const k of ["sleepStart", "sleepEnd", "inBedStart", "inBedEnd", "totalMin", "coreMin", "deepMin", "remMin", "awakeMin", "inBedMin", "source"] as const) {
+        if (n[k] === null && prev[k] !== null) (n as Record<string, unknown>)[k] = prev[k];
+      }
+    }
+    n.score = sleepScore(n);
     const row = {
       userId, date: n.date, sleepStart: n.sleepStart, sleepEnd: n.sleepEnd, inBedStart: n.inBedStart, inBedEnd: n.inBedEnd,
       totalMin: n.totalMin, coreMin: n.coreMin, deepMin: n.deepMin, remMin: n.remMin, awakeMin: n.awakeMin, inBedMin: n.inBedMin,
@@ -73,13 +94,11 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
       distanceKm: w.distanceKm, activeKcal: w.activeKcal, totalKcal: w.totalKcal, hrAvg: w.hrAvg, hrMin: w.hrMin, hrMax: w.hrMax,
       steps: w.steps, elevationM: w.elevationM, intensityMet: w.intensityMet, source: w.source, raw: JSON.stringify(w.raw), updatedAt: now,
     };
-    const { userId: _u, hkId: _h, ...set } = row; void _u; void _h;
-    await db.insert(healthWorkouts).values(row).onConflictDoUpdate({ target: healthWorkouts.hkId, set });
+    await db.insert(healthWorkouts).values(row).onConflictDoUpdate({ target: healthWorkouts.hkId, set: keepKnown(row, ["userId", "hkId"]) });
   }
   for (const m of p.metrics) {
     const row = { userId, date: m.date, metric: m.metric, qty: m.qty, min: m.min, avg: m.avg, max: m.max, units: m.units, updatedAt: now };
-    const { userId: _u, date: _d, metric: _m, ...set } = row; void _u; void _d; void _m;
-    await db.insert(healthMetrics).values(row).onConflictDoUpdate({ target: [healthMetrics.userId, healthMetrics.date, healthMetrics.metric], set });
+    await db.insert(healthMetrics).values(row).onConflictDoUpdate({ target: [healthMetrics.userId, healthMetrics.date, healthMetrics.metric], set: keepKnown(row, ["userId", "date", "metric"]) });
   }
   return { sleep: p.sleep.length, workouts: p.workouts.length, metrics: p.metrics.length, skipped: p.skipped.length };
 }
