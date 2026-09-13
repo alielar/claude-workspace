@@ -20,6 +20,36 @@ import Link from "next/link";
 import { decryptJson, deriveKey, encryptJson, generatePassword, KDF_ITERATIONS, passphraseStrength, randomBytes, toB64, VERIFIER } from "@/lib/vault/crypto";
 import { commonEmails, csvToImportRows, newVaultId, VAULT_KINDS, type ImportRow, type VaultItem, type VaultKind, type VaultMeta, type VaultRecord } from "@/lib/vault/types";
 
+/**
+ * Backup file (2026-09-13, Ali: "if Vercel dies or a migration wipes the database I lose
+ * everything"). It is EXACTLY what the server holds: the salt + verifier and every
+ * encrypted blob · nothing readable without the passphrase, so it can live in iCloud Drive,
+ * Files, a USB stick or an e-mail to yourself. Restore = pick the file (+ the passphrase it
+ * was made with, if it differs from the current one).
+ */
+type BackupFile = { format: "ali-vault-backup"; version: 1; exportedAt: string; count: number; meta: VaultMeta; items: VaultRecord[] };
+const LAST_BACKUP_KEY = "cc-vault-last-backup"; // a timestamp only · not sensitive
+
+function parseBackup(text: string): BackupFile {
+  const j = JSON.parse(text) as Partial<BackupFile>;
+  if (j.format !== "ali-vault-backup" || j.version !== 1 || !j.meta?.salt || !j.meta.verifier || !Array.isArray(j.items)) throw new Error("Not an A L I vault backup file.");
+  return j as BackupFile;
+}
+
+/** Hand the file to the phone: the share sheet (Files, iCloud Drive, AirDrop, Mail) when available, else a download. */
+async function saveFile(name: string, text: string): Promise<"shared" | "downloaded"> {
+  const file = new File([text], name, { type: "application/json" });
+  const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+  if (nav.share && nav.canShare?.({ files: [file] })) {
+    await nav.share({ files: [file], title: name });
+    return "shared";
+  }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a"); a.href = url; a.download = name; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  return "downloaded";
+}
+
 type Phase = "loading" | "offline" | "setup" | "locked" | "open";
 const IDLE_LOCK_MS = 5 * 60_000;
 const BACKGROUND_LOCK_MS = 60_000;
@@ -239,6 +269,17 @@ export default function VaultPage() {
   const [open, setOpen] = useState<{ item: VaultItem; isNew: boolean } | null>(null);
   const [importing, setImporting] = useState(false);
   const [changing, setChanging] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [pendingRestore, setPendingRestore] = useState<BackupFile | null>(null);
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
+  const [lastBackup, setLastBackup] = useState<number | null>(null);
+  useEffect(() => { try { const v = localStorage.getItem(LAST_BACKUP_KEY); if (v) setLastBackup(Number(v)); } catch { /* ignore */ } }, []); // eslint-disable-line react-hooks/set-state-in-effect
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const quickCopy = async (it: VaultItem) => {
+    const text = it.kind === "recovery" ? (it.codes ?? []).join("\n") : it.password;
+    if (!text) return;
+    try { await navigator.clipboard.writeText(text); setCopiedId(it.id); setTimeout(() => setCopiedId(null), 1400); } catch { /* open the item and copy there */ }
+  };
 
   const load = useCallback(() => {
     let alive = true;
@@ -251,7 +292,7 @@ export default function VaultPage() {
 
   const lock = useCallback(() => {
     keyRef.current = null;
-    setItems([]); setOpen(null); setImporting(false); setChanging(false); setPass(""); setPass2("");
+    setItems([]); setOpen(null); setImporting(false); setChanging(false); setPendingRestore(null); setBackupMsg(null); setPass(""); setPass2("");
     setPhase((p) => (p === "open" ? "locked" : p));
   }, []);
 
@@ -346,7 +387,52 @@ export default function VaultPage() {
     finally { setBusy(false); }
   };
 
+  const backup = async () => {
+    if (!meta) return;
+    setBackupMsg(null);
+    const stamp = new Date();
+    const name = `ali-vault-${stamp.toISOString().slice(0, 10)}.json`;
+    const file: BackupFile = { format: "ali-vault-backup", version: 1, exportedAt: stamp.toISOString(), count: records.length, meta, items: records };
+    try {
+      const how = await saveFile(name, JSON.stringify(file));
+      const now = Date.now(); setLastBackup(now); try { localStorage.setItem(LAST_BACKUP_KEY, String(now)); } catch { /* ignore */ }
+      setBackupMsg(how === "shared" ? `Saved ${name} where you chose. Keep it outside this phone too (iCloud Drive, a USB stick, an e-mail to yourself).` : `${name} downloaded. Move it somewhere safe outside this phone.`);
+    } catch (e) { if ((e as Error).name !== "AbortError") setBackupMsg("Couldn't save the file · try again."); }
+  };
+  /** Restore into an OPEN vault: merge the backup's items (re-encrypted with the current key when the backup used another passphrase). */
+  const restoreInto = async (file: BackupFile, backupPass: string): Promise<number> => {
+    const key = keyRef.current; if (!key || !meta) throw new Error("Locked");
+    let plain: VaultItem[] = [];
+    if (file.meta.salt === meta.salt && file.meta.verifier === meta.verifier) {
+      for (const r of file.items) { try { plain.push({ ...(await decryptJson<VaultItem>(key, r.blob)), id: r.id }); } catch { /* skip unreadable */ } }
+    } else {
+      if (!backupPass) throw new Error("That backup was made with a different passphrase · type it below.");
+      const bk = await deriveKey(backupPass, file.meta.salt, file.meta.iterations || KDF_ITERATIONS);
+      let ok = false; try { ok = (await decryptJson<string>(bk, file.meta.verifier)) === VERIFIER; } catch { ok = false; }
+      if (!ok) throw new Error("Wrong passphrase for that backup.");
+      for (const r of file.items) { try { plain.push({ ...(await decryptJson<VaultItem>(bk, r.blob)), id: r.id }); } catch { /* skip unreadable */ } }
+    }
+    const have = new Map(items.map((i) => [i.id, i.updatedAt]));
+    plain = plain.filter((i) => (have.get(i.id) ?? -1) < i.updatedAt);
+    if (plain.length === 0) return 0;
+    const re: VaultRecord[] = [];
+    for (const it of plain) re.push({ id: it.id, blob: await encryptJson(key, it), updatedAt: it.updatedAt });
+    for (let i = 0; i < re.length; i += 200) await api("PUT", { items: re.slice(i, i + 200) });
+    setItems((list) => [...list.filter((x) => !plain.some((p) => p.id === x.id)), ...plain].sort((a, b) => a.name.localeCompare(b.name)));
+    setRecords((rs) => [...rs.filter((x) => !re.some((p) => p.id === x.id)), ...re]);
+    return plain.length;
+  };
+  /** Restore when NO vault exists yet (fresh database): the file's salt/verifier and blobs go up as they are. */
+  const restoreFresh = async (file: BackupFile) => {
+    await api("POST", { salt: file.meta.salt, iterations: file.meta.iterations || KDF_ITERATIONS, verifier: file.meta.verifier });
+    for (let i = 0; i < file.items.length; i += 200) await api("PUT", { items: file.items.slice(i, i + 200) });
+    setMeta(file.meta); setRecords(file.items); setPhase("locked"); setError(null);
+  };
+
   const emails = useMemo(() => commonEmails(items), [items]);
+  // "now" is read once per open (a state value keeps the render pure for the compiler).
+  const [openedAt] = useState(() => Date.now());
+  const backupStale = !lastBackup || openedAt - lastBackup > 30 * 86400000;
   const q = query.trim().toLowerCase();
   const shown = items.filter((i) => (kind === "all" || i.kind === kind) && (!q || i.name.toLowerCase().includes(q) || (i.username ?? "").toLowerCase().includes(q) || (i.url ?? "").toLowerCase().includes(q)));
   const counts = VAULT_KINDS.map((k) => ({ ...k, n: items.filter((i) => i.kind === k.key).length }));
@@ -386,6 +472,18 @@ export default function VaultPage() {
         {error && <div role="alert" style={{ color: "var(--neg)", fontSize: 14.5 }}>{error}</div>}
         <button className="cc-btn cc-btn-primary" onClick={setup} disabled={busy || !pass || !pass2} style={{ minHeight: 52, borderRadius: 14, fontSize: 17 }}>{busy ? "Creating the key…" : "Create the vault"}</button>
       </div></div>
+      <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, lineHeight: 1.55, color: "var(--ink-2)" }}>
+        <b style={{ fontWeight: 600, color: "var(--ink)" }}>Have a backup file?</b>
+        <p style={{ margin: 0 }}>Pick the ali-vault-….json you saved earlier. It goes up exactly as it is; then unlock with the passphrase that backup was made with.</p>
+        <label className="cc-btn cc-btn-secondary" style={{ minHeight: 48, borderRadius: 12, fontSize: 15, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" }}>
+          {busy ? "Restoring…" : "Restore from backup"}
+          <input type="file" accept=".json,application/json" disabled={busy} onChange={async (e) => {
+            const f = e.target.files?.[0]; if (!f) return;
+            setBusy(true); setError(null);
+            try { await restoreFresh(parseBackup(await f.text())); } catch (err) { setError((err as Error).message); } finally { setBusy(false); }
+          }} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
+        </label>
+      </div></div>
     </div>
   );
 
@@ -424,22 +522,66 @@ export default function VaultPage() {
       {shown.length > 0 && (
         <section className="cc-card">
           {shown.map((it, i) => (
-            <button key={it.id} onClick={() => setOpen({ item: it, isNew: false })}
-              style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", width: "100%", minHeight: 58, padding: "8px 16px", background: "transparent", border: "none", borderBottom: i < shown.length - 1 ? "1px solid var(--line)" : "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-              <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 17, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.name}</span>
-                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {it.kind === "recovery" ? `${(it.codes ?? []).length} codes${it.username ? ` · ${it.username}` : ""}` : it.kind === "note" ? "secure note" : it.username ?? (it.kind === "apikey" ? "API key" : "no username")}
+            <div key={it.id} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", borderBottom: i < shown.length - 1 ? "1px solid var(--line)" : "none" }}>
+              <button onClick={() => setOpen({ item: it, isNew: false })}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", width: "100%", minHeight: 58, padding: "8px 0 8px 16px", background: "transparent", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", minWidth: 0, WebkitTapHighlightColor: "transparent" }}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 17, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.name}</span>
+                  <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {it.kind === "recovery" ? `${(it.codes ?? []).length} codes${it.username ? ` · ${it.username}` : ""}` : it.kind === "note" ? "secure note" : it.username ?? (it.kind === "apikey" ? "API key" : "no username")}
+                  </span>
                 </span>
-              </span>
-              <span style={{ fontSize: 12, color: "var(--ink-4)", fontFamily: "var(--f-mono)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{it.kind === "apikey" ? "key" : it.kind === "recovery" ? "codes" : it.kind === "note" ? "note" : ""}</span>
-            </button>
+                <span style={{ fontSize: 12, color: "var(--ink-4)", fontFamily: "var(--f-mono)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{it.kind === "apikey" ? "key" : it.kind === "recovery" ? "codes" : it.kind === "note" ? "note" : ""}</span>
+              </button>
+              {/* One tap copies the secret without opening the item (Ali: find things fast) */}
+              {it.kind !== "note" && (it.password || it.codes?.length) ? (
+                <button onClick={() => quickCopy(it)} aria-label={`Copy ${it.kind === "recovery" ? "codes" : it.kind === "apikey" ? "key" : "password"} for ${it.name}`}
+                  style={{ minHeight: 44, minWidth: 64, margin: "0 8px", padding: "0 10px", borderRadius: 10, border: "1px solid var(--line-hi)", background: copiedId === it.id ? "var(--accent-soft)" : "var(--fill-1)", color: copiedId === it.id ? "var(--violet)" : "var(--ink-2)", font: "inherit", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+                  {copiedId === it.id ? "Copied" : "Copy"}
+                </button>
+              ) : <span style={{ width: 8 }} />}
+            </div>
           ))}
         </section>
       )}
 
+      {/* Backup · the encrypted copy you keep elsewhere */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Backup</span><span className="tail" style={backupStale ? { color: "var(--warn)" } : undefined}>{lastBackup ? `last ${new Date(lastBackup).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : "never on this phone"}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 14.5, lineHeight: 1.55, color: "var(--ink-2)" }}>
+          <p style={{ margin: 0 }}>One file, still encrypted with your passphrase · safe in iCloud Drive, Files, a USB stick or an e-mail to yourself. If this server or database ever disappears, Restore brings everything back.</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className="cc-btn cc-btn-primary" onClick={backup} disabled={items.length === 0} style={{ minHeight: 46, padding: "0 16px", fontSize: 15 }}>Save backup file</button>
+            <label className="cc-btn cc-btn-ghost" style={{ minHeight: 46, padding: "0 14px", fontSize: 15, display: "inline-flex", alignItems: "center", cursor: "pointer", position: "relative" }}>
+              Restore from file
+              <input type="file" accept=".json,application/json" onChange={async (e) => {
+                const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
+                setBackupMsg(null);
+                try { const file = parseBackup(await f.text()); setRestoring(false); setPendingRestore(file); setPass(""); }
+                catch (err) { setBackupMsg((err as Error).message); }
+              }} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
+            </label>
+          </div>
+          {pendingRestore && (
+            <div style={{ display: "grid", gap: 8, padding: "8px 0 0", borderTop: "1px solid var(--line)" }}>
+              <span>Backup from {new Date(pendingRestore.exportedAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {pendingRestore.items.length} items. Items you already have are kept unless the backup&rsquo;s copy is newer.</span>
+              {(pendingRestore.meta.salt !== meta?.salt) && <PassphraseInput value={pass} onChange={setPass} placeholder="Passphrase that backup was made with" autoComplete="current-password" />}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="cc-btn cc-btn-primary" disabled={restoring} onClick={async () => {
+                  setRestoring(true); setBackupMsg(null);
+                  try { const n = await restoreInto(pendingRestore, pass); setBackupMsg(n ? `${n} item${n === 1 ? "" : "s"} restored.` : "Nothing to restore · you already have everything in that file."); setPendingRestore(null); setPass(""); }
+                  catch (err) { setBackupMsg((err as Error).message); } finally { setRestoring(false); }
+                }} style={{ minHeight: 46, padding: "0 16px", fontSize: 15 }}>{restoring ? "Restoring…" : "Restore"}</button>
+                <button className="cc-btn cc-btn-ghost" onClick={() => { setPendingRestore(null); setPass(""); }} style={{ minHeight: 46, padding: "0 12px", fontSize: 15 }}>Cancel</button>
+              </div>
+            </div>
+          )}
+          {backupMsg && <div role="status" style={{ fontSize: 14.5, color: /Couldn|Wrong|Not an|different/.test(backupMsg) ? "var(--neg)" : "var(--pos)" }}>{backupMsg}</div>}
+        </div>
+      </section>
+
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button className="cc-btn cc-btn-secondary" onClick={() => setImporting(true)} style={{ minHeight: 46, padding: "0 16px", fontSize: 15 }}>Import CSV</button>
+        <button className="cc-btn cc-btn-ghost" onClick={() => setImporting(true)} style={{ minHeight: 46, padding: "0 14px", fontSize: 15 }}>Import CSV</button>
         <button className="cc-btn cc-btn-ghost" onClick={() => { setChanging((v) => !v); setPass(""); setPass2(""); setError(null); }} style={{ minHeight: 46, padding: "0 14px", fontSize: 15 }}>{changing ? "Cancel" : "Change passphrase"}</button>
       </div>
       {changing && (

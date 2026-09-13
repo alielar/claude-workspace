@@ -26,22 +26,22 @@ export function prettyNotes(notes: string): string {
 
 const PREVIEW_LINES = 3;
 
-/** First 3 lines, tap to read all of it, tap again to fold. */
-export function NotesPreview({ notes, indent = 48 }: { notes: string; indent?: number }) {
-  const [open, setOpen] = useState(false);
+/**
+ * A task's notes under its row. Folded = the first 3 lines; the ≡ icon on the row opens
+ * the whole text and closes it again (Ali 2026-09-13). Plain text, no click handler, so it
+ * can be selected and copied on the phone (long-press) and on the laptop (drag).
+ */
+export function NotesPreview({ notes, open, indent = 48 }: { notes: string; open: boolean; indent?: number }) {
   const lines = notes.split("\n").filter((l) => l.trim());
-  const more = lines.length > PREVIEW_LINES;
   const text = open ? prettyNotes(notes) : prettyNotes(lines.slice(0, PREVIEW_LINES).join("\n"));
   return (
-    <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
-      style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", border: "none", font: "inherit", cursor: "pointer",
-        padding: `0 12px 10px ${indent}px`, color: "var(--ink-2)", WebkitTapHighlightColor: "transparent" }}>
-      <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: open ? "unset" : PREVIEW_LINES, overflow: "hidden",
+    <div style={{ padding: `0 12px 10px ${indent}px`, color: "var(--ink-2)", WebkitUserSelect: "text", userSelect: "text", WebkitTouchCallout: "default", cursor: "text" }}>
+      <div style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: open ? "unset" : PREVIEW_LINES, overflow: "hidden",
         fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
         <Linkify text={text} />
-      </span>
-      {(more || open) && <span style={{ display: "block", fontSize: 13, color: "var(--ink-4)", marginTop: 2 }}>{open ? "Show less" : `Show all · ${lines.length} lines`}</span>}
-    </button>
+      </div>
+      {!open && lines.length > PREVIEW_LINES && <span style={{ display: "block", fontSize: 13, color: "var(--ink-4)", marginTop: 2, userSelect: "none" }}>{lines.length - PREVIEW_LINES} more lines · tap ≡</span>}
+    </div>
   );
 }
 

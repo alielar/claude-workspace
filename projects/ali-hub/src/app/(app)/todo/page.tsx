@@ -24,7 +24,7 @@ import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import {
-  addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, nextWeekend, parseQuickAdd, sortTodos,
+  addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, nextMonday, nextWeekend, parseQuickAdd, sortTodos,
   docFormat, taskFormat, parseSubtasks, parseSections, DOC_FORMATS, TASK_FORMATS,
   type Area, type Bucket, type Format, type Priority, type Todo,
 } from "@/lib/todo/types";
@@ -135,6 +135,43 @@ function useLockBodyScroll() {
   }, []);
 }
 
+// The part of the screen the keyboard does NOT cover (2026-09-13, Ali: "the keyboard
+// hides the line I'm typing"). iOS shrinks and shifts the visual viewport when the
+// keyboard opens; `position: fixed; bottom: 0` knows nothing about that and the sheet's
+// lower part ends up under the keys. Sheets are therefore placed inside this box.
+function useVisualViewport() {
+  const read = () => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    return { top: vv?.offsetTop ?? 0, height: vv?.height ?? (typeof window !== "undefined" ? window.innerHeight : 800) };
+  };
+  const [box, setBox] = useState(read);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const update = () => setBox(read());
+    update();
+    vv?.addEventListener("resize", update); vv?.addEventListener("scroll", update); window.addEventListener("resize", update);
+    return () => { vv?.removeEventListener("resize", update); vv?.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+  }, []);
+  return box;
+}
+
+/** Bottom sheet that always sits inside the visible (keyboard-free) part of the screen. */
+function SheetFrame({ label, onClose, fill = false, children }: { label: string; onClose: () => void; fill?: boolean; children: React.ReactNode }) {
+  const vv = useVisualViewport();
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
+      <div style={{ position: "fixed", left: 0, right: 0, top: vv.top, height: vv.height, zIndex: 71, display: "flex", flexDirection: "column", justifyContent: "flex-end", pointerEvents: "none" }}>
+        <div role="dialog" aria-label={label} className="cc-sheet-panel" style={{ pointerEvents: "auto", background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0",
+          padding: `${fill ? 12 : 14}px 18px calc(env(safe-area-inset-bottom) + ${fill ? 12 : 14}px)`, width: "100%", maxWidth: 560, margin: "0 auto", boxSizing: "border-box",
+          display: "flex", flexDirection: "column", gap: 12, maxHeight: "100%", height: fill ? "min(92%, 100%)" : undefined, overflowY: fill ? "hidden" : "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Notes editor (tasks + lists) ─────────────────────────────────────────────
 //
 // Google-Docs feel (Ali 2026-09-11): the textarea grows with its text and never
@@ -163,11 +200,18 @@ function caretLine(el: HTMLTextAreaElement): { top: number; height: number } {
 
 function scrollCaretIntoView(el: HTMLTextAreaElement) {
   const { top, height } = caretLine(el);
-  const y = el.getBoundingClientRect().top + top; // the textarea never scrolls itself
+  // 1 · inside the textarea (it scrolls itself once it reaches its cap).
+  const pad = 8;
+  if (el.scrollHeight > el.clientHeight + 1) {
+    if (top + height > el.scrollTop + el.clientHeight - pad) el.scrollTop = top + height - el.clientHeight + pad;
+    else if (top < el.scrollTop + pad) el.scrollTop = Math.max(0, top - pad);
+  }
+  // 2 · the caret line, now in textarea coordinates, must sit inside the keyboard-free viewport.
+  const y = el.getBoundingClientRect().top + top - el.scrollTop;
   const vv = window.visualViewport;
   const vTop = vv?.offsetTop ?? 0;
   const vBottom = vTop + (vv?.height ?? window.innerHeight);
-  const margin = 72;
+  const margin = 56;
   let sc: HTMLElement | null = el.parentElement;
   while (sc && !(/(auto|scroll)/.test(getComputedStyle(sc).overflowY) && sc.scrollHeight > sc.clientHeight + 1)) sc = sc.parentElement;
   const target = sc ?? (document.scrollingElement as HTMLElement | null);
@@ -182,20 +226,31 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   value: string; onChange: (v: string) => void; rows?: number; placeholder: string; autoFocus?: boolean; fill?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  const minHeight = fill ? 240 : rows * 24 + 24;
+  const vv = useVisualViewport();
+  const minHeight = fill ? 160 : rows * 24 + 24;
+  // Grows with the text up to ~40 % of the keyboard-free screen, then scrolls inside itself:
+  // the browser keeps the caret visible in a scrolling textarea natively, and the box
+  // itself always fits above the keyboard (Ali 2026-09-13). `fill` = the doc editor,
+  // which simply takes all the room the sheet has.
+  const cap = fill ? undefined : Math.max(minHeight, Math.round(vv.height * 0.4));
 
   const grow = () => {
-    const el = ref.current; if (!el) return;
+    const el = ref.current; if (!el || fill) return;
+    const keep = el.scrollTop;
     el.style.height = "auto";
-    el.style.height = `${Math.max(minHeight, el.scrollHeight + 2)}px`;
+    const want = Math.max(minHeight, el.scrollHeight + 2);
+    el.style.height = `${cap ? Math.min(want, cap) : want}px`;
+    el.scrollTop = keep;
   };
   const follow = () => { const el = ref.current; if (el && document.activeElement === el) scrollCaretIntoView(el); };
-  useEffect(() => { grow(); }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { grow(); }, [value, cap]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // The keyboard opening shrinks the visual viewport · re-check the caret then.
-    const vv = window.visualViewport; if (!vv) return;
-    vv.addEventListener("resize", follow);
-    return () => vv.removeEventListener("resize", follow);
+    // The keyboard opening shrinks the visual viewport · re-check the caret then (twice: iOS
+    // reports the final size a moment after the first event).
+    const v = window.visualViewport; if (!v) return;
+    const onResize = () => { follow(); setTimeout(follow, 120); };
+    v.addEventListener("resize", onResize);
+    return () => v.removeEventListener("resize", onResize);
   }, []);
 
   const apply = (v: string, selStart: number, selEnd: number) => {
@@ -265,7 +320,7 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
   };
   const btn: React.CSSProperties = { minWidth: 38, minHeight: 36, padding: "0 6px", borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
   return (
-    <div style={fill ? { display: "flex", flexDirection: "column", gap: 6 } : { display: "grid", gap: 6 }}>
+    <div style={fill ? { display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: 0 } : { display: "grid", gap: 6 }}>
       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }} aria-label="Formatting">
         <button type="button" title="Heading" onMouseDown={keepFocus} onClick={() => setMarker("# ")} style={{ ...btn, fontWeight: 700 }}>H</button>
         <button type="button" title="Bullet list" onMouseDown={keepFocus} onClick={() => setMarker("- ")} style={btn}>•</button>
@@ -283,7 +338,9 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
       <textarea ref={ref} className="cc-input" value={value} onChange={(e) => { onChange(e.target.value); requestAnimationFrame(() => { grow(); follow(); }); }}
         onKeyDown={onKey} onKeyUp={(e) => { if (e.key.startsWith("Arrow")) follow(); }} onClick={follow} onFocus={() => requestAnimationFrame(follow)}
         placeholder={placeholder} rows={rows} autoFocus={autoFocus} spellCheck
-        style={{ fontSize: 16, lineHeight: 1.5, resize: "none", overflow: "hidden", minHeight, width: "100%", boxSizing: "border-box" }} />
+        style={fill
+          ? { fontSize: 16, lineHeight: 1.5, resize: "none", overflowY: "auto", flex: 1, minHeight, width: "100%", boxSizing: "border-box", WebkitOverflowScrolling: "touch" }
+          : { fontSize: 16, lineHeight: 1.5, resize: "none", overflowY: "auto", minHeight, maxHeight: cap, width: "100%", boxSizing: "border-box", WebkitOverflowScrolling: "touch" }} />
       <LinkChips text={value} />
     </div>
   );
@@ -319,6 +376,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
   // Notes live under the row (Ali 2026-09-12): the first three lines, tap for all of it;
   // or, when the task's notes are Subtasks, real tick boxes right here.
   const subtasks = taskFormat(t) === "checklist" && t.notes ? parseSubtasks(t.notes) : null;
+  const [peek, setPeek] = useState(false); // ≡ icon: tap opens the whole note, tap closes (phone and laptop alike)
   const sub = [
     showDate && t.dueDate ? fmtDue(t.dueDate, today) : null,
     t.dueTime,
@@ -330,7 +388,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
     <div className={`todo-row${celebrating ? " cc-done-row" : ""}`} {...swipe.handlers}
-      style={{ display: "grid", gridTemplateColumns: `auto 1fr${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
+      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes && !subtasks ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
       <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -346,6 +404,13 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
         </span>
         {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
       </button>
+      {t.notes && !subtasks && (
+        <button type="button" onClick={(e) => { e.stopPropagation(); setPeek((p) => !p); }}
+          aria-label={peek ? "Close notes" : "Open notes"} aria-expanded={peek} title="Notes"
+          style={{ width: 44, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
+          <span aria-hidden style={{ width: 24, height: 24, borderRadius: 7, border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
+        </button>
+      )}
       {onLater && !done && (
         // "Later today" (Ali 2026-09-11): opens the native time wheel; the reminder
         // comes back at that time, same day.
@@ -361,7 +426,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
     </div>
     {t.notes && !done && !celebrating && (
       <div style={{ background: "var(--bg-card)", transform: `translateX(${swipe.offset}px)` }}>
-        {subtasks ? <SubtaskList notes={t.notes} onChange={onNotes} /> : <NotesPreview notes={t.notes} />}
+        {subtasks ? <SubtaskList notes={t.notes} onChange={onNotes} /> : <NotesPreview notes={t.notes} open={peek} />}
       </div>
     )}
     </SwipeWrap>
@@ -489,16 +554,14 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
   const isWhen = (dueDate: string | null, evening: boolean, someday: boolean) => d.someday === someday && (someday || (d.dueDate === dueDate && d.evening === evening));
   const chips: { label: string; on: boolean; go: () => void }[] = [
     { label: "Today",     on: isWhen(today, false, false),             go: () => when(today) },
-    { label: "Evening",   on: isWhen(today, true, false),              go: () => when(today, true) },
+    { label: "Next week", on: isWhen(nextMonday(today), false, false),  go: () => when(nextMonday(today)) },
     { label: "Tomorrow",  on: isWhen(addDays(today, 1), false, false),  go: () => when(addDays(today, 1)) },
     { label: "Weekend",   on: isWhen(nextWeekend(today), false, false), go: () => when(nextWeekend(today)) },
     { label: "Someday",   on: d.someday || !d.dueDate,                 go: () => when(null, false, true) },
   ];
 
   return (
-    <>
-      <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div role="dialog" aria-label="Edit task" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
+    <SheetFrame label="Edit task" onClose={close}>
         <TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="What needs doing?" />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
@@ -557,8 +620,7 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
         </div>
-      </div>
-    </>
+    </SheetFrame>
   );
 }
 
@@ -611,9 +673,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
   };
 
   return (
-    <>
-      <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div role="dialog" aria-label="Edit doc" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "12px 18px calc(env(safe-area-inset-bottom) + 12px)", display: "flex", flexDirection: "column", gap: 12, maxWidth: 560, margin: "0 auto", height: "92dvh" }}>
+    <SheetFrame label="Edit doc" onClose={close} fill>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
           <div style={{ minWidth: 0 }}><TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="Name" /></div>
           <select className="cc-input" value={mode} onChange={(e) => setFormat(e.target.value as Format)} aria-label="How this doc displays"
@@ -623,13 +683,27 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
           <button onClick={close} aria-label="Close" style={{ width: 44, height: 44, borderRadius: 12, border: "none", background: "var(--fill-1)", color: "var(--ink-2)", fontSize: 17, cursor: "pointer" }}>✕</button>
         </div>
 
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+        {isNew && !(d.notes ?? "").trim() && (
+          <div style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>How should it display? You can change this any time.</span>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+              {DOC_FORMATS.map((f) => (
+                <button key={f.key} type="button" onClick={() => setFormat(f.key)} aria-pressed={mode === f.key}
+                  style={{ ...chipStyle(mode === f.key), minHeight: 52, padding: "6px 10px", textAlign: "left", display: "grid", gap: 1 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600 }}>{f.label}</span>
+                  <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>{f.hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{ flex: 1, minHeight: 0, overflowY: mode === "doc" || (editingDoc && (mode === "sections" || mode === "accordion")) ? "hidden" : "auto", display: "flex", flexDirection: "column", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
         {mode === "doc" ? (
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : mode === "checklist" ? (
           <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} showReset />
         ) : mode === "sections" || mode === "accordion" ? (
-          <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>{editingDoc ? "Start each section with a # heading (the H button)." : DOC_FORMATS.find((f) => f.key === mode)?.hint}</span>
               <button type="button" onClick={() => setEditingDoc((v) => !v)} className="cc-btn cc-btn-ghost" style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>{editingDoc ? "Read" : "Edit"}</button>
@@ -698,8 +772,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, borderRadius: 14, padding: "0 16px", color: "var(--neg)", fontSize: 15 }}>{isNew ? "Discard" : "Delete"}</button>
         </div>
-      </div>
-    </>
+    </SheetFrame>
   );
 }
 
