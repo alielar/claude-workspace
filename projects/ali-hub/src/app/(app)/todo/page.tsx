@@ -163,8 +163,11 @@ function SheetFrame({ label, onClose, fill = false, children }: { label: string;
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
       <div style={{ position: "fixed", left: 0, right: 0, top: vv.top, height: vv.height, zIndex: 71, display: "flex", flexDirection: "column", justifyContent: "flex-end", pointerEvents: "none" }}>
         <div role="dialog" aria-label={label} className="cc-sheet-panel" style={{ pointerEvents: "auto", background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0",
-          padding: `${fill ? 12 : 14}px 18px calc(env(safe-area-inset-bottom) + ${fill ? 12 : 14}px)`, width: "100%", maxWidth: 560, margin: "0 auto", boxSizing: "border-box",
-          display: "flex", flexDirection: "column", gap: 12, maxHeight: "100%", height: fill ? "min(92%, 100%)" : undefined, overflowY: fill ? "hidden" : "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+          padding: `${fill ? 12 : 12}px 16px calc(env(safe-area-inset-bottom) + ${fill ? 12 : 12}px)`, width: "100%", maxWidth: 560, margin: "0 auto", boxSizing: "border-box",
+          display: "flex", flexDirection: "column", gap: 10, minHeight: 0, flex: "0 1 auto",
+          // never under the clock: the status bar (safe-area top) plus a sliver of the page stay visible
+          maxHeight: "calc(100% - env(safe-area-inset-top) - 20px)", height: fill ? "calc(100% - env(safe-area-inset-top) - 20px)" : undefined,
+          overflowY: fill ? "hidden" : "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
           {children}
         </div>
       </div>
@@ -479,7 +482,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
 // ─── Shared chip style ────────────────────────────────────────────────────────
 
 const chipStyle = (on: boolean): React.CSSProperties => ({
-  minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
+  minHeight: 38, padding: "0 11px", borderRadius: 10, fontSize: 15, font: "inherit", cursor: "pointer",
   border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
 });
 
@@ -535,7 +538,7 @@ function TitleInput({ value, onChange, placeholder }: { value: string; onChange:
 function VaultField({ wakeDate, setWake, today }: { wakeDate: string | null | undefined; setWake: (v: string | null) => void; today: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ display: "grid", gap: 4 }}>
+    <div style={{ display: "grid", gap: 4, flexBasis: open ? "100%" : undefined }}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
         style={{ all: "unset", cursor: "pointer", fontSize: 13.5, color: wakeDate ? "var(--ink-3)" : "var(--ink-4)", minHeight: 32, display: "flex", alignItems: "center", gap: 6 }}>
         {wakeDate ? `Sleeping until ${fmtDue(wakeDate, today)}` : "Vault"} <span aria-hidden>{open ? "▴" : "▾"}</span>
@@ -574,8 +577,14 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
     <SheetFrame label="Edit task" onClose={close}>
         <TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="What needs doing?" />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+        {/* One row: list (Personal / Work) and priority (none / ! / !!) · was two rows (Ali 2026-09-13: fit the phone) */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 10px 44px 44px 48px", gap: 6 }}>
           {AREAS.map((a) => <button key={a.key} onClick={() => set({ area: a.key })} style={chipStyle((d.area ?? "personal") === a.key)}>{a.label}</button>)}
+          <span aria-hidden />
+          {([0, 1, 2] as Priority[]).map((p) => (
+            <button key={p} onClick={() => set({ priority: p })} aria-label={p === 0 ? "Normal priority" : p === 1 ? "Important" : "Urgent"} aria-pressed={d.priority === p}
+              style={{ ...chipStyle(d.priority === p), padding: 0, color: d.priority === p ? (p === 2 ? "var(--neg)" : p === 1 ? "var(--warn)" : "var(--ink)") : "var(--ink-3)", fontWeight: p ? 700 : 500 }}>{p === 0 ? "–" : p === 1 ? "!" : "!!"}</button>
+          ))}
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -586,50 +595,44 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           </label>
         </div>
 
-        <div style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>
-          <span>Time (reminder)</span>
-          <div style={{ display: "grid", gridTemplateColumns: !!d.dueDate && !d.someday ? "minmax(0, 1fr) auto" : "1fr", gap: 8, alignItems: "center" }}>
-            <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onClick={openPicker} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
-            {!!d.dueDate && !d.someday && <NagSelect value={d.nagMinutes} onChange={(m) => set({ nagMinutes: m })} />}
-          </div>
-          {!!d.dueDate && !d.dueTime && !d.someday && (
-            <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>no time = reminds from 9:00</span>
-          )}
+        {/* Reminder time + cadence on one line, label inline */}
+        <div style={{ display: "grid", gridTemplateColumns: !!d.dueDate && !d.someday ? "auto minmax(0, 1fr) auto" : "auto minmax(0, 1fr)", gap: 8, alignItems: "center", minWidth: 0 }}>
+          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>Remind</span>
+          <input type="time" className="cc-input" value={d.dueTime ?? ""} disabled={d.someday} onClick={openPicker} onChange={(e) => set({ dueTime: e.target.value || null, dueDate: d.dueDate ?? (e.target.value ? today : null) })} style={{ fontSize: 17, minHeight: 42, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+          {!!d.dueDate && !d.someday && <NagSelect value={d.nagMinutes} onChange={(m) => set({ nagMinutes: m })} />}
         </div>
+        {!!d.dueDate && !d.dueTime && !d.someday && <span style={{ fontSize: 12.5, color: "var(--ink-4)", marginTop: -6 }}>no time = reminds from 9:00</span>}
 
         {!!d.dueTime && !d.someday && (
-          <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Notify on
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-              {([["phone", "Phone"], ["laptop", "Laptop"], [null, "Both"]] as const).map(([key, label]) => (
-                <button key={label} onClick={() => set({ notifyTarget: key })} style={chipStyle((d.notifyTarget ?? null) === key)}>{label}</button>
-              ))}
-            </div>
-          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "auto repeat(3, 1fr)", gap: 6, alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "var(--ink-3)", paddingRight: 2 }}>Notify</span>
+            {([["phone", "Phone"], ["laptop", "Laptop"], [null, "Both"]] as const).map(([key, label]) => (
+              <button key={label} onClick={() => set({ notifyTarget: key })} style={{ ...chipStyle((d.notifyTarget ?? null) === key), minHeight: 36, fontSize: 14, padding: "0 8px" }}>{label}</button>
+            ))}
+          </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-          {([0, 1, 2] as Priority[]).map((p) => (
-            <button key={p} onClick={() => set({ priority: p })} style={chipStyle(d.priority === p)}>{p === 0 ? "Normal" : p === 1 ? "! Important" : "!! Urgent"}</button>
-          ))}
-        </div>
-
-        <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
-        <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
-
-        {/* Notes or Subtasks (Ali 2026-09-12) · same text underneath, so switching loses nothing.
-            Last field on purpose: with the keyboard open the sheet parks at its bottom, notes right above Done. */}
-        <div style={{ display: "grid", gap: 8 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            {TASK_FORMATS.map((f) => <button key={f.key} onClick={() => set({ format: f.key })} style={chipStyle(taskFormat(d) === f.key)} aria-pressed={taskFormat(d) === f.key}>{f.label}</button>)}
+        {/* project · Vault · Notes/Subtasks switch on one quiet line */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
+          <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
+          <span style={{ flex: 1 }} />
+          <div role="tablist" aria-label="Notes shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, padding: 2, borderRadius: 9, background: "var(--fill-1)" }}>
+            {TASK_FORMATS.map((f) => {
+              const on = taskFormat(d) === f.key;
+              return <button key={f.key} role="tab" aria-selected={on} onClick={() => set({ format: f.key })} style={{ minHeight: 32, padding: "0 10px", borderRadius: 7, border: "none", font: "inherit", fontSize: 13.5, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", cursor: "pointer" }}>{f.label}</button>;
+            })}
           </div>
-          {taskFormat(d) === "checklist"
-            ? <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} />
-            : <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />}
         </div>
+
+        {/* Notes / Subtasks · last field on purpose: with the keyboard open the sheet parks at its bottom, notes right above Done. */}
+        {taskFormat(d) === "checklist"
+          ? <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} />
+          : <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" rows={3} />}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
-          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
-          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
+          <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 48, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>
+          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this task?")) { onDelete(); onClose(); } }} style={{ minHeight: 48, minWidth: 48, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label={isNew ? "Discard" : "Delete"}>✕</button>
         </div>
     </SheetFrame>
   );
