@@ -243,15 +243,25 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
     el.scrollTop = keep;
   };
   const follow = () => { const el = ref.current; if (el && document.activeElement === el) scrollCaretIntoView(el); };
+  // Ali 2026-09-13: "when I tap into the notes it recentres · it should just scroll down so
+  // the Done button sits above the keyboard and the notes above it". iOS centres a focused
+  // field on its own; once the keyboard has settled we park the sheet at its bottom instead.
+  const parkAtBottom = () => {
+    const el = ref.current; if (!el || fill || document.activeElement !== el) return;
+    let sc: HTMLElement | null = el.parentElement;
+    while (sc && !/(auto|scroll)/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+    if (sc) sc.scrollTop = sc.scrollHeight;
+    follow();
+  };
   useEffect(() => { grow(); }, [value, cap]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // The keyboard opening shrinks the visual viewport · re-check the caret then (twice: iOS
-    // reports the final size a moment after the first event).
+    // The keyboard opening shrinks the visual viewport · park then re-check the caret (twice:
+    // iOS reports the final size a moment after the first event).
     const v = window.visualViewport; if (!v) return;
-    const onResize = () => { follow(); setTimeout(follow, 120); };
+    const onResize = () => { parkAtBottom(); setTimeout(parkAtBottom, 150); setTimeout(parkAtBottom, 400); };
     v.addEventListener("resize", onResize);
     return () => v.removeEventListener("resize", onResize);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const apply = (v: string, selStart: number, selEnd: number) => {
     onChange(v);
@@ -336,7 +346,7 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
         }}>⇣</button>
       </div>
       <textarea ref={ref} className="cc-input" value={value} onChange={(e) => { onChange(e.target.value); requestAnimationFrame(() => { grow(); follow(); }); }}
-        onKeyDown={onKey} onKeyUp={(e) => { if (e.key.startsWith("Arrow")) follow(); }} onClick={follow} onFocus={() => requestAnimationFrame(follow)}
+        onKeyDown={onKey} onKeyUp={(e) => { if (e.key.startsWith("Arrow")) follow(); }} onClick={follow} onFocus={() => { requestAnimationFrame(parkAtBottom); setTimeout(parkAtBottom, 350); }}
         placeholder={placeholder} rows={rows} autoFocus={autoFocus} spellCheck
         style={fill
           ? { fontSize: 16, lineHeight: 1.5, resize: "none", overflowY: "auto", flex: 1, minHeight, width: "100%", boxSizing: "border-box", WebkitOverflowScrolling: "touch" }
@@ -414,19 +424,19 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
       {onLater && !done && (
         // "Later today" (Ali 2026-09-11): opens the native time wheel; the reminder
         // comes back at that time, same day.
-        <label className="cc-btn cc-btn-ghost" aria-label="Later today" style={{ minHeight: 40, padding: "0 9px", fontSize: 14, borderRadius: 10, marginRight: 4, position: "relative", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
+        <label className="cc-btn cc-btn-ghost" aria-label="Later today" style={{ minHeight: 40, padding: "0 8px", fontSize: 13.5, borderRadius: 10, marginRight: 3, position: "relative", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
           Later
           <input type="time" defaultValue={nextFullHour()} onClick={openPicker} onChange={(e) => { if (e.target.value) onLater(e.target.value); }}
             aria-label="Pick a time for later today" style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", fontSize: 17 }} />
         </label>
       )}
       {onDefer && !done && (
-        <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 14, borderRadius: 10, marginRight: 2 }}>→ tmrw</button>
+        <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 8px", fontSize: 13.5, borderRadius: 10, marginRight: 2 }}>Tmrw →</button>
       )}
     </div>
-    {t.notes && !done && !celebrating && (
+    {t.notes && !done && !celebrating && (subtasks || peek) && (
       <div style={{ background: "var(--bg-card)", transform: `translateX(${swipe.offset}px)` }}>
-        {subtasks ? <SubtaskList notes={t.notes} onChange={onNotes} /> : <NotesPreview notes={t.notes} open={peek} />}
+        {subtasks ? <SubtaskList notes={t.notes} onChange={onNotes} /> : <NotesPreview notes={t.notes} />}
       </div>
     )}
     </SwipeWrap>
@@ -603,7 +613,11 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           ))}
         </div>
 
-        {/* Notes or Subtasks (Ali 2026-09-12) · same text underneath, so switching loses nothing. */}
+        <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
+        <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
+
+        {/* Notes or Subtasks (Ali 2026-09-12) · same text underneath, so switching loses nothing.
+            Last field on purpose: with the keyboard open the sheet parks at its bottom, notes right above Done. */}
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
             {TASK_FORMATS.map((f) => <button key={f.key} onClick={() => set({ format: f.key })} style={chipStyle(taskFormat(d) === f.key)} aria-pressed={taskFormat(d) === f.key}>{f.label}</button>)}
@@ -612,9 +626,6 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
             ? <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} />
             : <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />}
         </div>
-
-        <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
-        <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Add task" : "Done"}</button>

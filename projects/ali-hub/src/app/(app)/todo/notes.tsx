@@ -2,7 +2,7 @@
 
 /**
  * Notes, shown four ways (2026-09-12, Ali):
- *   NotesPreview   · a task's notes under its title: first 3 lines, tap = whole text, tap = back.
+ *   NotesPreview   · a task's notes under its title, only while the ≡ icon is open.
  *   SubtaskList    · a task's notes as subtasks, ticked inline with the same pop, ring, strike
  *                    and chime as a normal to-do. Three shown, "+N more" opens the rest.
  *   SubtaskEditor  · the same items inside a sheet: add, edit, tick, reorder, remove, reset.
@@ -27,20 +27,15 @@ export function prettyNotes(notes: string): string {
 const PREVIEW_LINES = 3;
 
 /**
- * A task's notes under its row. Folded = the first 3 lines; the ≡ icon on the row opens
- * the whole text and closes it again (Ali 2026-09-13). Plain text, no click handler, so it
- * can be selected and copied on the phone (long-press) and on the laptop (drag).
+ * A task's notes under its row · shown ONLY while the ≡ icon is open (Ali 2026-09-13:
+ * "when it's closed I shouldn't see anything"). Plain text, no click handler, so it can be
+ * selected and copied on the phone (long-press) and on the laptop (drag).
  */
-export function NotesPreview({ notes, open, indent = 48 }: { notes: string; open: boolean; indent?: number }) {
-  const lines = notes.split("\n").filter((l) => l.trim());
-  const text = open ? prettyNotes(notes) : prettyNotes(lines.slice(0, PREVIEW_LINES).join("\n"));
+export function NotesPreview({ notes, indent = 48 }: { notes: string; indent?: number }) {
   return (
-    <div style={{ padding: `0 12px 10px ${indent}px`, color: "var(--ink-2)", WebkitUserSelect: "text", userSelect: "text", WebkitTouchCallout: "default", cursor: "text" }}>
-      <div style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: open ? "unset" : PREVIEW_LINES, overflow: "hidden",
-        fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-        <Linkify text={text} />
-      </div>
-      {!open && lines.length > PREVIEW_LINES && <span style={{ display: "block", fontSize: 13, color: "var(--ink-4)", marginTop: 2, userSelect: "none" }}>{lines.length - PREVIEW_LINES} more lines · tap ≡</span>}
+    <div style={{ padding: `0 12px 12px ${indent}px`, color: "var(--ink-2)", WebkitUserSelect: "text", userSelect: "text", WebkitTouchCallout: "default", cursor: "text",
+      fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+      <Linkify text={prettyNotes(notes)} />
     </div>
   );
 }
