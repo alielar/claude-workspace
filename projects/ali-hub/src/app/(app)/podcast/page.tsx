@@ -17,8 +17,8 @@
  *   starting on Today and finishing here resumes seamlessly.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
 import { checklistToday } from "@/lib/checklist/day";
@@ -58,15 +58,16 @@ function buildCaptions(script: string, chapters: Chapter[], durationSec: number)
   return out;
 }
 
+/** useSearchParams needs a Suspense boundary on a statically built page. */
 export default function PodcastPage() {
+  return <Suspense fallback={null}><PodcastPlayer /></Suspense>;
+}
+
+function PodcastPlayer() {
   const router = useRouter();
   // ?date=YYYY-MM-DD opens one of the last briefs (Ali 2026-09-14) · default = today's.
-  // Read after mount so the server and first client render agree.
-  const [today, setToday] = useState(() => checklistToday());
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("date");
-    if (q && /^\d{4}-\d{2}-\d{2}$/.test(q) && q !== checklistToday()) setToday(q); // eslint-disable-line react-hooks/set-state-in-effect
-  }, []);
+  const q = useSearchParams().get("date");
+  const today = q && /^\d{4}-\d{2}-\d{2}$/.test(q) ? q : checklistToday();
   const isToday = today === checklistToday();
   const { data, setData } = useCached<{ episode: Episode | null }>(isToday ? "podcast-today" : `podcast-${today}`, () => fetchJson(isToday ? "/api/podcast/today" : `/api/podcast/today?date=${today}`));
   const ep = data?.episode && data.episode.date === today ? data.episode : null;
