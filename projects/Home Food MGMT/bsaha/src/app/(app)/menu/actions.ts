@@ -8,6 +8,7 @@ import { ensureSchema } from "@/db/migrate";
 import { DISLIKE_TAGS, MEALS, dishes, people, type Meal } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { slugify } from "@/lib/slug";
+import { forgetSlimDishes } from "@/lib/slim";
 
 const EMPTY_MACROS = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 };
 
@@ -32,6 +33,7 @@ export async function addDish(formData: FormData) {
     photoUrl, photoCredit: photoUrl ? me.name : null, photoLicense: photoUrl ? "family" : null,
     status: "ready", isCustom: true, createdBy: me.id, createdAt: new Date().toISOString(),
   });
+  forgetSlimDishes();
   redirect(`/menu/${slug}`);
 }
 
@@ -70,5 +72,6 @@ export async function deleteDish(formData: FormData) {
   if (!me?.isAdmin) return;
   const id = Number(formData.get("id"));
   await db.delete(dishes).where(eq(dishes.id, id));
+  forgetSlimDishes();
   redirect("/menu");
 }

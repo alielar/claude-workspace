@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { MEALS, type Meal } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
-import { listDishes } from "@/lib/dishes";
-import { toSlim } from "@/lib/slim";
+import { listSlimDishes } from "@/lib/slim";
 import { browserLabels } from "@/lib/browserLabels";
 import { t } from "@/lib/i18n/dict";
 import { DishBrowser } from "@/components/DishBrowser";
@@ -12,7 +11,7 @@ export default async function Menu({ searchParams }: { searchParams: Promise<{ m
   const me = (await currentPerson())!;
   const sp = await searchParams;
   const meal: Meal = MEALS.includes(sp.meal as Meal) ? (sp.meal as Meal) : "lunch";
-  const dishes = (await listDishes()).filter((d) => d.status === "ready").map(toSlim);
+  const dishes = await listSlimDishes();
 
   return (
     <main>

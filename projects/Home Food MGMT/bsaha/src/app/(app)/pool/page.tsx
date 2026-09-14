@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { currentPerson } from "@/lib/session";
-import { listDishes } from "@/lib/dishes";
-import { toSlim } from "@/lib/slim";
+import { listSlimDishes } from "@/lib/slim";
 import { browserLabels } from "@/lib/browserLabels";
 import { getPool, POOL_CAP, tomorrowKey } from "@/lib/pool";
 import { t } from "@/lib/i18n/dict";
@@ -11,8 +10,8 @@ export default async function PoolPage() {
   const me = (await currentPerson())!;
   if (me.role !== "cook" && !me.isAdmin) redirect("/today");
   const L = me.lang;
-  const [all, pool] = await Promise.all([listDishes(), getPool(tomorrowKey())]);
-  const dishes = all.filter((d) => d.status === "ready" && d.meal !== "breakfast").map(toSlim);
+  const [all, pool] = await Promise.all([listSlimDishes(), getPool(tomorrowKey())]);
+  const dishes = all.filter((d) => d.meal !== "breakfast");
 
   return (
     <main>
