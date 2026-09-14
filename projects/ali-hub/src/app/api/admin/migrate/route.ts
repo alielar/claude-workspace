@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server";
 import { HEALTH_DDL } from "@/lib/health/server";
 import { VAULT_DDL } from "@/lib/vault/server";
+import { DEDUPE_ROUTINE_ROWS } from "@/app/api/checklist/route";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
@@ -395,6 +396,11 @@ export async function POST() {
     // ── Sleep entries ───────────────────────────────────────────────────────
     // Apple Watch (Health Auto Export → /api/health/ingest) · same DDL as src/lib/health/server.ts
     ...HEALTH_DDL,
+    // ── 2026-09-14: doubled routine rows merged + UNIQUE(user, routine_key) · Speediance days → Sun/Tue/Thu (only rows still on the seeded Mon/Wed/Fri)
+    ...DEDUPE_ROUTINE_ROWS,
+    `UPDATE checklist_items SET weekdays = '["sun"]', start_date = NULL WHERE routine_key = 'gym-push' AND weekdays = '["mon"]'`,
+    `UPDATE checklist_items SET weekdays = '["tue"]', start_date = NULL WHERE routine_key = 'gym-pull' AND weekdays = '["wed"]'`,
+    `UPDATE checklist_items SET weekdays = '["thu"]', start_date = NULL WHERE routine_key = 'gym-legs' AND weekdays = '["fri"]'`,
     // ── Password vault (2026-09-12) · blind storage, same DDL as src/lib/vault/server.ts
     ...VAULT_DDL,
 

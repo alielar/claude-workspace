@@ -1,11 +1,15 @@
 "use client";
 
 /**
- * /checklist · edit the daily list. Deliberately small.
+ * /checklist · edit the daily list. Everything on Today is Ali's to change here
+ * (2026-09-14: "make the whole thing customisable, I want to edit any of it without asking").
  *
  *   list grouped by time of day (Morning · Afternoon · Evening · Anytime)
- *   + Add: name, emoji, time of day, optional link. That's it.
- *   tap an item → same sheet, plus "habit I'm building" switch and Delete
+ *   + Add / tap an item → one sheet:
+ *       name · time of day · days of the week (none = every day) · what it counts for
+ *       (Routine = counts toward the day's streak · Habit = own streak · Extra = tracked, not
+ *       counted) · a note or link · Delete (built-ins too · a deleted built-in never comes back
+ *       on its own because its routine key stays in the database).
  *
  * Ticking happens on Today; streak stats live there too. Nothing here needs the
  * network to render (phone copy first), edits go through the outbox.
@@ -25,15 +29,32 @@ const TIMES: { key: TimeOfDay; label: string; hint: string }[] = [
   { key: "evening",   label: "Evening",   hint: "21–04" },
   { key: "anytime",   label: "Anytime",   hint: "" },
 ];
-
+const DAYS: { key: string; label: string }[] = [
+  { key: "mon", label: "Mon" }, { key: "tue", label: "Tue" }, { key: "wed", label: "Wed" }, { key: "thu", label: "Thu" },
+  { key: "fri", label: "Fri" }, { key: "sat", label: "Sat" }, { key: "sun", label: "Sun" },
+];
+const KINDS: { key: ItemKind; label: string; hint: string }[] = [
+  { key: "routine", label: "Routine", hint: "counts toward the day" },
+  { key: "habit",   label: "Habit",   hint: "own streak, not counted yet" },
+  { key: "manual",  label: "Extra",   hint: "tracked, never counted" },
+];
 
 const URL_RE = /https?:\/\/\S+/;
+const chip = (on: boolean): React.CSSProperties => ({
+  minHeight: 40, padding: "0 8px", borderRadius: 10, font: "inherit", fontSize: 14.5, cursor: "pointer",
+  border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
+});
 
-function linkOf(item: ChecklistItem | null): string {
-  return item?.notes?.match(URL_RE)?.[0] ?? "";
+type Draft = { title: string; timeOfDay: TimeOfDay; notes: string; kind: ItemKind; weekdays: string[] };
+
+function daysLabel(days: string[] | null | undefined): string {
+  if (!days || days.length === 0 || days.length === 7) return "every day";
+  const order = DAYS.map((d) => d.key);
+  const sorted = [...days].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  if (sorted.join() === "mon,tue,wed,thu,fri") return "weekdays";
+  if (sorted.join() === "sat,sun") return "weekends";
+  return sorted.map((d) => DAYS.find((x) => x.key === d)?.label ?? d).join(" · ");
 }
-
-type Draft = { title: string; emoji: string; timeOfDay: TimeOfDay; link: string; habit: boolean };
 
 function Sheet({ item, onClose, onSave, onDelete }: {
   item: ChecklistItem | null;
@@ -42,53 +63,52 @@ function Sheet({ item, onClose, onSave, onDelete }: {
   onDelete: () => void;
 }) {
   const [d, setD] = useState<Draft>({
-    title: item?.title ?? "", emoji: item?.emoji ?? "", timeOfDay: item?.timeOfDay ?? "anytime",
-    link: linkOf(item), habit: item?.kind === "habit",
+    title: item?.title ?? "", timeOfDay: item?.timeOfDay ?? "anytime", notes: item?.notes ?? "",
+    kind: item?.kind ?? "manual", weekdays: item?.weekdays ?? [],
   });
-  const builtIn = item?.routineKey !== null && item?.routineKey !== undefined;
+  const builtIn = !!item?.routineKey;
+  const gym = !!item?.routineKey?.startsWith("gym-");
   const set = (p: Partial<Draft>) => setD((x) => ({ ...x, ...p }));
-  const save = () => { if (d.title.trim()) { onSave({ ...d, title: d.title.trim(), link: d.link.trim() }); onClose(); } };
+  const toggleDay = (k: string) => set({ weekdays: d.weekdays.includes(k) ? d.weekdays.filter((x) => x !== k) : [...d.weekdays, k] });
+  const save = () => { if (d.title.trim()) { onSave({ ...d, title: d.title.trim(), notes: d.notes.trim() }); onClose(); } };
+  useEffect(() => { const prev = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = prev; }; }, []);
 
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div role="dialog" aria-label={item ? "Edit item" : "New item"} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "14px 18px calc(env(safe-area-inset-bottom) + 14px)", display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", maxHeight: "88vh", overflowY: "auto" }}>
-        <div style={{ fontSize: 18, fontWeight: 600 }}>{item ? "Edit" : "New item"}</div>
+      <div role="dialog" aria-label={item ? "Edit item" : "New item"} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0", padding: "12px 16px calc(env(safe-area-inset-bottom) + 12px)", display: "grid", gap: 12, maxWidth: 560, margin: "0 auto", maxHeight: "calc(100dvh - env(safe-area-inset-top) - 20px)", overflowY: "auto" }}>
+        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 17, fontWeight: 500, minHeight: 48 }} />
 
-        {/* Emojis were removed from the whole app (Ali, 2026-09-10) · items are plain text. */}
-        <input className="cc-input" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="What do you do?" autoFocus={!item} onKeyDown={(e) => e.key === "Enter" && save()} style={{ fontSize: 17, minHeight: 48 }} />
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-          {TIMES.map((t) => {
-            const on = d.timeOfDay === t.key;
-            return (
-              <button key={t.key} onClick={() => set({ timeOfDay: t.key })} style={{ minHeight: 46, borderRadius: 12, font: "inherit", fontSize: 15, cursor: "pointer", border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)" }}>
-                {t.label}
-              </button>
-            );
-          })}
+        <div style={{ display: "grid", gap: 4 }}>
+          <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>When in the day</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+            {TIMES.map((t) => <button key={t.key} onClick={() => set({ timeOfDay: t.key })} aria-pressed={d.timeOfDay === t.key} style={chip(d.timeOfDay === t.key)}>{t.label}</button>)}
+          </div>
         </div>
 
-        <label style={{ display: "grid", gap: 4, fontSize: 14, color: "var(--ink-3)" }}>Link (optional · a video, a page; opens with one tap on Today)
-          <input className="cc-input" type="url" inputMode="url" value={d.link} onChange={(e) => set({ link: e.target.value })} placeholder="https://…" style={{ fontSize: 17, minHeight: 46 }} />
+        <div style={{ display: "grid", gap: 4 }}>
+          <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>Days · {daysLabel(d.weekdays)}{d.weekdays.length === 0 ? "" : " · tap all off for every day"}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
+            {DAYS.map((day) => <button key={day.key} onClick={() => toggleDay(day.key)} aria-pressed={d.weekdays.includes(day.key)} style={{ ...chip(d.weekdays.includes(day.key)), padding: 0, fontSize: 14 }}>{day.label}</button>)}
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gap: 4 }}>
+          <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>Counts as · {KINDS.find((k) => k.key === d.kind)?.hint}{gym ? " (training days never count, so a skipped session cannot break the streak)" : ""}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            {KINDS.map((k) => <button key={k.key} onClick={() => set({ kind: k.key })} aria-pressed={d.kind === k.key} disabled={gym} style={{ ...chip(d.kind === k.key), opacity: gym && d.kind !== k.key ? 0.5 : 1 }}>{k.label}</button>)}
+          </div>
+        </div>
+
+        <label style={{ display: "grid", gap: 4, fontSize: 13.5, color: "var(--ink-3)" }}>Note or link · shown under the name on Today; a link opens with one tap
+          <input className="cc-input" value={d.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="e.g. Speediance · chest, shoulders, triceps  or  https://…" autoCapitalize="none" style={{ fontSize: 16, minHeight: 44 }} />
         </label>
 
-        {item && !builtIn && (
-          <button onClick={() => set({ habit: !d.habit })} role="switch" aria-checked={d.habit} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 48, padding: "0 2px", background: "transparent", border: "none", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-            <span>
-              <span style={{ display: "block", fontSize: 16 }}>Habit I&rsquo;m building</span>
-              <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Own streak · not counted in the day until you switch this off</span>
-            </span>
-            <span aria-hidden style={{ width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0, background: d.habit ? "var(--violet)" : "var(--fill-3)", transition: "background .15s" }}>
-              <span style={{ position: "absolute", top: 3, left: d.habit ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .15s" }} />
-            </span>
-          </button>
-        )}
-        {item && builtIn && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Part of the built-in routine · you can rename it or move it, not delete it.</div>}
+        {builtIn && <div style={{ fontSize: 13.5, color: "var(--ink-4)", lineHeight: 1.5 }}>Part of the built-in routine. You can change everything here, including deleting it · it will not come back by itself.</div>}
 
-        <div style={{ display: "grid", gridTemplateColumns: item && !builtIn ? "1fr auto" : "1fr", gap: 10 }}>
-          <button className="cc-btn cc-btn-primary" onClick={save} disabled={!d.title.trim()} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{item ? "Save" : "Add"}</button>
-          {item && !builtIn && <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Delete “${item.title}”?`)) { onDelete(); onClose(); } }} style={{ minHeight: 50, minWidth: 50, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label="Delete">✕</button>}
+        <div style={{ display: "grid", gridTemplateColumns: item ? "1fr auto" : "1fr", gap: 10 }}>
+          <button className="cc-btn cc-btn-primary" onClick={save} disabled={!d.title.trim()} style={{ minHeight: 48, borderRadius: 14, fontSize: 17 }}>{item ? "Save" : "Add"}</button>
+          {item && <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Delete “${item.title}” from your list? Past ticks are kept.`)) { onDelete(); onClose(); } }} style={{ minHeight: 48, minWidth: 48, borderRadius: 14, padding: 0, color: "var(--neg)" }} aria-label="Delete">✕</button>}
         </div>
       </div>
     </>
@@ -104,15 +124,13 @@ export default function ChecklistPage() {
   const groups = TIMES.map((t) => ({ ...t, items: items.filter((i) => i.timeOfDay === t.key) })).filter((g) => g.items.length > 0);
 
   const save = async (d: Draft) => {
-    const body = { title: d.title, emoji: d.emoji || null, timeOfDay: d.timeOfDay, notes: d.link || null, kind: d.habit ? "habit" : undefined as ItemKind | undefined };
+    const body = { title: d.title, emoji: null, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: d.weekdays.length ? d.weekdays : null, startDate: null };
     if (sheet.item) {
       const id = sheet.item.id;
-      const wasHabit = sheet.item.kind === "habit";
-      const kind: ItemKind | undefined = sheet.item.routineKey ? undefined : d.habit ? "habit" : wasHabit ? "routine" : undefined;
-      setData((prev) => prev ? { ...prev, items: prev.items.map((i) => i.id === id ? { ...i, title: d.title, emoji: d.emoji || null, timeOfDay: d.timeOfDay, notes: d.link || null, kind: kind ?? i.kind } : i) } : prev!);
-      try { await sendOrQueue({ url: `/api/checklist/${id}`, method: "PATCH", body: { ...body, kind }, dedupeKey: `item:${id}` }); } catch { /* refresh shows truth */ }
+      setData((prev) => prev ? { ...prev, items: prev.items.map((i) => i.id === id ? { ...i, title: d.title, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: body.weekdays } : i) } : prev!);
+      try { await sendOrQueue({ url: `/api/checklist/${id}`, method: "PATCH", body, dedupeKey: `item:${id}` }); } catch { /* refresh shows truth */ }
     } else {
-      try { const ok = await sendOrQueue({ url: "/api/checklist", method: "POST", body: { ...body, kind: "manual" } }); if (ok) refresh(); } catch { /* ignore */ }
+      try { const ok = await sendOrQueue({ url: "/api/checklist", method: "POST", body }); if (ok) refresh(); } catch { /* ignore */ }
     }
     refresh();
   };
@@ -128,7 +146,7 @@ export default function ChecklistPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Edit list</h1>
-          <div className="sub">{items.length} items · tap one to change it</div>
+          <div className="sub">{items.length} items · tap one to change it · the kettlebell day is in Settings → Training days</div>
         </div>
         <button className="cc-btn cc-btn-primary" onClick={() => setSheet({ open: true, item: null })} style={{ minHeight: 44, borderRadius: 12 }}>+ Add</button>
       </div>
@@ -138,16 +156,16 @@ export default function ChecklistPage() {
       {groups.map((g) => (
         <section key={g.key} className="cc-card">
           <div className="cc-card-head"><span className="title">{g.label}</span><span className="tail">{g.hint}</span></div>
-          <div style={{ padding: "0 14px" }}>
+          <div className="cc-card-list">
             {g.items.map((i, idx) => {
-              const link = linkOf(i);
+              const link = i.notes?.match(URL_RE)?.[0];
+              const what = i.kind === "habit" ? "habit" : i.routineKey?.startsWith("gym-") ? "training day" : i.kind === "routine" ? "routine" : "extra";
               return (
-                <button key={i.id} onClick={() => setSheet({ open: true, item: i })} style={{ display: "grid", gridTemplateColumns: "32px 1fr auto", gap: 12, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 2px", background: "transparent", border: "none", borderBottom: idx < g.items.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-                  <span style={{ fontSize: 18, textAlign: "center", color: "var(--ink-4)" }}>•</span>
+                <button key={i.id} onClick={() => setSheet({ open: true, item: i })} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 16px", background: "transparent", border: "none", borderBottom: idx < g.items.length - 1 ? "1px solid var(--line)" : "none", color: "inherit", font: "inherit", textAlign: "left", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
                   <span style={{ minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 17 }}><Linkify text={i.title} /></span>
                     <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {i.kind === "habit" ? "habit I'm building" : i.routineKey ? "routine" : "daily"}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]} link` : ""}
+                      {what} · {daysLabel(i.weekdays)}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]}` : i.notes ? ` · ${i.notes}` : ""}
                     </span>
                   </span>
                   <span style={{ color: "var(--ink-4)" }}>›</span>

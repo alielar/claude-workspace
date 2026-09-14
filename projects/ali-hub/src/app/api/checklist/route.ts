@@ -102,6 +102,20 @@ function getThirtyDayStats(byDate: Map<string, Set<number>>, total: number, toda
 // Self-migration (the admin migrate route needs a key the phone has to send; this
 // is the same pattern as the podcast cron's ensureTable): run the ALTERs once per
 // server instance, silently no-op when the columns already exist.
+export const DEDUPE_ROUTINE_ROWS = [
+  // completions of a duplicate row → the oldest row with the same routine key (skip if that day is already ticked there)
+  `UPDATE OR IGNORE checklist_completions SET item_id = (
+     SELECT MIN(k.id) FROM checklist_items k, checklist_items c
+     WHERE c.id = checklist_completions.item_id AND k.user_id = c.user_id AND k.routine_key = c.routine_key)
+   WHERE item_id IN (SELECT c.id FROM checklist_items c WHERE c.routine_key IS NOT NULL
+     AND c.id <> (SELECT MIN(k.id) FROM checklist_items k WHERE k.user_id = c.user_id AND k.routine_key = c.routine_key))`,
+  `DELETE FROM checklist_completions WHERE item_id IN (SELECT c.id FROM checklist_items c WHERE c.routine_key IS NOT NULL
+     AND c.id <> (SELECT MIN(k.id) FROM checklist_items k WHERE k.user_id = c.user_id AND k.routine_key = c.routine_key))`,
+  `DELETE FROM checklist_items WHERE routine_key IS NOT NULL
+     AND id <> (SELECT MIN(k.id) FROM checklist_items k WHERE k.user_id = checklist_items.user_id AND k.routine_key = checklist_items.routine_key)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS ux_checklist_routine ON checklist_items(user_id, routine_key) WHERE routine_key IS NOT NULL`,
+];
+
 let columnsEnsured = false;
 async function ensureColumns() {
   if (columnsEnsured) return;
@@ -109,6 +123,12 @@ async function ensureColumns() {
   const { sql } = await import("drizzle-orm");
   try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN weekdays TEXT`)); } catch { /* already there */ }
   try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN start_date TEXT`)); } catch { /* already there */ }
+  // 2026-09-14 · "Push day showed two boxes": two requests (Today + the widget) seeded the same
+  // routine step at the same moment and nothing in the database forbade it. Same class of bug
+  // as the doubled work blocks: an insert with no uniqueness rule. Fix = merge the doubles
+  // (completions move to the oldest row) and a UNIQUE index so it cannot happen again.
+  for (const ddl of DEDUPE_ROUTINE_ROWS) { try { await db.run(sql.raw(ddl)); } catch { /* best-effort */ } }
+
   // KB Hour → Saturdays (Ali, 2026-09-11) · fills only an unset schedule, so a
   // later manual change in Settings is never overwritten.
   try { await db.run(sql.raw(`UPDATE kb_workouts SET assigned_days = '["sat"]' WHERE key = 'kb1' AND assigned_days IS NULL`)); } catch { /* table may not exist yet */ }
@@ -248,6 +268,8 @@ export async function GET() {
       autoSource: item.autoSource ?? null,
       color: item.color ?? "violet",
       notes: item.notes ?? null,
+      weekdays: (() => { try { return item.weekdays ? (JSON.parse(item.weekdays) as string[]) : null; } catch { return null; } })(),
+      startDate: item.startDate ?? null,
     };
   });
 
@@ -258,9 +280,10 @@ export async function GET() {
   const total = counted.size;
   const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
 
-  // On a machine day the gym row IS the training row · "Rest day" would be wrong.
+  // On a machine day the gym row IS the training row · no second "Train" box (2026-09-14:
+  // it showed twice when the kettlebell schedule was unset), unless a KB session was actually done.
   const machineToday = enriched.some((i) => i.routineKey?.startsWith("gym-") ?? false);
-  const showWorkoutRow = !(restDay && machineToday);
+  const showWorkoutRow = !machineToday || todayTrain !== null;
 
   return NextResponse.json({
     items: showWorkoutRow ? [workoutRow, ...enriched] : enriched,
@@ -276,7 +299,9 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { title, emoji, timeOfDay, autoSource, color, notes, kind } = await req.json();
+  const { title, emoji, timeOfDay, autoSource, color, notes, kind, weekdays } = await req.json();
+  const DAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+  const days = Array.isArray(weekdays) ? (weekdays as unknown[]).filter((d): d is string => typeof d === "string" && DAYS.has(d)) : [];
   if (!title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
 
   const existing = await db
@@ -299,6 +324,7 @@ export async function POST(req: Request) {
       color: color ?? "violet",
       notes: notes?.trim() || null,
       sortOrder: nextOrder,
+      weekdays: days.length ? JSON.stringify(days) : null,
     })
     .returning();
 

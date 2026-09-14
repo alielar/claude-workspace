@@ -31,6 +31,13 @@ export async function PATCH(
   if (body.autoSource !== undefined) updates.autoSource = body.autoSource ?? null;
   // kind: "routine" | "habit" | "manual" · promoting a habit = setting kind to "routine"
   if (body.kind === "routine" || body.kind === "habit" || body.kind === "manual") updates.kind = body.kind;
+  // weekdays: ["mon","thu"] · null / [] = every day (2026-09-14, editable on /checklist)
+  if (body.weekdays !== undefined) {
+    const DAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+    const days = Array.isArray(body.weekdays) ? (body.weekdays as unknown[]).filter((d): d is string => typeof d === "string" && DAYS.has(d)) : [];
+    updates.weekdays = days.length ? JSON.stringify(days) : null;
+  }
+  if (body.startDate !== undefined) updates.startDate = typeof body.startDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.startDate) ? body.startDate : null;
 
   const [updated] = await db.update(checklistItems)
     .set(updates)
