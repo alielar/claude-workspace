@@ -12,8 +12,9 @@
  *   "now"   · NOW FIRST · greeting + progress ring · ONE "Now" card with only this part of the
  *             day (still-open earlier steps + overdue to-dos on top → this part's routine →
  *             timed to-dos in clock order → anytime to-dos), six rows then "+N more" · "Later
- *             today" and "Done" fold underneath · Morning brief card (gone once heard) ·
- *             one highlight last.
+ *             today" and "Done" fold underneath.
+ *   Both end with the Morning brief card and then ONE highlight · listening and watching
+ *   come after the day's actions (Ali 2026-09-14 night).
  *   "spine" · DAY SPINE · greeting + clock · progress line · "Loose ends" tray = due to-dos
  *             with no time slot, each with Time (native wheel → today at that hour) and
  *             Tmrw → so nothing stays loose · then the day on a vertical time line: Morning
@@ -516,8 +517,6 @@ export default function TodayPage() {
           )}
         </section>
 
-        {/* Morning brief · stays until listened, then Today is just the day */}
-        <PodcastCard today={today} hideWhenHeard />
       </>
     );
   };
@@ -550,8 +549,6 @@ export default function TodayPage() {
             {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
           </div>
         </section>
-
-        <PodcastCard today={today} hideWhenHeard />
 
         <div style={{ display: "grid", gap: 0 }}>
           {segs.map((s, idx) => {
@@ -617,6 +614,10 @@ export default function TodayPage() {
       {layoutSwitch}
 
       {layout === "now" ? renderNow() : renderSpine()}
+
+      {/* Morning brief at the BOTTOM, just above the highlight (Ali 2026-09-14 night: once heard it
+          must not sit on top · the day's actions come first, listening and watching last). */}
+      <PodcastCard today={today} />
 
       {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose. */}
       <HighlightSuggestion />
