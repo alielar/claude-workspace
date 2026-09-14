@@ -27,6 +27,7 @@
 import { db } from "@/db";
 import { highlights } from "@/db/schema";
 import { desc, eq, lt, sql } from "drizzle-orm";
+import { searchVideos } from "@/lib/news/youtubeSearch";
 
 export type Competition = "Champions League" | "La Liga" | "Premier League" | "Bundesliga" | "Serie A" | "Ligue 1";
 type League = "ESP" | "GER" | "ITA" | "FRA" | "ENG" | "OTHER";
@@ -331,8 +332,13 @@ export function parseLatin(title: string): Parsed | null {
   const clean = title.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, " ").replace(/\s+/g, " ").trim();
   if (!/highlight|zusammenfassung|sintesi/i.test(clean)) return null;
   if (/\b(u1[0-9]|u2[0-3]|primavera|women|frauen|futuro|youth|legends|classic|training)\b/i.test(clean)) return null;
+  // Round compilations ("Tutti i gol della 3ª giornata", "All goals matchday 3") name several games:
+  // the card would show one match and the video another (Ali 2026-09-14 night: Como–Parma opened
+  // Roma–Torino). One match per video, or nothing.
+  if (/tutti i gol|all (the )?goals|every goal|alle tore|best goals|top \d+/i.test(clean)) return null;
   const comp = competitionOf(clean);
   if (!comp) return null;
+  const found: Parsed[] = [];
   for (const seg of clean.split(/\s*\|\s*/)) {
     const s = seg.replace(/\(?\b\d{1,2}\s*[-–:]\s*\d{1,2}\b\)?/g, " ").replace(/\s+/g, " ").trim();
     const parts = s.split(/\s+(?:vs\.?|v\.?|–|—)\s+|\s*-\s*/i);
@@ -342,12 +348,41 @@ export function parseLatin(title: string): Parsed | null {
       const home = resolveTeam(parts.slice(0, i).join("-"));
       const away = resolveTeam(parts.slice(i).join("-"));
       if (home && away && home.name !== away.name) {
-        return { home, away, competition: comp, context: `${comp}${roundOf(clean, comp) ? ` · ${roundOf(clean, comp)}` : ""}` };
+        found.push({ home, away, competition: comp, context: `${comp}${roundOf(clean, comp) ? ` · ${roundOf(clean, comp)}` : ""}` });
+        break;
       }
     }
   }
-  return null;
+  const keys = new Set(found.map((p) => [p.home.name, p.away.name].sort().join("|")));
+  if (keys.size !== 1) return null; // none, or several different games in one title
+  return found[0];
 }
+
+// ─── A watchable copy (2026-09-14 night) ──────────────────────────────────────
+// The Serie A official channel geo-blocks its highlights in Spain ("video unavailable"),
+// while the same match sits a few results down with millions of views on other channels.
+// So for Serie A we search YouTube for the match and keep the most-viewed public copy whose
+// title names BOTH teams (that check is also what keeps the card and the video the same game).
+
+/** Does a Latin title name this team (any alias or the display name)? */
+export function mentionsTeam(title: string, teamName: string): boolean {
+  const t = ` ${normLat(title)} `;
+  const names = [teamName, ...(TEAMS[teamName]?.aliases ?? []).filter((a) => !hasArabic(a))].map(normLat).filter((n) => n.length >= 4);
+  return names.some((n) => t.includes(` ${n} `) || t.includes(` ${n}`) && n.length >= 5);
+}
+const BLOCKED_CHANNELS = /^(serie a|lega serie a)$/i;
+export async function pickPublicVideo(home: string, away: string, competition: Competition): Promise<string | null> {
+  const hits = await searchVideos(`${home} ${away} highlights ${competition}`);
+  const ok = hits.filter((h) =>
+    !BLOCKED_CHANNELS.test(h.channel.trim()) &&
+    mentionsTeam(h.title, home) && mentionsTeam(h.title, away) &&
+    /highlight|sintesi|gol|goal|résumé|resumen|zusammenfassung|extended/i.test(h.title) &&
+    h.seconds >= 90 && h.seconds <= 20 * 60 &&
+    !/\b(u1[0-9]|u2[0-3]|primavera|women|frauen|youth|legends|classic|training|prediction|preview|reaction|fifa|efootball|pes)\b/i.test(h.title));
+  ok.sort((a, b) => b.views - a.views);
+  return ok[0]?.videoId ?? null;
+}
+const SEARCH_BUDGET = 4; // searches per poll (each is a ~1 MB page)
 
 // ─── Feed fetch ───────────────────────────────────────────────────────────────
 type FeedEntry = { videoId: string; title: string; publishedAt: number };
@@ -422,7 +457,9 @@ export async function scanSources(cl: Set<string> = CL_TEAMS_SEED): Promise<{ ca
 }
 
 /** Fetch every source, parse, filter, store. Returns how many new rows landed. */
-export async function pollHighlights(): Promise<{ added: number; seen: number; errors: string[] }> {
+/** `search: false` (the inline poll behind GET /api/highlights) skips the YouTube searches so a page load never waits on them · the 5-min tick does the searching. */
+export async function pollHighlights(opts: { search?: boolean } = {}): Promise<{ added: number; seen: number; errors: string[] }> {
+  const budget = opts.search === false ? 0 : SEARCH_BUDGET;
   await ensureTable();
   const cl = await clTeams();
   const { candidates, errors } = await scanSources(cl);
@@ -437,17 +474,36 @@ export async function pollHighlights(): Promise<{ added: number; seen: number; e
     existing.some((x) => pairKey(x.home, x.away, x.competition) === pairKey(h, a, c) && Math.abs(x.publishedAt.getTime() - t) < 3 * 86400_000);
 
   let added = 0;
+  let searches = 0;
   // beIN first so its clean, score-free copy wins when two sources carry the same match.
   candidates.sort((a, b) => (a.source === "bein" ? 0 : 1) - (b.source === "bein" ? 0 : 1));
   for (const c of candidates) {
     if (known.has(c.videoId) || sameMatch(c.home, c.away, c.competition, c.publishedAt)) continue;
+    let videoId = c.videoId, source = c.source;
+    if (c.source === "seriea" && searches < budget) {
+      searches += 1;
+      const alt = await pickPublicVideo(c.home, c.away, c.competition).catch(() => null);
+      if (alt && !known.has(alt)) { videoId = alt; source = "seriea-search"; }
+      else if (alt === null) source = "seriea-nohit"; // searched, nothing better · keep the official one
+    }
     try {
-      await db.insert(highlights).values({ videoId: c.videoId, source: c.source, title: c.title, home: c.home, away: c.away, competition: c.competition, context: c.context, publishedAt: new Date(c.publishedAt) });
-      existing.push({ videoId: c.videoId, home: c.home, away: c.away, competition: c.competition, publishedAt: new Date(c.publishedAt) });
-      known.add(c.videoId);
+      await db.insert(highlights).values({ videoId, source, title: c.title, home: c.home, away: c.away, competition: c.competition, context: c.context, publishedAt: new Date(c.publishedAt) });
+      existing.push({ videoId, home: c.home, away: c.away, competition: c.competition, publishedAt: new Date(c.publishedAt) });
+      known.add(videoId); known.add(c.videoId);
       added += 1;
     } catch { /* raced with another poll · fine */ }
   }
+  // Repair rows stored before this: unwatched Serie A official videos → a public copy, a few per poll.
+  try {
+    const stale = await db.select({ id: highlights.id, home: highlights.home, away: highlights.away, competition: highlights.competition })
+      .from(highlights).where(sql`source = 'seriea' AND watched_at IS NULL`).limit(budget - searches > 0 ? budget - searches : 0);
+    for (const r of stale) {
+      const alt = await pickPublicVideo(r.home, r.away, r.competition as Competition).catch(() => undefined);
+      if (alt === undefined) continue; // network · try again next poll
+      if (alt && !known.has(alt)) { await db.update(highlights).set({ videoId: alt, source: "seriea-search" }).where(eq(highlights.id, r.id)); known.add(alt); }
+      else await db.update(highlights).set({ source: "seriea-nohit" }).where(eq(highlights.id, r.id));
+    }
+  } catch { /* best effort */ }
   try { await db.delete(highlights).where(lt(highlights.publishedAt, new Date(Date.now() - KEEP_DAYS * 86400_000))); } catch { /* best effort */ }
   return { added, seen: candidates.length, errors };
 }

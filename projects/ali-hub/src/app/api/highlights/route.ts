@@ -17,7 +17,7 @@ export async function GET() {
   let items = await listHighlights().catch(() => []);
   const newest = items[0]?.publishedAt ?? 0;
   if (items.length === 0 || Date.now() - newest > 15 * 60 * 1000) {
-    await Promise.race([pollHighlights().catch(() => null), new Promise((r) => setTimeout(r, 7000))]);
+    await Promise.race([pollHighlights({ search: false }).catch(() => null), new Promise((r) => setTimeout(r, 7000))]);
     items = await listHighlights().catch(() => items);
   }
   return NextResponse.json({ items }, { headers: { "Cache-Control": "no-store" } });

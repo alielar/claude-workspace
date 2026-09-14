@@ -76,6 +76,57 @@ async function viaApi(query: string): Promise<ChannelHit[]> {
 type Rec = Record<string, unknown>;
 const str = (v: unknown): string | undefined => (typeof v === "string" && v ? v : undefined);
 
+// ─── Video search (highlights, 2026-09-14 night) ──────────────────────────────
+export type VideoHit = { videoId: string; title: string; channel: string; views: number; seconds: number };
+
+/** "1,234,567 views" / "1.2M views" / "87K views" → number (0 when unreadable). */
+export function parseViews(t: string | undefined): number {
+  if (!t) return 0;
+  const m = t.replace(/,/g, "").match(/([\d.]+)\s*([KMB])?/i);
+  if (!m) return 0;
+  const n = parseFloat(m[1]); const u = (m[2] ?? "").toUpperCase();
+  return Math.round(n * (u === "B" ? 1e9 : u === "M" ? 1e6 : u === "K" ? 1e3 : 1));
+}
+const parseLen = (t: string | undefined): number => {
+  if (!t) return 0;
+  const parts = t.split(":").map(Number);
+  if (parts.some((x) => Number.isNaN(x))) return 0;
+  return parts.reduce((acc, x) => acc * 60 + x, 0);
+};
+
+/** Public video search (the "videos" filter of the results page) · no key, no cost. */
+export async function searchVideos(query: string): Promise<VideoHit[]> {
+  const params = new URLSearchParams({ search_query: query.slice(0, 120), sp: "EgIQAQ==", hl: "en" });
+  const res = await fetch(`https://www.youtube.com/results?${params}`, { headers: HEADERS, signal: AbortSignal.timeout(9000) });
+  if (!res.ok) throw new Error(`youtube ${res.status}`);
+  const html = await res.text();
+  const m = html.match(/var ytInitialData = (\{[\s\S]*?\});<\/script>/);
+  if (!m) throw new Error("ytInitialData not found");
+  const data: unknown = JSON.parse(m[1]);
+  const hits: VideoHit[] = [];
+  const seen = new Set<string>();
+  walkVideos(data, (v) => {
+    const id = str(v.videoId);
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    const runs = (v.title as Rec | undefined)?.runs;
+    const title = Array.isArray(runs) ? runs.map((r) => str((r as Rec).text) ?? "").join("") : "";
+    const owner = ((v.ownerText as Rec | undefined)?.runs as Rec[] | undefined)?.[0];
+    const channel = str(owner?.text) ?? "";
+    const views = parseViews(str((v.viewCountText as Rec | undefined)?.simpleText));
+    const seconds = parseLen(str((v.lengthText as Rec | undefined)?.simpleText));
+    if (title) hits.push({ videoId: id, title, channel, views, seconds });
+  });
+  return hits.slice(0, 20);
+}
+function walkVideos(node: unknown, onVideo: (v: Rec) => void): void {
+  if (Array.isArray(node)) { for (const v of node) walkVideos(v, onVideo); return; }
+  if (!node || typeof node !== "object") return;
+  const r = node as Rec;
+  if (r.videoRenderer && typeof r.videoRenderer === "object") onVideo(r.videoRenderer as Rec);
+  for (const v of Object.values(r)) walkVideos(v, onVideo);
+}
+
 /** Depth-first visit of every `channelRenderer` object in YouTube's page data. */
 function walk(node: unknown, onChannel: (c: Rec) => void): void {
   if (Array.isArray(node)) { for (const v of node) walk(v, onChannel); return; }
