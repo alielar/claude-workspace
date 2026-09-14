@@ -19,7 +19,68 @@ export const people = sqliteTable("people", {
   /** Photo-first screens with almost no reading (Layla). */
   simpleUi: integer("simple_ui", { mode: "boolean" }).notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
+  /** JSON string[] of DISLIKE_TAGS. Filters this person's views only. */
+  dislikes: text("dislikes", { mode: "json" }).$type<string[]>().notNull().default([]),
   createdAt: text("created_at").notNull().default(""),
 });
 
 export type Person = typeof people.$inferSelect;
+
+export const MEALS = ["breakfast", "lunch", "dinner"] as const;
+export type Meal = (typeof MEALS)[number];
+
+/** Tags a person can dislike. Dishes carrying a disliked tag are hidden from that person's views. */
+export const DISLIKE_TAGS = ["peppers", "raw_onion", "spicy", "fish", "red_meat", "eggs", "dairy", "nuts"] as const;
+export type DislikeTag = (typeof DISLIKE_TAGS)[number];
+
+export type Ingredient = {
+  en: string;
+  fr: string;
+  ar: string;
+  qty: number;
+  unit: "g" | "ml" | "piece" | "bunch" | "tbsp" | "tsp" | "pinch";
+  group: "fresh" | "dry";
+};
+
+export type Recipe = { steps: string[]; tips: string[] };
+
+export type Macros = { kcal: number; protein_g: number; carbs_g: number; fat_g: number; fiber_g: number };
+
+export const dishes = sqliteTable("dishes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  meal: text("meal", { enum: MEALS }).notNull(),
+  nameEn: text("name_en").notNull(),
+  nameFr: text("name_fr").notNull(),
+  /** Darija in Arabic script. */
+  nameAr: text("name_ar").notNull(),
+  /** Darija in Latin letters, shown to the family next to their language. */
+  nameLatin: text("name_latin").notNull(),
+  descEn: text("desc_en").notNull().default(""),
+  descFr: text("desc_fr").notNull().default(""),
+  cuisine: text("cuisine").notNull().default(""),
+  servings: integer("servings").notNull().default(4),
+  prepMin: integer("prep_min").notNull().default(0),
+  cookMin: integer("cook_min").notNull().default(0),
+  /** JSON Macros, per serving, estimates. */
+  macros: text("macros", { mode: "json" }).$type<Macros>().notNull(),
+  /** JSON Ingredient[] for `servings` people. */
+  ingredients: text("ingredients", { mode: "json" }).$type<Ingredient[]>().notNull(),
+  /** JSON Recipe in Darija, Arabic script, written for the cook. */
+  recipeAr: text("recipe_ar", { mode: "json" }).$type<Recipe>().notNull(),
+  /** JSON string[] e.g. ["chicken","cooked_onion"]. */
+  tags: text("tags", { mode: "json" }).$type<string[]>().notNull(),
+  photoUrl: text("photo_url"),
+  photoCredit: text("photo_credit"),
+  photoLicense: text("photo_license"),
+  photoSourceUrl: text("photo_source_url"),
+  /** ready · researching (custom dish being filled in) · failed */
+  status: text("status").notNull().default("ready"),
+  /** Darija checked by the family. */
+  reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
+  isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
+  createdBy: integer("created_by"),
+  createdAt: text("created_at").notNull().default(""),
+});
+
+export type Dish = typeof dishes.$inferSelect;

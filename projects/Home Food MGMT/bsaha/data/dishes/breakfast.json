@@ -1,0 +1,4554 @@
+[
+  {
+    "slug": "baghrir-with-honey-butter-and-crushed-almonds",
+    "meal": "breakfast",
+    "name_en": "Baghrir with honey, butter and crushed almonds",
+    "name_fr": "Baghrir au miel, beurre et amandes concassées",
+    "name_ar": "بغرير بالعسل والزبدة واللوز المرضوض",
+    "name_latin": "Baghrir bel asel, zebda w louz",
+    "desc_en": "Light, honeycombed semolina pancakes drizzled with warm honey butter and topped with toasted crushed almonds.",
+    "desc_fr": "Crêpes de semoule alvéolées, arrosées de beurre au miel tiède et parsemées d'amandes grillées concassées.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 40,
+    "cook_min": 25,
+    "macros": {
+      "kcal": 480,
+      "protein_g": 12,
+      "carbs_g": 74,
+      "fat_g": 15,
+      "fiber_g": 4
+    },
+    "ingredients": [
+      {
+        "en": "Fine semolina",
+        "fr": "Semoule fine",
+        "ar": "سميدة رقيقة",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Flour",
+        "fr": "Farine",
+        "ar": "فرينة",
+        "qty": 100,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Dry yeast",
+        "fr": "Levure boulangère",
+        "ar": "خميرة الخبز",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Baking powder",
+        "fr": "Levure chimique",
+        "ar": "خميرة الحلوى",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Warm water",
+        "fr": "Eau tiède",
+        "ar": "ماء دافي",
+        "qty": 500,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 40,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 50,
+        "unit": "g",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خودي 250 غرام سميدة رقيقة و100 غرام فرينة، زيدي ملعقة صغيرة خميرة الخبز، ملعقة صغيرة خميرة الحلوى ونص ملعقة صغيرة ملحة.",
+        "زيدي نص ليترو ماء دافي بشوية بشوية وخلطي فالخلاط 3 دقايق حتى تولي العجينة خفيفة وسايلة بحال الحليب المخلط.",
+        "غطيها بفوطة وخليها ترتاح 30 دقيقة فبلاصة دافية حتى تطلع فيها الفقاقيع.",
+        "سخني مقلة غير لاصقة على نار متوسطة، بلا زيت بلا زبدة.",
+        "صبي مغرفة من العجين فالوسط وخليه يطيب من جهة واحدة جوج دقايق حتى تبان فيه العيون كاملة وينشف من الفوق. ما تقلبيهش.",
+        "حطي كل بغريرة فوق فوطة نظيفة بوحدها، ما تكوميهمش وهما سخانين باش ما يلصقوش.",
+        "فمقلة صغيرة ذوبي 40 غرام زبدة مع 4 ملاعق كبار عسل على نار هادية، حركي حتى يتخلطو مزيان.",
+        "حمري 50 غرام لوز فمقلة ناشفة 3 دقايق مع التحريك، وبعد رضيهم غليظ.",
+        "وقت التقديم صبي شوية من العسل بالزبدة على كل بغريرة ورشي اللوز من الفوق."
+      ],
+      "tips": [
+        "إلى ما طلعوش العيون، العجين ثقيل: زيدي شوية ماء دافي وخليه يرتاح 10 دقايق زايدين.",
+        "النار المتوسطة هي السر، إلى كانت قوية يحمار من التحت قبل ما ينشف من الفوق.",
+        "المقلة خاصها تكون ناشفة تماما، البغرير ما كيبغيش الزيت.",
+        "للدراري خففي الزبدة وزيدي العسل، وباقي البغرير كيتجمد ويتسخن فالمقلة."
+      ]
+    },
+    "tags": [
+      "gluten",
+      "dairy",
+      "nuts",
+      "vegetarian"
+    ],
+    "photo_query": "baghrir moroccan pancakes honey almonds"
+  },
+  {
+    "slug": "harcha-with-fresh-cheese-and-tomato",
+    "meal": "breakfast",
+    "name_en": "Harcha with fresh cheese and tomato",
+    "name_fr": "Harcha au fromage frais et tomate",
+    "name_ar": "حرشة بالجبن الطري والماطيشة",
+    "name_latin": "Harcha bel jben w matisha",
+    "desc_en": "Crumbly pan-baked semolina rounds served warm with fresh cheese and sliced tomato.",
+    "desc_fr": "Galettes de semoule dorées à la poêle, servies tièdes avec du fromage frais et des tranches de tomate.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 20,
+    "macros": {
+      "kcal": 510,
+      "protein_g": 16,
+      "carbs_g": 66,
+      "fat_g": 20,
+      "fiber_g": 4
+    },
+    "ingredients": [
+      {
+        "en": "Medium semolina",
+        "fr": "Semoule moyenne",
+        "ar": "سميدة متوسطة",
+        "qty": 400,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 60,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Vegetable oil",
+        "fr": "Huile végétale",
+        "ar": "زيت",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Sugar",
+        "fr": "Sucre",
+        "ar": "سكر",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Baking powder",
+        "fr": "Levure chimique",
+        "ar": "خميرة الحلوى",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 200,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh cheese (jben)",
+        "fr": "Fromage frais (jben)",
+        "ar": "جبن طري",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خودي 400 غرام سميدة متوسطة فطبسيل، زيدي ملعقة كبيرة سكر، نص ملعقة صغيرة ملحة وملعقة صغيرة خميرة الحلوى.",
+        "ذوبي 60 غرام زبدة وزيديها مع جوج ملاعق كبار زيت على السميدة، وفركي بيديك حتى تتشرب السميدة الدهن كاملة.",
+        "زيدي 200 مل حليب دافي بشوية بشوية وجمعي العجين بلا ما تعجنيه بزاف، خاصو يبقى رطب وكيتفتت شوية.",
+        "خليه يرتاح 10 دقايق باش تنتفخ السميدة.",
+        "قسميه 8 كوار، وفرشي كل كورة بيديك على سميدة حتى تولي بغلاظة 1 سنتيم.",
+        "سخني مقلة على نار هادية لمتوسطة بلا زيت، وحطي الحرشة وخليها تطيب 5 دقايق من كل جهة حتى تحمار وتقرقب.",
+        "قطعي 3 ماطيشات دوائر ورشي عليهم شوية ملحة وملعقة زيت العود.",
+        "قدمي الحرشة سخونة مع 200 غرام جبن طري والماطيشة فطبسيل فالوسط."
+      ],
+      "tips": [
+        "النار الهادية ضرورية، الحرشة غليظة وإلى كانت النار قوية تحمار من برا وتبقى نية من الداخل.",
+        "ما تعجنيش بزاف وما تزيديش الحليب كامل مرة واحدة، السميدة كتشرب بشوية.",
+        "الحرشة الباردة تقدري تسخنيها فالمقلة دقيقة من كل جهة وترجع بحال الجديدة.",
+        "إلى بغيتي الحرشة أخف، قسمي العجين 12 حرشة صغيرة ورقيقة."
+      ]
+    },
+    "tags": [
+      "gluten",
+      "dairy",
+      "vegetarian"
+    ],
+    "photo_query": "harcha moroccan semolina bread cheese tomato"
+  },
+  {
+    "slug": "msemen-with-fresh-cheese-and-olives",
+    "meal": "breakfast",
+    "name_en": "Msemen with fresh cheese and olives",
+    "name_fr": "Msemen au fromage frais et olives",
+    "name_ar": "مسمن بالجبن والزيتون",
+    "name_latin": "Msemen bel jben w zitoun",
+    "desc_en": "Flaky layered square flatbreads cooked on the griddle, served with fresh cheese and olives.",
+    "desc_fr": "Crêpes feuilletées carrées cuites à la plancha, servies avec du fromage frais et des olives.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 35,
+    "cook_min": 25,
+    "macros": {
+      "kcal": 560,
+      "protein_g": 16,
+      "carbs_g": 76,
+      "fat_g": 21,
+      "fiber_g": 4
+    },
+    "ingredients": [
+      {
+        "en": "Flour",
+        "fr": "Farine",
+        "ar": "فرينة",
+        "qty": 300,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Fine semolina",
+        "fr": "Semoule fine",
+        "ar": "سميدة رقيقة",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Dry yeast",
+        "fr": "Levure boulangère",
+        "ar": "خميرة الخبز",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Warm water",
+        "fr": "Eau tiède",
+        "ar": "ماء دافي",
+        "qty": 320,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Vegetable oil",
+        "fr": "Huile végétale",
+        "ar": "زيت",
+        "qty": 60,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 30,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh cheese (jben)",
+        "fr": "Fromage frais (jben)",
+        "ar": "جبن طري",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Green or black olives",
+        "fr": "Olives vertes ou noires",
+        "ar": "زيتون",
+        "qty": 120,
+        "unit": "g",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خودي 300 غرام فرينة و200 غرام سميدة رقيقة، زيدي ملعقة صغيرة ملحة ونص ملعقة صغيرة خميرة الخبز.",
+        "زيدي 320 مل ماء دافي بشوية بشوية وعجني 10 دقايق حتى تولي العجينة ملساء ومرنة وما تلصقش فاليد.",
+        "قسميها 8 كوار، دهنيهم بشوية زيت وخليهم يرتاحو 15 دقيقة تحت فوطة.",
+        "خلطي 60 مل زيت مع 30 غرام زبدة مذوبة فطبسيل صغير، وحضري 50 غرام سميدة رقيقة فطبسيل آخر.",
+        "على الطبلة مدهونة بالزيت، فرشي كل كورة بأطراف صباعك حتى تولي رقيقة بزاف كتشوفي من وراها.",
+        "دهنيها بشوية من الزيت بالزبدة ورشي عليها شوية سميدة، وطويها مربع: الجهة اليمنى على الوسط، والليسرى فوقها، وبعد الفوق والتحت.",
+        "سخني مقلة أو فرّاح على نار متوسطة، حطي المسمن وخليه يطيب 3 دقايق من كل جهة حتى يحمار ويتنفخ.",
+        "قدمي المسمن سخون مع 200 غرام جبن طري و120 غرام زيتون فطبسيل."
+      ],
+      "tips": [
+        "العجينة خاصها تكون مرنة بزاف باش تتفرش بلا ما تتقطع، إلى كانت ناشفة زيدي شوية ماء.",
+        "قبل ما تطيبيه، فرشي المسمن المطوي شوية بيديك باش يولي رقيق ويطيب مزيان من الداخل.",
+        "النار متوسطة، ما تخليهش يشيح: إلى حمار بزربة نقصي النار.",
+        "تقدري تطويهم وتجمديهم نيين بين ورق التجميد، وتطيبيهم مباشرة من الكونجيلاتور."
+      ]
+    },
+    "tags": [
+      "gluten",
+      "dairy",
+      "vegetarian"
+    ],
+    "photo_query": "msemen moroccan flatbread cheese olives"
+  },
+  {
+    "slug": "bissara-fava-bean-soup-with-olive-oil-and-cumin",
+    "meal": "breakfast",
+    "name_en": "Bissara (fava bean soup) with olive oil and cumin",
+    "name_fr": "Bissara (soupe de fèves) à l'huile d'olive et cumin",
+    "name_ar": "بيصارة بزيت العود والكامون",
+    "name_latin": "Bissara b zit laoud w kamoun",
+    "desc_en": "Thick, warming split fava bean soup finished with a swirl of olive oil, cumin and paprika, eaten with bread.",
+    "desc_fr": "Soupe épaisse de fèves cassées, arrosée d'huile d'olive, cumin et paprika, servie avec du pain.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 50,
+    "macros": {
+      "kcal": 470,
+      "protein_g": 24,
+      "carbs_g": 66,
+      "fat_g": 13,
+      "fiber_g": 16
+    },
+    "ingredients": [
+      {
+        "en": "Dried split fava beans",
+        "fr": "Fèves sèches décortiquées",
+        "ar": "فول مقشر",
+        "qty": 400,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 2,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Sweet paprika",
+        "fr": "Paprika doux",
+        "ar": "فلفلة حمرا حلوة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Water",
+        "fr": "Eau",
+        "ar": "ماء",
+        "qty": 1500,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي 400 غرام فول مقشر مزيان وصفيه، إلى قدرتي خليه فالماء ليلة كاملة كيطيب أسرع.",
+        "حطي الفول فطنجرة مع ليترو ونص ماء و4 حبات ثوم مقشرين وجوج ملاعق كبار زيت العود.",
+        "خليه يغلي على نار قوية، وبعد نقصي النار وغطيه وخليه يطيب 40 دقيقة حتى يولي الفول رخف كيتفتت.",
+        "إلى نقص الماء ووَلا غليظ بزاف زيدي كاس ماء سخون.",
+        "زيدي ملعقة صغيرة ملحة وملعقة صغيرة كامون، وخلطيه بالخلاط اليدوي حتى يولي ناعم بحال الكريمة.",
+        "خليه يطيب 5 دقايق زايدين على نار هادية مع التحريك باش ما يلصقش.",
+        "صبيه فالزلايف، وفوق كل زلافة صبي ملعقة زيت العود ورشي كامون وشوية فلفلة حمرا حلوة.",
+        "قدميها سخونة بزاف مع الخبز الكامل."
+      ],
+      "tips": [
+        "البيصارة خاصها تكون غليظة شوية ولكن ما تكونش عجينة، إلى بردت كتغلاظ، زيدي ماء سخون وقت التسخين.",
+        "الكامون كيتزاد فاللخر، إلى طيبتيه بزاف كيضيع نفحو.",
+        "ما تزيديش الملحة من اللول، الفول كيطيب أسرع بلا ملحة.",
+        "زيت العود الجيدة هي اللي كتعطي البيصارة الطعم، ما تبخليش عليها."
+      ]
+    },
+    "tags": [
+      "legumes",
+      "vegetarian",
+      "gluten"
+    ],
+    "photo_query": "bissara fava bean soup olive oil"
+  },
+  {
+    "slug": "khlii-with-eggs",
+    "meal": "breakfast",
+    "name_en": "Khlii with eggs",
+    "name_fr": "Khlii aux œufs",
+    "name_ar": "خليع بالبيض",
+    "name_latin": "Khlii bel bid",
+    "desc_en": "Moroccan preserved spiced beef gently warmed in its own fat with eggs cracked on top, served with bread.",
+    "desc_fr": "Viande séchée épicée marocaine réchauffée avec des œufs cassés dessus, servie avec du pain.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 15,
+    "macros": {
+      "kcal": 520,
+      "protein_g": 33,
+      "carbs_g": 34,
+      "fat_g": 28,
+      "fiber_g": 4
+    },
+    "ingredients": [
+      {
+        "en": "Khlii (preserved beef)",
+        "fr": "Khlii (viande séchée confite)",
+        "ar": "خليع",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Parsley",
+        "fr": "Persil",
+        "ar": "معدنوس",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خودي 200 غرام خليع، نقيه من الدهن الزايد وخلي غير ملعقة كبيرة من دهنو باش يطيب فيها.",
+        "قطعي جوج ماطيشات قطع صغار وقطعي نص حزمة معدنوس.",
+        "حطي الخليع مع شوية من دهنو فمقلة على نار هادية وخليه يسخن 5 دقايق حتى يرخف ويطلق ريحتو.",
+        "زيدي الماطيشة وخليها تطيب 4 دقايق حتى تذوب شوية مع الخليع.",
+        "كسري 8 بيضات فوق الخليع، واحدة حدا الأخرى، بلا ما تحركي.",
+        "رشي ملعقة صغيرة كامون ونص ملعقة صغيرة إبزار، غطي المقلة وخليها 4 دقايق حتى يجمد البياض ويبقى الصفار طري.",
+        "رشي المعدنوس من الفوق وقدميها مباشرة فالمقلة مع الخبز الكامل."
+      ],
+      "tips": [
+        "الخليع مالح ومتبل من قبل، ما تزيديش ملحة قبل ما تدوقي.",
+        "النار الهادية هي السر، الخليع كيحرق بزربة ويولي مر.",
+        "الدهن ديال الخليع كافي، ما تزيديش زيت.",
+        "البيض كيتقدم والصفار طري، إلى بغيتيه ناضج زيدي دقيقة مع الغطاء."
+      ]
+    },
+    "tags": [
+      "red_meat",
+      "eggs",
+      "gluten"
+    ],
+    "photo_query": "khlii moroccan dried meat eggs skillet"
+  },
+  {
+    "slug": "eggs-in-tomato-and-cumin-sauce-moroccan-style-no-peppers",
+    "meal": "breakfast",
+    "name_en": "Eggs in tomato and cumin sauce (Moroccan style, no peppers)",
+    "name_fr": "Œufs à la sauce tomate et cumin (à la marocaine, sans poivrons)",
+    "name_ar": "بيض بالماطيشة والكامون",
+    "name_latin": "Bid bel matisha w kamoun",
+    "desc_en": "Eggs poached in a thick garlicky tomato and cumin sauce, without peppers, scooped up with bread.",
+    "desc_fr": "Œufs pochés dans une sauce tomate épaisse à l'ail et au cumin, sans poivrons, à savourer avec du pain.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 25,
+    "macros": {
+      "kcal": 400,
+      "protein_g": 19,
+      "carbs_g": 38,
+      "fat_g": 19,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 800,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Onion",
+        "fr": "Oignon",
+        "ar": "بصلة",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Fresh coriander",
+        "fr": "Coriandre fraîche",
+        "ar": "قصبور",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حكي 800 غرام ماطيشة على الحكاكة أو قشريها وقطعيها صغيرة، وقطعي بصلة صغيرة ودقي 3 حبات ثوم.",
+        "سخني 3 ملاعق كبار زيت العود فمقلة عريضة على نار متوسطة، زيدي البصلة وخليها تذوب 4 دقايق.",
+        "زيدي الثوم وحركي دقيقة، وبعد زيدي الماطيشة مع ملعقة صغيرة ملحة ونص ملعقة إبزار.",
+        "خلي الصلصة تطيب 12 دقيقة على نار متوسطة وهي مكشوفة حتى تغلاظ وتشرب الماء.",
+        "زيدي ملعقة ونص كامون ونص حزمة قصبور مقطع وحركي.",
+        "بصباعك أو بالملعقة صاوبي 8 حفرات فالصلصة وكسري بيضة فكل حفرة.",
+        "غطي المقلة ونقصي النار وخليها 5 دقايق حتى يجمد البياض ويبقى الصفار طري.",
+        "رشي شوية كامون وقصبور من الفوق وقدميها فالمقلة مع الخبز الكامل."
+      ],
+      "tips": [
+        "الصلصة خاصها تكون غليظة قبل ما تزيدي البيض، إلى كانت سايلة البيض كيتشتت فيها.",
+        "ما تحركيش البيض بعد ما تكسريه، غير غطي وخلي البخار يطيبو.",
+        "الماطيشة المحكوكة أحسن من المقطعة، كتعطي صلصة ناعمة بلا قشور.",
+        "إلى الماطيشة حامضة زيدي رشة سكر صغيرة توازن الطعم."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "cooked_onion",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "eggs poached tomato sauce skillet moroccan"
+  },
+  {
+    "slug": "boiled-eggs-with-whole-wheat-khobz-olive-oil-and-zaatar",
+    "meal": "breakfast",
+    "name_en": "Boiled eggs with whole-wheat khobz, olive oil and zaatar",
+    "name_fr": "Œufs durs, khobz complet, huile d'olive et zaatar",
+    "name_ar": "بيض مسلوق مع خبز كامل وزيت العود والزعتر",
+    "name_latin": "Bid messlouq maa khobz kamel, zit laoud w zaatar",
+    "desc_en": "Simple Moroccan breakfast plate of boiled eggs, warm whole-wheat bread dipped in olive oil and zaatar, with cucumber and tomato.",
+    "desc_fr": "Assiette simple d'œufs durs, pain complet tiède trempé dans l'huile d'olive et le zaatar, avec concombre et tomate.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 10,
+    "macros": {
+      "kcal": 430,
+      "protein_g": 20,
+      "carbs_g": 40,
+      "fat_g": 22,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat khobz",
+        "fr": "Khobz complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Zaatar mix",
+        "fr": "Zaatar",
+        "ar": "زعتر",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Cucumber",
+        "fr": "Concombre",
+        "ar": "خيار",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حطي 8 بيضات فطنجرة وغمريهم بالماء البارد وزيدي رشة ملحة.",
+        "خليهم يغليو، ومن الغليان حسبي 8 دقايق باش يكون الصفار ناضج وطري شوية فالوسط.",
+        "حيديهم وحطيهم فماء بارد 5 دقايق باش يتقشرو بسهولة.",
+        "سخني 4 خبزات كاملات فالمقلة أو فالفران 3 دقايق حتى يوليو دافيين.",
+        "فطبسيل صغير صبي 4 ملاعق كبار زيت العود ورشي فوقها جوج ملاعق كبار زعتر.",
+        "قطعي خيارة وجوج ماطيشات دوائر ورشي عليهم شوية ملحة.",
+        "قشري البيض وقطعيه على جوج، ورشي عليه كامون وملحة.",
+        "قدمي كلشي فطبسيل واحد: البيض، الخيار والماطيشة، والخبز كيتغمس فزيت العود والزعتر."
+      ],
+      "tips": [
+        "البيض اللي من الفريكو كيتشقق فالماء السخون، خليه يبدا فالماء البارد.",
+        "8 دقايق من الغليان للصفار الناضج الطري، 10 دقايق إلى بغيتيه ناضج تماما.",
+        "الماء البارد بعد السلق هو اللي كيسهل التقشير.",
+        "زيت العود ديال الضيعة والزعتر الجديد كيعطيو الفرق، الزعتر القديم كيضيع طعمو."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "boiled eggs bread olive oil zaatar"
+  },
+  {
+    "slug": "raib-fresh-yogurt-with-seasonal-fruit-and-honey",
+    "meal": "breakfast",
+    "name_en": "Raib (fresh yogurt) with seasonal fruit and honey",
+    "name_fr": "Raïb (yaourt frais) aux fruits de saison et miel",
+    "name_ar": "رايب بالفواكه والعسل",
+    "name_latin": "Raib bel fakya w lasel",
+    "desc_en": "Homemade thick raib yogurt topped with chopped seasonal fruit, a drizzle of honey and a dusting of cinnamon.",
+    "desc_fr": "Raïb maison bien épais, garni de fruits de saison coupés, d'un filet de miel et d'une touche de cannelle.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 10,
+    "macros": {
+      "kcal": 270,
+      "protein_g": 10,
+      "carbs_g": 44,
+      "fat_g": 6,
+      "fiber_g": 3
+    },
+    "ingredients": [
+      {
+        "en": "Whole milk",
+        "fr": "Lait entier",
+        "ar": "حليب",
+        "qty": 1000,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Plain yogurt (starter)",
+        "fr": "Yaourt nature (ferment)",
+        "ar": "دانون طبيعي",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Apples",
+        "fr": "Pommes",
+        "ar": "تفاح",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Oranges",
+        "fr": "Oranges",
+        "ar": "ليمون",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني ليترو حليب فطنجرة على نار متوسطة حتى يبدا يغلي، وبعد حيديه.",
+        "خليه يبرد حتى يولي دافي، تقدري تخلي صبعك فيه 10 ثواني بلا ما يحرقك.",
+        "فطبسيل صغير خلطي دانون طبيعي واحد مع مغرفة من الحليب الدافي، وبعد زيديه على الحليب كامل وحركي بشوية.",
+        "صبي الحليب فالبرمة أو فالكيسان، غطيها وغلفيها بفوطة غليظة وخليها فبلاصة دافية 8 سوايع أو ليلة كاملة بلا ما تحركيها.",
+        "من بعد حطيها فالفريكو 3 سوايع على الأقل حتى تجمد وتولي رايب غليظ وبارد.",
+        "الصباح قطعي جوج بنانات وجوج تفاحات قطع صغار، وقشري جوج ليمونات وقطعيهم دوائر.",
+        "صبي الرايب فالزلايف، رتبي الفواكه من الفوق، وصبي على كل زلافة ملعقة عسل ورشة قرفة."
+      ],
+      "tips": [
+        "إلى كان الحليب سخون بزاف كيموت الفيرمون والرايب ما يجمدش، وإلى كان بارد ما يخدمش. دافي هو الصح.",
+        "ما تحركيش الرايب وهو كيجمد، الحركة كتخليه سايل.",
+        "خبي دانونة من هاد الرايب باش تعاودي بيها المرة الجاية.",
+        "بدلي الفواكه على حساب الموسم: الفراولة فالربيع، الدلاح والحبحب فالصيف."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "vegetarian"
+    ],
+    "photo_query": "yogurt bowl fresh fruit honey cinnamon"
+  },
+  {
+    "slug": "oat-porridge-with-dates-and-almonds",
+    "meal": "breakfast",
+    "name_en": "Oat porridge with dates and almonds",
+    "name_fr": "Porridge d'avoine aux dattes et amandes",
+    "name_ar": "عصيدة الشوفان بالتمر واللوز",
+    "name_latin": "Assida dyal chofan bel tmer w louz",
+    "desc_en": "Creamy oats simmered in milk, sweetened only with chopped dates and topped with toasted almonds.",
+    "desc_fr": "Avoine crémeuse mijotée dans le lait, sucrée uniquement aux dattes hachées et garnie d'amandes grillées.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 12,
+    "macros": {
+      "kcal": 390,
+      "protein_g": 13,
+      "carbs_g": 58,
+      "fat_g": 12,
+      "fiber_g": 7
+    },
+    "ingredients": [
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 600,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Water",
+        "fr": "Eau",
+        "ar": "ماء",
+        "qty": 400,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Dates",
+        "fr": "Dattes",
+        "ar": "تمر",
+        "qty": 8,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 40,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حيدي العظم من 8 تمرات وقطعيهم قطع صغار.",
+        "حطي 200 غرام شوفان فطنجرة مع 600 مل حليب و400 مل ماء ورشة ملحة.",
+        "زيدي نص التمر المقطع من اللول باش يذوب ويحلي العصيدة.",
+        "خليها تطيب على نار متوسطة 10 دقايق مع التحريك المتواصل حتى تولي غليظة وكريمية.",
+        "فالوقت اللي كتطيب، حمري 40 غرام لوز فمقلة ناشفة 3 دقايق وقطعيهم غليظ.",
+        "زيدي ملعقة صغيرة قرفة وحركي، وإلى كانت غليظة بزاف زيدي شوية حليب.",
+        "صبيها فالزلايف، ورشي من الفوق باقي التمر واللوز المحمر."
+      ],
+      "tips": [
+        "التحريك المتواصل هو اللي كيعطي العصيدة الكريمية وما تلصقش فالقاع.",
+        "التمر كافي للتحلية، ما تزيديش سكر. إلى الدراري بغاو أحلى زيدي ملعقة عسل صغيرة.",
+        "العصيدة كتغلاظ وهي كتبرد، خليها سايلة شوية وقت تحيديها من النار.",
+        "الشوفان الكامل أحسن من الرقيق السريع، كيبقى فيه قرمشة وكيشبع أكثر."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "nuts",
+      "vegetarian",
+      "gluten"
+    ],
+    "photo_query": "oatmeal porridge dates almonds bowl"
+  },
+  {
+    "slug": "overnight-oats-with-dried-figs-and-walnuts",
+    "meal": "breakfast",
+    "name_en": "Overnight oats with dried figs and walnuts",
+    "name_fr": "Avoine de la veille aux figues sèches et noix",
+    "name_ar": "شوفان مخلي فالفريكو بالكرموس اليابس والكركاع",
+    "name_latin": "Chofan dyal lil bel kermous yabes w gergaa",
+    "desc_en": "No-cook oats soaked overnight in milk and yogurt with chopped dried figs, finished with walnuts and honey.",
+    "desc_fr": "Avoine trempée toute la nuit dans du lait et du yaourt avec des figues sèches, garnie de noix et de miel.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": {
+      "kcal": 420,
+      "protein_g": 14,
+      "carbs_g": 60,
+      "fat_g": 14,
+      "fiber_g": 8
+    },
+    "ingredients": [
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 400,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Dried figs",
+        "fr": "Figues sèches",
+        "ar": "كرموس يابس",
+        "qty": 8,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Walnuts",
+        "fr": "Noix",
+        "ar": "كركاع",
+        "qty": 50,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فالليل قطعي 8 حبات كرموس يابس قطع صغار.",
+        "فطبسيل كبير خلطي 200 غرام شوفان مع 400 مل حليب وجوج دانونات طبيعيين.",
+        "زيدي الكرموس المقطع وملعقة صغيرة قرفة وحركي مزيان.",
+        "قسمي الخليط على 4 كيسان أو برمات صغار بالغطاء.",
+        "غطيهم وحطيهم فالفريكو ليلة كاملة، على الأقل 6 سوايع.",
+        "الصباح رضي 50 غرام كركاع غليظ، إلى بغيتي حمريهم فالمقلة 3 دقايق.",
+        "خرجي الكيسان، إلى كان الشوفان غليظ بزاف زيدي شوية حليب وحركي.",
+        "رشي الكركاع من الفوق وصبي نص ملعقة عسل على كل كاس."
+      ],
+      "tips": [
+        "الشوفان كيشرب الحليب فالليل ويولي طري بلا طياب، هادي فطور واجد للصباح المزروب.",
+        "الكرموس اليابس حلو بزاف، العسل غير رشة صغيرة من الفوق.",
+        "الكركاع كيتزاد الصباح باش يبقى مقرقب، إلى خليتيه الليل كامل كيرخف.",
+        "كيبقى فالفريكو 3 أيام، تقدري تحضري ديال الأسبوع."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "nuts",
+      "vegetarian",
+      "gluten"
+    ],
+    "photo_query": "overnight oats jar figs walnuts"
+  },
+  {
+    "slug": "yogurt-with-homemade-granola-and-strawberries",
+    "meal": "breakfast",
+    "name_en": "Yogurt with homemade granola and strawberries",
+    "name_fr": "Yaourt au granola maison et fraises",
+    "name_ar": "دانون بالكرانولا ديال الدار والفراولة",
+    "name_latin": "Danone bel granola dyal dar w fraoula",
+    "desc_en": "Thick yogurt layered with crunchy oven-baked oat, almond and honey granola and fresh strawberries.",
+    "desc_fr": "Yaourt épais avec un granola croustillant d'avoine, amandes et miel cuit au four, et des fraises fraîches.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 25,
+    "macros": {
+      "kcal": 410,
+      "protein_g": 15,
+      "carbs_g": 52,
+      "fat_g": 16,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 60,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Sunflower seeds",
+        "fr": "Graines de tournesol",
+        "ar": "زريعة نوار الشمس مقشرة",
+        "qty": 30,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Strawberries",
+        "fr": "Fraises",
+        "ar": "فراولة",
+        "qty": 300,
+        "unit": "g",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الفران على 160 درجة.",
+        "فطبسيل كبير خلطي 200 غرام شوفان مع 60 غرام لوز مقطع غليظ و30 غرام زريعة نوار الشمس ورشة ملحة وملعقة صغيرة قرفة.",
+        "فكاس صغير خلطي 3 ملاعق كبار عسل مع جوج ملاعق كبار زيت العود، وصبيهم على الشوفان وحركي حتى يتغلف كلشي.",
+        "فرشي الخليط فصينية الفران على ورقة الطياب طبقة رقيقة.",
+        "دخليه للفران 25 دقيقة، وحركيه مرة فالنص باش يحمار من كل جهة.",
+        "خرجيه وخليه يبرد فالصينية بلا ما تحركيه، وهو كيبرد كيقرقب.",
+        "غسلي 300 غرام فراولة وقطعيهم على أربعة.",
+        "فكل كاس حطي دانونة طبيعية، وفوقها 3 ملاعق كبار كرانولا والفراولة."
+      ],
+      "tips": [
+        "الفران الهادي هو السر، إلى كان سخون بزاف العسل كيحرق قبل ما يقرقب الشوفان.",
+        "ما تحركيش الكرانولا وهي كتبرد إلى بغيتيها كتلات كبار.",
+        "الكرانولا كتبقى شهر فبرمة مسدودة، صاوبي كمية مضروبة.",
+        "زيدي الكرانولا على الدانون غير وقت الماكلة، إلى خليتيها كترخف."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "nuts",
+      "vegetarian",
+      "gluten"
+    ],
+    "photo_query": "yogurt granola strawberries bowl"
+  },
+  {
+    "slug": "amlou-on-whole-wheat-toast-with-banana",
+    "meal": "breakfast",
+    "name_en": "Amlou on whole-wheat toast with banana",
+    "name_fr": "Amlou sur pain complet grillé et banane",
+    "name_ar": "أملو على خبز كامل محمر مع البنان",
+    "name_latin": "Amlou ala khobz kamel mhammer maa banane",
+    "desc_en": "Homemade almond, argan oil and honey spread on toasted whole-wheat bread, topped with banana slices.",
+    "desc_fr": "Pâte d'amandes maison à l'huile d'argan et au miel, tartinée sur du pain complet grillé avec des rondelles de banane.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 15,
+    "macros": {
+      "kcal": 470,
+      "protein_g": 13,
+      "carbs_g": 56,
+      "fat_g": 22,
+      "fiber_g": 7
+    },
+    "ingredients": [
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Argan oil (culinary)",
+        "fr": "Huile d'argan alimentaire",
+        "ar": "زيت أركان ديال الماكلة",
+        "qty": 60,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حمري 200 غرام لوز فمقلة ناشفة على نار متوسطة 8 دقايق مع التحريك حتى يحمارو شوية ويطلقو ريحتهم.",
+        "خليهم يبردو 5 دقايق، وبعد طحنيهم فالخلاط حتى يوليو دقيق ناعم وبعد يبداو يطلقو الزيت.",
+        "زيدي 60 مل زيت أركان بشوية بشوية وأنتي كتخلطي حتى يولي الخليط سايل بحال الكريمة.",
+        "زيدي 3 ملاعق كبار عسل ورشة ملحة وخلطي مرة أخرى.",
+        "حطي الأملو فبرمة ديال الزاج، كيبقى فالفريكو شهر.",
+        "حمري 8 شرايح خبز كامل فالمقلة أو الطوسطور حتى يقرقبو.",
+        "دهني كل شريحة بملعقة كبيرة أملو، وقطعي 3 بنانات دوائر ورتبيهم من الفوق."
+      ],
+      "tips": [
+        "اللوز خاصو يبرد قبل الطحن، إلى طحنتيه سخون كيولي عجينة ثقيلة.",
+        "إلى الخلاط سخن، وقفي دقيقة وعاودي، الحرارة كتفسد الطعم.",
+        "زيت أركان ديال الماكلة هي المحمرة، ما تستعمليش زيت أركان ديال الشعر.",
+        "الأملو مغذي ولكن غني، ملعقة كبيرة واحدة فالشريحة كافية."
+      ]
+    },
+    "tags": [
+      "nuts",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "almond butter toast banana slices"
+  },
+  {
+    "slug": "avocado-toast-with-a-boiled-egg",
+    "meal": "breakfast",
+    "name_en": "Avocado toast with a boiled egg",
+    "name_fr": "Toast à l'avocat et œuf dur",
+    "name_ar": "خبز محمر بالأفوكا والبيض المسلوق",
+    "name_latin": "Khobz mhammer bel avoca w bid messlouq",
+    "desc_en": "Toasted whole-wheat bread spread with mashed lemony avocado and topped with sliced boiled egg and cumin.",
+    "desc_fr": "Pain complet grillé tartiné d'avocat écrasé au citron, garni d'œuf dur en tranches et de cumin.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 10,
+    "macros": {
+      "kcal": 420,
+      "protein_g": 17,
+      "carbs_g": 36,
+      "fat_g": 24,
+      "fiber_g": 9
+    },
+    "ingredients": [
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 6,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Avocados",
+        "fr": "Avocats",
+        "ar": "أفوكا",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Lemon",
+        "fr": "Citron",
+        "ar": "حامض",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Cherry tomatoes",
+        "fr": "Tomates cerises",
+        "ar": "ماطيشة شيري",
+        "qty": 150,
+        "unit": "g",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سلقي 6 بيضات 9 دقايق من الغليان، وحطيهم فماء بارد وقشريهم.",
+        "قطعي جوج أفوكات على جوج، حيدي العظم وخرجي اللحم بالملعقة فطبسيل.",
+        "عصري نص حامض عليه وزيدي نص ملعقة صغيرة ملحة، وهرسيه بالفرشيطة حتى يولي ناعم مع شوية قطع.",
+        "حمري 8 شرايح خبز كامل فالمقلة أو الطوسطور.",
+        "دهني كل شريحة بطبقة من الأفوكا المهروس.",
+        "قطعي البيض دوائر ورتبيه فوق الأفوكا.",
+        "قطعي 150 غرام ماطيشة شيري على جوج وزيديها من الفوق.",
+        "رشي كامون وشوية ملحة وقطرات زيت العود وقدميها مباشرة."
+      ],
+      "tips": [
+        "الأفوكا خاصها تكون ناضجة: كتضغطي عليها بشوية وكترخف بلا ما تكون كحلة من الداخل.",
+        "الحامض كيمنع الأفوكا ما تسودش، زيديه مباشرة بعد الهرس.",
+        "حضري الأفوكا فاللخر، ما تخليهاش مهروسة بزاف قبل الماكلة.",
+        "إلى الأفوكا غالية، أفوكا واحدة كبيرة لأربعة كافية مع بيضة زايدة لكل واحد."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "avocado toast boiled egg whole grain"
+  },
+  {
+    "slug": "herb-and-fresh-cheese-omelette",
+    "meal": "breakfast",
+    "name_en": "Herb and fresh cheese omelette",
+    "name_fr": "Omelette aux herbes et fromage frais",
+    "name_ar": "أومليط بالمعدنوس والقصبور والجبن الطري",
+    "name_latin": "Omelette bel maadnous, qesbour w jben",
+    "desc_en": "Soft folded omelette filled with fresh cheese and a generous handful of chopped parsley, coriander and mint.",
+    "desc_fr": "Omelette moelleuse garnie de fromage frais et d'une belle poignée de persil, coriandre et menthe hachés.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 15,
+    "macros": {
+      "kcal": 380,
+      "protein_g": 22,
+      "carbs_g": 26,
+      "fat_g": 21,
+      "fiber_g": 3
+    },
+    "ingredients": [
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh cheese (jben)",
+        "fr": "Fromage frais (jben)",
+        "ar": "جبن طري",
+        "qty": 150,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Parsley",
+        "fr": "Persil",
+        "ar": "معدنوس",
+        "qty": 1,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh coriander",
+        "fr": "Coriandre fraîche",
+        "ar": "قصبور",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh mint",
+        "fr": "Menthe fraîche",
+        "ar": "نعناع",
+        "qty": 0.25,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 60,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي حزمة معدنوس ونص حزمة قصبور وشوية نعناع، نشفيهم مزيان وقطعيهم رقيق.",
+        "فتتي 150 غرام جبن طري بالفرشيطة.",
+        "كسري 8 بيضات فطبسيل، زيدي 60 مل حليب ونص ملعقة صغيرة ملحة ونص ملعقة إبزار، وخلطي بالفرشيطة حتى يتخلطو بلا ما تكثري.",
+        "زيدي نص الخضرة المقطعة للبيض وحركي.",
+        "سخني نص ملعقة زيت العود فمقلة متوسطة على نار متوسطة، وصبي ربع البيض.",
+        "خليه 2 دقايق حتى يبدا يجمد من الأطراف، وحطي ربع الجبن وشوية خضرة فالنص.",
+        "طوي الأومليط على جوج بالمسطة وخليه دقيقة أخرى، وحيديه وهو باقي طري شوية من الداخل.",
+        "عاودي نفس الشي 3 مرات باش تصاوبي 4 أومليطات، وقدميهم سخانين مع الخبز الكامل."
+      ],
+      "tips": [
+        "أومليط لكل واحد بوحدو أحسن من واحد كبير، كيطيب بالتساوي وكيبقى طري.",
+        "النار متوسطة ماشي قوية، الأومليط اللي كيحمار كيولي ناشف.",
+        "الخضرة خاصها تكون ناشفة تماما قبل التقطيع باش ما تخليش الأومليط يسيل.",
+        "حيديه من النار وهو باقي فيه شوية لمعان، كيكمل الطياب فالطبسيل."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "herb omelette fresh cheese folded"
+  },
+  {
+    "slug": "zucchini-and-spinach-omelette",
+    "meal": "breakfast",
+    "name_en": "Zucchini and spinach omelette",
+    "name_fr": "Omelette aux courgettes et épinards",
+    "name_ar": "أومليط بالقرعة الخضرا والسبانخ",
+    "name_latin": "Omelette bel garaa khadra w sbanekh",
+    "desc_en": "Thick oven-finished omelette packed with grated zucchini and wilted spinach, cut into wedges.",
+    "desc_fr": "Omelette épaisse finie au four, garnie de courgette râpée et d'épinards fondus, servie en parts.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 20,
+    "macros": {
+      "kcal": 340,
+      "protein_g": 19,
+      "carbs_g": 26,
+      "fat_g": 18,
+      "fiber_g": 5
+    },
+    "ingredients": [
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Zucchini",
+        "fr": "Courgettes",
+        "ar": "قرعة خضرا",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh spinach",
+        "fr": "Épinards frais",
+        "ar": "سبانخ",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Grated cheese",
+        "fr": "Fromage râpé",
+        "ar": "جبن محكوك",
+        "qty": 40,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حكي جوج قرعات خضرا على الحكاكة الكبيرة، رشي عليهم نص ملعقة ملحة وخليهم 5 دقايق وبعد عصريهم بيديك حتى يخرج الماء كامل.",
+        "غسلي 200 غرام سبانخ وقطعيه غليظ، ودقي جوج حبات ثوم.",
+        "سخني جوج ملاعق زيت العود فمقلة كبيرة كتدخل للفران، زيدي الثوم والقرعة وقلبي 4 دقايق حتى تنشف.",
+        "زيدي السبانخ وقلبي دقيقتين حتى يذبل ويخرج الماء ويتبخر.",
+        "كسري 8 بيضات فطبسيل، زيدي نص ملعقة ملحة، نص ملعقة إبزار ونص ملعقة كامون وخلطي.",
+        "صبي البيض على الخضرة فالمقلة وحركي مرة واحدة باش تتوزع الخضرة، ورشي 40 غرام جبن محكوك من الفوق.",
+        "خليه على نار هادية 5 دقايق حتى تجمد الأطراف، وبعد دخلي المقلة للفران السخون على 180 درجة 8 دقايق حتى يجمد الوسط.",
+        "قطعيه 8 قطع مثلثات وقدميه سخون أو دافي مع الخبز الكامل."
+      ],
+      "tips": [
+        "عصر القرعة ضروري، إلى ما عصرتيهاش الأومليط كيولي مايع.",
+        "إلى ما عندكش فران، غطي المقلة وخليه على نار هادية 10 دقايق حتى يجمد الوسط.",
+        "هاد الأومليط بنين حتى بارد، كيتقطع وكيدخل فالخبز للمدرسة.",
+        "الكامون مع السبانخ كيعطي طعم مغربي، ما تنساهش."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "zucchini spinach omelette frittata wedge"
+  },
+  {
+    "slug": "whole-wheat-crepes-with-fruit-and-honey",
+    "meal": "breakfast",
+    "name_en": "Whole-wheat crepes with fruit and honey",
+    "name_fr": "Crêpes à la farine complète, fruits et miel",
+    "name_ar": "كريب بالفرينة الكاملة مع الفواكه والعسل",
+    "name_latin": "Crepes bel farina kamla maa fakya w asel",
+    "desc_en": "Thin whole-wheat crepes rolled around fresh fruit and drizzled with honey.",
+    "desc_fr": "Crêpes fines à la farine complète, roulées avec des fruits frais et arrosées de miel.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 20,
+    "macros": {
+      "kcal": 400,
+      "protein_g": 13,
+      "carbs_g": 64,
+      "fat_g": 11,
+      "fiber_g": 7
+    },
+    "ingredients": [
+      {
+        "en": "Whole-wheat flour",
+        "fr": "Farine complète",
+        "ar": "فرينة كاملة",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Flour",
+        "fr": "Farine",
+        "ar": "فرينة",
+        "qty": 50,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 500,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 30,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Strawberries or apples",
+        "fr": "Fraises ou pommes",
+        "ar": "فراولة أو تفاح",
+        "qty": 250,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فطبسيل خلطي 200 غرام فرينة كاملة مع 50 غرام فرينة بيضا ورشة ملحة.",
+        "زيدي 3 بيضات فالوسط وحركي بالفرشيطة، وبعد زيدي 500 مل حليب بشوية بشوية وأنتي كتخلطي باش ما تكونش الكتلات.",
+        "ذوبي 30 غرام زبدة، زيدي نصها للعجين وخلي النص الآخر للمقلة. العجين خاصو يكون سايل بحال الكريمة.",
+        "خليه يرتاح 15 دقيقة فالفريكو.",
+        "سخني مقلة غير لاصقة على نار متوسطة لقوية، دهنيها بشوية زبدة بورقة ديال الكوزينة.",
+        "صبي مغرفة صغيرة وحركي المقلة بزربة باش يتفرش العجين رقيق، خليه دقيقة حتى تنشف الأطراف وقلبيه 30 ثانية من الجهة الأخرى.",
+        "كملي حتى تسالي العجين، تخرج ليك تقريبا 12 كريبة، كوميهم فطبسيل وغطيهم بفوطة.",
+        "قطعي جوج بنانات و250 غرام فراولة أو تفاح قطع صغار.",
+        "حطي شوية فواكه فكل كريبة، لفيها، وصبي عليها شوية عسل ورشة قرفة."
+      ],
+      "tips": [
+        "الراحة فالفريكو كتخلي الفرينة الكاملة تشرب الحليب والكريب ما يتقطعش.",
+        "الكريبة اللولة ديما كتفشل، هي ديال المقلة ماشي ديالك.",
+        "المقلة خاصها تكون سخونة مزيان قبل الكريبة اللولة، وبعد نقصي النار شوية.",
+        "الفرينة الكاملة كتعطي كريب أغلظ شوية، زيدي شوية حليب إلى شفتي العجين ثقيل."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "whole wheat crepes fruit honey rolled"
+  },
+  {
+    "slug": "herbel-barley-porridge-with-milk-and-honey",
+    "meal": "breakfast",
+    "name_en": "Herbel (barley porridge) with milk and honey",
+    "name_fr": "Herbel (porridge d'orge) au lait et miel",
+    "name_ar": "حربل بالحليب والعسل",
+    "name_latin": "Herbel bel hlib w lasel",
+    "desc_en": "Traditional cracked barley slow-cooked until tender, finished with hot milk and a spoon of honey.",
+    "desc_fr": "Orge concassée traditionnelle cuite lentement jusqu'à tendreté, terminée au lait chaud et au miel.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 60,
+    "macros": {
+      "kcal": 400,
+      "protein_g": 13,
+      "carbs_g": 72,
+      "fat_g": 7,
+      "fiber_g": 10
+    },
+    "ingredients": [
+      {
+        "en": "Cracked barley (herbel)",
+        "fr": "Orge concassée (herbel)",
+        "ar": "حربل (شعير مهرس)",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Water",
+        "fr": "Eau",
+        "ar": "ماء",
+        "qty": 1000,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 750,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 20,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي 250 غرام حربل مزيان وخليه فالماء ليلة كاملة، كيطيب أسرع وكيولي أرخف.",
+        "صفيه وحطيه فطنجرة مع ليترو ماء ونص ملعقة صغيرة ملحة.",
+        "خليه يغلي، وبعد نقصي النار وغطيه وخليه يطيب 40 دقيقة حتى تتفتح الحبات وتولي طرية.",
+        "حركيه من وقت لوقت وزيدي شوية ماء سخون إلى نشف قبل ما يطيب.",
+        "زيدي 750 مل حليب و20 غرام زبدة وخليه يطيب 15 دقيقة زايدين على نار هادية مع التحريك حتى يولي غليظ وكريمي.",
+        "دوقيه، الحبة خاصها تكون طرية تماما وما فيها حتى قرمشة.",
+        "صبيه فالزلايف سخون وصبي على كل زلافة ملعقة عسل."
+      ],
+      "tips": [
+        "الحربل كيطيب بزاف الوقت، إلى عندك كوكوط طيبيه فيها 20 دقيقة وبعد زيدي الحليب.",
+        "ما تزيديش الحليب من اللول، كيلصق وكيحرق. الماء اللول والحليب فاللخر.",
+        "الحربل الباقي كيولي غليظ فالفريكو، سخنيه مع شوية حليب وكيرجع.",
+        "العسل كيتزاد فالزلافة ماشي فالطنجرة، باش كل واحد يزيد على قدو."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "barley porridge milk honey bowl"
+  },
+  {
+    "slug": "fresh-cheese-jben-with-honey-walnuts-and-bread",
+    "meal": "breakfast",
+    "name_en": "Fresh cheese (jben) with honey, walnuts and bread",
+    "name_fr": "Fromage frais (jben) au miel, noix et pain",
+    "name_ar": "جبن طري بالعسل والكركاع والخبز",
+    "name_latin": "Jben bel asel, gergaa w khobz",
+    "desc_en": "Creamy fresh Moroccan cheese drizzled with honey and scattered with toasted walnuts, eaten with warm bread.",
+    "desc_fr": "Fromage frais marocain crémeux arrosé de miel et parsemé de noix grillées, à déguster avec du pain chaud.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 5,
+    "macros": {
+      "kcal": 440,
+      "protein_g": 18,
+      "carbs_g": 48,
+      "fat_g": 20,
+      "fiber_g": 5
+    },
+    "ingredients": [
+      {
+        "en": "Fresh cheese (jben)",
+        "fr": "Fromage frais (jben)",
+        "ar": "جبن طري",
+        "qty": 400,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Walnuts",
+        "fr": "Noix",
+        "ar": "كركاع",
+        "qty": 60,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Pears or apples",
+        "fr": "Poires ou pommes",
+        "ar": "بوعويد أو تفاح",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خرجي 400 غرام جبن طري من الفريكو 15 دقيقة قبل باش ما يكونش بارد بزاف.",
+        "حمري 60 غرام كركاع فمقلة ناشفة على نار متوسطة 3 دقايق حتى تطلع ريحتهم، ورضيهم غليظ.",
+        "سخني 4 خبزات كاملات فالفران أو فالمقلة 3 دقايق.",
+        "قطعي جوج بوعويدات أو تفاحات شرايح رقاق.",
+        "حطي الجبن فطبسيل عريض وفرشيه شوية بالملعقة.",
+        "صبي 4 ملاعق كبار عسل من الفوق، ورشي الكركاع ورشة قرفة.",
+        "قدميه مع الخبز السخون والفواكه المقطعة على الجنب."
+      ],
+      "tips": [
+        "الجبن ديال البلدي الطري هو الأحسن، إلى كان مالح بزاف نقصي العسل شوية.",
+        "الكركاع المحمر كيقرقب أكثر وكيولي طعمو أقوى، ما تفوتيش هاد الخطوة.",
+        "الخبز السخون مع الجبن البارد هو السر ديال هاد الفطور.",
+        "إلى كان الجبن سايل بزاف، خليه يصفي شوية فمصفاة 10 دقايق."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "nuts",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "fresh cheese honey walnuts bread plate"
+  },
+  {
+    "slug": "moroccan-orange-salad-with-cinnamon-and-dates",
+    "meal": "breakfast",
+    "name_en": "Moroccan orange salad with cinnamon and dates",
+    "name_fr": "Salade d'oranges marocaine à la cannelle et aux dattes",
+    "name_ar": "شلاضة الليمون بالقرفة والتمر",
+    "name_latin": "Chlada dyal limoun bel qerfa w tmer",
+    "desc_en": "Sliced oranges scented with orange-blossom water and cinnamon, with chopped dates and fresh mint.",
+    "desc_fr": "Tranches d'oranges parfumées à l'eau de fleur d'oranger et à la cannelle, avec des dattes et de la menthe.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 0,
+    "macros": {
+      "kcal": 190,
+      "protein_g": 2,
+      "carbs_g": 45,
+      "fat_g": 1,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Oranges",
+        "fr": "Oranges",
+        "ar": "ليمون",
+        "qty": 6,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Dates",
+        "fr": "Dattes",
+        "ar": "تمر",
+        "qty": 8,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Orange blossom water",
+        "fr": "Eau de fleur d'oranger",
+        "ar": "ماء الزهر",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Fresh mint",
+        "fr": "Menthe fraîche",
+        "ar": "نعناع",
+        "qty": 0.25,
+        "unit": "bunch",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "قشري 6 ليمونات بالموس وحيدي القشرة البيضا كاملة، باش ما تكونش مرة.",
+        "قطعي الليمون دوائر بغلاظة نص سنتيم، وجمعي العصير اللي كيسيل فطبسيل.",
+        "حيدي العظم من 8 تمرات وقطعيهم شرايح رقاق.",
+        "رتبي الليمون فطبسيل عريض، طبقة على طبقة، والتمر بيناتهم.",
+        "خلطي عصير الليمون اللي جمعتي مع ملعقة كبيرة ماء الزهر وملعقة كبيرة عسل، وصبيه من الفوق.",
+        "رشي ملعقة صغيرة قرفة على الليمون كامل.",
+        "غطيه وحطيه فالفريكو 30 دقيقة باش يتشرب الطعم، وقبل التقديم رشي أوراق النعناع المقطعة."
+      ],
+      "tips": [
+        "ماء الزهر قوي، ملعقة واحدة كافية، إلى زدتي كيغلب على الليمون.",
+        "الليمون البارد من الفريكو أبنن، حضريها من الليل إلى بغيتي.",
+        "هادي شلاضة خفيفة، قدميها مع الخبز والجبن أو مع البغرير باش تكمل الفطور.",
+        "إلى الليمون حامض بزاف زيدي نص ملعقة عسل، وإلى حلو ما تزيديش العسل أصلا."
+      ]
+    },
+    "tags": [
+      "vegetarian"
+    ],
+    "photo_query": "moroccan orange salad cinnamon dates"
+  },
+  {
+    "slug": "banana-date-and-oat-smoothie-bowl",
+    "meal": "breakfast",
+    "name_en": "Banana, date and oat smoothie bowl",
+    "name_fr": "Smoothie bowl banane, dattes et avoine",
+    "name_ar": "زلافة سموذي بالبنان والتمر والشوفان",
+    "name_latin": "Zlafa smoothie bel banane, tmer w chofan",
+    "desc_en": "Thick blended frozen banana, dates, oats and yogurt served in a bowl with sliced fruit and toasted seeds.",
+    "desc_fr": "Banane congelée, dattes, avoine et yaourt mixés bien épais, servis en bol avec des fruits et des graines grillées.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": {
+      "kcal": 360,
+      "protein_g": 11,
+      "carbs_g": 66,
+      "fat_g": 7,
+      "fiber_g": 8
+    },
+    "ingredients": [
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 5,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Dates",
+        "fr": "Dattes",
+        "ar": "تمر",
+        "qty": 8,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 80,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 300,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Sesame seeds",
+        "fr": "Graines de sésame",
+        "ar": "زنجلان",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Strawberries or apple",
+        "fr": "Fraises ou pomme",
+        "ar": "فراولة أو تفاح",
+        "qty": 150,
+        "unit": "g",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "من الليل قشري 4 بنانات، قطعيهم قطع وحطيهم فالكونجيلاتور فميكة.",
+        "حيدي العظم من 8 تمرات وخليهم فشوية ماء سخون 5 دقايق باش يرخفو.",
+        "حطي البنان المجمد، التمر، 80 غرام شوفان، جوج دانونات ونص ملعقة قرفة فالخلاط.",
+        "زيدي 300 مل حليب وخلطي حتى يولي ناعم وغليظ بحال الكريمة، إلى الخلاط ما قدرش زيدي شوية حليب.",
+        "حمري جوج ملاعق زنجلان فمقلة ناشفة دقيقتين حتى يحمارو شوية.",
+        "قطعي البنانة الباقية دوائر و150 غرام فراولة أو تفاح قطع.",
+        "صبي السموذي فـ4 زلايف ورتبي الفواكه من الفوق ورشي الزنجلان.",
+        "قدميه مباشرة وهو بارد وغليظ، بالملعقة."
+      ],
+      "tips": [
+        "البنان المجمد هو اللي كيعطي الغلاظة والبرودة، البنان العادي كيعطي عصير ماشي زلافة.",
+        "زيدي الحليب بشوية بشوية، الهدف زلافة غليظة كتاكل بالملعقة.",
+        "التمر كافي للحلاوة، ما كاين لا سكر لا عسل.",
+        "خبي ديما بنان مقطع فالكونجيلاتور، كيولي هاد الفطور واجد ف5 دقايق."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "banana smoothie bowl dates oats toppings"
+  },
+  {
+    "slug": "chia-pudding-with-orange-and-pomegranate",
+    "meal": "breakfast",
+    "name_en": "Chia pudding with orange and pomegranate",
+    "name_fr": "Pudding de chia à l'orange et à la grenade",
+    "name_ar": "بودينغ الشيا بالليمون والرمان",
+    "name_latin": "Pudding chia bel limoun w rman",
+    "desc_en": "Chia seeds set overnight in milk with a touch of honey and vanilla, topped with orange segments and pomegranate seeds.",
+    "desc_fr": "Graines de chia prises la nuit dans du lait avec un peu de miel et de vanille, garnies d'orange et de grenade.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": {
+      "kcal": 290,
+      "protein_g": 10,
+      "carbs_g": 36,
+      "fat_g": 12,
+      "fiber_g": 11
+    },
+    "ingredients": [
+      {
+        "en": "Chia seeds",
+        "fr": "Graines de chia",
+        "ar": "زريعة الشيا",
+        "qty": 80,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 600,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Vanilla sugar or extract",
+        "fr": "Sucre vanillé ou extrait",
+        "ar": "فانيلا",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Oranges",
+        "fr": "Oranges",
+        "ar": "ليمون",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Pomegranate",
+        "fr": "Grenade",
+        "ar": "رمان",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فطبسيل خلطي 600 مل حليب مع جوج ملاعق كبار عسل وملعقة صغيرة فانيلا حتى يذوب العسل.",
+        "زيدي 80 غرام زريعة الشيا وحركي مزيان بالفرشيطة.",
+        "خليه 10 دقايق وعاودي حركيه، هادي هي الخطوة اللي كتمنع الكتلات.",
+        "قسميه على 4 كيسان، غطيهم وحطيهم فالفريكو ليلة كاملة أو 4 سوايع على الأقل.",
+        "الصباح قشري 3 ليمونات وقطعيهم قطع صغار بلا القشرة البيضا.",
+        "قطعي الرمان على جوج وطرقي على ظهرو بملعقة فوق طبسيل حتى تطيح الحبات.",
+        "حطي فوق كل كاس ملعقة كبيرة دانون طبيعي، وبعد الليمون وحبات الرمان."
+      ],
+      "tips": [
+        "التحريك مرتين فاللول هو السر، إلى حركتي مرة واحدة الشيا كتجمع فالقاع كتلة.",
+        "إلى الصباح لقيتيه غليظ بزاف زيدي شوية حليب وحركي.",
+        "الشيا كاينة فمرجان وكارفور وعند العشابة، وشوية منها كتكفي بزاف.",
+        "بدلي الفواكه على حساب الموسم، الفراولة والمانغا بنينين هنا حتى هما."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "vegetarian"
+    ],
+    "photo_query": "chia pudding orange pomegranate glass"
+  },
+  {
+    "slug": "fresh-cheese-with-cucumber-tomato-and-olive-oil",
+    "meal": "breakfast",
+    "name_en": "Fresh cheese with cucumber, tomato and olive oil",
+    "name_fr": "Fromage frais, concombre, tomate et huile d'olive",
+    "name_ar": "جبن طري بالخيار والماطيشة وزيت العود",
+    "name_latin": "Jben bel khyar, matisha w zit laoud",
+    "desc_en": "Savoury breakfast plate of fresh cheese with cucumber and tomato, dressed with olive oil, oregano and cumin, with bread.",
+    "desc_fr": "Assiette salée de fromage frais, concombre et tomate, assaisonnée d'huile d'olive, d'origan et de cumin, avec du pain.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 5,
+    "macros": {
+      "kcal": 410,
+      "protein_g": 17,
+      "carbs_g": 38,
+      "fat_g": 21,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Fresh cheese (jben)",
+        "fr": "Fromage frais (jben)",
+        "ar": "جبن طري",
+        "qty": 300,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Cucumbers",
+        "fr": "Concombres",
+        "ar": "خيار",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Dried oregano",
+        "fr": "Origan séché",
+        "ar": "زعتر مجفف",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black olives",
+        "fr": "Olives noires",
+        "ar": "زيتون كحل",
+        "qty": 60,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي جوج خيارات و3 ماطيشات، وقطعيهم دوائر بغلاظة نص سنتيم.",
+        "قطعي 300 غرام جبن طري مكعبات أو شرايح على حساب نوعو.",
+        "رتبي فطبسيل عريض: الخيار من جهة، الماطيشة من جهة، والجبن فالوسط.",
+        "زيدي 60 غرام زيتون كحل بين الخضرة.",
+        "رشي نص ملعقة ملحة على الخيار والماطيشة، ونص ملعقة كامون على الجبن.",
+        "صبي 3 ملاعق كبار زيت العود على كلشي ورشي ملعقة صغيرة زعتر مجفف من الفوق.",
+        "سخني 4 خبزات كاملات فالفران أو المقلة 3 دقايق وقدميهم مع الطبسيل."
+      ],
+      "tips": [
+        "الماطيشة خاصها تكون ناضجة وحمرا، الماطيشة البيضا كتفسد هاد الطبسيل.",
+        "ما تملحيش الجبن، هو مالح بوحدو، الملحة غير للخضرة.",
+        "قطعي الخضرة فاللخر باش تبقى مقرقبة وما تسيلش الماء.",
+        "زيت العود الجيدة كتعوض التوابل كاملة، هادا طبسيل بسيط والجودة ديال المكونات هي كلشي."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "fresh cheese cucumber tomato plate"
+  },
+  {
+    "slug": "labneh-with-zaatar-cucumber-and-whole-wheat-bread",
+    "meal": "breakfast",
+    "name_en": "Labneh with zaatar, cucumber and whole-wheat bread",
+    "name_fr": "Labneh au zaatar, concombre et pain complet",
+    "name_ar": "لبنة بالزعتر والخيار والخبز الكامل",
+    "name_latin": "Labneh bel zaatar, khyar w khobz kamel",
+    "desc_en": "Homemade strained-yogurt labneh spread thick, sprinkled with zaatar and olive oil, with cucumber and warm whole-wheat bread.",
+    "desc_fr": "Labneh maison au yaourt égoutté, saupoudré de zaatar et d'huile d'olive, avec concombre et pain complet chaud.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 5,
+    "macros": {
+      "kcal": 380,
+      "protein_g": 16,
+      "carbs_g": 42,
+      "fat_g": 16,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Zaatar mix",
+        "fr": "Zaatar",
+        "ar": "زعتر",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Cucumbers",
+        "fr": "Concombres",
+        "ar": "خيار",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Cherry tomatoes",
+        "fr": "Tomates cerises",
+        "ar": "ماطيشة شيري",
+        "qty": 150,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh mint",
+        "fr": "Menthe fraîche",
+        "ar": "نعناع",
+        "qty": 0.25,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "من الليل صبي 8 دانونات طبيعيين فطبسيل وزيدي ملعقة صغيرة ملحة وحركي.",
+        "فرشي فوطة نظيفة رقيقة أو قماش ديال الجبن فمصفاة، وصبي الدانون فوقها.",
+        "جمعي أطراف الفوطة وعقديها، وعلقيها فوق طبسيل فالفريكو ليلة كاملة باش يصفي الماء.",
+        "الصباح حلي الفوطة، كتلقاي اللبنة غليظة بحال الجبن الطري، حطيها فطبسيل.",
+        "فرشيها بظهر الملعقة وصاوبي فيها دوائر، وصبي عليها 3 ملاعق كبار زيت العود.",
+        "رشي جوج ملاعق كبار زعتر من الفوق.",
+        "قطعي جوج خيارات عيدان طوال و150 غرام ماطيشة شيري على جوج، ورتبيهم على الجنب مع أوراق النعناع.",
+        "سخني 4 خبزات كاملات وقدميهم سخانين، الخبز كيتغمس فاللبنة."
+      ],
+      "tips": [
+        "كل ما خليتي الدانون يصفي أكثر كل ما ولات اللبنة غليظة، ليلة كاملة هي الأحسن.",
+        "الماء اللي كيصفي ما تلوحيهش، تقدري تستعمليه فالعجين ديال الخبز.",
+        "اللبنة كتبقى فالفريكو أسبوع فبرمة مسدودة مع شوية زيت العود من الفوق.",
+        "إلى ما عندكش وقت، خلطي الدانون الغليظ ديال اليوناني مع شوية ملحة وكيعطي نتيجة قريبة."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "labneh zaatar olive oil cucumber bread"
+  },
+  {
+    "slug": "scrambled-eggs-with-spinach",
+    "meal": "breakfast",
+    "name_en": "Scrambled eggs with spinach",
+    "name_fr": "Œufs brouillés aux épinards",
+    "name_ar": "بيض مخلط بالسبانخ",
+    "name_latin": "Bid mkhellet bel sbanekh",
+    "desc_en": "Soft scrambled eggs folded through garlicky wilted spinach, served with whole-wheat bread.",
+    "desc_fr": "Œufs brouillés moelleux mélangés à des épinards fondus à l'ail, servis avec du pain complet.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 10,
+    "macros": {
+      "kcal": 360,
+      "protein_g": 20,
+      "carbs_g": 30,
+      "fat_g": 18,
+      "fiber_g": 5
+    },
+    "ingredients": [
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Fresh spinach",
+        "fr": "Épinards frais",
+        "ar": "سبانخ",
+        "qty": 300,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي 300 غرام سبانخ مزيان، حيدي العروق الغلاظ وقطعيه غليظ.",
+        "دقي جوج حبات ثوم رقيق.",
+        "كسري 8 بيضات فطبسيل، زيدي نص ملعقة ملحة، نص ملعقة إبزار ونص ملعقة كامون، وخلطيهم بالفرشيطة.",
+        "سخني جوج ملاعق زيت العود فمقلة كبيرة على نار متوسطة، زيدي الثوم وحركي 30 ثانية.",
+        "زيدي السبانخ مع نص ملعقة ملحة وقلبي 3 دقايق حتى يذبل ويتبخر الماء ديالو.",
+        "نقصي النار وصبي البيض على السبانخ.",
+        "حركي بالمسطة بشوية وبلا وقفة من الأطراف للوسط، 3 دقايق حتى يجمد البيض وهو باقي طري ولامع.",
+        "حيديه من النار مباشرة وقدميه سخون مع الخبز الكامل."
+      ],
+      "tips": [
+        "الماء ديال السبانخ خاصو يتبخر كامل قبل البيض، وإلا كيولي البيض مايع.",
+        "النار الهادية والتحريك المتواصل هما السر ديال البيض الطري، النار القوية كتعطي بيض ناشف.",
+        "حيدي البيض من النار وهو باقي شوية سايل، كيكمل يطيب من سخانتو فالطبسيل.",
+        "إلى كان السبانخ غالي، السبانخ المجمد كيخدم، غير فوريه وعصريه مزيان قبل."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "scrambled eggs spinach plate bread"
+  },
+  {
+    "slug": "tuna-and-egg-sandwich-on-whole-wheat-bread",
+    "meal": "breakfast",
+    "name_en": "Tuna and egg sandwich on whole-wheat bread",
+    "name_fr": "Sandwich thon et œuf au pain complet",
+    "name_ar": "سندويتش الطون والبيض بالخبز الكامل",
+    "name_latin": "Sandwich ton w bid bel khobz kamel",
+    "desc_en": "Whole-wheat bread filled with lemony tuna, chopped boiled egg, tomato and lettuce, bound with yogurt instead of mayonnaise.",
+    "desc_fr": "Pain complet garni de thon citronné, œuf dur haché, tomate et laitue, lié au yaourt plutôt qu'à la mayonnaise.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 10,
+    "macros": {
+      "kcal": 430,
+      "protein_g": 30,
+      "carbs_g": 40,
+      "fat_g": 15,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Canned tuna in olive oil",
+        "fr": "Thon en boîte à l'huile d'olive",
+        "ar": "طون فالقرعة",
+        "qty": 2,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Lemon",
+        "fr": "Citron",
+        "ar": "حامض",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Lettuce",
+        "fr": "Laitue",
+        "ar": "خس",
+        "qty": 0.5,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Parsley",
+        "fr": "Persil",
+        "ar": "معدنوس",
+        "qty": 0.25,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread rolls",
+        "fr": "Petits pains complets",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سلقي 4 بيضات 9 دقايق من الغليان، برديهم فالماء، قشريهم وقطعيهم قطع صغار.",
+        "صفي جوج قرعات طون من الزيت وفتتيهم بالفرشيطة فطبسيل.",
+        "زيدي على الطون البيض المقطع، دانونة طبيعية، ملعقة زيت العود وعصير نص حامض.",
+        "زيدي نص ملعقة كامون ونص ملعقة إبزار وربع حزمة معدنوس مقطع، وخلطي كلشي مزيان.",
+        "قطعي جوج ماطيشات دوائر وغسلي أوراق الخس ونشفيهم.",
+        "شقي 4 خبزات كاملات على جوج وسخنيهم فالمقلة دقيقتين.",
+        "حطي فكل خبزة ورقة خس، وبعد الطون بالبيض، وفوقو الماطيشة وسديها.",
+        "قدميها مباشرة، أو لفيها فورق الألمنيوم للمدرسة والخدمة."
+      ],
+      "tips": [
+        "الدانون كيعوض الماينيز وكيعطي نفس الطراوة بأقل دهن.",
+        "الخس بين الخبز والطون كيمنع الخبز ما يتشرب ويولي طري.",
+        "ما تسلقيش البيض بزاف، الصفار الناضج الأخضر كيعطي ريحة قوية.",
+        "الطون ديال زيت العود أبنن من ديال الماء، غير صفيه مزيان."
+      ]
+    },
+    "tags": [
+      "fish",
+      "eggs",
+      "dairy",
+      "gluten"
+    ],
+    "photo_query": "tuna egg sandwich whole wheat bread"
+  },
+  {
+    "slug": "bread-with-olive-oil-honey-and-almonds",
+    "meal": "breakfast",
+    "name_en": "Bread with olive oil, honey and almonds",
+    "name_fr": "Pain à l'huile d'olive, miel et amandes",
+    "name_ar": "خبز بزيت العود والعسل واللوز",
+    "name_latin": "Khobz b zit laoud, asel w louz",
+    "desc_en": "The classic Moroccan countryside breakfast: warm bread dipped in olive oil mixed with honey, with toasted almonds.",
+    "desc_fr": "Le petit-déjeuner classique de la campagne marocaine : pain chaud trempé dans l'huile d'olive au miel, avec des amandes grillées.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 8,
+    "macros": {
+      "kcal": 450,
+      "protein_g": 10,
+      "carbs_g": 56,
+      "fat_g": 21,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 60,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Fresh mint (for tea)",
+        "fr": "Menthe fraîche (pour le thé)",
+        "ar": "نعناع",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Green tea",
+        "fr": "Thé vert",
+        "ar": "أتاي",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حمري 60 غرام لوز فمقلة ناشفة على نار متوسطة 5 دقايق مع التحريك حتى يحمارو، وقطعيهم غليظ.",
+        "سخني 4 خبزات كاملات فالفران على 180 درجة 5 دقايق أو فالمقلة حتى يوليو سخانين ومقرقبين من برا.",
+        "فطبسيل صغير صبي 4 ملاعق كبار زيت العود و4 ملاعق كبار عسل، ما تخلطيهمش بزاف، خليهم يبانو جوج.",
+        "رشي اللوز المحمر فوق الزيت والعسل.",
+        "حضري براد أتاي بالنعناع وقليل السكر.",
+        "قطعي الخبز قطع وقدميه سخون، كل واحد كيغمس فالزيت والعسل وكياخد اللوز معاه."
+      ],
+      "tips": [
+        "زيت العود البلدية الخضرا اللي كتحرق شوية فالحنك هي اللي كتعطي هاد الفطور طعمو.",
+        "العسل الحر ماشي ديال السكر، إلى كان غليظ سخنيه شوية فماء دافي.",
+        "الخبز سخون ضروري، الخبز البارد ما كيشربش الزيت مزيان.",
+        "ملعقة زيت وملعقة عسل لكل واحد كافية، هادا فطور غني، ما تكثريش."
+      ]
+    },
+    "tags": [
+      "gluten",
+      "nuts",
+      "vegetarian"
+    ],
+    "photo_query": "moroccan bread olive oil honey almonds"
+  },
+  {
+    "slug": "batbout-stuffed-with-egg-and-cheese",
+    "meal": "breakfast",
+    "name_en": "Batbout stuffed with egg and cheese",
+    "name_fr": "Batbout farci à l'œuf et au fromage",
+    "name_ar": "بطبوط معمر بالبيض والجبن",
+    "name_latin": "Batbout maammer bel bid w jben",
+    "desc_en": "Soft pan-cooked Moroccan pocket breads split open and filled with scrambled egg, cheese and parsley.",
+    "desc_fr": "Petits pains marocains moelleux cuits à la poêle, ouverts et garnis d'œufs brouillés, fromage et persil.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 30,
+    "cook_min": 25,
+    "macros": {
+      "kcal": 520,
+      "protein_g": 24,
+      "carbs_g": 62,
+      "fat_g": 19,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Flour",
+        "fr": "Farine",
+        "ar": "فرينة",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat flour",
+        "fr": "Farine complète",
+        "ar": "فرينة كاملة",
+        "qty": 150,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Fine semolina",
+        "fr": "Semoule fine",
+        "ar": "سميدة رقيقة",
+        "qty": 100,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Dry yeast",
+        "fr": "Levure boulangère",
+        "ar": "خميرة الخبز",
+        "qty": 1.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Warm water",
+        "fr": "Eau tiède",
+        "ar": "ماء دافي",
+        "qty": 300,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 6,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Grated or sliced cheese",
+        "fr": "Fromage râpé ou en tranches",
+        "ar": "جبن",
+        "qty": 120,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Parsley",
+        "fr": "Persil",
+        "ar": "معدنوس",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فطبسيل خلطي 250 غرام فرينة، 150 غرام فرينة كاملة، 100 غرام سميدة رقيقة، ملعقة ونص خميرة الخبز وملعقة صغيرة ملحة.",
+        "زيدي 300 مل ماء دافي بشوية بشوية وعجني 10 دقايق حتى تولي العجينة طرية ومرنة.",
+        "قسميها 8 كوار، فرشي كل كورة دايرة بغلاظة نص سنتيم، وخليهم يرتاحو 20 دقيقة على سميدة تحت فوطة.",
+        "سخني مقلة أو فرّاح على نار متوسطة بلا زيت، وطيبي كل بطبوطة 3 دقايق من كل جهة حتى تنتفخ وتحمار شوية، وقلبيها بزاف مرات.",
+        "غلفي البطبوط ففوطة باش يبقى طري.",
+        "كسري 6 بيضات، زيدي نص ملعقة إبزار ورشة ملحة ونص حزمة معدنوس مقطع، وخلطي.",
+        "سخني ملعقة زيت العود فمقلة على نار هادية، صبي البيض وحركي بشوية 3 دقايق حتى يجمد وهو طري.",
+        "شقي كل بطبوطة من جهة، حطي فيها شوية جبن وبعد البيض السخون، الجبن كيذوب من سخانة البيض.",
+        "قدميها مباشرة، جوج بطبوطات لكل واحد."
+      ],
+      "tips": [
+        "البطبوط كينتفخ إلى كانت العجينة مرتاحة مزيان والنار متوسطة، النار القوية كتحمرو قبل ما ينتفخ.",
+        "قلبي البطبوط بزاف مرات وهو كيطيب، هكا كيطيب من الجوج جهات بالتساوي وكينتفخ.",
+        "الفوطة بعد الطياب ضرورية، البخار كيخلي البطبوط طري ويتشق بسهولة.",
+        "تقدري تصاوبي البطبوط ليلة قبل، وتسخنيه الصباح فالمقلة دقيقة من كل جهة."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "batbout moroccan pita stuffed egg cheese"
+  },
+  {
+    "slug": "whole-wheat-pancakes-with-yogurt-and-fruit",
+    "meal": "breakfast",
+    "name_en": "Whole-wheat pancakes with yogurt and fruit",
+    "name_fr": "Pancakes à la farine complète, yaourt et fruits",
+    "name_ar": "بانكيك بالفرينة الكاملة مع الدانون والفواكه",
+    "name_latin": "Pancakes bel farina kamla maa danone w fakya",
+    "desc_en": "Fluffy whole-wheat pancakes served with thick yogurt, fresh fruit and a light drizzle of honey.",
+    "desc_fr": "Pancakes moelleux à la farine complète, servis avec du yaourt épais, des fruits frais et un filet de miel.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 20,
+    "macros": {
+      "kcal": 440,
+      "protein_g": 17,
+      "carbs_g": 66,
+      "fat_g": 12,
+      "fiber_g": 8
+    },
+    "ingredients": [
+      {
+        "en": "Whole-wheat flour",
+        "fr": "Farine complète",
+        "ar": "فرينة كاملة",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Baking powder",
+        "fr": "Levure chimique",
+        "ar": "خميرة الحلوى",
+        "qty": 2,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Sugar",
+        "fr": "Sucre",
+        "ar": "سكر",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 400,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Vegetable oil",
+        "fr": "Huile végétale",
+        "ar": "زيت",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Strawberries or apple",
+        "fr": "Fraises ou pomme",
+        "ar": "فراولة أو تفاح",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فطبسيل كبير خلطي 250 غرام فرينة كاملة مع جوج ملاعق صغار خميرة الحلوى، ملعقة كبيرة سكر ورشة ملحة.",
+        "فطبسيل آخر خلطي جوج بيضات مع 400 مل حليب وجوج ملاعق زيت.",
+        "صبي السايل على الفرينة وحركي بالفرشيطة غير حتى يتخلطو، خليه فيه شوية كتلات، ما تخلطيش بزاف.",
+        "خليه يرتاح 5 دقايق، كتشوفيه كينتفخ شوية.",
+        "سخني مقلة غير لاصقة على نار متوسطة ودهنيها بشوية زيت بورقة ديال الكوزينة.",
+        "صبي مغرفة صغيرة لكل بانكيك، خليه دقيقتين حتى تطلع الفقاقيع وتنشف الأطراف، وقلبيه دقيقة أخرى.",
+        "كملي حتى تسالي العجين، تخرج ليك تقريبا 12 بانكيك، غطيهم بفوطة.",
+        "قطعي جوج بنانات و200 غرام فراولة أو تفاح.",
+        "قدمي 3 بانكيكات لكل واحد مع دانونة طبيعية، الفواكه من الفوق وشوية عسل."
+      ],
+      "tips": [
+        "ما تخلطيش العجين بزاف، الكتلات الصغار عادية، الخلط الزايد كيعطي بانكيك قاسح.",
+        "قلبي البانكيك مرة واحدة برك، وقت كتشوفي الفقاقيع طلعو فالوجه كامل.",
+        "الفرينة الكاملة كتشرب أكثر، إلى كان العجين غليظ بزاف زيدي شوية حليب.",
+        "البانكيك الباقي كيتجمد ويتسخن فالطوسطور للصباح المزروب."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "whole wheat pancakes yogurt berries stack"
+  },
+  {
+    "slug": "muesli-with-milk-and-grated-apple",
+    "meal": "breakfast",
+    "name_en": "Muesli with milk and grated apple",
+    "name_fr": "Muesli au lait et pomme râpée",
+    "name_ar": "موسلي بالحليب والتفاح المحكوك",
+    "name_latin": "Muesli bel hlib w tffah mhkouk",
+    "desc_en": "Homemade muesli of oats, raisins, almonds and seeds soaked briefly in cold milk with freshly grated apple and cinnamon.",
+    "desc_fr": "Muesli maison d'avoine, raisins secs, amandes et graines, trempé dans du lait froid avec de la pomme râpée et de la cannelle.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": {
+      "kcal": 400,
+      "protein_g": 14,
+      "carbs_g": 58,
+      "fat_g": 13,
+      "fiber_g": 8
+    },
+    "ingredients": [
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Raisins",
+        "fr": "Raisins secs",
+        "ar": "زبيب",
+        "qty": 40,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 40,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Sunflower seeds",
+        "fr": "Graines de tournesol",
+        "ar": "زريعة نوار الشمس مقشرة",
+        "qty": 20,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Apples",
+        "fr": "Pommes",
+        "ar": "تفاح",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 700,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Lemon",
+        "fr": "Citron",
+        "ar": "حامض",
+        "qty": 0.5,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "قطعي 40 غرام لوز غليظ، وإلى بغيتي حمريهم فمقلة ناشفة 3 دقايق.",
+        "فبرمة كبيرة خلطي 200 غرام شوفان مع 40 غرام زبيب واللوز و20 غرام زريعة نوار الشمس، هادا هو الموسلي.",
+        "الصباح حكي جوج تفاحات بالقشرة على الحكاكة الكبيرة، وعصري عليهم نص حامض باش ما يسودوش.",
+        "قسمي الموسلي على 4 زلايف، تقريبا 6 ملاعق كبار فكل زلافة.",
+        "زيدي التفاح المحكوك على كل زلافة ورشة قرفة.",
+        "صبي 700 مل حليب بارد على الزلايف بالتساوي.",
+        "خليه 5 دقايق باش يرخف الشوفان شوية وبعد كولوه."
+      ],
+      "tips": [
+        "5 دقايق فالحليب كافيين، إلى خليتيه بزاف كيولي عجينة، وإلى كليتيه مباشرة كيبقى قاسح.",
+        "التفاح بالقشرة أحسن، الفيبر كامل فالقشرة، غير غسليه مزيان.",
+        "صاوبي الموسلي الناشف بكمية كبيرة، كيبقى شهر فبرمة مسدودة.",
+        "إلى بغيتيه أدفى فالشتا، سخني الحليب شوية قبل ما تصبيه."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "nuts",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "muesli bowl milk grated apple cinnamon"
+  },
+  {
+    "slug": "boiled-eggs-with-white-beans-loubia",
+    "meal": "breakfast",
+    "name_en": "Boiled eggs with white beans (loubia)",
+    "name_fr": "Œufs durs et haricots blancs (loubia)",
+    "name_ar": "بيض مسلوق مع اللوبيا",
+    "name_latin": "Bid messlouq maa loubia",
+    "desc_en": "Hearty Moroccan white beans in a cumin-tomato sauce served with halved boiled eggs and bread.",
+    "desc_fr": "Haricots blancs marocains en sauce tomate au cumin, servis avec des œufs durs coupés en deux et du pain.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 60,
+    "macros": {
+      "kcal": 490,
+      "protein_g": 27,
+      "carbs_g": 60,
+      "fat_g": 16,
+      "fiber_g": 14
+    },
+    "ingredients": [
+      {
+        "en": "Dried white beans",
+        "fr": "Haricots blancs secs",
+        "ar": "لوبيا بيضا",
+        "qty": 300,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Onion",
+        "fr": "Oignon",
+        "ar": "بصلة",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Sweet paprika",
+        "fr": "Paprika doux",
+        "ar": "فلفلة حمرا حلوة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Fresh coriander",
+        "fr": "Coriandre fraîche",
+        "ar": "قصبور",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 6,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خلي 300 غرام لوبيا بيضا فالماء ليلة كاملة، وصفيها الصباح.",
+        "قطعي بصلة رقيق، دقي 3 حبات ثوم، وحكي 4 ماطيشات.",
+        "سخني 3 ملاعق زيت العود فطنجرة، زيدي البصلة وخليها تذوب 5 دقايق، وبعد الثوم دقيقة.",
+        "زيدي الماطيشة المحكوكة، ملعقة ونص كامون، ملعقة فلفلة حمرا حلوة وملعقة ملحة، وخليها تطيب 5 دقايق.",
+        "زيدي اللوبيا وغمريها بالماء السخون بجوج صباع فوقها، وخليها تغلي وبعد نقصي النار وغطيها.",
+        "خليها تطيب 50 دقيقة حتى تولي اللوبيا رخفة والصلصة غليظة، زيدي ماء سخون إلى نشفت قبل.",
+        "فالوقت اللي كتطيب، سلقي 6 بيضات 9 دقايق، برديهم وقشريهم وقطعيهم على جوج.",
+        "زيدي نص حزمة قصبور مقطع على اللوبيا، صبيها فالزلايف وحطي على كل زلافة 3 أنصاف بيض.",
+        "قدميها سخونة مع الخبز الكامل."
+      ],
+      "tips": [
+        "ما تزيديش الملحة حتى تولي اللوبيا رخفة، الملحة من اللول كتقسحها.",
+        "اللوبيا أبنن الغد ديالها، صاوبيها الليل ديال العشا وخبي حصة للفطور.",
+        "إلى ما عندكش وقت، قرعة لوبيا مطيبة مصفية كتخدم، غير خليها تطيب 15 دقيقة فالصلصة.",
+        "الصلصة خاصها تكون غليظة شوية باش الخبز يتغمس فيها، ما تكثريش الماء."
+      ]
+    },
+    "tags": [
+      "legumes",
+      "eggs",
+      "cooked_onion",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "white bean stew boiled eggs bread"
+  },
+  {
+    "slug": "date-and-almond-energy-bites-with-a-glass-of-milk",
+    "meal": "breakfast",
+    "name_en": "Date and almond energy bites with a glass of milk",
+    "name_fr": "Bouchées énergétiques dattes-amandes et verre de lait",
+    "name_ar": "كويرات التمر واللوز مع كاس حليب",
+    "name_latin": "Kwirat tmer w louz maa kas hlib",
+    "desc_en": "No-bake bites of blended dates, almonds and oats rolled in sesame, served with a glass of cold milk.",
+    "desc_fr": "Bouchées sans cuisson de dattes, amandes et avoine mixées, roulées dans le sésame, avec un verre de lait froid.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 20,
+    "cook_min": 5,
+    "macros": {
+      "kcal": 420,
+      "protein_g": 14,
+      "carbs_g": 56,
+      "fat_g": 16,
+      "fiber_g": 8
+    },
+    "ingredients": [
+      {
+        "en": "Dates",
+        "fr": "Dattes",
+        "ar": "تمر",
+        "qty": 300,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 120,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 60,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Sesame seeds",
+        "fr": "Graines de sésame",
+        "ar": "زنجلان",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Orange blossom water",
+        "fr": "Eau de fleur d'oranger",
+        "ar": "ماء الزهر",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 1000,
+        "unit": "ml",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حمري 120 غرام لوز فمقلة ناشفة 5 دقايق وخليهم يبردو.",
+        "حمري 3 ملاعق زنجلان فنفس المقلة دقيقتين حتى يحمارو شوية، وحطيهم فطبسيل.",
+        "حيدي العظم من 300 غرام تمر، وإلى كان ناشف خليه فماء سخون 10 دقايق وصفيه مزيان.",
+        "طحني اللوز فالخلاط حتى يولي غليظ شوية، وزيدي 60 غرام شوفان وخلطي.",
+        "زيدي التمر، ملعقة قرفة وملعقة صغيرة ماء الزهر، وخلطي حتى يولي عجينة كتلصق وتتجمع.",
+        "بلي يديك بشوية ماء وصاوبي كويرات بحجم الكرمة، تقريبا 20 كويرة.",
+        "دحرجي كل كويرة فالزنجلان المحمر.",
+        "حطيهم فالفريكو 30 دقيقة باش يتماسكو، وقدمي 5 كويرات لكل واحد مع كاس حليب بارد."
+      ],
+      "tips": [
+        "إلى العجينة ما بغاتش تتجمع زيدي تمرة أو جوج، وإلى كانت لاصقة بزاف زيدي شوية شوفان.",
+        "الكويرات كتبقى فالفريكو أسبوعين فبرمة مسدودة، صاوبي كمية مضروبة.",
+        "5 كويرات فطور كامل مع الحليب، وجوج أو 3 كيخدمو كسناك قبل الرياضة.",
+        "بدلي اللوز بالكركاع أو الكاوكاو إلى بغيتي طعم آخر."
+      ]
+    },
+    "tags": [
+      "nuts",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "date almond energy balls sesame milk"
+  },
+  {
+    "slug": "cheese-and-halal-turkey-sandwich",
+    "meal": "breakfast",
+    "name_en": "Cheese and halal turkey sandwich",
+    "name_fr": "Sandwich fromage et dinde halal",
+    "name_ar": "سندويتش الجبن والديندي الحلال",
+    "name_latin": "Sandwich jben w dindi halal",
+    "desc_en": "Whole-wheat sandwich with sliced halal turkey, cheese, tomato, cucumber and lettuce, lightly toasted.",
+    "desc_fr": "Sandwich au pain complet avec dinde halal, fromage, tomate, concombre et laitue, légèrement grillé.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 8,
+    "macros": {
+      "kcal": 420,
+      "protein_g": 28,
+      "carbs_g": 40,
+      "fat_g": 15,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Whole-wheat bread rolls",
+        "fr": "Petits pains complets",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Halal turkey slices",
+        "fr": "Tranches de dinde halal",
+        "ar": "شرايح الديندي الحلال",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Cheese slices",
+        "fr": "Tranches de fromage",
+        "ar": "جبن شرايح",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Cucumber",
+        "fr": "Concombre",
+        "ar": "خيار",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Lettuce",
+        "fr": "Laitue",
+        "ar": "خس",
+        "qty": 0.5,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Plain yogurt",
+        "fr": "Yaourt nature",
+        "ar": "دانون طبيعي",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Dried oregano",
+        "fr": "Origan séché",
+        "ar": "زعتر مجفف",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فكاس صغير خلطي دانونة طبيعية مع ملعقة زيت العود، ملعقة صغيرة زعتر مجفف ونص ملعقة إبزار، هادي هي الصلصة.",
+        "قطعي جوج ماطيشات دوائر وخيارة شرايح رقاق طوال، وغسلي أوراق الخس ونشفيهم.",
+        "شقي 4 خبزات كاملات على جوج بلا ما تفصليهم.",
+        "دهني الجهة التحتانية من كل خبزة بملعقة من الصلصة.",
+        "حطي فكل خبزة جوج شرايح جبن، وفوقهم 50 غرام شرايح الديندي.",
+        "سخني المقلة على نار متوسطة، وحطي الخبزة المفتوحة فيها دقيقتين حتى يبدا الجبن يذوب والخبز يقرقب من التحت.",
+        "خرجيها وزيدي الماطيشة، الخيار والخس، وسديها واضغطي عليها شوية.",
+        "قطعيها على جوج وقدميها، أو لفيها للمدرسة."
+      ],
+      "tips": [
+        "الخضرة كتزاد بعد التسخين ماشي قبل، باش تبقى مقرقبة وباردة والجبن سخون.",
+        "شوفي الديندي مكتوب عليه حلال ومن ماركة معروفة، وشوفي التاريخ.",
+        "إلى كنتي غادي تلفي السندويتش للمدرسة، حطي الخس بين الخبز والماطيشة باش ما يتشربش الخبز.",
+        "الصلصة ديال الدانون كتعوض الماينيز والزبدة بجوج."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten"
+    ],
+    "photo_query": "turkey cheese sandwich whole wheat"
+  },
+  {
+    "slug": "sardines-on-toast-with-tomato",
+    "meal": "breakfast",
+    "name_en": "Sardines on toast with tomato",
+    "name_fr": "Sardines sur pain grillé à la tomate",
+    "name_ar": "سردين على خبز محمر بالماطيشة",
+    "name_latin": "Serdin ala khobz mhammer bel matisha",
+    "desc_en": "Toasted whole-wheat bread topped with lemony canned sardines, sliced tomato, parsley and cumin.",
+    "desc_fr": "Pain complet grillé garni de sardines en boîte citronnées, tomate en tranches, persil et cumin.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 5,
+    "macros": {
+      "kcal": 410,
+      "protein_g": 26,
+      "carbs_g": 38,
+      "fat_g": 17,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Canned sardines in olive oil",
+        "fr": "Sardines en boîte à l'huile d'olive",
+        "ar": "سردين فالقرعة",
+        "qty": 2,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Lemon",
+        "fr": "Citron",
+        "ar": "حامض",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Parsley",
+        "fr": "Persil",
+        "ar": "معدنوس",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "صفي جوج قرعات سردين من الزيت، حيدي الشوك الكبير من الوسط إلى كان، وفتتيهم غليظ بالفرشيطة.",
+        "زيدي على السردين عصير نص حامض، ملعقة صغيرة كامون، نص ملعقة إبزار ونص حزمة معدنوس مقطع، وخلطي بشوية.",
+        "قطعي 3 ماطيشات دوائر رقاق.",
+        "حمري 8 شرايح خبز كامل فالمقلة أو الطوسطور حتى يقرقبو.",
+        "قشري حبة ثوم وفركي بيها الخبز السخون فركة خفيفة، وقطري عليه شوية زيت العود.",
+        "رتبي الماطيشة على الخبز، وفوقها السردين المتبل.",
+        "رشي شوية معدنوس وكامون من الفوق، وقدميها مع قطع الحامض على الجنب."
+      ],
+      "tips": [
+        "السردين ديال زيت العود أبنن من ديال الماطيشة، الطعم ديالو أنقى.",
+        "الحامض والكامون هما اللي كيحيدو الريحة القوية ديال السردين.",
+        "الثوم على الخبز السخون كيعطي طعم قوي بحبة واحدة برك.",
+        "السردين فيه الكالسيوم والأوميغا، كوليه بالشوك الصغار، ما تحيديهش."
+      ]
+    },
+    "tags": [
+      "fish",
+      "gluten"
+    ],
+    "photo_query": "sardines on toast tomato lemon parsley"
+  },
+  {
+    "slug": "zaalouk-on-bread-with-a-boiled-egg",
+    "meal": "breakfast",
+    "name_en": "Zaalouk on bread with a boiled egg",
+    "name_fr": "Zaalouk sur pain et œuf dur",
+    "name_ar": "زعلوك على الخبز مع بيضة مسلوقة",
+    "name_latin": "Zaalouk ala khobz maa bida messlouqa",
+    "desc_en": "Smoky mashed eggplant and tomato salad with garlic and cumin, spread on warm bread with a boiled egg.",
+    "desc_fr": "Caviar d'aubergine et tomate à l'ail et au cumin, tartiné sur du pain chaud avec un œuf dur.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 35,
+    "macros": {
+      "kcal": 400,
+      "protein_g": 17,
+      "carbs_g": 42,
+      "fat_g": 19,
+      "fiber_g": 9
+    },
+    "ingredients": [
+      {
+        "en": "Eggplants",
+        "fr": "Aubergines",
+        "ar": "دنجال",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Tomatoes",
+        "fr": "Tomates",
+        "ar": "ماطيشة",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Garlic",
+        "fr": "Ail",
+        "ar": "ثوم",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Sweet paprika",
+        "fr": "Paprika doux",
+        "ar": "فلفلة حمرا حلوة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Fresh coriander",
+        "fr": "Coriandre fraîche",
+        "ar": "قصبور",
+        "qty": 0.5,
+        "unit": "bunch",
+        "group": "fresh"
+      },
+      {
+        "en": "Lemon",
+        "fr": "Citron",
+        "ar": "حامض",
+        "qty": 0.5,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat bread",
+        "fr": "Pain complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "قشري جوج دنجالات بالطول خطوط، خلي شوية من القشرة، وقطعيهم مكعبات كبار.",
+        "قشري 4 ماطيشات وقطعيهم صغار، ودقي 3 حبات ثوم.",
+        "حطي الدنجال والماطيشة والثوم فطنجرة مع 3 ملاعق زيت العود، ملعقة ملحة، ملعقة كامون وملعقة فلفلة حمرا حلوة، وكاس ماء.",
+        "غطيها وخليها تطيب على نار متوسطة 25 دقيقة حتى يولي الدنجال رخف تماما.",
+        "حيدي الغطاء وهرسي كلشي بالفرشيطة أو بظهر المغرفة، وخليه يطيب 8 دقايق زايدين مكشوف حتى ينشف الماء ويولي غليظ.",
+        "زيدي نص حزمة قصبور مقطع، عصير نص حامض ونص ملعقة كامون، وحركي وحيديه من النار.",
+        "سلقي 4 بيضات 9 دقايق، برديهم وقشريهم وقطعيهم على جوج.",
+        "سخني 4 خبزات كاملات، فرشي الزعلوك عليهم، قطري ملعقة زيت العود من الفوق، وحطي نصين بيض على كل حصة."
+      ],
+      "tips": [
+        "الزعلوك خاصو يطيب حتى ينشف الماء، الزعلوك السايل ما كيتفرشش على الخبز.",
+        "هرسيه بالفرشيطة ماشي بالخلاط، خاصو يبقى فيه قطع صغار.",
+        "الزعلوك الغد ديالو أبنن، صاوبيه الليل وخبيه فالفريكو، كيتاكل بارد أو دافي.",
+        "شوية من قشرة الدنجال كتعطي اللون والطعم، ما تقشريه كامل."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "zaalouk eggplant salad bread boiled egg"
+  },
+  {
+    "slug": "boiled-eggs-avocado-and-whole-wheat-khobz",
+    "meal": "breakfast",
+    "name_en": "Boiled eggs, avocado and whole-wheat khobz",
+    "name_fr": "Œufs durs, avocat et khobz complet",
+    "name_ar": "بيض مسلوق مع الأفوكا والخبز الكامل",
+    "name_latin": "Bid messlouq maa avoca w khobz kamel",
+    "desc_en": "Simple plate of halved boiled eggs, sliced avocado with lemon and cumin, cherry tomatoes and warm whole-wheat bread.",
+    "desc_fr": "Assiette simple d'œufs durs, avocat en tranches au citron et cumin, tomates cerises et pain complet chaud.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 10,
+    "macros": {
+      "kcal": 440,
+      "protein_g": 19,
+      "carbs_g": 38,
+      "fat_g": 25,
+      "fiber_g": 9
+    },
+    "ingredients": [
+      {
+        "en": "Eggs",
+        "fr": "Œufs",
+        "ar": "بيض",
+        "qty": 8,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Avocados",
+        "fr": "Avocats",
+        "ar": "أفوكا",
+        "qty": 2,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Lemon",
+        "fr": "Citron",
+        "ar": "حامض",
+        "qty": 1,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Cherry tomatoes",
+        "fr": "Tomates cerises",
+        "ar": "ماطيشة شيري",
+        "qty": 200,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Whole-wheat khobz",
+        "fr": "Khobz complet",
+        "ar": "خبز كامل",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cumin",
+        "fr": "Cumin moulu",
+        "ar": "كامون",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Black pepper",
+        "fr": "Poivre noir",
+        "ar": "إبزار",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حطي 8 بيضات فطنجرة بالماء البارد، خليهم يغليو وحسبي 9 دقايق.",
+        "برديهم فالماء البارد 5 دقايق، قشريهم وقطعيهم على جوج.",
+        "قطعي جوج أفوكات على جوج، حيدي العظم، قشريهم وقطعيهم شرايح.",
+        "عصري على الأفوكا نص حامض مباشرة باش ما تسودش، ورشي شوية ملحة.",
+        "قطعي 200 غرام ماطيشة شيري على جوج.",
+        "سخني 4 خبزات كاملات فالمقلة أو الفران 3 دقايق.",
+        "رتبي فكل طبسيل جوج بيضات، نص أفوكا والماطيشة.",
+        "رشي كامون وإبزار على البيض والأفوكا، قطري زيت العود، وقدميه مع الخبز السخون."
+      ],
+      "tips": [
+        "الحامض على الأفوكا مباشرة بعد التقطيع، وإلا كتسود ف10 دقايق.",
+        "الكامون على البيض المسلوق طعم مغربي أصيل، أحسن من الملحة بوحدها.",
+        "الأفوكا الناضجة كترخف بشوية تحت الصبع، القاسحة خليها جوج أيام برا الفريكو.",
+        "هادا فطور كيشبع بزاف، بيضتين ونص أفوكا كافيين لكل واحد."
+      ]
+    },
+    "tags": [
+      "eggs",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "boiled eggs avocado slices bread plate"
+  },
+  {
+    "slug": "light-rice-pudding-roz-bel-hlib-with-cinnamon",
+    "meal": "breakfast",
+    "name_en": "Light rice pudding (roz bel hlib) with cinnamon",
+    "name_fr": "Riz au lait léger (roz bel hlib) à la cannelle",
+    "name_ar": "روز بالحليب خفيف بالقرفة",
+    "name_latin": "Roz bel hlib khfif bel qerfa",
+    "desc_en": "Creamy Moroccan rice pudding cooked in milk with orange-blossom water, lightly sweetened and dusted with cinnamon.",
+    "desc_fr": "Riz au lait marocain crémeux à l'eau de fleur d'oranger, peu sucré et saupoudré de cannelle.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 35,
+    "macros": {
+      "kcal": 340,
+      "protein_g": 11,
+      "carbs_g": 58,
+      "fat_g": 7,
+      "fiber_g": 1
+    },
+    "ingredients": [
+      {
+        "en": "Round rice",
+        "fr": "Riz rond",
+        "ar": "روز مدور",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Water",
+        "fr": "Eau",
+        "ar": "ماء",
+        "qty": 300,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 1000,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Sugar",
+        "fr": "Sucre",
+        "ar": "سكر",
+        "qty": 3,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Orange blossom water",
+        "fr": "Eau de fleur d'oranger",
+        "ar": "ماء الزهر",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 15,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي 200 غرام روز مدور حتى يولي الماء صافي.",
+        "حطيه فطنجرة مع 300 مل ماء ورشة ملحة، وخليه يطيب على نار متوسطة 8 دقايق حتى يشرب الماء.",
+        "زيدي ليترو حليب وخليه يبدا يغلي بشوية، وبعد نقصي النار.",
+        "خليه يطيب على نار هادية 25 دقيقة مع التحريك كل شوية باش ما يلصقش فالقاع.",
+        "وقت يولي الروز طري والحليب غليظ بحال الكريمة، زيدي 3 ملاعق سكر و15 غرام زبدة وحركي دقيقتين.",
+        "حيديه من النار وزيدي ملعقة كبيرة ماء الزهر وحركي.",
+        "صبيه فالزلايف ورشي القرفة من الفوق، كيتاكل دافي أو بارد من الفريكو."
+      ],
+      "tips": [
+        "الروز المدور هو اللي كيعطي الكريمية، الروز الطويل كيبقى حبات مفرقة.",
+        "النار الهادية والتحريك هما السر، الحليب كيلصق وكيحرق بزربة.",
+        "3 ملاعق سكر كافيين لأربعة، الحليب والزبدة عندهم حلاوة ديالهم، ما تزيديش.",
+        "كيغلاظ وهو كيبرد، إلى بغيتيه بارد حيديه من النار وهو باقي سايل شوية."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "vegetarian"
+    ],
+    "photo_query": "rice pudding cinnamon bowl creamy"
+  },
+  {
+    "slug": "sellou-with-a-glass-of-milk",
+    "meal": "breakfast",
+    "name_en": "Sellou with a glass of milk",
+    "name_fr": "Sellou et verre de lait",
+    "name_ar": "سلو مع كاس حليب",
+    "name_latin": "Sellou maa kas hlib",
+    "desc_en": "Traditional Moroccan toasted flour, almond and sesame confection sweetened with honey, served in small portions with cold milk.",
+    "desc_fr": "Confiserie marocaine traditionnelle de farine grillée, amandes et sésame au miel, servie en petite portion avec du lait froid.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 20,
+    "cook_min": 30,
+    "macros": {
+      "kcal": 460,
+      "protein_g": 15,
+      "carbs_g": 50,
+      "fat_g": 22,
+      "fiber_g": 5
+    },
+    "ingredients": [
+      {
+        "en": "Flour",
+        "fr": "Farine",
+        "ar": "فرينة",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Almonds",
+        "fr": "Amandes",
+        "ar": "لوز",
+        "qty": 120,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Sesame seeds",
+        "fr": "Graines de sésame",
+        "ar": "زنجلان",
+        "qty": 120,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 100,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Butter",
+        "fr": "Beurre",
+        "ar": "زبدة",
+        "qty": 60,
+        "unit": "g",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground anise",
+        "fr": "Anis moulu",
+        "ar": "حبة حلاوة مطحونة",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 1000,
+        "unit": "ml",
+        "group": "fresh"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حمري 250 غرام فرينة فمقلة عريضة على نار هادية مع التحريك المتواصل 15 دقيقة حتى تولي بلون الذهب وتطلع ريحتها، وحيديها فطبسيل.",
+        "حمري 120 غرام زنجلان فالمقلة الناشفة 4 دقايق حتى يحمارو، وحيديهم.",
+        "حمري 120 غرام لوز فالمقلة 5 دقايق، وطحني النص دقيق والنص الآخر غليظ.",
+        "طحني نص الزنجلان دقيق وخلي النص حبات.",
+        "فطبسيل كبير خلطي الفرينة المحمرة مع اللوز والزنجلان، ملعقة كبيرة حبة حلاوة مطحونة، ملعقة قرفة ورشة ملحة.",
+        "ذوبي 60 غرام زبدة مع 100 غرام عسل على نار هادية حتى يتخلطو.",
+        "صبيهم على الخليط الناشف وفركي بيديك حتى يولي كلشي رطب وكيتجمع وقت كتضغطي عليه.",
+        "حطي السلو فبرمة مسدودة، وقدمي 3 ملاعق كبار لكل واحد مع كاس حليب بارد."
+      ],
+      "tips": [
+        "الفرينة خاصها تتحمر مزيان على نار هادية، إلى بقات بيضا السلو كيولي طعمو نية.",
+        "هاد السلو خفيف على العادة: العسل والزبدة مقاسين، إلى لقيتيه ناشف زيدي ملعقة عسل ماشي زبدة.",
+        "السلو كيبقى شهر برا الفريكو فبرمة مسدودة.",
+        "3 ملاعق كبار هي الحصة، السلو مغذي وثقيل، الحليب معاه كيكمل الفطور."
+      ]
+    },
+    "tags": [
+      "nuts",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "sellou moroccan sesame almond sweet milk"
+  },
+  {
+    "slug": "banana-and-date-milkshake-with-oats",
+    "meal": "breakfast",
+    "name_en": "Banana and date milkshake with oats",
+    "name_fr": "Milkshake banane-dattes à l'avoine",
+    "name_ar": "ميلكشيك البنان والتمر بالشوفان",
+    "name_latin": "Milkshake banane w tmer bel chofan",
+    "desc_en": "Thick blended milkshake of banana, dates, oats and cold milk with a touch of cinnamon, a filling breakfast in a glass.",
+    "desc_fr": "Milkshake épais de banane, dattes, avoine et lait froid avec une touche de cannelle, un petit-déjeuner complet en verre.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": {
+      "kcal": 330,
+      "protein_g": 11,
+      "carbs_g": 60,
+      "fat_g": 6,
+      "fiber_g": 6
+    },
+    "ingredients": [
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 4,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Dates",
+        "fr": "Dattes",
+        "ar": "تمر",
+        "qty": 8,
+        "unit": "piece",
+        "group": "dry"
+      },
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 60,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 800,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Vanilla sugar or extract",
+        "fr": "Sucre vanillé ou extrait",
+        "ar": "فانيلا",
+        "qty": 0.5,
+        "unit": "tsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حيدي العظم من 8 تمرات وخليهم فشوية ماء سخون 5 دقايق باش يرخفو، وصفيهم.",
+        "حطي 60 غرام شوفان فالخلاط بوحدهم وطحنيهم 20 ثانية حتى يوليو دقيق.",
+        "قشري 4 بنانات وقطعيهم قطع وزيديهم للخلاط مع التمر.",
+        "زيدي 800 مل حليب بارد، نص ملعقة قرفة ونص ملعقة فانيلا.",
+        "خلطي دقيقة كاملة حتى يولي ناعم وغليظ بلا حتى قطعة.",
+        "إلى بغيتيه بارد أكثر زيدي 4 قطع ديال الجليد وخلطي مرة أخرى.",
+        "صبيه ف4 كيسان كبار ورشي شوية قرفة من الفوق وقدميه مباشرة."
+      ],
+      "tips": [
+        "طحن الشوفان قبل هو السر ديال الميلكشيك الناعم، وإلا كيبقاو فيه حبات.",
+        "البنان المجمد كيعطي ميلكشيك أغلظ وأبرد بلا جليد.",
+        "التمر كافي، ما تزيديش سكر، ودوقي قبل ما تزيدي أي حاجة.",
+        "شربيه مباشرة، الشوفان كيغلاظو إلى بقى واقف."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "banana date milkshake glass oats"
+  },
+  {
+    "slug": "peanut-butter-and-banana-oatmeal",
+    "meal": "breakfast",
+    "name_en": "Peanut butter and banana oatmeal",
+    "name_fr": "Porridge d'avoine au beurre de cacahuète et banane",
+    "name_ar": "عصيدة الشوفان بزبدة الكاوكاو والبنان",
+    "name_latin": "Assida dyal chofan b zebdat kawkaw w banane",
+    "desc_en": "Creamy oatmeal stirred with natural peanut butter and mashed banana, topped with banana slices and cinnamon.",
+    "desc_fr": "Porridge d'avoine crémeux au beurre de cacahuète naturel et banane écrasée, garni de rondelles de banane et cannelle.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 12,
+    "macros": {
+      "kcal": 430,
+      "protein_g": 15,
+      "carbs_g": 60,
+      "fat_g": 15,
+      "fiber_g": 8
+    },
+    "ingredients": [
+      {
+        "en": "Rolled oats",
+        "fr": "Flocons d'avoine",
+        "ar": "شوفان",
+        "qty": 200,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 600,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Water",
+        "fr": "Eau",
+        "ar": "ماء",
+        "qty": 400,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Natural peanut butter",
+        "fr": "Beurre de cacahuète naturel",
+        "ar": "زبدة الكاوكاو",
+        "qty": 4,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Bananas",
+        "fr": "Bananes",
+        "ar": "بنان",
+        "qty": 3,
+        "unit": "piece",
+        "group": "fresh"
+      },
+      {
+        "en": "Ground cinnamon",
+        "fr": "Cannelle moulue",
+        "ar": "قرفة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "pinch",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 1,
+        "unit": "tbsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "هرسي بنانتين بالفرشيطة حتى يوليو بحال العجينة، وقطعي البنانة الثالثة دوائر للفوق.",
+        "حطي 200 غرام شوفان فطنجرة مع 600 مل حليب و400 مل ماء ورشة ملحة.",
+        "خليه يطيب على نار متوسطة 8 دقايق مع التحريك حتى يبدا يغلاظ.",
+        "زيدي البنان المهروس وملعقة قرفة وحركي دقيقتين.",
+        "زيدي 4 ملاعق كبار زبدة الكاوكاو وحركي حتى تذوب وتولي العصيدة كريمية.",
+        "دوقي، إلى بغيتيها أحلى زيدي ملعقة عسل، البنان عادة كافي.",
+        "صبيها فالزلايف، رتبي دوائر البنان من الفوق ورشي شوية قرفة."
+      ],
+      "tips": [
+        "خودي زبدة الكاوكاو الطبيعية اللي فيها غير الكاوكاو والملحة، ماشي اللي فيها السكر والزيت.",
+        "البنان المهروس خاصو يكون ناضج بزاف، بالنقط الكحلة، هو اللي كيحلي.",
+        "زبدة الكاوكاو كتزاد فاللخر على نار هادية، إلى غلات كتفصل الزيت.",
+        "هاد الفطور كيشبع حتى للغدا، مزيان لنهار الرياضة ديال الدراري."
+      ]
+    },
+    "tags": [
+      "nuts",
+      "legumes",
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "peanut butter banana oatmeal bowl"
+  },
+  {
+    "slug": "semolina-porridge-dchicha-with-milk",
+    "meal": "breakfast",
+    "name_en": "Semolina porridge (dchicha) with milk",
+    "name_fr": "Bouillie de dchicha (blé concassé) au lait",
+    "name_ar": "دشيشة بالحليب",
+    "name_latin": "Dchicha bel hlib",
+    "desc_en": "Comforting Moroccan cracked-wheat porridge cooked in water then milk, finished with a little olive oil or honey.",
+    "desc_fr": "Bouillie marocaine réconfortante de blé concassé cuite à l'eau puis au lait, terminée avec un peu d'huile d'olive ou de miel.",
+    "cuisine": "Moroccan",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 35,
+    "macros": {
+      "kcal": 380,
+      "protein_g": 13,
+      "carbs_g": 62,
+      "fat_g": 9,
+      "fiber_g": 7
+    },
+    "ingredients": [
+      {
+        "en": "Dchicha (cracked wheat)",
+        "fr": "Dchicha (blé concassé)",
+        "ar": "دشيشة",
+        "qty": 250,
+        "unit": "g",
+        "group": "dry"
+      },
+      {
+        "en": "Water",
+        "fr": "Eau",
+        "ar": "ماء",
+        "qty": 750,
+        "unit": "ml",
+        "group": "dry"
+      },
+      {
+        "en": "Milk",
+        "fr": "Lait",
+        "ar": "حليب",
+        "qty": 750,
+        "unit": "ml",
+        "group": "fresh"
+      },
+      {
+        "en": "Salt",
+        "fr": "Sel",
+        "ar": "ملحة",
+        "qty": 1,
+        "unit": "tsp",
+        "group": "dry"
+      },
+      {
+        "en": "Olive oil",
+        "fr": "Huile d'olive",
+        "ar": "زيت العود",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      },
+      {
+        "en": "Honey",
+        "fr": "Miel",
+        "ar": "عسل",
+        "qty": 2,
+        "unit": "tbsp",
+        "group": "dry"
+      }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي 250 غرام دشيشة وصفيها.",
+        "حطيها فطنجرة مع 750 مل ماء وملعقة صغيرة ملحة، وخليها تغلي.",
+        "نقصي النار وغطيها وخليها تطيب 20 دقيقة مع التحريك من وقت لوقت حتى تشرب الماء وتولي الحبات طرية.",
+        "زيدي 750 مل حليب وحركي، وخليها تطيب على نار هادية 12 دقيقة زايدين مع التحريك المتواصل حتى تولي غليظة وكريمية.",
+        "زيدي ملعقة زيت العود وحركي، ودوقي الملحة.",
+        "صبيها فالزلايف سخونة.",
+        "اللي بغاها مالحة كيزيد قطرات زيت العود من الفوق، واللي بغاها حلوة كيزيد نص ملعقة عسل."
+      ],
+      "tips": [
+        "الدشيشة كتشرب الماء بزاف، إلى نشفت قبل ما تطيب زيدي كاس ماء سخون ماشي بارد.",
+        "الحليب فاللخر ديما، إلى طيبتي الدشيشة فالحليب من اللول كيلصق وكيحرق.",
+        "التحريك فالدقايق اللخرا ضروري، هو اللي كيعطي الكريمية.",
+        "الدشيشة كتغلاظ وهي كتبرد، الباقي سخنيه مع شوية حليب."
+      ]
+    },
+    "tags": [
+      "dairy",
+      "gluten",
+      "vegetarian"
+    ],
+    "photo_query": "cracked wheat porridge milk bowl warm"
+  }
+]

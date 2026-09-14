@@ -4,7 +4,10 @@
  */
 import { sql } from "drizzle-orm";
 import { db } from "./index";
-import { people } from "./schema";
+import { dishes, people } from "./schema";
+import { seedDishes } from "./seedDishes";
+
+type Seed = typeof people.$inferInsert;
 
 const DDL = [
   `CREATE TABLE IF NOT EXISTS people (
@@ -19,29 +22,67 @@ const DDL = [
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT ''
   )`,
+  `CREATE TABLE IF NOT EXISTS dishes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    meal TEXT NOT NULL,
+    name_en TEXT NOT NULL,
+    name_fr TEXT NOT NULL,
+    name_ar TEXT NOT NULL,
+    name_latin TEXT NOT NULL,
+    desc_en TEXT NOT NULL DEFAULT '',
+    desc_fr TEXT NOT NULL DEFAULT '',
+    cuisine TEXT NOT NULL DEFAULT '',
+    servings INTEGER NOT NULL DEFAULT 4,
+    prep_min INTEGER NOT NULL DEFAULT 0,
+    cook_min INTEGER NOT NULL DEFAULT 0,
+    macros TEXT NOT NULL,
+    ingredients TEXT NOT NULL,
+    recipe_ar TEXT NOT NULL,
+    tags TEXT NOT NULL,
+    photo_url TEXT,
+    photo_credit TEXT,
+    photo_license TEXT,
+    photo_source_url TEXT,
+    status TEXT NOT NULL DEFAULT 'ready',
+    reviewed INTEGER NOT NULL DEFAULT 0,
+    is_custom INTEGER NOT NULL DEFAULT 0,
+    created_by INTEGER,
+    created_at TEXT NOT NULL DEFAULT ''
+  )`,
+];
+
+/** Columns added after a table shipped. "duplicate column" is swallowed. */
+const LATE_COLUMNS = [
+  `ALTER TABLE people ADD COLUMN dislikes TEXT NOT NULL DEFAULT '[]'`,
 ];
 
 /** The household on day one. Everything is renameable from the People screen. */
-const SEED = [
-  { name: "Ali", role: "family", lang: "en", isAdmin: true, sortOrder: 1 },
+const SEED: Seed[] = [
+  { name: "Ali", role: "family", lang: "en", isAdmin: true, sortOrder: 1, dislikes: ["peppers", "raw_onion"] },
   { name: "Papa", role: "family", lang: "fr", isAdmin: true, sortOrder: 2 },
   { name: "Mama", role: "family", lang: "fr", isAdmin: true, sortOrder: 3 },
   { name: "Anas", role: "family", lang: "en", isChild: true, sortOrder: 4 },
   { name: "Layla", role: "family", lang: "en", isChild: true, simpleUi: true, sortOrder: 5 },
   { name: "Amsterdam", role: "family", lang: "en", isAway: true, sortOrder: 6 },
   { name: "الطباخة", role: "cook", lang: "ar", sortOrder: 9 },
-] as const;
+];
 
 let done: Promise<void> | null = null;
 
 export function ensureSchema(): Promise<void> {
   done ??= (async () => {
     for (const ddl of DDL) await db.run(sql.raw(ddl));
+    for (const ddl of LATE_COLUMNS) {
+      try { await db.run(sql.raw(ddl)); } catch { /* already there */ }
+    }
     const [row] = await db.select({ n: sql<number>`count(*)` }).from(people);
     if (Number(row?.n ?? 0) === 0) {
       const now = new Date().toISOString();
       await db.insert(people).values(SEED.map((p) => ({ ...p, createdAt: now })));
     }
+    const [d] = await db.select({ n: sql<number>`count(*)` }).from(dishes);
+    if (Number(d?.n ?? 0) === 0) await seedDishes();
   })().catch((e) => {
     done = null; // let the next request retry
     throw e;

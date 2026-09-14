@@ -1,6 +1,6 @@
 # Bsaha — Implementation Plan
 
-**Overall Progress:** `21%`
+**Overall Progress:** `50%`
 
 ## TLDR
 Bsaha is a standalone phone-first web app (installable, no app store) for one household: Ali, both parents, Anas (15), Layla (11), a brother away in Amsterdam who returns later, and the cook. Each evening the family picks lunch and dinner for the next day from a two-week shortlist. At 23:00 the app settles each meal to at most two dishes, and the cook opens a Darija-only view at 06:30 with the day's orders, headcount and recipes. Breakfast is not voted: each person picks their own and the cook sees the list. A grocery list for the two-week cycle is copied as Darija text and sent to the driver on WhatsApp.
@@ -24,7 +24,7 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
 
 ## Tasks:
 
-- [ ] 🟨 **Step 1: Foundation**
+- [ ] 🟨 **Step 1: Foundation** (all built, only the production database step is open)
   - [x] 🟩 Next.js project, Drizzle with Turso, deployed to Vercel (bsaha-pink.vercel.app), installable on phone and Android tablet
   - [x] 🟩 "Who are you?" screen: tap your name, big tiles, cook gets her own view
   - [x] 🟩 People screen for admins: add, rename, family or cook, admin, away, child view, language
@@ -32,14 +32,14 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [x] 🟩 Me screen: change language, switch person
   - [ ] 🟥 Turso database created and connected in production (needs Ali's Turso account, see notes)
 
-- [ ] 🟥 **Step 2: Meal library**
-  - [ ] 🟥 Dish model: names in three languages, meal type, photo with licence and credit, per-serving macros, ingredients with quantities per serving, Darija recipe with steps and tips, tags for dislike filters (peppers, raw onion)
-  - [ ] 🟥 Generate about 120 dishes with Claude as a nutritionist would, family review pass on the Darija
-  - [ ] 🟥 Source photos from free-licence libraries, store credit per image
-  - [ ] 🟥 Browse by meal, dish detail, cook recipe view in Darija with large text
-  - [ ] 🟥 Per-person dislikes: settings in Me, filter applied to that person's views
-  - [ ] 🟥 Add your own dish: name plus photo URL, background job fills the rest
-  - [ ] 🟥 Macros hidden for children, labelled estimates for adults
+- [ ] 🟨 **Step 2: Meal library** (built and tested locally, family review of the Darija still open)
+  - [x] 🟩 Dish model: names in three languages, meal type, photo with licence and credit, per-serving macros, ingredients with quantities per serving, Darija recipe with steps and tips, tags for dislike filters (peppers, raw onion)
+  - [ ] 🟨 120 dishes written (40/40/40) as a nutritionist would · family review pass on the Darija still to do (admins: open a dish, Edit recipe, mark Reviewed)
+  - [x] 🟩 Source photos from free-licence libraries, store credit per image
+  - [x] 🟩 Browse by meal, dish detail, cook recipe view in Darija with large text
+  - [x] 🟩 Per-person dislikes: settings in Me, filter applied to that person's views
+  - [x] 🟩 Add your own dish: name plus photo URL, background job fills the rest
+  - [x] 🟩 Macros hidden for children, labelled estimates for adults
 
 - [ ] 🟥 **Step 3: Two-week cycle and grocery list**
   - [ ] 🟥 Admins create a cycle: dates, 10 lunches, 10 dinners, breakfast set
@@ -61,4 +61,7 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
 ## Notes
 - Live URL: https://bsaha-pink.vercel.app (bsaha.vercel.app belongs to someone else). Vercel project `bsaha`, linked from `bsaha/.vercel`.
 - Production database: Bsaha needs its own Turso database. Creating one needs a login to Ali's Turso account, which cannot be done from a non-interactive session. Two commands once logged in: `turso db create bsaha` and `turso db tokens create bsaha`, then set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on the Vercel project.
+- Photos: 116 of 120 dishes have a free-licence photo from Wikimedia Commons or Openverse, each checked by eye, credit and licence stored in `data/photos.json`. Four have none yet (date and almond bites, sardine kefta, turkey escalopes, and one more) and show a plain tile until the cook photographs them.
+- Custom dishes: the background write-up needs `ANTHROPIC_API_KEY` on the Vercel project. Until it is set, an added dish shows "Could not be written up" with a retry button.
+- Library refresh: `POST /api/admin/migrate` re-reads `data/dishes/*.json` and updates built-in dishes by slug without touching custom dishes, the Reviewed flag, or a photo the cook replaced.
 - Time zone fixed to Africa/Casablanca for deadlines and "today".
