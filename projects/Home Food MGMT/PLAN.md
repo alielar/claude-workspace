@@ -19,7 +19,7 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
 - **Main menu is international plus lean Moroccan (decided 2026-09-14).** Everything Moroccan stays reachable in the Moroccan menu. Lean Moroccan dishes, chosen by hand in `data/lean-moroccan.json` (soups, grilled fish, legume stews, cooked salads, lean chicken and fish dishes), also appear in the main menu. Heavy ones (fried or sweet doughs, honey-and-fat tagines, seffa, rfissa, couscous with meat) live only in the Moroccan menu.
 - **Search and filters run on the phone.** One load, then meal switching, text search and filters (light, balanced, hearty, high protein, high fibre, under 30 min, vegetarian, fish, chicken, red meat) are instant.
 - **Speed rule.** The app runs in Dublin next to the database. Every screen has a loading skeleton. Grids use 420px thumbnails.
-- **Library built like a nutritionist would.** Genuinely healthy and tasty, adequate protein and carbs across the day for the whole family, Moroccan throughout but not exclusively, halal, everything sourced in Morocco. About 120 dishes at launch, generated with Claude, Darija reviewed by the family before going live.
+- **Library built like a nutritionist would.** Genuinely healthy and tasty, adequate protein and carbs across the day for the whole family, halal, everything sourced in Morocco. 180 dishes: 120 Moroccan-and-classic plus 60 international high-protein dishes (fat under 35% of calories, protein 20 to 45 g per serving, vegetables in every dish), generated with Claude, Darija reviewed by the family before going live.
 - **Custom dishes.** Anyone adds a name plus a photo found online. That is enough to pick it for a meal. No API call at runtime (decided 2026-09-14, no Anthropic key needed). Admins can add a Darija recipe from the dish page. A custom dish without ingredients does not feed the grocery list.
 - **Darija in Arabic script** for recipes, the cook's view and the grocery list. Dish names also shown in Latin letters for the family. Right-to-left layout when Darija is selected.
 - **Photos.** Launch with free-licence stock (Wikimedia Commons, Openverse, Unsplash, Pexels), licence and credit stored per image. The cook replaces any photo with one she takes. No scraping.
@@ -43,7 +43,8 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [x] 🟩 Source photos from free-licence libraries, store credit per image
   - [x] 🟩 Browse by meal, dish detail, cook recipe view in Darija with large text
   - [x] 🟩 Main menu vs Moroccan menu, search, filters, instant switching on the phone
-  - [ ] 🟨 International library expansion: 60 more high-protein dishes (20 per meal) being written, photos to follow
+  - [x] 🟩 International library expansion: 60 more high-protein dishes (20 per meal), 180 dishes total
+  - [ ] 🟨 Photos for the 60 new dishes, checked by eye
   - [x] 🟩 Per-person dislikes: settings in Me, filter applied to that person's views
   - [x] 🟩 Add your own dish: name plus photo link, ready at once, admins add the recipe later
   - [x] 🟩 Macros hidden for children, labelled estimates for adults

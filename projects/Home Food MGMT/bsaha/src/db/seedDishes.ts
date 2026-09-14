@@ -10,6 +10,9 @@ import { slugify } from "@/lib/slug";
 import breakfast from "../../data/dishes/breakfast.json";
 import lunch from "../../data/dishes/lunch.json";
 import dinner from "../../data/dishes/dinner.json";
+import intlBreakfast from "../../data/dishes/intl-breakfast.json";
+import intlLunch from "../../data/dishes/intl-lunch.json";
+import intlDinner from "../../data/dishes/intl-dinner.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
 
@@ -22,7 +25,7 @@ type Raw = {
 };
 type Photo = { file: string; credit: string; license: string; source: string };
 
-const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[])];
+const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[]), ...(intlBreakfast as Raw[]), ...(intlLunch as Raw[]), ...(intlDinner as Raw[])];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
 const inMain = (r: Raw, slug: string) => r.cuisine !== "Moroccan" || LEAN.has(slug);
