@@ -857,7 +857,9 @@ export default function TodoPage() {
   const openTasks = visible.filter((t) => !t.doneAt);
   const doneToday = visible.filter((t) => t.doneAt !== null).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0));
   const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
-  const dueCount = groups.filter((g) => g.key === "overdue" || g.key === "today").reduce((s, g) => s + g.items.length, 0);
+  // "due today" = the badge rule (overdue + today, evening included), so the header, the
+  // home-screen badge and the widget all say the same number (Ali 2026-09-14).
+  const dueCount = badgeCount(visible, today);
 
   // Lists · pinned first, then most recently touched; search covers names and content.
   const q = query.trim().toLowerCase();

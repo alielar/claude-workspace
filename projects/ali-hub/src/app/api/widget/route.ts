@@ -3,7 +3,7 @@ import { GET as getChecklist } from "@/app/api/checklist/route";
 import { GET as getTodos } from "@/app/api/todos/route";
 import { checklistToday, dayPart, type DayPart } from "@/lib/checklist/day";
 import type { ChecklistData, ChecklistItem } from "@/lib/checklist/types";
-import { badgeCount, type Todo } from "@/lib/todo/types";
+import { badgeCount, isSleeping, type Todo } from "@/lib/todo/types";
 
 /**
  * GET /api/widget · one small JSON for the home-screen widget (Scriptable).
@@ -41,10 +41,28 @@ export async function GET() {
     .slice(0, 3)
     .map((i) => ({ title: i.title, emoji: i.emoji }));
 
-  // Lock-screen widget (option 4 "List"): the three most urgent tasks.
-  // Overdue first (oldest first), then today's · timed by time, evening-untimed last.
-  const urgent = todos
-    .filter((t) => !t.deleted && !t.doneAt && !t.someday && (t.area ?? "personal") !== "list" && t.dueDate !== null && t.dueDate <= today)
+  // Lock-screen widget · strict order (Ali 2026-09-14): today's routine steps for THIS part
+  // of the day, then work to-dos, then personal to-dos only once the two above are done.
+  const routineNow = items
+    .filter((i) => !i.completedToday && i.kind !== "habit" && i.source !== "workout" && (partOf(i) === null || partOf(i) === part))
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((i) => ({ t: i.title, w: "now" }));
+  const dueTasks = todos
+    .filter((t) => !t.deleted && !t.doneAt && !t.someday && !isSleeping(t, today) && (t.area ?? "personal") !== "list" && t.dueDate !== null && t.dueDate <= today);
+  const whenLabel = (t: Todo) => (t.dueDate! < today ? "late" : t.dueTime ? t.dueTime : t.evening && part !== "evening" ? "eve" : "today");
+  const byUrgency = (a: Todo, b: Todo) => {
+    const lateA = a.dueDate! < today ? 0 : 1, lateB = b.dueDate! < today ? 0 : 1;
+    if (lateA !== lateB) return lateA - lateB;
+    if (lateA === 0 && a.dueDate !== b.dueDate) return a.dueDate! < b.dueDate! ? -1 : 1;
+    const evA = a.evening && !a.dueTime ? 1 : 0, evB = b.evening && !b.dueTime ? 1 : 0;
+    if (evA !== evB) return evA - evB;
+    return (a.dueTime ?? "98:99") <= (b.dueTime ?? "98:99") ? -1 : 1;
+  };
+  const work = dueTasks.filter((t) => t.area === "work").sort(byUrgency).map((t) => ({ t: t.title, w: whenLabel(t) }));
+  const personal = dueTasks.filter((t) => (t.area ?? "personal") === "personal").sort(byUrgency).map((t) => ({ t: t.title, w: whenLabel(t) }));
+
+  // Kept for older copies of the script: the three most urgent tasks, any list.
+  const urgent = dueTasks
     .sort((a, b) => {
       const lateA = a.dueDate! < today ? 0 : 1, lateB = b.dueDate! < today ? 0 : 1;
       if (lateA !== lateB) return lateA - lateB;
@@ -68,10 +86,15 @@ export async function GET() {
       streak: data.overallStreak,
       bestStreak: data.bestStreak30 ?? 0,
       next,
+      // Same rules as the app badge and the To-do page: due today or overdue, both lists,
+      // Vault (sleeping) items excluded. `someday` = the To-do page's Someday buckets, Personal + Work
+      // (the 2026-09-14 overcount was sleeping Vault items · they have no date, so they looked like "someday").
       todosDue: badgeCount(todos, today),
-      someday: todos.filter((t) => !t.deleted && !t.doneAt && (t.area ?? "personal") !== "list" && (t.someday || !t.dueDate)).length,
+      someday: todos.filter((t) => !t.deleted && !t.doneAt && !isSleeping(t, today) && (t.area ?? "personal") !== "list" && (t.someday || !t.dueDate)).length,
       urgent,
+      routineNow, work, personal,
       todosWork: badgeCount(todos, today, "work"),
+      todosPersonal: badgeCount(todos, today, "personal"),
       trainedToday: items.some((i) => i.source === "workout" && i.completedToday),
     },
     { headers: { "Cache-Control": "no-store" } }

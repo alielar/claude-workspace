@@ -76,17 +76,33 @@ function drawRing(sizePt, pct) {
   return dc.getImage();
 }
 
-let d = null;
+// Fetch, with a last-good copy on disk (2026-09-14: the widget "bugged out" whenever
+// iOS gave it a slow network moment or the server was cold-starting · 8 s was too short
+// and a failed fetch painted an empty tile). Now: 20 s, and on failure the previous
+// answer is shown, up to 12 hours old.
+const fm = FileManager.local();
+const CACHE = fm.joinPath(fm.documentsDirectory(), "ali-widget-cache.json");
+let d = null, fromCache = false;
 try {
   const req = new Request(BASE + "/api/widget");
   req.headers = { "x-app-key": KEY };
-  req.timeoutInterval = 8;
+  req.timeoutInterval = 20;
   d = await req.loadJSON();
 } catch (e) { d = null; }
 // A pasted script with an empty KEY gets {"error":"Unauthorized"} back · that must
 // read as "no key", never as zero to-dos.
 let keyProblem = false;
 if (!d || typeof d.total !== "number") { keyProblem = !!(d && d.error) || !KEY; d = null; }
+if (d) {
+  try { fm.writeString(CACHE, JSON.stringify({ at: Date.now(), d })); } catch (e) { /* no disk, fine */ }
+} else if (!keyProblem) {
+  try {
+    if (fm.fileExists(CACHE)) {
+      const c = JSON.parse(fm.readString(CACHE));
+      if (c && c.d && Date.now() - c.at < 12 * 3600 * 1000) { d = c.d; fromCache = true; }
+    }
+  } catch (e) { /* ignore */ }
+}
 const NO_DATA = keyProblem ? "KEY missing · copy from Settings" : "tap to open";
 
 // ─── Lock Screen widgets ──────────────────────────────────────────────────────
@@ -99,10 +115,14 @@ if (FAMILY.indexOf("accessory") === 0) {
   // through and iOS still renders the text in its vibrant lock-screen material.
   lw.addAccessoryWidgetBackground = false;
   lw.refreshAfterDate = new Date(Date.now() + 10 * 60 * 1000);
-  // Routine first, always: unfinished routine steps for this part of day,
-  // then the most urgent to-dos — capped at 3 rows.
-  const routine = ((d && d.next) || []).map((n) => ({ t: n.title, w: "routine" }));
-  const urgent = routine.concat((d && d.urgent) || []).slice(0, 3);
+  // Strict order (Ali 2026-09-14): 1 · today's routine steps for this part of the day,
+  // 2 · work to-dos, 3 · personal to-dos only once routine and work are both done. Max 3 rows.
+  const routine = (d && d.routineNow) || ((d && d.next) || []).map((n) => ({ t: n.title, w: "now" }));
+  const work = (d && d.work) || [];
+  const personal = (d && d.personal) || [];
+  let urgent = routine.concat(work);
+  if (!urgent.length) urgent = personal;
+  urgent = urgent.slice(0, 3);
   const due = d ? d.todosDue || 0 : 0;
 
   if (FAMILY === "accessoryRectangular") {
@@ -161,7 +181,7 @@ if (FAMILY.indexOf("accessory") === 0) {
 const w = new ListWidget();
 w.backgroundColor = BG;
 w.url = BASE + "/today";
-w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
+w.refreshAfterDate = new Date(Date.now() + (fromCache ? 5 : 15) * 60 * 1000);
 w.setPadding(10, 10, 12, 10);
 
 const pct = d && d.total ? d.done / d.total : 0;
@@ -210,7 +230,7 @@ if (!d) {
   const countTxt = lineStack.addText(`${tCount} TD`);
   countTxt.font = Font.mediumSystemFont(13);
   countTxt.textColor = tCount > 0 ? INK : INK3;
-  const sdTxt = lineStack.addText(` · ${sCount} SD`);
+  const sdTxt = lineStack.addText(` · ${sCount} SD${fromCache ? " ·" : ""}`);
   sdTxt.font = Font.mediumSystemFont(13);
   sdTxt.textColor = INK3;
   const streak = d.streak ?? 0;
