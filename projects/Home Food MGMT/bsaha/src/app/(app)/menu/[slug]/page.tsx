@@ -7,7 +7,7 @@ import { people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { dishDesc, dishName, formatQty, getDish, ingredientName } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
-import { deleteDish, retryResearch, saveRecipe, setReviewed } from "../actions";
+import { deleteDish, saveRecipe, setReviewed } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
@@ -19,6 +19,9 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
   const L = me.lang;
   const isCook = me.role === "cook";
   const addedBy = dish.createdBy ? (await db.select({ name: people.name }).from(people).where(eq(people.id, dish.createdBy)))[0]?.name : null;
+
+  const hasRecipe = dish.recipeAr.steps.length > 0;
+  const hasIngredients = dish.ingredients.length > 0;
 
   const recipe = (
     <section className="mt-8" dir="rtl" style={AR}>
@@ -82,23 +85,14 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
           <span className="chip bg-card border border-line text-muted py-1 px-3">{dish.prepMin + dish.cookMin} {t(L, "minutes")}</span>
         )}
         {addedBy && <span className="chip bg-card border border-line text-muted py-1 px-3">{t(L, "customDish")} {addedBy}</span>}
-        {me.isAdmin && !dish.reviewed && dish.status === "ready" && (
+        {me.isAdmin && !dish.reviewed && (
           <span className="chip bg-card border border-line text-muted py-1 px-3">{t(L, "needsReview")}</span>
         )}
       </div>
 
-      {dish.status === "researching" && <p className="mt-6 text-muted text-lg">{t(L, "researching")}</p>}
-      {dish.status === "failed" && (
-        <form action={retryResearch} className="mt-6 flex items-center gap-3">
-          <input type="hidden" name="id" value={dish.id} />
-          <span className="text-muted">{t(L, "researchFailed")}</span>
-          <button className="btn-soft py-2">↻</button>
-        </form>
-      )}
-
       {dish.status === "ready" && (
         <>
-          {!me.isChild && !me.simpleUi && !isCook && (
+          {!me.isChild && !me.simpleUi && !isCook && dish.macros.kcal > 0 && (
             <section className="mt-6 tile p-4">
               <div className="flex items-baseline justify-between">
                 <h2 className="font-extrabold">{t(L, "nutrition")}</h2>
@@ -123,7 +117,7 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
             </section>
           )}
 
-          {isCook ? (<>{recipe}{ingredients}</>) : (<>{ingredients}{recipe}</>)}
+          {isCook ? (<>{hasRecipe && recipe}{hasIngredients && ingredients}</>) : (<>{hasIngredients && ingredients}{hasRecipe && recipe}</>)}
         </>
       )}
 
@@ -134,7 +128,7 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
         </p>
       )}
 
-      {me.isAdmin && dish.status === "ready" && (
+      {me.isAdmin && (
         <details className="mt-8 tile p-4">
           <summary className="font-bold cursor-pointer">{t(L, "editRecipe")}</summary>
           <form action={saveRecipe} className="mt-4 grid gap-3" dir="rtl" style={AR}>

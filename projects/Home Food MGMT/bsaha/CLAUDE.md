@@ -14,4 +14,5 @@ Schema changes go in `src/db/schema.ts` AND `src/db/migrate.ts` (idempotent SQL,
 - Cook-facing content (recipes, orders, grocery text) is always Darija.
 - Children (`isChild`) never see macros or calories.
 - No emojis in UI labels.
+- Custom dishes are name plus photo only. No Claude API call at runtime. Admins add a recipe from the dish page.
 - Deploy: `npx vercel --prod --yes` from this folder, then `curl -X POST https://<url>/api/admin/migrate`.

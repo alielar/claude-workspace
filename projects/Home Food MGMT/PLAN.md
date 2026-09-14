@@ -3,20 +3,20 @@
 **Overall Progress:** `50%`
 
 ## TLDR
-Bsaha is a standalone phone-first web app (installable, no app store) for one household: Ali, both parents, Anas (15), Layla (11), a brother away in Amsterdam who returns later, and the cook. Each evening the family picks lunch and dinner for the next day from a two-week shortlist. At 23:00 the app settles each meal to at most two dishes, and the cook opens a Darija-only view at 06:30 with the day's orders, headcount and recipes. Breakfast is not voted: each person picks their own and the cook sees the list. A grocery list for the two-week cycle is copied as Darija text and sent to the driver on WhatsApp.
+Bsaha is a standalone phone-first web app (installable, no app store) for one household: Ali, both parents, Anas (15), Layla (11), a brother away in Amsterdam who returns later, and the cook. Each evening the family picks lunch and dinner for the next day from a two-week shortlist. At 23:00 the app settles each meal to at most two dishes, and the cook opens a Darija-only view at 06:30 with the day's orders, headcount and recipes. Breakfast is not voted: each person picks their own and the cook sees the list. A grocery list for the two-week cycle is shown to the grocery account and can be copied as Darija text to WhatsApp.
 
 ## Critical Decisions
 - **Voting: pick one, add a backup.** First pick 2 points, backup 1 point. Top two dishes per meal at 23:00. Ties: more first picks, then least recently cooked, then random. A dish that won yesterday cannot win today. Admins can override with a visible "changed by" label.
 - **Breakfast is individual.** Each person picks their own breakfast the evening before. No vote, no two-dish limit. The cook sees a per-person list.
 - **Headcount.** Anyone eating at home marks it the day before by voting. No vote means not eating at home. The cook always cooks for at least three.
 - **Cycle: two weeks.** Shortlist of 10 lunches and 10 dinners plus a breakfast set. One big shop at cycle start, one fresh top-up list generated on day 7 from actual orders. Grocery quantities assume each shortlisted dish is cooked about twice.
-- **Grocery list goes out through the cook.** One button copies the list as Darija text. She pastes it to the driver on WhatsApp. No notifications or reminders anywhere in the app.
+- **Grocery list goes out through the cook.** One button copies the list as Darija text. She can paste it to the grocery person on WhatsApp. No notifications or reminders anywhere in the app.
 - **Identity: name only.** Open the app, tap your name. No household code, no PIN. Revisit only if someone actually votes as someone else.
-- **Roles.** Family or cook. Admins: Ali and both parents. Admins curate the shortlist together, manage people and can override results.
+- **Roles.** Family, cook, or grocery. The grocery account (never called driver) is for the person who shops. It sees only the shopping list. Admins: Ali and both parents. Admins curate the shortlist together, manage people and can override results.
 - **Children's views.** Anas and Layla never see macros or calories. Layla's interface is photo-first with almost no reading. Adults see everything, labelled as estimates.
 - **Personal dislikes are per person, not global.** Ali's filter: no peppers, no fresh or raw onions, cooked-down onions fine. The library stays complete for everyone else. Filters hide dishes from that person's view and recommendations only.
 - **Library built like a nutritionist would.** Genuinely healthy and tasty, adequate protein and carbs across the day for the whole family, Moroccan throughout but not exclusively, halal, everything sourced in Morocco. About 120 dishes at launch, generated with Claude, Darija reviewed by the family before going live.
-- **Custom dishes.** Anyone adds a name plus a photo found online. A background job researches the dish and fills in ingredients, method, macros and the Darija recipe.
+- **Custom dishes.** Anyone adds a name plus a photo found online. That is enough to pick it for a meal. No API call at runtime (decided 2026-09-14, no Anthropic key needed). Admins can add a Darija recipe from the dish page. A custom dish without ingredients does not feed the grocery list.
 - **Darija in Arabic script** for recipes, the cook's view and the grocery list. Dish names also shown in Latin letters for the family. Right-to-left layout when Darija is selected.
 - **Photos.** Launch with free-licence stock (Wikimedia Commons, Openverse, Unsplash, Pexels), licence and credit stored per image. The cook replaces any photo with one she takes. No scraping.
 - **Stack: same as A L I hub.** Next.js 16, Drizzle with Turso, Tailwind 4, Vercel. Project folder: `Home Food MGMT/bsaha`. Name: Bsaha, Latin letters.
@@ -38,13 +38,15 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [x] 🟩 Source photos from free-licence libraries, store credit per image
   - [x] 🟩 Browse by meal, dish detail, cook recipe view in Darija with large text
   - [x] 🟩 Per-person dislikes: settings in Me, filter applied to that person's views
-  - [x] 🟩 Add your own dish: name plus photo URL, background job fills the rest
+  - [x] 🟩 Add your own dish: name plus photo link, ready at once, admins add the recipe later
   - [x] 🟩 Macros hidden for children, labelled estimates for adults
 
-- [ ] 🟥 **Step 3: Two-week cycle and grocery list**
+- [ ] 🟥 **Step 3: Two-week cycle and grocery list** (starts once the production database is confirmed)
   - [ ] 🟥 Admins create a cycle: dates, 10 lunches, 10 dinners, breakfast set
   - [ ] 🟥 Grocery list: aggregate ingredients assuming each dish cooked about twice, grouped dry vs fresh, units normalised
-  - [ ] 🟥 Cook's "Copy list" button producing Darija text for WhatsApp
+  - [ ] 🟥 Grocery account: third role, its own sign-in tile, one screen with the current list and tick-off boxes, Darija by default
+  - [ ] 🟥 Product catalogue: map each ingredient to a real product as sold at Marjane and Carrefour Morocco (name as on the shelf, usual pack size, approximate price in dirhams). Research the common products first. See notes on prices and images.
+  - [ ] 🟥 Cook's "Copy list" button producing Darija text for WhatsApp, kept as the fallback
   - [ ] 🟥 Day 7 fresh top-up list from actual orders and remaining days
 
 - [ ] 🟥 **Step 4: Daily picks and the cook's morning view**
@@ -62,6 +64,6 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
 - Live URL: https://bsaha-pink.vercel.app (bsaha.vercel.app belongs to someone else). Vercel project `bsaha`, linked from `bsaha/.vercel`.
 - Production database: Bsaha needs its own Turso database. Creating one needs a login to Ali's Turso account, which cannot be done from a non-interactive session. Two commands once logged in: `turso db create bsaha` and `turso db tokens create bsaha`, then set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on the Vercel project.
 - Photos: 116 of 120 dishes have a free-licence photo from Wikimedia Commons or Openverse, each checked by eye, credit and licence stored in `data/photos.json`. Four have none yet (date and almond bites, sardine kefta, turkey escalopes, and one more) and show a plain tile until the cook photographs them.
-- Custom dishes: the background write-up needs `ANTHROPIC_API_KEY` on the Vercel project. Until it is set, an added dish shows "Could not be written up" with a retry button.
 - Library refresh: `POST /api/admin/migrate` re-reads `data/dishes/*.json` and updates built-in dishes by slug without touching custom dishes, the Reviewed flag, or a photo the cook replaced.
+- Grocery product catalogue, two honest limits. Prices at Marjane and Carrefour change weekly and neither publishes a stable public price feed, so prices will be approximate and dated, editable by admins or the grocery person. Product packshots on retailer sites belong to the brands, so the app will show our own photos or a plain tile, not copied catalogue images.
 - Time zone fixed to Africa/Casablanca for deadlines and "today".

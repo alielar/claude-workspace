@@ -74,7 +74,7 @@ export const dishes = sqliteTable("dishes", {
   photoCredit: text("photo_credit"),
   photoLicense: text("photo_license"),
   photoSourceUrl: text("photo_source_url"),
-  /** ready · researching (custom dish being filled in) · failed */
+  /** Always "ready" today. Kept for a future background fill-in. */
   status: text("status").notNull().default("ready"),
   /** Darija checked by the family. */
   reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
