@@ -782,6 +782,21 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
 
         <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
 
+        {/* Doc → task (Ali 2026-09-14: the "Fixes ALI" doc should be a to-do for today with its lines as subtasks).
+            Same entry, moved to the Personal list, due today, notes shown as Subtasks · every line becomes one. */}
+        {!isNew && (d.notes ?? "").trim() && (
+          <button type="button" className="cc-btn cc-btn-ghost" style={{ minHeight: 44, borderRadius: 12, fontSize: 15, justifySelf: "start" }}
+            onClick={() => {
+              if (!confirm("Turn this doc into a to-do for today? Its lines become subtasks you tick one by one.")) return;
+              const items = parseSubtasks(d.notes);
+              onSave({ ...d, title: d.title.trim() || "Untitled", area: "personal", dueDate: today, dueTime: null, evening: false, someday: false, priority: 0, format: "checklist", notes: items.length ? items.map((s) => `- [${s.done ? "x" : " "}] ${s.text}`).join("\n") : d.notes });
+              try { localStorage.setItem("cc-todo-area", "personal"); } catch { /* ignore */ }
+              onClose();
+            }}>
+            Make it a to-do for today
+          </button>
+        )}
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
           <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, borderRadius: 14, padding: "0 16px", color: "var(--neg)", fontSize: 15 }}>{isNew ? "Discard" : "Delete"}</button>
