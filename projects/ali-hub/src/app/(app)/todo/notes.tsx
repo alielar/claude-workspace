@@ -27,6 +27,25 @@ export function prettyNotes(notes: string): string {
 const PREVIEW_LINES = 3;
 
 /**
+ * One-line-looking field that grows with its text (Ali 2026-09-14: "checklist boxes must show
+ * their full content, expand the box rather than making me scroll inside it"). A textarea
+ * with rows=1 that resizes on every change; Return commits (blur) instead of adding a line.
+ */
+export function GrowInput({ value, onChange, onCommit, autoFocus, placeholder, ariaLabel, style }: {
+  value: string; onChange: (v: string) => void; onCommit?: () => void; autoFocus?: boolean; placeholder?: string; ariaLabel?: string; style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { const el = ref.current; if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }, [value]);
+  return (
+    <textarea ref={ref} className="cc-input" rows={1} value={value} placeholder={placeholder} aria-label={ariaLabel} autoFocus={autoFocus}
+      onChange={(e) => onChange(e.target.value.replace(/\n/g, " "))}
+      onBlur={onCommit}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
+      style={{ fontSize: 16, lineHeight: 1.4, minHeight: 40, padding: "8px 10px", resize: "none", overflow: "hidden", width: "100%", boxSizing: "border-box", overflowWrap: "anywhere", ...style }} />
+  );
+}
+
+/**
  * A task's notes under its row · shown ONLY while the ≡ icon is open (Ali 2026-09-13:
  * "when it's closed I shouldn't see anything"). Plain text, no click handler, so it can be
  * selected and copied on the phone (long-press) and on the laptop (drag).
@@ -57,7 +76,7 @@ function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
   };
   const showDone = s.done || celebrating;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: editable ? "40px 1fr auto" : "40px 1fr", alignItems: "center", minHeight: editable ? 46 : 38 }}>
+    <div style={{ display: "grid", gridTemplateColumns: editable ? "40px 1fr auto" : "40px 1fr", alignItems: editable ? "start" : "center", minHeight: editable ? 46 : 38, paddingTop: editable ? 3 : 0, paddingBottom: editable ? 3 : 0 }}>
       <button type="button" onClick={tick} aria-label={s.done ? "Mark subtask not done" : "Mark subtask done"} aria-pressed={showDone}
         style={{ width: 40, minHeight: editable ? 46 : 38, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 20, height: 20, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -66,8 +85,8 @@ function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
         </span>
       </button>
       {editable && onText ? (
-        <input className="cc-input" value={s.text} onChange={(e) => onText(e.target.value)} aria-label="Subtask"
-          style={{ fontSize: 16, minHeight: 40, padding: "0 10px", textDecoration: s.done ? "line-through" : "none", color: s.done ? "var(--ink-3)" : "var(--ink)" }} />
+        <GrowInput value={s.text} onChange={onText} ariaLabel="Subtask"
+          style={{ textDecoration: s.done ? "line-through" : "none", color: s.done ? "var(--ink-3)" : "var(--ink)" }} />
       ) : (
         <span className={celebrating ? "cc-done-strike" : undefined} style={{ display: "inline-block", fontSize: 15, lineHeight: 1.4, color: showDone ? "var(--ink-3)" : "var(--ink-2)", textDecoration: s.done ? "line-through" : "none", textDecorationColor: "var(--ink-4)", overflowWrap: "anywhere", paddingRight: 8 }}>
           <Linkify text={s.text} />

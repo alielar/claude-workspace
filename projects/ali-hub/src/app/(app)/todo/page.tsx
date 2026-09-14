@@ -18,7 +18,7 @@
 import Link from "next/link";
 import { Linkify, LinkChips } from "@/components/Linkify";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { NotesPreview, SubtaskList, SubtaskEditor, SectionsView } from "./notes";
+import { NotesPreview, SubtaskList, SubtaskEditor, SectionsView, GrowInput } from "./notes";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
@@ -733,13 +733,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
               <div key={i} style={{ display: "grid", gridTemplateColumns: "14px 1fr auto", gap: 10, alignItems: "center", minHeight: 48, borderBottom: "1px solid var(--line)" }}>
                 <span aria-hidden style={{ width: 5, height: 5, borderRadius: 4, background: "var(--violet)", justifySelf: "center" }} />
                 {editIdx === i ? (
-                  <input
-                    className="cc-input" value={editText} autoFocus
-                    onChange={(e) => setEditText(e.target.value)}
-                    onBlur={commitEdit}
-                    onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); }}
-                    style={{ fontSize: 16, minHeight: 40 }}
-                  />
+                  <GrowInput value={editText} autoFocus onChange={setEditText} onCommit={commitEdit} ariaLabel="List item" />
                 ) : (
                   <button onClick={() => { setEditIdx(i); setEditText(it); }} style={{ background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, lineHeight: 1.4, padding: "10px 0", cursor: "pointer", minWidth: 0, overflowWrap: "anywhere" }}>
                     <Linkify text={it} />
