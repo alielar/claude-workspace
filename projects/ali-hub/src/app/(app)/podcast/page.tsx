@@ -60,8 +60,15 @@ function buildCaptions(script: string, chapters: Chapter[], durationSec: number)
 
 export default function PodcastPage() {
   const router = useRouter();
-  const today = checklistToday();
-  const { data, setData } = useCached<{ episode: Episode | null }>("podcast-today", () => fetchJson("/api/podcast/today"));
+  // ?date=YYYY-MM-DD opens one of the last briefs (Ali 2026-09-14) · default = today's.
+  // Read after mount so the server and first client render agree.
+  const [today, setToday] = useState(() => checklistToday());
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("date");
+    if (q && /^\d{4}-\d{2}-\d{2}$/.test(q) && q !== checklistToday()) setToday(q); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
+  const isToday = today === checklistToday();
+  const { data, setData } = useCached<{ episode: Episode | null }>(isToday ? "podcast-today" : `podcast-${today}`, () => fetchJson(isToday ? "/api/podcast/today" : `/api/podcast/today?date=${today}`));
   const ep = data?.episode && data.episode.date === today ? data.episode : null;
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -226,7 +233,7 @@ export default function PodcastPage() {
       {/* Top bar */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 600 }}>Morning brief</div>
+          <div style={{ fontSize: 17, fontWeight: 600 }}>Morning brief{isToday ? "" : ` · ${new Date(today + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}`}</div>
           <div style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {currentChapter ? currentChapter.title : ep.date}
           </div>

@@ -30,8 +30,10 @@ export function heardToday(today: string): boolean {
 }
 
 export function PodcastCard({ today, hideWhenHeard = false }: { today: string; hideWhenHeard?: boolean }) {
-  const { data } = useCached<{ episode: Episode | null }>("podcast-today", () => fetchJson("/api/podcast/today"));
+  const { data } = useCached<{ episode: Episode | null; recent?: Episode[] }>("podcast-today", () => fetchJson("/api/podcast/today"));
   const ep = data?.episode && data.episode.date === today ? data.episode : null;
+  // The last briefs (Ali 2026-09-14: "I couldn't find yesterday's") · exactly 3 are kept on the server.
+  const previous = (data?.recent ?? []).filter((e) => e.date !== today && e.status === "ready" && e.audioUrl);
   const [heard, setHeard] = useState(false);
   const [resumeSec, setResumeSec] = useState(0);
 
@@ -43,22 +45,23 @@ export function PodcastCard({ today, hideWhenHeard = false }: { today: string; h
     } catch { /* defaults */ }
   }, [today]);
 
-  if (!ep) return null;
+  if (!ep && previous.length === 0) return null;
   if (hideWhenHeard && heard) return null;
 
-  const duration = ep.durationSec || 0;
-  const chapterCount = ep.chapters?.length ?? 0;
+  const duration = ep?.durationSec || 0;
+  const chapterCount = ep?.chapters?.length ?? 0;
+  const dayLabel = (ymd: string) => new Date(ymd + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
 
   return (
     <section className="cc-card">
       <div className="cc-card-head">
         <span className="title">Morning brief</span>
         <span className="tail">
-          {ep.status === "ready" ? (heard ? "listened ✓" : duration ? fmt(duration) : "podcast") : ep.script ? "voice is down" : "not ready yet"}
+          {!ep ? "today's is on its way" : ep.status === "ready" ? (heard ? "listened ✓" : duration ? fmt(duration) : "podcast") : ep.script ? "voice is down" : "not ready yet"}
         </span>
       </div>
-      <div className="cc-card-body">
-        {ep.status === "ready" && ep.audioUrl ? (
+      <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
+        {!ep ? null : ep.status === "ready" && ep.audioUrl ? (
           <Link href="/podcast" style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 14, alignItems: "center", minHeight: 56, textDecoration: "none", color: "inherit" }}>
             <span aria-hidden style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--violet)", color: "var(--on-accent)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>▶</span>
             <span style={{ minWidth: 0 }}>
@@ -80,6 +83,16 @@ export function PodcastCard({ today, hideWhenHeard = false }: { today: string; h
           <p style={{ margin: 0, fontSize: 15, color: "var(--ink-3)" }}>
             Today&rsquo;s episode isn&rsquo;t ready yet · it retries automatically. The written stories are on <Link href="/news" style={{ color: "var(--violet)" }}>News</Link>.
           </p>
+        )}
+        {previous.length > 0 && (
+          <div style={{ display: "grid", borderTop: ep ? "1px solid var(--line)" : "none", paddingTop: ep ? 6 : 0 }}>
+            {previous.map((e) => (
+              <Link key={e.date} href={`/podcast?date=${e.date}`} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", minHeight: 44, textDecoration: "none", color: "inherit" }}>
+                <span style={{ fontSize: 15, color: "var(--ink-2)" }}>{dayLabel(e.date)}</span>
+                <span style={{ fontSize: 14, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.durationSec ? fmt(e.durationSec) : "brief"} ›</span>
+              </Link>
+            ))}
+          </div>
         )}
       </div>
     </section>

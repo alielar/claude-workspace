@@ -17,7 +17,7 @@
 
 import { db } from "@/db";
 import { podcastEpisodes } from "@/db/schema";
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, lt, desc } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
@@ -59,8 +59,26 @@ const rowToEpisode = (r: typeof podcastEpisodes.$inferSelect): Episode => ({
   durationSec: r.durationSec ?? null,
 });
 
-export async function todaysEpisode(userId: string): Promise<Episode | null> {
-  const date = checklistToday();
+/** The last N episodes (newest first), light shape · for the News list of recent briefs. */
+export async function recentEpisodes(userId: string, n = KEEP_EPISODES): Promise<Episode[]> {
+  const rows = await db.select({
+    date: podcastEpisodes.date, status: podcastEpisodes.status, script: podcastEpisodes.script,
+    audioUrl: podcastEpisodes.audioUrl, attempts: podcastEpisodes.attempts,
+    chapters: podcastEpisodes.chapters, durationSec: podcastEpisodes.durationSec,
+  }).from(podcastEpisodes).where(eq(podcastEpisodes.userId, userId)).orderBy(desc(podcastEpisodes.date)).limit(n);
+  return rows.map((row) => ({ date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts, chapters: parseChaptersJson(row.chapters), durationSec: row.durationSec ?? null }));
+}
+
+/** Exactly KEEP_EPISODES episodes stay (Ali 2026-09-14) · older rows are deleted, audio included. */
+export async function pruneEpisodes(userId: string): Promise<void> {
+  const keep = await db.select({ date: podcastEpisodes.date }).from(podcastEpisodes)
+    .where(eq(podcastEpisodes.userId, userId)).orderBy(desc(podcastEpisodes.date)).limit(KEEP_EPISODES);
+  if (keep.length < KEEP_EPISODES) return;
+  const oldest = keep[keep.length - 1].date;
+  await db.delete(podcastEpisodes).where(and(eq(podcastEpisodes.userId, userId), lt(podcastEpisodes.date, oldest)));
+}
+
+export async function todaysEpisode(userId: string, date = checklistToday()): Promise<Episode | null> {
   // Never select audio_b64 here · it's megabytes and this runs on every Today load.
   const [row] = await db.select({
     date: podcastEpisodes.date, status: podcastEpisodes.status, script: podcastEpisodes.script,
@@ -137,6 +155,8 @@ async function haiku(prompt: string, maxTokens: number): Promise<string | null> 
 // Ali (2026-09-11): five minutes is a guide, not a cap. Cover what matters, never
 // pad, never truncate a story worth hearing. So: a wide sanity band instead of the
 // old 4-6 min gate. Brian at the slower rate (-8 %) runs ≈ 160 words/min.
+/** How many days of episodes stay reachable (News → last briefs). Older ones are deleted. */
+export const KEEP_EPISODES = 3;
 const MIN_WORDS = 650;
 const MAX_WORDS = 1550;
 const MIN_SEC = 240;   // 4 min · below this the day was under-told
@@ -145,10 +165,11 @@ const wordCount = (s: string) => s.replace(/^###.*$/gm, "").split(/\s+/).filter(
 
 const TONE_RULES = `TONE AND LANGUAGE (Ali's brief, 2026-09-11):
 - You are a smart friend who follows the news closely, sitting across the breakfast table, explaining what is going on in the world to someone who has the basics but is NOT an expert in geopolitics, AI or finance. Friendly, transparent, plain words.
-- Every story follows the same three beats in plain words: here is what happened · here is why it happened · here is what it means (for the world, for Europe, sometimes for Ali).
+- Every story follows the same three beats in plain words: here is what happened · here is why it happened · here is what it means. The third beat is the point of the whole podcast (Ali 2026-09-14: "go deeper on what it actually means"): give it two to four sentences, not one. Say concretely who gains and who loses, what changes next (prices, jobs, a country's options, a company's next move), what to watch for in the coming days, and, when it is real, what it means for Europe or for Ali. If the honest answer is "nobody knows yet", say what the two likely outcomes are.
 - Explain names, places and terms in a few words the first time ("Enflame, a Chinese company that makes the chips AI runs on"). Assume he does not know the background; give it in one or two sentences.
 - Simple vocabulary. Short sentences. The words you would say out loud. No jargon and no business-speak: never "leverage", "headwinds", "stakeholders", "ecosystem", "calculus", "signals", "narrative", "paradigm", "unprecedented", "dynamics", "geopolitical landscape". If a technical word is unavoidable, say it, then say what it means.
-- Numbers written for the ear ("two hundred million", "about a third"). No filler ("it's worth noting", "interestingly", "notably"). No headline-style teasers, no recaps.
+- Numbers written for the ear ("two hundred million", "about a third").
+- ZERO FILLER (Ali 2026-09-14). Every sentence must carry a fact, a cause or a consequence; if a sentence could be deleted and nothing would be lost, delete it. Banned outright: "it's worth noting", "interestingly", "notably", "let's dive in", "let's get into it", "stay tuned", "that's all for", "as always", "in other news", "moving on", "without further ado", "at the end of the day", "the bottom line is", "make no mistake", "time will tell", "only time will tell", "remains to be seen", "one thing is clear", "buckle up". No headline-style teasers, no recaps of what was just said, no sentence that only announces the next sentence, no "so, to sum up" inside a chapter, no rhetorical questions used as padding.
 - Transitions: when the topic changes, one natural linking sentence so it never feels like a jump ("That's the money side. Now to something closer to home for you: AI." · "Leaving politics for a moment..."). Every chapter after the first opens with such a bridge.`;
 
 /** The one Haiku call of the day: brief → spoken script, split into titled chapters. */
@@ -388,6 +409,7 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
       }
     }
     const audioUrl = `/api/podcast/audio?date=${date}`;
+    try { await pruneEpisodes(userId); } catch { /* best-effort housekeeping */ }
     await db.update(podcastEpisodes)
       .set({ status: "ready", audioUrl, audioB64: audio.toString("base64"), chapters: JSON.stringify(chapters), durationSec })
       .where(eq(podcastEpisodes.id, row.id));
