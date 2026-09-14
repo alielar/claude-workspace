@@ -110,6 +110,10 @@ const dict = {
     poolPreview: "Tomorrow you will choose from these.",
     done: "Done",
     tomorrow: "Tomorrow",
+    healthy: "Healthy",
+    rich: "Rich",
+    watchVideo: "Watch how it's made",
+    videoLink: "Video link (YouTube)",
     hello: "Hello",
   },
   fr: {
@@ -217,6 +221,10 @@ const dict = {
     poolPreview: "Demain tu choisiras parmi ces plats.",
     done: "Terminé",
     tomorrow: "Demain",
+    healthy: "Sain",
+    rich: "Gourmand",
+    watchVideo: "Voir la préparation en vidéo",
+    videoLink: "Lien vidéo (YouTube)",
     hello: "Salut",
   },
   ar: {
@@ -324,6 +332,10 @@ const dict = {
     poolPreview: "غدا غادي تختار من هادو.",
     done: "صافي",
     tomorrow: "غدا",
+    healthy: "صحي",
+    rich: "دسم",
+    watchVideo: "شوفي كيفاش كتطيب",
+    videoLink: "رابط الفيديو (يوتوب)",
     hello: "أهلا",
   },
 } as const;

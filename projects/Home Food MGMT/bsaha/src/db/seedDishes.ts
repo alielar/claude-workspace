@@ -15,6 +15,7 @@ import intlLunch from "../../data/dishes/intl-lunch.json";
 import intlDinner from "../../data/dishes/intl-dinner.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
+import videos from "../../data/videos/all.json";
 
 type Raw = {
   meal: "breakfast" | "lunch" | "dinner";
@@ -28,7 +29,9 @@ type Photo = { file: string; credit: string; license: string; source: string };
 const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[]), ...(intlBreakfast as Raw[]), ...(intlLunch as Raw[]), ...(intlDinner as Raw[])];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
-const inMain = (r: Raw, slug: string) => r.cuisine !== "Moroccan" || LEAN.has(slug);
+const inMain = (r: Raw) => r.cuisine !== "Moroccan";
+const isLean = (r: Raw, slug: string) => r.cuisine !== "Moroccan" || LEAN.has(slug);
+const VIDEOS = videos as Record<string, { url: string }>;
 
 export async function seedDishes() {
   const now = new Date().toISOString();
@@ -52,7 +55,9 @@ export async function seedDishes() {
       ingredients: r.ingredients,
       recipeAr: r.recipe_ar,
       tags: r.tags ?? [],
-      inMain: inMain(r, slug),
+      inMain: inMain(r),
+      isLean: isLean(r, slug),
+      ...(VIDEOS[r.name_en]?.url ? { videoUrl: VIDEOS[r.name_en].url } : {}),
       status: "ready",
       isCustom: false,
       createdAt: now,
@@ -69,7 +74,9 @@ export async function seedDishes() {
           meal: row.meal, nameEn: row.nameEn, nameFr: row.nameFr, nameAr: row.nameAr, nameLatin: row.nameLatin,
           descEn: row.descEn, descFr: row.descFr, cuisine: row.cuisine, servings: row.servings,
           prepMin: row.prepMin, cookMin: row.cookMin, macros: row.macros, ingredients: row.ingredients,
-          recipeAr: row.recipeAr, tags: row.tags, inMain: row.inMain,
+          recipeAr: row.recipeAr, tags: row.tags, inMain: row.inMain, isLean: row.isLean,
+          // a video set by hand in the app wins over the seed list
+          ...(row.videoUrl ? { videoUrl: sql`COALESCE(video_url, ${row.videoUrl})` } : {}),
           // stock photo only fills a gap; a photo the cook took stays
           ...(photo
             ? {

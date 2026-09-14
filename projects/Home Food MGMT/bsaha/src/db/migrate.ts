@@ -74,6 +74,8 @@ const LATE_COLUMNS = [
   `ALTER TABLE people ADD COLUMN dislikes TEXT NOT NULL DEFAULT '[]'`,
   `ALTER TABLE people ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE dishes ADD COLUMN in_main INTEGER NOT NULL DEFAULT 1`,
+  `ALTER TABLE dishes ADD COLUMN is_lean INTEGER NOT NULL DEFAULT 1`,
+  `ALTER TABLE dishes ADD COLUMN video_url TEXT`,
 ];
 
 /** The household on day one. Everything is renameable from the People screen. */

@@ -7,7 +7,7 @@ import { people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { dishDesc, dishName, formatQty, getDish, ingredientName } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
-import { deleteDish, saveRecipe, setReviewed } from "../actions";
+import { deleteDish, saveRecipe, setReviewed, setVideo } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
@@ -121,6 +121,12 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
         </>
       )}
 
+      {dish.videoUrl && (
+        <a href={dish.videoUrl} target="_blank" rel="noopener" className="btn-soft w-full mt-8">
+          {t(L, "watchVideo")}
+        </a>
+      )}
+
       {dish.photoCredit && (
         <p className="mt-6 text-xs text-muted">
           {t(L, "photoCredit")}: {dish.photoSourceUrl ? <a href={dish.photoSourceUrl} className="underline">{dish.photoCredit}</a> : dish.photoCredit}
@@ -142,6 +148,11 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
               <textarea name="tips" rows={5} className="input text-lg leading-relaxed" defaultValue={dish.recipeAr.tips.join("\n")} />
             </label>
             <button className="btn-accent">{t("ar", "save")}</button>
+          </form>
+          <form action={setVideo} className="mt-4 flex gap-2" dir="ltr">
+            <input type="hidden" name="id" value={dish.id} />
+            <input name="video" defaultValue={dish.videoUrl ?? ""} placeholder={t(L, "videoLink")} className="input" inputMode="url" />
+            <button className="btn-soft shrink-0">{t(L, "save")}</button>
           </form>
           <div className="mt-4 flex items-center justify-between">
             <form action={setReviewed}>

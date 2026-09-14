@@ -75,3 +75,14 @@ export async function deleteDish(formData: FormData) {
   forgetSlimDishes();
   redirect("/menu");
 }
+
+/** Admin: set or clear the YouTube link for a dish. */
+export async function setVideo(formData: FormData) {
+  const me = await currentPerson();
+  if (!me?.isAdmin) return;
+  const id = Number(formData.get("id"));
+  const raw = String(formData.get("video") ?? "").trim();
+  const ok = /^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(raw);
+  await db.update(dishes).set({ videoUrl: ok ? raw.slice(0, 300) : null }).where(eq(dishes.id, id));
+  revalidatePath("/menu", "layout");
+}

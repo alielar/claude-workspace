@@ -9,7 +9,7 @@ import { fold, highFibre, highProtein, lightness, quick, slimName, thumb, type S
 type Labels = Record<
   | "breakfast" | "lunch" | "dinner" | "mainMenu" | "moroccanMenu" | "search" | "searchHint" | "results" | "noResults" | "clear"
   | "f_light" | "f_balanced" | "f_hearty" | "f_protein" | "f_fibre" | "f_quick" | "f_veg" | "f_fish" | "f_chicken" | "f_meat"
-  | "hiddenByDislikes" | "inPool",
+  | "hiddenByDislikes" | "inPool" | "healthy" | "rich",
   string
 >;
 
@@ -46,6 +46,7 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
   const meals: Meal[] = pick?.meals ?? ["breakfast", "lunch", "dinner"];
   const [meal, setMeal] = useState<Meal>(meals.includes(initialMeal) ? initialMeal : meals[0]);
   const [moroccan, setMoroccan] = useState(false);
+  const [rich, setRich] = useState(false);
   const [q, setQ] = useState("");
   const [active, setActive] = useState<Set<Filter>>(new Set());
   const bad = useMemo(() => new Set(dislikes), [dislikes]);
@@ -55,14 +56,14 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
     let hidden = 0;
     const shown = dishes.filter((d) => {
       if (d.meal !== meal) return false;
-      if (moroccan ? d.cuisine !== "Moroccan" : !d.inMain) return false;
+      if (moroccan ? d.cuisine !== "Moroccan" || d.lean === rich : !d.inMain) return false;
       if (needle && !fold(`${d.nameEn} ${d.nameFr} ${d.nameAr} ${d.nameLatin} ${d.cuisine} ${d.ingredientsText}`).includes(needle)) return false;
       for (const f of active) if (!matches(d, f)) return false;
       if (d.tags.some((tag) => bad.has(tag))) { hidden++; return false; }
       return true;
     });
     return { shown, hidden };
-  }, [dishes, meal, moroccan, q, active, bad]);
+  }, [dishes, meal, moroccan, rich, q, active, bad]);
 
   const toggle = (f: Filter) =>
     setActive((prev) => {
@@ -84,6 +85,16 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
           {[false, true].map((m) => (
             <button key={String(m)} onClick={() => setMoroccan(m)} className={clsx("rounded-xl py-2.5 font-bold text-sm", moroccan === m ? "bg-ink text-bg" : "text-muted")}>
               {m ? labels.moroccanMenu : labels.mainMenu}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {moroccan && !hideMoroccanToggle && (
+        <div className="mt-2 grid grid-cols-2 gap-1 p-1 bg-card border border-line rounded-2xl">
+          {[false, true].map((r) => (
+            <button key={String(r)} onClick={() => setRich(r)} className={clsx("rounded-xl py-2 font-bold text-sm", rich === r ? "bg-accent-soft text-accent" : "text-muted")}>
+              {r ? labels.rich : labels.healthy}
             </button>
           ))}
         </div>

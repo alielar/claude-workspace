@@ -90,8 +90,12 @@ export const dishes = sqliteTable("dishes", {
   photoSourceUrl: text("photo_source_url"),
   /** Always "ready" today. Kept for a future background fill-in. */
   status: text("status").notNull().default("ready"),
-  /** Shown in the main menu. Every dish is also reachable in its cuisine menu. */
+  /** Main menu = international. Moroccan dishes live in the Moroccan menu only. */
   inMain: integer("in_main", { mode: "boolean" }).notNull().default(true),
+  /** Healthy side of the Moroccan menu (hand-picked list). International dishes are all designed lean. */
+  isLean: integer("is_lean", { mode: "boolean" }).notNull().default(true),
+  /** YouTube link showing how the dish is made. */
+  videoUrl: text("video_url"),
   /** Darija checked by the family. */
   reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
