@@ -11,6 +11,11 @@
  *       counted) · a note or link · Delete (built-ins too · a deleted built-in never comes back
  *       on its own because its routine key stays in the database).
  *
+ * Reads `GET /api/checklist?all=1` · the WHOLE week (2026-09-14 evening: the plain endpoint
+ * returns only today's rows, so on a Monday the Sun/Tue/Thu machine days were invisible here
+ * and Ali "couldn't find those sessions anywhere"). A "This week" card on top shows which
+ * day carries which extra; every-day items are implied.
+ *
  * Ticking happens on Today; streak stats live there too. Nothing here needs the
  * network to render (phone copy first), edits go through the outbox.
  */
@@ -116,12 +121,14 @@ function Sheet({ item, onClose, onSave, onDelete }: {
 }
 
 export default function ChecklistPage() {
-  const { data, loading, setData, refresh } = useCached<ChecklistData>("checklist", () => fetchJson<ChecklistData>("/api/checklist"));
+  const { data, loading, setData, refresh } = useCached<ChecklistData>("checklist-all", () => fetchJson<ChecklistData>("/api/checklist?all=1"));
   useEffect(() => { ensureMigrate(); }, []);
   const [sheet, setSheet] = useState<{ open: boolean; item: ChecklistItem | null }>({ open: false, item: null });
 
   const items = useMemo(() => (data?.items ?? []).filter((i) => i.source !== "workout"), [data]);
   const groups = TIMES.map((t) => ({ ...t, items: items.filter((i) => i.timeOfDay === t.key) })).filter((g) => g.items.length > 0);
+  const everyDay = items.filter((i) => !i.weekdays || i.weekdays.length === 0 || i.weekdays.length === 7).length;
+  const todayCode = DAYS[(new Date().getDay() + 6) % 7].key;
 
   const save = async (d: Draft) => {
     const body = { title: d.title, emoji: null, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: d.weekdays.length ? d.weekdays : null, startDate: null };
@@ -146,12 +153,39 @@ export default function ChecklistPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Edit list</h1>
-          <div className="sub">{items.length} items · tap one to change it · the kettlebell day is in Settings → Training days</div>
+          <div className="sub">{items.length} items · {everyDay} every day · tap one to change it</div>
         </div>
         <button className="cc-btn cc-btn-primary" onClick={() => setSheet({ open: true, item: null })} style={{ minHeight: 44, borderRadius: 12 }}>+ Add</button>
       </div>
 
       {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
+
+      {/* The week at a glance · only the day-specific items (everything else is every day) */}
+      {items.length > 0 && (
+        <section className="cc-card">
+          <div className="cc-card-head"><span className="title">This week</span><span className="tail">{everyDay} every day, plus</span></div>
+          <div className="cc-card-list">
+            {DAYS.map((day, idx) => {
+              const extras = items.filter((i) => i.weekdays && i.weekdays.length > 0 && i.weekdays.length < 7 && i.weekdays.includes(day.key));
+              const isToday = day.key === todayCode;
+              return (
+                <div key={day.key} style={{ display: "grid", gridTemplateColumns: "44px 1fr", gap: 10, alignItems: "center", minHeight: 44, padding: "6px 16px", borderBottom: idx < DAYS.length - 1 ? "1px solid var(--line)" : "none" }}>
+                  <span style={{ fontSize: 14, fontWeight: isToday ? 600 : 500, color: isToday ? "var(--violet)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{day.label}</span>
+                  <span style={{ display: "flex", flexWrap: "wrap", gap: 6, minWidth: 0 }}>
+                    {extras.length === 0 && <span style={{ fontSize: 14, color: "var(--ink-4)" }}>routine only</span>}
+                    {extras.map((i) => (
+                      <button key={i.id} onClick={() => setSheet({ open: true, item: i })} style={{ ...chip(false), minHeight: 32, fontSize: 13.5, padding: "0 10px", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {i.title.replace(/\s*·\s*machine$/i, "")}
+                      </button>
+                    ))}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ padding: "8px 16px 12px", fontSize: 13, color: "var(--ink-4)" }}>The kettlebell day is set in Settings → Training days.</div>
+        </section>
+      )}
 
       {groups.map((g) => (
         <section key={g.key} className="cc-card">

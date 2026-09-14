@@ -60,7 +60,7 @@ export type Format = (typeof FORMATS)[number];
 export const TASK_FORMATS: { key: Format; label: string }[] = [{ key: "doc", label: "Notes" }, { key: "checklist", label: "Subtasks" }];
 export const DOC_FORMATS: { key: Format; label: string; hint: string }[] = [
   { key: "list",      label: "List",      hint: "plain items, reorder by hand" },
-  { key: "checklist", label: "Checklist", hint: "items you tick · reset to reuse" },
+  { key: "checklist", label: "Checklist", hint: "items you tick · a ticked one goes" },
   { key: "doc",       label: "Document",  hint: "free text with headings and lists" },
   { key: "sections",  label: "Sections",  hint: "# headings fold · open several" },
   { key: "accordion", label: "Accordion", hint: "# headings fold · one open at a time" },

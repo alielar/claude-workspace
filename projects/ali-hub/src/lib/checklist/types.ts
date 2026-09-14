@@ -29,6 +29,8 @@ export type ChecklistItem = {
   /** Day codes ("mon"…"sun") the item exists on · null = every day. Editable on /checklist (2026-09-14). */
   weekdays?: string[] | null;
   startDate?: string | null;
+  /** Only in `GET /api/checklist?all=1` (the editor): true when the item is not scheduled for today. */
+  hiddenToday?: boolean;
   href?: string;
 };
 

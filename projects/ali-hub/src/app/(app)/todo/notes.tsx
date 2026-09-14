@@ -60,6 +60,10 @@ export function NotesPreview({ notes, indent = 48 }: { notes: string; indent?: n
 }
 
 // ─── One subtask row · shared by the inline list and the sheet editor ─────────
+// Ticking REMOVES the line (Ali 2026-09-14 evening: "when I check a subtask as done, just
+// remove it · I don't want to go and click on the cross"). The pop/ring/chime play first,
+// then the line is gone. `- [x]` lines from before are still shown struck through; a tap
+// removes them too. The ✕ removes without the celebration (a wrong entry, not a finished one).
 
 function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
   s: SubTask; onTick: () => void; onText?: (v: string) => void; onRemove?: () => void; editable: boolean;
@@ -68,7 +72,7 @@ function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
   const timer = useRef<number | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   const tick = () => {
-    if (s.done) { onTick(); return; }
+    if (s.done) { onTick(); return; } // already done · just goes away
     if (celebrating) return;
     setCelebrating(true);
     playDoneSound();
@@ -99,46 +103,44 @@ function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
   );
 }
 
-/** Subtasks under a task row · open ones first, three at a time. */
+/** Subtasks under a task row · three at a time; a ticked one is removed from the list. */
 export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; onChange: (notes: string | null) => void; indent?: number }) {
   const items = parseSubtasks(notes);
   const [open, setOpen] = useState(false);
   const shown = open ? items : items.slice(0, PREVIEW_LINES);
-  const done = items.filter((s) => s.done).length;
-  const toggle = (i: number) => onChange(serializeSubtasks(items.map((s, j) => (j === i ? { ...s, done: !s.done } : s))));
+  const removeAt = (i: number) => { const next = items.filter((_, j) => j !== i); onChange(next.length ? serializeSubtasks(next) : null); };
   return (
     <div style={{ padding: `0 12px 8px ${indent - 8}px` }}>
-      {shown.map((s, i) => <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => toggle(items.indexOf(s))} editable={false} />)}
+      {shown.map((s, i) => <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => removeAt(items.indexOf(s))} editable={false} />)}
       {(items.length > PREVIEW_LINES || open) && (
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
           style={{ background: "transparent", border: "none", font: "inherit", fontSize: 13, color: "var(--ink-4)", padding: "4px 0 2px 40px", cursor: "pointer", minHeight: 32 }}>
-          {open ? "Show less" : `+${items.length - PREVIEW_LINES} more · ${done}/${items.length} done`}
+          {open ? "Show less" : `+${items.length - PREVIEW_LINES} more`}
         </button>
       )}
     </div>
   );
 }
 
-/** Subtasks inside a sheet: add, edit, tick, reorder, remove, reset. */
-export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", autoFocus = false, showReset = false }: {
-  notes: string | null; onChange: (notes: string | null) => void; placeholder?: string; autoFocus?: boolean; showReset?: boolean;
+/** Subtasks inside a sheet: add, edit, tick (= remove), reorder, remove. */
+export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", autoFocus = false }: {
+  notes: string | null; onChange: (notes: string | null) => void; placeholder?: string; autoFocus?: boolean;
 }) {
   const items = parseSubtasks(notes);
   const [draft, setDraft] = useState("");
-  const write = (next: SubTask[]) => onChange(serializeSubtasks(next));
+  const write = (next: SubTask[]) => onChange(next.length ? serializeSubtasks(next) : null);
   const add = () => { if (!draft.trim()) return; write([...items, { text: draft.trim(), done: false }]); setDraft(""); };
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir; if (j < 0 || j >= items.length) return;
     const next = [...items]; [next[i], next[j]] = [next[j], next[i]]; write(next);
   };
-  const done = items.filter((s) => s.done).length;
   return (
     <div style={{ display: "grid", gap: 2 }}>
-      {items.length === 0 && <div style={{ fontSize: 14.5, color: "var(--ink-3)", padding: "6px 2px" }}>No subtasks yet · add the first one below.</div>}
+      {items.length === 0 && <div style={{ fontSize: 14.5, color: "var(--ink-3)", padding: "6px 2px" }}>Nothing open · add one below. A ticked line disappears.</div>}
       {items.map((s, i) => (
         <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", borderBottom: "1px solid var(--line)" }}>
           <SubtaskRow s={s} editable
-            onTick={() => write(items.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
+            onTick={() => write(items.filter((_, j) => j !== i))}
             onText={(v) => write(items.map((x, j) => (j === i ? { ...x, text: v } : x)))}
             onRemove={() => write(items.filter((_, j) => j !== i))} />
           <span style={{ display: "flex" }}>
@@ -154,10 +156,7 @@ export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", 
         <button type="button" onClick={add} disabled={!draft.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 46, minWidth: 46, borderRadius: 12, fontSize: 18, padding: 0 }} aria-label="Add subtask">+</button>
       </div>
       {items.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "var(--ink-4)", padding: "6px 2px 0" }}>
-          <span>{done}/{items.length} done</span>
-          {showReset && done > 0 && <button type="button" onClick={() => write(items.map((s) => ({ ...s, done: false })))} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13 }}>Untick all</button>}
-        </div>
+        <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "6px 2px 0" }}>{items.length} open · tick one and it goes</div>
       )}
     </div>
   );

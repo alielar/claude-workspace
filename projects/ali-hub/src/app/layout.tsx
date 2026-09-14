@@ -24,9 +24,10 @@ export const viewport: Viewport = {
 
 /**
  * Applies the saved theme before the first paint so there is no flash.
- * Values: "light" | "dark" | (absent = follow the phone's setting).
+ * Values: "light" | "dark" | "night" hold at any hour · absent = Automatic: the phone's
+ * setting by day, Night from 20:00 to 07:00. Mirror of refreshThemeAttr in src/lib/theme.ts.
  */
-const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");var h=new Date().getHours();if(h>=20||h<7){document.documentElement.setAttribute("data-theme","night")}else if(t==="light"||t==="dark"||t==="night"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}`;
+const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");var h=new Date().getHours();if(t==="light"||t==="dark"||t==="night"){document.documentElement.setAttribute("data-theme",t)}else if(h>=20||h<7){document.documentElement.setAttribute("data-theme","night")}}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -58,7 +58,7 @@ const NEWS_TOPICS = [
 ];
 
 const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
-  { key: "system", label: "Automatic", hint: "Follows the phone" },
+  { key: "system", label: "Automatic", hint: "Phone by day · Night 20:00–07:00" },
   { key: "light",  label: "Light",     hint: "" },
   { key: "dark",   label: "Dark",      hint: "" },
   { key: "night",  label: "Night",     hint: "Warm · less blue light" },
@@ -433,7 +433,7 @@ export default function SettingsPage() {
         <div className="cc-card-head"><span className="title">Appearance</span><span className="tail">{THEMES.find((t) => t.key === theme)?.hint}</span></div>
         <div className="cc-card-body">
           <Segmented value={theme} options={THEMES} onChange={setTheme} />
-          <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 2px" }}>From sunset to sunrise (20:00–07:00) the app is always in Night mode; your choice here rules the day.</div>
+          <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 2px" }}>Automatic follows the phone by day and turns to Night from 20:00 to 07:00. Light, Dark or Night picked here stays that way at any hour until you change it.</div>
         </div>
       </section>
 

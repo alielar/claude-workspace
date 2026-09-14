@@ -15,9 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, buildStretchPlan, isDefaultName, reelForMove, sessionForDate, sessionSeconds, type SessionKey, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, buildStretchPlan, isDefaultName, sessionForDate, sessionSeconds, type StretchPhase,
 } from "@/lib/routine/stretching";
-import { ReelRow, useReelDismissals } from "@/components/ReelLink";
 import { cues } from "@/lib/routine/cues";
 import { STRETCH_TRACKS, trackUrl } from "@/lib/routine/music";
 import { readCache, writeCache } from "@/lib/local/store";
@@ -56,8 +55,9 @@ async function completeStretchItem() {
 export default function StretchPage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
-  // Two sessions alternate day to day (2026-09-14) · today's is preselected, the idle screen can switch.
-  const [session, setSession] = useState<SessionKey>(() => sessionForDate(checklistToday()));
+  // Two sessions alternate day to day (2026-09-14) · picked automatically for today, no
+  // selector (Ali: "I tap Start and it runs whichever session is correct for today").
+  const [session] = useState(() => sessionForDate(checklistToday()));
   const SESSION = STRETCH_SESSIONS[session];
   const MOVES = SESSION.moves;
   const PLAN = useMemo(() => buildStretchPlan(MOVES), [MOVES]);
@@ -190,7 +190,7 @@ export default function StretchPage() {
     if (!announce) return;
     if (p.kind === "work") cues.work(movesRef.current[p.index]);
     else if (p.kind === "rest") cues.rest(movesRef.current[p.index + 1]);
-  }, [, PLAN]);
+  }, [PLAN]);
 
   // ── Ticker ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -273,7 +273,6 @@ export default function StretchPage() {
     router.push("/today");
   };
 
-  const reels = useReelDismissals();
   const seconds = Math.ceil(remainingMs / 1000);
   const isRest = phase.kind === "rest";
   const isLead = phase.kind === "leadin";
@@ -287,24 +286,8 @@ export default function StretchPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility</h1>
-            <div className="sub">{SESSION.name} · {SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
+            <div className="sub">Today: {SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
           </div>
-        </div>
-
-        {/* Which session · today's is preselected, the other one is a tap away */}
-        <div role="radiogroup" aria-label="Session" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-          {([1, 2] as SessionKey[]).map((k) => {
-            const on = session === k;
-            const s = STRETCH_SESSIONS[k];
-            return (
-              <button key={k} role="radio" aria-checked={on} onClick={() => setSession(k)}
-                style={{ minHeight: 56, padding: "6px 12px", borderRadius: 12, textAlign: "left", font: "inherit", cursor: "pointer", display: "grid", gap: 1,
-                  border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)" }}>
-                <span style={{ fontSize: 15, fontWeight: 600 }}>{s.name}{sessionForDate(checklistToday()) === k ? " · today" : ""}</span>
-                <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{s.focus}</span>
-              </button>
-            );
-          })}
         </div>
 
         <button
@@ -314,16 +297,6 @@ export default function StretchPage() {
         >
           ▶ Start
         </button>
-
-        {/* Learning reels · gone forever once dismissed */}
-        {reels.ready && STRETCH_REELS.some((r) => !reels.isDismissed(r.id)) && (
-          <div style={{ display: "grid", gap: 6 }}>
-            {STRETCH_REELS.map((r) => (
-              <ReelRow key={r.id} id={r.id} label={r.label} url={r.url} dismissed={reels.isDismissed(r.id)} onDismiss={reels.dismiss} />
-            ))}
-            <div style={{ fontSize: 12.5, color: "var(--ink-4)" }}>✕ removes a reel forever once you know the move.</div>
-          </div>
-        )}
 
         <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44, fontSize: 15, color: "var(--ink-2)" }}>
           <span>Speak each movement name</span>
@@ -420,7 +393,7 @@ export default function StretchPage() {
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
         <div style={{ fontSize: 64 }}>✓</div>
         <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility done</h1>
-        <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{SESSION.name} · {MOVES.length} moves · {fmt(TOTAL)} · ticked on today&rsquo;s list</p>
+        <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)} · ticked on today&rsquo;s list</p>
         <button className="cc-btn cc-btn-primary" onClick={exit} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
           Back to Today
         </button>
@@ -462,15 +435,6 @@ export default function StretchPage() {
         </div>
         {!isRest && nextName && (
           <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Next: {nextName}</div>
-        )}
-        {/* Form check mid-session (2026-09-09): the reel for THIS movement, one tap.
-            Opening it pauses the timer so nothing runs on while he watches. */}
-        {!isLead && phase.kind === "work" && reels.ready && !reels.isDismissed(reelForMove(MOVES, phase.index).id) && (
-          <a href={reelForMove(MOVES, phase.index).url} target="_blank" rel="noopener noreferrer"
-            onClick={() => { if (status === "running") pause(); }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44, padding: "0 16px", borderRadius: 12, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", textDecoration: "none", fontSize: 14, marginTop: 4 }}>
-            <span aria-hidden style={{ color: "var(--violet)" }}>▶</span> Check the form · pauses the timer
-          </a>
         )}
         {isRest && <div style={{ fontSize: 15, color: "var(--ink-3)" }}>coming up</div>}
         {status === "paused" && <div className="cc-pill cc-pill-warn" style={{ marginTop: 8 }}>Paused</div>}

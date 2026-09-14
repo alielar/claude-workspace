@@ -22,24 +22,23 @@ export function readTheme(): ThemeChoice {
   }
 }
 
-/** Sunset→sunrise (20:00–07:00, Ali's clock): the app is always in NIGHT mode. */
+/** Sunset→sunrise (20:00–07:00, Ali's clock): AUTOMATIC turns to Night in this window. */
 function inSunsetWindow(d = new Date()): boolean {
   const h = d.getHours();
   return h >= 20 || h < 7;
 }
 
 /** Recompute the <html data-theme> attribute from the stored choice + the clock.
- * During the sunset window the app is always Night (warm, low blue light) —
- * whatever was chosen; the daytime choice (Light/Dark/Automatic) rules the day. */
+ * Automatic (the default): follows the phone by day and is Night (warm, low blue light)
+ * from 20:00 to 07:00. Light / Dark / Night picked by hand hold at any hour until changed
+ * (Ali 2026-09-14: "by default automatic, but I can move it whenever I want" · before this
+ * the night window overrode every choice). Keep in sync with THEME_BOOT in app/layout.tsx. */
 export function refreshThemeAttr() {
   const root = document.documentElement;
   const choice = readTheme();
-  if (inSunsetWindow()) {
-    root.setAttribute("data-theme", "night");
-    return;
-  }
-  if (choice === "system") root.removeAttribute("data-theme");
-  else root.setAttribute("data-theme", choice);
+  if (choice !== "system") { root.setAttribute("data-theme", choice); return; }
+  if (inSunsetWindow()) root.setAttribute("data-theme", "night");
+  else root.removeAttribute("data-theme");
 }
 
 export function applyTheme(choice: ThemeChoice) {

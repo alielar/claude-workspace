@@ -75,10 +75,9 @@ const PART_LABEL: Record<DayPart, string> = {
 };
 const PART_ORDER: Record<DayPart, number> = { morning: 0, afternoon: 1, evening: 2 };
 
-function longDate(d: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid",
-  }).format(d);
+/** Ali's day, not the calendar's: before 04:00 the header must still name the day the list belongs to. */
+function longDate(ymd: string): string {
+  return new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" }).format(new Date(ymd + "T12:00:00"));
 }
 
 function linkify(text: string) {
@@ -274,13 +273,14 @@ function Card({ title, tail, children }: { title: string; tail?: React.ReactNode
  * Morning plan (2026-09-08, Ali-approved) · wake time + sequence, driven by whether
  * today is a training day (Settings → Training days). Minutes edited in Settings.
  */
-function MorningCard({ today }: { today: string }) {
-  void today;
+function MorningCard({ machineDay }: { machineDay: boolean }) {
   const { data: settings } = useCached<{ morningPlan?: string | null }>("settings", () => fetchJson("/api/settings"));
   const { data: ov } = useOverview();
   const plan = parseMorningPlan(settings?.morningPlan);
   const sched = ov?.schedule ?? null;
-  const isTraining = sched ? sched.todayKey !== null : true;
+  // Training morning = a Speediance machine day on the checklist OR the kettlebell day
+  // (2026-09-14: the card only knew the kettlebell schedule, so Sun/Tue/Thu showed "rest day" and the late wake time).
+  const isTraining = machineDay || (sched ? sched.todayKey !== null : true);
   const { wake, rows, bufferMin } = computeMorning(plan, isTraining);
   const [open, setOpen] = useState(false);
   return (
@@ -474,8 +474,12 @@ export default function TodayPage() {
   }, [setData, today]);
 
   // ── Grouping ──────────────────────────────────────────────────────────────
-  // Habits being built and the auto workout row are shown, but never counted (rest days must not break the streak).
-  const counted = items.filter((i) => i.kind !== "habit" && i.source !== "workout");
+  // Habits being built, the auto workout row and the machine days (gym-*) are shown but never counted ·
+  // the server's streak uses the same rule (2026-09-14: the page counted machine days, so a
+  // Speediance morning showed "5 / 6 · 83%" with everything else done while the streak said the day was complete).
+  const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-");
+  const machineDay = items.some(isMachine);
+  const counted = items.filter((i) => i.kind !== "habit" && i.source !== "workout" && !isMachine(i));
   const total = counted.length;
   const doneCount = counted.filter((i) => i.completedToday).length;
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
@@ -529,7 +533,7 @@ export default function TodayPage() {
             {greeting(hour)}
           </h1>
           <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 4 }}>
-            {longDate(now)}
+            {longDate(today)}
             {!online && <span style={{ color: "var(--warn)" }}> · offline, changes will sync</span>}
             {online && stale && <span> · showing saved copy</span>}
           </div>
@@ -553,7 +557,7 @@ export default function TodayPage() {
       </div>
 
       {/* HEADLINES · compact strip, full news lives in the tab */}
-      {part === "morning" && <MorningCard today={today} />}
+      {part === "morning" && <MorningCard machineDay={machineDay} />}
 
       {/* The podcast replaced the headlines strip (2026-09-09) · it stays until listened,
           then Today is just the checklist and the day's to-dos. Full news lives on /news. */}

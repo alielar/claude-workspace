@@ -19,7 +19,8 @@
  *   Session 2 · spine, shoulders, inner line 14 moves · standing 5 → floor 9
  *
  * Which session today: odd day-of-epoch = 1, even = 2, so it alternates every calendar day
- * even when a day is skipped; the idle screen has a switch to take the other one.
+ * even when a day is skipped. Picked automatically · no selector on the screen (Ali, 2026-09-14
+ * evening: "I tap Start and it runs whichever session is correct for today").
  *
  * Every move has a stable `key`. Ali's renames on the phone are stored BY KEY
  * (localStorage cc-stretch-names-v3), so a move renamed in one session is renamed in both.
@@ -122,8 +123,12 @@ export const DEFAULT_NAMES_EVER = new Set<string>([
 ].map((n) => n.toLowerCase()));
 export const isDefaultName = (n: string) => DEFAULT_NAMES_EVER.has(n.trim().toLowerCase());
 
-// Instagram reels · learning aids, dismissible forever once a move is mastered
-// (dismissals live in localStorage["cc-reels-dismissed"], see src/components/ReelLink.tsx).
+// ARCHIVED 2026-09-14 (Ali: "I know all the movements now · don't delete, archive so I can
+// ask for them back"). Instagram reels as learning aids · nothing renders them any more.
+// To bring them back: import STRETCH_REELS/reelForMove + ReelRow/useReelDismissals
+// (src/components/ReelLink.tsx) in /stretch again · idle-screen list + the mid-session
+// "Check the form · pauses the timer" link (git: the commit before this note has both blocks).
+// Dismissals still live in localStorage["cc-reels-dismissed"].
 export type StretchReel = { id: string; label: string; url: string; moveKey?: string };
 export const STRETCH_REELS: StretchReel[] = [
   {

@@ -453,7 +453,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
   const preview = firstLine(t.notes);
   const fmt = docFormat(t);
   const shape = (() => {
-    if (fmt === "checklist") { const s = parseSubtasks(t.notes); return s.length ? `${s.filter((x) => x.done).length}/${s.length} ticked` : null; }
+    if (fmt === "checklist") { const s = parseSubtasks(t.notes); return s.length ? `${s.length} open` : null; }
     if (fmt === "sections" || fmt === "accordion") { const n = parseSections(t.notes).filter((s) => s.title !== null).length; return n ? `${n} section${n === 1 ? "" : "s"}` : preview; }
     if (fmt === "list") { const n = (t.notes?.match(/^- /gm) ?? []).length; return n ? `${n} item${n === 1 ? "" : "s"}` : null; }
     return preview;
@@ -715,7 +715,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
         {mode === "doc" ? (
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : mode === "checklist" ? (
-          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} showReset />
+          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} />
         ) : mode === "sections" || mode === "accordion" ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
@@ -775,21 +775,6 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
         )}
 
         <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
-
-        {/* Doc → task (Ali 2026-09-14: the "Fixes ALI" doc should be a to-do for today with its lines as subtasks).
-            Same entry, moved to the Personal list, due today, notes shown as Subtasks · every line becomes one. */}
-        {!isNew && (d.notes ?? "").trim() && (
-          <button type="button" className="cc-btn cc-btn-ghost" style={{ minHeight: 44, borderRadius: 12, fontSize: 15, justifySelf: "start" }}
-            onClick={() => {
-              if (!confirm("Turn this doc into a to-do for today? Its lines become subtasks you tick one by one.")) return;
-              const items = parseSubtasks(d.notes);
-              onSave({ ...d, title: d.title.trim() || "Untitled", area: "personal", dueDate: today, dueTime: null, evening: false, someday: false, priority: 0, format: "checklist", notes: items.length ? items.map((s) => `- [${s.done ? "x" : " "}] ${s.text}`).join("\n") : d.notes });
-              try { localStorage.setItem("cc-todo-area", "personal"); } catch { /* ignore */ }
-              onClose();
-            }}>
-            Make it a to-do for today
-          </button>
-        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>

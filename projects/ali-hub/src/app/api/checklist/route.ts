@@ -163,11 +163,15 @@ async function seedRoutine(userId: string) {
   return true;
 }
 
-export async function GET() {
+export async function GET(req?: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
   const today = checklistToday();
+  // ?all=1 (the /checklist editor, 2026-09-14): every active item, including the ones scheduled
+  // for other weekdays, each marked `hiddenToday`. Without it only today's items come back ·
+  // that was why the editor could not show the Tuesday/Thursday/Sunday machine days on a Monday.
+  const all = req ? new URL(req.url).searchParams.get("all") === "1" : false;
   const lookback = format(subDays(new Date(today + "T12:00:00"), 90), "yyyy-MM-dd");
 
   // The routine columns may not exist on a database that hasn't run the migration yet.
@@ -247,7 +251,8 @@ export async function GET() {
     try { return (JSON.parse(item.weekdays) as string[]).includes(todayCode); } catch { return true; }
   });
 
-  const enriched = visible.map((item) => {
+  const visibleIds = new Set(visible.map((i) => i.id));
+  const enrich = (item: typeof items[number]) => {
     const itemDates = allCompletions
       .filter((c) => c.itemId === item.id)
       .map((c) => c.date)
@@ -270,8 +275,10 @@ export async function GET() {
       notes: item.notes ?? null,
       weekdays: (() => { try { return item.weekdays ? (JSON.parse(item.weekdays) as string[]) : null; } catch { return null; } })(),
       startDate: item.startDate ?? null,
+      hiddenToday: !visibleIds.has(item.id),
     };
-  });
+  };
+  const enriched = visible.map(enrich);
 
   // Day-level stats: everything except habits still being built and the machine
   // training days (gym-*) · a skipped gym morning must never break the streak.
@@ -286,7 +293,7 @@ export async function GET() {
   const showWorkoutRow = !machineToday || todayTrain !== null;
 
   return NextResponse.json({
-    items: showWorkoutRow ? [workoutRow, ...enriched] : enriched,
+    items: all ? items.map(enrich) : showWorkoutRow ? [workoutRow, ...enriched] : enriched,
     overallStreak: calcOverallStreak(byDate, total, today),
     monthlyPct: getMonthlyPct(byDate, total, today),
     thirtyDayAvg,
