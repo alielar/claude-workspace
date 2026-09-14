@@ -44,7 +44,7 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [x] 🟩 Browse by meal, dish detail, cook recipe view in Darija with large text
   - [x] 🟩 Main menu vs Moroccan menu, search, filters, instant switching on the phone
   - [x] 🟩 International library expansion: 60 more high-protein dishes (20 per meal), 180 dishes total
-  - [ ] 🟨 Photos for the 60 new dishes, checked by eye
+  - [x] 🟩 Photos for the new dishes, checked by eye: 170 of 180 dishes have one; 10 show a plain tile until the cook photographs them
   - [x] 🟩 Per-person dislikes: settings in Me, filter applied to that person's views
   - [x] 🟩 Add your own dish: name plus photo link, ready at once, admins add the recipe later
   - [x] 🟩 Macros hidden for children, labelled estimates for adults

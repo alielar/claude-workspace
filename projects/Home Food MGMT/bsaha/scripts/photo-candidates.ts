@@ -15,7 +15,7 @@ const strip = (h: string) => h.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim
 async function commons(q: string): Promise<Hit[]> {
   const u = new URL("https://commons.wikimedia.org/w/api.php");
   u.search = new URLSearchParams({ action: "query", format: "json", generator: "search", gsrnamespace: "6", gsrlimit: "12", gsrsearch: `${q} filetype:bitmap`, prop: "imageinfo", iiprop: "url|extmetadata|size", iiurlwidth: "1000" }).toString();
-  const r = await fetch(u, { headers: { "User-Agent": UA } }); if (!r.ok) return [];
+  const r = await fetch(u, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) }); if (!r.ok) return [];
   const j = await r.json(); const out: Hit[] = [];
   for (const p of Object.values(j?.query?.pages ?? {}) as { title: string; imageinfo?: Array<Record<string, unknown>> }[]) {
     const ii = p.imageinfo?.[0]; if (!ii) continue;
@@ -29,29 +29,37 @@ async function commons(q: string): Promise<Hit[]> {
 async function openverse(q: string): Promise<Hit[]> {
   const u = new URL("https://api.openverse.org/v1/images/");
   u.search = new URLSearchParams({ q, license: "cc0,by,by-sa,pdm", page_size: "12" }).toString();
-  const r = await fetch(u, { headers: { "User-Agent": UA } }); if (!r.ok) return [];
+  const r = await fetch(u, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) }); if (!r.ok) return [];
   const j = await r.json();
   return (j?.results ?? []).filter((it: { width?: number }) => Number(it.width ?? 0) >= 600).map((it: Record<string, string>) => ({ url: it.url, credit: it.creator || it.source || "Openverse", license: `CC ${String(it.license).toUpperCase()} ${it.license_version ?? ""}`.trim(), source: it.foreign_landing_url || it.url, title: it.title ?? "" }));
 }
 async function thumb(url: string, file: string) {
-  const r = await fetch(url, { headers: { "User-Agent": UA } }); if (!r.ok) return false;
+  const r = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) }); if (!r.ok) return false;
   const tmp = file + ".tmp"; fs.writeFileSync(tmp, Buffer.from(await r.arrayBuffer()));
   try { execFileSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", "70", "--resampleWidth", "800", tmp, "--out", file], { stdio: "ignore" }); } catch { fs.rmSync(tmp, { force: true }); return false; }
   fs.rmSync(tmp, { force: true }); return true;
 }
-async function run() {
-  const all: Record<string, Hit[]> = {};
-  for (const [slug, queries] of Object.entries(redo)) {
-    const seen = new Set<string>(); const picks: Hit[] = [];
-    for (const q of queries) {
-      for (const h of [...(await commons(q).catch(() => [])), ...(await openverse(q).catch(() => []))]) {
-        if (seen.has(h.url) || picks.length >= 4) continue; seen.add(h.url);
-        if (await thumb(h.url, path.join(outDir, `${slug}-${picks.length}.jpg`))) picks.push(h);
-      }
-      if (picks.length >= 4) break;
+async function one(slug: string, queries: string[]): Promise<Hit[]> {
+  const seen = new Set<string>(); const picks: Hit[] = [];
+  for (const q of queries) {
+    for (const h of [...(await commons(q).catch(() => [])), ...(await openverse(q).catch(() => []))]) {
+      if (seen.has(h.url) || picks.length >= 4) continue; seen.add(h.url);
+      if (await thumb(h.url, path.join(outDir, `${slug}-${picks.length}.jpg`)).catch(() => false)) picks.push(h);
     }
-    all[slug] = picks; console.log(slug, picks.length);
-    fs.writeFileSync(path.join(outDir, "candidates.json"), JSON.stringify(all, null, 1));
+    if (picks.length >= 4) break;
+  }
+  return picks;
+}
+
+async function run() {
+  const file = path.join(outDir, "candidates.json");
+  const all: Record<string, Hit[]> = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+  const todo = Object.entries(redo).filter(([slug]) => !all[slug]);
+  for (let i = 0; i < todo.length; i += 4) {
+    const batch = todo.slice(i, i + 4);
+    const results = await Promise.all(batch.map(([slug, qs]) => one(slug, qs)));
+    batch.forEach(([slug], k) => { all[slug] = results[k]; console.log(slug, results[k].length); });
+    fs.writeFileSync(file, JSON.stringify(all, null, 1));
   }
 }
 run().catch((e) => { console.error(e); process.exit(1); });
