@@ -216,7 +216,7 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
           </div>
         </div>
 
-        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 16 }}>▶ Start {minutes}:00</button>
+        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 14 }}>▶ Start {minutes}:00</button>
 
         {details}
 

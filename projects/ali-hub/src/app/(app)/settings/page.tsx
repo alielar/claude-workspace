@@ -85,7 +85,7 @@ function Segmented<T extends string>({ value, options, onChange }: {
             aria-checked={on}
             onClick={() => onChange(o.key)}
             style={{
-              minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer",
+              minHeight: 40, borderRadius: 10, border: "none", cursor: "pointer",
               fontSize: 15, fontWeight: on ? 600 : 500, font: "inherit",
               background: on ? "var(--bg-card-2)" : "transparent",
               color: on ? "var(--ink)" : "var(--ink-3)",

@@ -412,12 +412,19 @@ html, body {
 }
 
 /* ─── Card ───────────────────────────────────────────────────────────────── */
+/* Radius scale (audit 2026-09-14): card 14 (--r-lg) · button / input / sheet controls 12 (--r-md)
+   · chip 10 · small control 8 (--r-sm) · dots 4 · pills 999 · sheets 20px top. Nothing else. */
 .cc-card {
   background: var(--bg-card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   position: relative;
 }
+
+/* Rows that fill a card edge to edge (to-do rows, doc rows): the wrapper clips them to
+   the card's corners so a row background never paints a square corner over the card. */
+.cc-card-list { border-radius: var(--r-lg); overflow: hidden; min-width: 0; }
+.cc-card-head + .cc-card-list { border-radius: 0 0 var(--r-lg) var(--r-lg); }
 
 .cc-card-2 {
   background: var(--bg-card-2);

@@ -194,7 +194,7 @@ function Row({ item, onToggle, compact = false, currentBook = null }: {
           className={celebrating ? "cc-done-pop" : undefined}
           style={{
             position: "relative",
-            width: 28, height: 28, borderRadius: 9,
+            width: 28, height: 28, borderRadius: 10,
             border: `2px solid ${showDone ? "transparent" : auto ? `${accent}66` : "var(--line-strong)"}`,
             background: showDone ? accent : "var(--fill-1)",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -345,7 +345,7 @@ function CalRow({ b, onTick }: { b: CalBlock & { ticked: boolean }; onTick: () =
   return (
     <div className="today-row" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", minHeight: 52, padding: "8px 4px", borderBottom: "1px solid var(--line)", opacity: b.ticked ? 0.55 : 1 }}>
       <button onClick={tick} aria-pressed={showTicked} aria-label={b.ticked ? "Mark block not done" : "Mark block productive"} className={celebrating ? "cc-done-pop" : undefined}
-        style={{ position: "relative", width: 28, height: 28, borderRadius: 9, border: `2px solid ${showTicked ? "transparent" : "var(--line-strong)"}`, background: showTicked ? "var(--cyan)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        style={{ position: "relative", width: 28, height: 28, borderRadius: 10, border: `2px solid ${showTicked ? "transparent" : "var(--line-strong)"}`, background: showTicked ? "var(--cyan)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         {showTicked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
         {celebrating && <span className="cc-done-ring" />}
       </button>
@@ -372,7 +372,7 @@ function TodoRow({ t, today, toggleDone }: { t: Todo; today: string; toggleDone:
   };
   return (
     <div className={`today-row${celebrating ? " cc-done-row" : ""}`} style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 14, alignItems: "center", minHeight: 48, padding: "6px 4px", borderBottom: "1px solid var(--line)" }}>
-      <button onClick={tick} aria-label="Mark done" className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 28, height: 28, borderRadius: 9, border: `2px solid ${celebrating ? "transparent" : t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: celebrating ? "var(--pos)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+      <button onClick={tick} aria-label="Mark done" className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 28, height: 28, borderRadius: 10, border: `2px solid ${celebrating ? "transparent" : t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: celebrating ? "var(--pos)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         {celebrating && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
         {celebrating && <span className="cc-done-ring" />}
       </button>

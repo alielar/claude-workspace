@@ -331,7 +331,7 @@ function NotesEditor({ value, onChange, rows = 4, placeholder, autoFocus = false
     const next = m[1] + marker;
     apply(v.slice(0, a) + "\n" + next + v.slice(el.selectionEnd), a + 1 + next.length, a + 1 + next.length);
   };
-  const btn: React.CSSProperties = { minWidth: 38, minHeight: 36, padding: "0 6px", borderRadius: 9, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
+  const btn: React.CSSProperties = { minWidth: 38, minHeight: 36, padding: "0 6px", borderRadius: 10, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", font: "inherit", fontSize: 14, cursor: "pointer" };
   return (
     <div style={fill ? { display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: 0 } : { display: "grid", gap: 6 }}>
       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }} aria-label="Formatting">
@@ -401,7 +401,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
     <div className={`todo-row${celebrating ? " cc-done-row" : ""}`} {...swipe.handlers}
-      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes && !subtasks ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", ...swipe.style }}>
+      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes && !subtasks ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", paddingRight: 8, ...swipe.style }}>
       <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -421,7 +421,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
         <button type="button" onClick={(e) => { e.stopPropagation(); setPeek((p) => !p); }}
           aria-label={peek ? "Close notes" : "Open notes"} aria-expanded={peek} title="Notes"
           style={{ width: 44, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-          <span aria-hidden style={{ width: 24, height: 24, borderRadius: 7, border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
+          <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
         </button>
       )}
       {onLater && !done && (
@@ -459,6 +459,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
     return preview;
   })();
   const sub = [
+    t.priority > 0 ? "Pinned" : null,
     t.dueDate ? `remind ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
     t.project ? `#${t.project}` : null,
     shape,
@@ -468,8 +469,7 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
   return (
     <SwipeWrap swipe={swipe} onDelete={onDelete}>
       <button onClick={onOpen} className="todo-row" {...swipe.handlers}
-        style={{ display: "grid", gridTemplateColumns: t.priority > 0 ? "32px 1fr" : "1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 10px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...swipe.style }}>
-        {t.priority > 0 && <span aria-hidden style={{ fontSize: 16, textAlign: "center" }}>📌</span>}
+        style={{ display: "grid", gridTemplateColumns: "1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 16px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...swipe.style }}>
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
           <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty · tap to write"}</span>
@@ -493,7 +493,7 @@ function NagSelect({ value, onChange }: { value: number | null | undefined; onCh
   const cur = value ?? 30;
   return (
     <select className="cc-input" value={NAG_OPTIONS.includes(cur) ? cur : 30} onChange={(e) => onChange(Number(e.target.value))} aria-label="How often it reminds until done"
-      style={{ fontSize: 15, minHeight: 36, padding: "0 8px", borderRadius: 9, width: "auto", color: "var(--ink-2)", WebkitAppearance: "menulist", appearance: "auto" }}>
+      style={{ fontSize: 15, minHeight: 36, padding: "0 8px", borderRadius: 10, width: "auto", color: "var(--ink-2)", WebkitAppearance: "menulist", appearance: "auto" }}>
       {NAG_OPTIONS.map((m) => <option key={m} value={m}>every {m} min</option>)}
     </select>
   );
@@ -512,7 +512,7 @@ function ProjectField({ value, onChange, projects, listId, label = "project" }: 
       {open && (
         <>
           <input className="cc-input" list={listId} value={value ?? ""} autoFocus onChange={(e) => onChange(e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null)} placeholder="none"
-            style={{ fontSize: 16, minHeight: 36, width: 150, padding: "0 10px", borderRadius: 9 }} />
+            style={{ fontSize: 16, minHeight: 36, width: 150, padding: "0 10px", borderRadius: 10 }} />
           <datalist id={listId}>{projects.map((p) => <option key={p} value={p} />)}</datalist>
           {value && <button type="button" onClick={() => onChange(null)} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13 }}>Clear</button>}
         </>
@@ -617,10 +617,10 @@ function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }:
           <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
           <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
           <span style={{ flex: 1 }} />
-          <div role="tablist" aria-label="Notes shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, padding: 2, borderRadius: 9, background: "var(--fill-1)" }}>
+          <div role="tablist" aria-label="Notes shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, padding: 2, borderRadius: 10, background: "var(--fill-1)" }}>
             {TASK_FORMATS.map((f) => {
               const on = taskFormat(d) === f.key;
-              return <button key={f.key} role="tab" aria-selected={on} onClick={() => set({ format: f.key })} style={{ minHeight: 32, padding: "0 10px", borderRadius: 7, border: "none", font: "inherit", fontSize: 13.5, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", cursor: "pointer" }}>{f.label}</button>;
+              return <button key={f.key} role="tab" aria-selected={on} onClick={() => set({ format: f.key })} style={{ minHeight: 32, padding: "0 10px", borderRadius: 8, border: "none", font: "inherit", fontSize: 13.5, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", cursor: "pointer" }}>{f.label}</button>;
             })}
           </div>
         </div>
@@ -731,7 +731,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
             {items.length === 0 && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet · add the first item below.</div>}
             {items.map((it, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "14px 1fr auto", gap: 10, alignItems: "center", minHeight: 48, borderBottom: "1px solid var(--line)" }}>
-                <span aria-hidden style={{ width: 5, height: 5, borderRadius: 3, background: "var(--violet)", justifySelf: "center" }} />
+                <span aria-hidden style={{ width: 5, height: 5, borderRadius: 4, background: "var(--violet)", justifySelf: "center" }} />
                 {editIdx === i ? (
                   <input
                     className="cc-input" value={editText} autoFocus
@@ -763,7 +763,7 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-          <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>📌 Pin</button>
+          <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>{d.priority > 0 ? "Pinned" : "Pin"}</button>
           <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)} aria-pressed={remind}>Remind me</button>
           {remind && !!d.dueDate && <NagSelect value={d.nagMinutes} onChange={(m) => set({ nagMinutes: m })} />}
           <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={tags} listId="doc-tags" label="tag" />
@@ -911,9 +911,9 @@ export default function TodoPage() {
           return (
             <button key={a.key} role="tab" aria-selected={on} onClick={() => setArea(a.key)}
               className={a.key === "list" ? "seg-docs" : undefined}
-              style={{ minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, WebkitTapHighlightColor: "transparent" }}>
+              style={{ minHeight: 44, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, WebkitTapHighlightColor: "transparent" }}>
               {a.label}
-              {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
+              {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
             </button>
           );
         })}
@@ -958,7 +958,7 @@ export default function TodoPage() {
 
           {lists.length > 0 && (
             <section className="cc-card">
-              <div style={{ padding: "0 8px 0 0" }}>
+              <div className="cc-card-list">
                 {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}
               </div>
             </section>
@@ -991,7 +991,7 @@ export default function TodoPage() {
                   <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
                 )}
                 {!folded && (
-                  <div style={{ padding: "0 8px 0 0" }}>
+                  <div className="cc-card-list">
                     {g.items.map((t) => (
                       <Row key={t.clientId} t={t} today={today} showDate={!!g.dated}
                         onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)}
@@ -1009,7 +1009,7 @@ export default function TodoPage() {
               <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
                 <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
               </button>
-              {showDone && <div>{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)} />)}</div>}
+              {showDone && <div className="cc-card-list">{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)} />)}</div>}
             </section>
           )}
         </>

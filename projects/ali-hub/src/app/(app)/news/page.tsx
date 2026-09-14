@@ -138,14 +138,14 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
       {/* Source domain + summary preview */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, minWidth: 0 }}>
         {story.featured && (
-          <span style={{ fontSize: 13, color: "var(--warn)", flexShrink: 0, padding: "1px 5px", borderRadius: 3, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
+          <span style={{ fontSize: 13, color: "var(--warn)", flexShrink: 0, padding: "1px 5px", borderRadius: 4, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
         )}
         {hostname && (
           <span style={{
             fontSize: 13, color: accentColor, flexShrink: 0,
             fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
             textTransform: "uppercase",
-            padding: "1px 5px", borderRadius: 3,
+            padding: "1px 5px", borderRadius: 4,
             background: `${accentColor}12`, border: `1px solid ${accentColor}25`,
           }}>
             {hostname}
@@ -235,7 +235,7 @@ function ColumnSkeleton() {
         <div key={i} style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}>
           <div className="cc-skeleton" style={{ height: 13, borderRadius: 4, marginBottom: 6, width: "100%" }} />
           <div className="cc-skeleton" style={{ height: 13, borderRadius: 4, width: "70%" }} />
-          <div className="cc-skeleton" style={{ height: 10, borderRadius: 3, width: "35%", marginTop: 8 }} />
+          <div className="cc-skeleton" style={{ height: 10, borderRadius: 4, width: "35%", marginTop: 8 }} />
         </div>
       ))}
     </>

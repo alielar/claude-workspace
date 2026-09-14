@@ -290,7 +290,7 @@ export default function StretchPage() {
         <button
           className="cc-btn cc-btn-primary"
           onClick={start}
-          style={{ minHeight: 64, fontSize: 19, borderRadius: 16, width: "100%" }}
+          style={{ minHeight: 64, fontSize: 19, borderRadius: 14, width: "100%" }}
         >
           ▶ Start
         </button>
@@ -458,15 +458,15 @@ export default function StretchPage() {
 
       {/* Bottom: controls · thumb zone */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10 }}>
-        <button onClick={back} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 16, fontSize: 16 }}>‹ Back</button>
+        <button onClick={back} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 14, fontSize: 16 }}>‹ Back</button>
         <button
           onClick={status === "running" ? pause : resume}
           className="cc-btn cc-btn-primary"
-          style={{ minHeight: 64, borderRadius: 16, fontSize: 19 }}
+          style={{ minHeight: 64, borderRadius: 14, fontSize: 19 }}
         >
           {status === "running" ? "Pause" : "Resume"}
         </button>
-        <button onClick={skip} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 16, fontSize: 16 }}>Skip ›</button>
+        <button onClick={skip} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 14, fontSize: 16 }}>Skip ›</button>
       </div>
     </div>
   );

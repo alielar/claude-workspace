@@ -10,9 +10,9 @@ export default function AppLoading() {
       animation: "loadFadeIn 0.3s ease 0.15s forwards",
     }}>
       <div className="cc-skeleton" style={{ height: 28, width: 180, borderRadius: 8, marginBottom: 10 }} />
-      <div className="cc-skeleton" style={{ height: 14, width: 120, borderRadius: 6, marginBottom: 24 }} />
-      <div className="cc-skeleton" style={{ height: 120, borderRadius: 16, marginBottom: 14 }} />
-      <div className="cc-skeleton" style={{ height: 80, borderRadius: 16 }} />
+      <div className="cc-skeleton" style={{ height: 14, width: 120, borderRadius: 8, marginBottom: 24 }} />
+      <div className="cc-skeleton" style={{ height: 120, borderRadius: 14, marginBottom: 14 }} />
+      <div className="cc-skeleton" style={{ height: 80, borderRadius: 14 }} />
       <style>{`
         @keyframes loadFadeIn {
           from { opacity: 0; }

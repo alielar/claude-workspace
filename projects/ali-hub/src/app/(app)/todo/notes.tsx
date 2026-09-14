@@ -60,7 +60,7 @@ function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
     <div style={{ display: "grid", gridTemplateColumns: editable ? "40px 1fr auto" : "40px 1fr", alignItems: "center", minHeight: editable ? 46 : 38 }}>
       <button type="button" onClick={tick} aria-label={s.done ? "Mark subtask not done" : "Mark subtask done"} aria-pressed={showDone}
         style={{ width: 40, minHeight: editable ? 46 : 38, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 20, height: 20, borderRadius: 6, border: `2px solid ${showDone ? "transparent" : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
+        <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 20, height: 20, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
           {showDone && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
           {celebrating && <span className="cc-done-ring" />}
         </span>

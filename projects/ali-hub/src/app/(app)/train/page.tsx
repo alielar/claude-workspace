@@ -121,7 +121,7 @@ export default function TrainPage() {
                   </span>
                 ))}
               </div>
-              <Link href={`/train/${next.key}`} className="cc-btn cc-btn-primary" style={{ minHeight: 60, fontSize: 19, borderRadius: 16, textDecoration: "none" }}>
+              <Link href={`/train/${next.key}`} className="cc-btn cc-btn-primary" style={{ minHeight: 60, fontSize: 19, borderRadius: 14, textDecoration: "none" }}>
                 ▶ Start {next.name}
               </Link>
             </>
