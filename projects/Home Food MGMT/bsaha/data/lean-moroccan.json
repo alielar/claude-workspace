@@ -1,0 +1,52 @@
+{
+  "_note": "Moroccan-cuisine dishes that are genuinely lean and stay in the main menu. Everything Moroccan is also listed in the Moroccan menu. Slugs are slugify(name_en).",
+  "breakfast": [
+    "Bissara (fava bean soup) with olive oil and cumin",
+    "Eggs in tomato and cumin sauce (Moroccan style, no peppers)",
+    "Boiled eggs with whole-wheat khobz, olive oil and zaatar",
+    "Raib (fresh yogurt) with seasonal fruit and honey",
+    "Herbel (barley porridge) with milk and honey",
+    "Moroccan orange salad with cinnamon and dates",
+    "Boiled eggs with white beans (loubia)",
+    "Zaalouk on bread with a boiled egg",
+    "Semolina porridge (dchicha) with milk"
+  ],
+  "lunch": [
+    "Loubia (white bean stew) with bread",
+    "Moroccan lentils (l'ades) with bread",
+    "Harira with dates and bread",
+    "Fish tajine with chermoula and vegetables",
+    "Grilled sardines with chermoula and salad",
+    "Chicken brochettes with rice and tomato-cucumber salad",
+    "Chicken chorba with vermicelli",
+    "Sardine kefta in tomato sauce",
+    "Vegetable couscous",
+    "Stuffed zucchini with kefta and rice",
+    "Baked maakouda with salad and eggs",
+    "Moroccan chicken rice with vegetables",
+    "Beef with white beans (loubia bel lham)"
+  ],
+  "dinner": [
+    "Harira",
+    "Lentil soup with lemon",
+    "Vegetable chorba with bread",
+    "Tomato and vermicelli soup",
+    "Pumpkin soup with roasted seeds",
+    "Moroccan cooked salads plate (zaalouk, taktouka, carrot salad) with bread",
+    "Zaalouk with grilled bread and boiled eggs",
+    "Eggs in tomato sauce (no peppers) with bread",
+    "Berkoukech (pearl couscous soup with vegetables)",
+    "Grilled fish with salad",
+    "Chicken and vegetable soup",
+    "Lentil salad with fresh cheese and herbs",
+    "Roasted vegetables with couscous and yogurt",
+    "Turkey meatballs in tomato sauce with bread",
+    "Moroccan potato and egg salad",
+    "Batbout stuffed with tuna and vegetables",
+    "Barley soup (hsoua belboula)",
+    "Fish soup",
+    "Yogurt, fruit and nuts plate",
+    "Chickpea salad with tomato, cucumber and lemon, with bread",
+    "Beef and vegetable soup"
+  ]
+}

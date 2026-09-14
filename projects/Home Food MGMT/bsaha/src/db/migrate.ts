@@ -50,16 +50,35 @@ const DDL = [
     created_by INTEGER,
     created_at TEXT NOT NULL DEFAULT ''
   )`,
+  `CREATE TABLE IF NOT EXISTS devices (
+    id TEXT PRIMARY KEY,
+    person_id INTEGER NOT NULL,
+    owner_device INTEGER NOT NULL DEFAULT 0,
+    label TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT '',
+    last_seen_at TEXT NOT NULL DEFAULT ''
+  )`,
+  `CREATE TABLE IF NOT EXISTS pools (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    day TEXT NOT NULL,
+    meal TEXT NOT NULL,
+    dish_id INTEGER NOT NULL,
+    added_by INTEGER,
+    created_at TEXT NOT NULL DEFAULT ''
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS pools_day_meal_dish ON pools(day, meal, dish_id)`,
 ];
 
 /** Columns added after a table shipped. "duplicate column" is swallowed. */
 const LATE_COLUMNS = [
   `ALTER TABLE people ADD COLUMN dislikes TEXT NOT NULL DEFAULT '[]'`,
+  `ALTER TABLE people ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE dishes ADD COLUMN in_main INTEGER NOT NULL DEFAULT 1`,
 ];
 
 /** The household on day one. Everything is renameable from the People screen. */
 const SEED: Seed[] = [
-  { name: "Ali", role: "family", lang: "en", isAdmin: true, sortOrder: 1, dislikes: ["peppers", "raw_onion"] },
+  { name: "Ali", role: "family", lang: "en", isAdmin: true, isOwner: true, sortOrder: 1, dislikes: ["peppers", "raw_onion"] },
   { name: "Papa", role: "family", lang: "fr", isAdmin: true, sortOrder: 2 },
   { name: "Mama", role: "family", lang: "fr", isAdmin: true, sortOrder: 3 },
   { name: "Anas", role: "family", lang: "en", isChild: true, sortOrder: 4 },
@@ -81,6 +100,10 @@ export function ensureSchema(): Promise<void> {
       const now = new Date().toISOString();
       await db.insert(people).values(SEED.map((p) => ({ ...p, createdAt: now })));
     }
+    // Exactly one owner: the first admin named Ali, or the first admin.
+    await db.run(sql`UPDATE people SET is_owner = 1 WHERE id = (
+      SELECT id FROM people WHERE is_admin = 1 ORDER BY (name = 'Ali') DESC, id ASC LIMIT 1
+    ) AND NOT EXISTS (SELECT 1 FROM people WHERE is_owner = 1)`);
     const [d] = await db.select({ n: sql<number>`count(*)` }).from(dishes);
     if (Number(d?.n ?? 0) === 0) await seedDishes();
   })().catch((e) => {

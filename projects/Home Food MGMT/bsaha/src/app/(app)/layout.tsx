@@ -9,10 +9,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const me = await currentPerson();
   if (!me) redirect("/");
 
-  const tabs: Tab[] = [
-    { href: "/today", label: t(me.lang, "today") },
-    { href: "/menu", label: t(me.lang, "menu") },
-  ];
+  const tabs: Tab[] = [{ href: "/today", label: t(me.lang, "today") }];
+  if (me.role !== "grocery") tabs.push({ href: "/menu", label: t(me.lang, "menu") });
+  if (me.role === "cook") tabs.push({ href: "/pool", label: t(me.lang, "tomorrow") });
   if (me.isAdmin) tabs.push({ href: "/people", label: t(me.lang, "people") });
   tabs.push({ href: "/me", label: t(me.lang, "me") });
 

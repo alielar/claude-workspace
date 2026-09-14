@@ -1,16 +1,16 @@
 import clsx from "clsx";
 import { DISLIKE_TAGS, LANGS } from "@/db/schema";
-import { currentPerson } from "@/lib/session";
+import { currentSession } from "@/lib/session";
 import { LANG_LABEL, t } from "@/lib/i18n/dict";
 import { setMyLanguage, switchPerson } from "@/app/actions";
 import { toggleDislike } from "@/app/(app)/menu/actions";
 
 export default async function Me() {
-  const me = (await currentPerson())!;
+  const { person: me, device } = (await currentSession())!;
   return (
     <main>
       <h1 className="text-3xl font-extrabold">{me.name}</h1>
-      <p className="mt-1 text-muted">{t(me.lang, me.role === "cook" ? "cook" : "family")}</p>
+      <p className="mt-1 text-muted">{t(me.lang, me.role === "cook" ? "cook" : me.role === "grocery" ? "grocery" : "family")}</p>
 
       <section className="mt-8">
         <h2 className="text-sm font-bold text-muted uppercase tracking-wide">{t(me.lang, "yourLanguage")}</h2>
@@ -58,9 +58,13 @@ export default async function Me() {
       )}
 
       <section className="mt-10">
-        <form action={switchPerson}>
-          <button className="btn-ghost w-full">{t(me.lang, "switchPerson")}</button>
-        </form>
+        {device.ownerDevice ? (
+          <form action={switchPerson}>
+            <button className="btn-ghost w-full">{t(me.lang, "switchPerson")}</button>
+          </form>
+        ) : (
+          <p className="text-sm text-muted text-center">{t(me.lang, "lockedHint")}</p>
+        )}
       </section>
     </main>
   );

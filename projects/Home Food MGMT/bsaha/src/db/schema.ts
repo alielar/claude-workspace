@@ -3,7 +3,7 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const LANGS = ["en", "fr", "ar"] as const;
 export type Lang = (typeof LANGS)[number];
 
-export const ROLES = ["family", "cook"] as const;
+export const ROLES = ["family", "cook", "grocery"] as const;
 export type Role = (typeof ROLES)[number];
 
 /** One row per household member and the cook. Identity is just "tap your name". */
@@ -13,6 +13,8 @@ export const people = sqliteTable("people", {
   role: text("role", { enum: ROLES }).notNull().default("family"),
   lang: text("lang", { enum: LANGS }).notNull().default("en"),
   isAdmin: integer("is_admin", { mode: "boolean" }).notNull().default(false),
+  /** The platform owner (Ali). Can switch person on any device and release devices. */
+  isOwner: integer("is_owner", { mode: "boolean" }).notNull().default(false),
   isAway: integer("is_away", { mode: "boolean" }).notNull().default(false),
   /** Children never see macros or calories. */
   isChild: integer("is_child", { mode: "boolean" }).notNull().default(false),
@@ -25,6 +27,18 @@ export const people = sqliteTable("people", {
 });
 
 export type Person = typeof people.$inferSelect;
+
+/** One row per phone or tablet that picked a name. A device stays locked to its person. */
+export const devices = sqliteTable("devices", {
+  id: text("id").primaryKey(),
+  personId: integer("person_id").notNull(),
+  /** Bound by the owner: keeps the right to switch person. */
+  ownerDevice: integer("owner_device", { mode: "boolean" }).notNull().default(false),
+  label: text("label").notNull().default(""),
+  createdAt: text("created_at").notNull().default(""),
+  lastSeenAt: text("last_seen_at").notNull().default(""),
+});
+export type Device = typeof devices.$inferSelect;
 
 export const MEALS = ["breakfast", "lunch", "dinner"] as const;
 export type Meal = (typeof MEALS)[number];
@@ -76,6 +90,8 @@ export const dishes = sqliteTable("dishes", {
   photoSourceUrl: text("photo_source_url"),
   /** Always "ready" today. Kept for a future background fill-in. */
   status: text("status").notNull().default("ready"),
+  /** Shown in the main menu. Every dish is also reachable in its cuisine menu. */
+  inMain: integer("in_main", { mode: "boolean" }).notNull().default(true),
   /** Darija checked by the family. */
   reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
@@ -84,3 +100,15 @@ export const dishes = sqliteTable("dishes", {
 });
 
 export type Dish = typeof dishes.$inferSelect;
+
+/** Tomorrow's pool: the cook picks about 5 lunches and 5 dinners; the family votes only from these. */
+export const pools = sqliteTable("pools", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  /** YYYY-MM-DD, the day the meal is eaten. */
+  day: text("day").notNull(),
+  meal: text("meal", { enum: MEALS }).notNull(),
+  dishId: integer("dish_id").notNull(),
+  addedBy: integer("added_by"),
+  createdAt: text("created_at").notNull().default(""),
+});
+export type PoolRow = typeof pools.$inferSelect;

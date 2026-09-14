@@ -11,6 +11,7 @@ import breakfast from "../../data/dishes/breakfast.json";
 import lunch from "../../data/dishes/lunch.json";
 import dinner from "../../data/dishes/dinner.json";
 import photos from "../../data/photos.json";
+import lean from "../../data/lean-moroccan.json";
 
 type Raw = {
   meal: "breakfast" | "lunch" | "dinner";
@@ -23,6 +24,8 @@ type Photo = { file: string; credit: string; license: string; source: string };
 
 const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[])];
 const PHOTOS = photos as Record<string, Photo>;
+const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
+const inMain = (r: Raw, slug: string) => r.cuisine !== "Moroccan" || LEAN.has(slug);
 
 export async function seedDishes() {
   const now = new Date().toISOString();
@@ -46,6 +49,7 @@ export async function seedDishes() {
       ingredients: r.ingredients,
       recipeAr: r.recipe_ar,
       tags: r.tags ?? [],
+      inMain: inMain(r, slug),
       status: "ready",
       isCustom: false,
       createdAt: now,
@@ -62,7 +66,7 @@ export async function seedDishes() {
           meal: row.meal, nameEn: row.nameEn, nameFr: row.nameFr, nameAr: row.nameAr, nameLatin: row.nameLatin,
           descEn: row.descEn, descFr: row.descFr, cuisine: row.cuisine, servings: row.servings,
           prepMin: row.prepMin, cookMin: row.cookMin, macros: row.macros, ingredients: row.ingredients,
-          recipeAr: row.recipeAr, tags: row.tags,
+          recipeAr: row.recipeAr, tags: row.tags, inMain: row.inMain,
           // stock photo only fills a gap; a photo the cook took stays
           ...(photo
             ? {

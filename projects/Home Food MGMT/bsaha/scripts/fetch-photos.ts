@@ -11,7 +11,10 @@ import { execFileSync } from "node:child_process";
 import { slugify } from "../src/lib/slug";
 
 const root = path.resolve(__dirname, "..");
-const list = JSON.parse(fs.readFileSync(path.join(root, "data/dish-list.json"), "utf8")) as Record<string, string[]>;
+const dishFiles = fs.readdirSync(path.join(root, "data/dishes")).filter((f) => f.endsWith(".json"));
+const dishRows = dishFiles.flatMap((f) => JSON.parse(fs.readFileSync(path.join(root, "data/dishes", f), "utf8")) as { name_en: string; photo_query?: string }[]);
+const list = { all: dishRows.map((d) => d.name_en) } as Record<string, string[]>;
+const QUERY_FROM_JSON: Record<string, string> = Object.fromEntries(dishRows.filter((d) => d.photo_query).map((d) => [slugify(d.name_en), d.photo_query as string]));
 const photosFile = path.join(root, "data/photos.json");
 const photos = JSON.parse(fs.readFileSync(photosFile, "utf8")) as Record<string, { file: string; credit: string; license: string; source: string }>;
 const overridesFile = path.join(root, "data/photo-queries.json");
@@ -84,7 +87,7 @@ async function run() {
   for (const name of names) {
     const slug = slugify(name);
     if (photos[slug]) { found++; continue; }
-    const q = overrides[slug] ?? name.replace(/\(.*?\)/g, "").replace(/\b(with|and|no peppers|whole-wheat|homemade|light|fresh)\b/gi, " ").replace(/\s+/g, " ").trim();
+    const q = overrides[slug] ?? QUERY_FROM_JSON[slug] ?? name.replace(/\(.*?\)/g, "").replace(/\b(with|and|no peppers|whole-wheat|homemade|light|fresh)\b/gi, " ").replace(/\s+/g, " ").trim();
     let hit = await commons(q).catch(() => null);
     if (!hit) hit = await openverse(q).catch(() => null);
     if (!hit) { missing.push(name); console.log("  none:", name); continue; }
