@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/* Warm, single light theme. Kids and the cook see the same calm palette. */
+:root {
+  --bg: #fbf5ec;
+  --card: #ffffff;
+  --ink: #22201c;
+  --muted: #7a726a;
+  --line: #ece4d8;
+  --accent: #c2410c;
+  --accent-ink: #ffffff;
+  --accent-soft: #fde8dc;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+}
+
+html { color-scheme: light; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-latin), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+html[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-latin), system-ui, sans-serif;
+}
+
+/* Bottom tab bar sits above the phone's home indicator. */
+.safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+.pad-tabs { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+
+@layer components {
+  .tile {
+    @apply bg-card rounded-2xl border border-line shadow-sm active:scale-[0.98] transition-transform;
+  }
+  .btn-accent, .btn-soft, .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-3 text-base font-semibold active:scale-[0.98] transition-transform;
+  }
+  .btn-accent { @apply bg-accent text-accent-ink; }
+  .btn-soft { @apply bg-accent-soft text-accent; }
+  .btn-ghost { @apply bg-transparent text-muted border border-line; }
+  .input {
+    @apply w-full rounded-xl border border-line bg-card px-4 py-3 text-base outline-none focus:border-accent;
+  }
+  .chip { @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+}
