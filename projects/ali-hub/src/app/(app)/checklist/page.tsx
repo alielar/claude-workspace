@@ -183,7 +183,6 @@ export default function ChecklistPage() {
               );
             })}
           </div>
-          <div style={{ padding: "8px 16px 12px", fontSize: 13, color: "var(--ink-4)" }}>The kettlebell day is set in Settings → Training days.</div>
         </section>
       )}
 

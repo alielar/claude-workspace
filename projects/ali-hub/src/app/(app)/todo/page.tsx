@@ -16,8 +16,9 @@
  */
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { Linkify, LinkChips } from "@/components/Linkify";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { NotesPreview, SubtaskList, SubtaskEditor, SectionsView, GrowInput } from "./notes";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
@@ -787,6 +788,8 @@ function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }:
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TodoPage() {
+  // true only on the client after hydration (the quick-add bar is portalled into <body>)
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [now, setNow] = useState(() => new Date());
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60_000); return () => clearInterval(t); }, []);
   const today = checklistToday(now);
@@ -1020,8 +1023,12 @@ export default function TodoPage() {
         </section>
       )}
 
-      {/* Quick add · pinned above the tab bar */}
-      <form onSubmit={(e) => { e.preventDefault(); submit(); }} style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom))", zIndex: 30, padding: "8px 12px 10px", background: "var(--bg-chrome)", borderTop: "1px solid var(--line)" }}>
+      {/* Quick add · pinned above the tab bar. Rendered into <body> through a portal (2026-09-14 evening:
+          on the laptop the bar sometimes sat 60 px up, mid-page · a fixed box inside the page tree
+          followed the page's box instead of the window; from <body> nothing can shift it) · the
+          position lives in globals.css `.todo-addbar`. */}
+      {mounted && createPortal(
+      <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); submit(); }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
           {previewBits.length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 14, fontFamily: "var(--f-mono)", color: "var(--cyan)" }}>
@@ -1035,7 +1042,7 @@ export default function TodoPage() {
             <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
         </div>
-      </form>
+      </form>, document.body)}
 
       {open && ((open.area ?? "personal") === "list"
         ? <ListSheet t={open} today={today} tags={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
@@ -1051,8 +1058,7 @@ export default function TodoPage() {
             onClose={() => setDraft(null)} />)}
 
       <style>{`.seg-docs { position: relative; } .seg-docs::before { content: ""; position: absolute; left: -2.75px; top: 8px; bottom: 8px; width: 1.5px; background: var(--line-strong); border-radius: 1px; }
-        .todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }
-        @media (min-width: 768px) { form[style*="position: fixed"] { bottom: 0 !important; left: 56px !important; } }`}</style>
+        .todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }`}</style>
     </div>
   );
 }

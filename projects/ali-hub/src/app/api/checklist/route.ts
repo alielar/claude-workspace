@@ -266,7 +266,8 @@ export async function GET(req?: Request) {
       timeOfDay: (item.timeOfDay ?? "anytime") as TimeOfDay,
       kind: ((item.kind as ItemKind) ?? "manual"),
       routineKey: (item.routineKey as RoutineKey | null) ?? null,
-      completedToday: itemDates.includes(today),
+      // The kettlebell Saturday ticks itself once a KB session is finished today (2026-09-14 evening).
+      completedToday: itemDates.includes(today) || (item.routineKey === "gym-kb" && todayTrain !== null),
       streak: calcStreak(itemDates, today),
       last7: last7Dates.map((d) => itemDates.includes(d)),
       source: "manual" as const,
@@ -287,10 +288,11 @@ export async function GET(req?: Request) {
   const total = counted.size;
   const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
 
-  // On a machine day the gym row IS the training row · no second "Train" box (2026-09-14:
-  // it showed twice when the kettlebell schedule was unset), unless a KB session was actually done.
+  // Training days are checklist rows now (gym-push/pull/legs + gym-kb on Saturday, 2026-09-14 evening).
+  // The virtual Train row only appears when a KB session was actually done on a day with no gym row ·
+  // no more "Rest day · Train anyway" filler on ordinary days.
   const machineToday = enriched.some((i) => i.routineKey?.startsWith("gym-") ?? false);
-  const showWorkoutRow = !machineToday || todayTrain !== null;
+  const showWorkoutRow = !machineToday && todayTrain !== null;
 
   return NextResponse.json({
     items: all ? items.map(enrich) : showWorkoutRow ? [workoutRow, ...enriched] : enriched,

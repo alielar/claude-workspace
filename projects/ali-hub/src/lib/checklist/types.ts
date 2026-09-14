@@ -9,7 +9,7 @@ export type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
  */
 export type ItemKind = "routine" | "habit" | "manual";
 
-export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs";
+export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs" | "gym-kb";
 
 export type ChecklistItem = {
   id: number;
@@ -84,6 +84,9 @@ export const ROUTINE_SEED: {
   { routineKey: "gym-push", title: "Push day · machine", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "Speediance · chest, shoulders, triceps", sortOrder: -45, weekdays: ["sun"] },
   { routineKey: "gym-pull", title: "Pull day · machine", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "Speediance · back, biceps, rear delts", sortOrder: -45, weekdays: ["tue"] },
   { routineKey: "gym-legs", title: "Legs and core · machine", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "Speediance · squats, hinges, core", sortOrder: -45, weekdays: ["thu"] },
+  // Kettlebell Saturday (Ali 2026-09-14 evening: "Saturday needs to be a kettlebell day like push/pull/legs, with the Train button").
+  // Ticked automatically when a KB session is finished that day (checklist route); the Train button opens /train/kb1.
+  { routineKey: "gym-kb",   title: "Kettlebell · KB Hour",    emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 60 · 13 moves × 5 reps", sortOrder: -45, weekdays: ["sat"] },
   { routineKey: "breathe", title: "Wim Hof breathing",   emoji: "🫁", timeOfDay: "morning", kind: "routine", color: "cyan",   notes: `30 breaths · ${BREATHING_VIDEO_URL}`, sortOrder: -40 },
   { routineKey: "supp-am", title: "Morning supplements", emoji: "💊", timeOfDay: "morning", kind: "routine", color: "green",  notes: "Zinc · Omega-3 · Creatine", sortOrder: -30 },
   { routineKey: "supp-pm", title: "Magnesium",           emoji: "🌙", timeOfDay: "evening", kind: "routine", color: "violet", notes: "Night supplement", sortOrder: -20 },
