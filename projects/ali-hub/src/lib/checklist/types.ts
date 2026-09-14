@@ -72,7 +72,7 @@ export const ROUTINE_SEED: {
   weekdays?: string[];   // day codes · the item only shows on these days
   startDate?: string;    // hidden before this date
 }[] = [
-  { routineKey: "stretch", title: "Mobility",            emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "21 moves · 4 blocks · 12 minutes, 10 s rests", sortOrder: -50 },
+  { routineKey: "stretch", title: "Mobility",            emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "2 sessions of 10 minutes, alternating · 10 s rests", sortOrder: -50 },
   // Speediance machine days (Ali, 2026-09-14): three a week · Sun push, Tue pull, Thu legs+core
   // (he trained Sunday 13th, next Tuesday 15th and Thursday 17th). Tickable morning rows, NOT
   // counted in the day streak (excluded in the checklist route by the gym- prefix); Saturday's

@@ -20,7 +20,7 @@ export const DEFAULT_MORNING_PLAN: MorningPlan = {
   callsAt: "08:30",
   steps: [
     { id: "wake",      label: "Wake up · water · bathroom", minutes: 10 },
-    { id: "stretch",   label: "Mobility",                   minutes: 12 },
+    { id: "stretch",   label: "Mobility",                   minutes: 10 },
     { id: "breathe",   label: "Wim Hof",                    minutes: 12 },
     { id: "train",     label: "Train",                      minutes: 36, trainOnly: true },
     { id: "shower",    label: "Shower",                     minutes: 15 },

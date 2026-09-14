@@ -191,8 +191,8 @@ export async function POST() {
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
     // ── 2026-09-12 evening: "Mobility", 21 moves, 12:00 · title and note refreshed ──
     `UPDATE checklist_items SET title = 'Mobility' WHERE routine_key = 'stretch' AND title = 'Stretching'`,
-    `UPDATE checklist_items SET notes = '21 moves · 4 blocks · 12 minutes, 10 s rests'
-      WHERE routine_key = 'stretch' AND (notes IS NULL OR notes NOT LIKE '21 moves%')`,
+    `UPDATE checklist_items SET notes = '2 sessions of 10 minutes, alternating · 10 s rests'
+      WHERE routine_key = 'stretch' AND (notes IS NULL OR notes NOT LIKE '2 sessions%')`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────
     `ALTER TABLE user_settings ADD COLUMN calendar_feeds TEXT`,
     `CREATE TABLE IF NOT EXISTS calendar_ticks (

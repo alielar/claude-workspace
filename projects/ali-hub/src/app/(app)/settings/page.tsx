@@ -22,7 +22,7 @@ import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 import { parseMorningPlan, computeMorning, type MorningPlan } from "@/lib/morning/plan";
-import { STRETCH_MOVES, STRETCH_TOTAL_SECONDS } from "@/lib/routine/stretching";
+import { STRETCH_TOTAL_SECONDS } from "@/lib/routine/stretching";
 
 type UserSettings = {
   timezone: string;
@@ -628,7 +628,7 @@ export default function SettingsPage() {
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
           <span>
             <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Mobility</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{STRETCH_MOVES.length} moves · 10 s rests · {Math.floor(STRETCH_TOTAL_SECONDS / 60)}:{String(STRETCH_TOTAL_SECONDS % 60).padStart(2, "0")}</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>2 sessions, alternating · 10 s rests · {Math.floor(STRETCH_TOTAL_SECONDS / 60)}:{String(STRETCH_TOTAL_SECONDS % 60).padStart(2, "0")} each</span>
           </span>
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>

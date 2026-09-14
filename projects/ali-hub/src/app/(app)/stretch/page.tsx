@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_TOTAL_SECONDS, buildStretchPlan, isDefaultName, reelForMove, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_REELS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, buildStretchPlan, isDefaultName, reelForMove, sessionForDate, sessionSeconds, type SessionKey, type StretchPhase,
 } from "@/lib/routine/stretching";
 import { ReelRow, useReelDismissals } from "@/components/ReelLink";
 import { cues } from "@/lib/routine/cues";
@@ -26,8 +26,6 @@ import { checklistToday } from "@/lib/checklist/day";
 import type { ChecklistData } from "@/lib/checklist/types";
 
 type Status = "idle" | "running" | "paused" | "done";
-
-const PLAN = buildStretchPlan();
 
 function fmt(s: number) {
   const m = Math.floor(s / 60);
@@ -58,8 +56,14 @@ async function completeStretchItem() {
 export default function StretchPage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
+  // Two sessions alternate day to day (2026-09-14) · today's is preselected, the idle screen can switch.
+  const [session, setSession] = useState<SessionKey>(() => sessionForDate(checklistToday()));
+  const SESSION = STRETCH_SESSIONS[session];
+  const MOVES = SESSION.moves;
+  const PLAN = useMemo(() => buildStretchPlan(MOVES), [MOVES]);
+  const TOTAL = sessionSeconds(MOVES);
   const [step, setStep] = useState(0);                 // index into PLAN
-  const [remainingMs, setRemainingMs] = useState(PLAN[0].seconds * 1000);
+  const [remainingMs, setRemainingMs] = useState(STRETCH_LEADIN_SECONDS * 1000);
   const [voice, setVoice] = useState(true);
   const [track, setTrack] = useState<string>("off");           // track slug | "off"
   const [previewing, setPreviewing] = useState<string | null>(null);
@@ -69,9 +73,9 @@ export default function StretchPage() {
   // position, so every code change to the list was painted over by the snapshot
   // (Ali's screen on 2026-09-11 still showed "Seated Toe Stretch" and "Frog Pose").
   // It is migrated once: only names that were never a default survive as renames.
-  const MOVE_NAMES = STRETCH_MOVES.map((m) => m.name);
+  const MOVE_NAMES = MOVES.map((m) => m.name);
   const [renames, setRenames] = useState<Record<string, string>>({});
-  const moves = STRETCH_MOVES.map((m) => renames[m.key]?.trim() || m.name);
+  const moves = MOVES.map((m) => renames[m.key]?.trim() || m.name);
   const movesRef = useRef<string[]>(MOVE_NAMES);
   movesRef.current = moves;
   const [editIdx, setEditIdx] = useState<number | null>(null);
@@ -94,7 +98,7 @@ export default function StretchPage() {
     } catch { /* ignore */ }
   }, []);
   const renameMove = (i: number, name: string) => {
-    const key = STRETCH_MOVES[i].key;
+    const key = MOVES[i].key;
     const next = { ...renames };
     if (name.trim() && name.trim() !== MOVE_NAMES[i]) next[key] = name.trim(); else delete next[key];
     setRenames(next);
@@ -147,8 +151,8 @@ export default function StretchPage() {
   }, [phase, moves]);
 
   // elapsed seconds across the whole routine (for the top progress bar)
-  const elapsedBefore = useMemo(() => PLAN.slice(0, step).reduce((s, p) => s + p.seconds, 0), [step]);
-  const elapsed = Math.min(STRETCH_TOTAL_SECONDS, elapsedBefore + (phase.seconds - Math.ceil(remainingMs / 1000)));
+  const elapsedBefore = useMemo(() => PLAN.slice(0, step).reduce((s, p) => s + p.seconds, 0), [step, PLAN]);
+  const elapsed = Math.min(TOTAL, elapsedBefore + (phase.seconds - Math.ceil(remainingMs / 1000)));
 
   // ── Wake lock ──────────────────────────────────────────────────────────────
   const requestWakeLock = useCallback(async () => {
@@ -186,7 +190,7 @@ export default function StretchPage() {
     if (!announce) return;
     if (p.kind === "work") cues.work(movesRef.current[p.index]);
     else if (p.kind === "rest") cues.rest(movesRef.current[p.index + 1]);
-  }, []);
+  }, [, PLAN]);
 
   // ── Ticker ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -222,7 +226,7 @@ export default function StretchPage() {
       }
     }, 200);
     return () => clearInterval(id);
-  }, [status, step, enterStep]);
+  }, [status, step, enterStep, PLAN]);
 
   // ── Controls ──────────────────────────────────────────────────────────────
   const start = () => {
@@ -265,7 +269,7 @@ export default function StretchPage() {
     cues.silence();
     setStatus("idle");
     setStep(0);
-    setRemainingMs(PLAN[0].seconds * 1000);
+    setRemainingMs(STRETCH_LEADIN_SECONDS * 1000);
     router.push("/today");
   };
 
@@ -274,7 +278,7 @@ export default function StretchPage() {
   const isRest = phase.kind === "rest";
   const isLead = phase.kind === "leadin";
   const accent = isRest ? "var(--cyan)" : isLead ? "var(--warn)" : "var(--violet)";
-  const moveNumber = phase.kind === "done" ? STRETCH_MOVES.length : phase.kind === "leadin" ? 1 : phase.index + 1;
+  const moveNumber = phase.kind === "done" ? MOVES.length : phase.kind === "leadin" ? 1 : phase.index + 1;
 
   // ── Idle screen ───────────────────────────────────────────────────────────
   if (status === "idle") {
@@ -283,8 +287,24 @@ export default function StretchPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility</h1>
-            <div className="sub">{STRETCH_MOVES.length} moves · 4 blocks · 10 s rests · {fmt(STRETCH_TOTAL_SECONDS)}</div>
+            <div className="sub">{SESSION.name} · {SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
           </div>
+        </div>
+
+        {/* Which session · today's is preselected, the other one is a tap away */}
+        <div role="radiogroup" aria-label="Session" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          {([1, 2] as SessionKey[]).map((k) => {
+            const on = session === k;
+            const s = STRETCH_SESSIONS[k];
+            return (
+              <button key={k} role="radio" aria-checked={on} onClick={() => setSession(k)}
+                style={{ minHeight: 56, padding: "6px 12px", borderRadius: 12, textAlign: "left", font: "inherit", cursor: "pointer", display: "grid", gap: 1,
+                  border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)" }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>{s.name}{sessionForDate(checklistToday()) === k ? " · today" : ""}</span>
+                <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{s.focus}</span>
+              </button>
+            );
+          })}
         </div>
 
         <button
@@ -356,9 +376,9 @@ export default function StretchPage() {
           <ol style={{ padding: "4px 16px 8px", margin: 0, listStyle: "none" }}>
             {moves.map((m, i) => (
               <li key={i}>
-              {(i === 0 || STRETCH_MOVES[i].block !== STRETCH_MOVES[i - 1].block) && (
+              {(i === 0 || MOVES[i].block !== MOVES[i - 1].block) && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0 2px" }}>
-                  <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{STRETCH_BLOCKS[STRETCH_MOVES[i].block]}</span>
+                  <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{STRETCH_BLOCKS[MOVES[i].block]}</span>
                   <span aria-hidden style={{ flex: 1, height: 1, background: "var(--line)" }} />
                 </div>
               )}
@@ -382,7 +402,7 @@ export default function StretchPage() {
                     {m}
                   </button>
                 )}
-                <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-4)" }}>{STRETCH_MOVES[i].seconds}s</span>
+                <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-4)" }}>{MOVES[i].seconds}s</span>
               </div>
               </li>
             ))}
@@ -400,7 +420,7 @@ export default function StretchPage() {
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
         <div style={{ fontSize: 64 }}>✓</div>
         <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility done</h1>
-        <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{STRETCH_MOVES.length} moves · {fmt(STRETCH_TOTAL_SECONDS)} · ticked on today&rsquo;s list</p>
+        <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{SESSION.name} · {MOVES.length} moves · {fmt(TOTAL)} · ticked on today&rsquo;s list</p>
         <button className="cc-btn cc-btn-primary" onClick={exit} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
           Back to Today
         </button>
@@ -420,16 +440,16 @@ export default function StretchPage() {
       {/* Top: overall progress + exit */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div className="cc-progress-track" style={{ flex: 1, height: 4 }}>
-          <div className="cc-progress-fill" style={{ width: `${(elapsed / STRETCH_TOTAL_SECONDS) * 100}%`, transition: "width 0.3s linear" }} />
+          <div className="cc-progress-fill" style={{ width: `${(elapsed / TOTAL) * 100}%`, transition: "width 0.3s linear" }} />
         </div>
-        <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-3)" }}>{fmt(Math.max(0, STRETCH_TOTAL_SECONDS - elapsed))} left</span>
+        <span style={{ fontFamily: "var(--f-mono)", fontSize: 14, color: "var(--ink-3)" }}>{fmt(Math.max(0, TOTAL - elapsed))} left</span>
         <button onClick={exit} aria-label="Exit" className="cc-btn cc-btn-ghost" style={{ minWidth: 44, minHeight: 44, padding: 0, borderRadius: 12 }}>✕</button>
       </div>
 
       {/* Middle: phase, name, countdown */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 8 }}>
         <div style={{ fontFamily: "var(--f-mono)", fontSize: 14, letterSpacing: "0.18em", textTransform: "uppercase", color: accent }}>
-          {isLead ? "Get ready" : isRest ? "Rest" : `Move ${moveNumber} of ${STRETCH_MOVES.length} · ${STRETCH_BLOCKS[STRETCH_MOVES[Math.min(phase.index, STRETCH_MOVES.length - 1)].block]}`}
+          {isLead ? "Get ready" : isRest ? "Rest" : `Move ${moveNumber} of ${MOVES.length} · ${STRETCH_BLOCKS[MOVES[Math.min(phase.index, MOVES.length - 1)].block]}`}
         </div>
         <div style={{ fontSize: "clamp(24px, 7vw, 34px)", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em", minHeight: "2.4em", display: "flex", alignItems: "center" }}>
           {isRest ? (nextName ?? "") : moveName}
@@ -445,8 +465,8 @@ export default function StretchPage() {
         )}
         {/* Form check mid-session (2026-09-09): the reel for THIS movement, one tap.
             Opening it pauses the timer so nothing runs on while he watches. */}
-        {!isLead && phase.kind === "work" && reels.ready && !reels.isDismissed(reelForMove(phase.index).id) && (
-          <a href={reelForMove(phase.index).url} target="_blank" rel="noopener noreferrer"
+        {!isLead && phase.kind === "work" && reels.ready && !reels.isDismissed(reelForMove(MOVES, phase.index).id) && (
+          <a href={reelForMove(MOVES, phase.index).url} target="_blank" rel="noopener noreferrer"
             onClick={() => { if (status === "running") pause(); }}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44, padding: "0 16px", borderRadius: 12, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--ink-2)", textDecoration: "none", fontSize: 14, marginTop: 4 }}>
             <span aria-hidden style={{ color: "var(--violet)" }}>▶</span> Check the form · pauses the timer
