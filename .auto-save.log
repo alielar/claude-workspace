@@ -12068,3 +12068,116 @@ To github.com:alielar/claude-workspace.git
  1 file changed, 32 deletions(-)
 To github.com:alielar/claude-workspace.git
    1691695..64e2917  main -> main
+[main 4f93695] auto-save: 2026-09-12 23:47
+ 112 files changed, 4 insertions(+), 149495 deletions(-)
+ delete mode 100644 projects/QA:AC-platform/.gitignore
+ delete mode 100644 projects/QA:AC-platform/AGENTS.md
+ delete mode 100644 projects/QA:AC-platform/CLAUDE.md
+ delete mode 100644 projects/QA:AC-platform/PLAN.md
+ delete mode 100644 projects/QA:AC-platform/README.md
+ delete mode 100644 projects/QA:AC-platform/components.json
+ delete mode 100644 projects/QA:AC-platform/eslint.config.mjs
+ delete mode 100644 projects/QA:AC-platform/next.config.ts
+ delete mode 100644 projects/QA:AC-platform/package-lock.json
+ delete mode 100644 projects/QA:AC-platform/package.json
+ delete mode 100644 projects/QA:AC-platform/postcss.config.mjs
+ delete mode 100644 projects/QA:AC-platform/prisma.config.ts
+ delete mode 100644 projects/QA:AC-platform/prisma/classification-cache.json
+ delete mode 100644 projects/QA:AC-platform/prisma/schema.prisma
+ delete mode 100644 projects/QA:AC-platform/public/file.svg
+ delete mode 100644 projects/QA:AC-platform/public/globe.svg
+ delete mode 100644 projects/QA:AC-platform/public/next.svg
+ delete mode 100644 projects/QA:AC-platform/public/vercel.svg
+ delete mode 100644 projects/QA:AC-platform/public/window.svg
+ delete mode 100644 projects/QA:AC-platform/src/app/(dashboard)/cycles/[id]/page.tsx
+ delete mode 100644 projects/QA:AC-platform/src/app/(dashboard)/layout.tsx
+ delete mode 100644 projects/QA:AC-platform/src/app/(dashboard)/page.tsx
+ delete mode 100644 projects/QA:AC-platform/src/app/(dashboard)/performance/page.tsx
+ delete mode 100644 projects/QA:AC-platform/src/app/(dashboard)/pitches/[id]/page.tsx
+ delete mode 100644 projects/QA:AC-platform/src/app/(dashboard)/settings/page.tsx
+ delete mode 100644 projects/QA:AC-platform/src/app/api/cycle-batches/[id]/generate-all/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/cycle-batches/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/linear/config/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/linear/performance/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/linear/push/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/linear/qa-performance/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/linear/teams/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/pitches/[id]/analyze/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/pitches/[id]/download/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/pitches/[id]/generate-ac/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/pitches/[id]/messages/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/api/pitches/route.ts
+ delete mode 100644 projects/QA:AC-platform/src/app/favicon.ico
+ delete mode 100644 projects/QA:AC-platform/src/app/globals.css
+ delete mode 100644 projects/QA:AC-platform/src/app/layout.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/cycles/CycleBatchDetail.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/linear/LinearPushDialog.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/pitches/PitchDetail.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/pitches/PitchesDashboard.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/qa/QADashboard.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/shared/MarkdownRenderer.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/badge.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/button.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/card.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/dialog.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/input.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/scroll-area.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/separator.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/sheet.tsx
+ delete mode 100644 projects/QA:AC-platform/src/components/ui/textarea.tsx
+ delete mode 100644 projects/QA:AC-platform/src/lib/cycle-detection.ts
+ delete mode 100644 projects/QA:AC-platform/src/lib/linear.ts
+ delete mode 100644 projects/QA:AC-platform/src/lib/prisma.ts
+ delete mode 100644 projects/QA:AC-platform/src/lib/prompts.ts
+ delete mode 100644 projects/QA:AC-platform/src/lib/qa-classification.ts
+ delete mode 100644 projects/QA:AC-platform/src/lib/qa-performance.ts
+ delete mode 100644 projects/QA:AC-platform/src/lib/utils.ts
+ delete mode 100644 projects/QA:AC-platform/tsconfig.json
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/.DS_Store
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/README.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/create-issue.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/create-plan.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/document.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/execute.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/explore.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/learning-opportunity.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/peer-review.md
+ delete mode 100644 projects/grammar-platform-exercises:videoscript:lessons /claude/commands/review.md
+ delete mode 100644 projects/marketing-video-generator/CLAUDE.md
+ delete mode 100644 projects/vocab healing/Word_Bank_3000_Correction_Report.pdf
+ delete mode 100644 projects/vocab healing/Word_Bank_3000_Detailed_Changes.pdf
+ delete mode 100644 projects/vocab healing/Word_Bank_3000_Second_Pass.pdf
+ delete mode 100644 projects/vocab healing/acc_corrections.json
+ delete mode 100644 projects/vocab healing/acc_definitions.json
+ delete mode 100644 projects/vocab healing/assemble_final.py
+ delete mode 100644 projects/vocab healing/batch_apply.py
+ delete mode 100644 projects/vocab healing/build_review.py
+ delete mode 100644 projects/vocab healing/check.py
+ delete mode 100644 projects/vocab healing/check_dups.py
+ delete mode 100644 projects/vocab healing/compact.txt
+ delete mode 100644 projects/vocab healing/corrections_accum.json
+ delete mode 100644 projects/vocab healing/final_assemble.py
+ delete mode 100644 projects/vocab healing/inspect.py
+ delete mode 100644 projects/vocab healing/make_detailed_report.py
+ delete mode 100644 projects/vocab healing/make_final_report.py
+ delete mode 100644 projects/vocab healing/make_report.py
+ delete mode 100644 projects/vocab healing/patch_01.json
+ delete mode 100644 projects/vocab healing/patch_02.json
+ delete mode 100644 projects/vocab healing/patch_03.json
+ delete mode 100644 projects/vocab healing/patch_04.json
+ delete mode 100644 projects/vocab healing/patch_05.json
+ delete mode 100644 projects/vocab healing/patch_06.json
+ delete mode 100644 projects/vocab healing/patch_07.json
+ delete mode 100644 projects/vocab healing/patch_08.json
+ delete mode 100644 projects/vocab healing/patch_09.json
+ delete mode 100644 projects/vocab healing/review_all.txt
+ delete mode 100644 projects/vocab healing/review_lowmed.json
+ delete mode 100644 projects/vocab healing/review_lowmed.txt
+ delete mode 100644 projects/vocab healing/validate_final.py
+ delete mode 100644 projects/vocab healing/vocabulary_adjusted.json
+ delete mode 100644 projects/vocab healing/vocabulary_adjusted_with_notes.json
+ delete mode 100644 projects/vocab healing/vocabulary_changes_log.json
+ delete mode 100644 projects/vocab healing/vocabulary_corrected.json
+ rename {projects/grammar-platform-exercises:videoscript:lessons  => templates}/.DS_Store (62%)
+To github.com:alielar/claude-workspace.git
+   f016f63..4f93695  main -> main
