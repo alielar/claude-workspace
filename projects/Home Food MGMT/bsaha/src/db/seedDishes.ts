@@ -13,6 +13,9 @@ import dinner from "../../data/dishes/dinner.json";
 import intlBreakfast from "../../data/dishes/intl-breakfast.json";
 import intlLunch from "../../data/dishes/intl-lunch.json";
 import intlDinner from "../../data/dishes/intl-dinner.json";
+import intl2Breakfast from "../../data/dishes/intl2-breakfast.json";
+import intl2Lunch from "../../data/dishes/intl2-lunch.json";
+import intl2Dinner from "../../data/dishes/intl2-dinner.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
 import videos from "../../data/videos/all.json";
@@ -26,7 +29,7 @@ type Raw = {
 };
 type Photo = { file: string; credit: string; license: string; source: string };
 
-const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[]), ...(intlBreakfast as Raw[]), ...(intlLunch as Raw[]), ...(intlDinner as Raw[])];
+const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[]), ...(intlBreakfast as Raw[]), ...(intlLunch as Raw[]), ...(intlDinner as Raw[]), ...(intl2Breakfast as Raw[]), ...(intl2Lunch as Raw[]), ...(intl2Dinner as Raw[])];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
 const inMain = (r: Raw) => r.cuisine !== "Moroccan";
