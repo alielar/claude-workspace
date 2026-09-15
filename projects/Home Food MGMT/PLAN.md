@@ -1,6 +1,6 @@
 # Bsaha — Implementation Plan
 
-**Overall Progress:** `62%`
+**Overall Progress:** `68%`
 
 ## TLDR
 Bsaha is a standalone phone-first web app (installable, no app store) for one household: Ali, both parents, Anas (15), Layla (11), a brother away in Amsterdam who returns later, and the cook. Each evening the family picks lunch and dinner for the next day from a two-week shortlist. At 23:00 the app settles each meal to at most two dishes, and the cook opens a Darija-only view at 06:30 with the day's orders, headcount and recipes. Breakfast is not voted: each person picks their own and the cook sees the list. A grocery list for the two-week cycle is shown to the grocery account and can be copied as Darija text to WhatsApp.
@@ -52,9 +52,9 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [x] 🟩 Macros hidden for children, labelled estimates for adults
   - [x] 🟩 Moroccan menu restructure: every Moroccan dish moved there, Healthy/Rich toggle inside it; main menu is international only
   - [x] 🟩 Video link field on each dish, admin-editable, shown as a "watch how it's made" button
-  - [🟨] International library expansion, round 2: 80 more well-known dishes (pasta, pizza, tacos, chicken-and-rice, curries — 40 lunch, 40 dinner), 10 more breakfasts — in progress
-  - [🟨] Photo quality pass: up to 8 higher-quality candidates harvested per dish from Flickr/Wikimedia, human review and swap in progress
-  - [🟨] Cooking videos matched per dish from YouTube: breakfast pass found 54 of 70; lunch and dinner passes partial, to finish
+  - [x] 🟩 International library expansion, round 2: 80 more well-known dishes (pasta, pizza, tacos, chicken-and-rice, curries — 40 lunch, 40 dinner), 10 more breakfasts written, validated, deployed
+  - [x] 🟩 Photo quality pass: up to 8 higher-quality candidates harvested per dish from Flickr/Wikimedia; 68 of 180 dishes improved, visual review by AI agents, applied and live
+  - [🟨] Cooking videos matched per dish from YouTube: breakfast 54 of 70 found; lunch and dinner passes partial (hit org spend limit, pending resolution)
 
 - [ ] 🟥 **Step 3: Two-week cycle and grocery list** (starts once the production database is confirmed)
   - [ ] 🟥 Admins create a cycle: dates, 10 lunches, 10 dinners, breakfast set
