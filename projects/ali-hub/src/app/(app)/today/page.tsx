@@ -6,21 +6,20 @@
  * Renders instantly from the phone's local copy, refreshes in the background,
  * and every tick works offline (queued and synced later).
  *
- * TWO LAYOUTS since 2026-09-14 evening (Ali is testing both, switch under the progress line,
- * remembered in localStorage["cc-today-layout"]):
+ * DAY SPINE · the one layout (Ali picked it 2026-09-15; the "Now First" alternative and its
+ * switch are gone). Top to bottom:
  *
- *   "now"   · NOW FIRST · greeting + progress ring · ONE "Now" card with only this part of the
- *             day (still-open earlier steps + overdue to-dos on top → this part's routine →
- *             timed to-dos in clock order → anytime to-dos), six rows then "+N more" · "Later
- *             today" and "Done" fold underneath.
- *   Both end with the Morning brief card and then ONE highlight · listening and watching
- *   come after the day's actions (Ali 2026-09-14 night).
- *   "spine" · DAY SPINE · greeting + clock · progress line · "Loose ends" tray = due to-dos
- *             with no time slot, each with Time (native wheel → today at that hour) and
- *             Tmrw → so nothing stays loose · then the day on a vertical time line: Morning
- *             04–12 · Afternoon 12–21 · Evening 21–04, routine steps + timed to-dos placed by
- *             hour, past segments fold to one line, the current one is outlined, a violet
- *             "now" line with the clock sits after it.
+ *   greeting + date + clock · streak · progress line
+ *   LOOSE ENDS · due to-dos with no time slot, each with Time (native wheel → today at that
+ *                hour) and Tmrw →. The card DISAPPEARS when the list is empty — the empty space
+ *                is the point ("it motivates me to keep the page clean").
+ *   THE SPINE  · Morning 04–12 · Afternoon 12–21 · Evening 21–04 on a vertical time line;
+ *                routine steps and timed to-dos placed by the hour, past segments folded to one
+ *                line, the current one outlined, a violet "now" line with the clock after it.
+ *   Morning brief, then ONE highlight · listening and watching come after the day's actions.
+ *
+ * Tapping a to-do anywhere here opens the SAME task sheet as /todo (../todo/sheet), so time and
+ * date can be changed without leaving the page (Ali 2026-09-15).
  *
  * Calendar work blocks were REMOVED the same evening (Ali: "work blocks are natural, I have
  * them every day · this is a personal to-do app"). The calendar API routes still exist but
@@ -47,14 +46,7 @@ import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import { parseMorningPlan, computeMorning } from "@/lib/morning/plan";
 import { useOverview } from "@/lib/train/useTrain";
 import { addDays, fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
-
-// ─── Layout choice ────────────────────────────────────────────────────────────
-
-type Layout = "now" | "spine";
-const LAYOUT_KEY = "cc-today-layout";
-function readLayout(): Layout {
-  try { return localStorage.getItem(LAYOUT_KEY) === "spine" ? "spine" : "now"; } catch { return "now"; }
-}
+import { Sheet } from "../todo/sheet";
 
 // ─── One highlight suggestion (News keeps the rest) ──────────────────────────
 
@@ -84,7 +76,6 @@ function greeting(h: number): string {
   return "Late night";
 }
 
-const PART_LABEL: Record<DayPart, string> = { morning: "this morning", afternoon: "this afternoon", evening: "this evening" };
 const PART_TITLE: Record<DayPart, string> = { morning: "Morning", afternoon: "Afternoon", evening: "Evening" };
 const PART_HOURS: Record<DayPart, [string, string]> = { morning: ["04:00", "12:00"], afternoon: ["12:00", "21:00"], evening: ["21:00", "04:00"] };
 const PART_ORDER: Record<DayPart, number> = { morning: 0, afternoon: 1, evening: 2 };
@@ -218,8 +209,8 @@ function Row({ item, onToggle, compact = false, currentBook = null, flag }: {
 }
 
 /** One to-do inside Today · ticking chimes, pops and folds the row away. Optional Time / Tmrw actions (Day Spine's loose ends). */
-function TodoRow({ t, today, toggleDone, onTime, onDefer }: {
-  t: Todo; today: string; toggleDone: (t: Todo) => void;
+function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
+  t: Todo; today: string; toggleDone: (t: Todo) => void; onOpen: (t: Todo) => void;
   onTime?: (hhmm: string) => void; onDefer?: () => void;
 }) {
   const [celebrating, setCelebrating] = useState(false);
@@ -237,12 +228,13 @@ function TodoRow({ t, today, toggleDone, onTime, onDefer }: {
         {celebrating && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
         {celebrating && <span className="cc-done-ring" />}
       </button>
-      <Link href="/todo" style={{ textDecoration: "none", color: "inherit", minWidth: 0 }}>
+      {/* Tap = open the task sheet right here (2026-09-15) · it used to jump to /todo and need a second tap. */}
+      <button type="button" onClick={() => onOpen(t)} style={{ background: "transparent", border: "none", padding: 0, font: "inherit", textAlign: "left", color: "inherit", minWidth: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 16, lineHeight: 1.3 }}><Linkify text={t.title} /></span>
         <span style={{ display: "block", fontSize: 14, color: late ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
           {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}{t.project ? ` · #${t.project}` : ""}
         </span>
-      </Link>
+      </button>
       {actions && (
         <span style={{ display: "flex", gap: 4 }}>
           {onTime && (
@@ -256,54 +248,6 @@ function TodoRow({ t, today, toggleDone, onTime, onDefer }: {
         </span>
       )}
     </div>
-  );
-}
-
-/** A folding footer line inside a card ("Later today · 3", "Done · 4"). */
-function FoldLine({ label, tail, open, onToggle, first = false }: { label: string; tail: string; open: boolean; onToggle: () => void; first?: boolean }) {
-  return (
-    <button type="button" onClick={onToggle} aria-expanded={open}
-      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", minHeight: 44, padding: "0 16px", background: "transparent", border: "none", borderTop: first ? "none" : "1px solid var(--line)", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer", textAlign: "left" }}>
-      <span><b style={{ fontWeight: 500, color: "var(--ink-2)" }}>{label}</b> · {tail}</span>
-      <span>{open ? "▴" : "▾"}</span>
-    </button>
-  );
-}
-
-/**
- * Morning plan (2026-09-08, Ali-approved) · wake time + sequence, driven by whether
- * today is a training day (a machine day on the checklist, or the kettlebell schedule).
- */
-function MorningCard({ machineDay }: { machineDay: boolean }) {
-  const { data: settings } = useCached<{ morningPlan?: string | null }>("settings", () => fetchJson("/api/settings"));
-  const { data: ov } = useOverview();
-  const plan = parseMorningPlan(settings?.morningPlan);
-  const sched = ov?.schedule ?? null;
-  const isTraining = machineDay || (sched ? sched.todayKey !== null : true);
-  const { wake, rows, bufferMin } = computeMorning(plan, isTraining);
-  const [open, setOpen] = useState(false);
-  return (
-    <section className="cc-card">
-      <button onClick={() => setOpen((v) => !v)} aria-expanded={open}
-        style={{ all: "unset", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", minHeight: 46, padding: "10px 16px" }}>
-        <span style={{ fontSize: 15, fontWeight: 600 }}>Morning · wake {wake}</span>
-        <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{isTraining ? "training day" : "rest day"} · calls {plan.callsAt} {open ? "▴" : "▾"}</span>
-      </button>
-      {open && (
-        <div style={{ padding: "0 16px 12px" }}>
-          {rows.map((r) => (
-            <div key={r.id} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, minHeight: 36, alignItems: "center", borderBottom: "1px solid var(--line)" }}>
-              <span style={{ fontFamily: "var(--f-mono)", fontSize: 13.5, color: "var(--ink-3)" }}>{r.start}–{r.end}</span>
-              <span style={{ fontSize: 15 }}>{r.label}</span>
-            </div>
-          ))}
-          <div style={{ paddingTop: 8, fontSize: 13.5, color: bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>
-            {bufferMin >= 0 ? `${bufferMin} min spare before calls` : `${-bufferMin} min OVER · trim a step in Settings`}
-            {" · "}<Link href="/settings" style={{ color: "var(--violet)" }}>edit</Link>
-          </div>
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -322,14 +266,6 @@ export default function TodayPage() {
   const today = checklistToday(now);
   const part = dayPart(now);
   const hour = madridHour(now);
-
-  // Layout · read after mount (no flash of the wrong one on the server render).
-  const [layout, setLayout] = useState<Layout>("now");
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
-    setLayout(readLayout());
-  }, []);
-  const pickLayout = (l: Layout) => { setLayout(l); try { localStorage.setItem(LAYOUT_KEY, l); } catch { /* ignore */ } };
 
   const { data, loading, stale, setData, refresh } = useCached<ChecklistData>("checklist", () => fetchJson<ChecklistData>("/api/checklist"));
   useEffect(() => { ensureMigrate(); }, []);
@@ -386,16 +322,9 @@ export default function TodayPage() {
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
 
   const partOf = (i: ChecklistItem): DayPart | "anytime" => i.timeOfDay === "anytime" ? "anytime" : i.timeOfDay;
-  const isNow = (i: ChecklistItem) => partOf(i) === part || partOf(i) === "anytime";
-  const isEarlier = (i: ChecklistItem) => partOf(i) !== "anytime" && PART_ORDER[partOf(i) as DayPart] < PART_ORDER[part];
-  const open = items.filter((i) => !i.completedToday);
-  const nowItems = open.filter((i) => isNow(i)).sort((a, b) => (a.source === "workout" ? 1 : 0) - (b.source === "workout" ? 1 : 0));
-  const earlier = open.filter((i) => i.kind !== "habit" && isEarlier(i));
-  const laterItems = open.filter((i) => i.kind !== "habit" && partOf(i) !== "anytime" && PART_ORDER[partOf(i) as DayPart] > PART_ORDER[part]);
-  const doneItems = items.filter((i) => i.completedToday);
 
   // ── To-dos due today / overdue ────────────────────────────────────────────
-  const { data: todoData, toggleDone, upsert } = useTodos(today); // also keeps the home-screen badge current
+  const { data: todoData, toggleDone, upsert, remove } = useTodos(today); // also keeps the home-screen badge current
   const dueList = useMemo(() => {
     type Due = Todo & { dueDate: string };
     return (todoData?.todos ?? []).filter((t): t is Due =>
@@ -410,9 +339,13 @@ export default function TodayPage() {
   const giveTime = (t: Todo, hhmm: string) => upsert({ ...t, dueDate: today, dueTime: hhmm, evening: false });
   const defer = (t: Todo) => upsert({ ...t, dueDate: addDays(today, 1), dueTime: null });
 
-  const [folds, setFolds] = useState({ more: false, later: false, done: false });
-  const fold = (k: keyof typeof folds) => setFolds((f) => ({ ...f, [k]: !f[k] }));
-  const [opened, setOpened] = useState<Set<DayPart>>(new Set()); // spine: past segments reopened by tap
+  // The task sheet, opened by tapping a to-do row (same component as /todo).
+  const [openTodo, setOpenTodo] = useState<Todo | null>(null);
+  const projects = useMemo(
+    () => [...new Set((todoData?.todos ?? []).filter((t) => !t.deleted && t.project).map((t) => t.project!))].sort(),
+    [todoData]);
+
+  const [opened, setOpened] = useState<Set<DayPart>>(new Set()); // past segments reopened by tap
 
   // ── Header · shared ───────────────────────────────────────────────────────
   const header = (
@@ -421,107 +354,18 @@ export default function TodayPage() {
         <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{greeting(hour)}</h1>
         <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 4 }}>
           {longDate(today)}
-          {layout === "spine" && <span style={{ fontFamily: "var(--f-mono)" }}> · {clock(now)}</span>}
+          <span style={{ fontFamily: "var(--f-mono)" }}> · {clock(now)}</span>
           {!online && <span style={{ color: "var(--warn)" }}> · offline, changes will sync</span>}
           {online && stale && <span> · showing saved copy</span>}
         </div>
       </div>
-      {layout === "now" ? (
-        <div aria-label={`${doneCount} of ${total} routine steps done`} style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
-          <svg viewBox="0 0 56 56" width="56" height="56" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="28" cy="28" r="24" fill="none" stroke="var(--fill-2)" strokeWidth="5" />
-            <circle cx="28" cy="28" r="24" fill="none" stroke="var(--violet)" strokeWidth="5" strokeLinecap="round" strokeDasharray={2 * Math.PI * 24} strokeDashoffset={2 * Math.PI * 24 * (1 - (total ? doneCount / total : 0))} style={{ transition: "stroke-dashoffset .3s" }} />
-          </svg>
-          <span style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontSize: 13, color: "var(--ink-2)", fontFamily: "var(--f-mono)" }}>{loading && !data ? "…" : `${doneCount}/${total}`}</span>
-        </div>
-      ) : (
-        data && data.overallStreak > 0 && (
-          <div className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>{data.overallStreak} day{data.overallStreak === 1 ? "" : "s"}</div>
-        )
+      {data && data.overallStreak > 0 && (
+        <div className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>{data.overallStreak} day{data.overallStreak === 1 ? "" : "s"}</div>
       )}
     </header>
   );
 
-  // The switch · small, under the header, remembered.
-  const layoutSwitch = (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-      {layout === "now" ? (
-        data && data.overallStreak > 0
-          ? <span className="cc-pill cc-pill-warn" style={{ fontSize: 13 }}>{data.overallStreak} day streak</span>
-          : <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{loading && !data ? "" : `${pct}% of the routine`}</span>
-      ) : (
-        <span style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{loading && !data ? "…" : `${doneCount} / ${total} routine · ${pct}%`}</span>
-      )}
-      <div role="radiogroup" aria-label="Today layout" style={{ display: "inline-flex", gap: 2, padding: 2, borderRadius: 10, background: "var(--fill-1)", border: "1px solid var(--line)" }}>
-        {(["now", "spine"] as Layout[]).map((l) => (
-          <button key={l} role="radio" aria-checked={layout === l} onClick={() => pickLayout(l)}
-            style={{ minHeight: 28, padding: "0 10px", borderRadius: 8, border: "none", font: "inherit", fontSize: 13, cursor: "pointer", background: layout === l ? "var(--accent-soft)" : "transparent", color: layout === l ? "var(--ink)" : "var(--ink-3)", fontWeight: layout === l ? 600 : 400 }}>
-            {l === "now" ? "Now" : "Spine"}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  // ─── Layout A · NOW FIRST ──────────────────────────────────────────────────
-  const renderNow = () => {
-    // Rows in the order you would do them: earlier + overdue → this part's routine → timed → anytime.
-    const rows: { key: string; min: number; node: React.ReactNode }[] = [];
-    earlier.forEach((i) => rows.push({ key: `e${i.id}`, min: 0, node: <Row key={`e${i.id}`} item={i} onToggle={toggle} compact flag={`from ${PART_LABEL[partOf(i) as DayPart]}`} /> }));
-    overdueTodos.forEach((t) => rows.push({ key: t.clientId, min: 0, node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} /> }));
-    nowItems.forEach((i) => rows.push({ key: `n${i.id}`, min: 1, node: <Row key={`n${i.id}`} item={i} onToggle={toggle} currentBook={currentBook} /> }));
-    timedTodos.forEach((t) => rows.push({ key: t.clientId, min: 2, node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} /> }));
-    anytimeTodos.forEach((t) => rows.push({ key: t.clientId, min: 3, node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} /> }));
-    if (part === "evening") eveningTodos.forEach((t) => rows.push({ key: t.clientId, min: 3, node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} /> }));
-    const CAP = 6;
-    const shown = folds.more ? rows : rows.slice(0, CAP);
-    const hidden = rows.length - shown.length;
-    const laterCount = laterItems.length + (part !== "evening" ? eveningTodos.length : 0);
-    const allDone = !!data && total > 0 && rows.length === 0;
-
-    return (
-      <>
-        {part === "morning" && <MorningCard machineDay={machineDay} />}
-
-        <section className="cc-card">
-          <div className="cc-card-head">
-            <span className="title">Now</span>
-            <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-              {loading && !data ? "" : `${PART_LABEL[part]} · ${rows.length} to do`}
-              <Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>
-            </span>
-          </div>
-          <div style={{ padding: "0 14px" }}>
-            {loading && !data && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
-            {!loading && total === 0 && <div style={{ padding: "18px 0", fontSize: 15, color: "var(--ink-3)" }}>No items yet. <Link href="/checklist" style={{ color: "var(--violet)" }}>Set up your checklist →</Link></div>}
-            {allDone && <div style={{ padding: "18px 0", fontSize: 15, color: "var(--pos)" }}>✓ Nothing left for {PART_LABEL[part]}.</div>}
-            {shown.map((r) => r.node)}
-          </div>
-          {hidden > 0 && <FoldLine label={`+${hidden} more`} tail={`for ${PART_LABEL[part]}`} open={false} onToggle={() => fold("more")} />}
-          {laterCount > 0 && (
-            <>
-              <FoldLine label="Later today" tail={String(laterCount)} open={folds.later} onToggle={() => fold("later")} />
-              {folds.later && (
-                <div style={{ padding: "0 14px", opacity: 0.7 }}>
-                  {laterItems.map((i) => <Row key={i.id} item={i} onToggle={toggle} compact flag={PART_LABEL[partOf(i) as DayPart]} />)}
-                  {part !== "evening" && eveningTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} />)}
-                </div>
-              )}
-            </>
-          )}
-          {doneItems.length > 0 && (
-            <>
-              <FoldLine label="Done" tail={String(doneItems.length)} open={folds.done} onToggle={() => fold("done")} />
-              {folds.done && <div style={{ padding: "0 14px" }}>{doneItems.map((i) => <Row key={i.id} item={i} onToggle={toggle} compact />)}</div>}
-            </>
-          )}
-        </section>
-
-      </>
-    );
-  };
-
-  // ─── Layout B · DAY SPINE ──────────────────────────────────────────────────
+  // ─── The spine ─────────────────────────────────────────────────────────────
   const renderSpine = () => {
     // Untimed due to-dos have no slot on the spine · they sit in the tray until given a time or moved.
     const loose = [...overdueTodos, ...anytimeTodos, ...(part === "evening" ? eveningTodos : [])];
@@ -539,16 +383,19 @@ export default function TodayPage() {
 
     return (
       <>
-        <section className="cc-card">
-          <div className="cc-card-head">
-            <span className="title">Loose ends</span>
-            <span className="tail">{loose.length ? `${loose.length} with no time slot` : "all tied up"}</span>
-          </div>
-          <div style={{ padding: "0 14px" }}>
-            {loose.length === 0 && <div style={{ padding: "10px 4px 14px", fontSize: 15, color: "var(--pos)" }}>✓ Nothing untimed is open.</div>}
-            {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
-          </div>
-        </section>
+        {/* No loose ends = no card (Ali 2026-09-15: the empty space is the reward for
+            giving everything a time or a new day · never "nothing untimed is open"). */}
+        {loose.length > 0 && (
+          <section className="cc-card">
+            <div className="cc-card-head">
+              <span className="title">Loose ends</span>
+              <span className="tail">{loose.length} with no time slot</span>
+            </div>
+            <div style={{ padding: "0 14px" }}>
+              {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
+            </div>
+          </section>
+        )}
 
         <div style={{ display: "grid", gap: 0 }}>
           {segs.map((s, idx) => {
@@ -583,7 +430,7 @@ export default function TodayPage() {
                           {loading && !data && s.status === "now" && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
                           {s.routine.length === 0 && s.todos.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
                           {s.routine.map((i) => <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={s.status !== "now"} />)}
-                          {s.todos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} />)}
+                          {s.todos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} />)}
                         </div>
                       </>
                     )}
@@ -607,13 +454,14 @@ export default function TodayPage() {
     <div className="today-page" style={{ display: "grid", gap: 18 }}>
       {header}
 
-      {/* Progress line · the ring carries it in the Now layout */}
-      {layout === "spine" && (
+      <div>
         <div className="cc-progress-track" style={{ height: 4 }}><div className="cc-progress-fill" style={{ width: `${pct}%` }} /></div>
-      )}
-      {layoutSwitch}
+        <div style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginTop: 6 }}>
+          {loading && !data ? "…" : `${doneCount} / ${total} routine · ${pct}%`}
+        </div>
+      </div>
 
-      {layout === "now" ? renderNow() : renderSpine()}
+      {renderSpine()}
 
       {/* Morning brief at the BOTTOM, just above the highlight (Ali 2026-09-14 night: once heard it
           must not sit on top · the day's actions come first, listening and watching last). */}
@@ -621,6 +469,12 @@ export default function TodayPage() {
 
       {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose. */}
       <HighlightSuggestion />
+
+      {/* The task sheet · same one as /todo, so a time or date is one tap away from here. */}
+      {openTodo && (
+        <Sheet t={openTodo} today={today} projects={projects}
+          onSave={(t) => upsert(t)} onDelete={() => remove(openTodo)} onClose={() => setOpenTodo(null)} />
+      )}
 
       <style>{`
         .today-row:last-child { border-bottom: none !important; }
