@@ -73,6 +73,10 @@ phase is not done.
 
 ### 4.1 Morning routine — on waking, in this order
 
+**SUPERSEDED 2026-09-14 — Mobility is now TWO alternating 10:00 sessions** (Session 1 hips + back, 13 moves ·
+Session 2 spine, shoulders, inner line, 14 moves), chosen automatically by calendar day, with the Instagram reels
+archived. `src/lib/routine/stretching.ts` plus CLAUDE.md are the truth. Everything below is history.
+
 **a) Stretching** — REPLACED 2026-09-08 with a 20-movement, 4-block routine from Ali's
 (**2026-09-12: now 22 movements, 14:40** · Hindu squats AND Cossack squats in block 1 (Cossack in the seated-toe
 slot), Happy Baby replaces Butterfly/Frog, Kneeling hamstring split Left/Right, Child's Pose once; list in
@@ -134,6 +138,11 @@ the default now and make the swap to a built-in pacer easy later (or offer both)
 Tickable, part of the streak system, night dose surfaced in the evening, not the morning.
 
 ### 4.2 Workouts — kettlebell era
+
+**SUPERSEDED 2026-09-10 — there is ONE workout now: the KB Hour** (`kb1`, AMRAP 60 min, 13 kettlebell moves ×
+5 reps, assigned to Saturday by default). The W1/W2/W3 pages were deleted; their sessions are kept for history.
+Machine days (Speediance push Sun / pull Tue / legs Thu) live on as checklist rows, not as Train workouts.
+The two workouts below are history — see CLAUDE.md §3 Train.
 
 I no longer train on gym machines. Everything is kettlebell + dumbbell.
 **Current kettlebell: 12 kg.** I stay at 12 kg until I master every movement, then move
@@ -429,10 +438,10 @@ at a time where possible. I need to understand the question to give you a useful
 
 ## 8a. Answers given (2026-08-29) — treat as facts
 
-- **Login:** none for now. Open app, single URL known only to Ali. Google sign-in → Phase 7.
+- **Login:** ~~none for now, single URL known only to Ali~~ — **Google sign-in has been enforced since 2026-08-30** (`AUTH_REQUIRED=1` on Vercel). Item 2 of §7c.
 - **Phone:** iPhone 16, iOS 26.5.2. Installed PWA.
 - **Stretching timer:** screen stays awake (dimmed) for the ~11 min, sound + vibration on each change, used face-up on the floor. No native app.
-- **Workout days:** 4 sessions a week, any days, alternating W1/W2. No fixed schedule, but the data model must allow assigning days later.
+- **Workout days:** ~~4 sessions a week, any days, alternating W1/W2~~ — one workout since 2026-09-10; days are assignable and the KB Hour ships on Saturday (Settings → Training days). No fixed schedule, but the data model must allow assigning days later.
 - **Day clock:** wake 07:30 weekdays / 10:00 weekends; evening (magnesium) from 21:00; sleep ~23:30.
 - **Word bank + Knowledge:** archive (hidden, restorable, data kept).
 - **Journal + Mood:** archive with well-being.
