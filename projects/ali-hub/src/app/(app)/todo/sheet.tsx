@@ -385,15 +385,6 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
         </div>
         {!!d.dueDate && !d.dueTime && !d.someday && <span style={{ fontSize: 12.5, color: "var(--ink-4)", marginTop: -6 }}>no time = reminds from 9:00</span>}
 
-        {!!d.dueTime && !d.someday && (
-          <div style={{ display: "grid", gridTemplateColumns: "auto repeat(3, 1fr)", gap: 6, alignItems: "center" }}>
-            <span style={{ fontSize: 14, color: "var(--ink-3)", paddingRight: 2 }}>Notify</span>
-            {([["phone", "Phone"], ["laptop", "Laptop"], [null, "Both"]] as const).map(([key, label]) => (
-              <button key={label} onClick={() => set({ notifyTarget: key })} style={{ ...chipStyle((d.notifyTarget ?? null) === key), minHeight: 36, fontSize: 14, padding: "0 8px" }}>{label}</button>
-            ))}
-          </div>
-        )}
-
         {/* project · Vault · Notes/Subtasks switch on one quiet line */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
