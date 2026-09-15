@@ -50,7 +50,15 @@ const chip = (on: boolean): React.CSSProperties => ({
   border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: on ? "var(--ink)" : "var(--ink-2)",
 });
 
-type Draft = { title: string; timeOfDay: TimeOfDay; notes: string; kind: ItemKind; weekdays: string[] };
+type Draft = { title: string; timeOfDay: TimeOfDay; notes: string; kind: ItemKind; weekdays: string[]; atTime: string };
+
+/** Which part of the day an "HH:MM" falls in · Ali's clock (morning 04–12, afternoon 12–21, evening 21–04). */
+function partOfTime(hhmm: string): TimeOfDay {
+  const h = Number(hhmm.slice(0, 2));
+  if (h >= 4 && h < 12) return "morning";
+  if (h >= 12 && h < 21) return "afternoon";
+  return "evening";
+}
 
 function daysLabel(days: string[] | null | undefined): string {
   if (!days || days.length === 0 || days.length === 7) return "every day";
@@ -69,7 +77,7 @@ function Sheet({ item, onClose, onSave, onDelete }: {
 }) {
   const [d, setD] = useState<Draft>({
     title: item?.title ?? "", timeOfDay: item?.timeOfDay ?? "anytime", notes: item?.notes ?? "",
-    kind: item?.kind ?? "manual", weekdays: item?.weekdays ?? [],
+    kind: item?.kind ?? "manual", weekdays: item?.weekdays ?? [], atTime: item?.atTime ?? "",
   });
   const builtIn = !!item?.routineKey;
   const gym = !!item?.routineKey?.startsWith("gym-");
@@ -88,6 +96,19 @@ function Sheet({ item, onClose, onSave, onDelete }: {
           <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>When in the day</span>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
             {TIMES.map((t) => <button key={t.key} onClick={() => set({ timeOfDay: t.key })} aria-pressed={d.timeOfDay === t.key} style={chip(d.timeOfDay === t.key)}>{t.label}</button>)}
+          </div>
+        </div>
+
+        {/* An optional clock time (Ali 2026-09-15) · Today is a chronological spine, so training and
+            mobility should sit at the hour they are actually planned for. Setting one also moves the
+            item into the matching part of the day, so nothing can contradict itself. */}
+        <div style={{ display: "grid", gap: 4 }}>
+          <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>At what time · optional, places it on Today&rsquo;s timeline</span>
+          <div style={{ display: "grid", gridTemplateColumns: d.atTime ? "1fr auto" : "1fr", gap: 8 }}>
+            <input type="time" className="cc-input" value={d.atTime}
+              onChange={(e) => set(e.target.value ? { atTime: e.target.value, timeOfDay: partOfTime(e.target.value) } : { atTime: "" })}
+              style={{ fontSize: 17, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
+            {d.atTime && <button onClick={() => set({ atTime: "" })} className="cc-btn cc-btn-ghost" style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>No time</button>}
           </div>
         </div>
 
@@ -131,10 +152,10 @@ export default function ChecklistPage() {
   const todayCode = DAYS[(new Date().getDay() + 6) % 7].key;
 
   const save = async (d: Draft) => {
-    const body = { title: d.title, emoji: null, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: d.weekdays.length ? d.weekdays : null, startDate: null };
+    const body = { title: d.title, emoji: null, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: d.weekdays.length ? d.weekdays : null, startDate: null, atTime: d.atTime || null };
     if (sheet.item) {
       const id = sheet.item.id;
-      setData((prev) => prev ? { ...prev, items: prev.items.map((i) => i.id === id ? { ...i, title: d.title, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: body.weekdays } : i) } : prev!);
+      setData((prev) => prev ? { ...prev, items: prev.items.map((i) => i.id === id ? { ...i, title: d.title, timeOfDay: d.timeOfDay, notes: d.notes || null, kind: d.kind, weekdays: body.weekdays, atTime: body.atTime } : i) } : prev!);
       try { await sendOrQueue({ url: `/api/checklist/${id}`, method: "PATCH", body, dedupeKey: `item:${id}` }); } catch { /* refresh shows truth */ }
     } else {
       try { const ok = await sendOrQueue({ url: "/api/checklist", method: "POST", body }); if (ok) refresh(); } catch { /* ignore */ }
@@ -198,7 +219,7 @@ export default function ChecklistPage() {
                   <span style={{ minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 17 }}><Linkify text={i.title} /></span>
                     <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {what} · {daysLabel(i.weekdays)}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]}` : i.notes ? ` · ${i.notes}` : ""}
+                      {i.atTime ? `${i.atTime} · ` : ""}{what} · {daysLabel(i.weekdays)}{link ? ` · ${link.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0]}` : i.notes ? ` · ${i.notes}` : ""}
                     </span>
                   </span>
                   <span style={{ color: "var(--ink-4)" }}>›</span>

@@ -37,6 +37,8 @@ export async function PATCH(
     const days = Array.isArray(body.weekdays) ? (body.weekdays as unknown[]).filter((d): d is string => typeof d === "string" && DAYS.has(d)) : [];
     updates.weekdays = days.length ? JSON.stringify(days) : null;
   }
+  // atTime: "HH:MM" or null (2026-09-15) · the hour the step is planned for, used by Today's spine.
+  if (body.atTime !== undefined) updates.atTime = typeof body.atTime === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(body.atTime) ? body.atTime : null;
   if (body.startDate !== undefined) updates.startDate = typeof body.startDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.startDate) ? body.startDate : null;
 
   const [updated] = await db.update(checklistItems)

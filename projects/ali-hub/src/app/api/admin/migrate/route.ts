@@ -77,6 +77,8 @@ export async function POST() {
     `ALTER TABLE checklist_items ADD COLUMN routine_key TEXT`,
     `ALTER TABLE checklist_items ADD COLUMN weekdays TEXT`,
     `ALTER TABLE checklist_items ADD COLUMN start_date TEXT`,
+    // 2026-09-15 · optional clock time per routine step (Today is a chronological spine now)
+    `ALTER TABLE checklist_items ADD COLUMN at_time TEXT`,
 
     // ── Train · kettlebell era (Phase 3) ────────────────────────────────────
     `ALTER TABLE user_settings ADD COLUMN kettlebell_kg REAL NOT NULL DEFAULT 12`,

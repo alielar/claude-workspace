@@ -29,6 +29,8 @@ export type ChecklistItem = {
   /** Day codes ("mon"…"sun") the item exists on · null = every day. Editable on /checklist (2026-09-14). */
   weekdays?: string[] | null;
   startDate?: string | null;
+  /** "HH:MM" · the hour this step is planned for, so the spine can place it. null = no fixed time. */
+  atTime?: string | null;
   /** Only in `GET /api/checklist?all=1` (the editor): true when the item is not scheduled for today. */
   hiddenToday?: boolean;
   href?: string;
@@ -72,6 +74,7 @@ export const ROUTINE_SEED: {
   notes: string | null;
   sortOrder: number;
   weekdays?: string[];   // day codes · the item only shows on these days
+  atTime?: string;       // "HH:MM" · optional planned hour
   startDate?: string;    // hidden before this date
 }[] = [
   { routineKey: "stretch", title: "Mobility",            emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "2 sessions of 10 minutes, alternating · 10 s rests", sortOrder: -50 },

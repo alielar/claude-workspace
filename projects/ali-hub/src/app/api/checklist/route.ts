@@ -123,6 +123,7 @@ async function ensureColumns() {
   const { sql } = await import("drizzle-orm");
   try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN weekdays TEXT`)); } catch { /* already there */ }
   try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN start_date TEXT`)); } catch { /* already there */ }
+  try { await db.run(sql.raw(`ALTER TABLE checklist_items ADD COLUMN at_time TEXT`)); } catch { /* already there */ }
   // 2026-09-14 · "Push day showed two boxes": two requests (Today + the widget) seeded the same
   // routine step at the same moment and nothing in the database forbade it. Same class of bug
   // as the doubled work blocks: an insert with no uniqueness rule. Fix = merge the doubles
@@ -276,6 +277,7 @@ export async function GET(req?: Request) {
       notes: item.notes ?? null,
       weekdays: (() => { try { return item.weekdays ? (JSON.parse(item.weekdays) as string[]) : null; } catch { return null; } })(),
       startDate: item.startDate ?? null,
+      atTime: item.atTime ?? null,
       hiddenToday: !visibleIds.has(item.id),
     };
   };
@@ -308,7 +310,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { title, emoji, timeOfDay, autoSource, color, notes, kind, weekdays } = await req.json();
+  const { title, emoji, timeOfDay, autoSource, color, notes, kind, weekdays, atTime } = await req.json();
   const DAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
   const days = Array.isArray(weekdays) ? (weekdays as unknown[]).filter((d): d is string => typeof d === "string" && DAYS.has(d)) : [];
   if (!title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
@@ -334,6 +336,7 @@ export async function POST(req: Request) {
       notes: notes?.trim() || null,
       sortOrder: nextOrder,
       weekdays: days.length ? JSON.stringify(days) : null,
+      atTime: typeof atTime === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(atTime) ? atTime : null,
     })
     .returning();
 

@@ -192,7 +192,12 @@ function Row({ item, onToggle, compact = false, currentBook = null, flag }: {
           <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: compact ? 14 : 16, fontWeight: 500, lineHeight: 1.3, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
             <Linkify text={item.title} />
           </span>
-          {notes && <span style={{ display: "block", fontSize: 14, color: flag ? "var(--warn)" : "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>{linkify(notes)}</span>}
+          {(item.atTime || notes) && (
+            <span style={{ display: "block", fontSize: 14, color: flag ? "var(--warn)" : "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
+              {item.atTime && <span style={{ fontFamily: "var(--f-mono)" }}>{item.atTime}{notes ? " · " : ""}</span>}
+              {notes && linkify(notes)}
+            </span>
+          )}
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-3)" }}>
           {auto && <span className="cc-pill" style={{ fontSize: 13, padding: "2px 6px" }}>auto</span>}
@@ -369,14 +374,26 @@ export default function TodayPage() {
   const renderSpine = () => {
     // Untimed due to-dos have no slot on the spine · they sit in the tray until given a time or moved.
     const loose = [...overdueTodos, ...anytimeTodos, ...(part === "evening" ? eveningTodos : [])];
+    // A routine step with a time (Ali 2026-09-15) belongs to the part that hour falls in,
+    // whatever its "when in the day" says; without one it stays in its part, and "anytime"
+    // steps ride along with the current part.
+    const partOfItem = (i: ChecklistItem): DayPart | "anytime" => (i.atTime ? partOfTime(i.atTime) : partOf(i));
+    const minOf = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
     const segFor = (p: DayPart) => {
-      const routine = items.filter((i) => partOf(i) === p || (p === part && partOf(i) === "anytime"));
+      const routine = items.filter((i) => partOfItem(i) === p || (p === part && partOfItem(i) === "anytime"));
       const todos = p === "evening"
         ? [...timedTodos.filter((t) => partOfTime(t.dueTime!) === "evening"), ...(part !== "evening" ? eveningTodos : [])]
         : timedTodos.filter((t) => partOfTime(t.dueTime!) === p);
       const openCount = routine.filter((i) => !i.completedToday && i.kind !== "habit").length + todos.length;
       const status: "past" | "now" | "future" = PART_ORDER[p] < PART_ORDER[part] ? "past" : p === part ? "now" : "future";
-      return { p, routine, todos, openCount, status };
+      // One list in clock order · anything without an hour sits above the timed rows.
+      const rows: { key: string; min: number; order: number; node: React.ReactNode }[] = [
+        ...routine.map((i, n) => ({ key: `i${i.id}`, min: i.atTime ? minOf(i.atTime) : -1, order: n,
+          node: <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={status !== "now"} /> })),
+        ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n,
+          node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} /> })),
+      ].sort((a, b) => a.min - b.min || a.order - b.order);
+      return { p, routine, todos, rows, openCount, status };
     };
     const segs = PARTS.map(segFor);
     const nowIdx = PARTS.indexOf(part);
@@ -428,9 +445,8 @@ export default function TodayPage() {
                         <div style={{ padding: "0 14px" }}>
                           {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} />}
                           {loading && !data && s.status === "now" && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
-                          {s.routine.length === 0 && s.todos.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
-                          {s.routine.map((i) => <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={s.status !== "now"} />)}
-                          {s.todos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} />)}
+                          {s.rows.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
+                          {s.rows.map((r) => r.node)}
                         </div>
                       </>
                     )}

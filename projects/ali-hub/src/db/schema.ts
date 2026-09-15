@@ -569,6 +569,8 @@ export const checklistItems = sqliteTable("checklist_items", {
   weekdays: text("weekdays"),
   /** YYYY-MM-DD · the item is hidden before this date; null = always. */
   startDate: text("start_date"),
+  /** Optional clock time "HH:MM" · where the item sits on Today's spine (2026-09-15). null = anywhere in its part of the day. */
+  atTime: text("at_time"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
