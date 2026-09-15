@@ -1,0 +1,24 @@
+PHONE: +33751225100
+NAME: Jessie
+CRM STAGE: To be converted
+PERIOD: 2026-04-29 21:04 -> 2026-08-29 15:40 (heure de Madrid)
+MESSAGES: 14 (6 ecrits par Ali, 8 du lead)
+
+[2026-04-29 21:04] LEAD: Bonjour, merci. Bien reçu .
+[2026-04-30 16:49] LEAD: Bonjour, merci. J’ai 2 questions que j’ai oublié de poser hier. Il n’y a pas de cours d’essai pour savoir si ça nous convient avant de payer la totalité ?
+Si je ne peux pas payer maintenant, est-ce qu’il est possible de nous recontacter quand je serai  prête ?
+[2026-04-30 16:55] ALI: Nous ne proposons pas de cours d'essai, car cela alourdi les groupes. Cependant, je peux vous envoyer un enregistrement de cours de votre niveau, si vous le souhaitez ? Oui, nous pouvons nous recontacter. Toutefois, les places sont limités, je ne pourrais donc pas vous garantir une place à ce moment là. Vous pouvez tout de même déjà réserver votre place avec un pré-paiement. Est-ce que cela pourrait mieux vous convenir ?
+[2026-04-30 19:14] LEAD: Oui si c’est possible je veux bien voir un cours enregistré svp. Désolé du retard j’étais chez le Kiné.
+[2026-04-30 19:34] ALI: Aucun soucis, Jessie. Voici un enregistrement d'un cours de votre niveau : https://drive.google.com/file/d/1eQwY54FiQT-4UiZ8YW90IuQ_tlD2s7F0/view?usp=drivesdkIntermediate:. Qu'en pensez-vous ?
+[2026-04-30 20:45] LEAD: Merci , j’ai vu la vidéo. C’est pas mal. J’aimerai bien suivre les cours mais pour l’instant financièrement ça ne sera pas possible. Désolé.  Quand je serai prête je vous recontacterai si c’est toujours possible de s’inscrire. 
+Merci.
+[2026-04-30 20:46] ALI: Je comprends, Jessie. Ne souhaitez-vous pas réserver votre placce pour être certaine de pouvoir commencer les cours lorsque vous serez prête ?
+[2026-04-30 20:48] LEAD: Je préfère être sure de la date de début et payer. Pour l’instant je ne sais pas quand est-ce que je pourrai.
+[2026-04-30 20:55] ALI: Très bien, je comprends. Je reste à votre disposition si vous avez des questions. Belle soirée
+[2026-04-30 20:56] LEAD: Merci. Belle soirée à vous aussi .
+[2026-04-30 20:58] ALI: Merci beaucoup
+[2026-08-29 15:35] LEAD: Bonjour, oui je veux bien mais vous ne prenez pas le CPF.
+[2026-08-29 15:37] ALI: Bonjour Jessie, exact, on ne peut malheureusement pas accepter le CPF ni aucun financement public 😕 
+
+En revanche, on est très abordables autrement : environ 10€ la leçon, payable en plusieurs fois sans frais via Alma. Ça peut peut-être quand même rentrer dans votre budget ? Et si vous nous prouver que vous avez suffisamment de fonds sur votre CPF, vous pourriez bénéficier d'une remise 20%
+[2026-08-29 15:40] LEAD: D’accord. Je voyage dans 10 jours pour un peu plus d’un mois. Je vous recontacte à mon retour.

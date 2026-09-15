@@ -31,16 +31,18 @@ const PREVIEW_LINES = 3;
  * their full content, expand the box rather than making me scroll inside it"). A textarea
  * with rows=1 that resizes on every change; Return commits (blur) instead of adding a line.
  */
-export function GrowInput({ value, onChange, onCommit, autoFocus, placeholder, ariaLabel, style }: {
-  value: string; onChange: (v: string) => void; onCommit?: () => void; autoFocus?: boolean; placeholder?: string; ariaLabel?: string; style?: React.CSSProperties;
+export function GrowInput({ value, onChange, onCommit, onEnter, inputRef, autoFocus, placeholder, ariaLabel, style }: {
+  value: string; onChange: (v: string) => void; onCommit?: () => void; onEnter?: () => void;
+  inputRef?: (el: HTMLTextAreaElement | null) => void; autoFocus?: boolean; placeholder?: string; ariaLabel?: string; style?: React.CSSProperties;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { const el = ref.current; if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }, [value]);
   return (
-    <textarea ref={ref} className="cc-input" rows={1} value={value} placeholder={placeholder} aria-label={ariaLabel} autoFocus={autoFocus}
+    <textarea ref={(el) => { ref.current = el; inputRef?.(el); }} className="cc-input" rows={1} value={value} placeholder={placeholder} aria-label={ariaLabel} autoFocus={autoFocus}
       onChange={(e) => onChange(e.target.value.replace(/\n/g, " "))}
       onBlur={onCommit}
-      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
+      enterKeyHint={onEnter ? "next" : undefined}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (onEnter) onEnter(); else e.currentTarget.blur(); } }}
       style={{ fontSize: 16, lineHeight: 1.4, minHeight: 40, padding: "8px 10px", resize: "none", overflow: "hidden", width: "100%", boxSizing: "border-box", overflowWrap: "anywhere", ...style }} />
   );
 }
@@ -59,46 +61,54 @@ export function NotesPreview({ notes, indent = 48 }: { notes: string; indent?: n
   );
 }
 
-// ─── One subtask row · shared by the inline list and the sheet editor ─────────
-// Ticking REMOVES the line (Ali 2026-09-14 evening: "when I check a subtask as done, just
-// remove it · I don't want to go and click on the cross"). The pop/ring/chime play first,
-// then the line is gone. `- [x]` lines from before are still shown struck through; a tap
-// removes them too. The ✕ removes without the celebration (a wrong entry, not a finished one).
+// ─── Tick box · the pop, ring and chime every completion in the app uses ──────
 
-function SubtaskRow({ s, onTick, onText, onRemove, editable }: {
-  s: SubTask; onTick: () => void; onText?: (v: string) => void; onRemove?: () => void; editable: boolean;
-}) {
-  const [celebrating, setCelebrating] = useState(false);
+// Presentational only · the ROW owns the timer, so the strike, the chime and the box all
+// run in the same half second (before 2026-09-15 the box waited its own 650 ms first).
+function TickBox({ done, celebrating, onTick, small = false }: { done: boolean; celebrating: boolean; onTick: () => void; small?: boolean }) {
+  const show = done || celebrating;
+  const size = small ? 20 : 22;
+  return (
+    <button type="button" onClick={onTick} aria-label={done ? "Clear this item" : "Mark done"} aria-pressed={show}
+      style={{ width: 40, minHeight: small ? 38 : 44, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, WebkitTapHighlightColor: "transparent" }}>
+      <span aria-hidden className={celebrating ? "cc-done-pop" : undefined}
+        style={{ position: "relative", width: size, height: size, borderRadius: 8, border: `2px solid ${show ? "transparent" : "var(--line-strong)"}`, background: show ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
+        {show && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+        {celebrating && <span className="cc-done-ring" />}
+      </span>
+    </button>
+  );
+}
+
+/** Returns whether this row is mid-celebration, so the caller can swap the input for struck text. */
+function useCelebration(): [boolean, (run: () => void) => void] {
+  const [on, setOn] = useState(false);
   const timer = useRef<number | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  const tick = () => {
-    if (s.done) { onTick(); return; } // already done · just goes away
-    if (celebrating) return;
-    setCelebrating(true);
+  const start = (run: () => void) => {
+    if (on) return;
+    setOn(true);
     playDoneSound();
-    timer.current = window.setTimeout(() => { setCelebrating(false); onTick(); }, 650);
+    timer.current = window.setTimeout(() => { setOn(false); run(); }, 650);
   };
+  return [on, start];
+}
+
+// ─── One read-only subtask row (under a task on /todo and /today) ─────────────
+// Ticking REMOVES the line (Ali 2026-09-14: "when I check a subtask as done, just remove it").
+// The pop, ring, strike and chime play first, then the line is gone. `- [x]` lines written
+// before that change still show struck through; a tap removes them too.
+
+function SubtaskRow({ s, onTick }: { s: SubTask; onTick: () => void }) {
+  const [celebrating, start] = useCelebration();
   const showDone = s.done || celebrating;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: editable ? "40px 1fr auto" : "40px 1fr", alignItems: editable ? "start" : "center", minHeight: editable ? 46 : 38, paddingTop: editable ? 3 : 0, paddingBottom: editable ? 3 : 0 }}>
-      <button type="button" onClick={tick} aria-label={s.done ? "Mark subtask not done" : "Mark subtask done"} aria-pressed={showDone}
-        style={{ width: 40, minHeight: editable ? 46 : 38, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 20, height: 20, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
-          {showDone && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
-          {celebrating && <span className="cc-done-ring" />}
-        </span>
-      </button>
-      {editable && onText ? (
-        <GrowInput value={s.text} onChange={onText} ariaLabel="Subtask"
-          style={{ textDecoration: s.done ? "line-through" : "none", color: s.done ? "var(--ink-3)" : "var(--ink)" }} />
-      ) : (
-        <span className={celebrating ? "cc-done-strike" : undefined} style={{ display: "inline-block", fontSize: 15, lineHeight: 1.4, color: showDone ? "var(--ink-3)" : "var(--ink-2)", textDecoration: s.done ? "line-through" : "none", textDecorationColor: "var(--ink-4)", overflowWrap: "anywhere", paddingRight: 8 }}>
-          <Linkify text={s.text} />
-        </span>
-      )}
-      {editable && onRemove && (
-        <button type="button" onClick={onRemove} aria-label="Remove subtask" style={{ width: 40, height: 46, background: "transparent", border: "none", color: "var(--ink-3)", fontSize: 15, cursor: "pointer" }}>✕</button>
-      )}
+    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr", alignItems: "center", minHeight: 38 }}>
+      <TickBox done={s.done} celebrating={celebrating} onTick={() => (s.done ? onTick() : start(onTick))} small />
+      <span className={celebrating ? "cc-done-strike" : undefined}
+        style={{ display: "inline-block", fontSize: 15, lineHeight: 1.4, color: showDone ? "var(--ink-3)" : "var(--ink-2)", textDecoration: s.done ? "line-through" : "none", textDecorationColor: "var(--ink-4)", overflowWrap: "anywhere", paddingRight: 8 }}>
+        <Linkify text={s.text} />
+      </span>
     </div>
   );
 }
@@ -111,7 +121,7 @@ export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; o
   const removeAt = (i: number) => { const next = items.filter((_, j) => j !== i); onChange(next.length ? serializeSubtasks(next) : null); };
   return (
     <div style={{ padding: `0 12px 8px ${indent - 8}px` }}>
-      {shown.map((s, i) => <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => removeAt(items.indexOf(s))} editable={false} />)}
+      {shown.map((s, i) => <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => removeAt(items.indexOf(s))} />)}
       {(items.length > PREVIEW_LINES || open) && (
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
           style={{ background: "transparent", border: "none", font: "inherit", fontSize: 13, color: "var(--ink-4)", padding: "4px 0 2px 40px", cursor: "pointer", minHeight: 32 }}>
@@ -122,41 +132,83 @@ export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; o
   );
 }
 
-/** Subtasks inside a sheet: add, edit, tick (= remove), reorder, remove. */
-export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", autoFocus = false }: {
-  notes: string | null; onChange: (notes: string | null) => void; placeholder?: string; autoFocus?: boolean;
+/**
+ * Subtasks inside a sheet.
+ *
+ * TASKS (default, Ali 2026-09-15: "they're a simple checklist, not an ordered procedure"):
+ * a checkbox and a full-width box per line, nothing else. Return jumps to the add box at the
+ * bottom, which appends and keeps the caret there, so one Return per item fills the list;
+ * ticking strikes the line through, chimes and removes it — the only way to delete.
+ * (An empty line cannot be held in the stored text — `parseSubtasks` drops it — so a new item
+ * is always born in the add box, never as a blank row in the middle.)
+ *
+ * DOCS (`ordered`): the arrows and the ✕ stay, because a doc may hold real steps.
+ */
+export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", autoFocus = false, ordered = false }: {
+  notes: string | null; onChange: (notes: string | null) => void; placeholder?: string; autoFocus?: boolean; ordered?: boolean;
 }) {
   const items = parseSubtasks(notes);
   const [draft, setDraft] = useState("");
+  const addBox = useRef<HTMLInputElement | null>(null);
   const write = (next: SubTask[]) => onChange(next.length ? serializeSubtasks(next) : null);
-  const add = () => { if (!draft.trim()) return; write([...items, { text: draft.trim(), done: false }]); setDraft(""); };
+  // Return in the add box appends and keeps the caret there · the next subtask is immediate.
+  const add = () => { if (!draft.trim()) return; write([...items, { text: draft.trim(), done: false }]); setDraft(""); addBox.current?.focus(); };
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir; if (j < 0 || j >= items.length) return;
     const next = [...items]; [next[i], next[j]] = [next[j], next[i]]; write(next);
   };
+
   return (
-    <div style={{ display: "grid", gap: 2 }}>
+    <div style={{ display: "grid", gap: ordered ? 2 : 0 }}>
       {items.length === 0 && <div style={{ fontSize: 14.5, color: "var(--ink-3)", padding: "6px 2px" }}>Nothing open · add one below. A ticked line disappears.</div>}
       {items.map((s, i) => (
-        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", borderBottom: "1px solid var(--line)" }}>
-          <SubtaskRow s={s} editable
-            onTick={() => write(items.filter((_, j) => j !== i))}
-            onText={(v) => write(items.map((x, j) => (j === i ? { ...x, text: v } : x)))}
-            onRemove={() => write(items.filter((_, j) => j !== i))} />
-          <span style={{ display: "flex" }}>
-            <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up" style={{ width: 30, height: 40, background: "transparent", border: "none", color: i === 0 ? "var(--ink-4)" : "var(--ink-3)", fontSize: 14, cursor: "pointer" }}>↑</button>
-            <button type="button" onClick={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down" style={{ width: 30, height: 40, background: "transparent", border: "none", color: i === items.length - 1 ? "var(--ink-4)" : "var(--ink-3)", fontSize: 14, cursor: "pointer" }}>↓</button>
-          </span>
-        </div>
+        <SubtaskEditRow key={i} s={s} ordered={ordered}
+          onTick={() => write(items.filter((_, j) => j !== i))}
+          onText={(v) => write(items.map((x, j) => (j === i ? { ...x, text: v } : x)))}
+          onEnter={() => addBox.current?.focus()}
+          onRemove={ordered ? () => write(items.filter((_, j) => j !== i)) : undefined}
+          onMove={ordered ? (dir) => move(i, dir) : undefined}
+          first={i === 0} last={i === items.length - 1} />
       ))}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, marginTop: 8 }}>
-        <input className="cc-input" value={draft} autoFocus={autoFocus} onChange={(e) => setDraft(e.target.value)} enterKeyHint="done"
+      <div style={{ display: "grid", gridTemplateColumns: ordered ? "40px 1fr auto" : "40px 1fr", alignItems: "center", marginTop: 6 }}>
+        <span aria-hidden style={{ color: "var(--ink-4)", fontSize: 19, textAlign: "center" }}>+</span>
+        <input ref={addBox} className="cc-input" value={draft} autoFocus={autoFocus} onChange={(e) => setDraft(e.target.value)} enterKeyHint="next"
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
-          placeholder={placeholder} style={{ fontSize: 16, minHeight: 46, borderRadius: 12 }} />
-        <button type="button" onClick={add} disabled={!draft.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 46, minWidth: 46, borderRadius: 12, fontSize: 18, padding: 0 }} aria-label="Add subtask">+</button>
+          placeholder={placeholder} style={{ fontSize: 16, minHeight: 44, borderRadius: 10 }} />
+        {ordered && <button type="button" onClick={add} disabled={!draft.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 44, minWidth: 44, borderRadius: 10, fontSize: 18, padding: 0, marginLeft: 8 }} aria-label="Add item">+</button>}
       </div>
       {items.length > 0 && (
-        <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "6px 2px 0" }}>{items.length} open · tick one and it goes</div>
+        <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 0" }}>{items.length} open · Return adds the next one · tick one and it goes</div>
+      )}
+    </div>
+  );
+}
+
+/** One editable line: checkbox + full-width box (+ arrows and ✕ only in docs). */
+function SubtaskEditRow({ s, ordered, onTick, onText, onEnter, onRemove, onMove, first, last }: {
+  s: SubTask; ordered: boolean;
+  onTick: () => void; onText: (v: string) => void; onEnter: () => void;
+  onRemove?: () => void; onMove?: (dir: -1 | 1) => void; first: boolean; last: boolean;
+}) {
+  const [celebrating, start] = useCelebration();
+  const cols = ordered ? "40px 1fr auto" : "40px 1fr";
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: cols, alignItems: "center", minHeight: 46, borderBottom: "1px solid var(--line)" }}>
+      <TickBox done={s.done} celebrating={celebrating} onTick={() => (s.done ? onTick() : start(onTick))} />
+      {celebrating ? (
+        // The box becomes plain struck-through text for the half second before the line goes
+        // (a textarea cannot carry the sweep animation) · Ali 2026-09-15: subtasks had no strike and no sound.
+        <span className="cc-done-strike" style={{ display: "inline-block", fontSize: 16, lineHeight: 1.4, color: "var(--ink-3)", padding: "8px 10px", overflowWrap: "anywhere" }}>{s.text}</span>
+      ) : (
+        <GrowInput value={s.text} onChange={onText} onEnter={onEnter} ariaLabel="Subtask"
+          style={{ background: "transparent", border: "none", borderRadius: 0, padding: "8px 10px 8px 0" }} />
+      )}
+      {ordered && (
+        <span style={{ display: "flex" }}>
+          <button type="button" onClick={() => onMove?.(-1)} disabled={first} aria-label="Move up" style={{ width: 30, height: 40, background: "transparent", border: "none", color: first ? "var(--ink-4)" : "var(--ink-3)", fontSize: 14, cursor: "pointer" }}>↑</button>
+          <button type="button" onClick={() => onMove?.(1)} disabled={last} aria-label="Move down" style={{ width: 30, height: 40, background: "transparent", border: "none", color: last ? "var(--ink-4)" : "var(--ink-3)", fontSize: 14, cursor: "pointer" }}>↓</button>
+          <button type="button" onClick={onRemove} aria-label="Remove item" style={{ width: 34, height: 40, background: "transparent", border: "none", color: "var(--ink-3)", fontSize: 15, cursor: "pointer" }}>✕</button>
+        </span>
       )}
     </div>
   );

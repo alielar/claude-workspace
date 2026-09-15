@@ -1,0 +1,19 @@
+PHONE: +33758206742
+NAME: Patrick
+CRM STAGE: Meeting done
+PERIOD: 2026-09-10 17:21 -> 2026-09-11 18:17 (heure de Madrid)
+MESSAGES: 13 (9 ecrits par Ali, 4 du lead)
+
+[2026-09-10 17:21] LEAD: Bonjour, oui c’est bon pour moi
+[2026-09-10 17:58] ALI: Parfait Patrick ! Voici votre lien d'inscription directement ici : https://easypeasyfluent.com/fr/admission/ec623cfa-65f1-499f-ab3f-07691244e410
+[2026-09-10 17:58] ALI: Vous avez jusqu'à ce soir 20h pour finaliser, est-ce que tout est clair de votre côté ou avez-vous des questions ?
+[2026-09-10 17:59] LEAD: C’est clair
+[2026-09-10 17:59] ALI: Super, n'hésitez pas si vous avez des questions lors de votre inscription ! 👍
+[2026-09-10 19:51] LEAD: Bonsoir, je ne peux pas adhérer au programme , c'est trop cher honnetement , 180 € par Mois?
+[2026-09-10 19:57] ALI: Sachez que vous pouvez aussi étaler jusqu'à 10 fois sans frais avec Alma, ce qui reviendrait à 180€/mois effectivement
+[2026-09-10 20:01] ALI: Et si ça reste trop juste, il y a une option intermédiaire : au lieu du programme complet à 1.800€ jusqu'au B2, un cours de 90h à 990€, même garantie, pour un premier saut de niveau jusqu'au B1. Payable aussi en plusieurs fois, donc 99€ sur 10 fois
+[2026-09-10 20:01] ALI: Ça vous semblerait plus gérable comme ça ?
+[2026-09-11 18:06] LEAD: Mettez moi en liste d’attente pour le moment, c’est cher pour moi
+[2026-09-11 18:10] ALI: J'aimais bien votre profil pourtant
+[2026-09-11 18:10] ALI: Laissez moi revérifier avec l'administration
+[2026-09-11 18:17] ALI: Bonne nouvelle Patrick, j'ai pu obtenir une option encore plus légère pour vous : un format de 48h à 583€, sans garantie satisfait ou remboursé cette fois, mais qui vous permet quand même de progresser à votre rythme. Ça reste payable en plusieurs fois aussi biensûr, qu'en pensez-vous ?

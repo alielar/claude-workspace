@@ -1,0 +1,28 @@
+PHONE: +33612458620
+NAME: Lisa
+CRM STAGE: To be converted
+PERIOD: 2026-02-06 11:29 -> 2026-09-01 10:07 (Madrid time)
+MESSAGES: 17 (3 written by Ali, 9 from the lead)
+
+[2026-02-06 11:29] LEAD: Hello, thank you very much.
+
+I'm very interested in signing up, but the problem is that I'd like to pay in instalments and I don't have a bank card yet (I had it renewed)
+
+So I'll get it in the next few days, but I saw that my registration closes tonight.
+[2026-02-06 11:40] ALI: Alright, I understand. Do you already have an idea of when you expect to receive it?
+[2026-02-06 11:44] LEAD: I'm hoping Tuesday, because my bank is closed on Mondays.
+In any case, I'm certain I'll get it sometime next week.
+[2026-02-06 12:40] ALI: Very good. I'll ask the administration to hold your spot until Tuesday for now. Could you get back to me then to let me know how it's going?
+[2026-02-06 13:27] LEAD: Ok, very good, thank you very much
+[2026-02-06 14:01] LEAD: ???
+[2026-02-06 14:02] LEAD: You told me the administration was holding my spot until at least Tuesday because I'm waiting to receive my new bank card
+[2026-02-06 15:02] ALI: Yes Lisa, you can ignore the message above
+[2026-02-11 13:08] LEAD: Yes of course
+[2026-02-11 13:11] ALI: Great! Have you received your new card?
+[2026-02-11 15:10] LEAD: Not yet, I called them today and I'll call them again tomorrow
+[2026-02-11 15:38] ALI: Very good. Could you keep me posted tomorrow, please?
+[2026-08-31 11:21] LEAD: Sorry, I was going over my bank accounts. Unfortunately I'm going to struggle to pay, but in January several of my loans come to an end and things should get better
+[2026-08-31 11:42] ALI: I completely understand your situation
+[2026-08-31 11:42] ALI: Just so you know, payment can be made in instalments, up to 10 instalments interest-free via Alma, which could ease the load until January. Could that help you while you wait for your loans to finish?
+[2026-08-31 22:18] LEAD: I'd rather wait until January before starting a new payment
+[2026-09-01 10:07] ALI: Ok, no problem, get in touch with us when you feel ready. All the best!

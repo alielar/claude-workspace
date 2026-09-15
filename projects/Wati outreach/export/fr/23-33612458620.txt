@@ -1,0 +1,28 @@
+PHONE: +33612458620
+NAME: Lisa
+CRM STAGE: To be converted
+PERIOD: 2026-02-06 11:29 -> 2026-09-01 10:07 (heure de Madrid)
+MESSAGES: 17 (3 ecrits par Ali, 9 du lead)
+
+[2026-02-06 11:29] LEAD: Bonjour merci beaucoup. 
+
+Je suis trés interesser pour m'inscrire mais le probleme est que je souhaite payer en plusieurs fois et que je n'ai pas encore de cb (je l'ai faite renouveller) 
+
+Du coup je la recevrais dans les prochains jours mais j'ai vu que m'on inscription se finissait ce soir.
+[2026-02-06 11:40] ALI: Très bien, je comprends. Avez-vous déjà une idée de quand vous pensez la recevoir ?
+[2026-02-06 11:44] LEAD: J'espere mardi car ma banque est fermé le lundi. 
+En tout cas c'est sur que je la recevrais courant semaine prochaine.
+[2026-02-06 12:40] ALI: Très bien. Je vais demander à l'administration de garder votre place jusqu'à mardi pour l'instant. Pourriez-vous revenir vers moi à ce moment là pour me donner des nouvelles ?
+[2026-02-06 13:27] LEAD: Ok tres bien merci beaucoup
+[2026-02-06 14:01] LEAD: ???
+[2026-02-06 14:02] LEAD: Vous m'avez dis que l'administration gardait ma place jusqua au moins mardi car j'attend de recevoir ma nouvelle cb
+[2026-02-06 15:02] ALI: Oui Lisa, vous pouvez ignorer le message ci-dessus
+[2026-02-11 13:08] LEAD: Oui bien sur
+[2026-02-11 13:11] ALI: Super ! Avez-vous reçu votre nouvelle carte ?
+[2026-02-11 15:10] LEAD: Pas encore, je les ai appeller aujourdhui et je vais les rappeller demain
+[2026-02-11 15:38] ALI: Très bien. Pourriez-vous me tenir informée demain, s'il vous plait ?
+[2026-08-31 11:21] LEAD: Désolé je regardais par rapport à mes comptes bancaires. Malheureusement je vais avoir du mal à payer mais en janvier j’ai plusieurs crédit qui se termine et cela devrais s’améliorer
+[2026-08-31 11:42] ALI: Je comprends tout à fait votre situation
+[2026-08-31 11:42] ALI: Sachez que le paiement est possible en plusieurs fois, jusqu'à 10 fois sans frais via Alma, ce qui pourrait alléger la charge en attendant janvier. Est-ce que ça pourrait vous aider en attendant que vos crédits se terminent ?
+[2026-08-31 22:18] LEAD: Je préfère attendre janvier avant de commencer un nouveau paiement
+[2026-09-01 10:07] ALI: Ok pas de soucis, contactez nous quand vous vous sentez prête. Bon courage !

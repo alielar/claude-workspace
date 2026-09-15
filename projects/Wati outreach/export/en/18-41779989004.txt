@@ -1,0 +1,20 @@
+PHONE: +41779989004
+NAME: Afaf
+CRM STAGE: Meeting done
+PERIOD: 2026-09-15 19:05 -> 2026-09-15 21:36 (Madrid time)
+MESSAGES: 14 (7 written by Ali, 7 from the lead)
+
+[2026-09-15 19:05] LEAD: Good evening, sorry for the delay
+[2026-09-15 19:06] LEAD: I was just thinking about whether it was the right time for me
+[2026-09-15 19:07] LEAD: And if there's something holding me back at the moment it's the payment over 4 months
+[2026-09-15 19:07] LEAD: If it were spread over the length of the course or if there were more space between the payments I'd have preferred that
+[2026-09-15 19:56] ALI: Good evening Afaf, no problem about the delay
+[2026-09-15 19:56] ALI: For spacing out the payments, since you're in Switzerland it's via HeyLight, and I can offer you 10 instalments with no fees, so 180 CHF per month instead of the 4-instalment payment at 450 CHF
+[2026-09-15 19:56] ALI: Would that suit you better?
+[2026-09-15 20:39] LEAD: Yes that suits me perfectly
+[2026-09-15 20:40] LEAD: But so how do we do it, do you resend me a payment link?
+[2026-09-15 20:49] ALI: Perfect, I was able to check with the administration and push your deadline to 10pm 👍
+[2026-09-15 20:51] ALI: The link should work now, but here it is just in case: https://easypeasyfluent.com/fr/admission/d5f067a3-40fc-41cd-839a-bafa5e662bee
+[2026-09-15 20:51] ALI: Let me know once you're registered, and I'll send you the next steps 😊
+[2026-09-15 21:21] LEAD: Okay thanks
+[2026-09-15 21:36] ALI: Is the link working without a problem?

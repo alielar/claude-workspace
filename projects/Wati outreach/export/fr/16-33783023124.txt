@@ -1,0 +1,29 @@
+PHONE: +33783023124
+NAME: Junior
+CRM STAGE: Meeting done
+PERIOD: 2026-08-29 18:39 -> 2026-09-09 11:22 (heure de Madrid)
+MESSAGES: 17 (10 ecrits par Ali, 7 du lead)
+
+[2026-08-29 18:39] LEAD: Bonjour Oui je suis intéressé la formation est à combien ??
+[2026-08-29 18:46] ALI: Parfait ! Le mieux c'est qu'on en parle en appel pour bien cerner ce qui vous conviendrait le mieux. Je vous propose un entretien de 20-30 minutes pour faire le point sur votre niveau et vous présenter le programme. 
+
+Je suis disponible lundi à 13h30 ou 17h30, sinon mardi à 10h00. Ou si vous avez un autre créneau en tête, lequel vous conviendrait ?
+[2026-08-30 12:10] LEAD: Lundi 13h30 ça me va
+[2026-08-30 12:53] ALI: Lundi ne fonctionne plus malheureusement, tout as déjà été pris de mon côté ce jour-là
+
+Je suis disponible Mardi 10h30, 13h00 ou 16h00 ou mercredi à 12h ou 13h30.
+
+Si vous n'êtes disponible à aucun de ces créneaux, dites-moi quelle heure vous conviendrait le mieux Jeudi ou Vendredi 👍
+[2026-08-30 12:54] LEAD: Mardi 16h
+[2026-08-30 12:58] ALI: Super, je viens de vous envoyer une invitation pour Mardi 16h par mail. À Mardi ! 👍
+[2026-08-31 21:08] LEAD: Merci
+[2026-09-02 22:36] LEAD: Bonjour désolé du retard j’ai pas encore reçu mon salaire donc j’attends je vous reviens dans les plus brefs délais
+[2026-09-03 12:15] ALI: Salut Junior, j'ai dû libérer votre place, mais je je pourrais peut-être vous en trouver une autre dans un prochain groupe. Vous voulez que je regarde ?
+[2026-09-03 22:27] LEAD: Mettez moi en liste d’attente je vous répond dans le plus bref délais
+[2026-09-04 11:08] ALI: Avant de vous inscrire sur liste d'attente, qu'est-ce qui vous retient de démarrer maintenant en dehors du salaire ? Ou plutôt par curiosité, si le programme était gratuit, vous le noteriez combine sur 10, d'après mes explications de l'autre jour ?
+[2026-09-08 23:01] LEAD: Bonjour oui oui
+[2026-09-09 11:16] ALI: Ça marche, laissez moi vérifier avec l'administration pour vous
+[2026-09-09 11:16] ALI: Je reviens vers vous tout de suite
+[2026-09-09 11:21] ALI: Bonjour Junior, bonne nouvelle ! L'administration viens d'autoriser l'opération, je viens de vous renvoyer l'invitation par mail, et j'ai pu vous inscrire pour la session d'aujourd'hui qui finis à 20h
+[2026-09-09 11:22] ALI: Voici aussi le lien d'inscription au cas ou : https://easypeasyfluent.com/fr/admission/dc7b5fb6-11bb-457c-9de9-084d803e5000
+[2026-09-09 11:22] ALI: Dites-moi une fois inscrit, je vous enverrai les prochaines étapes 👍

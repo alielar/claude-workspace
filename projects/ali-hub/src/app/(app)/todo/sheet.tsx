@@ -491,7 +491,7 @@ export function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onC
         {mode === "doc" ? (
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : mode === "checklist" ? (
-          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} />
+          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} ordered />
         ) : mode === "sections" || mode === "accordion" ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>

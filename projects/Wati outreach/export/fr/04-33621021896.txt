@@ -1,0 +1,66 @@
+PHONE: +33621021896
+NAME: Mamadou
+CRM STAGE: Meeting done
+PERIOD: 2026-02-25 20:34 -> 2026-09-01 18:30 (heure de Madrid)
+MESSAGES: 51 (20 ecrits par Ali, 31 du lead)
+
+[2026-02-25 20:34] LEAD: Bonjour Juliette,
+
+Merci pour votre message, j’ai bien reçu votre e-mail.
+Comme je vous l’ai indiqué ce matin, je vais en discuter avec mon manager ainsi qu’avec l’équipe RH la semaine prochaine. Je reviendrai vers vous dès que possible, potentiellement pour un début le 30 mars.
+[2026-02-25 20:50] ALI: Super, je vous remercie. En attendant, avez-vous des questions ?
+[2026-02-25 20:54] LEAD: Je vous reviens la semaine prochaine
+[2026-02-25 20:55] ALI: Très bien. Belle soirée
+[2026-02-25 20:56] LEAD: Pareillement, et surtout merci pour le professionnalisme et les informations exhaustives.
+[2026-02-25 20:57] ALI: Avec plaisir ! J'ai été ravie de discuter avec vous
+[2026-03-04 17:30] LEAD: Bonjour Juliette
+[2026-03-04 17:32] LEAD: Possible de me renvoyer l’offre avec mon résultat afin que je puisse les transférer à mon employeur. Je vois que le lien est expiré. Mon manager me demande de l’envoyer l’offre. Si possible en PDF
+[2026-03-04 18:22] ALI: Bonjour Mamadou. Le lien devrait être de nouveau actif. Voici également la présentation du cours : https://docsend.com/view/mqy4e9645z7jufp5. avez-vous des questions ?
+[2026-03-04 18:27] LEAD: Merci mais il n’est pas possible de l’avoir en PDF parce que certains liens ne peuvent être ouvert dans les entreprises à cause des restrictions
+[2026-03-04 18:30] ALI: Voici le PDF. Pouvez-vous l'ouvrir ?
+[2026-03-04 18:31] ALI: 180h.pdf
+[2026-03-12 18:34] LEAD: Bonjour Juliette
+[2026-03-12 18:34] LEAD: Oui c’est toujours d’actualité j’attends le retour de mon management
+[2026-03-12 18:42] ALI: Super, je vous remercie. Avez-vous une petite idée de quand ils pourront revenir vers vous ?
+[2026-03-12 18:43] LEAD: La semaine pro je vais relancer mon manager
+[2026-03-12 18:43] ALI: Très bien. Pouvez-vous me tenir informée, s'il vous plait ?
+[2026-03-12 18:53] LEAD: Bien sûr !
+[2026-03-12 19:18] ALI: Je vous remercie. J'attends donc de vos nouvelles 😊
+[2026-03-25 17:14] LEAD: Bonjour Juliette
+[2026-03-25 17:14] LEAD: Oui je vais rejoindre l’académie
+[2026-03-25 17:15] LEAD: Possible d’avoir la prochaine session ?
+[2026-03-25 17:31] ALI: Super ! La prochaine session démarre la semaine prochaine, le 30 mars. Souhaiteriez-vous vous inscrire pour cette date ?
+[2026-03-25 17:47] LEAD: Il n’y a pas une autre date après le 30
+[2026-03-25 17:52] ALI: La session d'après est le 4 mai. Est-ce que cela vous conviendrait mieux ?
+[2026-03-25 17:56] LEAD: Oui pour mieux me preparer
+[2026-03-25 17:57] ALI: Aucun soucis. Avez-vous eu l'accord de votre employeur ou pensez-vous financer la formation vous-même ?
+[2026-03-25 17:57] LEAD: Pouvez-vous me renvoyer le programme sur lequel on s’était mis d’accord ?
+[2026-03-25 17:58] LEAD: Je vais financer perso
+[2026-03-25 17:59] ALI: Bien sûr. Les informations se trouvent dans ce lien : https://checkout.edusogno.com/landing/fr/checkout-page?product_tk=5FCh5jYQekNjD1q&user_tk=bljWYknql1pXdRW4&order_tk=6c9d859e-1e27-4e4b-8fd8-f03d383ffc4d. Est-ce qu'il fonctionne bien ?
+[2026-06-24 19:12] LEAD: Bonjour Juliette
+[2026-06-24 19:12] LEAD: Je me permets de revenir vers vous pour vous confirmer que je suis près pour les cours
+[2026-06-24 19:13] LEAD: Pouvons nous revoir ensemble les modalités ?
+[2026-06-24 19:13] LEAD: À votre disposition
+[2026-08-26 16:32] LEAD: Bonjour Ali
+[2026-08-26 16:33] LEAD: Oui ça fait toujours partie de mes objectifs
+[2026-08-26 16:50] ALI: Bonjour Mamadou ! Ravi de vous relire 😊 Vous vous souvenez bien du programme qu'on aviez vu ensemble avec Juliette? Était-ce le programme à 60h en 5 mois à 737e ? Si vous besoin d'infos complémentaires ou qu'on refasse le point, on peut aussi prévoir un petit appel si vous voulez.
+[2026-08-26 16:56] LEAD: Oui on peut refaire le point demain si possible
+[2026-08-26 16:56] LEAD: Entre 12h et 14h
+[2026-08-26 17:35] ALI: Petit souci : demain je suis complet sur ce créneau. On peut plutôt se caler vendredi ou samedi, ça vous irait ? Si oui, quel jour et quelle heure ?
+[2026-08-26 17:59] LEAD: Ça marche vendredi
+[2026-08-26 19:26] ALI: Voici mes disponibilités pour Vendredi : 
+
+- de 12h à 14h
+- de 16h30 à 17h
+- de 18h à 20h
+
+Quel créneau de 30 vous conviendrais?
+[2026-08-26 19:28] LEAD: 12h30-13h
+[2026-08-26 19:55] ALI: Top, c'est noté, vous avez bien reçu l'invitation par mail?
+[2026-08-26 20:03] LEAD: Oui Top!
+[2026-09-01 17:05] LEAD: Bonjour Ali
+[2026-09-01 17:06] LEAD: Malheureusement je ne pourrais plus participer au cours. Mon entreprise vient de valider une mobilité à Dublin
+[2026-09-01 17:47] ALI: Vous n'avez plus besoin d'anglais ?
+[2026-09-01 18:00] LEAD: Si mais ça serait après mon retour
+[2026-09-01 18:30] ALI: Je comprends, mais sachez que si vous ne confirmez pas aujourd'hui, votre place sera libérée et proposée à un autre candidat. On pourrait vous inscrire sur liste d'attente, mais le délai peut aller jusqu'à dix mois, sans garantie de place
+[2026-09-01 18:30] ALI: Faut savoir que si vous vous pouvez inscrivez aujourd'hui, vous n'avez pas à commencer tout de suite, vous choisissez votre date de départ, quand vous serez de retour du coup

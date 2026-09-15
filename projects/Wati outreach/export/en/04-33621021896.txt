@@ -1,0 +1,66 @@
+PHONE: +33621021896
+NAME: Mamadou
+CRM STAGE: Meeting done
+PERIOD: 2026-02-25 20:34 -> 2026-09-01 18:30 (Madrid time)
+MESSAGES: 51 (20 written by Ali, 31 from the lead)
+
+[2026-02-25 20:34] LEAD: Hello Juliette,
+
+Thank you for your message, I've received your email.
+As I told you this morning, I'm going to discuss it with my manager and with the HR team next week. I'll come back to you as soon as possible, potentially for a start on 30 March.
+[2026-02-25 20:50] ALI: Great, thank you. In the meantime, do you have any questions?
+[2026-02-25 20:54] LEAD: I'll get back to you next week
+[2026-02-25 20:55] ALI: Very good. Have a lovely evening
+[2026-02-25 20:56] LEAD: Likewise, and above all thank you for the professionalism and the thorough information.
+[2026-02-25 20:57] ALI: With pleasure! It was a delight talking with you
+[2026-03-04 17:30] LEAD: Hello Juliette
+[2026-03-04 17:32] LEAD: Could you resend me the offer with my result so I can forward them to my employer. I see the link has expired. My manager is asking me to send him the offer. In PDF if possible
+[2026-03-04 18:22] ALI: Hello Mamadou. The link should be active again. Here is also the course presentation: https://docsend.com/view/mqy4e9645z7jufp5. do you have any questions?
+[2026-03-04 18:27] LEAD: Thanks but is it not possible to have it as a PDF, because some links can't be opened inside companies due to restrictions
+[2026-03-04 18:30] ALI: Here is the PDF. Can you open it?
+[2026-03-04 18:31] ALI: 180h.pdf
+[2026-03-12 18:34] LEAD: Hello Juliette
+[2026-03-12 18:34] LEAD: Yes it's still on the cards, I'm waiting for my management's answer
+[2026-03-12 18:42] ALI: Great, thank you. Do you have any idea when they'll be able to get back to you?
+[2026-03-12 18:43] LEAD: Next week I'm going to chase my manager
+[2026-03-12 18:43] ALI: Very good. Could you keep me informed, please?
+[2026-03-12 18:53] LEAD: Of course!
+[2026-03-12 19:18] ALI: Thank you. So I'll wait to hear from you 😊
+[2026-03-25 17:14] LEAD: Hello Juliette
+[2026-03-25 17:14] LEAD: Yes I'm going to join the academy
+[2026-03-25 17:15] LEAD: Is it possible to get the next session?
+[2026-03-25 17:31] ALI: Great! The next session starts next week, on 30 March. Would you like to register for that date?
+[2026-03-25 17:47] LEAD: Isn't there another date after the 30th
+[2026-03-25 17:52] ALI: The session after that is 4 May. Would that suit you better?
+[2026-03-25 17:56] LEAD: Yes, to prepare myself better
+[2026-03-25 17:57] ALI: No problem. Did you get your employer's agreement or are you thinking of financing the course yourself?
+[2026-03-25 17:57] LEAD: Could you resend me the programme we had agreed on?
+[2026-03-25 17:58] LEAD: I'm going to finance it personally
+[2026-03-25 17:59] ALI: Of course. The information is in this link: https://checkout.edusogno.com/landing/fr/checkout-page?product_tk=5FCh5jYQekNjD1q&user_tk=bljWYknql1pXdRW4&order_tk=6c9d859e-1e27-4e4b-8fd8-f03d383ffc4d. Is it working properly?
+[2026-06-24 19:12] LEAD: Hello Juliette
+[2026-06-24 19:12] LEAD: I'm getting back in touch to confirm that I'm ready for the classes
+[2026-06-24 19:13] LEAD: Can we go over the terms together again?
+[2026-06-24 19:13] LEAD: At your disposal
+[2026-08-26 16:32] LEAD: Hello Ali
+[2026-08-26 16:33] LEAD: Yes it's still one of my objectives
+[2026-08-26 16:50] ALI: Hello Mamadou! Great to hear from you again 😊 Do you remember the programme we looked at together with Juliette? Was it the 60h programme over 5 months at 737€? If you need any additional information or want to go over it again, we can also arrange a quick call if you like.
+[2026-08-26 16:56] LEAD: Yes we can go over it again tomorrow if possible
+[2026-08-26 16:56] LEAD: Between 12pm and 2pm
+[2026-08-26 17:35] ALI: Small problem: tomorrow I'm fully booked in that slot. We could rather set it for Friday or Saturday, would that work for you? If so, what day and time?
+[2026-08-26 17:59] LEAD: Friday works
+[2026-08-26 19:26] ALI: Here are my availabilities for Friday:
+
+- from 12pm to 2pm
+- from 4:30pm to 5pm
+- from 6pm to 8pm
+
+Which 30-minute slot would suit you?
+[2026-08-26 19:28] LEAD: 12:30-1pm
+[2026-08-26 19:55] ALI: Great, that's noted, did you receive the invitation by email?
+[2026-08-26 20:03] LEAD: Yes, great!
+[2026-09-01 17:05] LEAD: Hello Ali
+[2026-09-01 17:06] LEAD: Unfortunately I won't be able to take part in the course anymore. My company has just approved a relocation to Dublin
+[2026-09-01 17:47] ALI: You don't need English anymore?
+[2026-09-01 18:00] LEAD: I do, but it would be after I come back
+[2026-09-01 18:30] ALI: I understand, but you should know that if you don't confirm today, your place will be released and offered to another candidate. We could put you on the waiting list, but the wait can be up to ten months, with no guarantee of a place
+[2026-09-01 18:30] ALI: You should know that if you register today, you don't have to start right away, you choose your start date, when you're back then

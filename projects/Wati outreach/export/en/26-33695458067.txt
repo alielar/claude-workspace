@@ -1,0 +1,16 @@
+PHONE: +33695458067
+NAME: Kossivi
+CRM STAGE: To be converted
+PERIOD: 2026-03-26 23:24 -> 2026-08-29 14:49 (Madrid time)
+MESSAGES: 10 (4 written by Ali, 6 from the lead)
+
+[2026-03-26 23:24] LEAD: Yes I still want to
+[2026-03-27 16:02] ALI: Great! Would you like to register?
+[2026-03-27 18:34] LEAD: Yes yes
+[2026-03-27 18:34] LEAD: How much is the price?
+[2026-03-27 19:39] ALI: The course that was offered to you during your interview with Nadir is a course of 60h in total over 5 months. The total price is 737€ which you can pay in 1, 3, 4 or 6 instalments. What do you think?
+[2026-03-28 10:59] LEAD: Are you in France? Can I pay with the CPF?
+[2026-03-30 16:40] LEAD: So how much does that come to?
+[2026-03-30 16:43] ALI: The total price of the course is 737€. With the 20% discount, that would come to 590€ in total. What do you think?
+[2026-08-29 14:34] LEAD: Hello yes but it seems to me that you're not based in France, right?
+[2026-08-29 14:49] ALI: We're 100% online, which allows us to be more flexible and affordable. It doesn't change anything in terms of quality or support. We can discuss it in more detail on a call, how about it? I'm available Tuesday at 6:30pm, Thursday at 5pm or Friday at 5pm. Or what other slot would work for you?

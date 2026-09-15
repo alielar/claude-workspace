@@ -1,0 +1,44 @@
+PHONE: +33620892946
+NAME: Brandon
+CRM STAGE: Sale
+PERIOD: 2026-05-08 09:05 -> 2026-09-02 15:10 (heure de Madrid)
+MESSAGES: 29 (16 ecrits par Ali, 13 du lead)
+
+[2026-05-08 09:05] LEAD: Bonjour,
+
+Je m'excuse de vous repondre aussi tard, je pense que je vais rester sur mon choix de la session de juillet, si les places sont toujours disponibles, je pourrais faire le choix des différentes dates qui seront en ce moment là proposer.
+
+Bien à vous
+[2026-05-08 16:48] ALI: Bonjour. Bien sûr, vous pouvez aussi d'ores et déjà réserver votre place pour la session de juillet avec un accompte de 80€. Cette somme sera alors déduite de ce qu'il vous restera à payer avant de débuter les cours, et cela vous assure une place. Qu'en pensez-vous ?
+[2026-06-11 18:29] LEAD: Bonjour, 
+Je vais très bien et vous également je pense, et je suis toujours intéressé et je pense que je vais attendre pour fin juillet comme je vous l'avais dit.
+[2026-06-11 18:48] ALI: Merci pour votre réponse. Très bien, je prends note. Belle journée
+[2026-06-11 19:29] LEAD: Merci à vous également
+[2026-08-30 12:18] LEAD: Bonjour, 
+
+Je m'excuse pour mon silence, je suis toujours intéressé, renvoyé moi le tarif svp
+[2026-08-30 12:52] ALI: On est à environ 10€ par leçon, avec des cours en petits groupes (2-3personnes) et des professeurs natifs certifiés, et c'est aussi payable en plusieurs fois, jusqu'à 4 fois sans frais
+[2026-08-30 12:52] ALI: Le mieux c'est qu'on en parle en appel pour bien cerner ce qui vous conviendrait. Je suis dispo Mardi 10h30, 13h00 ou 16h00 ou Mercredi à 12h ou 13h30. Ou un autre créneau vous arrangerait mieux peut-être ?
+[2026-08-30 15:24] LEAD: Mardi 13h00
+[2026-08-30 20:16] ALI: Super, je viens de vous envoyer une invitation pour Mardi 13h, bonne fin de soirée !
+[2026-08-30 20:16] ALI: Vous devriez avoir reçu l'invitation par mail
+[2026-08-30 20:17] LEAD: Oui je l’ai reçu,
+Bonne soirée à vous aussi
+[2026-09-02 08:41] LEAD: Bôjour Ali, 
+Oui j’ai reçu lien, par contre je rencontre une difficulté pour le paiement à plusieurs tranches, Alma n’a sélectionné que quelques pays émetteur parmi lesquels le mien n’y figure pas donc impossible de progresser, d'autant plusque je suis en attente de renouvelle de titre de sejour
+[2026-09-02 10:04] ALI: Bonjour Brandon, je comprends, merci pour la précision, vous n'avez pas de carte bancaire française ?
+[2026-09-02 10:14] LEAD: Si j’ai un compte avec une banque française
+[2026-09-02 10:20] ALI: Parfait, dans ce cas ça devrait normalement fonctionner avec Alma, puisque c'est bien votre carte qui compte
+[2026-09-02 10:20] ALI: Pouvez-vous me dire à quelle étape exactement ça bloque sur le lien ? Est-ce un pays à sélectionner, ou un message d'erreur précis qui s'affiche ? Un screenshot pourrais aider aussi
+[2026-09-02 10:40] LEAD: L'étape de l'identification où je dois présenter une carte d'identité et photo pour faire correspondre les deux
+[2026-09-02 11:48] ALI: Bonne nouvelle Brandon, j'ai pu échanger avec l'administration
+[2026-09-02 11:48] ALI: Vu votre situation avec Alma, on va passer par une autre solution de paiement (Stripe) pour le paiement en plusieurs fois, qui évite justement cette vérification d'identité qui bloquait chez vous
+[2026-09-02 11:49] ALI: Le lien que vous avez déjà reçu vient d'être mis à jour avec cette nouvelle option de paiement, il devrait suffire de recharger la page, dîtes moi si vous rencontrez un problème 👍
+[2026-09-02 11:51] LEAD: Vous ne travaillez pas avec Floa ??
+[2026-09-02 11:58] ALI: On ne travaille pas avec Floa spécifiquement, mais Stripe fonctionne sur le même principe : paiement échelonné par carte, sans complication, et ça devrait être plus simple pour vous vu votre situation actuelle
+[2026-09-02 12:07] LEAD: Sur Alma, j'avais la possibilité sur 10 versements par contre sur Stripe ce n’est pas le cas
+[2026-09-02 12:34] ALI: Laissez-moi revérifier ça avec l'administration, je reviens vers vous rapidement
+[2026-09-02 12:39] ALI: C'est bon Brandon, j'ai pu faire en sorte que les 10 versements soient aussi possibles avec Stripe,  il suffit de rafraîchir la page, dîtes moi si c'est bon 👍
+[2026-09-02 13:15] LEAD: Merci
+[2026-09-02 15:09] ALI: Merci à vous, et bon courage pour vos cours !
+[2026-09-02 15:10] LEAD: Merci

@@ -1,0 +1,20 @@
+PHONE: +33774573220
+NAME: Noura
+CRM STAGE: Reschedule
+PERIOD: 2026-08-29 18:06 -> 2026-08-29 18:29 (heure de Madrid)
+MESSAGES: 6 (3 ecrits par Ali, 3 du lead)
+
+[2026-08-29 18:06] LEAD: Bonjour, j’espère que vous allez bien.
+
+Je tiens à m’excuser. J’ai reçu deux appels provenant de numéros différents et, ne sachant pas lequel je devais prendre, j’ai pensé qu’il pouvait s’agir d’une arnaque. J’ai donc préféré ne pas répondre.
+
+Je me suis déjà fait arnaquer une fois auparavant, et je préfère donc être très prudent afin que cela ne se reproduise pas.
+
+Je vous prie de m’excuser pour ce malentendu et vous remercie de votre compréhension.
+[2026-08-29 18:10] ALI: Bonjour, je comprends tout à fait, on ne peut jamais être trop prudent avec les appels non sollicités. Merci de votre message, et pas de souci du tout.
+
+Est-ce qu'un appel rapide de 20 minutes cette semaine vous conviendrait ? Dites-moi simplement le jour et l'heure qui vous arrangent.
+[2026-08-29 18:17] LEAD: Je suis disponible ce lundi vers 11 h, si cela vous convient. cordialement
+[2026-08-29 18:20] ALI: Top, je viens de vous envoyer une invitation pour lundi 11H par mail. À Lundi !
+[2026-08-29 18:28] LEAD: Merci, je vous souhaite une excellente journée
+[2026-08-29 18:29] ALI: À vous également !

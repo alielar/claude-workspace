@@ -1,0 +1,16 @@
+PHONE: +33695458067
+NAME: Kossivi
+CRM STAGE: To be converted
+PERIOD: 2026-03-26 23:24 -> 2026-08-29 14:49 (heure de Madrid)
+MESSAGES: 10 (4 ecrits par Ali, 6 du lead)
+
+[2026-03-26 23:24] LEAD: Oui je souhaite toujours
+[2026-03-27 16:02] ALI: Super ! Souhaiteriez-vous vous inscrire ?
+[2026-03-27 18:34] LEAD: Oui oui
+[2026-03-27 18:34] LEAD: C’est combien pour le prix ?
+[2026-03-27 19:39] ALI: Le cours qui vous a été proposé lors de votre entretien avec Nadir est un cours de 60h au total sur 5 mois. Le tarif total est de 737€ que vous pouvez payer en 1 fois, 3 fois, 4 fois ou 6 fois. Qu'en pensez-vous ?
+[2026-03-28 10:59] LEAD: Vous êtes en France ? Je peux payer avec le CPF ?
+[2026-03-30 16:40] LEAD: Cela fait combien du coup ?
+[2026-03-30 16:43] ALI: Le prix total du cours est de 737€. Avec la réduction de 20%, cela ferait 590€ au total. Qu'en pensez-vous ?
+[2026-08-29 14:34] LEAD: Bonjour oui mais il me semble que vous n’est pas basé en France non ?
+[2026-08-29 14:49] ALI: On est en 100% en ligne, ce qui nous permet d'être plus flexibles et abordables. Ça ne change rien niveau qualité ou accompagnement. On peut en discuter plus en détail en appel, ça vous dit ? Je suis dispo mardi à 18h30, jeudi à 17h ou vendredi à 17h. Ou quel autre créneau vous arrangerais ?

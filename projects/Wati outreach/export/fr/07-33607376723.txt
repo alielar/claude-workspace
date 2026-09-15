@@ -1,0 +1,42 @@
+PHONE: +33607376723
+NAME: Anne
+CRM STAGE: Meeting done
+PERIOD: 2026-08-26 20:40 -> 2026-09-08 09:21 (heure de Madrid)
+MESSAGES: 33 (22 ecrits par Ali, 11 du lead)
+
+[2026-08-26 20:40] LEAD: Oui 👍
+[2026-08-26 20:59] ALI: Super 😊 Voici mes créneaux pour vendredi : 12h, 13h, 13h30, 16h30, 19h ou 19h30. Quelle heure vous conviendrait le mieux pour un échange de 20 min ? Sinon on peut faire, samedi ou même la semaine prochaine, si oui , quel jour/heure?
+[2026-09-04 20:28] LEAD: Je viens de recevoir je vais accepter
+[2026-09-04 20:28] LEAD: Super trop contente
+[2026-09-04 20:53] ALI: Félicitations Anne ! On est ravis que vous ayez été sélectionnée, et on a hâte de démarrer cette aventure avec vous 🎉
+[2026-09-04 20:54] ALI: Vous avez reçu le lien d'inscription par mail, avec toutes les infos sur le programme et le contrat de garantie. Dites-moi si vous avez la moindre question
+[2026-09-04 21:12] LEAD: On peut pas faire plutôt un prélèvement mensuel ?
+[2026-09-04 21:15] ALI: Sur le lien de paiement, vous avez l'option de payer en 4 fois via Alma, sans frais. Est-ce que ça vous conviendrait ?
+[2026-09-04 21:28] LEAD: Ça me fais de trop grosses mensualités  je pensais qu’on aurait pu faire 150 euros par mois
+[2026-09-04 21:44] ALI: Je comprends, ce que je pourrais faire pour vous, c’est un paiement en 10 fois, donc qui reviendrait à 180e par mois
+[2026-09-04 21:44] ALI: Cela vous conviendrait mieux ?
+[2026-09-04 21:53] LEAD: Oui ça serait mieux
+[2026-09-05 11:45] ALI: Bonjour Anne, c'est bon, vous avez maintenant l'option de payer en 10 fois directement sur le même lien
+[2026-09-05 11:46] ALI: N'hésitez pas si vous avez la moindre question avant la clôture des inscriptions aujourd'hui à 20h 👍
+[2026-09-05 15:09] ALI: Re-bonjour Anne ! Votre place est réservée jusqu'à ce soir. Vous avez des questions avant la clôture des inscriptions à 20h ?
+[2026-09-05 18:01] ALI: On est en train de finaliser les groupes des prochains mois. Vous avez pu procéder à l'inscription ?
+[2026-09-07 20:36] LEAD: Bonjour 
+Oui j’ai un petit soucis de dernière minute.
+Donc si c’est possible de décaler le début de ma formation à janvier 2027.
+Je vous remercie
+[2026-09-07 20:51] ALI: Bonjour Anne, aucun souci pour démarrer en janvier 2027 ! L'inscription ne veut pas dire commencer tout de suite : vous sécurisez votre place maintenant, et vous choisissez votre date de démarrage après, même dans plusieurs mois si besoin
+[2026-09-07 20:52] ALI: Les places sont limitées et se réattribuent vite si elles ne sont pas confirmées rapidement. Pour garder la vôtre, il suffit de finaliser l'inscription, et il suffirais de sélectionner janvier comme date de démarrage
+[2026-09-07 20:53] LEAD: Je ne paye pas la formation avant de commencer.
+[2026-09-07 20:56] ALI: Je comprends totalement Anne. En fait, si le paiement est demandé à la confirmation, c'est uniquement parce qu'on a un nombre de places limité par groupe et qu'on doit réserver vos enseignants en amont
+[2026-09-07 20:56] ALI: Vous restez complètement libre de choisir janvier comme date de démarrage, votre place est simplement sécurisée dès maintenant grâce au paiement, qu'est ce qui semble poser problème pour vous actuellement ?
+[2026-09-07 21:10] LEAD: Oui car j’ai un imprévu ce week-end ça tombe mal c’est comme ça
+[2026-09-07 21:16] ALI: Je comprends, un imprévu comme ça peut vraiment tomber au mauvais moment
+[2026-09-07 21:16] ALI: Laissez-moi voir avec l'administration ce qu'on peut faire pour vous
+[2026-09-07 21:22] ALI: Bonne nouvelle Anne, j'ai pu échanger avec l'administration : dans votre cas, on peut vous inscrire avec un acompte de 196€ seulement, déduit du montant total. Le reste sera à régler une fois que vous démarrez les cours
+[2026-09-07 21:24] ALI: Je viens de vous renvoyer votre invitation, voici le lien directement : https://easypeasyfluent.com/fr/admission/f3581eec-0d84-4df3-8377-82b5358a6609
+[2026-09-07 21:24] ALI: Dites-moi dès que vous avez pu finaliser votre inscription 👍
+[2026-09-07 22:41] LEAD: Je ne le ferai pas avant janvier
+[2026-09-07 22:42] LEAD: Je ne verse aucune somme aujourd’hui
+[2026-09-08 09:15] ALI: Je comprends Anne, avec des imprévus, c'est normal de vouloir limiter ce que vous sortez maintenant
+[2026-09-08 09:17] ALI: Laissez-moi revérifier avec l'administration ce qu'on peut faire pour vous éventuellement, je me souviens de votre profil, vous étiez vraiment motivée et on tient à vous accompagner jusqu'à votre objectif, donc je vais pousser de mon côté pour voir ce qui est possible
+[2026-09-08 09:21] ALI: Bonne nouvelle, j'ai pu obtenir mieux : on descend l'acompte à 96€ seulement pour sécuriser votre place, le reste étant à régler au démarrage. Est-ce que ça vous conviendrait mieux ?

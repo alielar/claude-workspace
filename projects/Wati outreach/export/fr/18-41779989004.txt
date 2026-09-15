@@ -1,0 +1,20 @@
+PHONE: +41779989004
+NAME: Afaf
+CRM STAGE: Meeting done
+PERIOD: 2026-09-15 19:05 -> 2026-09-15 21:36 (heure de Madrid)
+MESSAGES: 14 (7 ecrits par Ali, 7 du lead)
+
+[2026-09-15 19:05] LEAD: Bonsoir désolé pour le retard
+[2026-09-15 19:06] LEAD: Juste j’étais entrain de réfléchir si c’était le bon moment pour moi
+[2026-09-15 19:07] LEAD: Et si y a quelque chose qui me coince pour le moment c’est le paiement sur 4 mois
+[2026-09-15 19:07] LEAD: Si saurait était sur la durée de formation ou bien y a un espacement entre les paiment j’aurais préféré
+[2026-09-15 19:56] ALI: Bonsoir Afaf, pas de souci pour le délai
+[2026-09-15 19:56] ALI: Pour l'espacement des paiements, comme vous êtes en Suisse c'est via HeyLight, et je peux vous proposer 10 fois sans frais, donc à 180 CHF par mois au lieu du paiement en 4 fois à 450 CHF
+[2026-09-15 19:56] ALI: Est-ce que ça vous conviendrait mieux comme ça ?
+[2026-09-15 20:39] LEAD: Oui ça me convient parfaitement
+[2026-09-15 20:40] LEAD: Mais du coup comment on fait vous me renvoyer un lien de paiement ?
+[2026-09-15 20:49] ALI: Parfait, j'ai pu vérifier avec l'administration et pousser votre deadline pour 22h 👍
+[2026-09-15 20:51] ALI: Le lien devrais marcher maintenant, mais le voici au cas où: https://easypeasyfluent.com/fr/admission/d5f067a3-40fc-41cd-839a-bafa5e662bee
+[2026-09-15 20:51] ALI: Dîtes moi une fois inscrite, et je vous envoie les prochaines étapes 😊
+[2026-09-15 21:21] LEAD: Okey merci
+[2026-09-15 21:36] ALI: Le lien marche sans problème ?

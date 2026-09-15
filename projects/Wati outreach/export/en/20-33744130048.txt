@@ -1,0 +1,20 @@
+PHONE: +33744130048
+NAME: Moussa
+CRM STAGE: To be converted
+PERIOD: 2026-03-19 18:49 -> 2026-08-29 14:22 (Madrid time)
+MESSAGES: 14 (5 written by Ali, 9 from the lead)
+
+[2026-03-19 18:49] LEAD: Hello yes I'd like that
+[2026-03-19 18:50] LEAD: Can we finance the course with our Caf account
+[2026-03-19 18:50] LEAD: CPF account
+[2026-03-19 18:52] ALI: Given that we're a Swiss company, we can't accept the CPF account. However, if you send us a screenshot of your CPF account, we can apply a 15% discount on the total price of the course. What do you think?
+[2026-03-19 18:54] LEAD: Ok
+[2026-03-19 18:54] LEAD: End of the month I'll get back to you
+[2026-03-19 18:55] ALI: Very good. Our next session is 30 March, could that start date suit you? The session after that would then only be 4 May
+[2026-03-19 19:00] LEAD: Ok
+[2026-03-19 19:00] ALI: Great! If you'd like to take part in the 30 March session, you'll need to register next week.
+[2026-03-19 19:01] LEAD: Ok that's good
+[2026-03-19 19:02] ALI: Perfect! I'll send you a message next week then. Have a lovely rest of the day
+[2026-08-29 14:14] LEAD: Hello
+[2026-08-29 14:14] LEAD: Not now, I have a financial problem
+[2026-08-29 14:22] ALI: Ok, no problem, good luck!

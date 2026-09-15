@@ -1,0 +1,44 @@
+PHONE: +33620892946
+NAME: Brandon
+CRM STAGE: Sale
+PERIOD: 2026-05-08 09:05 -> 2026-09-02 15:10 (Madrid time)
+MESSAGES: 29 (16 written by Ali, 13 from the lead)
+
+[2026-05-08 09:05] LEAD: Hello,
+
+I apologise for replying to you so late, I think I'll stick with my choice of the July session, if places are still available, I'll be able to choose from the various dates that will be offered at that point.
+
+Best regards
+[2026-05-08 16:48] ALI: Hello. Of course, you can also reserve your place for the July session right now with a deposit (acompte) of 80€. This amount will then be deducted from what you have left to pay before starting the classes, and it guarantees you a place. What do you think?
+[2026-06-11 18:29] LEAD: Hello,
+I'm very well and I think you are too, and I'm still interested and I think I'll wait for the end of July as I told you.
+[2026-06-11 18:48] ALI: Thank you for your reply. Very good, I'll make a note. Have a lovely day
+[2026-06-11 19:29] LEAD: Thank you too
+[2026-08-30 12:18] LEAD: Hello,
+
+I apologise for my silence, I'm still interested, please resend me the price
+[2026-08-30 12:52] ALI: We're at around 10€ per lesson, with classes in small groups (2-3 people) and certified native teachers, and it's also payable in instalments, up to 4 times with no fees
+[2026-08-30 12:52] ALI: The best thing is for us to talk about it on a call to pin down what would suit you. I'm available Tuesday 10:30am, 1:00pm or 4:00pm or Wednesday at 12pm or 1:30pm. Or would another slot suit you better perhaps?
+[2026-08-30 15:24] LEAD: Tuesday 1:00pm
+[2026-08-30 20:16] ALI: Great, I've just sent you an invitation for Tuesday 1pm, have a good rest of the evening!
+[2026-08-30 20:16] ALI: You should have received the invitation by email
+[2026-08-30 20:17] LEAD: Yes I received it,
+Have a good evening too
+[2026-09-02 08:41] LEAD: Hello Ali,
+Yes I received the link, however I'm running into a difficulty with the instalment payment, Alma has only selected a few issuing countries and mine isn't among them so it's impossible to proceed, all the more so as I'm waiting for my residence permit to be renewed
+[2026-09-02 10:04] ALI: Hello Brandon, I understand, thank you for the detail, don't you have a French bank card?
+[2026-09-02 10:14] LEAD: Yes I have an account with a French bank
+[2026-09-02 10:20] ALI: Perfect, in that case it should normally work with Alma, since it's your card that counts
+[2026-09-02 10:20] ALI: Can you tell me at exactly which step it gets stuck on the link? Is it a country to select, or a specific error message that appears? A screenshot could help too
+[2026-09-02 10:40] LEAD: The identification step where I have to present an ID card and photo to match the two
+[2026-09-02 11:48] ALI: Good news Brandon, I was able to speak with the administration
+[2026-09-02 11:48] ALI: Given your situation with Alma, we're going to use another payment solution (Stripe) for the instalment payment, which avoids precisely that identity verification that was blocking you
+[2026-09-02 11:49] ALI: The link you already received has just been updated with this new payment option, refreshing the page should be enough, let me know if you run into a problem 👍
+[2026-09-02 11:51] LEAD: Don't you work with Floa??
+[2026-09-02 11:58] ALI: We don't work with Floa specifically, but Stripe works on the same principle: staged payment by card, without complications, and it should be simpler for you given your current situation
+[2026-09-02 12:07] LEAD: On Alma, I had the option of 10 instalments, however on Stripe that's not the case
+[2026-09-02 12:34] ALI: Let me double-check that with the administration, I'll come back to you shortly
+[2026-09-02 12:39] ALI: All set Brandon, I managed to get the 10 instalments to be possible with Stripe as well, you just need to refresh the page, let me know if it's ok 👍
+[2026-09-02 13:15] LEAD: Thanks
+[2026-09-02 15:09] ALI: Thank you, and good luck with your classes!
+[2026-09-02 15:10] LEAD: Thanks

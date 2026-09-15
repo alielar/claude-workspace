@@ -1,0 +1,80 @@
+PHONE: +33669105187
+NAME: Wajdi
+CRM STAGE: Sale
+PERIOD: 2026-08-27 21:24 -> 2026-09-14 14:00 (Madrid time)
+MESSAGES: 47 (18 written by Ali, 29 from the lead)
+
+[2026-08-27 21:24] LEAD: Hello,
+Yes
+[2026-08-27 21:55] ALI: We have no more slots this week, so we decided to open the free interviews for next week as well. What day and time would suit you for a 20-minute chat from next Monday onwards?
+[2026-08-28 14:59] LEAD: Tuesday at 5pm, does that work for you?
+[2026-08-28 15:24] ALI: Unfortunately, I already have an interview scheduled at 5pm. How about 6pm or 7pm?
+[2026-08-28 18:07] LEAD: 6pm
+[2026-08-28 18:42] ALI: I've just sent you an invitation by email, see you Tuesday! ☺️
+[2026-09-03 21:19] LEAD: Hello Ali
+[2026-09-03 21:19] LEAD: I discussed it with HR
+[2026-09-03 21:19] LEAD: She's getting back to me tomorrow
+[2026-09-03 21:19] LEAD: Sorry
+[2026-09-03 21:48] ALI: Ok no problem, keep me posted, I'll check with the administration about extending your deadline then since it doesn't depend on you
+[2026-09-10 11:32] LEAD: Hello Ali
+[2026-09-10 11:33] LEAD: FYI, things are moving on the HR side for financing the course
+[2026-09-10 11:33] LEAD: however, they're asking me for the result of the test we did together and a quote
+[2026-09-10 11:33] LEAD: I can't download them anymore because the link has expired.
+Can you send me the necessary items please?
+[2026-09-10 11:35] LEAD: Ideally a personalised quote please
+[2026-09-10 11:35] LEAD: (image)
+[2026-09-10 11:40] ALI: It's sorted Wajdi, I've refreshed your link, it should work by clicking on it again. In the admission results email, you'll find the contract with your test result (level A2) and all the registration information
+[2026-09-10 11:41] ALI: For the personalised quote, let me check with the administration how we can prepare it for you, I'll get back to you shortly, can you send me the company name and address please?
+[2026-09-10 11:43] LEAD: Onepoint
+[2026-09-10 11:44] LEAD: I need a PDF for the result and for the quote please
+[2026-09-10 11:54] ALI: Got it, I'll check that and get back to you as soon as possible today
+[2026-09-10 12:25] LEAD: Thanks
+[2026-09-10 14:43] ALI: Hello again Wajdi,
+
+I've also just sent you two emails:
+
+1. "Proposal for English training for a ONEPOINT employee", this is the one you can forward directly to your company, it contains all the details and the payment terms
+2. The admission results originally sent on 1 September, which I've resent to you, with the programme presentation in slides and the guarantee contract. That one is for you
+
+Two payment options possible for the company:
+
+- Bank transfer to the IBAN shown on the invoice, with "Wajdi Krout" as the reference. Then you just send us the receipt and we register the enrolment
+- Company bank card via the secure payment link in the email, which also allows payment in instalments with Alma
+[2026-09-10 14:43] LEAD: Thanks Ali
+[2026-09-10 14:43] ALI: Here's the quote in PDF too, you also have it in the first email just in case 👍
+[2026-09-10 14:43] ALI: Did you receive both emails?
+[2026-09-10 23:13] LEAD: Yes thanks
+[2026-09-11 10:17] ALI: Hello Wajdi, keep me posted if the process with the HR director moves forward today before the weekend. And have a good day 👍
+[2026-09-11 10:18] LEAD: Hello,
+The process is underway, because they asked me to send the quote to accounting
+[2026-09-11 10:20] ALI: Got it, keep me posted and don't hesitate if you need any additional information 👍
+[2026-09-11 10:34] LEAD: Good news:
+[2026-09-11 10:35] LEAD: I think we'll make the payment at the beginning of the week, Monday or Tuesday
+[2026-09-11 11:22] ALI: Perfect, thanks for keeping me informed, and have a good end of the week!
+[2026-09-14 11:06] LEAD: Hello Ali,
+We're going to make the payment with the sales admin team. Can you tell me if the link is still ok?
+[2026-09-14 11:12] LEAD: I've done what was needed and I've paid.
+[2026-09-14 11:12] LEAD: can you forward me the invoice in the name of onepoint please
+[2026-09-14 11:23] LEAD: Also, I've set up my account but I can't log in anymore.
+It tells me invalid email or password.
+Yet when I do forgotten password it tells me invalid email
+[2026-09-14 11:31] ALI: Hello Wajdi, welcome among us! 😊
+
+For the invoice in the company's name, I'll send it to you here shortly
+
+To save time, regarding your login details, I suggest you contact our student support. Here's the WhatsApp number: ‪+393755858639
+
+And let me know once it's sorted, I'm here to speed up the process if needed 👍
+[2026-09-14 13:47] ALI: Hello Wajdi, I've just heard back from my accountant: the transfer hasn't arrived on our side yet, it usually takes 1 to 2 days for this type of payment
+[2026-09-14 13:47] ALI: As soon as it's received, I'll make the personalised invoice for the company no problem
+[2026-09-14 13:47] ALI: And about your login, has the message concerning your account been passed on to our student support? I want to make sure it's moving forward in parallel
+[2026-09-14 13:47] LEAD: Hello Ali,
+It was a payment by invoice
+[2026-09-14 13:47] LEAD: By credit card sorry
+[2026-09-14 13:48] LEAD: The invoice is available in my account but it's in the name of KROUT Wajdi and not onepoint
+[2026-09-14 13:48] LEAD: It's been unblocked thanks
+[2026-09-14 14:00] ALI: So, I spoke with our accountant again. Actually there's a way to generate the personalised invoice yourself directly
+
+Go to Admin -> Contract and invoices -> View, then at the bottom left you have 'Generate a personalised invoice'. Click Create, put in your company details, and download the invoice
+
+Tell me if you get stuck at any step 👍

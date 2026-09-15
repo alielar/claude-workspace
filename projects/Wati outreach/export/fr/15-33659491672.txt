@@ -1,0 +1,25 @@
+PHONE: +33659491672
+NAME: Loman
+CRM STAGE: Meeting done
+PERIOD: 2026-09-10 14:13 -> 2026-09-11 18:16 (heure de Madrid)
+MESSAGES: 17 (11 ecrits par Ali, 6 du lead)
+
+[2026-09-10 14:13] LEAD: Salut Ali , j’ai reçu le mail hier mais je comprend pas trop comment réserver l’inscription et régler plus tard parce que je vois directement un liens de paiement
+[2026-09-10 14:53] ALI: Bonjour Loman, pour clarifier : le premier versement se fait à la confirmation de votre inscription, c'est ce qui vous réserve votre place. Vous pouvez ensuite choisir votre date de démarrage librement, même dans plusieurs semaines ou mois
+[2026-09-10 14:54] ALI: Si le montant total vous bloque, je vous ai débloqué un paiement en 10 fois sans frais si ça peut rendre les choses plus simples
+[2026-09-10 14:54] ALI: C'est ok pour vous ?
+[2026-09-10 17:10] LEAD: Oui oui je ne pourrais pas débuter tout de suite malheureusement niveau budget c’est un peu serrer , je reviendrais vers vous le mois prochain ou dans 2 mois
+[2026-09-10 17:41] ALI: Petit rappel Loman, sur ce format vous pouvez aussi étaler en 10 fois sans frais, ça reviendrait à 99€/mois. Est-ce que ça change quelque chose pour vous ?
+[2026-09-10 17:41] ALI: Sachez aussi que les places sont limitées : si elle n'est pas confirmée ce soir, votre place pourrais être libérée et réattribuée
+[2026-09-10 17:47] LEAD: Oui on vas faire comme ça je passe mon tour pour ce mois ci parce que c’est très serrer niveau budget je relancerai ma demande le mois prochain
+[2026-09-10 18:08] ALI: Je comprends Loman, mais sachez que si votre place n'est pas confirmée ce soir, elle sera réattribuée et l'entrée ne se ferait alors plus que par liste d'attente, actuellement entre 10 et 12 mois, sans garantie de date de démarrage
+[2026-09-10 18:08] ALI: Laissez-moi voir avec l'administration ce qu'on peut faire pour vous
+[2026-09-10 18:14] ALI: Bonne nouvelle Loman ! Je peux vous proposer un acompte de 96€ pour bloquer votre place dès maintenant. Vous pourrez démarrer le mois prochain sans souci, ou même dans quelques mois si vous voulez, et ce montant sera déduit du total bien évidemment. Qu'en pensez-vous ?
+[2026-09-10 19:20] LEAD: Ça m’arrange toujours pas niveau budget c’est pour ça que je préfère repousser ça au moin prochain pour être sûr de ne pas avoir de soucis financier ce mois ci
+[2026-09-10 19:20] LEAD: Merci beaucoup 🙏🏾
+[2026-09-10 19:22] ALI: D’accord, aucun problème. Malheureusement, nous avons dû réattribuer votre place et vous inscrire sur notre liste d’attente. Le délai peut toutefois être assez long, pouvant aller jusqu’à 10 mois
+
+N’hésitez pas à m’écrire le mois prochain pour savoir si une place s’est libérée plus tôt, mais je ne peux malheureusement pas vous le garantir. Bon courage Loman !
+[2026-09-11 18:10] LEAD: Bonjour si c’est pour le mois prochain c’est bon
+[2026-09-11 18:16] ALI: Je comprends Loman, ça reste compliqué niveau budget pour l'instant. Si l'acompte de 96e ne peut pas aider, vous restez malheureusement donc sur la liste d'attente, sans garantie de date de démarrage..
+[2026-09-11 18:16] ALI: Mais n'hésitez pas à revenir vers moi dès que ce sera le bon moment pour vous, on sait jamais
