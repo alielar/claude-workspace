@@ -347,13 +347,16 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
   const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
   const when = (dueDate: string | null, evening = false, someday = false) => set({ dueDate, evening, someday, dueTime: someday ? null : d.dueTime });
   const isWhen = (dueDate: string | null, evening: boolean, someday: boolean) => d.someday === someday && (someday || (d.dueDate === dueDate && d.evening === evening));
-  const chips: { label: string; on: boolean; go: () => void }[] = [
-    { label: "Today",     on: isWhen(today, false, false),             go: () => when(today) },
-    { label: "Next week", on: isWhen(nextMonday(today), false, false),  go: () => when(nextMonday(today)) },
-    { label: "Tomorrow",  on: isWhen(addDays(today, 1), false, false),  go: () => when(addDays(today, 1)) },
-    { label: "Weekend",   on: isWhen(nextWeekend(today), false, false), go: () => when(nextWeekend(today)) },
-    { label: "Someday",   on: d.someday || !d.dueDate,                 go: () => when(null, false, true) },
+  // Fixed order, three per row (Ali 2026-09-15): Today · Tomorrow · Someday / Weekend · Next week · Pick a date.
+  const chips: { label: string; on: boolean; go: () => void; dated: boolean }[] = [
+    { label: "Today",     on: isWhen(today, false, false),              go: () => when(today),                  dated: true },
+    { label: "Tomorrow",  on: isWhen(addDays(today, 1), false, false),  go: () => when(addDays(today, 1)),      dated: true },
+    { label: "Someday",   on: d.someday || !d.dueDate,                  go: () => when(null, false, true),      dated: false },
+    { label: "Weekend",   on: isWhen(nextWeekend(today), false, false), go: () => when(nextWeekend(today)),     dated: true },
+    { label: "Next week", on: isWhen(nextMonday(today), false, false),  go: () => when(nextMonday(today)),      dated: true },
   ];
+  // "Pick a date" is lit only when the date is none of the four presets.
+  const customDate = !!d.dueDate && !d.someday && !chips.some((c) => c.dated && c.on);
 
   return (
     <SheetFrame label="Edit task" onClose={close}>
@@ -369,10 +372,10 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
           ))}
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {chips.map((c) => <button key={c.label} onClick={c.go} style={chipStyle(c.on)}>{c.label}</button>)}
-          <label style={{ ...chipStyle(!!d.dueDate && !chips.slice(0, 4).some((c) => c.on)), display: "inline-flex", alignItems: "center", gap: 6, position: "relative" }}>
-            {d.dueDate && !chips.slice(0, 4).some((c) => c.on) ? fmtDue(d.dueDate, today) : "Pick a date"}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+          {chips.map((c) => <button key={c.label} onClick={c.go} style={{ ...chipStyle(c.on), padding: "0 6px" }}>{c.label}</button>)}
+          <label style={{ ...chipStyle(customDate), padding: "0 6px", display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", whiteSpace: "nowrap" }}>
+            {customDate ? fmtDue(d.dueDate!, today) : "Pick a date"}
             <input type="date" value={d.dueDate ?? ""} min={today} onClick={openPicker} onChange={(e) => e.target.value && when(e.target.value, d.evening)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", fontSize: 17 }} />
           </label>
         </div>
