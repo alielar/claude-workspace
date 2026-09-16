@@ -1,0 +1,27 @@
+PHONE: +32492160654
+NAME: Molzem
+CRM STAGE: Sale
+PERIOD: 2026-09-02 15:47 -> 2026-09-03 11:31
+MESSAGES: 16 (7 Ali, 9 lead)
+
+[2026-09-02 15:47] LEAD: Salut Ali,
+De notre côté c’est ok
+[2026-09-02 16:35] ALI: Super, dîtes moi si vous rencontrez quelconque problème quand vous procèderez à l’inscription, je suis là pour aider 👍
+[2026-09-02 16:35] ALI: Le lien d’inscription vous as été envoyé hier soir par mail
+[2026-09-02 19:45] ALI: Bonjour Molzem, les inscriptions pour aujourd'hui sont clos ce que Narcissa as pu s'inscrire sans problème
+[2026-09-02 19:46] LEAD: (image)
+[2026-09-02 19:46] LEAD: (message vocal)
+[2026-09-02 19:48] ALI: D'accord, laissez moi voir avec l'administration pour essayer d'étendre la date limite pour vous
+[2026-09-02 19:52] LEAD: On est en train de payer
+[2026-09-02 19:52] LEAD: Tu veux qu'on attend?
+[2026-09-02 19:53] LEAD: C'est bon on vient de payer 450€
+[2026-09-02 19:55] ALI: Je viens de vérifier avec l'administration et la date limite est prolongée pour vous à temps 👍
+[2026-09-02 19:55] ALI: Bienvenu parmi nous ☺️
+[2026-09-02 19:57] LEAD: Merci Ali 👌
+[2026-09-03 11:09] LEAD: (image)
+[2026-09-03 11:10] LEAD: (message vocal)
+[2026-09-03 11:31] ALI: Bonjour, ravi d'avoir de vos nouvelles
+
+Oui c'est bien le programme actuel, avec un début le 28 septembre et une fin le 27 juillet. Si vous souhaitez changer la date de début pour une date future, vous pouvez contacter le support étudiant directement depuis "Admin" dans l'appli, ou par WhatsApp au +393755858639
+
+Pour l'application, vous avez accès à un entraîneur de grammaire et un tuteur IA, tout ça se trouve dans la section "Tools" en attendant le début des cours :)

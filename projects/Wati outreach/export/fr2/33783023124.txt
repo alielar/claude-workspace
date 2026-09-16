@@ -1,0 +1,16 @@
+PHONE: +33783023124
+NAME: Junior
+CRM STAGE: Meeting done
+PERIOD: 2026-09-02 22:36 -> 2026-09-09 11:22
+MESSAGES: 10 (7 Ali, 3 lead)
+
+[2026-09-02 22:36] LEAD: Bonjour désolé du retard j’ai pas encore reçu mon salaire donc j’attends je vous reviens dans les plus brefs délais
+[2026-09-03 12:15] ALI: Salut Junior, j'ai dû libérer votre place, mais je je pourrais peut-être vous en trouver une autre dans un prochain groupe. Vous voulez que je regarde ?
+[2026-09-03 22:27] LEAD: Mettez moi en liste d’attente je vous répond dans le plus bref délais
+[2026-09-04 11:08] ALI: Avant de vous inscrire sur liste d'attente, qu'est-ce qui vous retient de démarrer maintenant en dehors du salaire ? Ou plutôt par curiosité, si le programme était gratuit, vous le noteriez combine sur 10, d'après mes explications de l'autre jour ?
+[2026-09-08 23:01] LEAD: Bonjour oui oui
+[2026-09-09 11:16] ALI: Ça marche, laissez moi vérifier avec l'administration pour vous
+[2026-09-09 11:16] ALI: Je reviens vers vous tout de suite
+[2026-09-09 11:21] ALI: Bonjour Junior, bonne nouvelle ! L'administration viens d'autoriser l'opération, je viens de vous renvoyer l'invitation par mail, et j'ai pu vous inscrire pour la session d'aujourd'hui qui finis à 20h
+[2026-09-09 11:22] ALI: Voici aussi le lien d'inscription au cas ou : https://easypeasyfluent.com/fr/admission/dc7b5fb6-11bb-457c-9de9-084d803e5000
+[2026-09-09 11:22] ALI: Dites-moi une fois inscrit, je vous enverrai les prochaines étapes 👍

@@ -1,0 +1,34 @@
+PHONE: +32486064410
+NAME: El
+CRM STAGE: Sale
+PERIOD: 2026-09-12 08:40 -> 2026-09-13 20:04
+MESSAGES: 21 (15 Ali, 6 lead)
+
+[2026-09-12 08:40] LEAD *: (message vocal)
+[2026-09-12 10:41] ALI *: Bonjour Sanae ! Laissez moi vérifier avec l'administration, et je reviens vers vous de suite 👍
+[2026-09-12 10:47] ALI *: C'est bon, j'ai pu obtenir le report : votre délai est officiellement repoussé jusqu'à demain dimanche 20h
+[2026-09-12 10:47] ALI *: N'hésitez pas si vous avez des questions entre temps 😊
+[2026-09-13 08:44] LEAD *: Merci
+[2026-09-13 08:45] LEAD *: Pouvons nous faire 2h de cours par exemple ? 
+Semaine type : lundi 2h
+Mardi 2h 
+Vendredi 1h de cours
+[2026-09-13 12:02] ALI *: Bonjour Sanae, oui tout à fait, vous êtes libre là-dessus : rien n'empêche de faire 2h d'affilée le même jour si ça vous arrange
+[2026-09-13 12:02] ALI *: Votre planning avec 2h lundi, 2h mardi et 1h vendredi fonctionne très bien, ça vous fait un bon rythme sur la semaine
+[2026-09-13 15:02] ALI: Salut Sanae ! Votre place est réservée jusqu'à ce soir. Vous avez d'autres questions avant la clôture des inscriptions à 20h ?
+[2026-09-13 15:30] LEAD *: Quelles sont les dates de rentrée ? Vous avez présenté plusieurs rentrées.
+[2026-09-13 15:38] ALI *: Concrètement : une fois votre place confirmée, on vous propose les différentes dates de démarrage disponibles et c'est vous qui choisissez celle qui vous arrange. L'inscription ne veut donc pas dire commencer tout de suite aussi, mais vous choisissez lors de l'inscription
+[2026-09-13 15:39] ALI *: Il vous reste quelque chose d'autre à clarifier ?
+[2026-09-13 15:43] LEAD *: (message vocal)
+[2026-09-13 15:49] ALI *: La prochaine rentrée est le 28 septembre pour le groupe d'octobre, puis le 26 octobre pour le groupe de novembre, et ensuite le 23 novembre pour le groupe de décembre :)
+[2026-09-13 15:51] ALI *: Et pour combiner avec vos autres formations, sachez que les heures hebdomadaires sont totalement libres. On était partis la dernière fois sur 5h/semaine
+
+Mais on peut partir sur un rythme plus léger si besoin, peut être 4h/semaine ou 5h vous semble abordable ?
+[2026-09-13 18:00] ALI *: On est en train de finaliser les groupes des prochains mois. Vous avez pu y réfléchir ?
+[2026-09-13 19:12] LEAD *: Je confirme mon inscription pour le 28 septembre
+[2026-09-13 20:02] ALI *: Parfait Sanae, ravi de vous compter parmi nous ! Je note votre démarrage au 28 septembre 😊
+[2026-09-13 20:04] ALI *: Pour que votre place soit définitivement bloquée sur ce groupe, il reste juste l'inscription à finaliser avec la première mensualité, c'est ce qui nous permet de réserver vos enseignants et d'ouvrir votre accès à la plateforme
+
+Le lien es sur le mail d'admission que vous avez reçu l'autre jour mais voici le lien ici si c'est plus simple : https://easypeasyfluent.com/fr/admission/8bffbab8-3396-4d19-bf5c-34e3b47eb0fe
+[2026-09-13 20:04] ALI *: Et comme vous ne l'aviez pas forcément en tête, j'ai fait le nécessaire de mon côté et votre délai est repoussé à 22h ce soir, vous avez donc le temps de faire ça tranquillement
+[2026-09-13 20:04] ALI *: Dites-moi une fois inscrite, je vous envoie les prochaines étapes 👍

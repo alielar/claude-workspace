@@ -1,0 +1,17 @@
+PHONE: +33650454303
+NAME: Kevin
+CRM STAGE: Meeting done
+PERIOD: 2026-09-04 18:29 -> 2026-09-08 18:22
+MESSAGES: 10 (5 Ali, 5 lead)
+
+[2026-09-04 18:29] LEAD *: Bonjour 
+Oui je suis intéressé , je vous contact lundi début d'après-midi
+[2026-09-08 10:16] LEAD *: Bonjour Teacher Ali
+[2026-09-08 10:17] LEAD *: Si vous avez disponible aujourd'hui,  je souhaite qu'on échanges concernant mon inscription
+[2026-09-08 10:32] ALI *: Bonjour, j'ai une disponibilité vers 11h, je peux vous appeler autour de cette heure là ?
+[2026-09-08 10:33] LEAD *: Je prends le train dans 10mn, si vous voulez 12 10 jusqu'à fin d'après-midi
+[2026-09-08 10:35] ALI *: Vers 17h, vous serez disponible ?
+[2026-09-08 10:37] LEAD *: Parfait
+[2026-09-08 11:09] ALI *: Parfait, je vous appellerais à 17h, à tout à l'heure Kevin !
+[2026-09-08 16:52] ALI *: Bonjour Kevin, je viens d'essayer de vous appeler, mais vous ne répondez pas
+[2026-09-08 18:22] ALI *: Dites moi Kevin, sinon je vais devoir vous mettre sur liste d'attente, et là je ne peux pas vous garantir une place pour les prochains mois. Ça vous va ?

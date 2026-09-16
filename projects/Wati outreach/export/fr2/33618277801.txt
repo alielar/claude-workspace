@@ -1,0 +1,14 @@
+PHONE: +33618277801
+NAME: Félix
+CRM STAGE: Meeting done
+PERIOD: 2026-09-09 17:16 -> 2026-09-15 14:56
+MESSAGES: 6 (4 Ali, 2 lead)
+
+[2026-09-09 17:16] LEAD *: Bonjour 
+Non je dois encore y réfléchir 
+Je reviendrai vers vous début de semaine prochaine
+[2026-09-09 18:16] ALI *: Pas de souci Félix, je comprends. Qu'est-ce qui vous ferait encore hésiter ? Le prix, le timing, autre chose ? Ça m'aide à voir si on peut y répondre dès maintenant 😊
+[2026-09-15 14:49] LEAD *: Bonjour j aimerai savoir! Il faut payer tout d’un coup! Ou il faut payer par mois ?
+[2026-09-15 14:55] ALI *: Vous avez le choix : en une seule fois (avec 15€ de réduction) ou en plusieurs mensualités sans frais, jusqu'à 4 fois
+[2026-09-15 14:55] ALI *: Par exemple, 3 x 600€ ou 4 x 450€
+[2026-09-15 14:56] ALI *: Ça vous convient?

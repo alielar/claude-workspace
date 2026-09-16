@@ -1,0 +1,10 @@
+PHONE: +32456870712
+NAME: Lorena
+CRM STAGE: Meeting done
+PERIOD: 2026-09-09 18:45 -> 2026-09-09 18:59
+MESSAGES: 4 (2 Ali, 2 lead)
+
+[2026-09-09 18:45] LEAD *: Salut Ali !!! Désolée vraiment de ne pas vous répondre, je suis encore au boulot et j'ai eu une journée horrible. Je vous remercie de m'avoir sélectionné, mais après une vérification sur mes comptes, je ne peux pas faire face à ce somme d'argent. Chaque moi à Bruxelles, ça coûte chèr. Désolée, j'espère que dans le future, je pourrais me permettre ça. Bonne soirée
+[2026-09-09 18:45] LEAD *: Et merci de votre attention et entretien, vous êtes top
+[2026-09-09 18:58] ALI *: Je comprends totalement Lorena, et merci pour votre honnêteté ☺️
+[2026-09-09 18:59] ALI *: Sachez qu'on peut aussi étaler en 10 fois avec Alma, ce qui reviendrait à 180 €/mois au lieu de 450 €, ou même en 12 fois, est-ce que ça changerait quelque chose pour vous ?

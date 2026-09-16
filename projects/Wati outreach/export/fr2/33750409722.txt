@@ -1,0 +1,10 @@
+PHONE: +33750409722
+NAME: Allan
+CRM STAGE: Meeting done
+PERIOD: 2026-09-15 20:40 -> 2026-09-15 21:02
+MESSAGES: 4 (2 Ali, 2 lead)
+
+[2026-09-15 20:40] LEAD: Slt Ali oui top j'ai bien reçu 👍
+[2026-09-15 21:00] ALI *: Super et félicitations Allan ! 😊
+[2026-09-15 21:02] ALI *: N'hésitez pas si vous avez des questions avant la clôture des inscriptions de demain 20h et bonne soirée à vous 👍
+[2026-09-15 21:02] LEAD *: Pas de soucis merci

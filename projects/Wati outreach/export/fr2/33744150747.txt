@@ -1,0 +1,12 @@
+PHONE: +33744150747
+NAME: Guy
+CRM STAGE: Meeting done
+PERIOD: 2026-09-07 17:38 -> 2026-09-08 17:27
+MESSAGES: 5 (2 Ali, 3 lead)
+
+[2026-09-07 17:38] LEAD *: Je comprends parfaitement ce que vous essayez de me proposer je ne suis pas contre le formation c’est juste les moyens financiers qui
+Me bloque
+[2026-09-07 19:09] ALI *: Je comprends Guy, le budget reste un vrai frein de votre côté ?
+[2026-09-07 19:09] ALI *: Si c'est toujours le cas, il existe une option encore plus légère qu'on avait évoquée, des formats plus courts sans la garantie satisfait ou remboursé, donc moins chers, mais sans cette sécurité-là. Ça reste possible si vous voulez qu'on regarde ensemble
+[2026-09-08 17:26] LEAD *: Oui oui
+[2026-09-08 17:27] LEAD *: Je préfère éviter pour l’instant au risque de me mette dans les problèmes financiers avec ma banque

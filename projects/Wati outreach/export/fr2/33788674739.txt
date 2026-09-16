@@ -1,0 +1,70 @@
+PHONE: +33788674739
+NAME: Paquito
+CRM STAGE: Sale
+PERIOD: 2026-09-04 16:03 -> 2026-09-11 12:47
+MESSAGES: 56 (31 Ali, 25 lead)
+
+[2026-09-04 16:03] LEAD: Bonjour oui ça m'intéresse
+[2026-09-04 16:07] ALI: Pour valider votre inscription, le paiement se fera en plusieurs fois comme vous le souhaitiez, vous aurez toutes les options d'échéancier directement sur le lien, vous voulez que j'essaye de voir avec l'administration pour mettre à jour votre date limite ?
+[2026-09-04 16:08] LEAD: Oui je veux bien merci
+[2026-09-04 16:35] ALI: Ok laissez moi voir avec eux si on peux faire en sorte de mettre à jour la date limite pour la session d'aujourd'hui 20h vous concernant
+[2026-09-04 16:35] ALI: Je reviens vers vous très vite
+[2026-09-04 16:40] ALI: Bonne nouvelle Paquito, l'administration vient de confirmer votre place pour cette session ! Le délai reste ce soir 20h pour valider, avez-vous des questions avant la clôture des inscriptions ?
+[2026-09-04 16:40] ALI: Le lien de paiement est bien actif de votre côté pour le premier versement
+[2026-09-04 16:50] LEAD: Je pourrais faire ça demain je peux pas aujourd'hui je suis à bloc de travail jusqu'à 21h30
+[2026-09-04 16:51] LEAD: L'administration n'est pas cool vous leur direz
+[2026-09-04 16:52] LEAD: Qui me laisse 24 heures jusqu'à demain 20h ça serait plus raisonnable il met trop la pression
+[2026-09-04 17:09] ALI: Je comprends que 24h vous mette moins la pression, laissez-moi vérifier ça avec l'administration et je reviens vers vous très vite, je leurs passerai le message aussi 😅
+[2026-09-04 17:15] ALI: C'est bon Paquito, j'ai pu obtenir un délai supplémentaire jusqu'à demain soir 20h pour vous
+
+Sachez que c'est la dernière fois qu'ils pourront faire ça, l'administration ne pourra plus repousser après ça, n'hésitez pas si vous avez des questions aussi
+[2026-09-04 17:47] LEAD: Parfait merci
+[2026-09-05 11:47] ALI: Bonjour Paquito ! Votre place est réservée jusqu'à ce soir. N'hésitez surtout pas si vous avez des questions ! 👍
+[2026-09-05 11:48] LEAD: Bonjour Je voulais savoir une chose les cours se font sur quelle application
+[2026-09-05 11:50] ALI: Les cours se déroulent sur notre plateforme et notre application EasyPeasy, accessibles depuis n'importe quel appareil avec internet, un smartphone suffit, mais une tablette ou un ordinateur est plus confortable. 
+
+Tout est inclus : matériel, exercices, plateformes de vocabulaire et de grammaire, tuteur AI, sans frais supplémentaire
+[2026-09-05 11:52] ALI: L'application s'appelle "easypeasyfluent", vous pouvez la trouver sur l'App Store et le Play Store aussi
+[2026-09-05 12:10] LEAD: C'est bien des cours de 2, 3 élèves maximum comme vous m'aviez précisé avec un professeur c'est pas de ia et dans la recherche que je vous avais parlé entre autres
+[2026-09-05 12:13] ALI: Exactement, les cours de Speaking se font en groupes de 2 à 3 élèves maximum, avec un vrai enseignant natif, certifié TEFL et avec minimum 5 ans d'expérience. Le tuteur AI est un outil en plus, disponible en illimité sur la plateforme, mais les leçons elles-mêmes sont toujours données par un enseignant humain
+[2026-09-05 12:14] LEAD: ok merci
+[2026-09-05 12:15] ALI: Pas de soucis, n'hésitez pas si vous avez des questions Paquito 👍
+[2026-09-05 13:58] LEAD: Je viens de télécharger l'application on me dit de rentrer mon adresse mail et mon mot de passe c'est ce que j'ai fait ça ne fonctionne pas on me dit que c'est c'est pas la bonne adresse mail ni le bon mot de passe j'en ai pas d'autre je comprends pas
+[2026-09-05 14:37] ALI: Je comprends la confusion Paquito, en fait vous n'avez pas encore de compte créé, celui-ci sera généré automatiquement dès votre inscription et votre premier paiement effectués. Vous recevrez ensuite un message de bienvenue avec vos identifiants et toutes les infos pour démarrer
+[2026-09-05 14:38] LEAD: ok merci merci de m'envoyer le lien de paiement sur ce numéro
+[2026-09-05 14:55] ALI: Sans problème, voice le lien de paiement: https://easypeasyfluent.com/fr/admission/ed52e36e-1c44-4c00-977f-16ae2eb6abc4
+[2026-09-05 14:56] ALI: Dîtes moi si vous rencontrez un problème 👍
+[2026-09-05 14:59] LEAD: Si je prends 10 mensualités c'est tous les combien chaque mensualité
+[2026-09-05 15:00] ALI: Le premier prélèvement se fait à la confirmation de votre place, puis chaque échéance suivante tombe 30 jours après la précédente, donc chaque mois
+[2026-09-05 15:00] LEAD: parfait
+[2026-09-05 18:08] ALI: Bonjour Paquito, je viens d'essayer de vous appeler ! Je voulais savoir si vous aviez encore des questions avant qu'on finalise les groupes des prochains mois
+[2026-09-05 18:08] ALI: J'ai vu que vous n'aviez pas encore finalisé votre inscription
+[2026-09-05 18:13] LEAD: J'arrête pas de bosser j'ai même pas encore mangé je vais le faire je vais le faire
+[2026-09-05 18:24] ALI: Pas de soucis, désolé de vous avoir dérangé avec mon appel. Bon courage et tenez moi au courant 👍
+[2026-09-05 18:49] LEAD: Je ne peux pas lire le contrat qui est en italien je ne peux pas le signer sur mon téléphone comment je fais
+[2026-09-05 19:00] LEAD: ????
+[2026-09-05 19:08] ALI: Bonjour Paquito, vous pouvez m'envoyer une capture d'écran du problème ? Et du contrat en italien ?
+[2026-09-05 19:08] ALI: Je peux vous appeler ?
+[2026-09-05 19:15] ALI: Donc, je viens de vérifier et voici le contrat en français que vous pouvez lire : https://easypeasyfluent.com/fr/terms-and-conditions
+[2026-09-05 19:15] ALI: Et vous n'avez pas besoin de signer quoi que ce soit
+[2026-09-05 19:51] LEAD: ok je vais finaliser
+[2026-09-05 19:59] ALI: Ça marche, dîtes moi si vous avez des questions pendant que vous finalisez votre inscription 👍
+[2026-09-05 20:17] LEAD: c est fait
+[2026-09-05 20:20] ALI: Bienvenu parmi nous Paquito, et bon courage pour vos cours ! On vas pouvoir rendre votre anglais fluent pour vos conversations avec la gente féminine ! 😊
+[2026-09-05 20:21] ALI: Notre support étudiant est à votre disposition à tout moment pour toute question ou demande 👍 
+
+Voici le numéro WhatsApp : ‪+393755858639
+[2026-09-05 20:22] LEAD: Par rapport à ce qu'on m'avait dit les 14 jours de rétractation à partir du premier cours merci de m'appeler c'est plus simple
+[2026-09-05 20:30] ALI: Oui c'est bien ça : les 14 jours de rétractation démarrent à partir de votre premier cours, pas de la date d'inscription
+[2026-09-05 20:31] ALI: Si vous avez des questions par rapport à ça, n'hésitez pas de me les poser ici ou de me faire un audio si c'est plus simple pour vous
+[2026-09-09 12:21] LEAD: Bonjour Ali je voulais planifier mes créneaux pour mes leçons à venir début octobre apparemment j'arrive pas quelle est la solution
+[2026-09-09 12:59] ALI: Bonjour Paquito ! Par rapport à ça, vous avez essayer de contacter le support étudiant ?
+[2026-09-09 13:12] LEAD: Je découvre l'application vous m'avez dit télécharger mais franchement j'y comprends rien donc si ça commence comme ça c'est pas bon
+[2026-09-09 13:17] ALI: Alors, une fois sur l'application, vous vous rendez dans 'Admin', tout à droite du menu en bas sur votre téléphone, et vous appuyer sur 'Contacter le support étudiant', ils seront capable de vous aider par rapport à quoique ce soit ☺️
+[2026-09-09 13:18] LEAD: ok je vais essayer merci
+[2026-09-11 12:25] LEAD: Bonjour Ali je veux programmer mes cours à l'avance à partir du 1er octobre rien ne fonctionne sur cette application je vais sur admis ensuite disponibilité pour vos leçons
+[2026-09-11 12:25] LEAD: Merci de m'appeler
+[2026-09-11 12:44] ALI: Bonjour Paquito ! En fait rien n'était cassé de votre côté, c'est juste que les cours sont publiés semaine par semaine et pas tous en une fois, donc la semaine du 1er octobre n'était simplement pas encore disponible à la réservation. 
+
+Elle s'ouvrira le 25 septembre à 20h, vous pourrez donc programmer vos cours à partir de ce moment-là
+[2026-09-11 12:47] LEAD: ok merci

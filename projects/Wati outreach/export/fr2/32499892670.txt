@@ -1,0 +1,26 @@
+PHONE: +32499892670
+NAME: Loubna
+CRM STAGE: Meeting done
+PERIOD: 2026-09-11 08:45 -> 2026-09-13 13:58
+MESSAGES: 8 (5 Ali, 3 lead)
+
+[2026-09-11 08:45] LEAD *: Bonjour Ali .  Le plaisir a été partagé. Je viens de voir mes mail et j'en suis ravie. 
+Cependant je ne vais pas pouvoir accepter la candidature actuellement. 
+C'est pourquoi je envoie ce message afin de ne pas mobilisé la place inutilement et de laisser l'opportunité à d'autres personnes. 
+Je reviendrais vers vous dès que cela me sera possible. 
+Bien à vous.
+[2026-09-11 10:19] ALI *: Bonjour Loubna, il y a quelque chose qui vous retient en particulier, comme le prix, le timing ou la méthode ?
+[2026-09-12 20:01] LEAD *: Bonjour je viens de voir vos messages. Veuillez m'en excuser.
+Je suis prise par d'autres engagements ce qui fait que je ne pourrais pas faire partie de la team. 
+C'est pourquoi actuellement je ne souhaite faire partie d'aucun groupe pour le moment. 
+Je garde vos contacts et je reviendrais vers vous une fois que cela me sera possible.
+[2026-09-13 11:54] ALI *: Bonjour Loubna, je voulais juste vous laisser un mot avant de refermer le dossier de mon côté
+[2026-09-13 11:54] ALI *: Sachez que le programme est aussi payable en plusieurs fois sans frais avec Alma, jusqu'à 10 fois, ce qui reviendrait à environ 99€ tout les 30 jours, je ne savais pas si vous étiez au courant
+[2026-09-13 11:55] ALI *: Je vous laisse y réfléchir à votre rythme comme vous le souhaitiez, est-ce que ça change quelque chose pour vous ?
+[2026-09-13 13:48] LEAD *: Bonjour je vous remercie pour votre proposition que je garde en tête. Et oui je suis au courant nous l'avons évoqué lors de l'entretient. 
+Malheureusement comme je l'avais déjà évoqué auparavant je ne pourrais faire partie du programme car je suis prise par d'autres engagements actuellement.
+C'est pourquoi je vous ferais signe lorsque cela me sera possible.
+Je vous souhaite une très bonne journée.
+[2026-09-13 13:58] ALI *: Je comprends totalement Loubna, et merci d'avoir pris le temps de me répondre aussi clairement. Vos engagements passent avant, c'est tout à fait normal
+
+Je vous souhaite une très bonne continuation, et n'hésitez pas à me faire signe quand le moment sera le bon pour vous, je vous tiendrais au courant aussi si une place se libère !

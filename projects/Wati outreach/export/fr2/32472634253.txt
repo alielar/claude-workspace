@@ -1,0 +1,14 @@
+PHONE: +32472634253
+NAME: Gobey
+CRM STAGE: Meeting done
+PERIOD: 2026-09-09 20:28 -> 2026-09-10 19:28
+MESSAGES: 8 (4 Ali, 4 lead)
+
+[2026-09-09 20:28] LEAD *: Non
+[2026-09-09 20:29] LEAD *: Oui je viens de voir
+[2026-09-09 20:33] ALI *: Parfait, merci Gobey ! N'hésitez pas si vous avez des questions !
+[2026-09-10 19:08] LEAD *: Le prix?
+[2026-09-10 19:08] LEAD *: Mais d ici novembre je vous conctaterai
+[2026-09-10 19:27] ALI *: Bonjour Gobey, merci pour ces précisions
+[2026-09-10 19:27] ALI *: J'ai échangé avec l'administration sur votre situation. On peut vous proposer le format 96h au lieu de 180h, à 990€ au lieu de 1800€, payable en plusieurs fois sans frais, jusqu'à 10 fois, ce qui reviendrait à 99€/mois
+[2026-09-10 19:28] ALI *: L'idée serais d'abord de viser le niveau A2, qu'en dîtes vous ?

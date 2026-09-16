@@ -1,0 +1,11 @@
+PHONE: +33699656776
+NAME: Amadou
+CRM STAGE: Meeting done
+PERIOD: 2026-09-02 18:03 -> 2026-09-07 16:01
+MESSAGES: 5 (2 Ali, 3 lead)
+
+[2026-09-02 18:03] LEAD *: Je suis au boulot c'est pour cela j arrive pas a vous répondre
+[2026-09-07 15:15] LEAD *: D'accord
+[2026-09-07 15:51] ALI *: Super, je vous prépare l'invitation. Est-ce que vous serez en mesure de vous inscrire avant 20h ce soir ? Et le programme vous convient toujours, pas de souci de votre côté ?
+[2026-09-07 15:54] LEAD *: D'accord
+[2026-09-07 16:01] ALI *: C'est bon Amadou, je viens de vous renvoyer l'invitation par mail avec le lien d'inscription, ça devrait être ouvert maintenant. Dites-moi si vous avez des questions avant la clôture des inscriptions ce soir à 20h

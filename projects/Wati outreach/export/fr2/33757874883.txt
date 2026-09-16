@@ -1,0 +1,11 @@
+PHONE: +33757874883
+NAME: Francois
+CRM STAGE: Meeting done
+PERIOD: 2026-09-15 20:35 -> 2026-09-15 20:57
+MESSAGES: 5 (3 Ali, 2 lead)
+
+[2026-09-15 20:35] LEAD *: Bonjour bien reçu merci
+[2026-09-15 20:36] LEAD *: Je souhaiterais avoir une précision concernant ma formation : après l'évaluation initiale, sur quel volume horaire total de cours (nombre d'heures ou de sessions) partirions-nous exactement pour mon programme ? Merci d'avance !
+[2026-09-15 20:56] ALI *: Bonjour Francois, avec plaisir
+[2026-09-15 20:56] ALI *: Votre programme est fixé à 180h au total, on avais convenu de 6h par semaine, soit environ un total de 8 mois
+[2026-09-15 20:57] ALI *: Est-ce que ça répond à votre question ?

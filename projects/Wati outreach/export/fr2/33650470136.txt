@@ -1,0 +1,11 @@
+PHONE: +33650470136
+NAME: Joëlla
+CRM STAGE: Meeting done
+PERIOD: 2026-09-04 19:06 -> 2026-09-05 11:55
+MESSAGES: 5 (3 Ali, 2 lead)
+
+[2026-09-04 19:06] LEAD *: Bonjour Mercii beaucoup pour l’opportunité
+[2026-09-04 19:06] LEAD *: Quand est ce qu’il faudra payer pour commencer ?
+[2026-09-04 19:11] ALI *: N'hésitez pas si vous avez des questions surtout 👍
+[2026-09-05 11:54] ALI *: Bonjour Joëlla, comme votre place n'a pas été confirmée hier soir, j'ai dû la libérer. En revanche, je peux peut-être vous en retrouver une dans un prochain groupe si ça vous intéresse toujours
+[2026-09-05 11:55] ALI *: Avant ça, est-ce que le mail et le lien de paiement fonctionnaient bien de votre côté ?

@@ -4,43 +4,85 @@ This folder is Ali's WhatsApp sales workspace. In this session your main job is 
 **write the next message to send to a French lead**, in Ali's style and with his
 commercial logic. Everything you need is here.
 
-## Read these first, on the first closing question of a session
+## Speed matters more than thoroughness here
 
-1. `playbook/02-PLAYBOOK-closing-france.md` — the logic: pipeline, prices with their
-   validity dates, the concession ladder, objection handling, tempo rules. **This is the
-   source of truth.** Read it before drafting anything.
-2. `playbook/04-CAS-APPRIS.md` — cases Ali logged since. It **overrides the playbook**
-   wherever they disagree, because it is more recent.
+Ali is mid-conversation with a lead. Target: **a usable answer in under a minute.**
+The default path is three steps and nothing else:
 
-Do **not** load the transcript files into context wholesale — they are ~700 KB each.
-Search them instead (`grep -n "trop cher" playbook/01-TRANSCRIPTS-mes-conversations.md`)
-when you want to see how a similar situation actually went.
+1. Run `node --env-file=.env lead.mjs <phone>` (takes ~2 seconds).
+2. Read **`playbook/00-QUICK.md`** — one page, covers ~90 % of cases.
+3. Answer.
 
-- `playbook/01-TRANSCRIPTS-mes-conversations.md` — 231 conversations Ali handled himself.
-  The style reference. Lines marked `ALI` are his own writing.
-- `playbook/01b-TRANSCRIPTS-equipe.md` — 305 conversations by the earlier team
-  (Juliette / Leyla / Julie personas). Useful for logic, **not** for style, and some
-  offers in there no longer exist.
+Do **not** open `02-PLAYBOOK-closing-france.md` unless the case fits none of the four
+situations on the quick card, or Ali asks for the reasoning behind a rule. Do **not**
+grep the transcripts unless he asks for a precedent — they are ~700 KB each and it is
+almost never worth the delay.
 
-## When Ali gives you a lead
+If the quick card already answers it, answer from the quick card. Speed is the feature.
 
-He may paste a phone number, a name, or a screenshot. **Always pull the real context first:**
+## What Ali types, and what he wants back
+
+| He types | He wants |
+|---|---|
+| a phone number, or a number + screenshot | **the message to send** — full format below |
+| `relance ?` | the follow-up message for a silent lead |
+| `analyse ?` | where the lead is and what is really blocking, **no message drafted** |
+| `qu'est-ce que j'aurais dû répondre ?` | a short critique of what he sent, against the ladder and the "non qui ne casse rien" schema, plus the better version |
+| a question about a rule or a price | the answer in one or two lines, no ceremony |
+
+A bare phone number always means "draft the reply". Do not ask him to clarify.
+
+**Signal: `c` or `C`** (sent alone, as the entire message) means: scan
+the France Sales threads yourself for the most recent conversations where the lead wrote last
+and Ali hasn't replied yet, and draft a reply for each, one per lead, each labeled with name +
+number. Procedure:
+
+1. `node --env-file=.env scripts-contacts-index.mjs` if `data/contacts-index.json` is more
+   than ~1h stale (check its mtime first — skip this step if it's fresh, it's the slow part).
+2. `node --env-file=.env refresh-fr-threads.mjs --since <today's date>`.
+3. Scan `data/french/threads-full.jsonl`: for each thread, if the last message's `who` is
+   `LEAD`, it's pending. Sort by timestamp, most recent first.
+4. Draft a reply for each pending thread found (same format as any other reply: quick
+   card first, playbook only if needed), most recent lead first.
+
+A plain phone number or name still means "just that lead" — only a bare `c`/`C` triggers
+the full pending scan.
+
+## Reference files
+
+- `playbook/00-QUICK.md` — the card. Your default.
+- `playbook/04-CAS-APPRIS.md` — cases Ali logged. **Overrides the card** where they differ.
+- `playbook/02-PLAYBOOK-closing-france.md` — the full logic. Unusual cases only.
+- `playbook/01-NUMBERS-PRODUCT-france.md` — full catalogue, prices, guarantee conditions,
+  payment/instalment rules, discount tiers, downsell ladder, product facts. Single source of
+  truth for any number — check here before quoting one, not just the quick card.
+- `playbook/03-OBJECTIONS-france.md` — the full objection playbook (O1-O11: price, time,
+  duration, in-person, trial lesson, delayed start, motivation, 1:1, pay-per-lesson,
+  Cambridge vs IELTS, level disagreement) plus the 1-10 diagnostic (money vs. product) and
+  the extended pay-per-lesson arsenal. Open this for any objection the quick card doesn't
+  cover cleanly.
+- `playbook/01-TRANSCRIPTS-mes-conversations.md` — 231 of Ali's own conversations. Grep for
+  a precedent only on request.
+- `playbook/01b-TRANSCRIPTS-equipe.md` — the earlier team's conversations. Logic only, not
+  style; some offers no longer exist.
+
+## Pulling a lead's context
 
 ```bash
 node --env-file=.env lead.mjs 33612345678     # or: lead.mjs Rahma
 ```
 
-That prints, in one go: the CRM stage, the meeting date, every campaign template we
-sent them and when, the full conversation with Madrid timestamps, replies captured by
-the webhook, who the ball is with, how long they have been silent, and whether the 24h
-WhatsApp window is open (open = free text allowed, closed = approved template only).
+Prints the CRM stage, the meeting, every campaign template we sent and when, the full
+conversation in Madrid time, webhook replies, who the ball is with, how long they have
+been silent, and whether the 24h window is open (open = free text, closed = template only).
 
-A screenshot only shows part of the story — run `lead.mjs` anyway whenever you have a
-number. If the screenshot is all you have, ask Ali for the number.
+Always run it when you have a number, even alongside a screenshot — the screenshot only
+shows part of the thread, and it will not show what we already sent them. **Check the
+template list**: a lead who already received `followup_text_3/4_fra` has been pushed once
+already, which changes the tone of what you write next.
 
-**If the conversation is not readable**, the lead is on the telemarketing number
-(+33671283778). The Wati API cannot read that channel; only webhook replies show up.
-Say so plainly rather than guessing.
+If no conversation is readable, the lead is on the telemarketing number (+33671283778),
+which the API cannot read. Say so rather than guessing.
 
 ## What to give back
 

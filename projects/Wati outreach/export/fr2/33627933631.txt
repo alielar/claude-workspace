@@ -1,0 +1,19 @@
+PHONE: +33627933631
+NAME: Sabrina
+CRM STAGE: Meeting done
+PERIOD: 2026-09-14 20:27 -> 2026-09-15 18:03
+MESSAGES: 13 (10 Ali, 3 lead)
+
+[2026-09-14 20:27] LEAD *: Bonsoir bien reçu merci à vous 🙏
+[2026-09-14 20:29] ALI *: Super, n'hésitez pas si vous avez des questions 👍
+[2026-09-14 20:29] ALI *: Et félicitations ! 😊
+[2026-09-15 17:08] LEAD *: Bonjour j’ai bien réfléchis le format me convient parfaitement mais compte tenu ma formation actuelle je préfère commencer le deuxième semestre 2027 merci pour votre temps je vous recontacterai bonne journée à vous
+[2026-09-15 17:12] ALI *: C'est dommage, vous sembliez vraiment motivé et bien préparé pour cette formation, mais je comprends, et c'est une raison tout à fait valable
+[2026-09-15 17:13] ALI *: Bonne nouvelle : confirmer votre place maintenant ne veut pas dire commencer maintenant
+[2026-09-15 17:13] ALI *: Vous choisissez votre mois de démarrage sur la plateforme après l'inscription, donc vous pouvez tout à fait sécuriser votre place aujourd'hui et commencer en 2027 quand votre formation actuelle sera terminée
+[2026-09-15 17:14] ALI *: Ça changerait quelque chose pour vous?
+[2026-09-15 17:46] LEAD *: Ça va être compliqué à gérer à mon avis je dois payer aujourd’hui pour une date que je ne connais pas encore , pas grave on verra dans quelque mois merci encore
+[2026-09-15 17:55] ALI *: Oui je comprends que ça puisse être compliqué, mais sans confirmation ce soir, votre place est réattribuée et l'entrée ne se fait plus que par liste d'attente, actuellement entre 10 et 12 mois, sans garantie de date de démarrage
+[2026-09-15 17:56] ALI *: Plutôt que de vous laisser sur cette liste, laissez-moi vérifier avec l'administration si on peut vous sécuriser une place, d'habitude ce n'est pas possible, mais je regarde
+[2026-09-15 18:03] ALI *: Bonne nouvelle Sabrina, j'ai pu obtenir quelque chose pour vous : avec un acompte de 196 €, déduit du montant total de votre formation, on peut sécuriser votre place dès maintenant. Le reste ne sera à régler qu'au moment où vous démarrez vos cours
+[2026-09-15 18:03] ALI *: Quel mois vous conviendrait le mieux ?

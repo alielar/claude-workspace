@@ -1,0 +1,29 @@
+PHONE: +32488644005
+NAME: Ioana
+CRM STAGE: Meeting done
+PERIOD: 2026-09-10 17:18 -> 2026-09-10 20:08
+MESSAGES: 10 (8 Ali, 2 lead)
+
+[2026-09-10 17:18] LEAD *: Bonjour, j'ai envoyé un email...
+[2026-09-10 17:46] ALI *: Bonjour Ioana, désolé je viens de voir votre email, je vérifie avec l'administration ce qu'on peut faire pour vous et je reviens vers vous de suite ☺️
+[2026-09-10 17:55] ALI *: Bonne nouvelle Ioana, j'ai échangé avec l'administration sur votre situation. On peut vous proposer le format 96h, à 990€, pour viser le niveau A2, aussi payable en plusieurs fois sans frais, jusqu'à 10 fois, ce qui reviendrait à 99€/mois
+[2026-09-10 17:56] ALI *: J'ai mis à jour votre lien d'inscription, et je vous ai renvoyé un nouveau mail d'invitation. La session pour les inscriptions vas clôturer ce soir à 20h
+[2026-09-10 17:56] ALI *: Auriez vous des questions ?
+[2026-09-10 18:36] LEAD *: ​Merci pour cette proposition qui correspond mieux à mon budget ! Avant de valider, j'aurais juste quelques questions :
+​Le montant de 990 € est-il le prix total final (frais d'intégration inclus) ?
+​Quand est prévue la date exacte de début du cours ?
+​Quels seront les jours et les horaires des cours, et combien serons-nous par groupe ?
+​Quel est le montant exact à payer aujourd'hui pour la première mensualité ?
+​Merci d'avance !
+[2026-09-10 19:17] ALI *: Rebonjour Ioana, avec plaisir !
+
+Oui, les 990€ sont le montant total, tout inclus (plateforme, app, matériel, exercices, tuteur IA), pas de frais supplémentaires
+
+Les sessions démarrent chaque mois, la date exacte se choisit quand vous vous inscrivez
+
+Les cours sont disponibles tous les jours de la semaine de 8h à 22h, le week-end compris. Vous choisissez vos créneaux librement. Les cours de Speaking se font en petits groupes de 2 à 3 personnes
+
+Pour le montant exact à régler aujourd'hui, ça dépend du mode de paiement choisi sur le lien : en plusieurs fois via Alma, ça peut aller jusqu'à 10 fois sans frais, soit un premier paiement de 99€
+[2026-09-10 19:19] ALI *: Voici le lien d'inscription, vous pouvez procéder directement ici : https://easypeasyfluent.com/fr/admission/9653419d-9542-4560-ae8e-a997021fd40c
+[2026-09-10 19:19] ALI *: Dites-moi si vous avez des questions ou si vous rencontrez le moindre problème pendant l'inscription ☺️
+[2026-09-10 20:08] ALI *: Bonsoir Ioana, le délai pour les inscriptions es passé, vous avez pu procéder à l'inscription à temps ?

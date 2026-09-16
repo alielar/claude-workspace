@@ -1,0 +1,21 @@
+PHONE: +41765755938
+NAME: Hajar
+CRM STAGE: Meeting done
+PERIOD: 2026-09-14 20:33 -> 2026-09-15 21:36
+MESSAGES: 10 (6 Ali, 4 lead)
+
+[2026-09-14 20:33] LEAD *: Bonsoir Ali,
+Bien reçu, je répondrais ASAP comme nous l’avions convenu.
+[2026-09-14 20:44] ALI *: Super, prenez le temps de tout regarder tranquillement. Je reste dispo ce soir ou demain s'il y a un point du programme ou du contrat de garantie sur lequel vous voulez qu'on revienne 👍
+[2026-09-15 17:04] LEAD *: Bonjour,
+Oui, je me laisse quelques heures avant 20h pour finaliser l’inscription.
+[2026-09-15 17:15] ALI *: Sans soucis, je suis là si vous avez des questions avant de finaliser votre inscription 👍
+[2026-09-15 19:54] LEAD *: Bonsoir,
+Est-ce possible de prolonger le délai de réflexion ?
+Il faut que j’établisse un plan de financement en plus d’une organisation personnelle vue que c’est un engagement à long terme.
+[2026-09-15 20:00] ALI *: Je comprends Hajar, un plan de financement pour un engagement de cette durée, ça mérite de prendre le temps de bien poser les choses
+[2026-09-15 20:00] ALI *: Voulez-vous que je vérifie avec l'administration si on peut prolonger officiellement le délai d'un jour ?
+[2026-09-15 20:25] ALI *: C'est bon Hajar, j'ai pris l'initiative et j'ai pu obtenir le report : votre délai est repoussé jusqu'à demain 20h 👍
+[2026-09-15 21:10] LEAD *: Très bien 
+Merci et désolé pour cette demande exceptionnelle 😊
+[2026-09-15 21:36] ALI: Pas de soucis, je suis là si besoin, et bonne soirée 👍

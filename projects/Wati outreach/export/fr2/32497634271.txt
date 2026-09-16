@@ -1,0 +1,21 @@
+PHONE: +32497634271
+NAME: Océane
+CRM STAGE: Meeting done
+PERIOD: 2026-09-04 15:49 -> 2026-09-04 17:35
+MESSAGES: 5 (2 Ali, 3 lead)
+
+[2026-09-04 15:49] LEAD *: Bonjour, 
+Je pense que vous pouvez clôturer sans moi. 
+C’est mon anniversaire et je ne compte pas regarder à ça maintenant. 
+Merci pour le temps consacré 
+Et bonne soirée
+[2026-09-04 16:11] ALI *: Joyeux anniversaire Océane, profitez-en bien 🎉 
+
+Sachez que si votre place n'est pas confirmée ce soir, elle est réattribuée et l'entrée ne se fait plus que par liste d'attente, actuellement entre 10 et 12 mois sans garantie de date
+
+Vu que c'est votre anniversaire, évènement spécial, voulez-vous que je vérifie avec l'administration si on peut prolonger officiellement le délai d'un jour ?
+[2026-09-04 17:04] LEAD *: Je viens de vous le dire, je n’ai pas le temps de regarder à ça. 
+Ça sera donc sans moi 
+Merci et bonne soirée
+[2026-09-04 17:06] ALI *: Pas de soucis, bon courage pour l'apprentissage de l'anglais 👍
+[2026-09-04 17:35] LEAD *: Merci beaucoup

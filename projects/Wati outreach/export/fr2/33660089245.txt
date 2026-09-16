@@ -1,0 +1,18 @@
+PHONE: +33660089245
+NAME: Rudy
+CRM STAGE: Meeting done
+PERIOD: 2026-09-15 17:13 -> 2026-09-15 20:56
+MESSAGES: 12 (7 Ali, 5 lead)
+
+[2026-09-15 17:13] LEAD: Je vous Donne ma réponse plus tard.
+[2026-09-15 17:17] ALI: Pas de soucis, je suis là si besoin avant la clôture des inscriptions 👍
+[2026-09-15 19:44] LEAD: Bonsoir je vais décliner pour le moment. Le timing n'est pas idéal.
+[2026-09-15 19:58] ALI: Je comprends Rudy, le timing peut vraiment bloquer même quand le reste convient
+[2026-09-15 19:58] ALI: Sachez que s'inscrire ne veut pas dire commencer tout de suite : vous sécurisez votre place maintenant et vous choisissez votre date de démarrage après, même dans plusieurs mois
+[2026-09-15 19:59] ALI: Est-ce que c'est plutôt ça qui coince, ou autre chose de précis ?
+[2026-09-15 20:01] LEAD: Je me sens un peu oppressé avec cette histoire de place qu'il faut sécuriser. Quand toutes les conditions seront réunies je verrai à ce moment là. Et s'il n'y a pas de place, ça sera tant pis.
+[2026-09-15 20:20] ALI: Je comprends que ça puisse sembler oppressant, et je suis désolé si ça vous a donné cette impression. Si on fonctionne comme ça, c'est uniquement une question de capacité : nos groupes sont volontairement petits et nos enseignants en nombre limité, donc on doit prioriser les personnes prêtes à démarrer pour garder cette flexibilité à nos élèves déjà inscrits, et permettre aux personnes vraiment motivées de commencer rapidement plutôt que d'attendre des mois
+[2026-09-15 20:21] ALI: Je comprends aussi que c'est une décision qui mérite réflexion. Voulez-vous que je vérifie avec l'administration si on peut vous laisser jusqu'à demain soir pour vous décider ?
+[2026-09-15 20:27] LEAD: Non ça ne sera pas necessaire. Je reviendrai vers vous au moment voulu. Merci
+[2026-09-15 20:52] ALI: Sans soucis, bon courage à vous Rudy !
+[2026-09-15 20:56] LEAD: Merci

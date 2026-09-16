@@ -1,0 +1,32 @@
+PHONE: +33627239954
+NAME: Aude
+CRM STAGE: Meeting done
+PERIOD: 2026-09-11 20:45 -> 2026-09-14 11:26
+MESSAGES: 16 (11 Ali, 5 lead)
+
+[2026-09-11 20:45] LEAD *: Salut, je viens de voir le mail malheureusement ça ne sera pas possible pour moi. Je dois décliner l’offre. Merci de votre compréhension.
+[2026-09-11 21:01] ALI *: Pas de souci Aude, je comprends. Juste pour savoir, qu'est-ce qui vous fait douter : le timing, le prix, la méthode, autre chose ? 
+
+Ça m'aide à voir si on peut trouver une solution adaptée
+[2026-09-11 21:05] LEAD *: Je ne doute pas simplement financièrement je ne peux pas finalement. Je préfère revenir vers vous lorsque je peux payer tout les cours . Merci de votre compréhension. Et vos explications.
+Bonne soirée.
+[2026-09-11 21:27] ALI *: Je comprends complètement votre situation financière Aude, et avant de vous laisser filer je voudrais vérifier une chose pour vous
+[2026-09-11 21:31] ALI *: Bonne nouvelle Aude, j'ai pu obtenir quelque chose dans votre cas précis : un format plus léger de 96h à 990€, au lieu de 180h à 1800€, qui vous amène progressivement vers le A2, avec les mêmes enseignants et le même accompagnement
+
+Vous pouvez aussi ici régler en plusieurs fois sans frais avec Alma, jusqu’à 10x donc ce qui reviendrait à 99€ par mois du coup
+
+Je vous envoie la nouvelle invitation ?
+[2026-09-12 17:09] LEAD *: Bonjour, malheureusement je ne pourrai pas. Je reviens vers vous dès que je peux. Merci d’avoir essayé de trouver une solution. Bonne journée
+[2026-09-12 19:30] LEAD *: Je vais voir ce que la formation propose comme cours d’anglais et si j’ai besoin d’approfondir je reviens vers vous. Pour la méthode . Financièrement c’est assez compliqué. J’ai besoin de prendre du recul avant d’investir et de m’engager à 100%.
+Vos informations m’ont permis d’y voir plus clair. Je reviendrai vers vous si besoin.
+[2026-09-13 11:57] ALI *: Je comprends Aude, et vous avez raison de vouloir prendre du recul avant de vous engager, c'est justement le côté financier que je veux essayer de débloquer pour vous
+[2026-09-13 11:57] ALI *: Laissez-moi quand même revérifier avec l'administration ce qu'on peut faire dans votre cas précis, d'habitude on ne peut rien faire là-dessus, mais je regarde
+[2026-09-13 12:05] ALI *: De retour! Alors: j'ai pu obtenir deux choses : déjà on vous rouvre une place alors que le délai était passé, et sur le cours de 96h à 990 € vous pouvez démarrer avec un acompte de 96 € seulement, déduit du montant total. Le reste sera à régler une fois que vous démarrez les cours
+[2026-09-13 12:05] ALI *: Et l'inscription ne veut pas dire commencer tout de suite : vous choisissez votre date de démarrage après, même dans plusieurs semaines. Vous gardez donc votre temps de recul, sans perdre la place
+[2026-09-13 12:07] ALI *: Je viens de renvoyer votre invitation, voici le lien aussi directement ici : https://easypeasyfluent.com/fr/admission/2a7e3073-4575-4be6-8cbc-aaf6de895b34
+[2026-09-13 12:07] ALI *: Dites-moi si tout vas bien, et je vous envoie les prochaines étapes 👍
+[2026-09-14 09:40] LEAD *: Bonjour,
+Excusez-moi mais je pense que vous n’avez pas compris. J’ai eu tout les renseignements nécessaires mais je ne pourrai pas  effectuer cette formation. Merci de votre compréhension. 
+Bonne journée.
+[2026-09-14 11:25] ALI *: Bonjour Aude, je comprends bien, et je suis désolé si j'ai pu donner l'impression du contraire
+[2026-09-14 11:26] ALI *: Vous êtes maintenant sur la liste d'attente, merci d'avoir pris le temps de clarifier, et bonne continuation à vous 👍

@@ -1,0 +1,39 @@
+PHONE: +32483655112
+NAME: Mbonzemba
+CRM STAGE: Sale
+PERIOD: 2026-09-08 21:01 -> 2026-09-10 12:17
+MESSAGES: 28 (16 Ali, 12 lead)
+
+[2026-09-08 21:01] LEAD: Oui, je ne pourrais que payer mensuellement. 
+Est-ce possible ?
+[2026-09-08 21:27] ALI: Oui bien sûr, vous pouvez régler en 4 fois via Alma, sans frais. Toutes les options d'échéancier sont disponibles directement sur le lien de paiement, c'est ok pour vous ?
+[2026-09-08 21:32] LEAD: Ok, cela fait 160 euros par mois. Merci beaucoup 🙏
+[2026-09-08 21:48] ALI: En fait sur 4 fois ça revient à 450€/mois (1.800€ ÷ 4), pas 160€. Mais si vous préférez alléger la mensualité, on peut aussi passer sur 10 fois, ce qui ferait 180€/mois. Ça vous convient mieux comme ça ?
+[2026-09-08 22:38] LEAD: Ok, c'est bon.
+[2026-09-08 22:52] ALI: C'est bon Jean Willy ! Je viens de mettre à jour votre lien pour l'option 10 fois. Il vous suffit de rafraîchir la page pour voir le changement
+
+Dites-moi si vous avez la moindre question avant la clôture des inscriptions demain à 20h 👍
+[2026-09-09 17:13] LEAD: Oui, je commence le mois prochain. C'est un peu difficile en septembre.
+[2026-09-09 18:14] ALI: Bien sûr, aucun souci pour démarrer le mois prochain ! L'inscription ne veut pas dire commencer tout de suite : vous sécurisez votre place maintenant, et vous choisissez votre date de démarrage après, même le mois prochain
+[2026-09-09 18:15] ALI: Sachez juste que si votre place n'est pas confirmée ce soir avant 20h, elle est réattribuée et l'entrée ne se fait plus que par liste d'attente, actuellement entre 10 et 12 mois, sans garantie de date
+[2026-09-10 09:02] LEAD: C'est le prix.
+[2026-09-10 11:35] ALI: Je comprends. Sachez que vous pouvez déjà étaler en plusieurs fois sans frais avec Alma, jusqu'à 10 fois si besoin
+[2026-09-10 11:35] ALI: Et si le budget reste trop juste malgré ça, il y a aussi une option intermédiaire qu'on propose à certains étudiants : au lieu du programme complet à 1.800€ jusqu'au B2, un cours de 90h à 990€, même garantie, pour un premier saut de niveau jusqu'au B1. Ça reste aussi payable en plusieurs fois
+[2026-09-10 11:35] ALI: Ça vous semblerait plus gérable comme ça ?
+[2026-09-10 11:37] LEAD: ok, pour moi. Je fais mon budget pour commencer au mois d'Octobre car ce mois de la rentrée, il y avait plusieurs dépenses. prévues. Merci beaucoup et très bonne journée!
+[2026-09-10 11:42] ALI: Parfait Jean Willy, ravi que ça vous convienne mieux ! Petite précision encore : l'inscription ne veut pas dire démarrer tout de suite, donc vous pouvez sécuriser votre place sur le cours 90h/990€ dès maintenant, et choisir octobre comme date de démarrage. Ça vous va comme ça ?
+[2026-09-10 11:44] LEAD: Je veux bien mais je ne peux pas payer pour l'instant. Seulement à la fin du mois septembre.
+[2026-09-10 11:51] ALI: Je vois, laissez moi voir avec l'administration ce que je peux faire et je reviens vers vous
+[2026-09-10 11:51] LEAD: ok, merci
+[2026-09-10 11:56] ALI: Bonne nouvelle Jean Willy, j'ai pu échanger avec l'administration sur votre cas. Comme on a un nombre de places limité et une liste d'attente qui tourne actuellement entre 10 et 12 mois sans garantie de date de démarrage, la seule façon de vous garder votre place jusqu'à octobre, c'est de la sécuriser dès maintenant, donc :
+[2026-09-10 11:56] ALI: On peut vous inscrire avec un acompte de 96€ seulement, déduit du montant total. Le reste sera à régler quand vous démarrez en octobre. Ça vous permettrait de garder votre place sans avancer une somme considérable maintenant
+[2026-09-10 11:57] LEAD: ok, envoyer moi un lien pour l'opération
+[2026-09-10 11:59] ALI: Voici le lien pour l'inscription : https://easypeasyfluent.com/fr/admission/38812df5-5c0c-437d-b50b-252e78a4a20c
+
+N'hésitez pas si vous avez des questions 👍
+[2026-09-10 11:59] LEAD: merci
+[2026-09-10 12:03] LEAD: C'est fait
+[2026-09-10 12:05] ALI: Bienvenu parmi nous Jean Willy, votre place est sécurisée ☺️
+[2026-09-10 12:07] ALI: Vous voudriez toujours suivre le cours qui vise B2 de 180h pour 1800e vu que maintenant vous commencerez en Octobre ou vous voulez le cours visant B1 pour 90h et 990e ? Juste pour confirmer ?
+[2026-09-10 12:11] LEAD: le cours qui vise B2 de 180h pour 1800e
+[2026-09-10 12:17] ALI: Parfait c'est noté 👍

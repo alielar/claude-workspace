@@ -79,12 +79,14 @@ if (existsSync('logs/sent.jsonl')) {
   }
 }
 
-// ── replies captured by the webhook (covers the telemarketing number) ────────
+// ── replies captured by the webhook (telemarketing number only) ──────────────
+// Skipped for leads who are not on that channel: it is the slowest call here.
 let hookReplies = [];
-if (existsSync('.wati-webhook-secret')) {
+if (param('whatsapp_33671283778') && existsSync('.wati-webhook-secret')) {
   try {
     const key = readFileSync('.wati-webhook-secret', 'utf8').trim();
-    const d = await (await fetch(`https://life-control-center-eta.vercel.app/api/wati?key=${key}&limit=5000`)).json();
+    const since = new Date(Date.now() - 30 * 864e5).toISOString();
+    const d = await (await fetch(`https://life-control-center-eta.vercel.app/api/wati?key=${key}&limit=5000&since=${encodeURIComponent(since)}`)).json();
     hookReplies = (d.events || []).map((e) => e.event).filter((b) => b && b.eventType === 'message' && b.owner === false && String(b.waId) === phone);
   } catch {}
 }
@@ -115,8 +117,12 @@ if (!msgs.length) {
   console.log('\n  No readable conversation on the France Sales number.');
   console.log('  (If they are a telemarketing-number lead, only the webhook replies above are visible.)\n');
 } else {
-  console.log(`\n  Conversation — ${msgs.length} messages, ${fmt(msgs[0].at)} → ${fmt(msgs[msgs.length - 1].at)} (Madrid time)\n`);
-  for (const m of msgs) {
+  const FULL = process.argv.includes('--full');
+  const shown = FULL ? msgs : msgs.slice(-40);
+  console.log(`\n  Conversation — ${msgs.length} messages, ${fmt(msgs[0].at)} → ${fmt(msgs[msgs.length - 1].at)} (Madrid time)`);
+  if (shown.length < msgs.length) console.log(`  (showing the last ${shown.length}; add --full for all)`);
+  console.log('');
+  for (const m of shown) {
     const who = m.who === 'LEAD' ? 'LEAD' : m.tpl ? 'US (auto)' : m.op === 'Admin Account' ? 'ALI ' : `${(m.op || 'US').slice(0, 14)}`;
     console.log(`  [${fmt(m.at)}] ${who}: ${String(m.text).replace(/\n/g, '\n' + ' '.repeat(28))}`);
   }

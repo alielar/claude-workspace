@@ -1,0 +1,11 @@
+PHONE: +33616876543
+NAME: Géraldine
+CRM STAGE: To be converted
+PERIOD: 2026-09-11 11:37 -> 2026-09-11 12:27
+MESSAGES: 4 (2 Ali, 2 lead)
+
+[2026-09-11 11:37] LEAD *: Bonjour,
+Je souhaite connaître vos tarifs,s' il vous plaît.
+[2026-09-11 11:53] ALI *: Nous avons un process de sélection car nous avons aussi une garantie de résultat qui représente un risque financier pour nous, nous devons nous assurer de travailler avec des personnes motivées et engagées. Ces personnes sont prioritaires. D'où l'entretien 🙂
+[2026-09-11 11:54] ALI *: Dîtes moi si vous êtes toujours intéressée pour bloquer un créneau, sinon, je vous souhaite tout le meilleur
+[2026-09-11 12:27] LEAD *: Non merci

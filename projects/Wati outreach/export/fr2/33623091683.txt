@@ -1,0 +1,16 @@
+PHONE: +33623091683
+NAME: Rahma
+CRM STAGE: Meeting done
+PERIOD: 2026-09-10 17:10 -> 2026-09-10 18:16
+MESSAGES: 7 (5 Ali, 2 lead)
+
+[2026-09-10 17:10] LEAD: Bonjour,
+Pour le moment je ne peux pas faire l'inscription. 
+Je garde vos coordonnées probablement pour plus tard dans le temps.
+Cordialement
+[2026-09-10 17:43] ALI: Bonjour Rahma, je comprends
+[2026-09-10 17:43] ALI: J'ai vraiment aimé votre profil et je tiens à ce qu'on puisse vous accompagner jusqu'à votre objectif. Est-ce qu'il y a quelque chose qui vous retient en particulier, comme le prix, le timing ou la méthode ?
+[2026-09-10 17:53] LEAD: Oui le prix
+[2026-09-10 18:11] ALI: Sachez que vous pouvez déjà étaler en plusieurs fois sans frais avec Alma, jusqu'à 10 fois si besoin, ce qui reviendrait à 180€/mois
+[2026-09-10 18:11] ALI: Mais laissez moi voir avec l'administration ce que je peux faire pour vous
+[2026-09-10 18:16] ALI: Bonne nouvelle Rahma ! L'administration me permet de vous proposer un cours intermédiaire de 96h, pour une progression jusqu'au niveau A2 au lieu de B1, à 990€ au lieu de 1800€, aussi payable en plusieurs fois, qu'en pensez-vous ?

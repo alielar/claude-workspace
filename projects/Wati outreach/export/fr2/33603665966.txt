@@ -1,0 +1,14 @@
+PHONE: +33603665966
+NAME: Lyli
+CRM STAGE: Meeting done
+PERIOD: 2026-09-15 11:16 -> 2026-09-15 18:02
+MESSAGES: 6 (4 Ali, 2 lead)
+
+[2026-09-15 11:16] LEAD *: Bonjour Ali 
+J’accuse réception des résultats et vous en remercie. Je regarde tout ça cet après midi et je vous redonne une réponse
+Avec mes remerciements
+[2026-09-15 17:41] LEAD *: Bonsoir après réflexion je ne donne pas suite dans l’immédiat je reviendrai probablement vers vous en début d’année prochaine cordialement
+[2026-09-15 17:57] ALI *: Bonsoir Lyli, sans confirmation ce soir, votre place est réattribuée et l'entrée ne se fait plus que par liste d'attente, actuellement entre 10 et 12 mois, sans garantie de date pour repartir malheureusement
+[2026-09-15 17:57] ALI *: Plutôt que de vous laisser sur cette liste, laissez-moi vérifier avec l'administration si on peut vous sécuriser une vraie place pour un mois qui vous arrange mieux, d'habitude ce n'est pas possible, mais je regarde
+[2026-09-15 18:02] ALI *: Bonne nouvelle, j'ai pu obtenir quelque chose pour vous : avec un acompte de 196 €, déduit du montant total de votre formation, on peut sécuriser votre place dès maintenant. Le reste ne sera à régler qu'au moment où vous démarrez vos cours
+[2026-09-15 18:02] ALI *: Quel mois vous conviendrait le mieux ?

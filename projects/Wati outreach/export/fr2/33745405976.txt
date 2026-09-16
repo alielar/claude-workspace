@@ -1,0 +1,12 @@
+PHONE: +33745405976
+NAME: Saidou
+CRM STAGE: Meeting done
+PERIOD: 2026-09-03 20:39 -> 2026-09-04 16:09
+MESSAGES: 4 (2 Ali, 2 lead)
+
+[2026-09-03 20:39] LEAD: Salut Ali
+Oui j’ai reçu le message
+[2026-09-04 14:09] LEAD *: Salut Ali ça tombe bien
+ Pouvez vous m’expliquer un petit peu  le coût de la formation
+[2026-09-04 16:08] ALI *: Salut Saidou from Côte d'Ivoire :) ! Comme vu ensemble lors de notre échange, c'est 1.800€ pour les 180h avec la garantie satisfait ou remboursé. Vous pouvez régler en une fois ou en plusieurs fois, jusqu'à 4 fois sans frais avec Alma
+[2026-09-04 16:09] ALI *: Chez nous, ça revient à environ 10€/leçon en petit groupe avec des enseignants natifs certifiés, des alternatives comparables tournent autour de 18-20€/h. La différence, c'est qu'on met l'essentiel du budget dans les enseignants plutôt que dans un local ou du marketing, ce qui nous permet de garder ce tarif sans rogner sur la qualité

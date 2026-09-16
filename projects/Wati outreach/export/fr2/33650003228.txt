@@ -1,0 +1,29 @@
+PHONE: +33650003228
+NAME: Danielle
+CRM STAGE: Meeting done
+PERIOD: 2026-09-09 22:07 -> 2026-09-11 18:02
+MESSAGES: 19 (10 Ali, 9 lead)
+
+[2026-09-09 22:07] LEAD *: Je n’ai pas reçu
+[2026-09-09 22:16] ALI *: Est-ce bien valere.dan@libero.it l'adresse que vous utilisez ? Si ce n'est pas la bonne, dites-le moi, je corrige et je vous les renvoie tout de suite
+[2026-09-09 22:17] LEAD *: Oui
+[2026-09-09 22:17] ALI *: Vérifiez aussi vos spams/courriers indésirables, vous pouvez taper "EasyPeasy – Résultat d'Admission" dans la barre de recherche de votre boîte mail, ça devrait le faire remonter 👍
+[2026-09-09 22:17] LEAD *: Ok
+[2026-09-09 22:18] ALI *: Tenez moi au courant 👍
+[2026-09-09 22:18] LEAD *: Il n’y à rien
+[2026-09-09 22:18] LEAD *: renvoyerz le moi svp
+[2026-09-09 22:19] ALI *: Je viens de renvoyer les résultats, pouvez vous rafraîchir votre boîte mail et vérifier ?
+[2026-09-09 22:20] LEAD *: J’ai bien reçu 
+Merci
+[2026-09-09 22:21] ALI *: Super, et félicitations en passant, n'hésitez surtout pas si vous avez des questions ☺️
+[2026-09-09 22:21] LEAD *: Ok
+Merci
+[2026-09-10 14:25] LEAD *: Bonjour
+Malheureusement je pourrai pas payer le premier versement ce mois-ci, ni le mois d’après mais sinon je suis intéressé !
+Est-ce que c’est possible que je garde les documents et que je m’inscrive par exemple en janvier ?
+[2026-09-10 14:50] ALI *: Je comprends votre situation, mais sachez que si les inscriptions se clôturent ce soir et sans confirmation de votre part, votre place est réattribuée et l'entrée ne se fait plus que par liste d'attente qui actuellement entre 10 et 12 mois, sans garantie de date de démarrage
+[2026-09-10 14:50] ALI *: Laissez-moi voir avec l'administration ce qu'on peut faire pour vous, vu que le premier versement est compliqué ce mois-ci comme le mois prochain
+[2026-09-10 14:56] ALI *: Bonne nouvelle Danielle! L'administration a accepté de faire un acompte de 196€ pour bloquer votre place. Cet acompte est déduit du montant total plus tard, et vous pourrez régler le reste jusqu'à janvier, au moment où vous voudrez démarrer
+[2026-09-10 14:57] ALI *: J'ai aussi mis à jour votre lien d'invitation avec cette nouvelle option, et vous le trouverez aussi juste ici si vous voulez avancer directement : https://easypeasyfluent.com/fr/admission/ad98ae1a-a859-4ea9-897c-fc9163328fae
+[2026-09-10 14:57] ALI *: Dites-moi une fois l'inscription faite, tout est clair pour vous ? 👍
+[2026-09-11 18:02] LEAD *: J’accepte la liste d’attente
