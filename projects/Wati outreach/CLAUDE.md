@@ -10,8 +10,17 @@ Ali is mid-conversation with a lead. Target: **a usable answer in under a minute
 The default path is three steps and nothing else:
 
 1. Run `node --env-file=.env lead.mjs <phone>` (takes ~2 seconds).
-2. Read **`playbook/00-QUICK.md`** — one page, covers ~90 % of cases.
+2. Read **`playbook/00-QUICK.md`** — one page, covers ~90 % of cases. It now carries the
+   condensed momentum/tone rules from `05-PRINCIPES-conversation.md` (always end on a
+   question when the lead is still deciding, downsell on any credible friction signal —
+   not just "trop cher", deadlines/extensions framed through administration, never
+   inflated reassurance).
 3. Answer.
+
+For deadline-extension phrasing, the exact downsell wording for the 90h/96h split, payment-question
+structure, or the deadline-day follow-up rhythm (14h/17h30/19h30), check
+`playbook/05-PRINCIPES-conversation.md` — it's short, read it whenever one of those situations
+comes up, not just on request.
 
 Do **not** open `02-PLAYBOOK-closing-france.md` unless the case fits none of the four
 situations on the quick card, or Ali asks for the reasoning behind a rule. Do **not**
@@ -51,6 +60,11 @@ the full pending scan.
 ## Reference files
 
 - `playbook/00-QUICK.md` — the card. Your default.
+- `playbook/05-PRINCIPES-conversation.md` — tone, momentum (always end on a question while
+  the lead is deciding), the broadened downsell trigger, deadline/extension framing via
+  administration, buying-intent handling, the deadline-day follow-up rhythm, do-not-contact
+  handling. Applies to nearly every message, not just edge cases — check it whenever tone,
+  timing, or a deadline/extension is in play, same tier as the quick card.
 - `playbook/04-CAS-APPRIS.md` — cases Ali logged. **Overrides the card** where they differ.
 - `playbook/02-PLAYBOOK-closing-france.md` — the full logic. Unusual cases only.
 - `playbook/01-NUMBERS-PRODUCT-france.md` — full catalogue, prices, guarantee conditions,

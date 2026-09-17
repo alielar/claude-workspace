@@ -35,6 +35,24 @@ Ne jamais ouvrir sur la sanction. L'accusé de réception vient toujours en prem
 - Hésitation sans raison : « Qu'est-ce qui vous fait hésiter exactement : le prix, le timing, la méthode, ou autre chose ? »
 - Avant toute concession : « Indépendamment du prix, seriez-vous intéressé(e) et motivé(e) ? »
 
+## Momentum — chaque message qui laisse le lead en train de décider
+
+Termine par une question directe ou une action précise (« Vous pouvez finaliser
+maintenant ? », « Ça répond à votre question ? », « Vous comptez vous inscrire d'ici
+quand ? ») — jamais sur une porte passive (« n'hésitez pas », « dites-moi une fois que
+c'est fait »), qui laisse le lead lire et reporter indéfiniment. Exception : veille de
+deadline sans urgence à créer, une clôture chaleureuse sans relance est ok.
+
+Downsell : ne pas attendre la phrase exacte « trop cher » — dès qu'il y a une friction
+crédible (question sur les fois, « je dois réfléchir », hésitation générale), envisager
+de descendre à 90h/990€ directement. Ne jamais downseller un lead prêt et enthousiaste.
+Détail complet : `05-PRINCIPES-conversation.md` §3.
+
+Deadline et extensions : jamais « je t'ai étendu ta deadline » — toujours via
+l'administration (« je vérifie ce qui est possible avec l'administration », « ils ont
+réactivé le lien »). Jamais de réassurance gonflée (« vraiment », « c'est du concret »,
+« croyez-moi ») — rester factuel. Détail complet : `05-PRINCIPES-conversation.md` §8-9, 12.
+
 ## Tempo
 
 Un blocage à la fois · **un seul message de pression par jour** · la concession se mérite (on annonce

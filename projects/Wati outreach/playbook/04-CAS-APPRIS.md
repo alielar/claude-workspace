@@ -80,3 +80,38 @@ le projet une fois par semaine.
   - *Message 2 (~5 min après)* : « Bonne nouvelle » + le détail concret — acompte de 196 € qui bloque la place et se déduit du montant total, solde en 10 fois sans frais — puis la question de clôture (« ça vous conviendrait ? »).
 **Pourquoi :** applique la règle de tempo de la quick card (« on annonce qu'on vérifie, on laisse passer un vrai moment, on revient avec Bonne nouvelle ») à ce blocage précis (retard de démarrage / trésorerie) — la sanction (liste d'attente) est posée dès le 1er message, mais la solution chiffrée (acompte 196 €) est retenue pour le 2e message afin qu'elle soit perçue comme une concession gagnée, pas donnée d'emblée. Confirme aussi que les montants standards de la quick card (1 800 €/180h, 10x = 180 €/mois, acompte 196 €) s'appliquent tels quels à cette offre accelerator anglais IELTS B2 6h/8m, pas seulement au cursus français.
 **Résultat :** à suivre.
+
+## 2026-09-17 — Les deux formats à 990 € ne sont pas le même produit : 90h AVEC garantie vs 96h SANS garantie
+
+**Correction d'Ali :** le palier "990 € / 90-96h" de la quick card recouvre en fait deux offres différentes, à ne pas confondre — le nombre d'heures dit lequel proposer :
+
+- **90h à 990 €, AVEC garantie de niveau** — la même garantie que le programme complet, juste sur un format plus court. À proposer en premier, comme alternative directe au 180h.
+  Script (à traduire tel quel, à adapter au prénom/vouvoiement) :
+  > « Un format plus petit vous conviendrait peut-être mieux pour démarrer : 90h au lieu de 180h, à 990 € au lieu de 1 800 €, toujours payable en plusieurs fois. La garantie de niveau reste incluse, et vous pourriez toujours continuer votre programme par la suite. Qu'en pensez-vous ? »
+
+- **96h à 990 €, SANS garantie, "progression générale"** — pas de garantie de réussite, pas d'objectif de niveau précis (donc ne jamais dire "objectif A2" ou autre niveau dessus, ce n'est pas ce format). À proposer en second, si le 90h-avec-garantie ne suffit pas ou ne convient pas.
+  Script :
+  > « Je comprends ; sinon, il existe un format pour progresser en anglais de façon générale, sans garantie de réussite, sur 96h pour 990 €, payable en plusieurs fois. Est-ce que ce serait mieux adapté pour démarrer ? Qu'en pensez-vous ? »
+
+**Pourquoi :** avant cette clarification, "990 €/90-96h" était traité comme un seul et même palier — risque de vendre par erreur une garantie qui n'existe pas sur le format 96h, ou d'omettre la garantie qui existe bien sur le 90h. Les deux montants et le paiement en plusieurs fois sont identiques, seule la présence de la garantie (et donc le nombre d'heures exact, 90 vs 96) change.
+**Comment appliquer :** dans tout downsell vers ce palier, préciser d'abord si le lead a besoin/veut garder la garantie de niveau — si oui → 90h ; si la garantie n'est pas le sujet ou qu'on descend encore d'un cran → 96h sans garantie, présenté comme "progression générale", jamais avec un niveau cible inventé.
+**Résultat :** règle à appliquer à tous les cas futurs, pas seulement un lead précis.
+
+## 2026-09-17 — Toujours relire le fil complet juste avant de répondre, pas une capture prise un peu plus tôt
+
+**Situation :** Lilia (+33783255426), objection prix. Son message initial contenait en fait deux bulles : « Ce qui me retient est le prix » PUIS, une minute après, « Je ne pourrai pas payer 1800€ pour l'instant » — cette deuxième bulle précisait déjà que c'est le total qui bloque, pas la mensualité. Le message envoyé (mensualité 450€/mois actuelle + proposition 10x + question mensuel-ou-total) a été rédigé sans avoir cette deuxième bulle sous les yeux, donc en repose une question à laquelle elle avait déjà répondu.
+**Pourquoi :** un lead peut envoyer plusieurs bulles coup sur coup ; un `lead.mjs` lancé entre les deux ne capture que ce qui existe à l'instant T. Avant de rédiger une réponse, vérifier qu'aucune bulle suivante n'est arrivée entre-temps (relancer `lead.mjs` juste avant d'envoyer si plusieurs minutes se sont écoulées depuis la dernière lecture).
+**Résultat :** confirmé que c'est bien le total qui bloque → downsell direct au format 90h (avec garantie), sans reposer la question mensuel/total.
+
+## 2026-09-17 — Lilia confirme que c'est le total de 1 800 € qui bloque → downsell direct au 90h
+
+**Situation :** Lilia (+33783255426), programme ENG 180h IELTS B2 (7h/semaine, 7 mois), niveau de départ A2. Elle a précisé que c'est le montant total de 1 800 € qui ne passe pas, indépendamment de tout étalement.
+**Ce qu'on fait :** appliquer O1 à la lettre — « sur 180h, au moindre doute sur le prix → downsell à 90h, toujours » — présenté comme un ajustement d'objectif personnel, garantie de niveau conservée (format 90h/990€ AVEC garantie, cf. cas du 2026-09-17 sur les deux formats à 990€), plusieurs fois rementionnées après (99 €/mois en 10x).
+**Résultat :** à suivre.
+
+## 2026-09-17 — Le 196 € d'acompte existe bien en France : mécanisme exceptionnel pour bloquer une place sans vérification téléphone
+
+**Situation :** François (+33757874883), déjà d'accord sur le 180h/1 800 € en 4x, bloqué à l'étranger sans accès à son numéro français jusqu'à lundi. Stripe (seule option disponible depuis l'étranger) n'accepte qu'un paiement unique et exige la vérification du téléphone, ce qui ne collait pas avec son plan en 4 fois.
+**Ce qu'Ali a instruit :** lui proposer un acompte de 196 €, déduit du montant total, qui ne nécessite pas de vérification de numéro de téléphone — présenté comme une exception accordée vu sa situation. Il règle le solde de sa première mensualité lundi ou mardi à son retour en France.
+**Pourquoi :** tranche (au moins pour ce cas précis) l'ambiguïté notée le 2026-09-16 entre `01-NUMBERS-PRODUCT-france.md` (qui affirme qu'il n'existe pas de palier d'acompte en France, le 196 € n'étant que le frais d'onboarding) et la pratique déjà observée sur Da et Boubou. Ali confirme que le mécanisme acompte 196 €/solde ensuite est bien utilisable en France, présenté comme une exception liée à la situation du lead (ici : accès téléphone bloqué), pas comme un article de catalogue standard.
+**Résultat :** à suivre.

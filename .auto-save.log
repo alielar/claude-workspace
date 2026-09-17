@@ -12274,3 +12274,58 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 projects/Wati outreach/scripts-contacts-index.mjs
 To github.com:alielar/claude-workspace.git
    970c377..9208cde  main -> main
+[main ee17d69] auto-save: 2026-09-16 23:47
+ 57 files changed, 3127 insertions(+), 80 deletions(-)
+ create mode 100644 projects/Wati outreach/build-doc.mjs
+ create mode 100644 projects/Wati outreach/export/closing-doc.html
+ create mode 100644 projects/Wati outreach/export/en-extra-1.json
+ create mode 100644 projects/Wati outreach/export/en-extra-2.json
+ create mode 100644 projects/Wati outreach/export/en-extra-3.json
+ create mode 100644 projects/Wati outreach/export/fr2/32456870712.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32472634253.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32476868251.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32483655112.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32486064410.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32488644005.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32492160654.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32495924397.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32497634271.txt
+ create mode 100644 projects/Wati outreach/export/fr2/32499892670.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33603665966.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33607376723.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33611950942.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33616876543.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33618277801.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33620892946.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33623091683.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33627239954.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33627933631.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33632839332.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33650003228.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33650454303.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33650470136.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33659491672.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33660089245.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33663106062.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33664726991.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33665987064.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33668484591.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33669105187.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33695491676.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33699656776.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33744150747.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33745405976.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33750409722.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33757874883.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33758206742.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33761810826.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33782300992.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33783023124.txt
+ create mode 100644 projects/Wati outreach/export/fr2/33788674739.txt
+ create mode 100644 projects/Wati outreach/export/fr2/41765755938.txt
+ create mode 100644 projects/Wati outreach/export/fr2/41779989004.txt
+ create mode 100644 projects/Wati outreach/playbook/00-QUICK.md
+ create mode 100644 projects/Wati outreach/playbook/01-NUMBERS-PRODUCT-france.md
+ create mode 100644 projects/Wati outreach/playbook/03-OBJECTIONS-france.md
+To github.com:alielar/claude-workspace.git
+   8fe0478..ee17d69  main -> main
