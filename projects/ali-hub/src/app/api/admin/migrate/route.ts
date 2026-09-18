@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server";
 import { HEALTH_DDL } from "@/lib/health/server";
 import { VAULT_DDL } from "@/lib/vault/server";
+import { BIRTHDAY_DDL } from "@/lib/birthdays/server";
 import { DEDUPE_ROUTINE_ROWS } from "@/app/api/checklist/route";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -427,6 +428,9 @@ export async function POST() {
       mastery_status TEXT NOT NULL DEFAULT 'new',
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
+
+    // ── Birthdays & important dates (2026-09-19) · same DDL as src/lib/birthdays/server.ts
+    ...BIRTHDAY_DDL,
   ];
 
   const results: string[] = [];

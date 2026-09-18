@@ -383,6 +383,17 @@ export default function TodoPage() {
               <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
             </div>
           </Link>
+          {/* Birthdays · names and dates worth remembering, with a push a few days ahead (2026-09-19) */}
+          <Link href="/birthdays" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+            <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 6v3M8 6v3M16 6v3" /><path d="M4 21v-7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7" /><path d="M4 21h16" /><path d="M4 15c1 1 2 1 3 0s2-1 3 0 2 1 3 0 2-1 3 0 2 1 3 0" /></svg>
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Birthdays</span>
+                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Names and dates worth remembering · reminds you ahead</span>
+              </span>
+              <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
+            </div>
+          </Link>
           {inArea.length > 3 && (
             <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
           )}

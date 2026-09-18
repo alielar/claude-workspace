@@ -43,6 +43,8 @@ import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import { PodcastCard } from "@/components/PodcastCard";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
+import { useBirthdays } from "@/lib/birthdays/useBirthdays";
+import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
 import { parseMorningPlan, computeMorning } from "@/lib/morning/plan";
 import { useOverview } from "@/lib/train/useTrain";
 import { addDays, fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
@@ -64,6 +66,29 @@ function HighlightSuggestion() {
       </span>
       <span aria-hidden style={{ width: 34, height: 34, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 14, paddingLeft: 2 }}>▶</span>
     </a>
+  );
+}
+
+// ─── Birthday reminder (Docs → Birthdays keeps the rest) ─────────────────────
+// Quiet nudge, near the top since it's usually actionable (get a gift, say
+// happy birthday) — unlike the passive highlight at the bottom. Disappears once
+// the nearest one is outside its own reminder window (2026-09-19).
+
+function BirthdayCard({ today }: { today: string }) {
+  const { data } = useBirthdays();
+  const upcoming = sortByUpcoming((data?.birthdays ?? []).filter((b) => dueSoon(b, today)), today);
+  const b = upcoming[0];
+  if (!b) return null;
+  const days = daysUntil(b, today);
+  const age = turningAge(b, today);
+  return (
+    <Link href="/birthdays" className="cc-card" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: "12px 16px", textDecoration: "none", color: "inherit" }}>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 13, color: "var(--ink-3)", marginBottom: 2 }}>Birthday{upcoming.length > 1 ? ` · ${upcoming.length - 1} more coming up` : ""}</span>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{b.name}{age !== null ? ` turns ${age}` : ""}</span>
+      </span>
+      <span style={{ fontSize: 14, color: "var(--violet)", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtDaysUntil(days)}</span>
+    </Link>
   );
 }
 
@@ -476,6 +501,8 @@ export default function TodayPage() {
           {loading && !data ? "…" : `${doneCount} / ${total} routine · ${pct}%`}
         </div>
       </div>
+
+      <BirthdayCard today={today} />
 
       {renderSpine()}
 

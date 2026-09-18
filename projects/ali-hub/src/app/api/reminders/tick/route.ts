@@ -2,11 +2,13 @@ import { NextResponse, after, type NextRequest } from "next/server";
 import { ensureTodaysPodcast, todaysEpisode } from "@/lib/podcast/generate";
 import { pollHighlights } from "@/lib/news/highlights";
 import { db } from "@/db";
-import { todos, userSettings } from "@/db/schema";
+import { birthdays, todos, userSettings } from "@/db/schema";
 import { and, eq, inArray, isNull, lte } from "drizzle-orm";
 import { getUserId } from "@/lib/user";
 import { checklistToday } from "@/lib/checklist/day";
 import { sendToUser } from "@/lib/push/server";
+import { ensureBirthdayTables } from "@/lib/birthdays/server";
+import { daysUntil, fmtDaysUntil, nextOccurrence, turningAge } from "@/lib/birthdays/types";
 
 /**
  * GET /api/reminders/tick?key=APP_KEY · "nag until done" (spec §7c item 3).
@@ -75,6 +77,25 @@ export async function GET(req: NextRequest) {
       body: titles, tag: "vault", url: "/todo",
     });
     await db.update(todos).set({ wakeDate: null }).where(inArray(todos.id, waking.map((t) => t.id)));
+  }
+
+  // Birthdays: one heads-up push per person, once per year, when the date enters its
+  // own reminder window (default 3 days ahead, editable per person) · never repeats
+  // for that occurrence (notifiedYear), never nags.
+  await ensureBirthdayTables().catch(() => {});
+  const bdayRows = await db.select().from(birthdays).where(and(eq(birthdays.userId, userId), eq(birthdays.deleted, false))).catch(() => []);
+  for (const b of bdayRows) {
+    const occYear = Number(nextOccurrence(b, today).slice(0, 4));
+    if (b.notifiedYear === occYear) continue;
+    const days = daysUntil(b, today);
+    if (days > b.remindDaysBefore) continue;
+    const age = turningAge(b, today);
+    await sendToUser(userId, {
+      title: `${b.name}'s birthday ${fmtDaysUntil(days).toLowerCase()}`,
+      body: age !== null ? `Turns ${age}` : "Don't forget to reach out.",
+      tag: `birthday-${b.clientId}-${occYear}`, url: "/birthdays",
+    });
+    await db.update(birthdays).set({ notifiedYear: occYear }).where(eq(birthdays.id, b.id));
   }
 
   const rows = await db.select().from(todos).where(and(

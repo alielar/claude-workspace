@@ -63,14 +63,28 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
   const fetcherRef = useRef(fetcher);
   useEffect(() => { fetcherRef.current = fetcher; }, [fetcher]);
 
+  // Guards a race that made a tick "come back" and need a second tap: a background
+  // refresh started BEFORE an optimistic setData (e.g. the 45s interval, or a focus
+  // refresh) can resolve AFTER it with server data that predates the edit — a GET that
+  // raced the PUT. Applying that response would silently revert the optimistic change.
+  // If a local edit landed after this refresh began, its answer is stale · skip it and
+  // let the next refresh (the outbox-flush one right after the write lands, or the next
+  // interval tick) pick up the truth.
+  const lastEditRef = useRef(0);
+
   const refresh = useCallback(async () => {
     if (!isOnline()) {
       setState((s) => ({ ...s, refreshing: false, stale: true, loading: false }));
       return;
     }
+    const startedAt = Date.now();
     setState((s) => ({ ...s, refreshing: true }));
     try {
       const fresh = await fetcherRef.current();
+      if (lastEditRef.current > startedAt) {
+        setState((s) => ({ ...s, refreshing: false, loading: false }));
+        return;
+      }
       if (fresh !== null && fresh !== undefined) {
         writeCache(key, fresh);
         setState({ data: fresh, savedAt: Date.now(), loading: false, refreshing: false, stale: false });
@@ -119,6 +133,7 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
   }, [refresh]);
 
   const setData = useCallback((updater: T | ((prev: T | null) => T)) => {
+    lastEditRef.current = Date.now();
     setState((s) => {
       const next = typeof updater === "function" ? (updater as (p: T | null) => T)(s.data) : updater;
       writeCache(key, next);

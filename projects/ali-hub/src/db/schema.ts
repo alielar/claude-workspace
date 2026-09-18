@@ -171,6 +171,32 @@ export const todos = sqliteTable("todos", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 });
 
+// ─── Birthdays & important dates (reached from To-do → Docs → Birthdays) ──────
+
+/**
+ * One row per person. `clientId` makes offline replays idempotent, same scheme as
+ * `todos`. `year` is optional (only used to show the age they're turning); `notifiedYear`
+ * is set by the reminders tick once the one-time heads-up push has gone out for that
+ * year's occurrence, so it never repeats.
+ */
+export const birthdays = sqliteTable("birthdays", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: text("client_id").notNull().unique(),
+  name: text("name").notNull(),
+  month: integer("month").notNull(),          // 1-12
+  day: integer("day").notNull(),               // 1-31
+  year: integer("year"),                        // birth year, optional
+  remindDaysBefore: integer("remind_days_before").notNull().default(3),
+  notes: text("notes"),                         // gift ideas etc, optional
+  notifiedYear: integer("notified_year"),       // last calendar year the push went out
+  deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 // ─── Calendar (Google iCal feeds → tickable work blocks on Today) ─────────────
 
 /** One tick = "I was productive in this block". Unique per user+day+block. */
