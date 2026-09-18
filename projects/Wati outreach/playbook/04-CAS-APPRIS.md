@@ -89,6 +89,16 @@ le projet une fois par semaine.
   Script (à traduire tel quel, à adapter au prénom/vouvoiement) :
   > « Un format plus petit vous conviendrait peut-être mieux pour démarrer : 90h au lieu de 180h, à 990 € au lieu de 1 800 €, toujours payable en plusieurs fois. La garantie de niveau reste incluse, et vous pourriez toujours continuer votre programme par la suite. Qu'en pensez-vous ? »
 
+  **Mise à jour du 2026-09-18 (Ali, cas Dany +32470923572) :** toujours nommer le niveau
+  cible explicitement dans ce script, pas seulement "la garantie de niveau" en
+  abstrait. Le niveau est une **variable** — celui associé au format 90h POUR ce lead
+  précis (lu sur son produit/programme d'origine, jamais inventé ni copié d'un autre
+  cas). Formulation type :
+  > « On a aussi un format plus léger : 90h à 990 € au lieu de 180h à 1 800 €, toujours
+  > avec la garantie de niveau, soit 99 €/mois en 10 fois plutôt que [mensualité
+  > actuelle]/mois, en visant le niveau [X] cette fois-ci et avec la même garantie de
+  > résultat. »
+
 - **96h à 990 €, SANS garantie, "progression générale"** — pas de garantie de réussite, pas d'objectif de niveau précis (donc ne jamais dire "objectif A2" ou autre niveau dessus, ce n'est pas ce format). À proposer en second, si le 90h-avec-garantie ne suffit pas ou ne convient pas.
   Script :
   > « Je comprends ; sinon, il existe un format pour progresser en anglais de façon générale, sans garantie de réussite, sur 96h pour 990 €, payable en plusieurs fois. Est-ce que ce serait mieux adapté pour démarrer ? Qu'en pensez-vous ? »
@@ -107,6 +117,12 @@ le projet une fois par semaine.
 
 **Situation :** Lilia (+33783255426), programme ENG 180h IELTS B2 (7h/semaine, 7 mois), niveau de départ A2. Elle a précisé que c'est le montant total de 1 800 € qui ne passe pas, indépendamment de tout étalement.
 **Ce qu'on fait :** appliquer O1 à la lettre — « sur 180h, au moindre doute sur le prix → downsell à 90h, toujours » — présenté comme un ajustement d'objectif personnel, garantie de niveau conservée (format 90h/990€ AVEC garantie, cf. cas du 2026-09-17 sur les deux formats à 990€), plusieurs fois rementionnées après (99 €/mois en 10x).
+**Résultat :** à suivre.
+
+## 2026-09-18 — L'acompte par défaut est 196 €, pas 96 € : 96 € est réservé à la deuxième concession
+
+**Correction :** sur le cas Carole (+33603246109, palier 990€/90h), j'avais proposé 96 € comme première offre d'acompte, par analogie avec le cas Loman (990€/90h) du 10/09 qui utilisait aussi 96 €. Ali a corrigé : l'ordre standard de la quick card ("Acompte 196 €, puis 96 € en seconde concession — jamais l'inverse") s'applique **quel que soit le palier de prix** — 196 € est toujours la première offre, 96 € n'intervient qu'en deuxième concession si 196 € coince encore. Le cas Loman n'est pas la règle à généraliser.
+**Pourquoi :** évite de brûler la deuxième concession (96 €) en premier, ce qui ne laisserait plus rien à offrir si le lead hésite encore.
 **Résultat :** à suivre.
 
 ## 2026-09-17 — Le 196 € d'acompte existe bien en France : mécanisme exceptionnel pour bloquer une place sans vérification téléphone

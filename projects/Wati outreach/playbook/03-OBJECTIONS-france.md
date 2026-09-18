@@ -1,6 +1,7 @@
 # 03 — Objections (France)
 
-Source : Objections_FINAL_FR_Aug_16_2026 (O1-O11) + FAQ_FR_Aug_14_2026 là où elle
+Source : Objections_FINAL_FR_Aug_16_2026 (O1-O11) + O12 ajouté le 2026-09-18 (TOEIC,
+demandé par Ali) + FAQ_FR_Aug_14_2026 là où elle
 ajoute une réponse que le doc Objections n'a pas. « Doit contenir » = ce sur quoi une
 bonne réponse est jugée. Les lignes modèles en italique sont écrites en tu ; passer au
 vous si l'appel a commencé en vous.
@@ -282,6 +283,47 @@ Ordre : prévenir juste après le test → expliquer l'évaluation → compromis
 évaluation expliquée (test oral, fluidité, volontairement pas de grammaire) + classe
 plus haute possible mais garantie reste sur notre évaluation + classe modifiable à
 tout moment + évaluation continue.
+
+## O12 — Veut le TOEIC plutôt que l'IELTS
+
+Objection fréquente en France (contexte entreprise/recrutement local). Même logique
+qu'O10 (Cambridge), adaptée aux différences réelles entre les deux examens.
+
+- IELTS = reconnu par les universités, les autorités d'immigration (UK, Australie,
+  Canada, Nouvelle-Zélande...) et les employeurs dans le monde entier ; le TOEIC est
+  surtout un test corporate/recrutement, très utilisé en France mais avec une
+  reconnaissance internationale plus limitée hors du cadre entreprise français
+- IELTS teste les 4 compétences (écoute, lecture, écriture, ET expression orale en
+  face à face) ; le TOEIC "de base" (le plus répandu) ne teste que l'écoute et la
+  lecture — pas d'oral, donc pas de preuve réelle de la capacité à parler la langue,
+  ce qui est souvent le vrai objectif du lead
+- Standardisé comme l'IELTS : plus fort que prévu → meilleur score utilisable ; moins
+  fort → certificat quand même valable pour le niveau atteint
+- Objection fréquente « le TOEIC/IELTS n'est valable que 2 ans » : les deux examens
+  ont la même limite de validité, donc ça ne joue pas en faveur du TOEIC
+
+**Doit contenir** : IELTS plus reconnu à l'international + IELTS teste l'oral
+(contrairement au TOEIC de base, écoute/lecture seulement) + standardisation ouverte
+vers le haut et le bas + l'objection des 2 ans démontée (les deux examens sont dans le
+même cas).
+
+Script à dire tel quel sur l'appel (passer au vous si l'appel a commencé en vous) :
+
+*« On travaille avec l'IELTS plutôt que le TOEIC parce que c'est l'examen le plus
+reconnu internationalement — universités, employeurs, immigration, partout dans le
+monde. Le TOEIC c'est surtout utilisé en France dans un contexte d'entreprise, mais ça
+a une reconnaissance plus limitée à l'international. Et surtout, l'IELTS teste les 4
+compétences, y compris l'oral en face à face avec un examinateur, alors que le TOEIC
+classique ne teste que l'écoute et la lecture — donc ça ne prouve pas vraiment que tu
+sais parler, ce qui reste quand même l'objectif principal. Et si jamais t'as déjà
+entendu que l'IELTS n'est valable que 2 ans, sache que c'est exactement pareil pour le
+TOEIC, donc ça ne joue pas en faveur de l'un ou de l'autre. Est-ce que ça répond à ta
+question ? »*
+
+⚠️ Comparatif à confirmer avec Ali avant diffusion large — les points ci-dessus sont
+la comparaison factuelle standard IELTS/TOEIC, pas une info spécifique à easypeasy ;
+si Ali a une formulation ou un argument différent déjà validé en appel, celui-ci
+prévaut et ce bloc doit être corrigé en conséquence.
 
 ## Objections sans réponse française documentée
 

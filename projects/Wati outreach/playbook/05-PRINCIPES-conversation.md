@@ -75,6 +75,13 @@ lance », « je suis prêt(e) à m'inscrire » → aller droit à l'inscription,
    moindre valeur : « Si vous préférez démarrer sur un engagement plus léger, il existe
    aussi un format avec moins d'heures et un investissement total plus bas. Ça vous
    mettrait plus à l'aise ? »
+4. Toujours nommer le niveau cible explicitement (variable par lead, lu sur son produit
+   d'origine, jamais inventé) et la nouvelle mensualité comparée à sa mensualité
+   actuelle réelle — pas une formule abstraite. Cf. script à jour dans
+   `04-CAS-APPRIS.md` (mise à jour du 2026-09-18) : « On a aussi un format plus léger :
+   90h à 990 € au lieu de 180h à 1 800 €, toujours avec la garantie de niveau, soit
+   99 €/mois en 10 fois plutôt que [mensualité actuelle]/mois, en visant le niveau [X]
+   cette fois-ci et avec la même garantie de résultat. »
 
 **Nuance timing — ne pas downseller à tort :** si le seul problème est un vrai timing
 (« je ne peux démarrer que dans deux mois »), ne pas downseller automatiquement. Expliquer
@@ -157,6 +164,56 @@ qui contrôle ou impose la deadline : « Je vérifie avec l'administration et je
 je peux faire pour vous. » / « J'ai pu en parler à l'administration, ils ont
 temporairement réactivé le lien / gardé la place. »
 (Déjà appliqué spontanément sur le cas François du 17/09 — pattern à généraliser.)
+
+**Script standard à utiliser tel quel (validé par Ali le 2026-09-18) pour la bulle
+d'attente quand la deadline est passée :**
+> « Comme la clôture des inscriptions est passée, je vérifie avec l'administration pour
+> voir ce que je peux faire pour vous »
+> « Je reviens vers vous très vite »
+
+Ne pas nommer la raison technique précise (ex. "mettre à jour l'invitation sur le format
+90h") dans cette bulle — rester volontairement générique ("ce que je peux faire pour
+vous"), et dire "très vite" plutôt qu'un délai chiffré ("dans 5 minutes" / "dans quelques
+minutes"). Le détail technique et le délai précis appartiennent au message "Bonne
+nouvelle" qui suit, pas à la bulle d'attente elle-même.
+
+**Extensions successives : chaque palier repasse par l'administration, jamais automatique.**
+Si le lead dit ne pas pouvoir tenir même la première extension obtenue, ne pas sauter
+directement à un délai beaucoup plus long — repasser par un nouveau "je vérifie" à
+chaque palier, comme si chaque extension coûtait un effort réel. Exemple complet
+(validé par Ali le 2026-09-18) :
+
+1. Lead, après la deadline : « Désolé, ce soir c'est vraiment impossible pour moi. »
+2. *(bulle d'attente standard ci-dessus)*
+3. Bonne nouvelle : « Bonne nouvelle [prénom], j'ai pu obtenir un délai jusqu'à 23h ce
+   soir avec l'administration. Vous pensez pouvoir finaliser d'ici là ? »
+4. Lead : « Même 23h ça va être compliqué, je ne serai pas disponible. »
+5. Nouvelle vérification, pas une extension automatique : « Je comprends, laissez-moi
+   revoir ça avec l'administration. »
+6. Bonne nouvelle (palier suivant) : « Bonne nouvelle, j'ai pu pousser jusqu'à demain
+   midi. Vous pensez pouvoir finaliser d'ici là ? »
+
+Chaque palier reste cadré comme une exception obtenue, jamais comme une règle ("on
+étend toujours"), et on ne propose jamais d'emblée le délai le plus long possible —
+seulement le prochain palier raisonnable, un à la fois.
+
+**Cas réel (Dany, +32470923572, 2026-09-18) — nuance importante :** si le lead donne
+lui-même son propre horizon ("je fais ça demain matin"), caler l'extension directement
+dessus plutôt que de forcer un palier intermédiaire artificiel — ici Ali a directement
+proposé "demain midi" (pour lui laisser toute la matinée), pas un petit palier du soir
+d'abord. L'escalade en paliers successifs (ci-dessus) sert quand le lead repousse
+plusieurs fois de suite sans donner d'horizon clair ; quand il donne son propre horizon,
+on l'accommode directement en une fois.
+
+Ce que le message réel contenait, à reprendre :
+1. **« De retour. »** en ouverture du message qui lève l'attente — signale qu'on
+   revient bien après vérification, avant d'annoncer le résultat.
+2. Rassurer que c'est **le même lien** déjà envoyé, pas un nouveau à chercher : « ça
+   sera sur le même lien que je vous ai envoyé 👍 »
+3. Clore sur une action concrète demandée plutôt qu'une simple ouverture passive :
+   « dites-moi une fois inscrite pour que je vous envoie les prochaines étapes » — le
+   "n'hésitez pas si vous avez des questions" peut cohabiter avant ça, tant que la
+   dernière partie reste une action demandée (cf. §2, formulation déjà validée).
 
 ## 10. Quand un lead est prêt à acheter
 
@@ -250,6 +307,33 @@ Si un lead très intéressé disparaît ensuite : se demander si le format compl
 friction cachée, si un downsell aurait dû être proposé plus tôt, envisager un appel
 téléphonique de relance si pertinent — ne jamais supposer qu'un enthousiasme exprimé
 équivaut à un achat conclu.
+
+## 15bis. Demander un horizon approximatif — marquer CITF (contact in the future)
+
+Situation type : le lead a déjà décliné poliment une ou plusieurs fois, sans donner de
+date ("je reviendrai vers vous dès que possible", "quand ce sera possible pour moi"…).
+Plutôt que de laisser ça ouvert indéfiniment ou de relancer sans savoir quand, demander
+une fois un horizon approximatif pour caler une vraie relance plus tard et marquer le
+lead CITF.
+
+Script standard (validé par Ali le 2026-09-18, cas Loubna +32499892670 — 3e refus poli
+sans date) :
+
+```
+Je comprends [prénom], merci pour votre clarté à chaque fois.
+```
+
+```
+Pour éviter de vous solliciter sans raison entre-temps, auriez-vous une période approximative en tête pour qu'on revienne vers vous au bon moment ?
+```
+
+Pas de contenu commercial dans ce message (pas de prix, pas de downsell, pas de
+mécanisme de blocage de place) — après plusieurs refus nets déjà exprimés poliment, ce
+serait perçu comme ne pas respecter sa réponse. Le seul objectif est la date.
+
+Si le lead répond avec une période, même vague ("en janvier", "dans quelques mois") →
+marquer CITF avec cette date, ne pas relancer avant. Si le lead ne répond pas ou reste
+sans date → ne plus relancer du tout, considérer le dossier clos.
 
 ## 16. Checklist avant d'envoyer un message
 

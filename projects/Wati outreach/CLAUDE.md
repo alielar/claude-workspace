@@ -70,9 +70,10 @@ the full pending scan.
 - `playbook/01-NUMBERS-PRODUCT-france.md` — full catalogue, prices, guarantee conditions,
   payment/instalment rules, discount tiers, downsell ladder, product facts. Single source of
   truth for any number — check here before quoting one, not just the quick card.
-- `playbook/03-OBJECTIONS-france.md` — the full objection playbook (O1-O11: price, time,
+- `playbook/03-OBJECTIONS-france.md` — the full objection playbook (O1-O12: price, time,
   duration, in-person, trial lesson, delayed start, motivation, 1:1, pay-per-lesson,
-  Cambridge vs IELTS, level disagreement) plus the 1-10 diagnostic (money vs. product) and
+  Cambridge vs IELTS, level disagreement, TOEIC vs IELTS) plus the 1-10 diagnostic (money
+  vs. product) and
   the extended pay-per-lesson arsenal. Open this for any objection the quick card doesn't
   cover cleanly.
 - `playbook/01-TRANSCRIPTS-mes-conversations.md` — 231 of Ali's own conversations. Grep for
