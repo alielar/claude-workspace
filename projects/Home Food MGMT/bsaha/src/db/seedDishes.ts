@@ -12,6 +12,7 @@ import { dishes, pools, type Ingredient, type Macros, type Recipe } from "./sche
 import { slugify } from "@/lib/slug";
 import nhsBreakfast from "../../data/dishes/nhs-breakfast.json";
 import nhsLunch from "../../data/dishes/nhs-lunch.json";
+import nhsDinner from "../../data/dishes/nhs-dinner.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
 import videos from "../../data/videos/all.json";
@@ -25,7 +26,7 @@ type Raw = {
 };
 type Photo = { file: string; credit: string; license: string; source: string };
 
-const ALL = [...(nhsBreakfast as Raw[]), ...(nhsLunch as Raw[])];
+const ALL = [...(nhsBreakfast as Raw[]), ...(nhsLunch as Raw[]), ...(nhsDinner as Raw[])];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
 const inMain = (r: Raw) => r.cuisine !== "Moroccan";
