@@ -1,0 +1,3510 @@
+[
+ {
+  "slug": "orange-and-sultana-milk-pudding",
+  "meal": "breakfast",
+  "name_en": "Orange and sultana milk pudding",
+  "name_fr": "Pudding au lait, orange et raisins secs",
+  "name_ar": "بودينغ الحليب بالليمون والزبيب",
+  "name_latin": "Boudinj lhlib bel limoun w zbib",
+  "desc_en": "A creamy ground-rice pudding sweetened only by sultanas and fresh orange, no added sugar.",
+  "desc_fr": "Un pudding crémeux au riz moulu, sucré seulement par les raisins secs et l'orange fraîche, sans sucre ajouté.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 5,
+  "macros": {
+   "kcal": 216,
+   "protein_g": 8,
+   "carbs_g": 41,
+   "fat_g": 3,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Oranges",
+    "fr": "Oranges",
+    "ar": "ليمون",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Semi-skimmed milk",
+    "fr": "Lait demi-écrémé",
+    "ar": "حليب نص سمين",
+    "qty": 600,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground rice",
+    "fr": "Riz moulu",
+    "ar": "روز مطحون",
+    "qty": 80,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Mixed spice",
+    "fr": "Épices mélangées",
+    "ar": "لخلطة ديال لبهارات الحلوة",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   },
+   {
+    "en": "Sultanas or raisins",
+    "fr": "Raisins secs",
+    "ar": "زبيب",
+    "qty": 60,
+    "unit": "g",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حكي ملعقة صغيرة من قشر ليمونة وحدة، وعصريها. قطعي الليمونة التانية شرايح وقشريها مزيان.",
+    "دوزي الحليب، الروز المطحون، قشر الليمون واللخلطة ديال لبهارات فطنجرة ما كتلصقش، وخليهم يغليو مع التقليب المستمر بملعقة ديال الخشب حتى يغليظ الخليط.",
+    "زيدي عصير الليمون ومعظم الزبيب، وخليه يطيب على نار هادية بزاف 1 حتى 2 دقيقة، مع التقليب طول الوقت.",
+    "وزعي البودينغ على 4 طبيسل، وزيني بشرايح الليمون والزبيب الباقي. قدميه فالحين."
+   ],
+   "tips": [
+    "يمكن تبدلي اللخلطة ديال لبهارات بجوزة الطيب.",
+    "هاد الطبق كيصلح بزاف كفطور بدل البسيسة."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "orange sultana milk pudding bowl"
+ },
+ {
+  "slug": "breakfast-fruit-salad",
+  "meal": "breakfast",
+  "name_en": "Breakfast fruit salad",
+  "name_fr": "Salade de fruits du petit-déjeuner",
+  "name_ar": "سلاطة الفواكه ديال الفطور",
+  "name_latin": "Slata dyal lfawakih l'ftour",
+  "desc_en": "A refreshing bowl of kiwi, grapes and melon with a spoon of yoghurt, a fast way to get fruit in early.",
+  "desc_fr": "Un bol rafraîchissant de kiwi, raisin et melon avec du yaourt, une façon rapide de manger des fruits dès le matin.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 0,
+  "macros": {
+   "kcal": 117,
+   "protein_g": 6,
+   "carbs_g": 23,
+   "fat_g": 1,
+   "fiber_g": 3
+  },
+  "ingredients": [
+   {
+    "en": "Kiwis, peeled and sliced",
+    "fr": "Kiwis, pelés et tranchés",
+    "ar": "كيوي مقشر ومقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Seedless grapes, halved",
+    "fr": "Raisins sans pépins, coupés en deux",
+    "ar": "عنب بلا زريعة مقطع نصين",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Melon, deseeded and chopped",
+    "fr": "Melon, épépiné et coupé",
+    "ar": "بطيخ أصفر منزوع الزريعة ومقطع",
+    "qty": 0.5,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 8,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground ginger",
+    "fr": "Gingembre moulu",
+    "ar": "سكنجبير مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "خلطي الكيوي المقطع، العنب والبطيخ الأصفر فطبسيل كبير.",
+    "فطبسيل آخر، خلطي الدانون خفيف الدسم مع السكنجبير.",
+    "وزعي الفواكه على 4 طبيسل، وزيدي فوقها خليط الدانون بملعقة."
+   ],
+   "tips": [
+    "إلى استعملتي فواكه معلبة، تأكدي بلي هي فعصير طبيعي ماشي فشيرة.",
+    "يمكن تستعملي أي فواكه بغيتي فهاد الطبق."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "fresh fruit salad bowl kiwi grapes"
+ },
+ {
+  "slug": "healthier-full-english-breakfast",
+  "meal": "breakfast",
+  "name_en": "Healthier full English breakfast (halal)",
+  "name_fr": "Petit-déjeuner anglais complet, version plus légère (halal)",
+  "name_ar": "الفطور الإنجليزي الكامل الخفيف (حلال)",
+  "name_latin": "Lftour linglizi lkamel lkhafif (halal)",
+  "desc_en": "The classic cooked breakfast, trimmed down and made with halal turkey bacon and turkey sausage, still every bit as satisfying.",
+  "desc_fr": "Le classique petit-déjeuner anglais, allégé et préparé avec du bacon et de la saucisse de dinde halal, tout aussi copieux.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 262,
+   "protein_g": 20,
+   "carbs_g": 19,
+   "fat_g": 13,
+   "fiber_g": 6
+  },
+  "ingredients": [
+   {
+    "en": "Lean halal turkey bacon rashers",
+    "fr": "Tranches de bacon de dinde halal maigre",
+    "ar": "شرائح البيكون ديال الدجاج الرومي الحلال",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Tomatoes, halved",
+    "fr": "Tomates, coupées en deux",
+    "ar": "ماطيشة مقطعة نصين",
+    "qty": 8,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Closed-cup mushrooms, thickly sliced",
+    "fr": "Champignons de Paris, tranchés épais",
+    "ar": "فطر مقطع غليظ",
+    "qty": 250,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Cold water",
+    "fr": "Eau froide",
+    "ar": "الما بارد",
+    "qty": 50,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Reduced-salt baked beans in tomato sauce",
+    "fr": "Haricots blancs à la tomate, moins salés",
+    "ar": "لوبيا مصبرة فالصلصة، ملحتها خفيفة",
+    "qty": 420,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. صفي شرائح البيكون ديال الدجاج الرومي والماطيشة المقطعة فالشبكة، وخليهم يطيبو 5 حتى 6 دقايق، وقلبي البيكون مرة وحدة.",
+    "فنفس الوقت، حطي الفطر فمقلاة كبيرة مع الما البارد. خليه يغلي ويطيب على نار هادية 5 دقايق، مع التقليب بين لفينة ولفينة.",
+    "سخني اللوبيا المصبرة فطنجرة آخرا.",
+    "سخني زيت نباتي فمقلاة ما كتلصقش وكسري البيض فيها. خليه يطيب على نار متوسطة قريب دقيقتين حتى يجمد، من بعد دخليه للفوطاج باش يكمل يجمد من فوق. وزعي البيكون والماطيشة على 4 طبيسل سخونين.",
+    "وزعي اللوبيا والفطر، وحطي بيضة فوق كل طبسيل. رشي لبزار الكحل وقدمي."
+   ],
+   "tips": [
+    "طياب الفطر فشوية ما صحي أحسن بزاف من قليه.",
+    "ختاري اللوبيا المصبرة اللي ملحتها وسكارها خفاف."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "chicken"
+  ],
+  "photo_query": "cooked breakfast eggs beans tomato"
+ },
+ {
+  "slug": "easy-overnight-oats",
+  "meal": "breakfast",
+  "name_en": "Easy overnight oats",
+  "name_fr": "Overnight oats faciles",
+  "name_ar": "شوفان مبيت بسهولة",
+  "name_latin": "Chofan mbeyet b shoula",
+  "desc_en": "Oats soaked overnight in apple juice with dried fruit, ready to eat the moment you wake up with fresh berries on top.",
+  "desc_fr": "Flocons d'avoine trempés toute la nuit dans du jus de pomme avec des fruits secs, prêts dès le réveil avec des fruits rouges frais.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 0,
+  "macros": {
+   "kcal": 294,
+   "protein_g": 10,
+   "carbs_g": 58,
+   "fat_g": 4,
+   "fiber_g": 8
+  },
+  "ingredients": [
+   {
+    "en": "High-fibre porridge oats",
+    "fr": "Flocons d'avoine riches en fibres",
+    "ar": "شوفان غني بالألياف",
+    "qty": 150,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Dried cranberries",
+    "fr": "Canneberges séchées",
+    "ar": "كرانبيري مجفف",
+    "qty": 25,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Ready-to-eat dried apricots, chopped",
+    "fr": "Abricots secs moelleux, hachés",
+    "ar": "مشمش مجفف مقطع",
+    "qty": 50,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Sultanas",
+    "fr": "Raisins secs blonds",
+    "ar": "زبيب",
+    "qty": 25,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Unsweetened apple juice",
+    "fr": "Jus de pomme sans sucre ajouté",
+    "ar": "عصير التفاح بلا سكر",
+    "qty": 300,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 8,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Blueberries",
+    "fr": "Myrtilles",
+    "ar": "توت أزرق",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Raspberries",
+    "fr": "Framboises",
+    "ar": "توت العليق",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "فطبسيل كبير، خلطي الشوفان، الكرانبيري، المشمش والزبيب. زيدي عصير التفاح وقلبي مزيان. غطي وحطيه فالتلاجة الليل كامل.",
+    "فالصباح، وزعي الخليط المبيت على 4 طبيسل ديال الفطور.",
+    "زيدي فوق كل طبسيل جوج معالق ديال الدانون، ووزعي التوت الأزرق وتوت العليق."
+   ],
+   "tips": [
+    "يمكن تبدلي الكرانبيري بالكريز المجفف، والزبيب بزبيب آخر.",
+    "بدل التوت، زيني بموزة مقطعة أو تفاحة مقطعة صغار."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "overnight oats jar berries yoghurt"
+ },
+ {
+  "slug": "potato-and-poached-egg-hash",
+  "meal": "breakfast",
+  "name_en": "Potato and poached egg hash (halal)",
+  "name_fr": "Hachis de pommes de terre à l'œuf poché (halal)",
+  "name_ar": "هاش البطاطا بالبيضة المسلوقة (حلال)",
+  "name_latin": "Hach lbtata bel bida msaloqa (halal)",
+  "desc_en": "A tasty way to use up leftover cooked potatoes, topped with a runny poached egg, made with halal turkey bacon.",
+  "desc_fr": "Une façon savoureuse d'utiliser les restes de pommes de terre cuites, avec un œuf poché coulant, préparé avec du bacon de dinde halal.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 20,
+  "macros": {
+   "kcal": 209,
+   "protein_g": 12,
+   "carbs_g": 19,
+   "fat_g": 9,
+   "fiber_g": 3
+  },
+  "ingredients": [
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Lean halal turkey bacon rashers, chopped",
+    "fr": "Tranches de bacon de dinde halal maigre, hachées",
+    "ar": "شرائح بيكون ديال الدجاج الرومي الحلال مقطعة",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Potatoes, pre-cooked and chunked",
+    "fr": "Pommes de terre précuites, coupées en morceaux",
+    "ar": "بطاطا مطيبة من قبل ومقطعة مكعبات",
+    "qty": 400,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Spring onions, finely chopped",
+    "fr": "Oignons nouveaux, hachés finement",
+    "ar": "بصلة خضرة مقطعة صغيرة",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Tomatoes, chopped",
+    "fr": "Tomates, hachées",
+    "ar": "ماطيشة مقطعة",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الزيت النباتي فمقلاة كبيرة ما كتلصقش، وزيدي البيكون ديال الدجاج الرومي وطيبيه دقيقة أو جوج. زيدي البطاطا وخليها تطيب على نار متوسطة 12 حتى 15 دقيقة، وقلبيها بين لفينة ولفينة، حتى تولي محمرة.",
+    "زيدي البصلة الخضرة والماطيشة، وخليهم يطيبو على نار هادية 4 حتى 5 دقايق، وفنفس الوقت سلقي البيض.",
+    "سلقي البيض فالما كيغلي هادي 3 حتى 4 دقايق، حتى يجمد البياض ويبقى الصفار طري (أو زيدي الوقت إلى بغيتيه مجمد).",
+    "وزعي هاش البطاطا على 4 طبيسل سخونين وحطي بيضة مسلوقة فوق كل واحد. رشي لبزار الكحل وقدمي."
+   ],
+   "tips": [
+    "البطاطا الصغيرة اللي ما كتتفرقش هي الأحسن فهاد الطبق. إلى كانت بطاطا بردة، قلبيها بشوية باش تحافظ على شكلها.",
+    "زيدي شوية خل فالما ديال السلق باش يبقى البيض مجموع.",
+    "للنسخة النباتية، بدلي البيكون بجوج معالق ديال اللوبيا الحمرا المصبرة."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "chicken"
+  ],
+  "photo_query": "potato hash poached egg tomato"
+ },
+ {
+  "slug": "vanilla-muesli-milkshake",
+  "meal": "breakfast",
+  "name_en": "Vanilla muesli milkshake",
+  "name_fr": "Milkshake au muesli et à la vanille",
+  "name_ar": "ميلكشيك الموزلي بالفانيليا",
+  "name_latin": "Milkshake dyal lmuesli bel vanille",
+  "desc_en": "A speedy blended drink of banana, yoghurt and muesli for mornings when there's no time to sit down.",
+  "desc_fr": "Une boisson mixée rapide à la banane, au yaourt et au muesli pour les matins pressés.",
+  "cuisine": "British",
+  "servings": 6,
+  "prep_min": 5,
+  "cook_min": 0,
+  "macros": {
+   "kcal": 93,
+   "protein_g": 6,
+   "carbs_g": 17,
+   "fat_g": 1,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Ripe banana",
+    "fr": "Banane mûre",
+    "ar": "موزة مزيانة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 150,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Muesli, no added sugar",
+    "fr": "Muesli sans sucre ajouté",
+    "ar": "موزلي بلا سكر مزاد",
+    "qty": 50,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Skimmed milk",
+    "fr": "Lait écrémé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 550,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Vanilla extract",
+    "fr": "Extrait de vanille",
+    "ar": "فانيليا",
+    "qty": 0.5,
+    "unit": "tsp",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "قطعي الموزة فالخلاط وزيدي الدانون، الموزلي، الحليب والفانيليا.",
+    "خلطي الكل حتى يولي ناعم، من بعد صبي ف6 كيسان. قدميه فالحين."
+   ],
+   "tips": [
+    "إلى ما عندكش خلاط، يمكن تستعملي خلاط يدوي فطاس.",
+    "باش تاخد الطاقة اللي خاصك باش تبدا نهارك، قدميه مع خبز الكامل محمص."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "banana muesli milkshake glass"
+ },
+ {
+  "slug": "raspberry-and-banana-shakes",
+  "meal": "breakfast",
+  "name_en": "Raspberry and banana shake",
+  "name_fr": "Milkshake framboise et banane",
+  "name_ar": "ميلكشيك التوت والموز",
+  "name_latin": "Milkshake dyal tout l3oliq w lmouz",
+  "desc_en": "A five-minute blended breakfast drink that counts towards your five a day.",
+  "desc_fr": "Une boisson mixée en cinq minutes qui compte dans vos cinq fruits et légumes par jour.",
+  "cuisine": "British",
+  "servings": 6,
+  "prep_min": 5,
+  "cook_min": 0,
+  "macros": {
+   "kcal": 80,
+   "protein_g": 5,
+   "carbs_g": 13,
+   "fat_g": 1,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Ripe bananas",
+    "fr": "Bananes mûres",
+    "ar": "موز مزيان",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Frozen raspberries",
+    "fr": "Framboises surgelées",
+    "ar": "توت العليق مجمد",
+    "qty": 150,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 400,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Vanilla extract",
+    "fr": "Extrait de vanille",
+    "ar": "فانيليا",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "قطعي الموز فالخلاط وزيدي توت العليق المجمد، الدانون، الحليب والفانيليا.",
+    "خلطي الكل قريب شي شوية حتى يولي ناعم، من بعد صبي ف6 كيسان. قدميه فالحين."
+   ],
+   "tips": [
+    "يمكن تبدليه بدانون التوت خفيف الدسم و150 غرام فريز بدل توت العليق. ملي يكون توت العليق فموسمو، استعمليه طري بدل المجمد.",
+    "إلى ما عندكش خلاط، خدمي بخلاط يدوي فطاس."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "raspberry banana milkshake glasses"
+ },
+ {
+  "slug": "breakfast-burritos",
+  "meal": "breakfast",
+  "name_en": "Breakfast burritos",
+  "name_fr": "Burritos du petit-déjeuner",
+  "name_ar": "بوريتو الفطور",
+  "name_latin": "Burrito lftour",
+  "desc_en": "Wholewheat tortillas rolled around a tomato and pepper omelette, good hot for breakfast or wrapped cold for lunch.",
+  "desc_fr": "Des tortillas complètes roulées autour d'une omelette tomate-poivron, à servir chaud le matin ou froid à midi.",
+  "cuisine": "Mexican",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 229,
+   "protein_g": 15,
+   "carbs_g": 17,
+   "fat_g": 12,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Soft wholewheat tortillas",
+    "fr": "Tortillas de blé complet souples",
+    "ar": "طورتيا القمح الكامل",
+    "qty": 4,
+    "unit": "piece",
+    "group": "dry"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 6,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Tomatoes, finely chopped",
+    "fr": "Tomates, hachées finement",
+    "ar": "ماطيشة مقطعة صغيرة",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Spring onions, finely chopped",
+    "fr": "Oignons nouveaux, hachés",
+    "ar": "بصلة خضرة مقطعة صغيرة",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Bell pepper, deseeded and chopped",
+    "fr": "Poivron, épépiné et haché",
+    "ar": "فلفلة حلوة منزوعة الزريعة ومقطعة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Reduced-fat hard cheese, grated",
+    "fr": "Fromage à pâte dure allégé, râpé",
+    "ar": "جبن قاسي خفيف الدسم مبرش",
+    "qty": 40,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "فرشي الطورتيا فوق الطبلة. سخني الفوطاج.",
+    "خفقي البيض مع الحليب فطبسيل. فطبسيل آخر، خلطي الماطيشة، البصلة الخضرة والفلفلة الحلوة، ورشي شوية لبزار.",
+    "سخني نص ملعقة صغيرة زيت فمقلاة ما كتلصقش وصبي ربع خليط البيض. خليه يطيب على نار متوسطة قريب دقيقة حتى يجمد من تحت.",
+    "حطي على الطورتيا البيض المطيب، ربع خليط الماطيشة و10 غرام جبن. دخليه للفوطاج باش يكمل البيض يجمد والجبن يدوب.",
+    "لفي الطورتيا وقطعيها نصين، أو لفيها فبابيي القصدير باش تقدميها من بعد. كرري مع 3 طورتيات الباقيين."
+   ],
+   "tips": [
+    "يمكن تستعملي طورتيا عادية، لكن ديال القمح الكامل فيها ألياف أكثر.",
+    "باش يشبعو الطفال أكثر، زيدي 100 غرام لوبيا مصفاة لخليط الماطيشة — غادي تزيد ألياف بزاف."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "peppers",
+   "vegetarian"
+  ],
+  "photo_query": "breakfast burrito egg vegetables wrap"
+ },
+ {
+  "slug": "sausages-tomato-and-mushrooms-on-toast",
+  "meal": "breakfast",
+  "name_en": "Halal beef sausages on toast",
+  "name_fr": "Saucisses de bœuf halal sur toast",
+  "name_ar": "سوسيس البقري الحلال فوق الخبز محمص",
+  "name_latin": "Sausis lbaqri lhalal foq lkhobz m7ammes",
+  "desc_en": "Grilled halal beef sausages with mushrooms and cherry tomatoes on wholemeal toast, a favourite breakfast combination.",
+  "desc_fr": "Saucisses de bœuf halal grillées avec champignons et tomates cerises sur pain complet grillé.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 12,
+  "macros": {
+   "kcal": 180,
+   "protein_g": 13,
+   "carbs_g": 25,
+   "fat_g": 3,
+   "fiber_g": 3
+  },
+  "ingredients": [
+   {
+    "en": "Reduced-fat halal beef sausages",
+    "fr": "Saucisses de bœuf halal allégées",
+    "ar": "سوسيس البقري الحلال خفيف الدسم",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Cherry tomatoes, halved",
+    "fr": "Tomates cerises, coupées en deux",
+    "ar": "ماطيشة صغيرة مقطعة نصين",
+    "qty": 2,
+    "unit": "bunch",
+    "group": "fresh"
+   },
+   {
+    "en": "Closed-cup mushrooms, sliced",
+    "fr": "Champignons de Paris, tranchés",
+    "ar": "فطر مقطع شرايح",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Cold water",
+    "fr": "Eau froide",
+    "ar": "الما بارد",
+    "qty": 100,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Dried mixed herbs",
+    "fr": "Herbes de Provence",
+    "ar": "لخلطة ديال لعشاب اليابسة",
+    "qty": 0.5,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. صفي السوسيس فالشبكة وطيبيه 10 دقايق، وقلبيه بزاف حتى يحمر من كل الجهات.",
+    "حطي الماطيشة الصغيرة فبابيي القصدير وطيبيها 3 حتى 4 دقايق حدا السوسيس.",
+    "فنفس الوقت، طيبي الفطر فالما 3 حتى 4 دقايق، وزيدي لعشاب اليابسة إلى بغيتي. صفي الما الزايد.",
+    "حمصي الخبز. قطعي السوسيس وخلطيه مع الفطر. حطيه فوق الخبز المحمص وزيني بالماطيشة المطيبة. رشي لبزار وقدمي."
+   ],
+   "tips": [
+    "شوفي الملحة اللي فالسوسيس واختاري نوع فيه ملحة خفيفة.",
+    "باش يشبع الفطور أكثر، قدميه مع طبق لوبيا مصبرة ملحتها وسكارها خفاف."
+   ]
+  },
+  "tags": [
+   "red_meat"
+  ],
+  "photo_query": "grilled sausages mushrooms toast breakfast"
+ },
+ {
+  "slug": "eggs-paprika",
+  "meal": "breakfast",
+  "name_en": "Eggs paprika",
+  "name_fr": "Œufs au paprika",
+  "name_ar": "بيض بالتحميرة",
+  "name_latin": "Bid b tahmira",
+  "desc_en": "Soft-cooked onions and tomatoes spiced with paprika, topped with hard-boiled egg on toast.",
+  "desc_fr": "Oignons et tomates fondants épicés au paprika, servis avec un œuf dur sur pain grillé.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 20,
+  "macros": {
+   "kcal": 209,
+   "protein_g": 11,
+   "carbs_g": 24,
+   "fat_g": 9,
+   "fiber_g": 4
+  },
+  "ingredients": [
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Onions, thinly sliced into rings",
+    "fr": "Oignons, émincés en rondelles",
+    "ar": "بصلة مقطعة حلقات رقاق",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Tomatoes, sliced",
+    "fr": "Tomates, tranchées",
+    "ar": "ماطيشة مقطعة شرايح",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Mild paprika",
+    "fr": "Paprika doux",
+    "ar": "تحميرة حلوة",
+    "qty": 3,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سلقي البيض فالما كيغلي بشوية 10 حتى 12 دقيقة حتى يجمد مزيان.",
+    "فنفس الوقت، سخني الزيت النباتي فمقلاة كبيرة ما كتلصقش. زيدي البصلة وطيبيها على نار متوسطة هادية، مع التقليب بزاف، حتى تولي طرية بزاف — قريب 10 دقايق. زيدي شوية ما سخون إلى لزم باش ما تلصقش.",
+    "زيدي الماطيشة والتحميرة للبصلة، وطيبي 5 حتى 8 دقايق أخرين. رشي شوية لبزار.",
+    "قشري البيض وقطعي كل وحدة ل4. حمصي الخبز، من بعد حطي فوق كل شريحة ربع خليط الماطيشة و4 أرباع بيضة. رشي تحميرة أو لبزار زيادة إلى بغيتي."
+   ],
+   "tips": [
+    "زيدي التحميرة على حساب الذوق. يمكن تستعملي تحميرة مدخنة، وزيدي شوية فلفلة حارة إلى بغيتي حرة.",
+    "قدميها فوق طبق روز كامل، خليط الماطيشة والبيض كيعطيو وجبة نباتية خفيفة ومزيانة."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "cooked_onion",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "eggs paprika tomato onion toast"
+ },
+ {
+  "slug": "banana-and-apricot-bagels",
+  "meal": "breakfast",
+  "name_en": "Banana and apricot bagels",
+  "name_fr": "Bagels à la banane et aux abricots",
+  "name_ar": "بيگل بالموز والمشمش",
+  "name_latin": "Bagel bel mouz w lmesmar",
+  "desc_en": "A simple idea that works: soft cheese and apricots spread on a toasted bagel, topped with banana.",
+  "desc_fr": "Une idée simple mais efficace : fromage frais et abricots sur un bagel grillé, garni de banane.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 2,
+  "macros": {
+   "kcal": 244,
+   "protein_g": 12,
+   "carbs_g": 46,
+   "fat_g": 2,
+   "fiber_g": 5
+  },
+  "ingredients": [
+   {
+    "en": "Wholemeal bagels, sliced in half",
+    "fr": "Bagels complets, coupés en deux",
+    "ar": "بيگل كامل مقطع نصين",
+    "qty": 4,
+    "unit": "piece",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat soft cheese",
+    "fr": "Fromage frais allégé",
+    "ar": "جبن طري خفيف الدسم",
+    "qty": 80,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Ready-to-eat dried apricots, chopped",
+    "fr": "Abricots secs moelleux, hachés",
+    "ar": "مشمش مجفف مقطع",
+    "qty": 40,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Bananas, sliced",
+    "fr": "Bananes, tranchées",
+    "ar": "موز مقطع شرايح",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. حمصي بشوية الوجه المقطوع ديال كل نص بيگل.",
+    "خلطي الجبن الطري مع المشمش وادهنيه فوق قاعدة البيگل. زيني بشرايح الموز من بعد غطي بالنص الثاني ديال البيگل."
+   ],
+   "tips": [
+    "إلى ما كتاكليش منتجات الحليب، ما تزيديش الجبن. هرسي الموز وادهنيه فوق البيگل المحمص، من بعد رشي المشمش المقطع فوقو."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "banana apricot bagel soft cheese"
+ },
+ {
+  "slug": "healthy-beans-on-toast",
+  "meal": "breakfast",
+  "name_en": "Loaded beans on toast",
+  "name_fr": "Haricots blancs garnis sur toast",
+  "name_ar": "لوبيا محملة فوق الخبز محمص",
+  "name_latin": "Loubia m7ammla foq lkhobz m7ammes",
+  "desc_en": "A clever twist on beans on toast, cooking mushrooms, peppers and cherry tomatoes right into the beans for extra veg.",
+  "desc_fr": "Une version astucieuse des haricots sur toast, avec champignons, poivrons et tomates cerises cuits directement dans les haricots.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 247,
+   "protein_g": 12,
+   "carbs_g": 33,
+   "fat_g": 5,
+   "fiber_g": 6
+  },
+  "ingredients": [
+   {
+    "en": "Red bell pepper, deseeded and finely chopped",
+    "fr": "Poivron rouge, épépiné et haché finement",
+    "ar": "فلفلة حمرا منزوعة الزريعة ومقطعة صغيرة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Spring onions, finely chopped",
+    "fr": "Oignons nouveaux, hachés",
+    "ar": "بصلة خضرة مقطعة صغيرة",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Reduced-salt baked beans",
+    "fr": "Haricots blancs à la tomate, moins salés",
+    "ar": "لوبيا مصبرة فالصلصة، ملحتها خفيفة",
+    "qty": 420,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Mushrooms, sliced",
+    "fr": "Champignons, tranchés",
+    "ar": "فطر مقطع",
+    "qty": 150,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Cherry tomatoes, halved",
+    "fr": "Tomates cerises, coupées en deux",
+    "ar": "ماطيشة صغيرة مقطعة نصين",
+    "qty": 16,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat spread",
+    "fr": "Margarine allégée",
+    "ar": "زبدة نباتية خفيفة الدسم",
+    "qty": 4,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الفلفلة الحمرا والبصلة الخضرة فطنجرة كبيرة مع 3 معالق ديال الما. طيبي 2 حتى 3 دقايق على نار هادية حتى يجف الما.",
+    "زيدي اللوبيا، الفطر والماطيشة الصغيرة للطنجرة. سخني على نار هادية 5 حتى 6 دقايق، مع التقليب بزاف، حتى تسخن اللوبيا مزيان.",
+    "فنفس الوقت، حمصي الخبز وادهني كل شريحة بالزبدة النباتية. حطي اللوبيا فوق الخبز وقدمي مع رشة لبزار."
+   ],
+   "tips": [
+    "إلى ما عندكش بصلة خضرة، يمكن تستعملي بصلة عادية مقطعة صغيرة."
+   ]
+  },
+  "tags": [
+   "peppers",
+   "vegetarian",
+   "gluten",
+   "legumes"
+  ],
+  "photo_query": "baked beans toast vegetables"
+ },
+ {
+  "slug": "mashed-avocado-cheese-on-toast",
+  "meal": "breakfast",
+  "name_en": "Mashed avocado cheese on toast",
+  "name_fr": "Avocat écrasé et fromage sur toast",
+  "name_ar": "أفوكا مهروسة بالجبن فوق الخبز محمص",
+  "name_latin": "Lavoca mahrousa bel jben foq lkhobz m7ammes",
+  "desc_en": "A healthier take on cheese on toast, with mashed avocado and tomato under the melted cheese.",
+  "desc_fr": "Une version plus légère du toast au fromage, avec avocat écrasé et tomate sous le fromage fondu.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 5,
+  "macros": {
+   "kcal": 301,
+   "protein_g": 9,
+   "carbs_g": 23,
+   "fat_g": 18,
+   "fiber_g": 7
+  },
+  "ingredients": [
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ripe avocados",
+    "fr": "Avocats mûrs",
+    "ar": "أفوكا مزيانة",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Tomatoes, sliced",
+    "fr": "Tomates, tranchées",
+    "ar": "ماطيشة مقطعة شرايح",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Reduced-fat hard cheese, grated",
+    "fr": "Fromage à pâte dure allégé, râpé",
+    "ar": "جبن قاسي خفيف الدسم مبرش",
+    "qty": 40,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حمصي شرايح الخبز.",
+    "فنفس الوقت، قشري الأفوكا، نزعي النواة وهرسيها بفرشيطة. ادهنيها فوق الخبز المحمص وصفي فوقها الماطيشة. رشي شوية لبزار.",
+    "رشي الجبن فوق وحطيه فالفوطاج 2 حتى 3 دقايق حتى يدوب الجبن."
+   ],
+   "tips": [
+    "باش تتأكدي إلى الأفوكا مزيانة، كبسي بشوية على طرفها الدقيق، خاصها تعطي شوية.",
+    "بشري الجبن رقيق باش يعمر أكثر."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "avocado toast melted cheese tomato"
+ },
+ {
+  "slug": "pancakes-with-tomato-and-mushrooms",
+  "meal": "breakfast",
+  "name_en": "Savoury tomato and mushroom pancakes",
+  "name_fr": "Crêpes salées à la tomate et aux champignons",
+  "name_ar": "مسمن رقيق بالماطيشة والفطر",
+  "name_latin": "Crepe malha bel matisha w lfoter",
+  "desc_en": "Thin savoury pancakes topped with mushrooms and cherry tomatoes, a relaxed weekend breakfast or light lunch.",
+  "desc_fr": "Des crêpes fines et salées garnies de champignons et de tomates cerises.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 15,
+  "macros": {
+   "kcal": 177,
+   "protein_g": 10,
+   "carbs_g": 26,
+   "fat_g": 5,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Plain flour",
+    "fr": "Farine",
+    "ar": "دقيق",
+    "qty": 100,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Egg",
+    "fr": "Œuf",
+    "ar": "بيضة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 3,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 250,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Closed-cup mushrooms, sliced",
+    "fr": "Champignons de Paris, tranchés",
+    "ar": "فطر مقطع",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Reduced-salt vegetable stock",
+    "fr": "Bouillon de légumes allégé en sel",
+    "ar": "مرق ديال الخضرة ملحتو خفيفة",
+    "qty": 50,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Cherry tomatoes, halved",
+    "fr": "Tomates cerises, coupées en deux",
+    "ar": "ماطيشة صغيرة مقطعة نصين",
+    "qty": 2,
+    "unit": "bunch",
+    "group": "fresh"
+   },
+   {
+    "en": "Dried mixed herbs",
+    "fr": "Herbes de Provence",
+    "ar": "لخلطة ديال لعشاب اليابسة",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الدقيق فطبسيل كبير وزيدي البيضة، الدانون والحليب. خفقي بمخفقة حتى يولي العجين ناعم بلا كتل.",
+    "سخني شوية قطرات زيت فمقلاة ما كتلصقش. صبي ربع العجين ودوري المقلاة باش يتوزع العجين. طيبيه حتى يبان فيه الفقاقيع ويجمد، من بعد قلبيه للجهة الثانية. كرري باش تصاوبي 4 مسامن، وخليهم سخونين.",
+    "فنفس الوقت، حطي الفطر والمرق فمقلاة كبيرة وخليهم يطيبو 5 حتى 6 دقايق. زيدي الماطيشة الصغيرة ولعشاب وطيبي دقيقتين حتى 3 أخرين.",
+    "قدمي مسمن لكل واحد، وحطي فوقو الفطر والماطيشة."
+   ],
+   "tips": [
+    "يمكن تصاوبي العجين بالخلاط، خلطي الكل قريب 15 حتى 20 ثانية.",
+    "للنسخة الحلوة، قدمي المسمن مع موزة مقطعة شرايح وملعقة زيادة ديال الدانون."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "savoury pancake mushroom tomato plate"
+ },
+ {
+  "slug": "toasted-oats-with-yoghurt-and-fruit",
+  "meal": "breakfast",
+  "name_en": "Toasted oats with yoghurt and fruit",
+  "name_fr": "Flocons d'avoine grillés au yaourt et aux fruits",
+  "name_ar": "شوفان محمص بالدانون والفواكه",
+  "name_latin": "Chofan m7ammes bel danone w lfawakih",
+  "desc_en": "Lightly toasted oats, nuts and seeds stirred with yoghurt, apple and grapes, a crunchy start to the day.",
+  "desc_fr": "Flocons d'avoine, noix et graines légèrement grillés, mélangés au yaourt, à la pomme et au raisin.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 2,
+  "macros": {
+   "kcal": 479,
+   "protein_g": 16,
+   "carbs_g": 58,
+   "fat_g": 19,
+   "fiber_g": 7
+  },
+  "ingredients": [
+   {
+    "en": "Rolled oats",
+    "fr": "Flocons d'avoine",
+    "ar": "شوفان",
+    "qty": 200,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Almonds or hazelnuts, chopped",
+    "fr": "Amandes ou noisettes, hachées",
+    "ar": "لوز أو بندق مقطع",
+    "qty": 40,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Sunflower seeds",
+    "fr": "Graines de tournesol",
+    "ar": "زريعة عباد الشمس",
+    "qty": 40,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Sesame seeds",
+    "fr": "Graines de sésame",
+    "ar": "جلجلان",
+    "qty": 20,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 320,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Unsweetened apple juice",
+    "fr": "Jus de pomme sans sucre ajouté",
+    "ar": "عصير التفاح بلا سكر",
+    "qty": 120,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Sultanas or raisins",
+    "fr": "Raisins secs",
+    "ar": "زبيب",
+    "qty": 40,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Apple, cored and grated",
+    "fr": "Pomme, épépinée et râpée",
+    "ar": "تفاحة منزوعة القلب ومبرشة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Seedless grapes, halved",
+    "fr": "Raisins sans pépins, coupés en deux",
+    "ar": "عنب بلا زريعة مقطع نصين",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. فرشي الشوفان، الكسكروط ولزريعة فوق طبق الفران وحمصيهم دقيقة حتى 2 دقايق. عسها ما تحرقهمش!",
+    "صبي الخليط فطبسيل وزيدي الدانون، عصير التفاح، الزبيب والتفاح المبرش وقلبي.",
+    "وزعي على 4 طبيسل وزيني بالعنب."
+   ],
+   "tips": [
+    "إلى ما كتاكليش الكسكروط، ماشي مشكل تزيديه.",
+    "بدلي الدانون بحليب الصويا باش يولي الطبق بلا حليب البقر.",
+    "يمكن تستعملي توت أزرق أو توت العليق بدل العنب."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "nuts",
+   "vegetarian"
+  ],
+  "photo_query": "toasted oats yoghurt fruit grapes bowl"
+ },
+ {
+  "slug": "forest-fruit-milkshake",
+  "meal": "breakfast",
+  "name_en": "Forest fruit milkshake",
+  "name_fr": "Milkshake aux fruits des bois",
+  "name_ar": "ميلكشيك فواكه الغابة",
+  "name_latin": "Milkshake dyal fawakih lghaba",
+  "desc_en": "A five-minute pink milkshake of banana, frozen berries, yoghurt and milk.",
+  "desc_fr": "Un milkshake rose en cinq minutes à la banane, fruits rouges surgelés, yaourt et lait.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 0,
+  "macros": {
+   "kcal": 157,
+   "protein_g": 9,
+   "carbs_g": 23,
+   "fat_g": 5,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Banana, peeled",
+    "fr": "Banane, épluchée",
+    "ar": "موزة مقشرة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Frozen mixed berries",
+    "fr": "Fruits rouges surgelés",
+    "ar": "فواكه حمرا مجمدة مخلطة",
+    "qty": 150,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 150,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 750,
+    "unit": "ml",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "قطعي الموزة فالخلاط وزيدي الفواكه المجمدة (ماشي لازم تفكها).",
+    "زيدي الدانون والحليب. خلطي 15 حتى 20 ثانية، من بعد صبي ف4 كيسان.",
+    "قدميها وهي باردة!"
+   ],
+   "tips": [
+    "يمكن تستعملي توت العليق المجمد بدل فواكه الغابة. زيادتها وهي مجمدة كتعطي ميلكشيك بارد بزاف.",
+    "إلى ما عندكش خلاط عادي، استعملي خلاط يدوي فطاس."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "berry milkshake pink glasses"
+ },
+ {
+  "slug": "mini-apple-and-banana-muffins",
+  "meal": "breakfast",
+  "name_en": "Mini apple and banana muffins",
+  "name_fr": "Mini-muffins pomme et banane",
+  "name_ar": "مافن صغير بالتفاح والموز",
+  "name_latin": "Muffin sghir bettfah w lmouz",
+  "desc_en": "Easy oven muffins with apple and mashed banana, good for breakfast on the go and freezer-friendly.",
+  "desc_fr": "Des muffins faciles à la pomme et à la banane écrasée, parfaits à emporter.",
+  "cuisine": "British",
+  "servings": 12,
+  "prep_min": 20,
+  "cook_min": 25,
+  "macros": {
+   "kcal": 99,
+   "protein_g": 2,
+   "carbs_g": 16,
+   "fat_g": 3,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Plain flour",
+    "fr": "Farine",
+    "ar": "دقيق",
+    "qty": 150,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Baking powder",
+    "fr": "Levure chimique",
+    "ar": "لفير",
+    "qty": 1.5,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Caster sugar",
+    "fr": "Sucre fin",
+    "ar": "سكر ناعم",
+    "qty": 50,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Semi-skimmed milk",
+    "fr": "Lait demi-écrémé",
+    "ar": "حليب نص سمين",
+    "qty": 100,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Egg",
+    "fr": "Œuf",
+    "ar": "بيضة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Vanilla extract",
+    "fr": "Extrait de vanille",
+    "ar": "فانيليا",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat spread, melted",
+    "fr": "Margarine allégée, fondue",
+    "ar": "زبدة نباتية خفيفة الدسم مدوبة",
+    "qty": 40,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Apple, peeled, cored and chopped",
+    "fr": "Pomme, pelée, épépinée et hachée",
+    "ar": "تفاحة مقشرة منزوعة القلب ومقطعة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Banana, mashed",
+    "fr": "Banane, écrasée",
+    "ar": "موزة مهروسة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفران 200 درجة (180 بالمروحة). حطي 12 ورقة كاغيط فصينية المافن.",
+    "غربلي الدقيق واللفير فطبسيل، من بعد زيدي السكر.",
+    "حطي الحليب، البيضة، الفانيليا والزبدة المدوبة فكاس وخفقيهم. زيدي الخليط السائل للدقيق، من بعد زيدي التفاح والموز المهروس. قلبي بشوية بلا ما تزيدي فالخلط.",
+    "عمري الورقات بالعجين وخبزي 20 حتى 25 دقيقة، حتى يطلعو المافن ويوليو دهبيين. نزعيهم بشوية من الصينية وخليهم يبردو فوق الشبكة."
+   ],
+   "tips": [
+    "إلى بغيتي، زيدي نص ملعقة صغيرة قرفة أو لخلطة ديال لبهارات الحلوة للدقيق والسكر.",
+    "باش تجمديهم، خليهم يبردو مزيان قبل ما تحطيهم فكيس الفريزر."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "mini apple banana muffins"
+ },
+ {
+  "slug": "vegetable-omelettes",
+  "meal": "breakfast",
+  "name_en": "Traffic light omelette",
+  "name_fr": "Omelette aux poivrons multicolores",
+  "name_ar": "أومليت الفلفلة الملونة",
+  "name_latin": "Omelette dyal lfelfla lmlawna",
+  "desc_en": "A colourful omelette with red and yellow peppers and spring onion, light for breakfast or lunch.",
+  "desc_fr": "Une omelette colorée aux poivrons rouge et jaune et oignons nouveaux.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 15,
+  "macros": {
+   "kcal": 190,
+   "protein_g": 14,
+   "carbs_g": 6,
+   "fat_g": 13,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Red bell pepper, deseeded and chopped",
+    "fr": "Poivron rouge, épépiné et haché",
+    "ar": "فلفلة حمرا منزوعة الزريعة ومقطعة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Yellow bell pepper, deseeded and chopped",
+    "fr": "Poivron jaune, épépiné et haché",
+    "ar": "فلفلة صفرا منزوعة الزريعة ومقطعة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Spring onions, finely chopped",
+    "fr": "Oignons nouveaux, hachés",
+    "ar": "بصلة خضرة مقطعة صغيرة",
+    "qty": 6,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 8,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني ملعقة صغيرة زيت فمقلاة ما كتلصقش. زيدي الفلفلة والبصلة الخضرة، وقلبي 3 حتى 4 دقايق حتى تطيب بشوية. نزعيهم من المقلاة لطبسيل. مسحي المقلاة بورقة، وسخني الفوطاج.",
+    "خفقي البيض مع الحليب. سخني شوية قطرات زيت فالمقلاة وصبي ربع خليط البيض. خليه يتوزع ويطيب دقيقة حتى 2 حتى يجمد من تحت.",
+    "رشي ربع خليط الفلفلة فوقو، ودخليه للفوطاج دقيقة حتى 2 حتى يجمد. زحفيه لطبسيل سخون.",
+    "كرري مع الخليط الباقي باش تصاوبي 4 أومليت. قدمي مع رشة لبزار."
+   ],
+   "tips": [
+    "مقلاة ما كتلصقش مزيانة من أحسن الحوايج اللي خاصك فالكوزينة!",
+    "قدمي كل أومليت مع شريحة خبز كامل باش تشبع الوجبة أكثر."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "peppers",
+   "vegetarian"
+  ],
+  "photo_query": "colourful omelette peppers plate"
+ },
+ {
+  "slug": "scrambled-eggs-on-mushrooms-with-grilled-peppers",
+  "meal": "breakfast",
+  "name_en": "Scrambled eggs on giant mushrooms with grilled peppers",
+  "name_fr": "Œufs brouillés sur champignons géants et poivrons grillés",
+  "name_ar": "بيض مخلط فوق الفطر الكبير مع الفلفلة المشوية",
+  "name_latin": "Bid mkhllet foq lfoter lkbir m3a lfelfla mchwiya",
+  "desc_en": "Scrambled eggs and grilled peppers piled onto a large grilled mushroom cap, served with warm pitta.",
+  "desc_fr": "Œufs brouillés et poivrons grillés sur un grand champignon grillé, servis avec du pain pita chaud.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 369,
+   "protein_g": 21,
+   "carbs_g": 44,
+   "fat_g": 10,
+   "fiber_g": 9
+  },
+  "ingredients": [
+   {
+    "en": "Red bell peppers, deseeded and sliced",
+    "fr": "Poivrons rouges, épépinés et tranchés",
+    "ar": "فلفلة حمرا منزوعة الزريعة ومقطعة",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Large mushrooms, stalks removed",
+    "fr": "Gros champignons, sans pied",
+    "ar": "فطر كبير منزوع الساق",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 6,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Skimmed milk",
+    "fr": "Lait écrémé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat spread",
+    "fr": "Margarine allégée",
+    "ar": "زبدة نباتية خفيفة الدسم",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Cherry tomatoes, halved",
+    "fr": "Tomates cerises, coupées en deux",
+    "ar": "ماطيشة صغيرة مقطعة نصين",
+    "qty": 12,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal pittas",
+    "fr": "Pains pita complets",
+    "ar": "خبز بيتا كامل",
+    "qty": 4,
+    "unit": "piece",
+    "group": "dry"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. صفي الفلفلة المقطعة وراس الفطر فالشبكة، وطيبيهم 4 حتى 5 دقايق، وقلبيهم مرة وحدة.",
+    "ملي كيتشوا الخضرة، خفقي البيض مع الحليب. قطعي ساق الفطر صغير.",
+    "دوبي الزبدة النباتية فطنجرة ما كتلصقش وزيدي البيض وساق الفطر، وقلبي بملعقة ديال الخشب حتى يجمد البيض. زيدي الفلفلة المشوية والماطيشة الصغيرة، وطيبي شوية ثواني زيادة.",
+    "فنفس الوقت، سخني خبز البيتا فالطوستير أو تحت الفوطاج. سخني 4 طبيسل وحطي فطرة فوق كل واحد. وزعي البيض المخلط، رشي لبزار وقدمي مع البيتا السخونة."
+   ],
+   "tips": []
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "peppers",
+   "gluten",
+   "vegetarian"
+  ],
+  "photo_query": "scrambled eggs grilled mushroom peppers"
+ },
+ {
+  "slug": "mushrooms-on-toast",
+  "meal": "breakfast",
+  "name_en": "Creamy mushrooms on toast",
+  "name_fr": "Champignons crémeux sur toast",
+  "name_ar": "فطر بالصلصة فوق الخبز محمص",
+  "name_latin": "Lfoter bes-salsa foq lkhobz m7ammes",
+  "desc_en": "Mushrooms simmered in milk and lightly thickened, spooned over buttered toast, ready in minutes.",
+  "desc_fr": "Champignons mijotés dans du lait légèrement épaissi, servis sur toast beurré.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 185,
+   "protein_g": 10,
+   "carbs_g": 21,
+   "fat_g": 6,
+   "fiber_g": 5
+  },
+  "ingredients": [
+   {
+    "en": "Button mushrooms, washed and sliced",
+    "fr": "Champignons de Paris, lavés et tranchés",
+    "ar": "فطر مغسول ومقطع",
+    "qty": 4,
+    "unit": "bunch",
+    "group": "fresh"
+   },
+   {
+    "en": "Semi-skimmed milk",
+    "fr": "Lait demi-écrémé",
+    "ar": "حليب نص سمين",
+    "qty": 300,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat spread",
+    "fr": "Margarine allégée",
+    "ar": "زبدة نباتية خفيفة الدسم",
+    "qty": 4,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Cornflour",
+    "fr": "Fécule de maïs",
+    "ar": "نشا الذرة",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الفطر والحليب فطنجرة، وسخني حتى يبدا يغلي. نقصي النار وخليه يطيب على نار هادية 5 دقايق.",
+    "فنفس الوقت حمصي الخبز. ادهني كل شريحة بالزبدة النباتية.",
+    "خلطي نشا الذرة مع ملعقتين ديال الما البارد، من بعد زيديها للفطر. سخني حتى يغليظ (غادي ياخد قريب ثواني)، وطيبي دقيقة زيادة على نار هادية.",
+    "وزعي الفطر على شرايح الخبز وقدمي فالحين."
+   ],
+   "tips": [
+    "مرة أخرى، يمكن تستعملي خليط الفطر كحشوة لذيذة للأومليت.",
+    "يمكن تستعملي خبز البيتا بدل الخبز المحمص إلى بغيتي."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "creamy mushrooms on toast"
+ },
+ {
+  "slug": "fruity-french-toast",
+  "meal": "breakfast",
+  "name_en": "Fruity French toast",
+  "name_fr": "Pain perdu aux fruits",
+  "name_ar": "خبز محمر بالفواكه",
+  "name_latin": "Khobz m7ammer bel fawakih",
+  "desc_en": "Egg-soaked fruit bread pan-fried until golden, topped with banana and berries.",
+  "desc_fr": "Pain aux fruits trempé dans l'œuf et doré à la poêle, garni de banane et de fruits rouges.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 5,
+  "macros": {
+   "kcal": 115,
+   "protein_g": 4,
+   "carbs_g": 20,
+   "fat_g": 3,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Fruit bread slices",
+    "fr": "Tranches de pain aux fruits",
+    "ar": "خبز بالفواكه مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Egg",
+    "fr": "Œuf",
+    "ar": "بيضة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 150,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Vanilla extract",
+    "fr": "Extrait de vanille",
+    "ar": "فانيليا",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 0.5,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Bananas, peeled and sliced",
+    "fr": "Bananes, épluchées et tranchées",
+    "ar": "موز مقشر ومقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Frozen mixed berries, thawed",
+    "fr": "Fruits rouges surgelés, décongelés",
+    "ar": "فواكه حمرا مجمدة مفكوكة",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "قطعي شرايح الخبز نصين بشكل مثلث.",
+    "فطبسيل واسع، خفقي البيضة مع الحليب والفانيليا. حطي قطع الخبز وخليهم 2 حتى 3 دقايق، وقلبيهم مرة وحدة باش يتشربو مزيان من الجوج الجهات.",
+    "سخني مقلاة كبيرة ما كتلصقش وزيدي الزيت. حطي الخبز المتشرب وطيبيه على نار هادية دقيقة حتى 2 حتى يجمد ويولي دهبي.",
+    "قلبيه وطيبي الجهة الثانية دقيقة حتى 2 أخرين.",
+    "وزعي الخبز على 4 طبيسل سخونين. زيني بشرايح الموز وقدمي مع الفواكه الحمرا."
+   ],
+   "tips": [
+    "هاد الوصفة كتخدم مزيان بخبز الفواكه اللي قدم شوية، الخبز اليابس كيشرب الخليط أكثر.",
+    "بدل الموز أو الفواكه الحمرا، جربي مانجو مقطعة أو أناناس.",
+    "يمكن تقدميها بالفريز الطري أو التوت الأزرق ملي يكونو فموسمهم."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "french toast banana berries"
+ },
+ {
+  "slug": "english-breakfast-muffins",
+  "meal": "breakfast",
+  "name_en": "English breakfast muffins (halal)",
+  "name_fr": "Muffins anglais du petit-déjeuner (halal)",
+  "name_ar": "مافن الفطور الإنجليزي (حلال)",
+  "name_latin": "Muffin lftour linglizi (halal)",
+  "desc_en": "Toasted English muffins with soft cheese, halal smoked turkey and scrambled egg.",
+  "desc_fr": "Muffins anglais grillés au fromage frais, dinde fumée halal et œufs brouillés.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 5,
+  "macros": {
+   "kcal": 291,
+   "protein_g": 20,
+   "carbs_g": 34,
+   "fat_g": 8,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "English muffins, sliced in half",
+    "fr": "Muffins anglais, coupés en deux",
+    "ar": "مافن إنجليزي مقطع نصين",
+    "qty": 4,
+    "unit": "piece",
+    "group": "dry"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 2,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 0.5,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat soft cheese",
+    "fr": "Fromage frais allégé",
+    "ar": "جبن طري خفيف الدسم",
+    "qty": 40,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Halal smoked turkey slices",
+    "fr": "Tranches de dinde fumée halal",
+    "ar": "شرائح الديك الرومي المدخن الحلال",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. حمصي المافن من الوجه المقطوع غير.",
+    "فنفس الوقت، خفقي البيض مع الحليب. سخني الزيت فطنجرة ما كتلصقش وزيدي البيض، وقلبي باش يجمد ويولي مخلط.",
+    "ادهني نص المافن المحمص بالجبن الطري وحطي فوقه شريحة ديك رومي. وزعي البيض المخلط على المافن، رشي لبزار، وغطي بالنص الآخر."
+   ],
+   "tips": [
+    "جربي خبز الصمون الكامل بدل المافن الإنجليزي للتغيير.",
+    "إلى بغيتي، سلقي البيض فالما الهادي 3 حتى 4 دقايق حتى يجمد ويبقى طري فالوسط.",
+    "للنسخة النباتية، بدلي الديك الرومي بماطيشة مشوية أو فطر مقطع مطيب فمرق الخضرة."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "chicken",
+   "gluten"
+  ],
+  "photo_query": "breakfast muffin egg turkey cheese"
+ },
+ {
+  "slug": "three-bears-breakfast",
+  "meal": "breakfast",
+  "name_en": "Apple and raspberry porridge",
+  "name_fr": "Porridge à la pomme et à la framboise",
+  "name_ar": "بسيسة بالتفاح وتوت العليق",
+  "name_latin": "Bsissa bettfah w tout l3oliq",
+  "desc_en": "Creamy porridge topped with yoghurt, apple slices and raspberries.",
+  "desc_fr": "Porridge crémeux garni de yaourt, tranches de pomme et framboises.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 8,
+  "macros": {
+   "kcal": 344,
+   "protein_g": 17,
+   "carbs_g": 48,
+   "fat_g": 9,
+   "fiber_g": 6
+  },
+  "ingredients": [
+   {
+    "en": "High-fibre porridge oats",
+    "fr": "Flocons d'avoine riches en fibres",
+    "ar": "شوفان غني بالألياف",
+    "qty": 200,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 1,
+    "unit": "l",
+    "group": "fresh"
+   },
+   {
+    "en": "Cold water",
+    "fr": "Eau froide",
+    "ar": "الما بارد",
+    "qty": 80,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Apple, cored and thinly sliced",
+    "fr": "Pomme, épépinée et finement tranchée",
+    "ar": "تفاحة منزوعة القلب ومقطعة رقيقة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Raspberries",
+    "fr": "Framboises",
+    "ar": "توت العليق",
+    "qty": 40,
+    "unit": "g",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الشوفان فطنجرة مع الحليب والما. سخني مع التقليب المستمر حتى يغليظ.",
+    "نقصي النار وخليه يطيب على نار هادية 3 حتى 4 دقايق، مع التقليب.",
+    "وزعي البسيسة على 4 طبيسل وزيني بالدانون، التفاح وتوت العليق. قدميها فالحين."
+   ],
+   "tips": [
+    "إلى ما كتاكليش منتجات الحليب، صاوبي البسيسة بالما، أو بحليب الصويا أو الشوفان.",
+    "جربي المانجو والأناناس الطري بدلها — كاينين فمعظم لمحلات."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "porridge apple raspberries bowl"
+ },
+ {
+  "slug": "carrot-and-sultana-pancakes",
+  "meal": "breakfast",
+  "name_en": "Carrot and sultana mini pancakes",
+  "name_fr": "Mini-crêpes à la carotte et aux raisins secs",
+  "name_ar": "مسمن صغير بالخيزو والزبيب",
+  "name_latin": "Msemmen sghir bel khizzou w zbib",
+  "desc_en": "Quick wholemeal mini pancakes with grated carrot and sultanas, good warm or cold.",
+  "desc_fr": "Mini-crêpes complètes rapides à la carotte râpée et aux raisins secs.",
+  "cuisine": "British",
+  "servings": 8,
+  "prep_min": 10,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 91,
+   "protein_g": 4,
+   "carbs_g": 14,
+   "fat_g": 2,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Wholemeal self-raising flour",
+    "fr": "Farine complète à levure incorporée",
+    "ar": "دقيق كامل فيه لفير",
+    "qty": 100,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Ground mixed spice",
+    "fr": "Épices mélangées moulues",
+    "ar": "لخلطة ديال لبهارات الحلوة",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Large egg",
+    "fr": "Gros œuf",
+    "ar": "بيضة كبيرة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Grated carrot",
+    "fr": "Carotte râpée",
+    "ar": "خيزو مبرش",
+    "qty": 80,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat plain yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Semi-skimmed milk",
+    "fr": "Lait demi-écrémé",
+    "ar": "حليب نص سمين",
+    "qty": 100,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Sultanas or raisins",
+    "fr": "Raisins secs",
+    "ar": "زبيب",
+    "qty": 30,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الدقيق، لخلطة ديال لبهارات، البيضة، الخيزو المبرش، الدانون والحليب فطبسيل كبير وخفقي مزيان بمخفقة أو فرشيطة.",
+    "زيدي الزبيب وقلبي.",
+    "سخني مقلاة ما كتلصقش على نار متوسطة وزيدي شوية قطرات زيت. طيبي ملعقة كبيرة من العجين فمرة، وقلبيها بعد دقيقة حتى 2 باش تطيب الجهة الثانية.",
+    "صاوبي 8 مسامن صغار بهاد الطريقة، وزيدي شوية قطرات زيت لكل دورة."
+   ],
+   "tips": [
+    "يمكن تستعملي الدقيق الأبيض، لكن الكامل فيه ألياف أكثر.",
+    "حافظي عليها فكيس أو حق مسدود فبلاصة باردة، غادي تعمر 2 حتى 3 ديال الأيام."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "carrot mini pancakes sultanas"
+ },
+ {
+  "slug": "super-scrambled-eggs",
+  "meal": "breakfast",
+  "name_en": "Super scrambled eggs",
+  "name_fr": "Super œufs brouillés",
+  "name_ar": "بيض مخلط سوبر",
+  "name_latin": "Bid mkhllet super",
+  "desc_en": "Soft scrambled eggs with grilled tomatoes and mushrooms on wholemeal toast.",
+  "desc_fr": "Œufs brouillés moelleux avec tomates et champignons grillés sur pain complet.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 255,
+   "protein_g": 17,
+   "carbs_g": 19,
+   "fat_g": 13,
+   "fiber_g": 3
+  },
+  "ingredients": [
+   {
+    "en": "Tomatoes, halved",
+    "fr": "Tomates, coupées en deux",
+    "ar": "ماطيشة مقطعة نصين",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Button mushrooms",
+    "fr": "Champignons de Paris",
+    "ar": "فطر",
+    "qty": 2,
+    "unit": "bunch",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 8,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat spread",
+    "fr": "Margarine allégée",
+    "ar": "زبدة نباتية خفيفة الدسم",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. صفي الماطيشة والفطر فالشبكة وطيبيهم 8 حتى 10 دقايق. فنفس الوقت حمصي الخبز.",
+    "خفقي البيض مع الحليب فطبسيل. دوبي الزبدة النباتية فطنجرة ما كتلصقش وزيدي خليط البيض.",
+    "طيبي على نار متوسطة، مع التقليب المستمر بملعقة ديال الخشب، حتى يجمد البيض — قريب دقيقة.",
+    "قدمي البيض المخلط فوق الخبز المحمص، مع الماطيشة والفطر المشويين. رشي لبزار على حساب الذوق."
+   ],
+   "tips": [
+    "يمكن تبدلي الماطيشة بشرايح فلفلة حمرا أو صفرا مشوية.",
+    "إلى بغيتيها حرة، زيدي رشة فلفلة حارة مطحونة لخليط البيض.",
+    "باش ما يبقاش البيض مجفف بزاف، نزعيه من النار وهو مازال شوية سائل، غادي يكمل يطيب بسخونة المقلاة."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "gluten",
+   "vegetarian"
+  ],
+  "photo_query": "scrambled eggs toast tomato mushroom"
+ },
+ {
+  "slug": "carrot-and-courgette-muffins",
+  "meal": "breakfast",
+  "name_en": "Savoury carrot and courgette muffins",
+  "name_fr": "Muffins salés à la carotte et à la courgette",
+  "name_ar": "مافن مالح بالخيزو والكرعة",
+  "name_latin": "Muffin malh bel khizzou w lkar3a",
+  "desc_en": "Savoury oat muffins packed with grated carrot and courgette, good warm or cold in a lunchbox.",
+  "desc_fr": "Muffins salés à l'avoine garnis de carotte et courgette râpées.",
+  "cuisine": "British",
+  "servings": 8,
+  "prep_min": 15,
+  "cook_min": 30,
+  "macros": {
+   "kcal": 200,
+   "protein_g": 6,
+   "carbs_g": 16,
+   "fat_g": 12,
+   "fiber_g": 3
+  },
+  "ingredients": [
+   {
+    "en": "Low-fat spread, melted",
+    "fr": "Margarine allégée, fondue",
+    "ar": "زبدة نباتية خفيفة الدسم مدوبة",
+    "qty": 125,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Skimmed milk",
+    "fr": "Lait écrémé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 2,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Large eggs, beaten",
+    "fr": "Gros œufs, battus",
+    "ar": "بيض كبير مخفوق",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Grated carrot",
+    "fr": "Carotte râpée",
+    "ar": "خيزو مبرش",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Grated courgette",
+    "fr": "Courgette râpée",
+    "ar": "كرعة مبرشة",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal self-raising flour",
+    "fr": "Farine complète à levure incorporée",
+    "ar": "دقيق كامل فيه لفير",
+    "qty": 100,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Baking powder",
+    "fr": "Levure chimique",
+    "ar": "لفير",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Dried mixed herbs",
+    "fr": "Herbes de Provence",
+    "ar": "لخلطة ديال لعشاب اليابسة",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Porridge oats",
+    "fr": "Flocons d'avoine",
+    "ar": "شوفان",
+    "qty": 75,
+    "unit": "g",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفران 180 درجة (160 بالمروحة). فرشي صينية المافن ب8 ورقات كاغيط.",
+    "خلطي الزبدة النباتية المدوبة والباردة بشوية، الحليب والبيض. زيدي الخيزو والكرعة المبرشين وقلبي.",
+    "فطبسيل آخر كبير، دوزي الدقيق، اللفير، لعشاب والشوفان.",
+    "زيدي الخليط السائل للدقيق وقلبي بشوية بلا ما تزيدي. عمري ورقات المافن وخبزي 25 حتى 30 دقيقة حتى يوليو قاسحين ودهبيين. خليهم يبردو فوق الشبكة."
+   ],
+   "tips": [
+    "سر المافن الناجح هو ما تزيديش فخلط السائل مع اليابس.",
+    "جمدي شي عدد فكيس الفريزر، غادي يعمرو حتى 3 ديال الشهور."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "savoury carrot courgette muffins"
+ },
+ {
+  "slug": "blueberry-and-banana-muffins",
+  "meal": "breakfast",
+  "name_en": "Blueberry and banana muffins",
+  "name_fr": "Muffins myrtille et banane",
+  "name_ar": "مافن التوت الأزرق والموز",
+  "name_latin": "Muffin tout azreq w lmouz",
+  "desc_en": "Fruit-packed muffins with much less fat and sugar than shop-bought ones.",
+  "desc_fr": "Des muffins riches en fruits, bien moins gras et sucrés que ceux du commerce.",
+  "cuisine": "British",
+  "servings": 8,
+  "prep_min": 10,
+  "cook_min": 25,
+  "macros": {
+   "kcal": 227,
+   "protein_g": 6,
+   "carbs_g": 31,
+   "fat_g": 9,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Low-fat spread, melted",
+    "fr": "Margarine allégée, fondue",
+    "ar": "زبدة نباتية خفيفة الدسم مدوبة",
+    "qty": 125,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Semi-skimmed milk",
+    "fr": "Lait demi-écrémé",
+    "ar": "حليب نص سمين",
+    "qty": 2,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Vanilla extract",
+    "fr": "Extrait de vanille",
+    "ar": "فانيليا",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Eggs, beaten",
+    "fr": "Œufs, battus",
+    "ar": "بيض مخفوق",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ripe banana, mashed",
+    "fr": "Banane mûre, écrasée",
+    "ar": "موزة مزيانة مهروسة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Unsweetened apple purée",
+    "fr": "Compote de pomme sans sucre ajouté",
+    "ar": "معجون التفاح بلا سكر",
+    "qty": 50,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Self-raising flour",
+    "fr": "Farine à levure incorporée",
+    "ar": "دقيق فيه لفير",
+    "qty": 100,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Ground mixed spice",
+    "fr": "Épices mélangées moulues",
+    "ar": "لخلطة ديال لبهارات الحلوة",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Soft brown sugar",
+    "fr": "Sucre roux",
+    "ar": "سكر أسمر",
+    "qty": 50,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Dried blueberries",
+    "fr": "Myrtilles séchées",
+    "ar": "توت أزرق مجفف",
+    "qty": 75,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Porridge oats",
+    "fr": "Flocons d'avoine",
+    "ar": "شوفان",
+    "qty": 75,
+    "unit": "g",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفران 180 درجة (160 بالمروحة). فرشي صينية المافن ب8 ورقات كاغيط.",
+    "خلطي الزبدة النباتية المدوبة والباردة، الحليب، الفانيليا، الموز المهروس، معجون التفاح والبيض فطبسيل.",
+    "فطبسيل آخر كبير، دوزي الدقيق، لخلطة ديال لبهارات، السكر، التوت الأزرق والشوفان.",
+    "صبي الخليط السائل بشوية فوق اليابس، وقلبي بشوية حتى يتلاقاو.",
+    "وزعي الخليط على ورقات المافن، وخبزي 25 حتى 30 دقيقة حتى يوليو قاسحين ودهبيين. خرجيهم من الفران وخليهم يبردو فوق الشبكة."
+   ],
+   "tips": [
+    "باش تصاوبي معجون التفاح بروحك، طيبي تفاحة مقطعة فشوية ما 5 حتى 6 دقايق حتى تطيب، من بعد هرسيها وخليها تبرد.",
+    "سر المافن الناجح هو ما تزيديش فالخلط.",
+    "جربي الكرانبيري المجفف بدل التوت الأزرق مرة أخرى."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "blueberry banana muffins"
+ },
+ {
+  "slug": "eyeball-juice-jellies",
+  "meal": "breakfast",
+  "name_en": "Fruit jellies",
+  "name_fr": "Gelées de fruits",
+  "name_ar": "جيلي الفواكه",
+  "name_latin": "Jelly dyal lfawakih",
+  "desc_en": "A light fruit-juice jelly set with whole grapes and blueberries inside, a fun low-calorie treat.",
+  "desc_fr": "Une gelée légère au jus de fruits avec des raisins et myrtilles entiers à l'intérieur.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 0,
+  "macros": {
+   "kcal": 70,
+   "protein_g": 4,
+   "carbs_g": 13,
+   "fat_g": 0,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Green seedless grapes",
+    "fr": "Raisins verts sans pépins",
+    "ar": "عنب أخضر بلا زريعة",
+    "qty": 24,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Fresh blueberries",
+    "fr": "Myrtilles fraîches",
+    "ar": "توت أزرق طري",
+    "qty": 12,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Powdered gelatine",
+    "fr": "Gélatine en poudre",
+    "ar": "جيلاتين مسحوق",
+    "qty": 1,
+    "unit": "piece",
+    "group": "dry"
+   },
+   {
+    "en": "Unsweetened apple and raspberry juice",
+    "fr": "Jus de pomme et framboise sans sucre ajouté",
+    "ar": "عصير التفاح وتوت العليق بلا سكر",
+    "qty": 250,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Cold water",
+    "fr": "Eau froide",
+    "ar": "الما بارد",
+    "qty": 250,
+    "unit": "ml",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "شقي بعض العنب بلا ما تقطعوه كامل، ودخلي فيه حبة توت أزرق.",
+    "حطي شي حبات فقاع كيسان، وحطي الباقي فالتلاجة.",
+    "صبي 90 مل ديال الما السخون فكاس وذري عليه الجيلاتين المسحوق، قلبي. خليه 5 دقايق حتى يدوب.",
+    "خلطي عصير التفاح وتوت العليق مع الما البارد فقاع كبير. زيدي الجيلاتين المدوب وقلبي مزيان.",
+    "وزعي على الكيسان وحطيهم فالتلاجة حتى يجمدو، قريب 2 حتى 3 ديال الساعات.",
+    "قدميها مزينة بحبات العنب والتوت الباقيين."
+   ],
+   "tips": [
+    "يمكن تستعملي كورات البطيخ بدل العنب الأخضر.",
+    "ختاري عصير فواكه طبيعي 100%، ماشي مشروب فيه سكر مزاد."
+   ]
+  },
+  "tags": [
+   "vegetarian"
+  ],
+  "photo_query": "fruit juice jelly grapes glass"
+ },
+ {
+  "slug": "kedgeree-with-a-kick",
+  "meal": "breakfast",
+  "name_en": "Kedgeree with a kick",
+  "name_fr": "Kedgeree relevé",
+  "name_ar": "كدجري بيضة وحوت بالكاري",
+  "name_latin": "Kedgeree bida w lhout bel curry",
+  "desc_en": "Curried rice with three kinds of fish, peas and hard-boiled egg, cheap, filling and quick.",
+  "desc_fr": "Riz au curry avec trois poissons, petits pois et œuf dur, économique et rapide.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 15,
+  "cook_min": 15,
+  "macros": {
+   "kcal": 489,
+   "protein_g": 35,
+   "carbs_g": 65,
+   "fat_g": 12,
+   "fiber_g": 4
+  },
+  "ingredients": [
+   {
+    "en": "Easy-cook white or brown rice",
+    "fr": "Riz blanc ou complet à cuisson facile",
+    "ar": "روز بيض ولا كامل",
+    "qty": 300,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Skinless cod fillet, chunked",
+    "fr": "Filet de cabillaud sans peau, en morceaux",
+    "ar": "فيليه الحوت الأبيض بلا جلد مقطع",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Skinless smoked haddock fillet, chunked",
+    "fr": "Filet d'aiglefin fumé sans peau, en morceaux",
+    "ar": "فيليه الحوت المدخن بلا جلد مقطع",
+    "qty": 120,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Skinless salmon fillet, chunked",
+    "fr": "Filet de saumon sans peau, en morceaux",
+    "ar": "فيليه السلمون بلا جلد مقطع",
+    "qty": 120,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Curry powder",
+    "fr": "Poudre de curry",
+    "ar": "كاري مسحوق",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Frozen peas, thawed",
+    "fr": "Petits pois surgelés, décongelés",
+    "ar": "جلبانة مجمدة مفكوكة",
+    "qty": 150,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Fresh parsley, chopped",
+    "fr": "Persil frais, haché",
+    "ar": "معدنوس طري مقطع",
+    "qty": 2,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "طيبي الروز فالما كيغلي حتى يطيب، على حساب التعليمات ديال الباكيط. فنفس الوقت، سلقي البيض 10 دقايق.",
+    "حطي قطع الحوت فمقلاة كبيرة وزيدي شوية ما. سخني وخلي يطيب 3 حتى 4 دقايق حتى يبان الحوت مطيب. صفي.",
+    "قشري البيض وقطعيه ل4. صفي الروز وزيديه للحوت مع الكاري، الجلبانة والمعدنوس. سخني، مع التقليب بشوية، 2 حتى 3 دقايق. رشي لبزار وقدمي، وحطي البيض فوق."
+   ],
+   "tips": [
+    "دوري على خليط الحوت المحضر من قبل من عند البياع، غادي توفري فراس المال.",
+    "مرة أخرى، استعملي خضرة مجمدة مخلطة بدل الجلبانة."
+   ]
+  },
+  "tags": [
+   "fish",
+   "eggs"
+  ],
+  "photo_query": "kedgeree fish rice eggs bowl"
+ },
+ {
+  "slug": "banana-and-raspberry-porridge",
+  "meal": "breakfast",
+  "name_en": "Creamy banana porridge with crushed raspberries",
+  "name_fr": "Porridge crémeux à la banane et framboises écrasées",
+  "name_ar": "بسيسة الموز بتوت العليق المهروس",
+  "name_latin": "Bsissa lmouz b tout l3oliq lmahros",
+  "desc_en": "Creamy oat porridge with mashed banana stirred through, topped with yoghurt and crushed raspberries.",
+  "desc_fr": "Porridge crémeux à l'avoine et à la banane écrasée, garni de yaourt et framboises écrasées.",
+  "cuisine": "British",
+  "servings": 6,
+  "prep_min": 10,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 214,
+   "protein_g": 9,
+   "carbs_g": 36,
+   "fat_g": 3,
+   "fiber_g": 5
+  },
+  "ingredients": [
+   {
+    "en": "Porridge oats",
+    "fr": "Flocons d'avoine",
+    "ar": "شوفان",
+    "qty": 200,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Skimmed milk",
+    "fr": "Lait écrémé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 300,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Water",
+    "fr": "Eau",
+    "ar": "الما",
+    "qty": 750,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Large ripe bananas",
+    "fr": "Grosses bananes mûres",
+    "ar": "موز كبير مزيان",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Raspberries",
+    "fr": "Framboises",
+    "ar": "توت العليق",
+    "qty": 200,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "0%-fat Greek yoghurt",
+    "fr": "Yaourt grec 0% de matière grasse",
+    "ar": "دانون يوناني خالي الدسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الشوفان فطنجرة مع الحليب والما. سخني مع التقليب المستمر حتى يغليظ. نقصي النار وخليه يطيب على نار هادية 3 حتى 4 دقايق، مع التقليب بزاف.",
+    "فنفس الوقت، هرسي الموز فطبسيل بفرشيطة. زيدي النص للبسيسة. زيدي توت العليق للنص الآخر ديال الموز وهرسيهم بشوية.",
+    "وزعي البسيسة على 6 طبيسل سخونين وزيني كل واحد بالدانون وخليط الموز وتوت العليق."
+   ],
+   "tips": []
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "banana porridge raspberries bowl"
+ },
+ {
+  "slug": "no-pastry-mini-mushroom-quiches",
+  "meal": "breakfast",
+  "name_en": "No-pastry mini mushroom quiches",
+  "name_fr": "Mini-quiches aux champignons sans pâte",
+  "name_ar": "كيش صغير بالفطر بلا عجين",
+  "name_latin": "Quiche sghir bel foter bla 3jin",
+  "desc_en": "Light egg and mushroom mini quiches with no pastry base, served with a crunchy green salad.",
+  "desc_fr": "Mini-quiches légères aux œufs et champignons sans fond de pâte, servies avec une salade croquante.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 20,
+  "cook_min": 15,
+  "macros": {
+   "kcal": 213,
+   "protein_g": 6,
+   "carbs_g": 3,
+   "fat_g": 7,
+   "fiber_g": 2
+  },
+  "ingredients": [
+   {
+    "en": "Low-fat spread, for greasing",
+    "fr": "Margarine allégée, pour graisser",
+    "ar": "زبدة نباتية خفيفة الدسم للدهن",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 1,
+    "unit": "tbsp",
+    "group": "dry"
+   },
+   {
+    "en": "Button mushrooms, quartered",
+    "fr": "Champignons de Paris, coupés en quatre",
+    "ar": "فطر مقطع أرباع",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Small onion, finely chopped",
+    "fr": "Petit oignon, haché finement",
+    "ar": "بصلة صغيرة مقطعة صغيرة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Eggs, beaten",
+    "fr": "Œufs, battus",
+    "ar": "بيض مخفوق",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Semi-skimmed milk",
+    "fr": "Lait demi-écrémé",
+    "ar": "حليب نص سمين",
+    "qty": 50,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   },
+   {
+    "en": "Ground nutmeg",
+    "fr": "Noix de muscade moulue",
+    "ar": "جوزة الطيب مطحونة",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   },
+   {
+    "en": "Reduced-fat cheddar, finely grated",
+    "fr": "Cheddar allégé, finement râpé",
+    "ar": "شودار خفيف الدسم مبرش رقيق",
+    "qty": 10,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Iceberg lettuce, shredded",
+    "fr": "Laitue iceberg, émincée",
+    "ar": "خس مقطع رقيق",
+    "qty": 0.25,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Green pepper, diced",
+    "fr": "Poivron vert, en dés",
+    "ar": "فلفلة خضرا مقطعة مكعبات",
+    "qty": 0.5,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Celery stick, sliced",
+    "fr": "Branche de céleri, tranchée",
+    "ar": "كرافس مقطع",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Cucumber, chopped",
+    "fr": "Concombre, coupé",
+    "ar": "خيار مقطع",
+    "qty": 0.25,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Fresh chives, chopped",
+    "fr": "Ciboulette fraîche, hachée",
+    "ar": "كراث طري مقطع",
+    "qty": 1,
+    "unit": "bunch",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "دهني قاع وحيوط 4 حفرات ديال صينية المافن. قطعي 4 دوائر ديال بابيي الفران وحطيهم فقاع كل حفرة.",
+    "سخني الزيت فمقلاة صغيرة، زيدي البصلة وطيبيها دقيقتين حتى تطرى، من بعد زيدي الفطر وطيبي شوية دقايق زيادة. حطيهم فصينية المافن.",
+    "خلطي البيض مع الحليب، لبزار وجوزة الطيب. صبيه فصينية المافن ورشي فوقو الجبن.",
+    "خبزيه فالفران المسخن من قبل (180 درجة، 160 بالمروحة) 15 دقيقة حتى يطلع ويولي دهبي.",
+    "خليه فالصينية يبرد 10 دقايق. نزعيه بسكينة تدور على حواف الصينية، وقدميه مع الشلاضة الخضرة."
+   ],
+   "tips": [
+    "جربي خضرة أخرى — استعمال 160 غرام خضرة مجمدة مفكوكة بدل الفطر والبصلة كيوفر الوقت لأنك ما خاصكش تطيبيها من قبل.",
+    "قدميها سخونة مع ماطيشة مشوية وخبز محمص لفطور نهاية الأسبوع اللذيذ."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "peppers",
+   "vegetarian"
+  ],
+  "photo_query": "mini crustless quiche mushroom salad"
+ },
+ {
+  "slug": "plum-and-peach-grills",
+  "meal": "breakfast",
+  "name_en": "Plum and peach grills",
+  "name_fr": "Prunes et pêches grillées sur toast",
+  "name_ar": "برقوق وخوخ مشوي فوق الخبز محمص",
+  "name_latin": "Barqoq w khoukh mchwi foq lkhobz m7ammes",
+  "desc_en": "Grilled plums and peaches over soft cheese on toast, an unexpectedly good fruity breakfast.",
+  "desc_fr": "Prunes et pêches grillées sur du fromage frais et du pain grillé.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 209,
+   "protein_g": 8,
+   "carbs_g": 27,
+   "fat_g": 6,
+   "fiber_g": 5
+  },
+  "ingredients": [
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat soft cheese",
+    "fr": "Fromage frais allégé",
+    "ar": "جبن طري خفيف الدسم",
+    "qty": 80,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Vanilla extract",
+    "fr": "Extrait de vanille",
+    "ar": "فانيليا",
+    "qty": 0.5,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Peaches, pitted and thinly sliced",
+    "fr": "Pêches, dénoyautées et finement tranchées",
+    "ar": "خوخ منزوع النواة ومقطع رقيق",
+    "qty": 2,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Plums, pitted and thinly sliced",
+    "fr": "Prunes, dénoyautées et finement tranchées",
+    "ar": "برقوق منزوع النواة ومقطع رقيق",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Half-fat crème fraîche",
+    "fr": "Crème fraîche allégée",
+    "ar": "كريمة فريش نص دسم",
+    "qty": 4,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground nutmeg",
+    "fr": "Noix de muscade moulue",
+    "ar": "جوزة الطيب مطحونة",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. حمصي شرايح الخبز بشوية من الجوج الجهات.",
+    "خلطي الجبن الطري مع الفانيليا وادهنيه فوق الخبز. زيني بالبرقوق والخوخ المقطعين.",
+    "دخليه للفوطاج 3 حتى 4 دقايق.",
+    "زيدي فوق كل طبسيل ملعقة كبيرة ديال الكريمة فريش، رشي جوزة الطيب وقدمي."
+   ],
+   "tips": [
+    "ختاري ديما الخبز الكامل بدل الأبيض، فيه ألياف أكثر لجسمك.",
+    "حاولي تزيدي فواكه طرية فالفطور معظم أيام الأسبوع."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "grilled peach plum toast cream"
+ },
+ {
+  "slug": "easy-sugar-and-lemon-pancakes",
+  "meal": "breakfast",
+  "name_en": "Simple sugar and lemon pancakes",
+  "name_fr": "Crêpes faciles au sucre et au citron",
+  "name_ar": "مسمن رقيق بالسكر والحامض",
+  "name_latin": "Crepe rqiqa bes-sokkar w lhamd",
+  "desc_en": "Thin classic pancakes finished with a squeeze of lemon and a little sugar.",
+  "desc_fr": "Des crêpes fines classiques terminées avec un filet de citron et un peu de sucre.",
+  "cuisine": "British",
+  "servings": 2,
+  "prep_min": 5,
+  "cook_min": 15,
+  "macros": {
+   "kcal": 195,
+   "protein_g": 8,
+   "carbs_g": 30,
+   "fat_g": 5,
+   "fiber_g": 1
+  },
+  "ingredients": [
+   {
+    "en": "Plain flour",
+    "fr": "Farine",
+    "ar": "دقيق",
+    "qty": 125,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Large egg",
+    "fr": "Gros œuf",
+    "ar": "بيضة كبيرة",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Low-fat milk",
+    "fr": "Lait allégé",
+    "ar": "حليب خفيف الدسم",
+    "qty": 300,
+    "unit": "ml",
+    "group": "fresh"
+   },
+   {
+    "en": "Vegetable oil",
+    "fr": "Huile végétale",
+    "ar": "زيت نباتي",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Lemon, sliced into quarters",
+    "fr": "Citron, coupé en quartiers",
+    "ar": "حامضة مقطعة أرباع",
+    "qty": 1,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Caster sugar",
+    "fr": "Sucre fin",
+    "ar": "سكر ناعم",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الدقيق، البيضة والحليب فطبسيل كبير مع ملعقتين ديال الما البارد. خفقي حتى يولي العجين ناعم رقيق.",
+    "سخني مقلاة صغيرة غليظة ما كتلصقش وزيدي شوية قطرات زيت لكل مسمن. صبي قريب 3 معالق كبار ديال العجين، ودوري المقلاة باش يتوزع على القاع كامل.",
+    "ملي تطيب الجهة السفلى (قريب 90 ثانية)، قلبيها باش تطيب الجهة الثانية. كرري باش تصاوبي 8 مسامن رقاق، قدميهم مباشرة أو خليهم سخونين فالفران على نار خفيفة.",
+    "قدمي مسمنين لكل واحد، مع نص ملعقة صغيرة سكر وربع حامضة للعصر."
+   ],
+   "tips": [
+    "يمكن تغطي العجين وتحطيه فالتلاجة حتى 4 ساعات قبل الطياب. غير خلطيه مزيان قبل ما تبداي.",
+    "عصير الليمون بديل زوين للتغيير، والدراري غادي يفضلوه على الحامض الحمض."
+   ]
+  },
+  "tags": [
+   "eggs",
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "thin pancakes lemon sugar plate"
+ },
+ {
+  "slug": "porridge-with-yoghurt-and-berries",
+  "meal": "breakfast",
+  "name_en": "Porridge with yoghurt and berries",
+  "name_fr": "Porridge au yaourt et aux fruits rouges",
+  "name_ar": "بسيسة بالدانون والتوت",
+  "name_latin": "Bsissa bel danone w tout",
+  "desc_en": "Simple porridge oats topped with yoghurt and mixed summer berries, quick and satisfying.",
+  "desc_fr": "Flocons d'avoine simples garnis de yaourt et de fruits rouges mélangés.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 207,
+   "protein_g": 8,
+   "carbs_g": 34,
+   "fat_g": 4,
+   "fiber_g": 4
+  },
+  "ingredients": [
+   {
+    "en": "Porridge oats",
+    "fr": "Flocons d'avoine",
+    "ar": "شوفان",
+    "qty": 150,
+    "unit": "g",
+    "group": "dry"
+   },
+   {
+    "en": "Water",
+    "fr": "Eau",
+    "ar": "الما",
+    "qty": 600,
+    "unit": "ml",
+    "group": "dry"
+   },
+   {
+    "en": "Low-fat natural yoghurt",
+    "fr": "Yaourt nature allégé",
+    "ar": "دانون طبيعي خفيف الدسم",
+    "qty": 8,
+    "unit": "tbsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Frozen mixed berries, thawed",
+    "fr": "Fruits rouges surgelés, décongelés",
+    "ar": "فواكه حمرا مجمدة مفكوكة",
+    "qty": 100,
+    "unit": "g",
+    "group": "fresh"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "حطي الشوفان والما فطنجرة ما كتلصقش. سخني مع التقليب حتى يغلي، من بعد نقصي النار وخليه يطيب على نار هادية، مع التقليب بزاف، 5 دقايق.",
+    "وزعي البسيسة على طبيسل وزيدي فوق كل واحد ملعقتين ديال الدانون. زيدي التوت فوق وقدمي."
+   ],
+   "tips": [
+    "عسي تخرجي الفواكه المجمدة من الفريزر ليلة قبل، باش تكون مفكوكة وقت الفطور."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian"
+  ],
+  "photo_query": "porridge yoghurt mixed berries bowl"
+ },
+ {
+  "slug": "haddock-florentine",
+  "meal": "breakfast",
+  "name_en": "Grilled fish florentine",
+  "name_fr": "Poisson florentine grillé",
+  "name_ar": "حوت مشوي فوق السبانخ مع البيضة",
+  "name_latin": "Lhout mchwi foq sbanekh m3a lbida",
+  "desc_en": "A poached egg on grilled white fish over wilted spinach, a lighter weekend brunch.",
+  "desc_fr": "Un œuf poché sur du poisson blanc grillé et des épinards fondus.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 10,
+  "macros": {
+   "kcal": 322,
+   "protein_g": 37,
+   "carbs_g": 19,
+   "fat_g": 10,
+   "fiber_g": 4
+  },
+  "ingredients": [
+   {
+    "en": "Skinless white fish fillets",
+    "fr": "Filets de poisson blanc sans peau",
+    "ar": "فيليه الحوت الأبيض بلا جلد",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Tomatoes, halved",
+    "fr": "Tomates, coupées en deux",
+    "ar": "ماطيشة مقطعة نصين",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Eggs",
+    "fr": "Œufs",
+    "ar": "بيض",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Reduced-fat spread",
+    "fr": "Margarine allégée",
+    "ar": "زبدة نباتية خفيفة الدسم",
+    "qty": 4,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Spinach",
+    "fr": "Épinards",
+    "ar": "سبانخ",
+    "qty": 300,
+    "unit": "g",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفوطاج. غليي الما. شوي الحوت مع الماطيشة حداه فالشبكة 5 حتى 6 دقايق حتى يطيب الحوت (خاصو يولي ما بانش شفاف ويتفرق بسهولة).",
+    "فنفس الوقت، سلقي البيض فالما الهادي كيغلي 4 حتى 5 دقايق. حمصي الخبز وادهنيه بالزبدة النباتية.",
+    "حطي السبانخ فمصفاة كبيرة وصبي عليه الما السخون بشوية باش يذبل. خليه يصفى شوية، من بعد وزعيه على 4 طبيسل سخونين. حطي الحوت فوقو، وبيضة مسلوقة فوق كل طبسيل.",
+    "رشي لبزار وقدمي مع الماطيشة والخبز المحمص."
+   ],
+   "tips": [
+    "جربي السلمون بدل الحوت الأبيض للتغيير.",
+    "زيدي شوية خل فالما ديال السلق باش يبقى البيض مجموع.",
+    "قدميها مع فطر مشوي بدل السبانخ إلى بغيتي."
+   ]
+  },
+  "tags": [
+   "fish",
+   "eggs",
+   "gluten"
+  ],
+  "photo_query": "poached egg fish spinach breakfast"
+ },
+ {
+  "slug": "baked-tomatoes-on-toast",
+  "meal": "breakfast",
+  "name_en": "Baked tomatoes on toast",
+  "name_fr": "Tomates au four sur toast",
+  "name_ar": "ماطيشة مطيبة بالفران فوق الخبز محمص",
+  "name_latin": "Matisha mtayba bel farran foq lkhobz m7ammes",
+  "desc_en": "Herby oven-baked tomatoes with a crumb and cheese topping, served on toast.",
+  "desc_fr": "Tomates au four aux herbes, gratinées au fromage, servies sur pain grillé.",
+  "cuisine": "British",
+  "servings": 4,
+  "prep_min": 5,
+  "cook_min": 15,
+  "macros": {
+   "kcal": 212,
+   "protein_g": 10,
+   "carbs_g": 34,
+   "fat_g": 5,
+   "fiber_g": 4
+  },
+  "ingredients": [
+   {
+    "en": "Tomatoes, halved",
+    "fr": "Tomates, coupées en deux",
+    "ar": "ماطيشة مقطعة نصين",
+    "qty": 8,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Cherry tomatoes, halved",
+    "fr": "Tomates cerises, coupées en deux",
+    "ar": "ماطيشة صغيرة مقطعة نصين",
+    "qty": 3,
+    "unit": "bunch",
+    "group": "fresh"
+   },
+   {
+    "en": "Dried mixed herbs",
+    "fr": "Herbes de Provence",
+    "ar": "لخلطة ديال لعشاب اليابسة",
+    "qty": 1,
+    "unit": "tsp",
+    "group": "dry"
+   },
+   {
+    "en": "Fresh chives, chopped",
+    "fr": "Ciboulette fraîche, hachée",
+    "ar": "كراث طري مقطع",
+    "qty": 2,
+    "unit": "tsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal breadcrumbs",
+    "fr": "Chapelure complète",
+    "ar": "فتات الخبز الكامل",
+    "qty": 2,
+    "unit": "tbsp",
+    "group": "dry"
+   },
+   {
+    "en": "Reduced-fat hard cheese, finely grated",
+    "fr": "Fromage à pâte dure allégé, finement râpé",
+    "ar": "جبن قاسي خفيف الدسم مبرش رقيق",
+    "qty": 4,
+    "unit": "tsp",
+    "group": "fresh"
+   },
+   {
+    "en": "Wholemeal bread slices",
+    "fr": "Tranches de pain complet",
+    "ar": "خبز كامل مقطع",
+    "qty": 4,
+    "unit": "piece",
+    "group": "fresh"
+   },
+   {
+    "en": "Ground black pepper",
+    "fr": "Poivre noir moulu",
+    "ar": "لبزار كحل مطحون",
+    "qty": 1,
+    "unit": "pinch",
+    "group": "dry"
+   }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفران 190 درجة (170 بالمروحة).",
+    "صفي الماطيشة، الوجه المقطوع لفوق، فوق طبق الفران. رشي لعشاب والكراث ورشي شوية لبزار. خبزي 10 دقايق.",
+    "رشي فتات الخبز والجبن فوق الماطيشة، وخبزي 5 دقايق زيادة.",
+    "فنفس الوقت، حمصي الخبز. حطي الخبز فوق طبيسل سخونة ووزعي الماطيشة فوقو. رشي شوية لبزار زيادة وقدمي."
+   ],
+   "tips": [
+    "مرة أخرى، جربي تحشي بيها خبز البيتا الكامل السخون."
+   ]
+  },
+  "tags": [
+   "dairy",
+   "vegetarian",
+   "gluten"
+  ],
+  "photo_query": "baked tomatoes cheese toast"
+ }
+]
