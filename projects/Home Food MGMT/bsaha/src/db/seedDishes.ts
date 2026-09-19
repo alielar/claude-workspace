@@ -1,21 +1,15 @@
 /**
  * Loads the hand-written library (data/dishes/*.json + data/photos.json) into the dishes table.
  * Upserts by slug so re-running after a content fix updates text but keeps custom dishes,
- * the reviewed flag and any photo the cook replaced.
+ * the reviewed flag and any photo the cook replaced. Anything built-in (not custom) whose
+ * slug is no longer in the source files below is removed - the catalog is exactly these
+ * files, nothing left over from an earlier library. The old hand-written library lives in
+ * data/dishes-archive/ if it's ever needed again.
  */
-import { sql } from "drizzle-orm";
+import { eq, sql, and, notInArray, inArray } from "drizzle-orm";
 import { db } from "./index";
-import { dishes, type Ingredient, type Macros, type Recipe } from "./schema";
+import { dishes, pools, type Ingredient, type Macros, type Recipe } from "./schema";
 import { slugify } from "@/lib/slug";
-import breakfast from "../../data/dishes/breakfast.json";
-import lunch from "../../data/dishes/lunch.json";
-import dinner from "../../data/dishes/dinner.json";
-import intlBreakfast from "../../data/dishes/intl-breakfast.json";
-import intlLunch from "../../data/dishes/intl-lunch.json";
-import intlDinner from "../../data/dishes/intl-dinner.json";
-import intl2Breakfast from "../../data/dishes/intl2-breakfast.json";
-import intl2Lunch from "../../data/dishes/intl2-lunch.json";
-import intl2Dinner from "../../data/dishes/intl2-dinner.json";
 import nhsBreakfast from "../../data/dishes/nhs-breakfast.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
@@ -30,7 +24,7 @@ type Raw = {
 };
 type Photo = { file: string; credit: string; license: string; source: string };
 
-const ALL = [...(breakfast as Raw[]), ...(lunch as Raw[]), ...(dinner as Raw[]), ...(intlBreakfast as Raw[]), ...(intlLunch as Raw[]), ...(intlDinner as Raw[]), ...(intl2Breakfast as Raw[]), ...(intl2Lunch as Raw[]), ...(intl2Dinner as Raw[]), ...(nhsBreakfast as Raw[])];
+const ALL = [...(nhsBreakfast as Raw[])];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
 const inMain = (r: Raw) => r.cuisine !== "Moroccan";
@@ -93,5 +87,24 @@ export async function seedDishes() {
         },
       });
   }
+
+  // The catalog is exactly the source files above: drop any built-in dish no longer listed.
+  const currentSlugs = ALL.map((r) => slugify(r.name_en));
+  const stale = currentSlugs.length
+    ? await db.select({ id: dishes.id }).from(dishes).where(and(eq(dishes.isCustom, false), notInArray(dishes.slug, currentSlugs)))
+    : await db.select({ id: dishes.id }).from(dishes).where(eq(dishes.isCustom, false));
+  if (stale.length) {
+    const staleIds = stale.map((d) => d.id);
+    await db.delete(pools).where(inArray(pools.dishId, staleIds));
+    await db.delete(dishes).where(inArray(dishes.id, staleIds));
+  }
+  // Any pool row pointing at a dish that no longer exists at all (belt and braces).
+  const liveIds = (await db.select({ id: dishes.id }).from(dishes)).map((d) => d.id);
+  if (liveIds.length) {
+    await db.delete(pools).where(notInArray(pools.dishId, liveIds));
+  } else {
+    await db.delete(pools);
+  }
+
   return ALL.length;
 }
