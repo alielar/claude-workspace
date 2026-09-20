@@ -9,15 +9,21 @@ export const PRIMARY_KEY: WorkoutKey = "kb1";
 export type WorkoutFormat = "amrap" | "sets";
 
 export type TrainExercise = {
-  id: string;            // stable slug, e.g. "snatch"
+  id: string;            // stable slug, e.g. "swing"
   name: string;
   reps: number;
   sets: number;          // 1 for AMRAP rounds
-  perSide: boolean;      // "per side" / "per arm"
+  perSide: boolean;      // one arm / one leg does the work · reps count per side
+  eachWay?: boolean;     // halos, helicopters: reps count per direction (shown "each way", implies perSide)
   kettlebell: boolean;   // weight comes from the kettlebell setting
   weightKg: number | null; // dumbbell exercises: editable, null = not set
   videoUrl?: string | null; // how-to video (YouTube / Instagram reel), opens externally
 };
+
+/** "6 per side" · "5 each way" · "8". */
+export function repsLabel(e: Pick<TrainExercise, "reps" | "perSide" | "eachWay">): string {
+  return `${e.reps}${e.eachWay ? " each way" : e.perSide ? " per side" : ""}`;
+}
 
 export type TrainWorkout = {
   key: WorkoutKey;
@@ -42,9 +48,87 @@ export type TrainSession = {
   notes: string | null;
 };
 
+/** One movement inside a round: work time only (on-demand rest is kept apart). */
+export type MoveLog = { id: string; ms: number };
+/** One completed round: per-move work times, the rest taken inside the round, and `ms` = work time of the round. */
+export type RoundLog = { moves: MoveLog[]; restMs: number; ms: number };
+/** The 3 × 20 incline bench after the clock (2026-09-20). `reps` = what was done per set. */
+export type BenchLog = { mode: "dumbbells" | "machine"; weightKg: number; reps: number[] };
+
+/**
+ * AMRAP log. `roundsAt` (elapsed ms at each round tap) is the original score and is still
+ * written; v2 adds the timings the weekly comparison needs once rest between rounds exists.
+ */
+export type AmrapLog = {
+  roundsAt?: number[];
+  v?: 2;
+  roundLogs?: RoundLog[];      // one per completed round
+  roundRestMs?: number[];      // the rest taken AFTER each round (between rounds)
+  bench?: BenchLog;
+};
+
 export type SessionLog =
-  | { roundsAt?: number[] }                       // w1: elapsed ms at each round tap
+  | AmrapLog                                      // w1 / kb1
   | { sets?: Record<string, boolean[]> };         // w2: exerciseId → set done flags
+
+// ─── Work-only metrics (2026-09-20) ──────────────────────────────────────────
+// With 2 min rest between rounds, "rounds in 40 minutes" also measures how long you
+// rested. The comparison that stays honest week to week is the WORK-ONLY average
+// round time · rest excluded · lower is better.
+
+export type WorkStats = {
+  rounds: number;
+  workMs: number;          // sum of round work time
+  restMs: number;          // inside rounds + between rounds
+  avgRoundMs: number;      // work only
+  bestRoundMs: number;     // fastest round, work only
+  moveAvgMs: Record<string, number>;
+};
+
+export function workStats(s: Pick<TrainSession, "log">): WorkStats | null {
+  const log = s.log as AmrapLog;
+  const rl = log?.roundLogs;
+  if (!rl || rl.length === 0) return null;
+  const workMs = rl.reduce((a, r) => a + r.ms, 0);
+  const restMs = rl.reduce((a, r) => a + r.restMs, 0) + (log.roundRestMs ?? []).reduce((a, b) => a + b, 0);
+  const moveTotals: Record<string, { ms: number; n: number }> = {};
+  for (const r of rl) for (const m of r.moves) {
+    const t = (moveTotals[m.id] ??= { ms: 0, n: 0 });
+    t.ms += m.ms; t.n += 1;
+  }
+  const moveAvgMs: Record<string, number> = {};
+  for (const [id, t] of Object.entries(moveTotals)) moveAvgMs[id] = t.ms / t.n;
+  return {
+    rounds: rl.length, workMs, restMs,
+    avgRoundMs: workMs / rl.length,
+    bestRoundMs: Math.min(...rl.map((r) => r.ms)),
+    moveAvgMs,
+  };
+}
+
+export type WeeklyPace = { week: string; label: string; avgRoundMs: number };
+
+/** Best (lowest) work-only average round time per ISO week, newest first · sessions without v2 logs are skipped. */
+export function weeklyPaces(sessions: TrainSession[], today: string, key: WorkoutKey = PRIMARY_KEY): WeeklyPace[] {
+  const todayWeek = isoWeekKey(today);
+  const prevWeek = previousWeekKey(today);
+  const map = new Map<string, WeeklyPace>();
+  for (const s of sessions) {
+    if (s.workoutKey !== key || s.finishedAt === null) continue;
+    const st = workStats(s);
+    if (!st || st.rounds < 2) continue;
+    const week = isoWeekKey(s.date);
+    const cur = map.get(week);
+    if (!cur || st.avgRoundMs < cur.avgRoundMs) map.set(week, { week, label: weekLabel(week, todayWeek, prevWeek), avgRoundMs: st.avgRoundMs });
+  }
+  return [...map.values()].sort((a, b) => (a.week < b.week ? 1 : -1));
+}
+
+/** The pace to beat this week: the most recent earlier week's best work-only round time. */
+export function paceToBeat(paces: WeeklyPace[], today: string): WeeklyPace | null {
+  const todayWeek = isoWeekKey(today);
+  return paces.find((p) => p.week < todayWeek) ?? null;
+}
 
 export type WeeklyBest = { week: string; label: string; best: number; sessions: number };
 
@@ -104,45 +188,58 @@ export function weekStreak(sessions: TrainSession[], today: string): number {
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const kb = (id: string, name: string, reps: number, perSide = false): TrainExercise =>
-  ({ id, name, reps, sets: 1, perSide, kettlebell: true, weightKg: null, videoUrl: null });
+const kb = (id: string, name: string, reps: number, perSide = false, eachWay = false): TrainExercise =>
+  ({ id, name, reps, sets: 1, perSide: perSide || eachWay, ...(eachWay ? { eachWay } : {}), kettlebell: true, weightKg: null, videoUrl: null });
+
+/** Moves that left the round on 2026-09-20 (snatches, crush thrusters, plain squats) · a stored
+ * row still carrying one of these is on the old recipe and gets migrated (workoutRows.ts). */
+export const KB1_RETIRED_IDS = ["snatch", "crush-thruster", "squat"];
 
 /**
- * The KB Hour (2026-09-10, Ali) · the ONE workout on Train. Every kettlebell
- * movement from the old W1 + W2 + W3, deduped (13 moves), 5 reps each (per side
- * where marked), as many rounds as possible in 60 minutes — the same AMRAP game
- * as the old 30-minute W1. Order alternates hinge / squat / press / pull with a
- * lighter "breather" move every few slots; the snatches sit mid-round, warm
- * enough to be safe, not yet grip-fried. Old w1/w2/w3 rows stay in the DB and
- * old sessions keep their keys; only "kb1" is listed and playable.
+ * The KB Hour (2026-09-10, Ali) · the ONE workout on Train. Audited and rebuilt
+ * 2026-09-20: AMRAP 40 min, 11 moves, on-demand rest inside a round, 2 min rest
+ * between rounds (`restSeconds`), then 3 × 20 incline bench after the clock.
+ *
+ * Order (the logic, in priority order):
+ *  1. most explosive / most technical first, while fresh → swings open the round;
+ *  2. alternate hinge → push → squat → pull so no muscle group works twice in a row;
+ *  3. grip-heavy moves (swings, rows, high pulls) kept apart, grip-light ones
+ *     (halos, helicopters, pullover, triceps) between them as active recovery;
+ *  4. close with a low-skill, grip-light move you can do tired without consequence,
+ *     because the next round opens with swings and needs grip.
+ * Ali does swings, thrusters and high pulls one-armed → per side; halos and
+ * helicopters count per direction ("each way"). Snatches and crush thrusters are
+ * out (his call), plain squats became reverse lunges (the round had three squat
+ * patterns and no single-leg one). Old w1/w2/w3 rows stay in the DB for history.
  */
 export const DEFAULT_WORKOUTS: TrainWorkout[] = [
   {
     key: "kb1",
     name: "KB Hour",
     format: "amrap",
-    amrapMinutes: 60,
-    restSeconds: 0,
+    amrapMinutes: 40,
+    restSeconds: 120,   // rest between rounds (on-demand rest inside a round is untimed)
     // Saturdays (Ali, 2026-09-11) · Mon/Wed/Fri are Speediance machine days,
     // which live as checklist rows, not Train workouts.
     assignedDays: ["sat"],
     exercises: [
-      kb("swing",          "Swings",                     5),
-      kb("goblet-curl",    "Goblet squat + deep curl",   5),
-      kb("press",          "Presses",                    5, true),
-      kb("ballistic-row",  "Ballistic rows",             5, true),
-      kb("thruster",       "Thrusters",                  5),
-      kb("highpull",       "High pulls",                 5),
-      kb("halo",           "Halos",                      5),
-      kb("snatch",         "Snatches",                   5, true),
-      kb("squat",          "Squats",                     5),
-      kb("pullover",       "Pullovers",                  5),
-      kb("crush-thruster", "Crush press hold thrusters", 5),
-      kb("helicopter",     "Helicopters",                5),
-      kb("tri-press",      "Triceps overhead press",     5),
+      kb("swing",         "Swings",                   10, true),
+      kb("press",         "Presses",                   5, true),
+      kb("goblet-curl",   "Goblet squat + deep curl",  6),
+      kb("ballistic-row", "Ballistic rows",            5, true),
+      kb("halo",          "Halos",                     5, false, true),
+      kb("thruster",      "Thrusters",                 6, true),
+      kb("highpull",      "High pulls",                8, true),
+      kb("helicopter",    "Helicopters",               5, false, true),
+      kb("lunge",         "Reverse lunges",            5, true),
+      kb("pullover",      "Pullovers",                 8),
+      kb("tri-press",     "Triceps overhead press",    8),
     ],
   },
 ];
+
+/** The bench block after the clock: 3 × 20 · 20 kg with dumbbells (10 each side, Ali's max pair). */
+export const BENCH_DEFAULT: { sets: number; reps: number; weightKg: number; restSeconds: number } = { sets: 3, reps: 20, weightKg: 20, restSeconds: 90 };
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 

@@ -65,15 +65,18 @@ export function RepEditor({ exercise, showSets, kettlebellKg, isNew = false, onS
         <input className="cc-input" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })}
           placeholder="Exercise name" autoFocus={isNew} style={{ fontSize: 18, fontWeight: 600, minHeight: 48 }} />
 
-        <Stepper label={draft.perSide ? "Reps per side" : "Reps"} value={draft.reps} min={1} max={100} step={1}
+        <Stepper label={draft.eachWay ? "Reps each way" : draft.perSide ? "Reps per side" : "Reps"} value={draft.reps} min={1} max={100} step={1}
                  onChange={(v) => setDraft({ ...draft, reps: v })} />
         {showSets && (
           <Stepper label="Sets" value={draft.sets} min={1} max={10} step={1}
                    onChange={(v) => setDraft({ ...draft, sets: v })} />
         )}
 
+        {/* How the reps count: total (two hands on the bell) · per side (one arm / one leg) · each way (halos, helicopters: per direction) */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button onClick={() => setDraft({ ...draft, perSide: !draft.perSide })} style={chip(draft.perSide)}>Per side</button>
+          <button onClick={() => setDraft({ ...draft, perSide: false, eachWay: false })} style={chip(!draft.perSide)}>Total</button>
+          <button onClick={() => setDraft({ ...draft, perSide: true, eachWay: false })} style={chip(draft.perSide && !draft.eachWay)}>Per side</button>
+          <button onClick={() => setDraft({ ...draft, perSide: true, eachWay: true })} style={chip(!!draft.eachWay)}>Each way</button>
           <button onClick={() => setDraft({ ...draft, kettlebell: !draft.kettlebell })} style={chip(draft.kettlebell)}>Kettlebell</button>
         </div>
 

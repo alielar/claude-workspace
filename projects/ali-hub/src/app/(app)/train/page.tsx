@@ -10,7 +10,7 @@
 
 import Link from "next/link";
 import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrain";
-import { fmtClock, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
+import { fmtClock, repsLabel, workStats, weeklyPaces, paceToBeat, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { useClientValue } from "@/lib/useClientValue";
 
@@ -23,6 +23,7 @@ function describe(w: TrainWorkout): string {
 function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[] }) {
   const w = workouts.find((x) => x.key === s.workoutKey);
   const setsDone = "sets" in s.log && s.log.sets ? Object.values(s.log.sets).flat().filter(Boolean).length : null;
+  const stats = workStats(s);
   const d = new Date(s.date + "T12:00:00");
   const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(d);
   return (
@@ -33,7 +34,8 @@ function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[
       </span>
       <span style={{ fontSize: 15, color: "var(--ink-2)", textAlign: "right" }}>
         {s.workoutKey !== "w2" ? `${s.rounds ?? 0} rounds` : setsDone !== null ? `${setsDone} sets` : "…"}
-        {s.durationSeconds ? <span style={{ color: "var(--ink-4)" }}> · {fmtClock(s.durationSeconds)}</span> : null}
+        {stats ? <span style={{ color: "var(--ink-4)" }}> · {fmtClock(stats.avgRoundMs / 1000)} / round</span>
+          : s.durationSeconds ? <span style={{ color: "var(--ink-4)" }}> · {fmtClock(s.durationSeconds)}</span> : null}
       </span>
     </div>
   );
@@ -54,6 +56,9 @@ export default function TrainPage() {
   const sched = ov?.schedule ?? null;
   const planned = DAY_CODES.filter((d) => workouts.some((w) => w.assignedDays?.includes(d))).map((d) => DAY_LABELS[d as DayCode]).join(" · ");
   const restToday = sched !== null && sched.todayKey === null && !ov?.sessions.some((s) => s.date === today && s.finishedAt !== null);
+  // Work-only pace (rest excluded) · the comparison that stays honest now that rounds have rest between them.
+  const paces = ov ? weeklyPaces(ov.sessions, today) : [];
+  const pace = paceToBeat(paces, today);
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -103,7 +108,7 @@ export default function TrainPage() {
       <section className="cc-card" style={{ overflow: "hidden" }}>
         <div className="cc-card-head">
           <span className="title">{sched?.next ? `Up next · ${fmtScheduleDate(sched.next.date, today)}` : "Up next"}</span>
-          <span className="tail">{ov?.toBeat ? `to beat: ${ov.toBeat.rounds}` : "set the bar"}</span>
+          <span className="tail">{ov?.toBeat ? `to beat: ${ov.toBeat.rounds} rounds${pace ? ` · ${fmtClock(pace.avgRoundMs / 1000)} / round` : ""}` : "set the bar"}</span>
         </div>
         <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
           {loading || !next ? (
@@ -117,7 +122,7 @@ export default function TrainPage() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {next.exercises.map((e) => (
                   <span key={e.id} className="cc-pill" style={{ fontSize: 14 }}>
-                    {e.name} · {e.reps}{e.perSide ? "/side" : ""}{next.format === "sets" ? ` × ${e.sets}` : ""}
+                    {e.name} · {repsLabel(e)}{next.format === "sets" ? ` × ${e.sets}` : ""}
                   </span>
                 ))}
               </div>
