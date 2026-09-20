@@ -7,7 +7,8 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
 
 ## Critical Decisions
 - **The cook curates a daily pool (decided 2026-09-14).** The day before, the cook picks about 5 lunches and 5 dinners from the library based on what the kitchen has, capped at 10 dishes total. The family votes only from that pool.
-- **Voting: pick one, add a backup.** First pick 2 points, backup 1 point. Top two dishes per meal at 23:00, chosen from the pool. Ties: more first picks, then least recently cooked, then random. A dish that won yesterday cannot win today. Admins can override with a visible "changed by" label.
+- **Simple daily loop while the family travels (decided 2026-09-20, supersedes voting for now).** The cook shortlists up to 5 dishes per meal for tomorrow, including breakfast. Ali taps one per meal. At 20:00 Africa/Casablanca tomorrow is settled and the cook's screen is final; choices reopen at midnight for the next day. If nobody chose by 20:00 the cook takes whichever of her own five she prefers - the app never picks for her. The lock is a clock comparison on each screen, so no cron or scheduled job exists. The voting rules below stay written down for when the family is home again.
+- **Voting (deferred): pick one, add a backup.** First pick 2 points, backup 1 point. Top two dishes per meal at 23:00, chosen from the pool. Ties: more first picks, then least recently cooked, then random. A dish that won yesterday cannot win today. Admins can override with a visible "changed by" label.
 - **Breakfast is individual.** Each person picks their own breakfast the evening before. No vote, no two-dish limit. The cook sees a per-person list.
 - **Headcount.** Anyone eating at home marks it the day before by voting. No vote means not eating at home. The cook always cooks for at least three.
 - **Cycle: two weeks.** Shortlist of 10 lunches and 10 dinners plus a breakfast set. One big shop at cycle start, one fresh top-up list generated on day 7 from actual orders. Grocery quantities assume each shortlisted dish is cooked about twice.
@@ -70,11 +71,13 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [ ] 🟥 Day 7 fresh top-up list from actual orders and remaining days
 
 - [ ] 🟨 **Step 4: Daily picks and the cook's morning view**
-  - [x] 🟩 Cook's pool screen: pick tomorrow's 5 lunches and 5 dinners with search, cap 10, instant taps
-  - [x] 🟩 Family Today shows tomorrow's pool as a preview
-  - [ ] 🟥 Evening screen: breakfast pick, lunch pick plus backup, dinner pick plus backup, from the pool
-  - [ ] 🟥 23:00 lock via scheduled job, top two per meal, tie-breaks, no repeat of yesterday's winner
-  - [ ] 🟥 Result screen: the dishes, who is eating what, "changed by" label on override
+  - [x] 🟩 Cook's shortlist screen: up to 5 dishes per meal for tomorrow, with search and instant taps
+  - [x] 🟩 Family Today shows tomorrow's shortlist and what has been chosen
+  - [x] 🟩 Tomorrow screen: tap one dish per meal from the shortlist, tap again to undo, dislikes filtered out
+  - [x] 🟩 20:00 settle, no scheduled job: every screen compares the Morocco clock, choices reopen at midnight
+  - [x] 🟩 Nobody chose by 20:00: the cook's screen tells her to cook whichever of her five she prefers
+  - [ ] 🟥 Full family voting (first pick plus backup, points, top two, tie-breaks) - deferred until the family is home
+  - [ ] 🟥 Result screen: who is eating what, "changed by" label on override
   - [ ] 🟥 Cook's morning view: breakfast list, lunch and dinner with headcount (minimum three), tap for recipe
   - [ ] 🟥 Cook marks a meal done and can replace the photo with her own
 
