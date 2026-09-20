@@ -5,16 +5,25 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
-import { dishDesc, dishName, formatQty, getDish, ingredientName } from "@/lib/dishes";
+import { dishDesc, dishName, getDish } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
 import { DeleteDishButton } from "@/components/DeleteDishButton";
+import { Ingredients } from "@/components/Ingredients";
 import { putOnMenu, saveRecipe, setReviewed, setVideo, takeOffMenu } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
-export default async function DishPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function DishPage({
+  params, searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  /** `people`: how many ordered this dish, set by the cook's orders screen. */
+  searchParams: Promise<{ people?: string }>;
+}) {
   const me = (await currentPerson())!;
   const { slug } = await params;
+  const wanted = Number((await searchParams).people);
+  const eaters = Number.isInteger(wanted) && wanted > 0 && wanted <= 20 ? wanted : undefined;
   const dish = await getDish(slug);
   if (!dish) notFound();
   const L = me.lang;
@@ -49,18 +58,14 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
   );
 
   const ingredients = (
-    <section className="mt-8">
-      <h2 className="text-xl font-extrabold">{t(L, "ingredients")}</h2>
-      <p className="text-sm text-muted">{t(L, "forPeople")}</p>
-      <ul className="mt-3 tile divide-y divide-line">
-        {dish.ingredients.map((i, k) => (
-          <li key={k} className="flex justify-between gap-3 px-4 py-2.5">
-            <span className={clsx(isCook && "text-lg")}>{ingredientName(i, L)}</span>
-            <span className="text-muted shrink-0">{formatQty(i.qty, i.unit, L)}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <Ingredients
+      items={dish.ingredients}
+      base={dish.servings}
+      lang={L}
+      initial={eaters}
+      big={isCook}
+      labels={{ title: t(L, "ingredients"), howMany: t(L, "howManyPeople"), forOne: t(L, "forOne"), forN: t(L, "forN") }}
+    />
   );
 
   return (

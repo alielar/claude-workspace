@@ -65,21 +65,5 @@ export function dishDesc(d: Dish, lang: Lang): string {
   return lang === "fr" ? d.descFr : lang === "ar" ? "" : d.descEn;
 }
 
-export function ingredientName(i: { en: string; fr: string; ar: string }, lang: Lang): string {
-  return lang === "ar" ? i.ar : lang === "fr" ? i.fr : i.en;
-}
-
-export function formatQty(qty: number, unit: string, lang: Lang): string {
-  const n = Number.isInteger(qty) ? String(qty) : String(Math.round(qty * 10) / 10);
-  const units: Record<string, Record<Lang, string>> = {
-    g: { en: "g", fr: "g", ar: "غ" },
-    ml: { en: "ml", fr: "ml", ar: "مل" },
-    piece: { en: "", fr: "", ar: "" },
-    bunch: { en: "bunch", fr: "botte", ar: "ربطة" },
-    tbsp: { en: "tbsp", fr: "c. à s.", ar: "م.ك" },
-    tsp: { en: "tsp", fr: "c. à c.", ar: "م.ص" },
-    pinch: { en: "pinch", fr: "pincée", ar: "رشة" },
-  };
-  const u = units[unit]?.[lang] ?? unit;
-  return u ? `${n} ${u}` : n;
-}
+// Pure helpers, kept in a module without database imports so client components can use them.
+export { formatQty, ingredientName } from "./scale";

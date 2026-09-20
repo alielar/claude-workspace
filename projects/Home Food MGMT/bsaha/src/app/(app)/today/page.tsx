@@ -6,9 +6,9 @@ import { DishImage } from "@/components/DishImage";
 import { t } from "@/lib/i18n/dict";
 import type { Dish, Lang, Meal } from "@/db/schema";
 
-function DishRow({ dish, lang, note }: { dish: Dish; lang: Lang; note?: string }) {
+function DishRow({ dish, lang, note, people }: { dish: Dish; lang: Lang; note?: string; people?: number }) {
   return (
-    <Link href={`/menu/${dish.slug}`} className="tile flex items-center gap-3 p-2">
+    <Link href={people ? `/menu/${dish.slug}?people=${people}` : `/menu/${dish.slug}`} className="tile flex items-center gap-3 p-2">
       <span className="w-20 h-16 rounded-lg bg-accent-soft overflow-hidden shrink-0 relative">
         <DishImage photo={dish.photoUrl} />
       </span>
@@ -34,6 +34,8 @@ export default async function Today() {
     const seen = new Set<number>();
     return picks.filter((p) => p.meal === meal && !seen.has(p.dish.id) && seen.add(p.dish.id));
   };
+  /** How many people chose this dish for this meal: the count the recipe opens at. */
+  const eaters = (meal: Meal, dishId: number) => picks.filter((p) => p.meal === meal && p.dish.id === dishId).length;
 
   return (
     <main>
@@ -70,7 +72,10 @@ export default async function Today() {
                 {chosen.length > 0 ? (
                   <ul className="mt-1.5 grid gap-2">
                     {chosen.map(({ dish }) => (
-                      <li key={dish.id}><DishRow dish={dish} lang={L} /></li>
+                      <li key={dish.id}>
+                        <DishRow dish={dish} lang={L} people={eaters(meal, dish.id)}
+                          note={`${eaters(meal, dish.id)} ${t(L, eaters(meal, dish.id) === 1 ? "personShort" : "peopleShort")}`} />
+                      </li>
                     ))}
                   </ul>
                 ) : locked ? (
