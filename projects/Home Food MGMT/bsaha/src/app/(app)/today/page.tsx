@@ -2,7 +2,7 @@ import Link from "next/link";
 import { currentPerson } from "@/lib/session";
 import { getPicks, getPool, isLocked, lockLabel, POOL_MEALS, tomorrowKey } from "@/lib/pool";
 import { dishName } from "@/lib/dishes";
-import { thumb } from "@/lib/dishMeta";
+import { DishImage } from "@/components/DishImage";
 import { t } from "@/lib/i18n/dict";
 import type { Dish, Lang, Meal } from "@/db/schema";
 
@@ -10,10 +10,7 @@ function DishRow({ dish, lang, note }: { dish: Dish; lang: Lang; note?: string }
   return (
     <Link href={`/menu/${dish.slug}`} className="tile flex items-center gap-3 p-2">
       <span className="w-20 h-16 rounded-lg bg-accent-soft overflow-hidden shrink-0 relative">
-        {dish.photoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={thumb(dish.photoUrl) ?? undefined} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-        )}
+        <DishImage photo={dish.photoUrl} />
       </span>
       <span className="min-w-0">
         <span className="block text-lg font-bold leading-tight">{dishName(dish, lang)}</span>

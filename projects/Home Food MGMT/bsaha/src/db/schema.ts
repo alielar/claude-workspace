@@ -99,10 +99,12 @@ export const dishes = sqliteTable("dishes", {
   /** Darija checked by the family. */
   reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
   /**
-   * Set when someone takes the dish off the menu. Removed dishes leave every list, every
-   * shortlist and every choice, but keep their photo and recipe and sit in the Removed
-   * library, ready to be put back. Null means the dish is on the menu.
+   * The library holds every dish ever added. `onMenu` is the smaller hand-picked set the
+   * family and the cook actually see - about 30 per meal. Taking a dish off the menu leaves
+   * it in the library with its photo and recipe intact, ready to be put back.
    */
+  onMenu: integer("on_menu", { mode: "boolean" }).notNull().default(true),
+  /** When it last left the menu, so the library can show the recent ones first. */
   removedAt: text("removed_at"),
   removedBy: integer("removed_by"),
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),

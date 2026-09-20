@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import type { Lang, Meal } from "@/db/schema";
-import { fold, highFibre, highProtein, lightness, quick, slimName, thumb, type SlimDish } from "@/lib/dishMeta";
+import { fold, highFibre, highProtein, lightness, quick, slimName, type SlimDish } from "@/lib/dishMeta";
+import { DishImage } from "./DishImage";
 
 type Labels = Record<
   | "breakfast" | "lunch" | "dinner" | "mainMenu" | "moroccanMenu" | "search" | "searchHint" | "results" | "noResults" | "clear"
@@ -118,7 +119,7 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
             inputMode="search"
             enterKeyHint="search"
           />
-          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 -mx-5 px-5 [scrollbar-width:none]">
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 -mx-5 px-5 lg:mx-0 lg:px-0 lg:flex-wrap lg:overflow-visible [scrollbar-width:none]">
             {FILTERS.map((f) => (
               <button
                 key={f}
@@ -140,14 +141,13 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
       <p className="mt-2 text-xs text-muted">{shown.length} {labels.results}{hidden > 0 && !child ? ` · ${hidden} ${labels.hiddenByDislikes}` : ""}</p>
       {shown.length === 0 && <p className="mt-6 text-muted">{labels.noResults}</p>}
 
-      <div className={clsx("mt-2 grid gap-3", simple ? "grid-cols-1" : "grid-cols-2")}>
+      <div className={clsx("mt-2 grid gap-3", simple ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5")}>
         {shown.map((d) => {
           const inner = (
             <>
               <div className="aspect-[4/3] bg-accent-soft relative">
                 {d.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb(d.photo) ?? undefined} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <DishImage photo={d.photo} />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-accent text-4xl font-extrabold">{d.nameEn.slice(0, 1)}</div>
                 )}

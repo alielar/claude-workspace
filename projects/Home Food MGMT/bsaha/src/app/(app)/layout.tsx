@@ -14,13 +14,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // The cook shortlists; everyone else chooses from it. Admins reach the shortlist from Today.
   if (me.role === "cook") tabs.push({ href: "/pool", label: t(me.lang, "shortlist") });
   else if (me.role !== "grocery") tabs.push({ href: "/tomorrow", label: t(me.lang, "tomorrow") });
+  if (me.isAdmin) tabs.push({ href: "/library", label: t(me.lang, "library") });
   if (me.isAdmin) tabs.push({ href: "/people", label: t(me.lang, "people") });
   tabs.push({ href: "/me", label: t(me.lang, "me") });
 
   return (
-    <div className="min-h-dvh max-w-md mx-auto px-5 pt-8 pad-tabs">
-      {children}
-      <TabBar tabs={tabs} />
-    </div>
+    <>
+      <TabBar tabs={tabs} appName={t(me.lang, "appName")} />
+      {/* Phone: one narrow column with room for the bottom bar. Laptop: full width beside the sidebar. */}
+      <div className="min-h-dvh max-w-md mx-auto px-5 pt-8 pad-tabs lg:max-w-none lg:mx-0 lg:ms-60 lg:px-10 lg:pb-16 lg:pt-10">
+        <div className="lg:max-w-6xl lg:mx-auto">{children}</div>
+      </div>
+    </>
   );
 }

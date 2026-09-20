@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import clsx from "clsx";
 import type { Lang, Meal } from "@/db/schema";
-import { slimName, thumb, type SlimDish } from "@/lib/dishMeta";
+import { slimName, type SlimDish } from "@/lib/dishMeta";
+import { DishImage } from "./DishImage";
 import { choose } from "@/app/(app)/tomorrow/actions";
 
 export type ChooserLabels = {
@@ -58,7 +59,7 @@ export function MealChooser({
             {items.length === 0 ? (
               <p className="mt-2 text-muted">{labels.nothingForMeal}</p>
             ) : (
-              <div className="mt-3 grid gap-3">
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {items.map(({ dish }) => {
                   const on = mine === dish.id;
                   const dim = locked && mine !== undefined && !on;
@@ -76,10 +77,7 @@ export function MealChooser({
                       )}
                     >
                       <span className="w-24 h-20 rounded-xl bg-accent-soft overflow-hidden shrink-0 relative">
-                        {dish.photo && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={thumb(dish.photo) ?? undefined} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-                        )}
+                        <DishImage photo={dish.photo} />
                       </span>
                       <span className="min-w-0">
                         <span className="block text-lg font-extrabold leading-tight">{slimName(dish, lang)}</span>

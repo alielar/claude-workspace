@@ -1,18 +1,27 @@
-import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { dishes, type Dish, type Lang, type Meal, type Person } from "@/db/schema";
 
 export async function listDishes(meal?: Meal): Promise<Dish[]> {
   await ensureSchema();
-  const where = meal ? and(eq(dishes.meal, meal), isNull(dishes.removedAt)) : isNull(dishes.removedAt);
+  const where = meal ? and(eq(dishes.meal, meal), eq(dishes.onMenu, true)) : eq(dishes.onMenu, true);
   return db.select().from(dishes).where(where).orderBy(asc(dishes.nameEn));
 }
 
-/** The Removed library: dishes taken off the menu, newest first, ready to be put back. */
-export async function listRemovedDishes(): Promise<Dish[]> {
+/** Dishes in the library but not on the menu, the ones taken off most recently first. */
+export async function listOffMenuDishes(): Promise<Dish[]> {
   await ensureSchema();
-  return db.select().from(dishes).where(isNotNull(dishes.removedAt)).orderBy(desc(dishes.removedAt));
+  return db.select().from(dishes).where(eq(dishes.onMenu, false)).orderBy(desc(dishes.removedAt), asc(dishes.nameEn));
+}
+
+/** How many dishes are on the menu for each meal. */
+export async function menuCounts(): Promise<Record<string, number>> {
+  await ensureSchema();
+  const rows = await db.select().from(dishes).where(eq(dishes.onMenu, true));
+  const out: Record<string, number> = { breakfast: 0, lunch: 0, dinner: 0 };
+  for (const r of rows) out[r.meal] = (out[r.meal] ?? 0) + 1;
+  return out;
 }
 
 export async function getDish(slug: string): Promise<Dish | null> {
@@ -23,7 +32,7 @@ export async function getDish(slug: string): Promise<Dish | null> {
 
 export async function listReadyDishes(meal: Meal): Promise<Dish[]> {
   await ensureSchema();
-  return db.select().from(dishes).where(and(eq(dishes.meal, meal), eq(dishes.status, "ready"), isNull(dishes.removedAt))).orderBy(asc(dishes.nameEn));
+  return db.select().from(dishes).where(and(eq(dishes.meal, meal), eq(dishes.status, "ready"), eq(dishes.onMenu, true))).orderBy(asc(dishes.nameEn));
 }
 
 /** True when the dish carries a tag this person does not eat. */

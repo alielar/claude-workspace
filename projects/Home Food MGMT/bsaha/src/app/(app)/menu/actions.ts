@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { DISLIKE_TAGS, MEALS, dishes, people, picks, pools, type Meal } from "@/db/schema";
@@ -68,40 +68,40 @@ export async function saveRecipe(formData: FormData) {
 }
 
 /**
- * Take a dish off the menu. It keeps its photo, recipe and everything else and moves to the
- * Removed library, where it can be put back at any time. It also leaves any shortlist and any
- * choice that pointed at it, so nobody is told they are getting a dish that is no longer offered.
+ * Take a dish off the menu. It stays in the library with its photo, recipe and everything else,
+ * ready to be put back. It leaves any shortlist and clears any choice that pointed at it, so
+ * nobody is told they are getting a dish that is no longer offered.
  */
-export async function removeDish(formData: FormData) {
+export async function takeOffMenu(formData: FormData) {
   const me = await currentPerson();
   if (!me?.isAdmin) return;
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) return;
-  await db.update(dishes).set({ removedAt: new Date().toISOString(), removedBy: me.id }).where(eq(dishes.id, id));
+  await db.update(dishes).set({ onMenu: false, removedAt: new Date().toISOString(), removedBy: me.id }).where(eq(dishes.id, id));
   await db.delete(pools).where(eq(pools.dishId, id));
   await db.delete(picks).where(eq(picks.dishId, id));
   forgetSlimDishes();
   revalidatePath("/", "layout");
-  redirect("/menu/removed");
+  redirect("/library");
 }
 
-/** Put a dish from the Removed library back on the menu. */
-export async function restoreDish(formData: FormData) {
+/** Put a dish from the library onto the menu. */
+export async function putOnMenu(formData: FormData) {
   const me = await currentPerson();
   if (!me?.isAdmin) return;
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) return;
   const [back] = await db
     .update(dishes)
-    .set({ removedAt: null, removedBy: null })
-    .where(and(eq(dishes.id, id), isNotNull(dishes.removedAt)))
+    .set({ onMenu: true, removedAt: null, removedBy: null })
+    .where(and(eq(dishes.id, id), eq(dishes.onMenu, false)))
     .returning({ slug: dishes.slug });
   forgetSlimDishes();
   revalidatePath("/", "layout");
   if (back) redirect(`/menu/${back.slug}`);
 }
 
-/** Delete for good, from the Removed library only. Nothing else in the app deletes a dish. */
+/** Delete for good. Only for a dish that is already off the menu. */
 export async function deleteDish(formData: FormData) {
   const me = await currentPerson();
   if (!me?.isAdmin) return;
@@ -109,10 +109,10 @@ export async function deleteDish(formData: FormData) {
   if (!Number.isFinite(id)) return;
   await db.delete(pools).where(eq(pools.dishId, id));
   await db.delete(picks).where(eq(picks.dishId, id));
-  await db.delete(dishes).where(and(eq(dishes.id, id), isNotNull(dishes.removedAt)));
+  await db.delete(dishes).where(and(eq(dishes.id, id), eq(dishes.onMenu, false)));
   forgetSlimDishes();
   revalidatePath("/", "layout");
-  redirect("/menu/removed");
+  redirect("/library");
 }
 
 /** Admin: set or clear the YouTube link for a dish. */

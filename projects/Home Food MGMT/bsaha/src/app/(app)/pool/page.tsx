@@ -10,7 +10,8 @@ export default async function PoolPage() {
   const me = (await currentPerson())!;
   if (me.role !== "cook" && !me.isAdmin) redirect("/today");
   const L = me.lang;
-  const [dishes, pool] = await Promise.all([listSlimDishes(), getPool(tomorrowKey())]);
+  const [all, pool] = await Promise.all([listSlimDishes(), getPool(tomorrowKey())]);
+  const dishes = all.filter((d) => d.onMenu);
 
   return (
     <main>

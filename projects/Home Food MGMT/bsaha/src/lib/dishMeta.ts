@@ -12,6 +12,7 @@ export type SlimDish = {
   nameLatin: string;
   cuisine: string;
   inMain: boolean;
+  onMenu: boolean;
   lean: boolean;
   tags: string[];
   kcal: number;

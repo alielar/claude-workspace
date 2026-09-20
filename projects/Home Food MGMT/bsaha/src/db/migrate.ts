@@ -80,6 +80,7 @@ const DDL = [
 
 /** Columns added after a table shipped. "duplicate column" is swallowed. */
 const LATE_COLUMNS = [
+  `ALTER TABLE dishes ADD COLUMN on_menu INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE dishes ADD COLUMN removed_at TEXT`,
   `ALTER TABLE dishes ADD COLUMN removed_by INTEGER`,
   `ALTER TABLE people ADD COLUMN dislikes TEXT NOT NULL DEFAULT '[]'`,
@@ -108,6 +109,8 @@ export function ensureSchema(): Promise<void> {
     for (const ddl of LATE_COLUMNS) {
       try { await db.run(sql.raw(ddl)); } catch { /* already there */ }
     }
+    // A dish removed before the library existed is simply off the menu now.
+    await db.run(sql`UPDATE dishes SET on_menu = 0 WHERE removed_at IS NOT NULL AND on_menu = 1`);
     const [row] = await db.select({ n: sql<number>`count(*)` }).from(people);
     if (Number(row?.n ?? 0) === 0) {
       const now = new Date().toISOString();
