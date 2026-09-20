@@ -101,20 +101,6 @@ export async function putOnMenu(formData: FormData) {
   if (back) redirect(`/menu/${back.slug}`);
 }
 
-/** Delete for good. Only for a dish that is already off the menu. */
-export async function deleteDish(formData: FormData) {
-  const me = await currentPerson();
-  if (!me?.isAdmin) return;
-  const id = Number(formData.get("id"));
-  if (!Number.isFinite(id)) return;
-  await db.delete(pools).where(eq(pools.dishId, id));
-  await db.delete(picks).where(eq(picks.dishId, id));
-  await db.delete(dishes).where(and(eq(dishes.id, id), eq(dishes.onMenu, false)));
-  forgetSlimDishes();
-  revalidatePath("/", "layout");
-  redirect("/library");
-}
-
 /** Admin: set or clear the YouTube link for a dish. */
 export async function setVideo(formData: FormData) {
   const me = await currentPerson();

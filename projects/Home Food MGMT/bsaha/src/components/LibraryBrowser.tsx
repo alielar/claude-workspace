@@ -6,13 +6,14 @@ import clsx from "clsx";
 import type { Lang, Meal } from "@/db/schema";
 import { fold, highFibre, highProtein, quick, slimName, type SlimDish } from "@/lib/dishMeta";
 import { DishImage } from "./DishImage";
-import { clearMenuForMeal, setOnMenu } from "@/app/(app)/library/actions";
+import { clearMenuForMeal, clearWholeMenu, deleteDishForGood, setOnMenu } from "@/app/(app)/library/actions";
 
 export type LibraryLabels = Record<
   | "breakfast" | "lunch" | "dinner" | "search" | "searchHint" | "results" | "noResults" | "clear"
   | "f_protein" | "f_fibre" | "f_quick" | "f_veg" | "f_fish" | "f_chicken" | "f_meat"
   | "onMenu" | "addToMenu" | "onMenuCount" | "target" | "showAll" | "showOnMenu" | "showOffMenu"
-  | "clearMeal" | "clearMealDone" | "moroccan" | "international" | "sortProtein" | "sortName",
+  | "clearMeal" | "clearMealDone" | "clearAll" | "clearAllConfirm" | "deleteForever" | "deleteConfirm"
+  | "moroccan" | "international" | "sortProtein" | "sortName",
   string
 >;
 
@@ -33,7 +34,10 @@ function matches(d: SlimDish, f: Filter): boolean {
   }
 }
 
-/** The whole library, with a tick on every dish saying whether it is on the menu. */
+/**
+ * The whole library, with a tick on every dish saying whether it is on the menu, and a
+ * delete-for-good link on every dish for the ones that should not be in the library at all.
+ */
 export function LibraryBrowser({
   dishes, lang, labels, target,
 }: {
@@ -41,6 +45,8 @@ export function LibraryBrowser({
 }) {
   const [onMenu, setLocal] = useState<Record<number, boolean>>(() =>
     Object.fromEntries(dishes.map((d) => [d.id, d.onMenu])));
+  /** Deleted on this screen, hidden at once without waiting for a reload. */
+  const [gone, setGone] = useState<Set<number>>(new Set());
   const [meal, setMeal] = useState<Meal>("lunch");
   const [show, setShow] = useState<Show>("all");
   const [cuisine, setCuisine] = useState<"all" | "intl" | "moroccan">("all");
@@ -51,13 +57,15 @@ export function LibraryBrowser({
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { breakfast: 0, lunch: 0, dinner: 0 };
-    for (const d of dishes) if (onMenu[d.id]) c[d.meal]++;
+    for (const d of dishes) if (onMenu[d.id] && !gone.has(d.id)) c[d.meal]++;
     return c;
-  }, [dishes, onMenu]);
+  }, [dishes, onMenu, gone]);
+  const totalOn = counts.breakfast + counts.lunch + counts.dinner;
 
   const shown = useMemo(() => {
     const needle = fold(q.trim());
     const list = dishes.filter((d) => {
+      if (gone.has(d.id)) return false;
       if (d.meal !== meal) return false;
       if (show === "on" && !onMenu[d.id]) return false;
       if (show === "off" && onMenu[d.id]) return false;
@@ -68,7 +76,7 @@ export function LibraryBrowser({
       return true;
     });
     return list.sort((a, b) => (sort === "protein" ? b.protein - a.protein || a.nameEn.localeCompare(b.nameEn) : a.nameEn.localeCompare(b.nameEn)));
-  }, [dishes, meal, show, cuisine, q, active, sort, onMenu]);
+  }, [dishes, meal, show, cuisine, q, active, sort, onMenu, gone]);
 
   const toggle = (d: SlimDish) => {
     const next = !onMenu[d.id];
@@ -84,6 +92,21 @@ export function LibraryBrowser({
     if (ids.length === 0) return;
     setLocal((p) => ({ ...p, ...Object.fromEntries(ids.map((i) => [i, false])) }));
     start(async () => { await clearMenuForMeal(meal); });
+  };
+
+  const clearAll = () => {
+    if (totalOn === 0 || !window.confirm(labels.clearAllConfirm)) return;
+    setLocal(Object.fromEntries(dishes.map((d) => [d.id, false])));
+    start(async () => { await clearWholeMenu(); });
+  };
+
+  const remove = (d: SlimDish) => {
+    if (!window.confirm(labels.deleteConfirm)) return;
+    setGone((p) => new Set(p).add(d.id));
+    start(async () => {
+      const ok = await deleteDishForGood(d.id);
+      if (!ok) setGone((p) => { const n = new Set(p); n.delete(d.id); return n; });
+    });
   };
 
   const toggleFilter = (f: Filter) =>
@@ -124,10 +147,17 @@ export function LibraryBrowser({
           className="chip py-1.5 px-3 text-sm border border-line bg-card text-muted">
           {sort === "protein" ? labels.sortProtein : labels.sortName}
         </button>
-        {counts[meal] > 0 && (
-          <button onClick={clearMeal} className="chip py-1.5 px-3 text-sm border border-line bg-card text-accent ms-auto">
-            {labels.clearMeal}
-          </button>
+        {totalOn > 0 && (
+          <div className="flex gap-2 ms-auto">
+            {counts[meal] > 0 && (
+              <button onClick={clearMeal} className="chip py-1.5 px-3 text-sm border border-line bg-card text-accent">
+                {labels.clearMeal}
+              </button>
+            )}
+            <button onClick={clearAll} className="chip py-1.5 px-3 text-sm border border-line bg-card text-accent">
+              {labels.clearAll}
+            </button>
+          </div>
         )}
       </div>
 
@@ -167,6 +197,9 @@ export function LibraryBrowser({
                 <button onClick={() => toggle(d)}
                   className={clsx("mt-2 w-full rounded-xl py-2 text-sm font-bold", on ? "bg-accent text-accent-ink" : "bg-accent-soft text-accent")}>
                   {on ? labels.onMenu : labels.addToMenu}
+                </button>
+                <button onClick={() => remove(d)} className="mt-2 self-end text-xs text-muted underline py-1">
+                  {labels.deleteForever}
                 </button>
               </div>
             </div>

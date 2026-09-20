@@ -7,6 +7,7 @@ import { people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { dishDesc, dishName, formatQty, getDish, ingredientName } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
+import { DeleteDishButton } from "@/components/DeleteDishButton";
 import { putOnMenu, saveRecipe, setReviewed, setVideo, takeOffMenu } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
@@ -175,12 +176,15 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
                 {t(L, "reviewed")}
               </button>
             </form>
-            {dish.onMenu && (
-              <form action={takeOffMenu}>
-                <input type="hidden" name="id" value={dish.id} />
-                <button className="text-sm text-muted underline">{t(L, "removeFromMenu")}</button>
-              </form>
-            )}
+            <div className="flex items-center gap-4">
+              {dish.onMenu && (
+                <form action={takeOffMenu}>
+                  <input type="hidden" name="id" value={dish.id} />
+                  <button className="text-sm text-muted underline">{t(L, "removeFromMenu")}</button>
+                </form>
+              )}
+              <DeleteDishButton id={dish.id} label={t(L, "deleteForever")} confirmText={t(L, "deleteConfirm")} />
+            </div>
           </div>
         </details>
       )}

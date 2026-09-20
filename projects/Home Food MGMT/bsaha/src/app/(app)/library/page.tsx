@@ -33,6 +33,8 @@ export default async function LibraryPage() {
             onMenu: t(L, "onMenu"), addToMenu: t(L, "addToMenu"), onMenuCount: t(L, "onMenuCount"),
             target: t(L, "target"), showAll: t(L, "showAll"), showOnMenu: t(L, "showOnMenu"), showOffMenu: t(L, "showOffMenu"),
             clearMeal: t(L, "clearMeal"), clearMealDone: t(L, "clearMealDone"),
+            clearAll: t(L, "clearAll"), clearAllConfirm: t(L, "clearAllConfirm"),
+            deleteForever: t(L, "deleteForever"), deleteConfirm: t(L, "deleteConfirm"),
             moroccan: t(L, "moroccanMenu"), international: t(L, "mainMenu"),
             sortProtein: t(L, "sortProtein"), sortName: t(L, "sortName"),
           }}

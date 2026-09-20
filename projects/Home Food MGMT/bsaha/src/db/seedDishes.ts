@@ -3,7 +3,8 @@
  * the NHS-sourced international catalog, the Moroccan catalog (Moroccan menu only), and the
  * high-protein set adapted from the USDA MyPlate Kitchen recipes (public domain).
  * Upserts by slug so re-running after a content fix updates text but keeps custom dishes,
- * the reviewed flag and any photo the cook replaced. Anything built-in (not custom) whose
+ * the reviewed flag, any photo the cook replaced, `on_menu` and a "deleted" status (a dish deleted
+ * for good in the app keeps its row as a tombstone, so this upsert cannot revive it). Anything built-in (not custom) whose
  * slug is no longer in the source files below is removed - the catalog is exactly these
  * files, nothing left over from an earlier library. The old hand-written library lives in
  * data/dishes-archive/ if it's ever needed again.

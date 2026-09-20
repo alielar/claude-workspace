@@ -76,6 +76,26 @@ const DDL = [
     created_at TEXT NOT NULL DEFAULT ''
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS pools_day_meal_dish ON pools(day, meal, dish_id)`,
+  /** One-off data fixes leave a marker here so they run exactly once per database. */
+  `CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+  )`,
+];
+
+/**
+ * Data fixes that must run once and never again, keyed by name. The menu was emptied on
+ * 2026-09-20 so it could be built again by hand from the library; without the marker a later
+ * deploy would empty it a second time and undo whatever was picked since.
+ */
+const ONE_OFFS: { key: string; run: () => Promise<void> }[] = [
+  {
+    key: "menu_emptied_2026_09_20",
+    run: async () => {
+      const now = new Date().toISOString();
+      await db.run(sql`UPDATE dishes SET on_menu = 0, removed_at = ${now} WHERE on_menu = 1`);
+    },
+  },
 ];
 
 /** Columns added after a table shipped. "duplicate column" is swallowed. */
@@ -111,6 +131,12 @@ export function ensureSchema(): Promise<void> {
     }
     // A dish removed before the library existed is simply off the menu now.
     await db.run(sql`UPDATE dishes SET on_menu = 0 WHERE removed_at IS NOT NULL AND on_menu = 1`);
+    for (const fix of ONE_OFFS) {
+      const seen = await db.all<{ key: string }>(sql`SELECT key FROM settings WHERE key = ${fix.key}`);
+      if (seen.length) continue;
+      await fix.run();
+      await db.run(sql`INSERT INTO settings (key, value) VALUES (${fix.key}, ${new Date().toISOString()})`);
+    }
     const [row] = await db.select({ n: sql<number>`count(*)` }).from(people);
     if (Number(row?.n ?? 0) === 0) {
       const now = new Date().toISOString();
