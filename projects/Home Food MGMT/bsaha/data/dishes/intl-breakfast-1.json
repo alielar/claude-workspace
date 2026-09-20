@@ -1,0 +1,531 @@
+[
+  {
+    "slug": "greek-yogurt-bowl-with-berries-honey-and-walnuts",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Greek yogurt bowl with berries, honey and walnuts",
+    "name_fr": "Bol de yaourt grec aux fruits rouges, miel et noix",
+    "name_ar": "دانون يوناني بالتوت والعسل والݣرݣاع",
+    "name_latin": "Danone grec b toot o l3sel o gergaa",
+    "desc_en": "Thick strained yogurt with fresh berries, a drizzle of honey and toasted walnuts. Ready in five minutes, 22 g of protein.",
+    "desc_fr": "Yaourt épais égoutté avec des fruits rouges, un filet de miel et des noix grillées. Prêt en cinq minutes, 22 g de protéines.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 0,
+    "macros": { "kcal": 320, "protein_g": 22, "carbs_g": 30, "fat_g": 12, "fiber_g": 4 },
+    "ingredients": [
+      { "en": "Greek yogurt, plain, 0-2% fat", "fr": "Yaourt grec nature", "ar": "دانون يوناني طبيعي", "qty": 800, "unit": "g", "group": "fresh" },
+      { "en": "Strawberries, halved", "fr": "Fraises coupées en deux", "ar": "فريز مقطع نصين", "qty": 250, "unit": "g", "group": "fresh" },
+      { "en": "Blueberries or raspberries", "fr": "Myrtilles ou framboises", "ar": "توت أزرق ولا فرامبواز", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Walnuts, roughly chopped", "fr": "Noix concassées", "ar": "ݣرݣاع مهرس", "qty": 60, "unit": "g", "group": "dry" },
+      { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 4, "unit": "tsp", "group": "dry" },
+      { "en": "Oats, toasted", "fr": "Flocons d'avoine grillés", "ar": "شوفان محمر", "qty": 40, "unit": "g", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حمري الݣرݣاع والشوفان فمقلة بلا زيت على نار متوسطة 3 دقايق حتى تخرج الريحة، وخليهم يبردو.",
+        "غسلي الفريز والتوت وصفيهم مزيان.",
+        "قسمي الدانون على 4 زلافات.",
+        "حطي الفاكهة فوق الدانون.",
+        "رشي الݣرݣاع والشوفان المحمر.",
+        "زيدي ملعقة صغيرة ديال العسل لكل زلافة وقدمي دغيا."
+      ],
+      "tips": [
+        "الدانون اليوناني خاصو يكون ثقيل، إلا كان خفيف صفيه ساعة فالتلاجة فوق طرف ديال الثوب.",
+        "ما تحطيش العسل بزاف، الفاكهة راها حلوة بوحدها.",
+        "تقدري تبدلي الفاكهة حسب الموسم: البنان، الخوخ، ولا التفاح مقطع."
+      ]
+    },
+    "tags": ["dairy", "nuts", "vegetarian"],
+    "photo_query": "greek yogurt bowl berries walnuts honey"
+  },
+  {
+    "slug": "overnight-oats-with-banana-and-peanut-butter",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Overnight oats with banana and peanut butter",
+    "name_fr": "Porridge de la veille à la banane et au beurre de cacahuète",
+    "name_ar": "شوفان ديال الليل بالبنان وزبدة الكاوكاو",
+    "name_latin": "Chofan dyal lil b lbanan o zebdat lkawkaw",
+    "desc_en": "Oats soaked in milk and yogurt overnight, topped with banana and a spoon of peanut butter in the morning. No cooking, 20 g of protein.",
+    "desc_fr": "Avoine trempée dans du lait et du yaourt toute la nuit, garnie de banane et d'une cuillère de beurre de cacahuète le matin. Sans cuisson, 20 g de protéines.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": { "kcal": 410, "protein_g": 20, "carbs_g": 52, "fat_g": 14, "fiber_g": 7 },
+    "ingredients": [
+      { "en": "Rolled oats", "fr": "Flocons d'avoine", "ar": "شوفان", "qty": 200, "unit": "g", "group": "dry" },
+      { "en": "Semi-skimmed milk", "fr": "Lait demi-écrémé", "ar": "حليب نص سمين", "qty": 400, "unit": "ml", "group": "fresh" },
+      { "en": "Greek yogurt, plain", "fr": "Yaourt grec nature", "ar": "دانون يوناني طبيعي", "qty": 300, "unit": "g", "group": "fresh" },
+      { "en": "Chia seeds", "fr": "Graines de chia", "ar": "زريعة الشيا", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Bananas, sliced", "fr": "Bananes en rondelles", "ar": "بنان مقطع", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Peanut butter, no added sugar", "fr": "Beurre de cacahuète sans sucre", "ar": "زبدة الكاوكاو بلا سكر", "qty": 4, "unit": "tbsp", "group": "dry" },
+      { "en": "Cinnamon", "fr": "Cannelle", "ar": "قرفة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 2, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "فطنجرة كبيرة ولا فبوكالات، خلطي الشوفان مع الحليب والدانون وزريعة الشيا والقرفة والعسل.",
+        "قلبي مزيان حتى يتخلط كلشي.",
+        "غطيه وحطيه فالتلاجة ليلة كاملة، ولا على الأقل 4 سوايع.",
+        "فالصباح قلبيه، وإلا كان خشين شوية زيدي شوية ديال الحليب.",
+        "قسميه على 4 زلافات.",
+        "حطي فوق كل زلافة شرايح البنان وملعقة ديال زبدة الكاوكاو."
+      ],
+      "tips": [
+        "استعملي الشوفان الكبير، ماشي الرقيق اللي كيطيب دغيا، باش ما يوليش عجينة.",
+        "تقدري تحضري 4 بوكالات نهار الأحد وكتبقى 4 أيام فالتلاجة.",
+        "قطعي البنان غير وقت التقديم باش ما يسودش."
+      ]
+    },
+    "tags": ["dairy", "nuts", "vegetarian", "gluten"],
+    "photo_query": "overnight oats banana peanut butter jar"
+  },
+  {
+    "slug": "spinach-and-feta-omelette",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Spinach and feta omelette",
+    "name_fr": "Omelette aux épinards et à la feta",
+    "name_ar": "أومليت بالسبانخ والفيتا",
+    "name_latin": "Omelette b sabanekh o feta",
+    "desc_en": "A soft omelette folded over wilted spinach and crumbled feta. Ten minutes, 24 g of protein.",
+    "desc_fr": "Une omelette moelleuse pliée sur des épinards fondus et de la feta émiettée. Dix minutes, 24 g de protéines.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 10,
+    "macros": { "kcal": 330, "protein_g": 24, "carbs_g": 5, "fat_g": 23, "fiber_g": 2 },
+    "ingredients": [
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 10, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh spinach", "fr": "Épinards frais", "ar": "سبانخ", "qty": 300, "unit": "g", "group": "fresh" },
+      { "en": "Feta cheese, crumbled", "fr": "Feta émiettée", "ar": "جبن فيتا مفتت", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Garlic clove, minced", "fr": "Gousse d'ail hachée", "ar": "تومة مهرسة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Milk", "fr": "Lait", "ar": "حليب", "qty": 60, "unit": "ml", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 0.5, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني ملعقة زيت فمقلة كبيرة، زيدي التومة وحركيها 30 ثانية.",
+        "زيدي السبانخ وقلبيها دقيقتين حتى تنزل، وحطيها فطبق وعصريها من الما.",
+        "خلطي البيض مع الحليب والملحة والابزار بالفورشيطة.",
+        "سخني باقي الزيت فالمقلة على نار متوسطة، وكبي ربع البيض.",
+        "ملي يبدا يتجمد من الجوانب، حطي ربع السبانخ والفيتا فنص واحد.",
+        "طوي الأومليت على النص الآخر، خليها 30 ثانية وحطيها فالطبق.",
+        "عاودي نفس الشي مع باقي البيض، 4 أومليتات."
+      ],
+      "tips": [
+        "النار متوسطة ماشي قوية، البيض خاصو يبقى طري من الداخل.",
+        "عصري السبانخ مزيان وإلا الأومليت غادي تولي عايمة فالما.",
+        "الفيتا مالحة، ما تزيديش ملحة بزاف."
+      ]
+    },
+    "tags": ["eggs", "dairy", "vegetarian"],
+    "photo_query": "spinach feta omelette plate"
+  },
+  {
+    "slug": "avocado-toast-with-poached-eggs",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Avocado toast with poached eggs",
+    "name_fr": "Toast à l'avocat et œufs pochés",
+    "name_ar": "توست بالأفوكا والبيض المسلوق بلا قشرة",
+    "name_latin": "Toast b lavoka o lbid poché",
+    "desc_en": "Mashed avocado with lemon on whole-grain toast, a poached egg on each slice. 18 g of protein and good fats.",
+    "desc_fr": "Avocat écrasé au citron sur du pain complet grillé, un œuf poché sur chaque tranche. 18 g de protéines et de bonnes graisses.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 10,
+    "macros": { "kcal": 420, "protein_g": 18, "carbs_g": 32, "fat_g": 25, "fiber_g": 9 },
+    "ingredients": [
+      { "en": "Whole-grain bread, thick slices", "fr": "Pain complet, tranches épaisses", "ar": "خبز كامل شرايح غلاض", "qty": 8, "unit": "piece", "group": "fresh" },
+      { "en": "Ripe avocados", "fr": "Avocats mûrs", "ar": "أفوكا طايبة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 8, "unit": "piece", "group": "fresh" },
+      { "en": "Lemon", "fr": "Citron", "ar": "ليمونة حامضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Cherry tomatoes, halved", "fr": "Tomates cerises coupées en deux", "ar": "طماطم صغيرة مقطعة", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 1, "unit": "tbsp", "group": "dry" },
+      { "en": "Chilli flakes (optional)", "fr": "Piment en flocons (facultatif)", "ar": "فلفلة حارة مهرسة (اختياري)", "qty": 1, "unit": "pinch", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 0.5, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "هرسي الأفوكا بالفورشيطة مع عصير نص ليمونة وشوية ملحة.",
+        "حمري الخبز فالطوستر ولا فمقلة.",
+        "غلي الما فطنجرة واسعة، ونقصي النار حتى يولي يغلي بشوية.",
+        "هرسي بيضة فكاس صغير، ونزليها بشوية فالما. خليها 3 دقايق حتى يتجمد البياض ويبقى الصفار طري.",
+        "حيديها بملعقة مثقوبة وحطيها فوق ورقة ديال المطبخ. عاودي مع باقي البيض، 3 ولا 4 فكل مرة.",
+        "دهني الخبز بالأفوكا، حطي البيضة فوق، وزيدي الطماطم الصغيرة.",
+        "رشي شوية زيت العود والفلفلة الحارة وقدمي دغيا."
+      ],
+      "tips": [
+        "زيدي ملعقة صغيرة ديال الخل للما، كيعاون البياض يتجمع.",
+        "البيض الطري هو اللي كيتسلق مزيان، البيض القديم كيتفرق فالما.",
+        "الأفوكا خاصها تكون طايبة: كتنزل شوية ملي تعصريها."
+      ]
+    },
+    "tags": ["eggs", "vegetarian", "gluten"],
+    "photo_query": "avocado toast poached egg"
+  },
+  {
+    "slug": "eggs-poached-in-spiced-tomato-sauce",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Eggs poached in spiced tomato sauce",
+    "name_fr": "Œufs pochés dans une sauce tomate épicée",
+    "name_ar": "بيض مطيب فمرقة الطماطم بالتوابل",
+    "name_latin": "Bid mtayeb f merqat matecha b tawabel",
+    "desc_en": "Shakshuka-style: a thick tomato and pepper sauce with cumin and paprika, eggs cracked in and cooked until just set. Serve with bread.",
+    "desc_fr": "Façon chakchouka : une sauce épaisse de tomates et poivrons au cumin et paprika, des œufs cassés dedans et cuits juste pris. À servir avec du pain.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 25,
+    "macros": { "kcal": 340, "protein_g": 19, "carbs_g": 20, "fat_g": 20, "fiber_g": 5 },
+    "ingredients": [
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 8, "unit": "piece", "group": "fresh" },
+      { "en": "Ripe tomatoes, grated", "fr": "Tomates mûres râpées", "ar": "طماطم طايبة محكوكة", "qty": 800, "unit": "g", "group": "fresh" },
+      { "en": "Red bell pepper, diced", "fr": "Poivron rouge en dés", "ar": "فلفلة حمرا حلوة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "تومة مهرسة", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كامون", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Sweet paprika", "fr": "Paprika doux", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Fresh parsley or coriander, chopped", "fr": "Persil ou coriandre frais haché", "ar": "معدنوس ولا قصبور مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Whole-wheat bread", "fr": "Pain complet", "ar": "خبز كامل", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الزيت فمقلة واسعة، وقلي البصلة والفلفلة 6 دقايق حتى يطراو.",
+        "زيدي التومة والكامون والفلفلة الحلوة، وحركي دقيقة.",
+        "كبي الطماطم المحكوكة والملحة، وخليها تطيب على نار متوسطة 12 دقيقة حتى تخشن المرقة.",
+        "ديري 8 حفرات فالمرقة بالمغرف، وهرسي بيضة فكل واحدة.",
+        "غطي المقلة ونقصي النار. خليها 6 حتى 8 دقايق حتى يتجمد البياض ويبقى الصفار طري.",
+        "رشي المعدنوس وقدميها فالمقلة مع الخبز."
+      ],
+      "tips": [
+        "المرقة خاصها تكون خشينة قبل ما تزيدي البيض، وإلا البيض غادي يغرق.",
+        "ما تحركيش البيض ملي تحطيه، غير غطي وصبري.",
+        "بغيتيها حارة؟ زيدي فلفلة حارة مقطعة مع البصلة."
+      ]
+    },
+    "tags": ["eggs", "peppers", "cooked_onion", "vegetarian", "gluten"],
+    "photo_query": "shakshuka eggs tomato sauce skillet"
+  },
+  {
+    "slug": "vegetable-frittata-with-herbs",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Vegetable frittata with herbs",
+    "name_fr": "Frittata aux légumes et aux herbes",
+    "name_ar": "فريتاتا بالخضرة والأعشاب",
+    "name_latin": "Frittata b lkhodra o la3chab",
+    "desc_en": "An oven-finished Italian omelette full of zucchini, tomatoes and herbs. Good hot or cold, 21 g of protein a slice.",
+    "desc_fr": "Une omelette italienne finie au four, pleine de courgettes, tomates et herbes. Bonne chaude ou froide, 21 g de protéines la part.",
+    "cuisine": "Italian",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 25,
+    "macros": { "kcal": 310, "protein_g": 21, "carbs_g": 9, "fat_g": 21, "fiber_g": 3 },
+    "ingredients": [
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 10, "unit": "piece", "group": "fresh" },
+      { "en": "Zucchini, diced", "fr": "Courgette en dés", "ar": "ݣرعة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Cherry tomatoes, halved", "fr": "Tomates cerises coupées en deux", "ar": "طماطم صغيرة مقطعة", "qty": 200, "unit": "g", "group": "fresh" },
+      { "en": "Spring onions, sliced", "fr": "Oignons nouveaux émincés", "ar": "بصلة خضرا مقطعة", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Grated cheese (edam or gruyère type)", "fr": "Fromage râpé (type edam ou gruyère)", "ar": "فرماج محكوك", "qty": 80, "unit": "g", "group": "fresh" },
+      { "en": "Milk", "fr": "Lait", "ar": "حليب", "qty": 80, "unit": "ml", "group": "fresh" },
+      { "en": "Fresh parsley and basil, chopped", "fr": "Persil et basilic frais hachés", "ar": "معدنوس وحبق مقطعين", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الفرن على 200 درجة.",
+        "سخني الزيت فمقلة كبيرة كتدخل للفرن، وقلي الݣرعة والبصلة الخضرا 5 دقايق.",
+        "خلطي البيض مع الحليب والفرماج والأعشاب والملحة والابزار.",
+        "كبي البيض فوق الخضرة فالمقلة، وحطي الطماطم فوق.",
+        "خليها على النار 3 دقايق حتى تتجمد الجوانب.",
+        "دخلي المقلة للفرن 12 حتى 15 دقيقة حتى يتجمد الوسط ويحمر شوية.",
+        "خليها تبرد 5 دقايق، قطعيها 8 قطع وقدميها."
+      ],
+      "tips": [
+        "إلا ما عندكش مقلة كتدخل للفرن، كبي كلشي فطبق ديال الفرن مدهون وطيبيه 20 دقيقة.",
+        "الفريتاتا كتبقى 3 أيام فالتلاجة، مزيانة للفطور ديال الصباح السرعان.",
+        "ما تطيبيهاش بزاف، ملي يتجمد الوسط خرجيها."
+      ]
+    },
+    "tags": ["eggs", "dairy", "vegetarian"],
+    "photo_query": "vegetable frittata skillet tomatoes zucchini"
+  },
+  {
+    "slug": "cottage-cheese-pancakes-with-fruit",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Cottage cheese pancakes with fruit",
+    "name_fr": "Pancakes au fromage blanc et aux fruits",
+    "name_ar": "بانكيك بالجبن الطري والفاكهة",
+    "name_latin": "Pancake b jben tri o lfakya",
+    "desc_en": "Fluffy pancakes made with cottage cheese and oats, so each stack carries 26 g of protein. Served with fresh fruit.",
+    "desc_fr": "Des pancakes moelleux au fromage blanc et à l'avoine, 26 g de protéines par assiette. Servis avec des fruits frais.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 15,
+    "macros": { "kcal": 380, "protein_g": 26, "carbs_g": 42, "fat_g": 11, "fiber_g": 5 },
+    "ingredients": [
+      { "en": "Cottage cheese or fresh cheese (jben)", "fr": "Fromage blanc ou fromage frais", "ar": "جبن طري (جبن بلدي حلو)", "qty": 400, "unit": "g", "group": "fresh" },
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Rolled oats", "fr": "Flocons d'avoine", "ar": "شوفان", "qty": 160, "unit": "g", "group": "dry" },
+      { "en": "Baking powder", "fr": "Levure chimique", "ar": "خميرة الحلوة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Vanilla", "fr": "Vanille", "ar": "فانيلا", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Mixed fresh fruit (berries, banana, peach)", "fr": "Fruits frais mélangés", "ar": "فاكهة طرية مخلطة", "qty": 400, "unit": "g", "group": "fresh" },
+      { "en": "Butter or oil for the pan", "fr": "Beurre ou huile pour la poêle", "ar": "زبدة ولا زيت للمقلة", "qty": 1, "unit": "tbsp", "group": "fresh" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "طحني الشوفان فالخلاطة حتى يولي طحين.",
+        "زيدي الجبن والبيض والخميرة والفانيلا وملعقة عسل، وخلطي حتى تولي عجينة ناعمة.",
+        "خليها ترتاح 5 دقايق باش يشرب الشوفان.",
+        "سخني مقلة على نار متوسطة ودهنيها بشوية زبدة.",
+        "كبي مغرف صغير من العجينة لكل بانكيك، وخليها دقيقتين حتى تبان فقاقيع.",
+        "قلبيها وطيبي الجهة الأخرى دقيقة ونص.",
+        "قدمي 3 بانكيكات لكل واحد مع الفاكهة وشوية عسل."
+      ],
+      "tips": [
+        "النار متوسطة ماشي قوية، هاد العجينة كتحمر دغيا.",
+        "ما تكبريش البانكيك بزاف، الصغار كيتقلبو أسهل.",
+        "تقدري تجمدي الباقي وتسخنيه فالطوستر."
+      ]
+    },
+    "tags": ["eggs", "dairy", "vegetarian", "gluten"],
+    "photo_query": "cottage cheese pancakes berries stack"
+  },
+  {
+    "slug": "banana-oat-pancakes",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Banana oat pancakes",
+    "name_fr": "Pancakes banane et avoine",
+    "name_ar": "بانكيك بالبنان والشوفان",
+    "name_latin": "Pancake b lbanan o chofan",
+    "desc_en": "Three-ingredient pancakes, banana, oats and eggs, blended and cooked in minutes. Naturally sweet, no sugar added.",
+    "desc_fr": "Des pancakes à trois ingrédients, banane, avoine et œufs, mixés et cuits en quelques minutes. Naturellement sucrés, sans sucre ajouté.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 15,
+    "macros": { "kcal": 350, "protein_g": 15, "carbs_g": 50, "fat_g": 10, "fiber_g": 6 },
+    "ingredients": [
+      { "en": "Ripe bananas", "fr": "Bananes mûres", "ar": "بنان طايب", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Rolled oats", "fr": "Flocons d'avoine", "ar": "شوفان", "qty": 200, "unit": "g", "group": "dry" },
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Milk", "fr": "Lait", "ar": "حليب", "qty": 100, "unit": "ml", "group": "fresh" },
+      { "en": "Baking powder", "fr": "Levure chimique", "ar": "خميرة الحلوة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Cinnamon", "fr": "Cannelle", "ar": "قرفة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Greek yogurt, to serve", "fr": "Yaourt grec pour servir", "ar": "دانون يوناني للتقديم", "qty": 200, "unit": "g", "group": "fresh" },
+      { "en": "Oil for the pan", "fr": "Huile pour la poêle", "ar": "زيت للمقلة", "qty": 1, "unit": "tbsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "حطي البنان والشوفان والبيض والحليب والخميرة والقرفة فالخلاطة.",
+        "خلطي 30 ثانية حتى تولي عجينة ناعمة، وخليها ترتاح 5 دقايق.",
+        "سخني مقلة على نار متوسطة ودهنيها بشوية زيت.",
+        "كبي مغرف صغير لكل بانكيك، وخليها دقيقتين حتى تجف الجوانب.",
+        "قلبيها بشوية وطيبي دقيقة أخرى.",
+        "قدميها مع ملعقة دانون وشرايح بنان."
+      ],
+      "tips": [
+        "البنان خاصو يكون طايب مزيان، بنقط كحلة، هو اللي كيعطي الحلاوة.",
+        "هاد البانكيك طري، قلبيه بملعقة عريضة وبشوية.",
+        "ما تحطيش النار قوية، كيحمر من برا ويبقى ني من الداخل."
+      ]
+    },
+    "tags": ["eggs", "dairy", "vegetarian", "gluten"],
+    "photo_query": "banana oat pancakes stack"
+  },
+  {
+    "slug": "chia-pudding-with-mango",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Chia pudding with mango",
+    "name_fr": "Pudding de chia à la mangue",
+    "name_ar": "بودينغ الشيا بالمانݣا",
+    "name_latin": "Pudding chia b lmanga",
+    "desc_en": "Chia seeds set overnight in milk and yogurt, topped with fresh mango. Creamy, high in fibre, no cooking.",
+    "desc_fr": "Des graines de chia prises pendant la nuit dans du lait et du yaourt, garnies de mangue fraîche. Crémeux, riche en fibres, sans cuisson.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": { "kcal": 330, "protein_g": 16, "carbs_g": 34, "fat_g": 14, "fiber_g": 12 },
+    "ingredients": [
+      { "en": "Chia seeds", "fr": "Graines de chia", "ar": "زريعة الشيا", "qty": 100, "unit": "g", "group": "dry" },
+      { "en": "Semi-skimmed milk", "fr": "Lait demi-écrémé", "ar": "حليب نص سمين", "qty": 500, "unit": "ml", "group": "fresh" },
+      { "en": "Greek yogurt, plain", "fr": "Yaourt grec nature", "ar": "دانون يوناني طبيعي", "qty": 300, "unit": "g", "group": "fresh" },
+      { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Vanilla", "fr": "Vanille", "ar": "فانيلا", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Ripe mango, diced", "fr": "Mangue mûre en dés", "ar": "مانݣا طايبة مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Lime", "fr": "Citron vert", "ar": "ليمون أخضر", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Toasted coconut flakes or almonds", "fr": "Noix de coco ou amandes grillées", "ar": "كوك ولا لوز محمر", "qty": 30, "unit": "g", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خلطي الحليب مع الدانون والعسل والفانيلا فطنجرة.",
+        "زيدي زريعة الشيا وحركي مزيان.",
+        "خليها 10 دقايق وعاودي حركيها باش ما تتجمعش الزريعة فالقاع.",
+        "غطيها وحطيها فالتلاجة ليلة كاملة، ولا على الأقل 4 سوايع.",
+        "قشري المانݣا وقطعيها مكعبات صغار، وزيدي عليها عصير نص ليمونة خضرا.",
+        "قسمي البودينغ على 4 كيسان، حطي المانݣا فوق ورشي الكوك ولا اللوز."
+      ],
+      "tips": [
+        "حركي مرتين فالبداية، هذا هو السر باش يولي ناعم بلا كتل.",
+        "إلا خرج خشين بزاف زيدي شوية حليب فالصباح.",
+        "ما كاينش مانݣا؟ الفريز، الخوخ ولا الرمان كيمشيو مزيان."
+      ]
+    },
+    "tags": ["dairy", "vegetarian"],
+    "photo_query": "chia pudding mango glass"
+  },
+  {
+    "slug": "scrambled-eggs-with-mushrooms-on-whole-wheat-toast",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Scrambled eggs with mushrooms on whole-wheat toast",
+    "name_fr": "Œufs brouillés aux champignons sur toast complet",
+    "name_ar": "بيض مخلط بالفݣيع على توست كامل",
+    "name_latin": "Bid mkhellet b lfgi3 3la toast kamel",
+    "desc_en": "Soft scrambled eggs and golden sautéed mushrooms piled on toast. Fifteen minutes, 23 g of protein.",
+    "desc_fr": "Des œufs brouillés moelleux et des champignons dorés sur du pain grillé. Quinze minutes, 23 g de protéines.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 12,
+    "macros": { "kcal": 370, "protein_g": 23, "carbs_g": 28, "fat_g": 19, "fiber_g": 5 },
+    "ingredients": [
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 10, "unit": "piece", "group": "fresh" },
+      { "en": "Mushrooms, sliced", "fr": "Champignons émincés", "ar": "فݣيع مقطع", "qty": 400, "unit": "g", "group": "fresh" },
+      { "en": "Whole-wheat bread", "fr": "Pain complet", "ar": "خبز كامل", "qty": 8, "unit": "piece", "group": "fresh" },
+      { "en": "Butter", "fr": "Beurre", "ar": "زبدة", "qty": 20, "unit": "g", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 1, "unit": "tbsp", "group": "dry" },
+      { "en": "Milk", "fr": "Lait", "ar": "حليب", "qty": 60, "unit": "ml", "group": "fresh" },
+      { "en": "Garlic clove, minced", "fr": "Gousse d'ail hachée", "ar": "تومة مهرسة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 0.5, "unit": "bunch", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الزيت فمقلة كبيرة على نار قوية، وزيدي الفݣيع. خليه بلا تحريك 3 دقايق حتى يحمر.",
+        "زيدي التومة وشوية ملحة وحركي دقيقتين، وحطيه فطبق.",
+        "حمري الخبز.",
+        "خلطي البيض مع الحليب والملحة والابزار.",
+        "ذوبي الزبدة فنفس المقلة على نار هادية، وكبي البيض.",
+        "حركي بشوية بملعقة ديال الخشب حتى يتجمد البيض ويبقى طري وملمع، 3 دقايق.",
+        "حطي البيض فوق الخبز، والفݣيع فوقه، ورشي المعدنوس."
+      ],
+      "tips": [
+        "الفݣيع خاصو نار قوية ومقلة واسعة، وإلا كيطلق الما وكيتسلق.",
+        "البيض حيديه من النار قبل ما يتجمد كامل، كيكمل يطيب فالطبق.",
+        "ما تزيديش الملحة للبيض حتى للآخر، كتخليه يطلق الما."
+      ]
+    },
+    "tags": ["eggs", "dairy", "vegetarian", "gluten"],
+    "photo_query": "scrambled eggs mushrooms toast"
+  },
+  {
+    "slug": "egg-and-vegetable-breakfast-muffins",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Egg and vegetable breakfast muffins",
+    "name_fr": "Muffins aux œufs et aux légumes",
+    "name_ar": "مافن البيض بالخضرة",
+    "name_latin": "Muffin lbid b lkhodra",
+    "desc_en": "Little baked omelettes in a muffin tin, packed with spinach, tomato and cheese. Make a batch on Sunday, eat all week.",
+    "desc_fr": "Des petites omelettes cuites dans un moule à muffins, pleines d'épinards, de tomate et de fromage. À préparer le dimanche pour toute la semaine.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 22,
+    "macros": { "kcal": 290, "protein_g": 22, "carbs_g": 6, "fat_g": 19, "fiber_g": 2 },
+    "ingredients": [
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 10, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh spinach, chopped", "fr": "Épinards frais hachés", "ar": "سبانخ مقطعة", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Tomato, deseeded and diced", "fr": "Tomate épépinée en dés", "ar": "طماطم مقطعة بلا زريعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Spring onions, sliced", "fr": "Oignons nouveaux émincés", "ar": "بصلة خضرا مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Grated cheese", "fr": "Fromage râpé", "ar": "فرماج محكوك", "qty": 100, "unit": "g", "group": "fresh" },
+      { "en": "Smoked turkey, diced (optional)", "fr": "Dinde fumée en dés (facultatif)", "ar": "ديندي مدخن مقطع (اختياري)", "qty": 100, "unit": "g", "group": "fresh" },
+      { "en": "Milk", "fr": "Lait", "ar": "حليب", "qty": 60, "unit": "ml", "group": "fresh" },
+      { "en": "Olive oil for the tin", "fr": "Huile d'olive pour le moule", "ar": "زيت العود للقالب", "qty": 1, "unit": "tbsp", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الفرن على 180 درجة، ودهني قالب ديال 12 مافن بالزيت مزيان.",
+        "خلطي البيض مع الحليب والملحة والابزار.",
+        "زيدي السبانخ والطماطم والبصلة الخضرا والفرماج والديندي، وحركي.",
+        "كبي الخليط فالقالب، عمري كل واحد ثلاثة أرباع.",
+        "طيبي 20 حتى 22 دقيقة حتى ينتافخو ويتجمدو.",
+        "خليهم يبردو 5 دقايق قبل ما تخرجيهم من القالب."
+      ],
+      "tips": [
+        "دهني القالب مزيان ولا استعملي ورق المافن، البيض كيلصق.",
+        "كيبقاو 4 أيام فالتلاجة، سخنيهم 30 ثانية فالميكرو.",
+        "غادي ينزلو ملي يبردو، هذا عادي."
+      ]
+    },
+    "tags": ["eggs", "dairy", "gluten"],
+    "photo_query": "egg muffins vegetables muffin tin"
+  },
+  {
+    "slug": "whole-wheat-french-toast-with-berries",
+    "meal": "breakfast",
+    "on_menu": false,
+    "name_en": "Whole-wheat French toast with berries",
+    "name_fr": "Pain perdu complet aux fruits rouges",
+    "name_ar": "خبز مقلي بالبيض والحليب مع التوت",
+    "name_latin": "Khobz meqli b lbid o lhlib m3a toot",
+    "desc_en": "Thick whole-wheat slices soaked in egg and cinnamon milk, pan-fried golden, with berries and yogurt instead of syrup.",
+    "desc_fr": "Des tranches épaisses de pain complet trempées dans du lait à l'œuf et à la cannelle, dorées à la poêle, avec des fruits rouges et du yaourt au lieu du sirop.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 5,
+    "cook_min": 15,
+    "macros": { "kcal": 390, "protein_g": 19, "carbs_g": 48, "fat_g": 13, "fiber_g": 7 },
+    "ingredients": [
+      { "en": "Whole-wheat bread, thick slices", "fr": "Pain complet, tranches épaisses", "ar": "خبز كامل شرايح غلاض", "qty": 8, "unit": "piece", "group": "fresh" },
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Milk", "fr": "Lait", "ar": "حليب", "qty": 200, "unit": "ml", "group": "fresh" },
+      { "en": "Cinnamon", "fr": "Cannelle", "ar": "قرفة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Vanilla", "fr": "Vanille", "ar": "فانيلا", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Butter", "fr": "Beurre", "ar": "زبدة", "qty": 20, "unit": "g", "group": "fresh" },
+      { "en": "Mixed berries", "fr": "Fruits rouges mélangés", "ar": "توت مخلط", "qty": 300, "unit": "g", "group": "fresh" },
+      { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 200, "unit": "g", "group": "fresh" },
+      { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 2, "unit": "tbsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خلطي البيض مع الحليب والقرفة والفانيلا فطبق واسع.",
+        "سخني مقلة على نار متوسطة وذوبي شوية زبدة.",
+        "غطسي شريحة الخبز فالخليط 10 ثواني من كل جهة، ما تخليهاش بزاف.",
+        "قليها دقيقتين من كل جهة حتى تحمر.",
+        "عاودي مع باقي الشرايح، وزيدي زبدة كل مرة.",
+        "قدمي شريحتين لكل واحد مع التوت وملعقة دانون وشوية عسل."
+      ],
+      "tips": [
+        "الخبز ديال البارح أحسن، الطري كيشرب بزاف وكيتفتت.",
+        "ما تغطسيش الخبز بزاف، غير جهة وجهة.",
+        "ما كاينش توت؟ البنان والتفاح المقلي فالقرفة كيمشيو مزيان."
+      ]
+    },
+    "tags": ["eggs", "dairy", "vegetarian", "gluten"],
+    "photo_query": "french toast berries plate"
+  }
+]

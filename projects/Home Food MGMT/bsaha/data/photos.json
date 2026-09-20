@@ -1,1030 +1,4 @@
 {
-  "orange-and-sultana-milk-pudding": {
-    "file": "orange-and-sultana-milk-pudding.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/orange-and-sultana-milk-pudding/"
-  },
-  "breakfast-fruit-salad": {
-    "file": "breakfast-fruit-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/breakfast-fruit-salad/"
-  },
-  "healthier-full-english-breakfast": {
-    "file": "healthier-full-english-breakfast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/healthier-full-english-breakfast/"
-  },
-  "easy-overnight-oats": {
-    "file": "easy-overnight-oats.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/easy-overnight-oats/"
-  },
-  "potato-and-poached-egg-hash": {
-    "file": "potato-and-poached-egg-hash.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/potato-and-poached-egg-hash/"
-  },
-  "vanilla-muesli-milkshake": {
-    "file": "vanilla-muesli-milkshake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vanilla-muesli-milkshake/"
-  },
-  "raspberry-and-banana-shake": {
-    "file": "raspberry-and-banana-shakes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/raspberry-and-banana-shakes/"
-  },
-  "breakfast-burritos": {
-    "file": "breakfast-burritos.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/breakfast-burritos/"
-  },
-  "beef-sausages-on-toast": {
-    "file": "sausages-tomato-and-mushrooms-on-toast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sausages-tomato-and-mushrooms-on-toast/"
-  },
-  "eggs-paprika": {
-    "file": "eggs-paprika.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/eggs-paprika/"
-  },
-  "banana-and-apricot-bagels": {
-    "file": "banana-and-apricot-bagels.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/banana-and-apricot-bagels/"
-  },
-  "loaded-beans-on-toast": {
-    "file": "healthy-beans-on-toast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/healthy-beans-on-toast/"
-  },
-  "mashed-avocado-cheese-on-toast": {
-    "file": "mashed-avocado-cheese-on-toast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mashed-avocado-cheese-on-toast/"
-  },
-  "savoury-tomato-and-mushroom-pancakes": {
-    "file": "pancakes-with-tomato-and-mushrooms.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pancakes-with-tomato-and-mushrooms/"
-  },
-  "toasted-oats-with-yoghurt-and-fruit": {
-    "file": "toasted-oats-with-yoghurt-and-fruit.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/toasted-oats-with-yoghurt-and-fruit/"
-  },
-  "forest-fruit-milkshake": {
-    "file": "forest-fruit-milkshake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/forest-fruit-milkshake/"
-  },
-  "mini-apple-and-banana-muffins": {
-    "file": "mini-apple-and-banana-muffins.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mini-apple-and-banana-muffins/"
-  },
-  "traffic-light-omelette": {
-    "file": "vegetable-omelettes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vegetable-omelettes/"
-  },
-  "scrambled-eggs-on-giant-mushrooms-with-grilled-peppers": {
-    "file": "scrambled-eggs-on-mushrooms-with-grilled-peppers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/scrambled-eggs-on-mushrooms-with-grilled-peppers/"
-  },
-  "creamy-mushrooms-on-toast": {
-    "file": "mushrooms-on-toast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mushrooms-on-toast/"
-  },
-  "fruity-french-toast": {
-    "file": "fruity-french-toast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/fruity-french-toast/"
-  },
-  "english-breakfast-muffins": {
-    "file": "english-breakfast-muffins.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/english-breakfast-muffins/"
-  },
-  "apple-and-raspberry-porridge": {
-    "file": "three-bears-breakfast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/three-bears-breakfast/"
-  },
-  "carrot-and-sultana-mini-pancakes": {
-    "file": "carrot-and-sultana-pancakes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/carrot-and-sultana-pancakes/"
-  },
-  "super-scrambled-eggs": {
-    "file": "super-scrambled-eggs.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/"
-  },
-  "savoury-carrot-and-courgette-muffins": {
-    "file": "carrot-and-courgette-muffins.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/carrot-and-courgette-muffins/"
-  },
-  "blueberry-and-banana-muffins": {
-    "file": "blueberry-and-banana-muffins.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/blueberry-and-banana-muffins/"
-  },
-  "fruit-jellies": {
-    "file": "eyeball-juice-jellies.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/eyeball-juice-jellies/"
-  },
-  "kedgeree-with-a-kick": {
-    "file": "kedgeree-with-a-kick.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/kedgeree-with-a-kick/"
-  },
-  "creamy-banana-porridge-with-crushed-raspberries": {
-    "file": "banana-and-raspberry-porridge.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/banana-and-raspberry-porridge/"
-  },
-  "no-pastry-mini-mushroom-quiches": {
-    "file": "no-pastry-mini-mushroom-quiches.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/no-pastry-mini-mushroom-quiches/"
-  },
-  "plum-and-peach-grills": {
-    "file": "plum-and-peach-grills.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/plum-and-peach-grills/"
-  },
-  "simple-sugar-and-lemon-pancakes": {
-    "file": "easy-sugar-and-lemon-pancakes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/easy-sugar-and-lemon-pancakes/"
-  },
-  "porridge-with-yoghurt-and-berries": {
-    "file": "porridge-with-yoghurt-and-berries.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/porridge-with-yoghurt-and-berries/"
-  },
-  "grilled-fish-florentine": {
-    "file": "haddock-florentine.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/haddock-florentine/"
-  },
-  "baked-tomatoes-on-toast": {
-    "file": "baked-tomatoes-on-toast.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/baked-tomatoes-on-toast/"
-  },
-  "punjabi-dhal": {
-    "file": "panjabi-dhal.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/panjabi-dhal/"
-  },
-  "tuna-and-potato-salad": {
-    "file": "tuna-and-potato-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tuna-and-potato-salad/"
-  },
-  "mexican-bean-and-tomato-soup": {
-    "file": "mexican-bean-and-tomato-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mexican-bean-and-tomato-soup/"
-  },
-  "turkey-ham-toast-faces": {
-    "file": "mummies-faces-halloween-pizza.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mummies-faces-halloween-pizza/"
-  },
-  "pizza-pitta-faces": {
-    "file": "pizza-pitta-faces.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pizza-pitta-faces/"
-  },
-  "fast-chicken-noodle-soup": {
-    "file": "fast-chicken-noodle-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/fast-chicken-noodle-soup/"
-  },
-  "salmon-and-courgette-bagels": {
-    "file": "salmon-and-courgette-bagels.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/salmon-and-courgette-bagels/"
-  },
-  "caribbean-chicken-salad": {
-    "file": "caribbean-chicken-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/caribbean-chicken-salad/"
-  },
-  "pasta-salad-on-lettuce": {
-    "file": "pasta-salad-on-lettuce.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pasta-salad-on-lettuce/"
-  },
-  "finger-licking-chicken-pittas": {
-    "file": "finger-licking-chicken-pittas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/finger-licking-chicken-pittas/"
-  },
-  "coconut-rice-salad": {
-    "file": "coconut-rice-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/coconut-rice-salad/"
-  },
-  "harvest-vegetable-soup": {
-    "file": "harvest-vegetable-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/harvest-vegetable-soup/"
-  },
-  "baked-falafel-pitta": {
-    "file": "falafels.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/falafels/"
-  },
-  "fruity-winter-slaw": {
-    "file": "fruity-winter-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/fruity-winter-salad/"
-  },
-  "sweetcorn-and-sweet-potato-fritters": {
-    "file": "sweetcorn-and-sweet-potato-fritters.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sweetcorn-and-sweet-potato-fritters/"
-  },
-  "spiced-chicken-and-vegetable-soup": {
-    "file": "spiced-chicken-and-vegetable-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/spiced-chicken-and-vegetable-soup/"
-  },
-  "chicken-and-vegetable-stir-fry": {
-    "file": "chicken-and-vegetable-stir-fry.jpg",
-    "credit": "MILIDZANI",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Garlic_chicken_stir-fry_with_rice.jpg"
-  },
-  "pronto-pizza-squares": {
-    "file": "pronto-pizza-squares.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pronto-pizza-squares/"
-  },
-  "hot-cheese-and-salsa-turnovers": {
-    "file": "hot-cheese-and-salsa-turnovers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/hot-cheese-and-salsa-turnovers/"
-  },
-  "cheesy-veggie-pasta-wedges": {
-    "file": "pasta-vegetable-cheese-wedges.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pasta-vegetable-cheese-wedges/"
-  },
-  "tasty-chicken-wraps": {
-    "file": "tasty-chicken-wraps.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tasty-chicken-wraps/"
-  },
-  "pepper-and-onion-melts": {
-    "file": "pepper-and-onion-melts.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pepper-and-onion-melts/"
-  },
-  "sweet-potato-wedges-with-simple-salsa": {
-    "file": "sweet-potato-chips-with-salsa.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sweet-potato-chips-with-salsa/"
-  },
-  "roasted-root-vegetables-with-beetroot-and-cucumber-dips": {
-    "file": "roasted-root-veg-with-beetroot-and-cucumber-dips.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/roasted-root-veg-with-beetroot-and-cucumber-dips/"
-  },
-  "greek-style-salad": {
-    "file": "greek-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/greek-salad/"
-  },
-  "super-savoury-rice": {
-    "file": "super-mixed-veg-rice.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/super-mixed-veg-rice/"
-  },
-  "zesty-prawn-salad": {
-    "file": "kicking-prawn-salad.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/kicking-prawn-salad/"
-  },
-  "easy-carrot-soup": {
-    "file": "easy-carrot-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/easy-carrot-soup/"
-  },
-  "quick-pizza-calzone": {
-    "file": "cheats-pizza-calzone.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/cheats-pizza-calzone/"
-  },
-  "turkey-ham-and-coleslaw-pittas": {
-    "file": "ham-and-fresh-coleslaw-pittas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/ham-and-fresh-coleslaw-pittas/"
-  },
-  "maraq-fahfah-somali-lamb-and-vegetable-broth": {
-    "file": "maraq-fahfah-somali-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/maraq-fahfah-somali-soup/"
-  },
-  "couscous-with-chicken-and-peas": {
-    "file": "couscous-with-chicken-and-peas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/couscous-with-chicken-and-peas/"
-  },
-  "classic-vegetable-soup": {
-    "file": "easy-vegetable-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/easy-vegetable-soup/"
-  },
-  "four-seasons-pizza": {
-    "file": "four-seasons-pizza.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/four-seasons-pizza/"
-  },
-  "fishy-toast-toppers": {
-    "file": "fishy-toast-toppers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/fishy-toast-toppers/"
-  },
-  "mediterranean-roasted-vegetable-sandwiches": {
-    "file": "mediterranean-vegetable-sandwiches.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mediterranean-vegetable-sandwiches/"
-  },
-  "vegetable-frittata": {
-    "file": "courgette-and-tomato-vegetable-frittata.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/courgette-and-tomato-vegetable-frittata/"
-  },
-  "stuffed-peppers-with-beetroot-rice": {
-    "file": "scary-stuffed-peppers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/scary-stuffed-peppers/"
-  },
-  "crunchy-salad-pittas": {
-    "file": "crunchy-salad-pittas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/crunchy-salad-pittas/"
-  },
-  "super-veggie-soup": {
-    "file": "super-veggie-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/super-veggie-soup/"
-  },
-  "chicken-pizza-naan": {
-    "file": "chicken-pizza-naan.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-pizza-naan/"
-  },
-  "chicken-and-tomato-jacket-potato": {
-    "file": "chicken-and-tomato-jacket-potato.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-and-tomato-jacket-potato/"
-  },
-  "egg-shakshuka": {
-    "file": "shakshuka.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/shakshuka/"
-  },
-  "courgette-rocket-and-turkey-ham-pizza": {
-    "file": "courgette-rocket-and-ham-pizza.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/courgette-rocket-and-ham-pizza/"
-  },
-  "crispy-potato-and-courgette-rosti-with-salsa": {
-    "file": "crispy-potato-courgette-fritters-with-salsa.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/crispy-potato-courgette-fritters-with-salsa/"
-  },
-  "spicy-chicken-and-salad-sandwich": {
-    "file": "spicy-chicken-and-salad-sandwich.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/spicy-chicken-and-salad-sandwich/"
-  },
-  "salmon-and-cucumber-wraps": {
-    "file": "salmon-and-cucumber-wraps.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/salmon-and-cucumber-wraps/"
-  },
-  "chunky-chicken-and-sweetcorn-soup": {
-    "file": "chicken-and-sweetcorn-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-and-sweetcorn-soup/"
-  },
-  "turkey-sandwich-with-apple-coleslaw": {
-    "file": "turkey-sarnie-with-coleslaw.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/turkey-sarnie-with-coleslaw/"
-  },
-  "pakistani-saag-aloo": {
-    "file": "pakistani-saag-aloo.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pakistani-saag-aloo/"
-  },
-  "masala-curry-potatoes": {
-    "file": "masala-curry-potatoes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/masala-curry-potatoes/"
-  },
-  "turkey-tikka-kebabs": {
-    "file": "turkey-tikka-kebabs.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/turkey-tikka-kebabs/"
-  },
-  "loaded-beef-sandwiches": {
-    "file": "roast-beef-sandwiches.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/roast-beef-sandwiches/"
-  },
-  "hot-turkey-ham-and-tomato-crumpets": {
-    "file": "hot-ham-and-tomato-crumpets.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/hot-ham-and-tomato-crumpets/"
-  },
-  "cheese-and-avocado-quesadillas": {
-    "file": "tortilla-cheese-turnovers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tortilla-cheese-turnovers/"
-  },
-  "hearty-vegetable-and-lentil-soup": {
-    "file": "vegetable-and-lentil-soup.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vegetable-and-lentil-soup/"
-  },
-  "okra-and-potato-curry": {
-    "file": "deresh-aloo-curry.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/deresh-aloo-curry/"
-  },
-  "macaroni-and-vegetable-slices": {
-    "file": "macaroni-and-vegetable-slices.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/macaroni-and-vegetable-slices/"
-  },
-  "jerk-style-chicken-skewers": {
-    "file": "jerk-style-chicken-skewers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/jerk-style-chicken-skewers/"
-  },
-  "vegetarian-jamaican-rundown": {
-    "file": "vegetarian-jamaican-rundown.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vegetarian-jamaican-rundown/"
-  },
-  "tuna-and-sweetcorn-pasta": {
-    "file": "tasty-tuna-and-sweetcorn-pasta.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tasty-tuna-and-sweetcorn-pasta/"
-  },
-  "bharelu-shaak-gujarati-stuffed-vegetables": {
-    "file": "bharelu-shaak.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/bharelu-shaak/"
-  },
-  "veggie-spaghetti-bolognese": {
-    "file": "veggie-spag-bol-recipe.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/veggie-spag-bol-recipe/"
-  },
-  "pesto-and-parmesan-salmon": {
-    "file": "pesto-and-parmesan-salmon.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pesto-and-parmesan-salmon/"
-  },
-  "cornmeal-and-okra-with-spicy-fish": {
-    "file": "bajan-cou-cou-with-spicy-fish.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/bajan-cou-cou-with-spicy-fish/"
-  },
-  "chicken-and-vegetable-parcels": {
-    "file": "chicken-and-vegetable-parcels.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-and-vegetable-parcels/"
-  },
-  "salmon-with-spring-onion-mash": {
-    "file": "salmon-with-spring-onion-mash.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/salmon-with-spring-onion-mash/"
-  },
-  "roasted-vegetables-and-couscous": {
-    "file": "roasted-veg-and-couscous.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/roasted-veg-and-couscous/"
-  },
-  "turkey-stir-fry": {
-    "file": "turkey-stir-fry.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/turkey-stir-fry/"
-  },
-  "chilli-beef-and-bean-burgers": {
-    "file": "chilli-beef-and-bean-burgers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chilli-beef-and-bean-burgers/"
-  },
-  "green-vegetable-mac-and-cheese": {
-    "file": "vegetable-mac-and-cheeese.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vegetable-mac-and-cheeese/"
-  },
-  "beef-sausage-and-bean-stew": {
-    "file": "sausage-and-bean-stew.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sausage-and-bean-stew/"
-  },
-  "sweet-potato-and-pea-pasta": {
-    "file": "sweet-potato-pea-pasta.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sweet-potato-pea-pasta/"
-  },
-  "perfect-pasta-and-tomato-sauce": {
-    "file": "perfect-pasta-and-tomato-sauce.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/perfect-pasta-and-tomato-sauce/"
-  },
-  "crunchy-homemade-fish-fingers-with-sweet-potato-wedges": {
-    "file": "homemade-fish-fingers-with-sweet-potato-wedges.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/homemade-fish-fingers-with-sweet-potato-wedges/"
-  },
-  "glazed-roast-chicken-drumsticks": {
-    "file": "roast-chicken-drumsticks.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/roast-chicken-drumsticks/"
-  },
-  "mediterranean-potato-tray-bake": {
-    "file": "mediterranean-potato-bake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mediterranean-potato-bake/"
-  },
-  "baked-potatoes-with-mince": {
-    "file": "baked-potatoes-with-mince.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/baked-potatoes-with-mince/"
-  },
-  "beef-stew-with-dumplings": {
-    "file": "super-stew-and-dumplings.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/super-stew-and-dumplings/"
-  },
-  "prawn-jambalaya": {
-    "file": "prawn-jambalaya.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/prawn-jambalaya/"
-  },
-  "cheesy-turkey-ham-and-leek-bake": {
-    "file": "cheesy-ham-and-leek-bake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/cheesy-ham-and-leek-bake/"
-  },
-  "tuna-carrot-and-cheddar-patties": {
-    "file": "tuna-carrot-cheddar-patties.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tuna-carrot-cheddar-patties/"
-  },
-  "beef-sausage-and-mash-with-onion-gravy": {
-    "file": "sausage-and-mash.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sausage-and-mash/"
-  },
-  "chicken-pasta-with-peas": {
-    "file": "chicken-pasta-with-peas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-pasta-with-peas/"
-  },
-  "pesto-tagliatelle-with-peppers-and-squash": {
-    "file": "pesto-tagliatelle-peppers-and-squash.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pesto-tagliatelle-peppers-and-squash/"
-  },
-  "simple-rajma-curry": {
-    "file": "kidney-bean-rajma-curry.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/kidney-bean-rajma-curry/"
-  },
-  "jollof-rice": {
-    "file": "jollof-rice.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/jollof-rice/"
-  },
-  "chicken-jalfrezi": {
-    "file": "chicken-jalfrezi.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-jalfrezi/"
-  },
-  "turkey-koftas": {
-    "file": "turkey-koftas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/turkey-koftas/"
-  },
-  "vegetable-and-lentil-cobbler": {
-    "file": "vegetable-and-lentil-cobbler.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vegetable-and-lentil-cobbler/"
-  },
-  "beef-sausage-tomato-and-butter-bean-bake": {
-    "file": "sausage-tomato-butter-bean-bake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sausage-tomato-butter-bean-bake/"
-  },
-  "turkey-meatballs-with-tagliatelle": {
-    "file": "eyeball-halloween-meatballs.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/eyeball-halloween-meatballs/"
-  },
-  "chicken-and-banana-korma": {
-    "file": "chicken-and-banana-korma.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chicken-and-banana-korma/"
-  },
-  "caribbean-tofu-and-sweet-potato-curry-with-rice-and-beans": {
-    "file": "caribbean-tofu-and-sweet-potato-curry-with-rice-and-peas.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/caribbean-tofu-and-sweet-potato-curry-with-rice-and-peas/"
-  },
-  "good-old-fish-and-chips": {
-    "file": "homemade-fish-and-chips.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/homemade-fish-and-chips/"
-  },
-  "garlic-ginger-and-lime-fish-skewers": {
-    "file": "garlic-ginger-lime-fish-skewers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/garlic-ginger-lime-fish-skewers/"
-  },
-  "sweet-and-sour-chicken": {
-    "file": "sweet-and-sour-chicken.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/sweet-and-sour-chicken/"
-  },
-  "punjabi-turkey-keema": {
-    "file": "panjabi-keema.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/panjabi-keema/"
-  },
-  "slow-cooked-lamb-and-leek-bake": {
-    "file": "slow-cooked-lamb-and-leek-bake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/slow-cooked-lamb-and-leek-bake/"
-  },
-  "vegetable-jalfrezi": {
-    "file": "vegetable-jalfrezi.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/vegetable-jalfrezi/"
-  },
-  "pea-and-spinach-risotto": {
-    "file": "pea-and-spinach-risotto.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pea-and-spinach-risotto/"
-  },
-  "herby-pasta-with-vegetables": {
-    "file": "herby-pasta-with-veg.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/herby-pasta-with-veg/"
-  },
-  "turkey-burgers": {
-    "file": "turkey-burgers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/turkey-burgers/"
-  },
-  "spaghetti-carbonara": {
-    "file": "pasta-carbonara.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pasta-carbonara/"
-  },
-  "meat-free-cottage-pie": {
-    "file": "meat-free-cottage-pie.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/meat-free-cottage-pie/"
-  },
-  "beef-and-bean-casserole": {
-    "file": "beef-and-bean-casserole.jpg",
-    "credit": "JIP",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Beef_stew_at_restaurant_Frans_%26_Sandra.jpg"
-  },
-  "classic-cottage-pie": {
-    "file": "classic-cottage-pie.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/classic-cottage-pie/"
-  },
-  "tandoori-chicken": {
-    "file": "tandoori-chicken-quarters.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tandoori-chicken-quarters/"
-  },
-  "roast-chicken-breast-with-peppers": {
-    "file": "roast-chicken-breast-with-peppers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/roast-chicken-breast-with-peppers/"
-  },
-  "vegetarian-chilli": {
-    "file": "tasty-vegetarian-chilli.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tasty-vegetarian-chilli/"
-  },
-  "bariis-iskukaris-somali-spiced-rice-with-chicken": {
-    "file": "bariis-iskukaris.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/bariis-iskukaris/"
-  },
-  "west-african-potato-and-pepper-pottage-with-egg": {
-    "file": "asaro-mpoto-mpoto-potato-casserole-pottage.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/asaro-mpoto-mpoto-potato-casserole-pottage/"
-  },
-  "oat-fufu-with-kale-and-prawn-stew": {
-    "file": "oat-fufu-with-kale-riro.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/oat-fufu-with-kale-riro/"
-  },
-  "chicken-and-vegetable-pie-with-mashed-potato": {
-    "file": "halloween-spider-chicken-pies.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/halloween-spider-chicken-pies/"
-  },
-  "mushroom-risotto": {
-    "file": "mushroom-risotto.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/mushroom-risotto/"
-  },
-  "salmon-and-broccoli-pasta": {
-    "file": "salmon-and-broccoli-pasta.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/salmon-and-broccoli-pasta/"
-  },
-  "quick-chicken-couscous": {
-    "file": "quick-chicken-couscous.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/quick-chicken-couscous/"
-  },
-  "steamed-vegetable-mix-with-cheese-sauce": {
-    "file": "veg-mix-with-cheese-sauce.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/veg-mix-with-cheese-sauce/"
-  },
-  "fabulous-fish-pie": {
-    "file": "fabulous-fish-pie.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/fabulous-fish-pie/"
-  },
-  "roast-chicken-dinner": {
-    "file": "roast-dinner.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/roast-dinner/"
-  },
-  "honey-beans-with-plantain": {
-    "file": "ewa-oloyin-with-plantain.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/ewa-oloyin-with-plantain/"
-  },
-  "meatballs-in-tomato-sauce": {
-    "file": "meatballs-and-sauce.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/meatballs-and-sauce/"
-  },
-  "pigeon-pea-pilau-with-carrot-pickle": {
-    "file": "pigeon-peas-pilau-with-carrot-pickle.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pigeon-peas-pilau-with-carrot-pickle/"
-  },
-  "pasta-ratatouille-bake": {
-    "file": "pasta-ratatouille-bake.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/pasta-ratatouille-bake/"
-  },
-  "tuna-and-bean-jacket-potatoes": {
-    "file": "tuna-and-bean-jacket-potatoes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/tuna-and-bean-jacket-potatoes/"
-  },
-  "cheese-and-tomato-grilled-fish": {
-    "file": "cheese-and-tomato-grilled-fish.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/cheese-and-tomato-grilled-fish/"
-  },
-  "beef-and-garlic-bread-bake": {
-    "file": "beef-and-garlic-bread-bake.jpg",
-    "credit": "fifikins",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/25925793@N00/4530158959"
-  },
-  "peppers-with-spicy-turkey-stuffing": {
-    "file": "spicy-turkey-stuffed-peppers.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/spicy-turkey-stuffed-peppers/"
-  },
-  "chilli-con-carne": {
-    "file": "chilli-con-carne.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/chilli-con-carne/"
-  },
-  "baked-macaroni-cheese-with-tomatoes": {
-    "file": "macaroni-cheese-with-tomatoes.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/macaroni-cheese-with-tomatoes/"
-  },
-  "spaghetti-bolognese": {
-    "file": "easy-spaghetti-bolognese.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/easy-spaghetti-bolognese/"
-  },
-  "beef-curry": {
-    "file": "brilliant-beef-curry.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/brilliant-beef-curry/"
-  },
-  "bengali-style-chicken-curry": {
-    "file": "bengali-chicken-curry.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/bengali-chicken-curry/"
-  },
-  "turkey-with-apples-and-celery": {
-    "file": "turkey-with-apples-and-celery.jpg",
-    "credit": "Robert Lender",
-    "license": "CC BY-SA 2.0",
-    "source": "https://www.flickr.com/photos/19949055@N00/1031809694"
-  },
-  "macher-jhol-bengali-fish-curry": {
-    "file": "macher-jhol-bengali-fish-curry.jpg",
-    "credit": "NHS Healthier Families",
-    "license": "Open Government Licence v3.0",
-    "source": "https://www.nhs.uk/healthier-families/recipes/macher-jhol-bengali-fish-curry/"
-  },
   "baghrir-with-honey-butter-and-crushed-almonds": {
     "file": "baghrir-with-honey-butter-and-crushed-almonds.jpg",
     "credit": "Sabah HAANA",
@@ -1433,622 +407,568 @@
     "license": "CC BY 2.0",
     "source": "https://commons.wikimedia.org/wiki/File:Mmm...veggie_beef_soup_(4320521264).jpg"
   },
-  "tomato-basil-and-garlic-omelette": {
-    "file": "tomato-basil-and-garlic-omelette.jpg",
-    "credit": "Renee Comet (Photographer)",
-    "license": "Public domain",
-    "source": "https://commons.wikimedia.org/wiki/File:Eggs_omelette.jpg"
-  },
-  "broccoli-and-mushroom-omelette": {
-    "file": "broccoli-and-mushroom-omelette.jpg",
-    "credit": "Sillycybergrl",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:The_Homlette.jpg"
-  },
-  "falafel-sandwich-with-yogurt-sauce": {
-    "file": "falafel-sandwich-with-yogurt-sauce.jpg",
-    "credit": "Israel_photo_gallery",
-    "license": "CC BY-SA 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Falafel_in_a_pita.jpg"
-  },
-  "spinach-and-egg-stuffed-mushrooms": {
-    "file": "spinach-and-egg-stuffed-mushrooms.jpg",
-    "credit": "Jpbrigand2",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Oeufs_farcis_aux_champignons.jpg"
-  },
-  "avocado-egg-and-tomato-toast": {
-    "file": "avocado-egg-and-tomato-toast.jpg",
-    "credit": "Andy Li",
-    "license": "CC0",
-    "source": "https://commons.wikimedia.org/wiki/File:Garden_breakfast_-_Garden_Caf%C3%A9_Brighton_2023-12-30.jpg"
-  },
-  "chicken-noodle-soup": {
-    "file": "chicken-noodle-soup.jpg",
-    "credit": "Nichijyou123",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Chicken_Noodle_Soup_US.jpg"
-  },
-  "turkey-and-vegetable-stir-fry": {
-    "file": "turkey-and-vegetable-stir-fry.jpg",
-    "credit": "Elix Perth",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/24218403@N00/3337443502"
-  },
-  "chicken-and-spanish-rice": {
-    "file": "chicken-and-spanish-rice.jpg",
-    "credit": "E4024",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Arroz_a_la_valenciana_(Chile).jpg"
-  },
-  "pasta-with-spinach-white-beans-and-chicken": {
-    "file": "pasta-with-spinach-white-beans-and-chicken.jpg",
-    "credit": "Stacy Spensley",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/21001756@N06/4392117799"
-  },
-  "tuna-and-apple-salad-sandwich": {
-    "file": "tuna-and-apple-salad-sandwich.jpg",
+  "spinach-and-feta-omelette": {
+    "file": "spinach-and-feta-omelette.jpg",
     "credit": "jeffreyw",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Tuna_salad_sandwich_(1).jpg"
+    "source": "https://www.flickr.com/photos/7927684@N03/5182567699"
   },
-  "grilled-chicken-and-avocado-quinoa": {
-    "file": "grilled-chicken-and-avocado-quinoa.jpg",
+  "avocado-toast-with-poached-eggs": {
+    "file": "avocado-toast-with-poached-eggs.jpg",
+    "credit": "Stacy Spensley",
+    "license": "CC BY 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:T%C3%ADpico_desayuno_that_girl.jpg"
+  },
+  "scrambled-eggs-with-mushrooms-on-whole-wheat-toast": {
+    "file": "scrambled-eggs-with-mushrooms-on-whole-wheat-toast.jpg",
+    "credit": "ultrakml",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/34948727@N00/8121597563"
+  },
+  "egg-and-vegetable-breakfast-muffins": {
+    "file": "egg-and-vegetable-breakfast-muffins.jpg",
+    "credit": "Tatiana12",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/98826299@N00/7774910340"
+  },
+  "whole-wheat-french-toast-with-berries": {
+    "file": "whole-wheat-french-toast-with-berries.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/7927684@N03/5067519701"
+  },
+  "peanut-butter-banana-protein-smoothie": {
+    "file": "peanut-butter-banana-protein-smoothie.jpg",
     "credit": "rawpixel",
-    "license": "CC CC0 1.0",
-    "source": "https://www.rawpixel.com/image/5963648/free-public-domain-cc0-photo"
+    "license": "CC0 1.0",
+    "source": "https://www.rawpixel.com/image/5970856/banana-smoothie"
   },
-  "sardine-cucumber-and-tomato-sandwich": {
-    "file": "sardine-cucumber-and-tomato-sandwich.jpg",
-    "credit": "Arnaud 25",
+  "egg-and-cheese-breakfast-sandwich": {
+    "file": "egg-and-cheese-breakfast-sandwich.jpg",
+    "credit": "wstryder",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/36514345@N00/7369866712"
+  },
+  "chicken-stir-fry-with-broccoli-and-cashews": {
+    "file": "chicken-stir-fry-with-broccoli-and-cashews.jpg",
+    "credit": "Simon Law from Montréal, QC, Canada",
+    "license": "CC BY-SA 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cashewchickenphoto.jpg"
+  },
+  "beef-and-broccoli-stir-fry": {
+    "file": "beef-and-broccoli-stir-fry.jpg",
+    "credit": "WordRidden",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/97844767@N00/4510890024"
+  },
+  "spaghetti-bolognese-with-lean-beef": {
+    "file": "spaghetti-bolognese-with-lean-beef.jpg",
+    "credit": "kadluba",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/38235150@N00/3264340270"
+  },
+  "turkey-chili-with-beans": {
+    "file": "turkey-chili-with-beans.jpg",
+    "credit": "Keenan Pepper",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/7349212@N05/2626854098"
+  },
+  "beef-tacos-with-lettuce-tomato-and-yogurt": {
+    "file": "beef-tacos-with-lettuce-tomato-and-yogurt.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/7927684@N03/14901642417"
+  },
+  "chicken-tikka-masala-with-brown-rice": {
+    "file": "chicken-tikka-masala-with-brown-rice.jpg",
+    "credit": "secretlondon123",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/25834786@N03/2895455410"
+  },
+  "thai-green-curry-with-chicken": {
+    "file": "thai-green-curry-with-chicken.jpg",
+    "credit": "adactio",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/74105777@N00/3288326265"
+  },
+  "baked-cod-with-tomatoes-and-olives": {
+    "file": "baked-cod-with-tomatoes-and-olives.jpg",
+    "credit": "Sanjumech12",
     "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Sardines_et_pain_grill%C3%A9_01.jpg"
+    "source": "https://commons.wikimedia.org/w/index.php?curid=40767865"
   },
-  "split-pea-soup": {
-    "file": "split-pea-soup.jpg",
-    "credit": "cogdogblog",
+  "mushroom-and-spinach-lasagna": {
+    "file": "mushroom-and-spinach-lasagna.jpg",
+    "credit": "serenejournal",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/37996646802@N01/11579080605"
+    "source": "https://www.flickr.com/photos/8564557@N05/4253080686"
   },
-  "fish-tacos-with-cabbage": {
-    "file": "fish-tacos-with-cabbage.jpg",
-    "credit": "HarshLight from San Jose, CA, USA",
+  "baked-chicken-parmesan-with-salad": {
+    "file": "baked-chicken-parmesan-with-salad.jpg",
+    "credit": "BarelyFitz",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Bayside_Fish_Tacos_(12872596063).jpg"
+    "source": "https://www.flickr.com/photos/43935390809@N01/1977028224"
   },
-  "chicken-cacciatore": {
-    "file": "chicken-cacciatore.jpg",
-    "credit": "Robot B",
+  "salmon-teriyaki-with-rice-and-greens": {
+    "file": "salmon-teriyaki-with-rice-and-greens.jpg",
+    "credit": "o.tacke",
+    "license": "CC0 1.0",
+    "source": "https://www.flickr.com/photos/89882948@N05/51588195066"
+  },
+  "chicken-and-vegetable-fried-rice": {
+    "file": "chicken-and-vegetable-fried-rice.jpg",
+    "credit": "avlxyz",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/10559879@N00/3334369091"
+  },
+  "beef-and-vegetable-kebabs": {
+    "file": "beef-and-vegetable-kebabs.jpg",
+    "credit": "PersonalCreations.com",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/9777401@N06/4452588585"
+    "source": "https://www.flickr.com/photos/127294011@N07/15075034702"
   },
-  "pineapple-chicken": {
-    "file": "pineapple-chicken.jpg",
-    "credit": "PattayaPatrol",
+  "baked-eggplant-parmesan": {
+    "file": "baked-eggplant-parmesan.jpg",
+    "credit": "Flickr.com user \"Blue Lotus\"",
+    "license": "CC BY 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Melanzane_alla_Parmigiana.jpg"
+  },
+  "vegetable-noodle-stir-fry-with-egg": {
+    "file": "vegetable-noodle-stir-fry-with-egg.jpg",
+    "credit": "spurekar",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/63324741@N04/49974276306"
+  },
+  "lighter-moussaka": {
+    "file": "lighter-moussaka.jpg",
+    "credit": "Haydn Blackey",
     "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:DFC_0882_A_colorful_plate_of_sweet_and_sour_chicken_with_bell_peppers_pineapple_chunks_and_scallions_served_in_a_white_oval_dish.jpg"
+    "source": "https://commons.wikimedia.org/wiki/File:Moussaka_-_Brunswick_Centre_-_London_2026-06-04.jpg"
   },
-  "salmon-burgers-with-sweet-potato-wedges": {
-    "file": "salmon-burgers-with-sweet-potato-wedges.jpg",
-    "credit": "Buck",
+  "baked-meatballs-with-couscous-and-tomato-sauce": {
+    "file": "baked-meatballs-with-couscous-and-tomato-sauce.jpg",
+    "credit": "jshj",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Bulkie_roll_spicy_salmon_burger.jpg"
+    "source": "https://www.flickr.com/photos/21559804@N00/824608884"
   },
-  "slow-cooked-beef-stew": {
-    "file": "slow-cooked-beef-stew.jpg",
-    "credit": "Missvain",
-    "license": "CC BY 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Bistro_Jeanty_-_Sarah_Stierch_-_May_2018_02.jpg"
+  "chicken-caesar-salad-with-a-light-dressing": {
+    "file": "chicken-caesar-salad-with-a-light-dressing.jpg",
+    "credit": "avlxyz",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/10559879@N00/521246021"
   },
-  "beef-stroganoff-with-yogurt": {
-    "file": "beef-stroganoff-with-yogurt.jpg",
-    "credit": "jgodsey",
+  "tuna-nicoise-salad": {
+    "file": "tuna-nicoise-salad.jpg",
+    "credit": "WordRidden",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Beef_Stroganoff_on_Pasta.jpg"
+    "source": "https://www.flickr.com/photos/97844767@N00/22811271"
   },
-  "pasta-bolognese": {
-    "file": "pasta-bolognese.jpg",
-    "credit": "JIP",
+  "lentil-soup-with-lemon-and-cumin": {
+    "file": "lentil-soup-with-lemon-and-cumin.jpg",
+    "credit": "bobjudge",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/8286199@N08/3210281474"
+  },
+  "minestrone-soup": {
+    "file": "minestrone-soup.jpg",
+    "credit": "waldopics",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/85056813@N00/3581699066"
+  },
+  "tomato-and-white-bean-soup": {
+    "file": "tomato-and-white-bean-soup.jpg",
+    "credit": "stu_spivack",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/35034346243@N01/2235570691"
+  },
+  "chickpea-salad-with-cucumber-tomato-and-herbs": {
+    "file": "chickpea-salad-with-cucumber-tomato-and-herbs.jpg",
+    "credit": "FitTasteTic",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/188303370@N04/49859621146"
+  },
+  "falafel-bowl-with-tahini-and-salad": {
+    "file": "falafel-bowl-with-tahini-and-salad.jpg",
+    "credit": "EvanProdromou",
     "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Spaghetti_bolognese_at_Antell_Martintalo.jpg"
+    "source": "https://commons.wikimedia.org/wiki/File:Bowl_of_falafel.jpg"
   },
-  "baked-parmesan-fish-with-mushrooms": {
-    "file": "baked-parmesan-fish-with-mushrooms.jpg",
-    "credit": "thebittenword.com",
+  "seared-salmon-rice-bowl-with-cucumber-and-avocado": {
+    "file": "seared-salmon-rice-bowl-with-cucumber-and-avocado.jpg",
+    "credit": "Andy Li",
+    "license": "CC0",
+    "source": "https://commons.wikimedia.org/wiki/File:Salmon_%26_Tuna_Poke_Bowl_(M)_with_Spicy_Mayo_sauce_-_Kitokito_2025-04-25.jpg"
+  },
+  "beef-and-vegetable-stir-fry-with-brown-rice": {
+    "file": "beef-and-vegetable-stir-fry-with-brown-rice.jpg",
+    "credit": "jeffreyw",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/22198928@N00/2199948375"
+    "source": "https://commons.wikimedia.org/wiki/File:Broccoli_beef_(5457397534).jpg"
   },
-  "honey-baked-lentils": {
-    "file": "honey-baked-lentils.jpg",
-    "credit": "David Jackmanson",
+  "chicken-burrito-bowl-with-black-beans-and-corn": {
+    "file": "chicken-burrito-bowl-with-black-beans-and-corn.jpg",
+    "credit": "sarahstierch",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/58301516@N00/16043294946"
+    "source": "https://www.flickr.com/photos/7633518@N08/52493469421"
   },
-  "chicken-and-rice-salad": {
-    "file": "chicken-and-rice-salad.jpg",
-    "credit": "RBerteig",
+  "spaghetti-with-tomato-and-basil-sauce": {
+    "file": "spaghetti-with-tomato-and-basil-sauce.jpg",
+    "credit": "jeffreyw",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/51035786238@N01/540146878"
+    "source": "https://www.flickr.com/photos/7927684@N03/14530170849"
   },
-  "roast-turkey-breast-with-rosemary-and-thyme": {
-    "file": "roast-turkey-breast-with-rosemary-and-thyme.jpg",
-    "credit": "Usien",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Putenbraten.JPG"
-  },
-  "lemon-chicken-pasta-bake": {
-    "file": "lemon-chicken-pasta-bake.jpg",
-    "credit": "kae71463",
+  "pasta-primavera-with-spring-vegetables": {
+    "file": "pasta-primavera-with-spring-vegetables.jpg",
+    "credit": "Stacy Spensley",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/75231152@N00/8295928914"
+    "source": "https://www.flickr.com/photos/21001756@N06/4378453396"
   },
-  "crispy-oven-fried-chicken": {
-    "file": "crispy-oven-fried-chicken.jpg",
-    "credit": "ウィ貴公子",
+  "cobb-salad-with-chicken-and-eggs": {
+    "file": "cobb-salad-with-chicken-and-eggs.jpg",
+    "credit": "nan palmero",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/97402086@N00/16660362983"
+  },
+  "stuffed-sweet-potatoes-with-black-beans-and-yogurt": {
+    "file": "stuffed-sweet-potatoes-with-black-beans-and-yogurt.jpg",
+    "credit": "jules:stonesoup",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/58367355@N00/22100868223"
+  },
+  "shrimp-and-avocado-salad-with-lime": {
+    "file": "shrimp-and-avocado-salad-with-lime.jpg",
+    "credit": "rawpixel",
+    "license": "CC0 1.0",
+    "source": "https://www.rawpixel.com/image/5968164/shrimps-avocado"
+  },
+  "turkey-meatball-and-vegetable-soup": {
+    "file": "turkey-meatball-and-vegetable-soup.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/7927684@N03/6170168515"
+  },
+  "overnight-oats-with-banana-and-peanut-butter": {
+    "file": "overnight-oats-with-banana-and-peanut-butter.jpg",
+    "credit": "Original description was: I, VirtualSteve took this photograph on February 19, 2006.",
+    "license": "CC BY-SA 2.5",
+    "source": "https://commons.wikimedia.org/wiki/File:Muesli.jpg"
+  },
+  "eggs-poached-in-spiced-tomato-sauce": {
+    "file": "eggs-poached-in-spiced-tomato-sauce.jpg",
+    "credit": "FranHogan",
     "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%82%AD%E3%83%81%E3%82%AD%E3%83%B3_THE_%E3%82%AC%E3%83%BC%E3%83%AA%E3%83%83%E3%82%AF%E3%83%9A%E3%83%83%E3%83%91%E3%83%BC_%E3%83%9E%E3%82%AF%E3%83%89%E3%83%8A%E3%83%AB%E3%83%89%E6%B8%8B%E8%B0%B7MIYASHITA_PARK%E5%BA%97_2024%E5%B9%B410%E6%9C%8831%E6%97%A5%E3%81%AE%E6%B8%8B%E8%B0%B7_202410311447_IMG_6620.jpg"
+    "source": "https://commons.wikimedia.org/w/index.php?curid=92677142"
   },
-  "overnight-oats-with-yogurt-and-berries": {
-    "file": "overnight-oats-with-yogurt-and-berries.jpg",
-    "credit": "Denna Jones",
+  "vegetable-frittata-with-herbs": {
+    "file": "vegetable-frittata-with-herbs.jpg",
+    "credit": "jeffreyw",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/95267793@N00/2732313297"
+    "source": "https://www.flickr.com/photos/7927684@N03/6628633881"
   },
-  "garlic-and-lemon-stuffed-chicken": {
-    "file": "garlic-and-lemon-stuffed-chicken.jpg",
+  "apple-cinnamon-porridge-with-almonds": {
+    "file": "apple-cinnamon-porridge-with-almonds.jpg",
+    "credit": "Kim Siever",
+    "license": "Public domain 1.0",
+    "source": "https://www.flickr.com/photos/57873306@N00/4626501723"
+  },
+  "smoked-salmon-on-rye-with-cream-cheese": {
+    "file": "smoked-salmon-on-rye-with-cream-cheese.jpg",
+    "credit": "cyclonebill",
+    "license": "CC BY-SA 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Laksemadder.jpg"
+  },
+  "green-smoothie-with-spinach-mango-and-yogurt": {
+    "file": "green-smoothie-with-spinach-mango-and-yogurt.jpg",
+    "credit": "rawpixel",
+    "license": "CC0 1.0",
+    "source": "https://www.rawpixel.com/image/5918800/image-public-domain-free-photo"
+  },
+  "quinoa-breakfast-bowl-with-almonds-and-dates": {
+    "file": "quinoa-breakfast-bowl-with-almonds-and-dates.jpg",
+    "credit": "Jennifer from Vancouver, Canada",
+    "license": "CC BY 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Quinoa_Breakfast_(7865498832).jpg"
+  },
+  "baked-eggs-with-white-beans-and-tomatoes": {
+    "file": "baked-eggs-with-white-beans-and-tomatoes.jpg",
+    "credit": "avlxyz",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/10559879@N00/2175095132"
+  },
+  "ricotta-toast-with-honey-and-figs": {
+    "file": "ricotta-toast-with-honey-and-figs.jpg",
+    "credit": "avlxyz",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/10559879@N00/4105639848"
+  },
+  "tomato-and-cheese-toasted-sandwich-with-a-boiled-egg": {
+    "file": "tomato-and-cheese-toasted-sandwich-with-a-boiled-egg.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Grilled_cheese_sandwich_with_roasted_tomato_soup.jpg"
+  },
+  "baked-salmon-with-lemon-garlic-and-green-beans": {
+    "file": "baked-salmon-with-lemon-garlic-and-green-beans.jpg",
+    "credit": "avlxyz",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/10559879@N00/4780854087"
+  },
+  "chicken-alfredo-with-a-lighter-yogurt-sauce": {
+    "file": "chicken-alfredo-with-a-lighter-yogurt-sauce.jpg",
+    "credit": "MattCC716",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/27874898@N00/51950457060"
+  },
+  "baked-ziti-with-turkey-and-spinach": {
+    "file": "baked-ziti-with-turkey-and-spinach.jpg",
+    "credit": "joebeone",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/71753172@N00/423517445"
+  },
+  "shrimp-scampi-with-whole-wheat-linguine": {
+    "file": "shrimp-scampi-with-whole-wheat-linguine.jpg",
+    "credit": "Prayitno / Thank you for (12 millions +) view",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/34128007@N04/18893300233"
+  },
+  "chicken-fajitas-with-peppers-and-onions": {
+    "file": "chicken-fajitas-with-peppers-and-onions.jpg",
+    "credit": "Elisa Arteaga from Caracas, Venezuela",
+    "license": "CC BY-SA 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Flickr_elisart_324248450--Beef_and_chicken_fajitas.jpg"
+  },
+  "chickpea-and-spinach-curry": {
+    "file": "chickpea-and-spinach-curry.jpg",
+    "credit": "Miansari66",
+    "license": "CC0",
+    "source": "https://commons.wikimedia.org/wiki/File:Nohutlu_Ispanak.JPG"
+  },
+  "fish-tacos-with-cabbage-slaw": {
+    "file": "fish-tacos-with-cabbage-slaw.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/7927684@N03/9641664708"
+  },
+  "stuffed-bell-peppers-with-beef-and-rice": {
+    "file": "stuffed-bell-peppers-with-beef-and-rice.jpg",
+    "credit": "healthiermi",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/54781600@N05/37673754461"
+  },
+  "lighter-beef-lasagna": {
+    "file": "lighter-beef-lasagna.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lasagna_(1).jpg"
+  },
+  "roast-chicken-with-root-vegetables": {
+    "file": "roast-chicken-with-root-vegetables.jpg",
+    "credit": "Onny Nagathan",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Roasted_Chicken_with_Potato.jpg"
+  },
+  "pesto-chicken-with-roasted-vegetables": {
+    "file": "pesto-chicken-with-roasted-vegetables.jpg",
     "credit": "Infrogmation of New Orleans",
     "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Chicken_and_Zucchini_dinner.jpg"
+    "source": "https://commons.wikimedia.org/wiki/File:Pesto_Chicken_and_Grilled_Zucchini.jpg"
   },
-  "baked-lemon-chicken-with-onions": {
-    "file": "baked-lemon-chicken-with-onions.jpg",
-    "credit": "Diana from Pennsylvania USA",
+  "garlic-butter-shrimp-with-zucchini-noodles": {
+    "file": "garlic-butter-shrimp-with-zucchini-noodles.jpg",
+    "credit": "jhegyessy",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Barbecued_chicken_drumsticks-02.jpg"
+    "source": "https://www.flickr.com/photos/33805261@N00/7150038285"
   },
-  "soy-and-orange-marinated-chicken": {
-    "file": "soy-and-orange-marinated-chicken.jpg",
-    "credit": "Ruocaled",
+  "greek-salad-with-grilled-chicken": {
+    "file": "greek-salad-with-grilled-chicken.jpg",
+    "credit": "Thriving Vegetarian",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/54063325@N07/13599513043"
+    "source": "https://www.flickr.com/photos/90155432@N02/8562461142"
   },
-  "apple-fennel-and-chicken-couscous-salad": {
-    "file": "apple-fennel-and-chicken-couscous-salad.jpg",
-    "credit": "sporkist",
+  "quinoa-salad-with-roasted-vegetables-and-feta": {
+    "file": "quinoa-salad-with-roasted-vegetables-and-feta.jpg",
+    "credit": "Jennifer from Vancouver, Canada",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/17879025@N00/165332040"
+    "source": "https://commons.wikimedia.org/wiki/File:Summer_Quinoa_Salad_(Vegan)_(7475479352).jpg"
   },
-  "arroz-con-pollo-with-chicken-thighs": {
-    "file": "arroz-con-pollo-with-chicken-thighs.jpg",
-    "credit": "Kobako",
-    "license": "CC BY-SA 2.5",
-    "source": "https://commons.wikimedia.org/wiki/File:Arroz-con-Pollo.jpg"
+  "chicken-shawarma-bowl-with-rice-and-salad": {
+    "file": "chicken-shawarma-bowl-with-rice-and-salad.jpg",
+    "credit": "Shoshanah",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/68737200@N00/3856978749"
   },
-  "avocado-chicken-and-blueberry-wrap": {
-    "file": "avocado-chicken-and-blueberry-wrap.jpg",
+  "egg-salad-sandwich-on-whole-grain-bread": {
+    "file": "egg-salad-sandwich-on-whole-grain-bread.jpg",
+    "credit": "wandersick",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/20989767@N06/5698783698"
+  },
+  "penne-with-chicken-spinach-and-ricotta": {
+    "file": "penne-with-chicken-spinach-and-ricotta.jpg",
+    "credit": "Geoff Peters 604",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/54359128@N00/3374729757"
+  },
+  "whole-wheat-pasta-with-tuna-lemon-and-capers": {
+    "file": "whole-wheat-pasta-with-tuna-lemon-and-capers.jpg",
+    "credit": "pierodmr",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/113266559@N08/14232687887"
+  },
+  "thai-style-chicken-noodle-salad-with-peanut-dressing": {
+    "file": "thai-style-chicken-noodle-salad-with-peanut-dressing.jpg",
+    "credit": "mauriciogouvea",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/10551498@N07/9017465573"
+  },
+  "lentil-and-bulgur-salad-with-herbs": {
+    "file": "lentil-and-bulgur-salad-with-herbs.jpg",
+    "credit": "Rooey202",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/50284194@N00/6215131688"
+  },
+  "beef-kofta-wraps-with-tzatziki": {
+    "file": "beef-kofta-wraps-with-tzatziki.jpg",
+    "credit": "CharmaineZoe's Marvelous Melange",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/53499099@N00/48162583727"
+  },
+  "roasted-cauliflower-and-chickpea-bowl-with-tahini": {
+    "file": "roasted-cauliflower-and-chickpea-bowl-with-tahini.jpg",
+    "credit": "Laurel Fan",
+    "license": "CC BY-SA 2.0",
+    "source": "https://www.flickr.com/photos/18295242@N00/2373049124"
+  },
+  "greek-yogurt-bowl-with-berries-honey-and-walnuts": {
+    "file": "greek-yogurt-bowl-with-berries-honey-and-walnuts.jpg",
+    "credit": "Jose C Silva",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/61676142@N00/9920331173"
+  },
+  "cottage-cheese-pancakes-with-fruit": {
+    "file": "cottage-cheese-pancakes-with-fruit.jpg",
+    "credit": "Herson Rodriguez hero",
+    "license": "CC0",
+    "source": "https://commons.wikimedia.org/wiki/File:Pancakes_with_Berries_(Unsplash).jpg"
+  },
+  "banana-oat-pancakes": {
+    "file": "banana-oat-pancakes.jpg",
+    "credit": "Brandon Martin-Anderson",
+    "license": "CC BY-SA 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Banana_on_pancake.jpg"
+  },
+  "chia-pudding-with-mango": {
+    "file": "chia-pudding-with-mango.jpg",
+    "credit": "Gogerr",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/w/index.php?curid=192221239"
+  },
+  "labneh-with-za-atar-cucumber-and-whole-wheat-pita": {
+    "file": "labneh-with-za-atar-cucumber-and-whole-wheat-pita.jpg",
+    "credit": "simpleprovisions",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/80665970@N03/11331291104"
+  },
+  "sheet-pan-chicken-with-sweet-potatoes-and-broccoli": {
+    "file": "sheet-pan-chicken-with-sweet-potatoes-and-broccoli.jpg",
+    "credit": "Gudlyf",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/80093862@N00/3547222422"
+  },
+  "one-pot-lemon-garlic-chicken-and-rice": {
+    "file": "one-pot-lemon-garlic-chicken-and-rice.jpg",
+    "credit": "Miansari66",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/w/index.php?curid=26558996"
+  },
+  "grilled-chicken-kebabs-with-tzatziki-and-rice": {
+    "file": "grilled-chicken-kebabs-with-tzatziki-and-rice.jpg",
+    "credit": "Orderinchaos",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Chicken_souvlaki_at_Hellenic_2.jpg"
+  },
+  "lean-beef-burgers-with-sweet-potato-fries": {
+    "file": "lean-beef-burgers-with-sweet-potato-fries.jpg",
+    "credit": "rawpixel",
+    "license": "CC0 1.0",
+    "source": "https://www.rawpixel.com/image/6023344/photo-image-public-domain-food-hamburger"
+  },
+  "turkey-meatballs-in-tomato-sauce-with-spaghetti": {
+    "file": "turkey-meatballs-in-tomato-sauce-with-spaghetti.jpg",
+    "credit": "jeffreyw",
+    "license": "CC BY 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Spaghetti_and_meatballs_1.jpg"
+  },
+  "lentil-shepherd-s-pie": {
+    "file": "lentil-shepherd-s-pie.jpg",
+    "credit": "WordRidden",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/97844767@N00/4897135759"
+  },
+  "chicken-and-mushroom-risotto": {
+    "file": "chicken-and-mushroom-risotto.jpg",
+    "credit": "Kolforn (Kolforn) I'd appreciate if you could mail me (Kolforn@gmail.com) if you want to use this picture out of the Wik",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:-2019-12-22_Mushroom_Risotto_with_onion_and_herbs_finished_with_Parmesan_and_Mushroom,_Trimingham.JPG"
+  },
+  "chicken-and-vegetable-soup-with-barley": {
+    "file": "chicken-and-vegetable-soup-with-barley.jpg",
+    "credit": "Cajsa Lilliehook from Portland",
+    "license": "CC BY-SA 2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Chicken_Vegetable_Soup_(8731954951).jpg"
+  },
+  "mediterranean-tuna-pasta-salad": {
+    "file": "mediterranean-tuna-pasta-salad.jpg",
+    "credit": "jules:stonesoup",
+    "license": "CC BY 2.0",
+    "source": "https://www.flickr.com/photos/58367355@N00/8782280522"
+  },
+  "grilled-chicken-wrap-with-yogurt-garlic-sauce": {
+    "file": "grilled-chicken-wrap-with-yogurt-garlic-sauce.jpg",
     "credit": "Takeaway",
     "license": "CC BY-SA 3.0",
     "source": "https://commons.wikimedia.org/wiki/File:Smoked_chicken_and_avocado_wrap.jpg"
   },
-  "avocado-potato-and-grilled-chicken-salad": {
-    "file": "avocado-potato-and-grilled-chicken-salad.jpg",
-    "credit": "ウィ貴公子",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:%E3%83%AD%E3%82%A4%E3%83%A4%E3%83%AB%E3%83%9B%E3%82%B9%E3%83%88%E7%9B%AE%E9%BB%92%E5%BA%97_2025%E5%B9%B43%E6%9C%8827%E6%97%A5%E3%81%AE%E6%9D%B1%E4%BA%AC_202503271834_IMG_6809.jpg"
-  },
-  "baked-fish-with-onions": {
-    "file": "baked-fish-with-onions.jpg",
-    "credit": "methTICALman",
+  "turkey-and-hummus-whole-wheat-sandwich": {
+    "file": "turkey-and-hummus-whole-wheat-sandwich.jpg",
+    "credit": "The Marmot",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/46614245@N00/2262396498"
+    "source": "https://www.flickr.com/photos/38142119@N00/15046644535"
   },
-  "beef-and-potato-skillet": {
-    "file": "beef-and-potato-skillet.jpg",
-    "credit": "Alpha from Melbourne, Australia",
-    "license": "CC BY-SA 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Beef_Stroganoff_with_unpolished_red_rice_(4703242780).jpg"
-  },
-  "beef-and-vegetables-over-rice": {
-    "file": "beef-and-vegetables-over-rice.jpg",
-    "credit": "Ginny",
-    "license": "CC BY-SA 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Ginger_chicken_(3168342551).jpg"
-  },
-  "beef-bean-and-macaroni-supper": {
-    "file": "beef-bean-and-macaroni-supper.jpg",
-    "credit": "JIP",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Chili_con_carne_with_pasta.jpg"
-  },
-  "beef-casserole-with-potatoes-and-green-beans": {
-    "file": "beef-casserole-with-potatoes-and-green-beans.jpg",
-    "credit": "George Alexander Ishida Newman from Japan",
+  "caprese-sandwich-with-grilled-chicken": {
+    "file": "caprese-sandwich-with-grilled-chicken.jpg",
+    "credit": "jeffreyw",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Beef_stew_(13499700243).jpg"
+    "source": "https://commons.wikimedia.org/wiki/File:Blue_cheese_and_tomato_sandwiches.jpg"
   },
-  "beef-mince-and-vegetable-stew": {
-    "file": "beef-mince-and-vegetable-stew.jpg",
+  "lemon-chicken-orzo-soup": {
+    "file": "lemon-chicken-orzo-soup.jpg",
     "credit": "E4024",
     "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:T%C3%BCrl%C3%BC_ve_pilav.jpg"
+    "source": "https://commons.wikimedia.org/w/index.php?curid=65787036"
   },
-  "beefy-macaroni-cheese": {
-    "file": "beefy-macaroni-cheese.jpg",
-    "credit": "Luigi Novi",
-    "license": "CC BY 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:8.28.12CheeseburgerMacByLuigiNovi1.jpg"
-  },
-  "black-skillet-beef-with-greens-and-potatoes": {
-    "file": "black-skillet-beef-with-greens-and-potatoes.jpg",
-    "credit": "meshmar2",
+  "chicken-and-avocado-quinoa-bowl": {
+    "file": "chicken-and-avocado-quinoa-bowl.jpg",
+    "credit": "markhillary",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/21837558@N00/363014319"
+    "source": "https://www.flickr.com/photos/56087830@N00/4565271772"
   },
-  "bosnian-pot": {
-    "file": "bosnian-pot.jpg",
-    "credit": "Andre",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Pot-au-feu2.jpg"
-  },
-  "broccoli-pasta-in-parmesan-sauce": {
-    "file": "broccoli-pasta-in-parmesan-sauce.jpg",
-    "credit": "Famartin",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:2020-08-30_06_01_03_Close_view_of_Healthy_Choice_Cafe_Steamers_Grilled_Chicken_Marinara_with_Parmesan_(Grilled_Chicken_Breast_with_Penne_Pasta_%26_Broccoli)_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg"
-  },
-  "butternut-squash-and-ricotta-pasta-bake": {
-    "file": "butternut-squash-and-ricotta-pasta-bake.jpg",
-    "credit": "Karen and Brad Emerson",
+  "grilled-vegetable-and-cheese-wrap": {
+    "file": "grilled-vegetable-and-cheese-wrap.jpg",
+    "credit": "Jennifer from Vancouver, Canada",
     "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Butternut_squash_stuffed_shells_with_toasted_pecan_and_sage_brown_butter_(3869054302).jpg"
+    "source": "https://commons.wikimedia.org/wiki/File:Vegetable_and_Basil-Garlic_Hummus_Wrap_(4800115998).jpg"
   },
-  "chicken-and-blueberry-pasta-salad": {
-    "file": "chicken-and-blueberry-pasta-salad.jpg",
-    "credit": "Vegan Feast Catering",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/25128194@N02/4983712089"
-  },
-  "chicken-and-broccoli-fettuccine": {
-    "file": "chicken-and-broccoli-fettuccine.jpg",
-    "credit": "MattCC716",
+  "white-bean-and-tuna-salad": {
+    "file": "white-bean-and-tuna-salad.jpg",
+    "credit": "Katrin Gilger",
     "license": "CC BY-SA 2.0",
-    "source": "https://www.flickr.com/photos/27874898@N00/51965776815"
+    "source": "https://commons.wikimedia.org/wiki/File:Insalata_di_Fagioli_e_Tonno_%E2%80%93_Bohnensalat_mit_Thunfisch_(7327273414).jpg"
   },
-  "chicken-and-chickpea-soup-with-mild-chilli": {
-    "file": "chicken-and-chickpea-soup-with-mild-chilli.jpg",
-    "credit": "austinevan",
+  "chicken-pesto-pasta-salad": {
+    "file": "chicken-pesto-pasta-salad.jpg",
+    "credit": "Whitney from Chicago, IL",
     "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/19762676@N00/4284579281"
-  },
-  "chicken-and-dumpling-soup-with-spinach": {
-    "file": "chicken-and-dumpling-soup-with-spinach.jpg",
-    "credit": "Kelly Hunter",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/47149893@N07/6375459211"
-  },
-  "chicken-and-dumplings": {
-    "file": "chicken-and-dumplings.jpg",
-    "credit": "Jonathunder",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:ChickenDumplings.jpg"
-  },
-  "chicken-and-garden-vegetable-soup": {
-    "file": "chicken-and-garden-vegetable-soup.jpg",
-    "credit": "Roundhere44",
-    "license": "CC0",
-    "source": "https://commons.wikimedia.org/wiki/File:Leek_Soup.jpg"
-  },
-  "chicken-and-julienne-vegetable-parcels": {
-    "file": "chicken-and-julienne-vegetable-parcels.jpg",
-    "credit": "balise42",
-    "license": "CC BY-SA 2.0",
-    "source": "https://www.flickr.com/photos/22722986@N08/7577694658"
-  },
-  "chicken-and-rice-with-peas": {
-    "file": "chicken-and-rice-with-peas.jpg",
-    "credit": "E4024",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Arroz_a_la_valenciana_(Chile).jpg"
-  },
-  "chicken-apple-and-sweetcorn-chilli": {
-    "file": "chicken-apple-and-sweetcorn-chilli.jpg",
-    "credit": "Tobyotter",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/78428166@N00/6858743117"
-  },
-  "chicken-asparagus-and-orange-rice-salad": {
-    "file": "chicken-asparagus-and-orange-rice-salad.jpg",
-    "credit": "Sharon Mollerus",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/38315261@N00/751572818"
-  },
-  "chicken-cheese-and-broccoli-bread-bake": {
-    "file": "chicken-cheese-and-broccoli-bread-bake.jpg",
-    "credit": "Karen and Brad Emerson",
-    "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Savory_spinach_and_artichoke_bread_pudding_(3419994104).jpg"
-  },
-  "chicken-club-pasta-salad": {
-    "file": "chicken-club-pasta-salad.jpg",
-    "credit": "Jeremy Bronson",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/10670915@N05/4997140593"
-  },
-  "chicken-mole": {
-    "file": "chicken-mole.jpg",
-    "credit": "AlejandroLinaresGarcia",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:MoleChickenMuniMarketChiapa.jpg"
-  },
-  "chicken-pea-and-tomato-pasta-casserole": {
-    "file": "chicken-pea-and-tomato-pasta-casserole.jpg",
-    "credit": "Scott Veg",
-    "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Baked_macaroni_and_cheese_close-up.jpg"
-  },
-  "chicken-pozole-soup-with-chickpeas": {
-    "file": "chicken-pozole-soup-with-chickpeas.jpg",
-    "credit": "JamesCohen",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/31599292@N00/6749770299"
-  },
-  "chicken-rice-and-broccoli-bake": {
-    "file": "chicken-rice-and-broccoli-bake.jpg",
-    "credit": "Vegan Feast Catering",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/25128194@N02/3846892603"
-  },
-  "chicken-salad-with-raspberry-dressing": {
-    "file": "chicken-salad-with-raspberry-dressing.jpg",
-    "credit": "jhritz",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/29818924@N00/75797080"
-  },
-  "chicken-spaghetti-bake-with-peppers": {
-    "file": "chicken-spaghetti-bake-with-peppers.jpg",
-    "credit": "PersonalCreations.com",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/127294011@N07/15072779381"
-  },
-  "chicken-stew-with-potato-and-carrot": {
-    "file": "chicken-stew-with-potato-and-carrot.jpg",
-    "credit": "E4024",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Chicken_stew_(Turkey).jpg"
-  },
-  "creamy-chicken-and-potato-hash": {
-    "file": "creamy-chicken-and-potato-hash.jpg",
-    "credit": "Mark Jason Dominus",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Lamb_hash.jpg"
-  },
-  "crisp-oven-fried-cod": {
-    "file": "crisp-oven-fried-cod.jpg",
-    "credit": "Rusty Clark ~ 100K Photos",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/23206546@N04/7759356380"
-  },
-  "curried-chicken-with-raisins-and-mushrooms": {
-    "file": "curried-chicken-with-raisins-and-mushrooms.jpg",
-    "credit": "Dan Costin",
-    "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Country_Captain.jpg"
-  },
-  "curried-turkey-and-spinach-soup": {
-    "file": "curried-turkey-and-spinach-soup.jpg",
-    "credit": "jules:stonesoup",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/58367355@N00/6705857781"
-  },
-  "fish-parcels-with-pear-and-roast-potatoes": {
-    "file": "fish-parcels-with-pear-and-roast-potatoes.jpg",
-    "credit": "Yortw",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/52293377@N03/5194392762"
-  },
-  "fish-stew-with-cabbage-and-rice": {
-    "file": "fish-stew-with-cabbage-and-rice.jpg",
-    "credit": "joyosity",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/33993074@N00/10146908466"
-  },
-  "fish-with-spinach-tomato-and-olives": {
-    "file": "fish-with-spinach-tomato-and-olives.jpg",
-    "credit": "forestwildlife",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/39307357@N05/8471934486"
-  },
-  "grilled-beef-and-pepper-salad-with-pears": {
-    "file": "grilled-beef-and-pepper-salad-with-pears.jpg",
-    "credit": "Jonas Weckschmied",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/54336566@N08/17200661946"
-  },
-  "jamaican-jerk-chicken": {
-    "file": "jamaican-jerk-chicken.jpg",
-    "credit": "stu_spivack",
-    "license": "CC BY-SA 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Jerk_chicken_plate.jpg"
-  },
-  "lime-marinated-beef-with-stuffed-peppers": {
-    "file": "lime-marinated-beef-with-stuffed-peppers.jpg",
-    "credit": "Wikiuser100",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Grilled_flank_steak.jpg"
-  },
-  "loaded-potato-skins-with-spiced-chicken": {
-    "file": "loaded-potato-skins-with-spiced-chicken.jpg",
-    "credit": "don_naked",
-    "license": "CC BY-SA 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Potato_skins_arranged_on_a_plate_as_an_appetizer.jpg"
-  },
-  "macaroni-cheese-with-broccoli": {
-    "file": "macaroni-cheese-with-broccoli.jpg",
-    "credit": "Karen and Brad Emerson",
-    "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Mac_and_cheese_(3498405296).jpg"
-  },
-  "mango-chicken-wraps-with-peanut-sauce": {
-    "file": "mango-chicken-wraps-with-peanut-sauce.jpg",
-    "credit": "Dan Costin",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/30955003@N00/4267985992"
-  },
-  "oven-fried-fish": {
-    "file": "oven-fried-fish.jpg",
-    "credit": "Horacio Cambeiro",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Breaded_Argentine_Hake_Fillets_Ready_for_Oven_Baking.jpg"
-  },
-  "peppers-stuffed-with-rice-and-black-beans": {
-    "file": "peppers-stuffed-with-rice-and-black-beans.jpg",
-    "credit": "suavehouse113",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/94513428@N00/3921374103"
-  },
-  "picadillo-with-black-beans-and-rice": {
-    "file": "picadillo-with-black-beans-and-rice.jpg",
-    "credit": "MinerCRx",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Cuban_Picadillo.jpg"
-  },
-  "pineapple-and-avocado-chicken-pittas": {
-    "file": "pineapple-and-avocado-chicken-pittas.jpg",
-    "credit": "Gilabrand",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Sabich.jpg"
-  },
-  "pineapple-ginger-glazed-chicken-with-couscous": {
-    "file": "pineapple-ginger-glazed-chicken-with-couscous.jpg",
-    "credit": "Ruth and Dave",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/95142644@N00/10147421045"
-  },
-  "pot-roasted-beef-with-turnips": {
-    "file": "pot-roasted-beef-with-turnips.jpg",
-    "credit": "jeffreyw",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/7927684@N03/7331360786"
-  },
-  "prawn-corn-and-black-bean-sandwich": {
-    "file": "prawn-corn-and-black-bean-sandwich.jpg",
-    "credit": "Nillerdk",
-    "license": "CC BY 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Sm%C3%B8rrebr%C3%B8d_4.jpg"
-  },
-  "roast-chicken-with-brussels-sprouts-and-potatoes": {
-    "file": "roast-chicken-with-brussels-sprouts-and-potatoes.jpg",
-    "credit": "Simon Speed",
-    "license": "CC0",
-    "source": "https://commons.wikimedia.org/wiki/File:XmasDinner.JPG"
-  },
-  "salmon-and-pineapple-skewers-with-rice": {
-    "file": "salmon-and-pineapple-skewers-with-rice.jpg",
-    "credit": "Martin Cathrae",
-    "license": "CC BY-SA 2.0",
-    "source": "https://www.flickr.com/photos/34067077@N00/2562447280"
-  },
-  "scalloped-potatoes-and-chicken-with-fennel": {
-    "file": "scalloped-potatoes-and-chicken-with-fennel.jpg",
-    "credit": "Glane23",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Potatoes_gratin%C3%A9.JPG"
-  },
-  "short-cut-lasagne": {
-    "file": "short-cut-lasagne.jpg",
-    "credit": "Miansari66",
-    "license": "CC0",
-    "source": "https://commons.wikimedia.org/wiki/File:Lasagna_in_Baking_Tray.jpg"
-  },
-  "simple-salmon-patties": {
-    "file": "simple-salmon-patties.jpg",
-    "credit": "jeffreyw",
-    "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Salmon_patty_sandwich_(1).jpg"
-  },
-  "sizzling-chicken-and-vegetables-with-brown-rice": {
-    "file": "sizzling-chicken-and-vegetables-with-brown-rice.jpg",
-    "credit": "PattayaPatrol",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:DFC_2428_Sizzling_stir-fried_chicken_with_red_peppers_and_onions_served_alongside_a_mound_of_steamed_white_rice.jpg"
-  },
-  "skillet-lasagne-with-spinach": {
-    "file": "skillet-lasagne-with-spinach.jpg",
-    "credit": "jeffreyw",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/7927684@N03/11454347753"
-  },
-  "stovetop-tamale-pie": {
-    "file": "stovetop-tamale-pie.jpg",
-    "credit": "fo.ol",
-    "license": "CC BY-SA 2.0",
-    "source": "https://www.flickr.com/photos/37996589754@N01/2269071185"
-  },
-  "stuffed-cabbage-rolls": {
-    "file": "stuffed-cabbage-rolls.jpg",
-    "credit": "jeffreyw",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/7927684@N03/25239801202"
-  },
-  "taco-salad-with-beans": {
-    "file": "taco-salad-with-beans.jpg",
-    "credit": "goblinbox_(queen_of_ad_hoc_bento)",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/25977089@N00/5362390691"
-  },
-  "tex-mex-beef-and-black-bean-skillet": {
-    "file": "tex-mex-beef-and-black-bean-skillet.jpg",
-    "credit": "Neeta Lind",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/71132408@N00/2747936277"
-  },
-  "thai-pineapple-chicken-with-rice": {
-    "file": "thai-pineapple-chicken-with-rice.jpg",
-    "credit": "bochalla",
-    "license": "CC BY-SA 2.0",
-    "source": "https://www.flickr.com/photos/98627683@N00/4508666583"
-  },
-  "tuna-and-vegetable-picnic-sandwich": {
-    "file": "tuna-and-vegetable-picnic-sandwich.jpg",
-    "credit": "RatRanch",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/31696772@N00/87453508"
-  },
-  "turkey-and-cucumber-sandwich": {
-    "file": "turkey-and-cucumber-sandwich.jpg",
-    "credit": "E4024",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Bazlama_tostu.jpg"
-  },
-  "turkey-and-mushroom-pasta-bake": {
-    "file": "turkey-and-mushroom-pasta-bake.jpg",
-    "credit": "Geoffreyrabbit",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Baked_cheese_with_cream_sauce_mushroom_pasta.jpg"
-  },
-  "turkey-and-potato-salad": {
-    "file": "turkey-and-potato-salad.jpg",
-    "credit": "Benreis",
-    "license": "CC BY 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Rus_salati_Lido_Restaurant_Adalar.JPG"
-  },
-  "turkey-tostadas": {
-    "file": "turkey-tostadas.jpg",
-    "credit": "TheCulinaryGeek",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/72949902@N00/5076307841"
-  },
-  "white-chicken-chilli-with-beans": {
-    "file": "white-chicken-chilli-with-beans.jpg",
-    "credit": "jeffreyw",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/7927684@N03/15290290762"
-  },
-  "white-chilli-with-peppers-and-beans": {
-    "file": "white-chilli-with-peppers-and-beans.jpg",
-    "credit": "jeffreyw",
-    "license": "CC BY 2.0",
-    "source": "https://www.flickr.com/photos/7927684@N03/15290290762"
+    "source": "https://commons.wikimedia.org/w/index.php?curid=18866984"
   }
 }

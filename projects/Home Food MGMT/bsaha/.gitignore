@@ -43,3 +43,6 @@ next-env.d.ts
 # local sqlite
 local.db
 local.db-*
+
+# photo candidate scratch (scripts/photo-candidates2.ts)
+/data/candidates2/

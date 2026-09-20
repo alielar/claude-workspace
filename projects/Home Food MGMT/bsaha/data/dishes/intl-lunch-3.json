@@ -1,0 +1,579 @@
+[
+  {
+    "slug": "thai-style-chicken-noodle-salad-with-peanut-dressing",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Thai-style chicken noodle salad with peanut dressing",
+    "name_fr": "Salade de nouilles au poulet façon thaï, sauce cacahuète",
+    "name_ar": "سلاطة الشعرية بالدجاج على الطريقة التايلاندية بصوص الكاوكاو",
+    "name_latin": "Salade ch3riya b djaj tailandiya b sauce lkawkaw",
+    "desc_en": "Rice noodles, shredded chicken, cabbage, carrot, cucumber and herbs in a creamy peanut-lime dressing. Cold, crunchy, 34 g of protein.",
+    "desc_fr": "Nouilles de riz, poulet effiloché, chou, carotte, concombre et herbes dans une sauce crémeuse cacahuète-citron vert. Froid, croquant, 34 g de protéines.",
+    "cuisine": "Asian",
+    "servings": 4,
+    "prep_min": 20,
+    "cook_min": 15,
+    "macros": { "kcal": 540, "protein_g": 34, "carbs_g": 58, "fat_g": 19, "fiber_g": 7 },
+    "ingredients": [
+      { "en": "Chicken breast", "fr": "Blanc de poulet", "ar": "صدر الدجاج", "qty": 500, "unit": "g", "group": "fresh" },
+      { "en": "Rice noodles", "fr": "Nouilles de riz", "ar": "شعرية الروز", "qty": 250, "unit": "g", "group": "dry" },
+      { "en": "White cabbage, finely shredded", "fr": "Chou blanc finement émincé", "ar": "كرومب مقطع رقيق", "qty": 300, "unit": "g", "group": "fresh" },
+      { "en": "Carrots, grated", "fr": "Carottes râpées", "ar": "خيزو محكوك", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Cucumber, in sticks", "fr": "Concombre en bâtonnets", "ar": "خيار مقطع عيدان", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh coriander and mint", "fr": "Coriandre et menthe fraîches", "ar": "قصبور ونعناع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Peanut butter", "fr": "Beurre de cacahuète", "ar": "زبدة الكاوكاو", "qty": 4, "unit": "tbsp", "group": "dry" },
+      { "en": "Soy sauce", "fr": "Sauce soja", "ar": "صوص الصوجا", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Limes", "fr": "Citrons verts", "ar": "ليمون أخضر", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 1, "unit": "tbsp", "group": "dry" },
+      { "en": "Fresh ginger, grated", "fr": "Gingembre frais râpé", "ar": "سكنجبير طري محكوك", "qty": 1, "unit": "tbsp", "group": "fresh" },
+      { "en": "Garlic clove, minced", "fr": "Gousse d'ail hachée", "ar": "تومة مهرسة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Roasted peanuts, chopped", "fr": "Cacahuètes grillées concassées", "ar": "كاوكاو محمر مهرس", "qty": 40, "unit": "g", "group": "dry" },
+      { "en": "Chilli flakes (optional)", "fr": "Piment en flocons (facultatif)", "ar": "فلفلة حارة مهرسة (اختياري)", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سلقي الدجاج فما مملح 15 دقيقة، خليه يبرد شوية وفتتيه.",
+        "نقعي شعرية الروز فما سخون حسب الكيس (تقريبا 5 دقايق)، صفيها وغسليها بما بارد.",
+        "للصوص: خلطي زبدة الكاوكاو مع الصوجا وعصير الليمون الأخضر والعسل والسكنجبير والتومة و4 ملاعق ما سخون حتى تولي ناعمة.",
+        "قطعي الكرومب رقيق، حكي الخيزو، وقطعي الخيار.",
+        "فطبق كبير خلطي الشعرية مع الخضرة والدجاج والأعشاب.",
+        "كبي الصوص وقلبي مزيان، ورشي الكاوكاو والفلفلة الحارة."
+      ],
+      "tips": [
+        "الصوص خاصو يكون سايل شوية، زيدي ما سخون بشوية حتى يولي كيف الكريمة.",
+        "قلبي السلاطة غير وقت التقديم، الكرومب كيبقى مقرقب.",
+        "الكرومب المقطع رقيق بزاف هو السر، استعملي الحكاكة الكبيرة."
+      ]
+    },
+    "tags": ["chicken", "nuts", "gluten"],
+    "photo_query": "thai chicken noodle salad peanut dressing"
+  },
+  {
+    "slug": "cobb-salad-with-chicken-and-eggs",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Cobb salad with chicken and eggs",
+    "name_fr": "Salade Cobb au poulet et aux œufs",
+    "name_ar": "سلاطة كوب بالدجاج والبيض",
+    "name_latin": "Salade Cobb b djaj o lbid",
+    "desc_en": "Rows of grilled chicken, boiled eggs, avocado, tomato, cucumber and smoked turkey over lettuce with a yogurt-herb dressing. 42 g of protein, no bacon needed.",
+    "desc_fr": "Des rangées de poulet grillé, œufs durs, avocat, tomate, concombre et dinde fumée sur de la laitue avec une sauce yaourt aux herbes. 42 g de protéines, sans bacon.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 20,
+    "cook_min": 15,
+    "macros": { "kcal": 520, "protein_g": 42, "carbs_g": 14, "fat_g": 32, "fiber_g": 7 },
+    "ingredients": [
+      { "en": "Chicken breast", "fr": "Blanc de poulet", "ar": "صدر الدجاج", "qty": 500, "unit": "g", "group": "fresh" },
+      { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Smoked turkey, diced", "fr": "Dinde fumée en dés", "ar": "ديندي مدخن مقطع", "qty": 100, "unit": "g", "group": "fresh" },
+      { "en": "Avocado, diced", "fr": "Avocat en dés", "ar": "أفوكا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Tomatoes, diced", "fr": "Tomates en dés", "ar": "طماطم مقطعة", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Cucumber, diced", "fr": "Concombre en dés", "ar": "خيار مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Lettuce, chopped", "fr": "Laitue hachée", "ar": "خس مقطع", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Blue cheese or feta, crumbled", "fr": "Bleu ou feta émietté", "ar": "فيتا مفتتة", "qty": 60, "unit": "g", "group": "fresh" },
+      { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Lemon", "fr": "Citron", "ar": "ليمونة حامضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh chives or parsley, chopped", "fr": "Ciboulette ou persil frais haché", "ar": "بصلة خضرا ولا معدنوس مقطع", "qty": 3, "unit": "tbsp", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Dijon mustard", "fr": "Moutarde de Dijon", "ar": "موطارد", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سلقي البيض 9 دقايق، قشريه وقطعيه على أربعة.",
+        "ملحي الدجاج وابزريه، وشويه فمقلة مع ملعقة زيت 6 دقايق من كل جهة. خليه يرتاح وقطعيه مكعبات.",
+        "قلي الديندي فنفس المقلة دقيقتين حتى يحمر.",
+        "للصوص: خلطي الدانون مع عصير الليمون والموطارد والأعشاب وملعقة زيت والملحة والابزار.",
+        "فرشي الخس فطبق كبير، وحطي فوقه الدجاج والبيض والديندي والأفوكا والطماطم والخيار كل واحد فصف.",
+        "رشي الفرماج وقدمي الصوص على جنب."
+      ],
+      "tips": [
+        "الصفوف هي اللي كتعطي الشكل ديال سلاطة كوب، كل واحد كيخلط فطبقو.",
+        "الأفوكا زيدي عليها ليمون باش ما تسودش.",
+        "الصوص كيبقى 3 أيام فالتلاجة، مزيان لأي سلاطة."
+      ]
+    },
+    "tags": ["chicken", "eggs", "dairy"],
+    "photo_query": "cobb salad chicken eggs avocado"
+  },
+  {
+    "slug": "lentil-and-bulgur-salad-with-herbs",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Lentil and bulgur salad with herbs",
+    "name_fr": "Salade de lentilles et boulgour aux herbes",
+    "name_ar": "سلاطة العدس والبلغور بالأعشاب",
+    "name_latin": "Salade l3des o lbulgur b la3chab",
+    "desc_en": "Green lentils and bulgur with tomato, cucumber, parsley, mint and a lemon-cumin dressing. Like a hearty tabbouleh, 19 g of fibre.",
+    "desc_fr": "Lentilles vertes et boulgour avec tomate, concombre, persil, menthe et une sauce citron-cumin. Comme un taboulé consistant, 19 g de fibres.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 25,
+    "macros": { "kcal": 460, "protein_g": 21, "carbs_g": 72, "fat_g": 12, "fiber_g": 19 },
+    "ingredients": [
+      { "en": "Green or brown lentils", "fr": "Lentilles vertes ou brunes", "ar": "عدس", "qty": 250, "unit": "g", "group": "dry" },
+      { "en": "Bulgur", "fr": "Boulgour", "ar": "بلغور", "qty": 150, "unit": "g", "group": "dry" },
+      { "en": "Tomatoes, diced", "fr": "Tomates en dés", "ar": "طماطم مقطعة", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Cucumber, diced", "fr": "Concombre en dés", "ar": "خيار مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Spring onions, sliced", "fr": "Oignons nouveaux émincés", "ar": "بصلة خضرا مقطعة", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Fresh mint, chopped", "fr": "Menthe fraîche hachée", "ar": "نعناع مقطع", "qty": 0.5, "unit": "bunch", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Lemons", "fr": "Citrons", "ar": "ليمون حامض", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كامون", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Feta (optional)", "fr": "Feta (facultatif)", "ar": "فيتا (اختياري)", "qty": 100, "unit": "g", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1.5, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "غسلي العدس وطيبيه فما كثير 20 دقيقة حتى يطيب ويبقى صحيح. صفيه.",
+        "كبي على البلغور 250 مل ما كيغلي مع رشة ملحة، غطيه 15 دقيقة، وفرقيه بالفورشيطة.",
+        "للصوص: خلطي الزيت مع عصير الليمون والكامون والملحة.",
+        "خلطي العدس والبلغور مع الصوص وهما دافيين.",
+        "زيدي الطماطم والخيار والبصلة الخضرا والأعشاب وقلبي.",
+        "زيدي الفيتا فوق وقدمي دافية ولا باردة."
+      ],
+      "tips": [
+        "ما تطيبيش العدس بزاف، خاصو يبقى صحيح ماشي مهرس.",
+        "خلطي الحبوب مع الصوص وهي سخونة، كتشرب الطعم أكثر.",
+        "كتبقى 3 أيام فالتلاجة، غير زيدي شوية ليمون قبل التقديم."
+      ]
+    },
+    "tags": ["legumes", "dairy", "raw_onion", "vegetarian", "gluten"],
+    "photo_query": "lentil bulgur salad herbs tomato"
+  },
+  {
+    "slug": "stuffed-sweet-potatoes-with-black-beans-and-yogurt",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Stuffed sweet potatoes with black beans and yogurt",
+    "name_fr": "Patates douces farcies aux haricots noirs et yaourt",
+    "name_ar": "بطاطا حلوة معمرة باللوبيا الكحلة والدانون",
+    "name_latin": "Batata hlowa m3emra b loubya kehla o danone",
+    "desc_en": "Baked sweet potatoes split and filled with spiced black beans, corn, tomato, coriander and a spoon of yogurt. Vegetarian, 17 g of fibre.",
+    "desc_fr": "Des patates douces au four ouvertes et garnies de haricots noirs épicés, maïs, tomate, coriandre et une cuillère de yaourt. Végétarien, 17 g de fibres.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 50,
+    "macros": { "kcal": 480, "protein_g": 19, "carbs_g": 84, "fat_g": 9, "fiber_g": 17 },
+    "ingredients": [
+      { "en": "Sweet potatoes, medium", "fr": "Patates douces moyennes", "ar": "بطاطا حلوة متوسطة", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Cooked black or red beans (canned, drained)", "fr": "Haricots noirs ou rouges cuits (en boîte)", "ar": "لوبيا كحلة ولا حمرا مطيبة (بوطة)", "qty": 500, "unit": "g", "group": "dry" },
+      { "en": "Sweetcorn", "fr": "Maïs", "ar": "ذرة", "qty": 150, "unit": "g", "group": "dry" },
+      { "en": "Tomatoes, diced", "fr": "Tomates en dés", "ar": "طماطم مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "تومة مهرسة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كامون", "qty": 2, "unit": "tsp", "group": "dry" },
+      { "en": "Sweet paprika", "fr": "Paprika doux", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 200, "unit": "g", "group": "fresh" },
+      { "en": "Fresh coriander, chopped", "fr": "Coriandre fraîche hachée", "ar": "قصبور مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Lime", "fr": "Citron vert", "ar": "ليمون أخضر", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الفرن على 200 درجة. غسلي البطاطا الحلوة، ثقبيها بالفورشيطة، وطيبيها فالفرن 45 دقيقة حتى تولي طرية.",
+        "فهاد الوقت، سخني الزيت فمقلة، وقلي البصلة 5 دقايق.",
+        "زيدي التومة والكامون والفلفلة الحلوة، وحركي دقيقة.",
+        "زيدي اللوبيا والذرة والطماطم والملحة، وطيبي 8 دقايق.",
+        "شقي كل بطاطا من الوسط، وافتحيها شوية وهرسي الداخل بالفورشيطة.",
+        "عمريها باللوبيا، وزيدي ملعقة دانون والقصبور وعصير الليمون الأخضر."
+      ],
+      "tips": [
+        "البطاطا كبيرة؟ زيدي 15 دقيقة. كتكون طايبة ملي يدخل الموس بسهولة.",
+        "تقدري تطيبي البطاطا فالميكرو 8 دقايق إلا كنتي مزروبة.",
+        "الحشو كيبقى 3 أيام فالتلاجة، غير طيبي بطاطا جديدة."
+      ]
+    },
+    "tags": ["legumes", "dairy", "cooked_onion", "vegetarian"],
+    "photo_query": "stuffed sweet potato black beans"
+  },
+  {
+    "slug": "chicken-and-avocado-quinoa-bowl",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Chicken and avocado quinoa bowl",
+    "name_fr": "Bol de quinoa au poulet et à l'avocat",
+    "name_ar": "بول الكينوا بالدجاج والأفوكا",
+    "name_latin": "Bowl quinoa b djaj o lavoka",
+    "desc_en": "Lemon-herb chicken over quinoa with avocado, cherry tomatoes, cucumber, chickpeas and a tahini drizzle. A complete bowl, 42 g of protein.",
+    "desc_fr": "Du poulet citron-herbes sur du quinoa avec avocat, tomates cerises, concombre, pois chiches et un filet de tahini. Un bol complet, 42 g de protéines.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 20,
+    "macros": { "kcal": 600, "protein_g": 42, "carbs_g": 52, "fat_g": 24, "fiber_g": 12 },
+    "ingredients": [
+      { "en": "Chicken breast", "fr": "Blanc de poulet", "ar": "صدر الدجاج", "qty": 600, "unit": "g", "group": "fresh" },
+      { "en": "Quinoa, rinsed", "fr": "Quinoa rincé", "ar": "كينوا مغسولة", "qty": 220, "unit": "g", "group": "dry" },
+      { "en": "Avocado, sliced", "fr": "Avocat en tranches", "ar": "أفوكا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Cherry tomatoes, halved", "fr": "Tomates cerises coupées en deux", "ar": "طماطم صغيرة مقطعة", "qty": 250, "unit": "g", "group": "fresh" },
+      { "en": "Cucumber, diced", "fr": "Concombre en dés", "ar": "خيار مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Cooked chickpeas (canned, drained)", "fr": "Pois chiches cuits (en boîte)", "ar": "حمص مطيب (بوطة)", "qty": 250, "unit": "g", "group": "dry" },
+      { "en": "Lemons", "fr": "Citrons", "ar": "ليمون حامض", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Dried oregano", "fr": "Origan séché", "ar": "زعتر يابس", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "تومة مهرسة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Tahini", "fr": "Tahini", "ar": "طحينة", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 0.5, "unit": "bunch", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1.5, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "طيبي الكينوا ف450 مل ما مملح 15 دقيقة مغطية، وخليها ترتاح.",
+        "خلطي الدجاج مع الزيت وعصير ليمونة والزعتر والتومة والملحة.",
+        "شوي الدجاج فمقلة سخونة 6 دقايق من كل جهة، خليه يرتاح وقطعيه شرايح.",
+        "لصوص الطحينة: خلطي الطحينة مع عصير ليمونة و3 ملاعق ما ورشة ملحة.",
+        "فكل زلافة: كينوا، دجاج، أفوكا، طماطم، خيار، حمص.",
+        "كبي صوص الطحينة ورشي المعدنوس."
+      ],
+      "tips": [
+        "صوص الطحينة كيخشن أول ومن بعد كيولي ناعم، زيدي الما بشوية وحركي.",
+        "الأفوكا قطعيها فالآخر وزيدي عليها ليمون.",
+        "كل شي غير الأفوكا يتحضر من قبل، مزيان لغدا الخدمة."
+      ]
+    },
+    "tags": ["chicken", "legumes"],
+    "photo_query": "chicken avocado quinoa bowl"
+  },
+  {
+    "slug": "shrimp-and-avocado-salad-with-lime",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Shrimp and avocado salad with lime",
+    "name_fr": "Salade de crevettes à l'avocat et au citron vert",
+    "name_ar": "سلاطة القمرون بالأفوكا والليمون الأخضر",
+    "name_latin": "Salade lqamroun b lavoka o limoun khder",
+    "desc_en": "Garlic-seared shrimp over lettuce with avocado, tomato, cucumber, red onion and a lime-coriander dressing. Light and fresh, 30 g of protein.",
+    "desc_fr": "Des crevettes saisies à l'ail sur de la laitue avec avocat, tomate, concombre, oignon rouge et une sauce citron vert-coriandre. Léger et frais, 30 g de protéines.",
+    "cuisine": "International",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 8,
+    "macros": { "kcal": 380, "protein_g": 30, "carbs_g": 16, "fat_g": 23, "fiber_g": 8 },
+    "ingredients": [
+      { "en": "Shrimp, peeled", "fr": "Crevettes décortiquées", "ar": "قمرون مقشر", "qty": 600, "unit": "g", "group": "fresh" },
+      { "en": "Avocados, diced", "fr": "Avocats en dés", "ar": "أفوكا مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Tomatoes, diced", "fr": "Tomates en dés", "ar": "طماطم مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Cucumber, diced", "fr": "Concombre en dés", "ar": "خيار مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Red onion, finely chopped", "fr": "Oignon rouge finement haché", "ar": "بصلة حمرا مقطعة رقيقة", "qty": 0.5, "unit": "piece", "group": "fresh" },
+      { "en": "Lettuce", "fr": "Laitue", "ar": "خس", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh coriander, chopped", "fr": "Coriandre fraîche hachée", "ar": "قصبور مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Limes", "fr": "Citrons verts", "ar": "ليمون أخضر", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "تومة مهرسة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Sweet paprika", "fr": "Paprika doux", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Whole-wheat bread, to serve", "fr": "Pain complet pour servir", "ar": "خبز كامل للتقديم", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "نشفي القمرون وخلطيه مع التومة والفلفلة الحلوة ورشة ملحة.",
+        "سخني ملعقة زيت فمقلة على نار قوية، وقلي القمرون دقيقتين من كل جهة حتى يحمر. خليه يبرد شوية.",
+        "للصوص: خلطي باقي الزيت مع عصير 2 ليمونات خضر ونص القصبور والملحة.",
+        "قطعي الخس وفرشيه فطبق كبير.",
+        "زيدي الأفوكا والطماطم والخيار والبصلة والقمرون.",
+        "كبي الصوص، رشي باقي القصبور، وقدمي مع الخبز."
+      ],
+      "tips": [
+        "القمرون كيطيب ف4 دقايق، ملي يولي وردي وينطوي كيف الهلال هو طايب. أكثر من هكا كيقسح.",
+        "الأفوكا زيدي عليها عصير الليمون الأخضر دغيا باش ما تسودش.",
+        "القمرون المجمد مزيان، غير ذوبيه ونشفيه مزيان قبل."
+      ]
+    },
+    "tags": ["fish", "raw_onion", "gluten"],
+    "photo_query": "shrimp avocado salad lime"
+  },
+  {
+    "slug": "beef-kofta-wraps-with-tzatziki",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Beef kofta wraps with tzatziki",
+    "name_fr": "Wraps de kefta de bœuf au tzatziki",
+    "name_ar": "راب الكفتة بالتزاتزيكي",
+    "name_latin": "Wrap kefta b tzatziki",
+    "desc_en": "Spiced lean beef kofta grilled and rolled in a whole-wheat wrap with cucumber-yogurt tzatziki, tomato and lettuce. 36 g of protein.",
+    "desc_fr": "De la kefta de bœuf maigre épicée, grillée et roulée dans une galette complète avec un tzatziki concombre-yaourt, de la tomate et de la laitue. 36 g de protéines.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 20,
+    "cook_min": 12,
+    "macros": { "kcal": 560, "protein_g": 36, "carbs_g": 42, "fat_g": 26, "fiber_g": 6 },
+    "ingredients": [
+      { "en": "Lean minced beef", "fr": "Bœuf haché maigre", "ar": "كفتة بقري بلا دهن", "qty": 600, "unit": "g", "group": "fresh" },
+      { "en": "Onion, grated", "fr": "Oignon râpé", "ar": "بصلة محكوكة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كامون", "qty": 2, "unit": "tsp", "group": "dry" },
+      { "en": "Sweet paprika", "fr": "Paprika doux", "ar": "فلفلة حلوة مطحونة", "qty": 2, "unit": "tsp", "group": "dry" },
+      { "en": "Ground coriander", "fr": "Coriandre moulue", "ar": "قصبور يابس مطحون", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Whole-wheat wraps", "fr": "Galettes complètes", "ar": "خبز راب كامل", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 250, "unit": "g", "group": "fresh" },
+      { "en": "Cucumber", "fr": "Concombre", "ar": "خيار", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Garlic clove, minced", "fr": "Gousse d'ail hachée", "ar": "تومة مهرسة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Lemon", "fr": "Citron", "ar": "ليمونة حامضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Tomatoes, sliced", "fr": "Tomates en tranches", "ar": "طماطم مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Lettuce, shredded", "fr": "Laitue émincée", "ar": "خس مقطع", "qty": 0.5, "unit": "piece", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1.5, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "للتزاتزيكي: حكي الخيار، ملحيه وعصريه من الما. خلطيه مع الدانون والتومة وعصير نص ليمونة ورشة ملحة.",
+        "خلطي الكفتة مع البصلة المحكوكة والمعدنوس والكامون والفلفلة الحلوة والقصبور والملحة، وعجنيها مزيان بيديك.",
+        "كوري 12 كفتة طويلة (كيف الأصبع).",
+        "شويها فمقلة سخونة ولا على الشواية 10 دقايق، قلبيها حتى تحمر من كل جهة.",
+        "سخني الخبز 30 ثانية فالمقلة.",
+        "دهني كل خبزة بالتزاتزيكي، حطي 3 كفتات والطماطم والخس، وكوريه."
+      ],
+      "tips": [
+        "عصري الخيار مزيان وإلا التزاتزيكي كيولي عايم.",
+        "عجني الكفتة دقيقتين، كتشد وكتبقى صحيحة على الشواية.",
+        "الكفتة كتجمد نية، خرجيها ليلة قبل."
+      ]
+    },
+    "tags": ["red_meat", "dairy", "cooked_onion", "gluten"],
+    "photo_query": "kofta wrap tzatziki"
+  },
+  {
+    "slug": "grilled-vegetable-and-cheese-wrap",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Grilled vegetable and cheese wrap",
+    "name_fr": "Wrap aux légumes grillés et au fromage",
+    "name_ar": "راب الخضرة المشوية بالفرماج",
+    "name_latin": "Wrap lkhodra mechwiya b fromage",
+    "desc_en": "Zucchini, eggplant and peppers grilled and rolled with hummus, feta and rocket in a warm whole-wheat wrap. Vegetarian and filling.",
+    "desc_fr": "Courgette, aubergine et poivrons grillés et roulés avec du houmous, de la feta et de la roquette dans une galette complète chaude. Végétarien et rassasiant.",
+    "cuisine": "Mediterranean",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 20,
+    "macros": { "kcal": 470, "protein_g": 18, "carbs_g": 52, "fat_g": 21, "fiber_g": 11 },
+    "ingredients": [
+      { "en": "Zucchini, sliced lengthwise", "fr": "Courgette en lamelles", "ar": "ݣرعة خضرا مقطعة بالطول", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Eggplant, sliced", "fr": "Aubergine en tranches", "ar": "دنجال مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Red bell pepper, in strips", "fr": "Poivron rouge en lanières", "ar": "فلفلة حمرا حلوة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Whole-wheat wraps", "fr": "Galettes complètes", "ar": "خبز راب كامل", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Hummus", "fr": "Houmous", "ar": "حمص مهرس", "qty": 200, "unit": "g", "group": "dry" },
+      { "en": "Feta, crumbled", "fr": "Feta émiettée", "ar": "فيتا مفتتة", "qty": 120, "unit": "g", "group": "fresh" },
+      { "en": "Rocket", "fr": "Roquette", "ar": "روكيت", "qty": 80, "unit": "g", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Dried oregano", "fr": "Origan séché", "ar": "زعتر يابس", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Lemon", "fr": "Citron", "ar": "ليمونة حامضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "دهني الخضرة بالزيت ورشي الزعتر والملحة.",
+        "شويها فمقلة ديال الشوي ولا فالفرن على 220 درجة 15 دقيقة حتى تحمر وتطرا.",
+        "عصري شوية ليمون على الخضرة المشوية.",
+        "سخني الخبز 30 ثانية فمقلة ناشفة.",
+        "دهني كل خبزة بالحمص المهرس، حطي الخضرة والفيتا والروكيت.",
+        "كوريه مزيان وحمريه فالمقلة دقيقة من كل جهة، وقطعيه على جوج."
+      ],
+      "tips": [
+        "الدنجال ملحيه 10 دقايق قبل وعصريه، كيشرب زيت أقل.",
+        "الخضرة المشوية كتبقى 3 أيام فالتلاجة، شوي كمية كبيرة.",
+        "التحمير فالآخر كيشد الراب وكيخليه مقرقب."
+      ]
+    },
+    "tags": ["legumes", "dairy", "peppers", "vegetarian", "gluten"],
+    "photo_query": "grilled vegetable wrap hummus feta"
+  },
+  {
+    "slug": "white-bean-and-tuna-salad",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "White bean and tuna salad",
+    "name_fr": "Salade de haricots blancs au thon",
+    "name_ar": "سلاطة اللوبيا البيضا بالطون",
+    "name_latin": "Salade loubya lbida b ton",
+    "desc_en": "The Italian classic: white beans, tuna, red onion, parsley and lemon in olive oil, with tomatoes and bread. No cooking, 30 g of protein.",
+    "desc_fr": "Le classique italien : haricots blancs, thon, oignon rouge, persil et citron à l'huile d'olive, avec des tomates et du pain. Sans cuisson, 30 g de protéines.",
+    "cuisine": "Italian",
+    "servings": 4,
+    "prep_min": 10,
+    "cook_min": 0,
+    "macros": { "kcal": 450, "protein_g": 30, "carbs_g": 48, "fat_g": 14, "fiber_g": 12 },
+    "ingredients": [
+      { "en": "Cooked white beans (canned, drained)", "fr": "Haricots blancs cuits (en boîte, égouttés)", "ar": "لوبيا بيضا مطيبة (بوطة، مصفية)", "qty": 600, "unit": "g", "group": "dry" },
+      { "en": "Canned tuna in olive oil, drained", "fr": "Thon en boîte à l'huile d'olive, égoutté", "ar": "طون فالبوطة بزيت العود، مصفي", "qty": 320, "unit": "g", "group": "dry" },
+      { "en": "Red onion, very thinly sliced", "fr": "Oignon rouge émincé très fin", "ar": "بصلة حمرا مقطعة رقيقة بزاف", "qty": 0.5, "unit": "piece", "group": "fresh" },
+      { "en": "Cherry tomatoes, halved", "fr": "Tomates cerises coupées en deux", "ar": "طماطم صغيرة مقطعة", "qty": 250, "unit": "g", "group": "fresh" },
+      { "en": "Celery stalk, thinly sliced", "fr": "Branche de céleri émincée", "ar": "كرافس مقطع رقيق", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Lemon", "fr": "Citron", "ar": "ليمونة حامضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Whole-grain bread", "fr": "Pain complet", "ar": "خبز كامل", "qty": 4, "unit": "piece", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 0.5, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "صفي اللوبيا وغسليها مزيان.",
+        "نقعي البصلة فما بارد مع شوية ليمون 10 دقايق، وصفيها.",
+        "فطبق كبير خلطي اللوبيا مع الطون مفتت قطع كبار.",
+        "زيدي البصلة والطماطم والكرافس والمعدنوس.",
+        "كبي الزيت وعصير الليمون والملحة والابزار، وقلبي بشوية.",
+        "خليها 10 دقايق باش تشرب، وقدمي مع الخبز."
+      ],
+      "tips": [
+        "قلبي بشوية باش ما تتهرسش اللوبيا.",
+        "الطون بزيت العود هو المزيان هنا، صفيه غير شوية.",
+        "كتولي أحسن بعد ساعة فالتلاجة."
+      ]
+    },
+    "tags": ["fish", "legumes", "raw_onion", "gluten"],
+    "photo_query": "white bean tuna salad parsley"
+  },
+  {
+    "slug": "chicken-pesto-pasta-salad",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Chicken pesto pasta salad",
+    "name_fr": "Salade de pâtes au poulet et au pesto",
+    "name_ar": "سلاطة المقرونة بالدجاج والبيستو",
+    "name_latin": "Salade mqarouna b djaj o pesto",
+    "desc_en": "Pasta, grilled chicken, cherry tomatoes, mozzarella and spinach in a basil pesto loosened with yogurt. Great cold for lunchboxes, 36 g of protein.",
+    "desc_fr": "Pâtes, poulet grillé, tomates cerises, mozzarella et épinards dans un pesto au basilic allongé au yaourt. Parfait froid pour la lunchbox, 36 g de protéines.",
+    "cuisine": "Italian",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 20,
+    "macros": { "kcal": 590, "protein_g": 36, "carbs_g": 62, "fat_g": 21, "fiber_g": 8 },
+    "ingredients": [
+      { "en": "Whole-wheat fusilli or penne", "fr": "Fusilli ou penne complets", "ar": "مقرونة كاملة", "qty": 320, "unit": "g", "group": "dry" },
+      { "en": "Chicken breast", "fr": "Blanc de poulet", "ar": "صدر الدجاج", "qty": 500, "unit": "g", "group": "fresh" },
+      { "en": "Cherry tomatoes, halved", "fr": "Tomates cerises coupées en deux", "ar": "طماطم صغيرة مقطعة", "qty": 250, "unit": "g", "group": "fresh" },
+      { "en": "Mozzarella, diced (or light mozzarella)", "fr": "Mozzarella en dés (ou allégée)", "ar": "موزاريلا مقطعة", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Baby spinach", "fr": "Jeunes pousses d'épinards", "ar": "سبانخ صغيرة", "qty": 100, "unit": "g", "group": "fresh" },
+      { "en": "Pesto", "fr": "Pesto", "ar": "بيستو", "qty": 4, "unit": "tbsp", "group": "dry" },
+      { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 100, "unit": "g", "group": "fresh" },
+      { "en": "Lemon", "fr": "Citron", "ar": "ليمونة حامضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 1, "unit": "tbsp", "group": "dry" },
+      { "en": "Pine nuts or almonds, toasted", "fr": "Pignons ou amandes grillés", "ar": "لوز محمر", "qty": 30, "unit": "g", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "طيبي المقرونة فما مملح كيغلي، صفيها وغسليها بما بارد.",
+        "ملحي الدجاج وابزريه، وشويه فمقلة مع الزيت 6 دقايق من كل جهة. خليه يرتاح وقطعيه مكعبات.",
+        "خلطي البيستو مع الدانون وعصير الليمون.",
+        "فطبق كبير خلطي المقرونة مع صوص البيستو.",
+        "زيدي الدجاج والطماطم والموزاريلا والسبانخ وقلبي.",
+        "رشي اللوز المحمر وقدمي باردة ولا فحرارة البيت."
+      ],
+      "tips": [
+        "الدانون كيخفف البيستو وكيخليه يغطي المقرونة كاملة بلا زيت بزاف.",
+        "السبانخ زيديها فالآخر باش تبقى طرية.",
+        "كتبقى يومين فالتلاجة، مزيانة للمدرسة والخدمة."
+      ]
+    },
+    "tags": ["chicken", "dairy", "nuts", "gluten", "pasta"],
+    "photo_query": "chicken pesto pasta salad tomatoes mozzarella"
+  },
+  {
+    "slug": "roasted-cauliflower-and-chickpea-bowl-with-tahini",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Roasted cauliflower and chickpea bowl with tahini",
+    "name_fr": "Bol de chou-fleur et pois chiches rôtis au tahini",
+    "name_ar": "بول الشيفلور والحمص المشويين بالطحينة",
+    "name_latin": "Bowl chiflour o lhommes mechwiyin b tahina",
+    "desc_en": "Cumin-roasted cauliflower and crispy chickpeas over bulgur with pickled red onion, parsley and lemon-tahini sauce. Vegetarian, 15 g of fibre.",
+    "desc_fr": "Du chou-fleur rôti au cumin et des pois chiches croustillants sur du boulgour avec de l'oignon rouge mariné, du persil et une sauce tahini-citron. Végétarien, 15 g de fibres.",
+    "cuisine": "Middle Eastern",
+    "servings": 4,
+    "prep_min": 15,
+    "cook_min": 30,
+    "macros": { "kcal": 520, "protein_g": 19, "carbs_g": 68, "fat_g": 20, "fiber_g": 15 },
+    "ingredients": [
+      { "en": "Cauliflower, in florets", "fr": "Chou-fleur en bouquets", "ar": "شيفلور مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Cooked chickpeas (canned, drained and dried)", "fr": "Pois chiches cuits (en boîte, égouttés et séchés)", "ar": "حمص مطيب (بوطة، مصفي ومنشف)", "qty": 500, "unit": "g", "group": "dry" },
+      { "en": "Bulgur", "fr": "Boulgour", "ar": "بلغور", "qty": 240, "unit": "g", "group": "dry" },
+      { "en": "Red onion, thinly sliced", "fr": "Oignon rouge émincé", "ar": "بصلة حمرا مقطعة رقيقة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Tahini", "fr": "Tahini", "ar": "طحينة", "qty": 4, "unit": "tbsp", "group": "dry" },
+      { "en": "Lemons", "fr": "Citrons", "ar": "ليمون حامض", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Garlic clove, minced", "fr": "Gousse d'ail hachée", "ar": "تومة مهرسة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كامون", "qty": 2, "unit": "tsp", "group": "dry" },
+      { "en": "Sweet paprika", "fr": "Paprika doux", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 3, "unit": "tbsp", "group": "dry" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1.5, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "سخني الفرن على 220 درجة.",
+        "خلطي الشيفلور والحمص مع الزيت والكامون والفلفلة الحلوة والملحة، وفرشيهم فطبق كبير ديال الفرن.",
+        "شويهم 30 دقيقة، قلبيهم فالنص، حتى يحمر الشيفلور ويقرقب الحمص.",
+        "نقعي البصلة فعصير ليمونة مع رشة ملحة 15 دقيقة.",
+        "كبي على البلغور 400 مل ما كيغلي مع رشة ملحة، غطيه 15 دقيقة.",
+        "للصوص: خلطي الطحينة مع عصير ليمونة والتومة و4 ملاعق ما ورشة ملحة.",
+        "فكل زلافة: بلغور، شيفلور وحمص، بصلة منقوعة، معدنوس، وصوص الطحينة فوق."
+      ],
+      "tips": [
+        "نشفي الحمص مزيان بورقة قبل الفرن، وإلا ما يقرقبش.",
+        "الشيفلور خاصو مكان واسع فالطبق باش يحمر.",
+        "البصلة المنقوعة فالليمون كتولي وردية وحلوة، وكتفقد الحرارة."
+      ]
+    },
+    "tags": ["legumes", "raw_onion", "vegetarian", "gluten"],
+    "photo_query": "roasted cauliflower chickpea bowl tahini"
+  },
+  {
+    "slug": "turkey-meatball-and-vegetable-soup",
+    "meal": "lunch",
+    "on_menu": false,
+    "name_en": "Turkey meatball and vegetable soup",
+    "name_fr": "Soupe de boulettes de dinde aux légumes",
+    "name_ar": "شربة كويرات الديندي بالخضرة",
+    "name_latin": "Chorbat kwirat dindi b lkhodra",
+    "desc_en": "Small herby turkey meatballs simmered in a tomato-vegetable broth with zucchini, carrot and spinach. A light Italian wedding soup, 34 g of protein.",
+    "desc_fr": "De petites boulettes de dinde aux herbes mijotées dans un bouillon tomate-légumes avec courgette, carotte et épinards. Une soupe légère à l'italienne, 34 g de protéines.",
+    "cuisine": "Italian",
+    "servings": 4,
+    "prep_min": 20,
+    "cook_min": 30,
+    "macros": { "kcal": 420, "protein_g": 34, "carbs_g": 28, "fat_g": 18, "fiber_g": 6 },
+    "ingredients": [
+      { "en": "Minced turkey or chicken", "fr": "Dinde ou poulet haché", "ar": "ديندي ولا دجاج مفروم", "qty": 600, "unit": "g", "group": "fresh" },
+      { "en": "Egg", "fr": "Œuf", "ar": "بيضة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Breadcrumbs", "fr": "Chapelure", "ar": "خبز مطحون", "qty": 50, "unit": "g", "group": "dry" },
+      { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان محكوك", "qty": 40, "unit": "g", "group": "fresh" },
+      { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+      { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "تومة مهرسة", "qty": 3, "unit": "piece", "group": "fresh" },
+      { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Carrots, diced", "fr": "Carottes en dés", "ar": "خيزو مقطع", "qty": 2, "unit": "piece", "group": "fresh" },
+      { "en": "Zucchini, diced", "fr": "Courgette en dés", "ar": "ݣرعة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+      { "en": "Canned crushed tomatoes", "fr": "Tomates concassées en boîte", "ar": "طماطم مهرسة فالبوطة", "qty": 400, "unit": "g", "group": "dry" },
+      { "en": "Chicken stock", "fr": "Bouillon de poulet", "ar": "مرقة الدجاج", "qty": 1500, "unit": "ml", "group": "dry" },
+      { "en": "Fresh spinach", "fr": "Épinards frais", "ar": "سبانخ", "qty": 150, "unit": "g", "group": "fresh" },
+      { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت العود", "qty": 2, "unit": "tbsp", "group": "dry" },
+      { "en": "Dried oregano", "fr": "Origan séché", "ar": "زعتر يابس", "qty": 1, "unit": "tsp", "group": "dry" },
+      { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1.5, "unit": "tsp", "group": "dry" }
+    ],
+    "recipe_ar": {
+      "steps": [
+        "خلطي الديندي مع البيضة والخبز المطحون والبارميزان ونص المعدنوس وتومة مهرسة وملعقة ملحة. كوري كويرات صغار قد الݣرݣاعة.",
+        "سخني الزيت فطنجرة كبيرة، وقلي البصلة والخيزو 6 دقايق.",
+        "زيدي باقي التومة والزعتر وحركي دقيقة.",
+        "زيدي الطماطم والمرقة والملحة، وخليها تغلي.",
+        "نزلي الكويرات بشوية فالمرقة، وطيبي 12 دقيقة على نار متوسطة بلا تحريك بزاف.",
+        "زيدي الݣرعة و5 دقايق أخرى، ومن بعد السبانخ دقيقتين.",
+        "رشي باقي المعدنوس وقدمي."
+      ],
+      "tips": [
+        "الكويرات صغار كيطيبو دغيا وكيبقاو طريين، بللي يديك بالما باش ما تلصقش.",
+        "ما تحركيش الشربة بقوة ف5 دقايق الأولى وإلا كتفرق الكويرات.",
+        "تقدري تزيدي حفنة ديال لسان العصفور مع الݣرعة."
+      ]
+    },
+    "tags": ["chicken", "eggs", "dairy", "cooked_onion", "gluten"],
+    "photo_query": "turkey meatball vegetable soup bowl"
+  }
+]

@@ -1,7 +1,8 @@
 /**
  * Loads the library (data/dishes/*.json + data/photos.json) into the dishes table:
- * the NHS-sourced international catalog, the Moroccan catalog (Moroccan menu only), and the
- * high-protein set adapted from the USDA MyPlate Kitchen recipes (public domain).
+ * the Moroccan catalog (Moroccan menu only) and the international library written in-house
+ * (96 healthy everyday dishes, 2026-09-20). The earlier NHS and USDA MyPlate sets are archived in
+ * data/dishes-archive/nhs-myplate-2026-09-20/ and are removed from the database by the stale sweep below.
  * Upserts by slug so re-running after a content fix updates text but keeps custom dishes,
  * the reviewed flag, any photo the cook replaced, `on_menu` and a "deleted" status (a dish deleted
  * for good in the app keeps its row as a tombstone, so this upsert cannot revive it). Anything built-in (not custom) whose
@@ -13,22 +14,17 @@ import { eq, sql, and, notInArray, inArray } from "drizzle-orm";
 import { db } from "./index";
 import { dishes, pools, type Ingredient, type Macros, type Recipe } from "./schema";
 import { slugify } from "@/lib/slug";
-import nhsBreakfast from "../../data/dishes/nhs-breakfast.json";
-import nhsLunch from "../../data/dishes/nhs-lunch.json";
-import nhsDinner from "../../data/dishes/nhs-dinner.json";
 import morBreakfast from "../../data/dishes/moroccan-breakfast.json";
 import morLunch from "../../data/dishes/moroccan-lunch.json";
 import morDinner from "../../data/dishes/moroccan-dinner.json";
-import mpBreakfast from "../../data/dishes/myplate-breakfast.json";
-import mpLunch from "../../data/dishes/myplate-lunch.json";
-import mpDinner from "../../data/dishes/myplate-dinner.json";
-import lib1 from "../../data/dishes/myplate-library-1.json";
-import lib2 from "../../data/dishes/myplate-library-2.json";
-import lib3 from "../../data/dishes/myplate-library-3.json";
-import lib4 from "../../data/dishes/myplate-library-4.json";
-import lib5 from "../../data/dishes/myplate-library-5.json";
-import lib6 from "../../data/dishes/myplate-library-6.json";
-import lib7 from "../../data/dishes/myplate-library-7.json";
+import intlB1 from "../../data/dishes/intl-breakfast-1.json";
+import intlB2 from "../../data/dishes/intl-breakfast-2.json";
+import intlL1 from "../../data/dishes/intl-lunch-1.json";
+import intlL2 from "../../data/dishes/intl-lunch-2.json";
+import intlL3 from "../../data/dishes/intl-lunch-3.json";
+import intlD1 from "../../data/dishes/intl-dinner-1.json";
+import intlD2 from "../../data/dishes/intl-dinner-2.json";
+import intlD3 from "../../data/dishes/intl-dinner-3.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
 import videos from "../../data/videos/all.json";
@@ -47,11 +43,13 @@ type Raw = {
 type Photo = { file: string; credit: string; license: string; source: string };
 
 const ALL = [
-  ...(nhsBreakfast as Raw[]), ...(nhsLunch as Raw[]), ...(nhsDinner as Raw[]),
+  // The Moroccan menu, restored from the pre-NHS library (see PLAN.md).
   ...(morBreakfast as Raw[]), ...(morLunch as Raw[]), ...(morDinner as Raw[]),
-  ...(mpBreakfast as Raw[]), ...(mpLunch as Raw[]), ...(mpDinner as Raw[]),
-  // Library only: high-protein MyPlate recipes waiting to be put on the menu.
-  ...(lib1 as Raw[]), ...(lib2 as Raw[]), ...(lib3 as Raw[]), ...(lib4 as Raw[]), ...(lib5 as Raw[]), ...(lib6 as Raw[]), ...(lib7 as Raw[]),
+  // The international library, rebuilt 2026-09-20: 96 well-known healthy dishes written in-house
+  // (24 breakfast, 36 lunch, 36 dinner). They land off the menu; the menu is hand-picked from them.
+  ...(intlB1 as Raw[]), ...(intlB2 as Raw[]),
+  ...(intlL1 as Raw[]), ...(intlL2 as Raw[]), ...(intlL3 as Raw[]),
+  ...(intlD1 as Raw[]), ...(intlD2 as Raw[]), ...(intlD3 as Raw[]),
 ];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));

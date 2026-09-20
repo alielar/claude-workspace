@@ -20,8 +20,11 @@ type Hit = { url: string; credit: string; license: string; source: string; w: nu
 const strip = (h: string) => h.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 const overrides: Record<string, string> = fs.existsSync(path.join(root, "data/photo-queries2.json")) ? JSON.parse(fs.readFileSync(path.join(root, "data/photo-queries2.json"), "utf8")) : {};
 
-const dishes = fs.readdirSync(path.join(root, "data/dishes")).filter((f) => f.endsWith(".json"))
+/** ONLY_PREFIX=intl- limits the run to dish files whose name starts with that prefix. */
+const prefix = process.env.ONLY_PREFIX ?? "";
+const dishes = fs.readdirSync(path.join(root, "data/dishes")).filter((f) => f.endsWith(".json") && f.startsWith(prefix))
   .flatMap((f) => JSON.parse(fs.readFileSync(path.join(root, "data/dishes", f), "utf8")) as { name_en: string; photo_query?: string }[]);
+const QUERY: Record<string, string> = Object.fromEntries(dishes.filter((d) => d.photo_query).map((d) => [slugify(d.name_en), d.photo_query as string]));
 
 /** Short query: drop parentheses and filler, keep the first 4 meaningful words. */
 function shortQuery(name: string) {
@@ -63,7 +66,8 @@ async function thumb(url: string, file: string) {
 }
 
 async function one(slug: string, name: string): Promise<{ q: string; hits: Hit[] }> {
-  const q0 = overrides[slug] ?? shortQuery(name);
+  // The dish file's own photo_query first (written for stock-photo search), then the name.
+  const q0 = overrides[slug] ?? QUERY[slug] ?? shortQuery(name);
   let out = await gather(slug, q0);
   if (out.hits.length < 3 && q0.split(" ").length > 2) {
     const q1 = q0.split(" ").slice(0, 2).join(" ");
