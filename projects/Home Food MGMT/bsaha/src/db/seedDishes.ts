@@ -1,6 +1,7 @@
 /**
  * Loads the library (data/dishes/*.json + data/photos.json) into the dishes table:
- * the NHS-sourced international catalog plus the Moroccan catalog (Moroccan menu only).
+ * the NHS-sourced international catalog, the Moroccan catalog (Moroccan menu only), and the
+ * high-protein set adapted from the USDA MyPlate Kitchen recipes (public domain).
  * Upserts by slug so re-running after a content fix updates text but keeps custom dishes,
  * the reviewed flag and any photo the cook replaced. Anything built-in (not custom) whose
  * slug is no longer in the source files below is removed - the catalog is exactly these
@@ -17,6 +18,9 @@ import nhsDinner from "../../data/dishes/nhs-dinner.json";
 import morBreakfast from "../../data/dishes/moroccan-breakfast.json";
 import morLunch from "../../data/dishes/moroccan-lunch.json";
 import morDinner from "../../data/dishes/moroccan-dinner.json";
+import mpBreakfast from "../../data/dishes/myplate-breakfast.json";
+import mpLunch from "../../data/dishes/myplate-lunch.json";
+import mpDinner from "../../data/dishes/myplate-dinner.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
 import videos from "../../data/videos/all.json";
@@ -35,6 +39,7 @@ type Photo = { file: string; credit: string; license: string; source: string };
 const ALL = [
   ...(nhsBreakfast as Raw[]), ...(nhsLunch as Raw[]), ...(nhsDinner as Raw[]),
   ...(morBreakfast as Raw[]), ...(morLunch as Raw[]), ...(morDinner as Raw[]),
+  ...(mpBreakfast as Raw[]), ...(mpLunch as Raw[]), ...(mpDinner as Raw[]),
 ];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));

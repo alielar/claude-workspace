@@ -1,0 +1,259 @@
+[
+ {
+  "slug": "tomato-and-garlic-omelet",
+  "meal": "breakfast",
+  "name_en": "Tomato, basil and garlic omelette",
+  "name_fr": "Omelette aux tomates, basilic et ail",
+  "name_ar": "أومليت بالمطيشة والحبق والتوما",
+  "name_latin": "Omlit bel matisha w lhbaq w touma",
+  "desc_en": "A big folded omelette with garlic-toasted bread cubes, fresh tomato, basil and a little mozzarella. Three eggs a head, 29 g of protein.",
+  "desc_fr": "Une grande omelette pliée avec des croûtons à l'ail, tomate fraîche, basilic et un peu de mozzarella. Trois œufs par personne, 29 g de protéines.",
+  "cuisine": "Mediterranean",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 20,
+  "macros": { "kcal": 322, "protein_g": 29, "carbs_g": 18, "fat_g": 15, "fiber_g": 9 },
+  "ingredients": [
+   { "en": "Whole wheat bread", "fr": "Pain complet", "ar": "خبز كامل", "qty": 2, "unit": "piece", "group": "dry" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Garlic cloves, finely chopped", "fr": "Gousses d'ail hachées fin", "ar": "فصوص ديال التوما مقطعين مزيان", "qty": 4, "unit": "piece", "group": "fresh" },
+   { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 12, "unit": "piece", "group": "fresh" },
+   { "en": "Mozzarella, grated", "fr": "Mozzarella râpée", "ar": "موزاريلا مبشورة", "qty": 120, "unit": "g", "group": "fresh" },
+   { "en": "Tomatoes, halved", "fr": "Tomates coupées en deux", "ar": "مطيشة مقطوعة نصين", "qty": 4, "unit": "piece", "group": "fresh" },
+   { "en": "Fresh basil", "fr": "Basilic frais", "ar": "حبق طري", "qty": 1, "unit": "bunch", "group": "fresh" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفرن على 150 درجة. قطعي الخبز حجرات صغار، خلطيهم مع ملعقة ديال زيت الزيتون والتوما المقطعة.",
+    "فرشي حجرات الخبز فصينية وحمريهم فالفرن 15 حتى 20 دقيقة حتى يوليو ذهبيين وقاسحين. حيديهم وخليهم يبردو.",
+    "خبطي البيض فطاس مع رشة ديال الابزار.",
+    "سخني شوية ديال زيت الزيتون فمقلاة ما كتلصقش على نار متوسطة، وصبي فيها ربع ديال البيض.",
+    "ملي يبدا البيض يشد من تحت، نقصي النار وخليه يطيب بشوية.",
+    "ملي يقرب وجه البيض يطيب، رشي فوقو الموزاريلا والحبق، وزيدي شرايح المطيشة وحجرات الخبز على نص واحد.",
+    "طوي الأومليت على النص، خليه دقيقة أخرى، وزلقيه فالطبسيل.",
+    "عاودي نفس الشي مع باقي البيض حتى تكملي 4 ديال الأومليت."
+   ],
+   "tips": [
+    "إلا بغيتي الأومليت أخف، دوزي 8 بيضات كاملين و4 ديال البياض بوحدو.",
+    "المطيشة كتخرج الما. زيديها فالآخر باش الأومليت ما يرطبش."
+   ]
+  },
+  "tags": ["eggs", "dairy", "vegetarian", "gluten", "cooked_onion"]
+ },
+ {
+  "slug": "broccoli-omelet",
+  "meal": "breakfast",
+  "name_en": "Broccoli and mushroom omelette",
+  "name_fr": "Omelette au brocoli et champignons",
+  "name_ar": "أومليت بالبروكلي والفقاقع",
+  "name_latin": "Omlit bel brokoli w lfqaqe",
+  "desc_en": "A light omelette stuffed with sauteed broccoli, peppers and mushrooms, with ricotta and a little parmesan. Only 220 calories for 22 g of protein.",
+  "desc_fr": "Une omelette légère garnie de brocoli, poivrons et champignons sautés, avec ricotta et un peu de parmesan. Seulement 220 calories pour 22 g de protéines.",
+  "cuisine": "Mediterranean",
+  "servings": 4,
+  "prep_min": 15,
+  "cook_min": 15,
+  "macros": { "kcal": 220, "protein_g": 22, "carbs_g": 12, "fat_g": 9, "fiber_g": 3 },
+  "ingredients": [
+   { "en": "Broccoli florets", "fr": "Bouquets de brocoli", "ar": "بروكلي مقطع نوارات", "qty": 300, "unit": "g", "group": "fresh" },
+   { "en": "Red bell pepper, in strips", "fr": "Poivron rouge en lanières", "ar": "فلفلة حمرا مقطعة خيوط", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Mushrooms, sliced", "fr": "Champignons émincés", "ar": "فقاقع مقطعين شرايح", "qty": 250, "unit": "g", "group": "fresh" },
+   { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 4, "unit": "piece", "group": "fresh" },
+   { "en": "Egg whites", "fr": "Blancs d'œufs", "ar": "بياض ديال البيض", "qty": 8, "unit": "piece", "group": "fresh" },
+   { "en": "Skimmed milk", "fr": "Lait écrémé", "ar": "حليب خفيف", "qty": 60, "unit": "ml", "group": "fresh" },
+   { "en": "Ricotta or fresh cheese", "fr": "Ricotta ou fromage frais", "ar": "ريكوتا ولا جبن طري", "qty": 125, "unit": "g", "group": "fresh" },
+   { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان مبشور", "qty": 2, "unit": "tbsp", "group": "fresh" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "قطعي البروكلي نوارات صغار، الفلفلة خيوط، والفقاقع شرايح.",
+    "خبطي البيض مع بياض البيض والحليب فطاس.",
+    "سخني شوية ديال زيت الزيتون فمقلاة ما كتلصقش، وزيدي البروكلي والفلفلة والفقاقع. قليهم 3 حتى 5 دقايق وحيديهم من المقلاة.",
+    "فنفس المقلاة، صبي ربع ديال خليط البيض وخليه ينتشر فالقاع.",
+    "ملي يبدا الوجه يشد، رشي فوقو شوية ديال البارميزان.",
+    "حطي الريكوتا على نص ديال الأومليت وزيدي فوقها جزء من الخضرة.",
+    "طوي النص الآخر فوق الخضرة وخليه يطيب دقيقة أخرى، ومن بعد زلقيه فالطبسيل.",
+    "عاودي نفس الشي حتى تكملي 4 ديال الأومليت. زيدي الملحة والابزار، وزيني بالخضرة اللي بقات."
+   ],
+   "tips": [
+    "ما تزيديش الملحة للخضرة وهي كتطيب، غادي تخرج الما وتبقى رطبة.",
+    "إلا ما كانتش الريكوتا، الجبن الطري ديال البقرة كيخدم بحال بحال."
+   ]
+  },
+  "tags": ["eggs", "dairy", "vegetarian", "peppers"]
+ },
+ {
+  "slug": "falafel-yogurt-sandwich",
+  "meal": "breakfast",
+  "name_en": "Falafel sandwich with yogurt sauce",
+  "name_fr": "Sandwich falafel à la sauce yaourt",
+  "name_ar": "سندويتش الفلافل بصالصة الدانون",
+  "name_latin": "Sandwitch lfalafel b salsat danone",
+  "desc_en": "Chickpea patties with garlic, onion and parsley, tucked into whole-wheat bread with a cool yogurt and onion sauce, tomato and lettuce.",
+  "desc_fr": "Galettes de pois chiches à l'ail, oignon et persil, dans du pain complet avec une sauce fraîche au yaourt et oignon, tomate et laitue.",
+  "cuisine": "Middle Eastern",
+  "servings": 4,
+  "prep_min": 25,
+  "cook_min": 20,
+  "macros": { "kcal": 543, "protein_g": 20, "carbs_g": 77, "fat_g": 19, "fiber_g": 13 },
+  "ingredients": [
+   { "en": "Dried chickpeas", "fr": "Pois chiches secs", "ar": "حمص ناشف", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 60, "unit": "ml", "group": "dry" },
+   { "en": "Garlic clove, crushed", "fr": "Gousse d'ail écrasée", "ar": "فص ديال التوما مهروس", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Onions, chopped", "fr": "Oignons hachés", "ar": "بصلة مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس طري مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+   { "en": "Lemon juice", "fr": "Jus de citron", "ar": "عصير الحامض", "qty": 2, "unit": "tsp", "group": "fresh" },
+   { "en": "Harissa", "fr": "Harissa", "ar": "هريسة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Plain yogurt", "fr": "Yaourt nature", "ar": "دانون طبيعي", "qty": 250, "unit": "g", "group": "fresh" },
+   { "en": "Whole wheat pita bread", "fr": "Pain pita complet", "ar": "خبز البيتا الكامل", "qty": 4, "unit": "piece", "group": "dry" },
+   { "en": "Flour", "fr": "Farine", "ar": "دقيق", "qty": 30, "unit": "g", "group": "dry" },
+   { "en": "Tomatoes, sliced", "fr": "Tomates en rondelles", "ar": "مطيشة مقطعة شرايح", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Lettuce", "fr": "Laitue", "ar": "خس", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "نقعي الحمص فالما من الليل. غديا صفيه، غطيه بالما الجديد وطيبو حتى يولي طري، تقريبا ساعتين. صفيه مزيان.",
+    "سخني شوية ديال الزيت وقلي فيه التوما ووحدة من البصلات حتى يوليو طريين، 5 حتى 7 دقايق.",
+    "اهرسي الحمص المطيب مع البصلة والتوما والمعدنوس والملحة وعصير الحامض والهريسة حتى يولي الخليط ناعم.",
+    "بللي يديك بالدقيق وشكلي من الخليط كرات مفلطحة، قد ملعقة كبيرة لكل وحدة، وغطسيهم فالدقيق.",
+    "سخني باقي الزيت فالمقلاة وقلي الفلافل حتى تولي ذهبية من الجوج ديال الجهات. حطيهم على ورق المطبخ باش يمص الزيت الزايد.",
+    "خلطي الدانون مع البصلة الأخرى مقطعة صغيرة باش تدير الصالصة.",
+    "حلي الخبز، عمريه بالفلافل، وزيدي فوقو صالصة الدانون والمطيشة والخس."
+   ],
+   "tips": [
+    "الحمص المعلب كيخدم إلا كنتي مستعجلة: صفيه مزيان وقفزي المرحلة ديال الطياب.",
+    "إلا كان الخليط رطب بزاف، زيدي شوية ديال الدقيق حتى يولي يتشكل بسهولة.",
+    "الهريسة اختيارية. حيديها إلا كان شي حد ما كيحملش الحار."
+   ]
+  },
+  "tags": ["vegetarian", "legumes", "dairy", "gluten", "raw_onion", "spicy", "cooked_onion"]
+ },
+ {
+  "slug": "herbed-spinach-quiche-portabella-caps",
+  "meal": "breakfast",
+  "name_en": "Spinach and egg stuffed mushrooms",
+  "name_fr": "Champignons farcis aux épinards et œufs",
+  "name_ar": "فقاقع معمرين بالسبانخ والبيض",
+  "name_latin": "Fqaqe m3amrin bel sbanakh w lbid",
+  "desc_en": "A quiche without the pastry: big mushroom caps filled with herbed scrambled egg and spinach, baked until set. 199 calories, 19 g of protein.",
+  "desc_fr": "Une quiche sans pâte : de gros champignons garnis d'œufs brouillés aux herbes et épinards, cuits au four. 199 calories, 19 g de protéines.",
+  "cuisine": "International",
+  "servings": 4,
+  "prep_min": 15,
+  "cook_min": 25,
+  "macros": { "kcal": 199, "protein_g": 19, "carbs_g": 19, "fat_g": 6, "fiber_g": 4 },
+  "ingredients": [
+   { "en": "Large flat mushrooms", "fr": "Gros champignons plats", "ar": "فقاقع كبار ومفلطحين", "qty": 4, "unit": "piece", "group": "fresh" },
+   { "en": "Eggs", "fr": "Œufs", "ar": "بيض", "qty": 3, "unit": "piece", "group": "fresh" },
+   { "en": "Egg whites", "fr": "Blancs d'œufs", "ar": "بياض ديال البيض", "qty": 6, "unit": "piece", "group": "fresh" },
+   { "en": "Breadcrumbs", "fr": "Chapelure", "ar": "خبز مطحون", "qty": 60, "unit": "g", "group": "dry" },
+   { "en": "Skimmed milk", "fr": "Lait écrémé", "ar": "حليب خفيف", "qty": 60, "unit": "ml", "group": "fresh" },
+   { "en": "Chopped spinach, cooked and drained", "fr": "Épinards hachés, cuits et égouttés", "ar": "سبانخ مقطعة مطيبة ومصفية", "qty": 250, "unit": "g", "group": "fresh" },
+   { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان مبشور", "qty": 30, "unit": "g", "group": "fresh" },
+   { "en": "Garlic and herb seasoning", "fr": "Mélange ail et fines herbes", "ar": "خلطة ديال التوما والأعشاب", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 1, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سخني الفرن على 190 درجة. حيدي العيدان ديال الفقاقع ومسحيهم بخرقة مبللة.",
+    "دهني صينية بشوية ديال زيت الزيتون وحطي فيها الفقاقع، الجهة الفارغة لفوق.",
+    "فطاس، خبطي البيض وبياض البيض مع الحليب والخبز المطحون والسبانخ وخلطة التوما والأعشاب ومعظم البارميزان.",
+    "سخني مقلاة ما كتلصقش بشوية ديال الزيت، صبي فيها الخليط وقلبيه حتى يبدا غير يشد. حيديه من النار دغيا.",
+    "بملعقة كبيرة، عمري الفقاقع بالخليط ديال البيض وهو سخون.",
+    "رشي فوقهم البارميزان اللي بقا.",
+    "دخليهم للفرن تقريبا 20 دقيقة حتى يشد البيض. قدميهم سخونين."
+   ],
+   "tips": [
+    "إلا كانت السبانخ مجمدة، دوبيها وعصريها مزيان بيديك قبل ما تزيديها، وإلا غادي تخرج الما فالفرن.",
+    "الفقاقع الكبار هوما اللي خدامين هنا. الصغار ما كيعمروش."
+   ]
+  },
+  "tags": ["eggs", "dairy", "vegetarian", "gluten"]
+ },
+ {
+  "slug": "overnight-oatmeal-berries",
+  "meal": "breakfast",
+  "name_en": "Overnight oats with yogurt and berries",
+  "name_fr": "Flocons d'avoine du lendemain au yaourt et fruits rouges",
+  "name_ar": "الشوفان ديال الليل بالدانون والفواكه الحمرا",
+  "name_latin": "Chofan dyal lil b danone w lfawakih lhamra",
+  "desc_en": "Mixed the night before and left in the fridge: oats, milk, Greek yogurt, honey and cinnamon, with berries on top. Nothing to cook in the morning.",
+  "desc_fr": "Préparé la veille et laissé au frais : flocons d'avoine, lait, yaourt grec, miel et cannelle, avec des fruits rouges. Rien à cuire le matin.",
+  "cuisine": "International",
+  "servings": 4,
+  "prep_min": 10,
+  "cook_min": 0,
+  "macros": { "kcal": 305, "protein_g": 16, "carbs_g": 52, "fat_g": 4, "fiber_g": 7 },
+  "ingredients": [
+   { "en": "Rolled oats", "fr": "Flocons d'avoine", "ar": "شوفان", "qty": 240, "unit": "g", "group": "dry" },
+   { "en": "Low-fat milk", "fr": "Lait demi-écrémé", "ar": "حليب خفيف", "qty": 480, "unit": "ml", "group": "fresh" },
+   { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 240, "unit": "g", "group": "fresh" },
+   { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 8, "unit": "tsp", "group": "dry" },
+   { "en": "Cinnamon", "fr": "Cannelle", "ar": "قرفة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Vanilla extract", "fr": "Extrait de vanille", "ar": "فانيلا", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Berries (fresh or frozen)", "fr": "Fruits rouges (frais ou surgelés)", "ar": "فواكه حمرا طرية ولا مجمدة", "qty": 200, "unit": "g", "group": "fresh" }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "فطاس ولا فبوكالات، خلطي الحليب والدانون والعسل والقرفة والفانيلا.",
+    "زيدي الشوفان وقلبي مزيان حتى يتبلل كلو.",
+    "وزعي الخليط على 4 ديال البوكالات ولا الطبيسل.",
+    "زيدي الفواكه الحمرا فوق ولا قلبيها مع الشوفان بلطف.",
+    "غطيهم ودخليهم للتلاجة من الليل، على الأقل 8 سوايع.",
+    "قدميهم باردين من التلاجة، ولا سخنيهم شوية إلا بغا شي حد."
+   ],
+   "tips": [
+    "إلا بغيتي الشوفان أغلظ، نقصي الحليب شوية.",
+    "الفواكه المجمدة كتدوب بوحدها فالتلاجة وكتعطي لون زوين للشوفان.",
+    "هاد الفطور كيتحضر فالليل. حضريه ملي كتسالي العشا."
+   ]
+  },
+  "tags": ["vegetarian", "dairy", "gluten"]
+ },
+ {
+  "slug": "avocado-breakfast-bruschetta",
+  "meal": "breakfast",
+  "name_en": "Avocado, egg and tomato toast",
+  "name_fr": "Tartines à l'avocat, œuf et tomate",
+  "name_ar": "خبز محمر بالأفوكا والبيض والمطيشة",
+  "name_latin": "Khobz mhammar bel avoka w lbid w lmatisha",
+  "desc_en": "Toasted whole-grain bread spread with fresh cheese, piled with avocado, tomato, boiled egg and basil. Quick, filling, 17 g of protein.",
+  "desc_fr": "Pain complet grillé tartiné de fromage frais, garni d'avocat, tomate, œuf dur et basilic. Rapide, nourrissant, 17 g de protéines.",
+  "cuisine": "Mediterranean",
+  "servings": 4,
+  "prep_min": 15,
+  "cook_min": 10,
+  "macros": { "kcal": 397, "protein_g": 17, "carbs_g": 55, "fat_g": 13, "fiber_g": 7 },
+  "ingredients": [
+   { "en": "Ripe avocado", "fr": "Avocat mûr", "ar": "أفوكا طايحة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Tomatoes", "fr": "Tomates", "ar": "مطيشة", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Spring onion", "fr": "Oignon nouveau", "ar": "بصلة خضرا", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Fresh basil", "fr": "Basilic frais", "ar": "حبق طري", "qty": 1, "unit": "bunch", "group": "fresh" },
+   { "en": "Eggs, hard-boiled", "fr": "Œufs durs", "ar": "بيض مسلوق", "qty": 4, "unit": "piece", "group": "fresh" },
+   { "en": "Whole-grain baguette, sliced", "fr": "Baguette complète en tranches", "ar": "خبز كامل مقطع شرايح", "qty": 12, "unit": "piece", "group": "dry" },
+   { "en": "Ricotta or fresh cheese", "fr": "Ricotta ou fromage frais", "ar": "ريكوتا ولا جبن طري", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": {
+   "steps": [
+    "سلقي البيض حتى يقسح، قشريه وقطعيه صغير.",
+    "قطعي الأفوكا والمطيشة والبصلة الخضرا حجرات صغار.",
+    "فطاس صغير، خلطي الأفوكا والمطيشة والبصلة والبيض ومعظم الحبق بلطف باش ما يتهرسش.",
+    "زيدي الابزار الكحل على حساب الذوق.",
+    "حمري شرايح الخبز وادهنيهم بالجبن الطري.",
+    "حطي فوقهم خليط الأفوكا وزيني بالحبق اللي بقا. قدميهم دغيا."
+   ],
+   "tips": [
+    "دوزي الأفوكا ملي تكون طرية شوية فاليد، هي اللي كتعطي الذوق.",
+    "زيدي شوية ديال عصير الحامض على الأفوكا باش ما تكحلش.",
+    "حمري الخبز فآخر وقت باش يبقى قاسح تحت الخليط."
+   ]
+  },
+  "tags": ["eggs", "dairy", "vegetarian", "gluten", "raw_onion"]
+ }
+]
