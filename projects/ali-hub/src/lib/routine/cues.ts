@@ -45,8 +45,51 @@ class Cues {
     }
   }
 
+  /** One shaped note: optional pitch sweep, attack, exponential tail. `at` = ms from now. */
+  private tone(o: { type?: OscillatorType; from: number; to?: number; at?: number; ms: number; vol?: number; attack?: number }) {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const t0 = ctx.currentTime + (o.at ?? 0) / 1000;
+    const end = t0 + o.ms / 1000;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = o.type ?? "sine";
+    osc.frequency.setValueAtTime(o.from, t0);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, end);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(o.vol ?? 0.25, t0 + (o.attack ?? 8) / 1000);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(end + 0.03);
+  }
+
   private vibrate(pattern: number | number[]) {
     try { navigator.vibrate?.(pattern); } catch { /* unsupported */ }
+  }
+
+  /** AMRAP round done: the bell lands (low thud + knock), then a bright two-note lift.
+   * Past the record the lift sits a third higher, so every extra round sounds like a win. */
+  round(aboveRecord = false) {
+    this.tone({ from: 150, to: 55, ms: 220, vol: 0.5, attack: 4 });
+    this.tone({ type: "triangle", from: 330, to: 60, ms: 110, vol: 0.12, attack: 2 });
+    const base = aboveRecord ? 784 : 659;
+    this.tone({ from: base, ms: 140, vol: 0.14, at: 70 });
+    this.tone({ from: base * 4 / 3, ms: 280, vol: 0.12, at: 160 });
+    this.vibrate(aboveRecord ? [30, 30, 90] : [30, 30, 60]);
+  }
+
+  /** The moment the number to beat falls: a low drone under a rising four-note arpeggio. */
+  record() {
+    this.tone({ from: 110, ms: 1500, vol: 0.18, attack: 40 });
+    this.tone({ type: "triangle", from: 220, ms: 1500, vol: 0.05, attack: 40 });
+    const notes: [number, number][] = [[440, 0], [554.4, 130], [659.3, 260], [880, 400]];
+    notes.forEach(([f, at], i) => {
+      const ms = i === notes.length - 1 ? 950 : 260;
+      this.tone({ from: f, ms, vol: 0.2, at });
+      this.tone({ type: "triangle", from: f * 2, ms, vol: 0.04, at });
+    });
+    this.vibrate([80, 40, 80, 40, 300]);
   }
 
   /** Speak a short phrase (movement name). Cancels anything still speaking. */

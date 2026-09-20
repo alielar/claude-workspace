@@ -8,7 +8,11 @@
  *     mid-set; a 700 ms guard stops accidental double taps; small undo bottom-left
  *   - the number to beat (last week's best) is always visible
  *   - pace: "on pace for N" from your average round time; colour says ahead / tight / behind
- *   - the moment you pass the number to beat: full-screen flash, sound, vibration
+ *   - every round: a burst from the number (glow, rings, "+1"), a bell-landing sound, a short buzz ·
+ *     violet, then green once you are past the record (and the lift in the sound sits higher)
+ *   - the moment you pass the number to beat: the record moment · dark overlay, violet burst and
+ *     rings, the number slams in green, a four-note rise (cues.record) · 2.6 s, taps still count
+ *   - the recipe line at the bottom: a move with a how-to reel (videoUrl) is a tap away, mid-set
  *   - time up: alarm → summary → saved (offline-safe)
  * The live session is stored on the phone every tap, so nothing is lost if the phone locks.
  */
@@ -49,7 +53,13 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   const [status, setStatus] = useState<Status>("idle");
   const [session, setSession] = useState<TrainSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const [flash, setFlash] = useState(false);
+  // Round celebration (2026-09-20, Ali: "make it feel like I really did something"):
+  // every tap fires a burst from the number (glow + rings + a floating "+1", violet ·
+  // green once you're past the record); the tap that beats the number to beat gets
+  // the full-screen record moment instead of the old flat flash. `burst.id` re-mounts
+  // the elements so the animation restarts on every round.
+  const [burst, setBurst] = useState<{ id: number; above: boolean } | null>(null);
+  const [record, setRecord] = useState(false);
   const [editing, setEditing] = useState<TrainExercise | null>(null);
   const lastTap = useRef(0);
   const recordShown = useRef(false);
@@ -146,13 +156,16 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
     const s = { ...session, rounds: nextRounds, log: { roundsAt } };
     writeActiveSession(s);
     setSession(s);
-    try { navigator.vibrate?.(40); } catch { /* ignore */ }
-    if (toBeat !== null && nextRounds > toBeat && !recordShown.current) {
+    const above = toBeat !== null && nextRounds > toBeat;
+    if (above && !recordShown.current) {
       recordShown.current = true;
-      setFlash(true);
-      cues.done();
-      setTimeout(() => setFlash(false), 1800);
+      setRecord(true);
+      cues.record();
+      setTimeout(() => setRecord(false), 2600);
+    } else {
+      cues.round(above);
     }
+    setBurst({ id: t, above });
   };
 
   const undoRound = () => {
@@ -268,13 +281,20 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
 
   // ── Running ───────────────────────────────────────────────────────────────
   const urgent = remainingMs < 60_000;
+  const aboveBar = toBeat !== null && rounds > toBeat;
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 12px)" }}>
-      {/* Record flash */}
-      {flash && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 5, background: "var(--violet)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", color: "#06060B", animation: "cc-flash 1.8s var(--easeOut) forwards", pointerEvents: "none" }}>
-          <div style={{ fontSize: 15, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase" }}>New record</div>
-          <div style={{ fontSize: 96, fontWeight: 700, lineHeight: 1 }}>{rounds}</div>
+      {/* The record moment · a burst and three rings out of the centre, the number slams in
+          green, "new record" tracks in. Taps still land underneath (pointer-events none). */}
+      {record && (
+        <div className="amrap-record" aria-live="polite">
+          <div className="amrap-record-burst" />
+          <div className="amrap-record-ring" />
+          <div className="amrap-record-ring" style={{ animationDelay: "0.18s" }} />
+          <div className="amrap-record-ring" style={{ animationDelay: "0.36s" }} />
+          <div className="amrap-record-label">New record</div>
+          <div className="tabular-nums amrap-record-num">{rounds}</div>
+          <div className="amrap-record-sub">{toBeatObj ? `past ${toBeatObj.label.toLowerCase()}'s ${toBeat}` : "a new best"} · keep going</div>
         </div>
       )}
 
@@ -297,16 +317,26 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
         onClick={addRound}
         aria-label="Add one round"
         style={{
-          flex: 1, margin: "12px 0", borderRadius: 28, border: "2px solid var(--line-hi)",
-          background: "var(--fill-1)", color: "inherit", cursor: "pointer",
+          flex: 1, margin: "12px 0", borderRadius: 28, border: `2px solid ${aboveBar ? "var(--pos)" : "var(--line-hi)"}`,
+          background: "var(--fill-1)", color: "inherit", cursor: "pointer", position: "relative", overflow: "hidden",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
           WebkitTapHighlightColor: "transparent", touchAction: "manipulation",
+          transition: "border-color 0.4s var(--easeOut)",
+          ["--c" as string]: aboveBar ? "var(--pos)" : "var(--violet)",
         }}
         className="amrap-tap"
       >
-        <div style={{ fontSize: 14, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)" }}>rounds</div>
-        <div key={rounds} className="tabular-nums amrap-num" style={{ fontSize: "clamp(120px, 42vw, 220px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.05em", color: toBeat !== null && rounds > toBeat ? "var(--pos)" : "var(--ink)" }}>{rounds}</div>
-        <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 6 }}>tap anywhere here after each round</div>
+        {burst && (
+          <span key={burst.id} aria-hidden className="amrap-burst">
+            <span className="amrap-burst-glow" />
+            <span className="amrap-burst-ring" />
+            <span className="amrap-burst-ring" style={{ animationDelay: "0.1s" }} />
+            <span className="amrap-plus">+1</span>
+          </span>
+        )}
+        <div style={{ fontSize: 14, fontFamily: "var(--f-mono)", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)", position: "relative" }}>rounds{aboveBar ? " · above the bar" : ""}</div>
+        <div key={rounds} className="tabular-nums amrap-num" style={{ position: "relative", fontSize: "clamp(120px, 42vw, 220px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.05em", color: aboveBar ? "var(--pos)" : "var(--ink)" }}>{rounds}</div>
+        <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 6, position: "relative" }}>tap anywhere here after each round</div>
         {pace && (
           <div style={{ fontSize: 15, color: paceColor, marginTop: 2 }}>
             {fmtClock(pace.avg / 1000)} per round · on pace for {pace.projected}
@@ -315,10 +345,15 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
         )}
       </button>
 
-      {/* Round recipe, compact */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", marginBottom: 12 }}>
-        {w.exercises.map((e) => (
-          <span key={e.id} style={{ fontSize: 14, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.reps} {e.name.toLowerCase()}</span>
+      {/* Round recipe · a move with a how-to reel is a tap away (opens Instagram / YouTube), the rest is plain text */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0 2px", justifyContent: "center", marginBottom: 8 }}>
+        {w.exercises.map((e) => e.videoUrl ? (
+          <a key={e.id} href={e.videoUrl} target="_blank" rel="noopener noreferrer" aria-label={`How to do ${e.name}`}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 44, padding: "0 8px", borderRadius: 10, fontSize: 14, color: "var(--ink-2)", fontFamily: "var(--f-mono)", textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
+            {e.reps} {e.name.toLowerCase()}<span aria-hidden style={{ color: "var(--violet)", fontSize: 11 }}>▶</span>
+          </a>
+        ) : (
+          <span key={e.id} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 8px", fontSize: 14, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.reps} {e.name.toLowerCase()}</span>
         ))}
       </div>
 
@@ -330,10 +365,70 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
       </div>
 
       <style>{`
-        .amrap-tap:active { background: var(--fill-2) !important; border-color: var(--violet) !important; }
-        @keyframes amrap-pop { 0% { transform: scale(1.12); } 100% { transform: scale(1); } }
-        .amrap-num { animation: amrap-pop 0.25s var(--easeOut); }
-        @keyframes cc-flash { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+        .amrap-tap:active { background: var(--fill-2) !important; }
+
+        /* the number lands: scale + glow settle */
+        @keyframes amrap-pop {
+          0% { transform: scale(1.22); filter: drop-shadow(0 0 28px var(--c)); }
+          100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+        }
+        .amrap-num { animation: amrap-pop 0.55s var(--easeOut); }
+
+        /* every round: a glow bloom, two rings and a "+1" lifting off */
+        .amrap-burst { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+        .amrap-burst-glow {
+          position: absolute; width: 70vmin; height: 70vmin; border-radius: 50%;
+          background: radial-gradient(circle, color-mix(in srgb, var(--c) 42%, transparent) 0%, transparent 62%);
+          animation: amrap-glow 0.9s var(--easeOut) forwards;
+        }
+        @keyframes amrap-glow { 0% { transform: scale(0.3); opacity: 1; } 100% { transform: scale(1.7); opacity: 0; } }
+        .amrap-burst-ring {
+          position: absolute; width: 40vmin; height: 40vmin; border-radius: 50%;
+          border: 2px solid var(--c); animation: amrap-ring 0.85s var(--easeOut) forwards;
+        }
+        @keyframes amrap-ring { 0% { transform: scale(0.45); opacity: 0.9; } 100% { transform: scale(2.3); opacity: 0; } }
+        .amrap-plus {
+          position: absolute; right: 10%; top: 42%; font-family: var(--f-mono); font-size: 30px; font-weight: 600; color: var(--c);
+          animation: amrap-plus 1s var(--easeOut) forwards;
+        }
+        @keyframes amrap-plus { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 15% { opacity: 1; transform: translateY(-8px) scale(1); } 100% { transform: translateY(-96px) scale(1); opacity: 0; } }
+
+        /* the record moment */
+        .amrap-record {
+          position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6; text-align: center;
+          background: color-mix(in srgb, var(--bg-deep) 96%, transparent);
+          animation: amrap-record-fade 2.6s var(--easeOut) forwards;
+        }
+        @keyframes amrap-record-fade { 0% { opacity: 0; } 6% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+        .amrap-record-burst {
+          position: absolute; width: 90vmin; height: 90vmin; border-radius: 50%;
+          background: radial-gradient(circle, color-mix(in srgb, var(--violet) 55%, transparent) 0%, transparent 68%);
+          animation: amrap-record-burst 1.5s var(--easeOut) forwards;
+        }
+        @keyframes amrap-record-burst { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(2.6); opacity: 0; } }
+        .amrap-record-ring {
+          position: absolute; width: 50vmin; height: 50vmin; border-radius: 50%; border: 2px solid var(--violet);
+          animation: amrap-record-ring 1.7s var(--easeOut) forwards;
+        }
+        @keyframes amrap-record-ring { 0% { transform: scale(0.15); opacity: 1; } 100% { transform: scale(3.2); opacity: 0; } }
+        .amrap-record-label {
+          position: relative; font-family: var(--f-mono); font-size: 15px; text-transform: uppercase; color: var(--violet);
+          animation: amrap-track 1.1s var(--easeOut) forwards;
+        }
+        @keyframes amrap-track { 0% { letter-spacing: 0.75em; opacity: 0; } 100% { letter-spacing: 0.24em; opacity: 1; } }
+        .amrap-record-num {
+          position: relative; font-size: clamp(150px, 50vw, 280px); font-weight: 200; line-height: 1; letter-spacing: -0.05em; color: var(--pos);
+          animation: amrap-slam 0.75s cubic-bezier(.34,1.56,.64,1) 0.08s both;
+        }
+        @keyframes amrap-slam { 0% { transform: scale(0.35); opacity: 0; filter: drop-shadow(0 0 0 transparent); } 60% { filter: drop-shadow(0 0 40px var(--pos)); } 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--pos) 50%, transparent)); } }
+        .amrap-record-sub { position: relative; font-size: 15px; color: var(--ink-2); animation: amrap-rise 0.6s var(--easeOut) 0.55s both; }
+        @keyframes amrap-rise { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+        @media (prefers-reduced-motion: reduce) {
+          .amrap-num, .amrap-burst-glow, .amrap-burst-ring, .amrap-plus, .amrap-record-burst, .amrap-record-ring,
+          .amrap-record-label, .amrap-record-num, .amrap-record-sub { animation-duration: 0.01s !important; animation-delay: 0s !important; }
+        }
       `}</style>
     </div>
   );
