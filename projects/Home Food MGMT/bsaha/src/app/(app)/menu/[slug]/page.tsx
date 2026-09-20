@@ -31,7 +31,6 @@ export default async function DishPage({
   const addedBy = dish.createdBy ? (await db.select({ name: people.name }).from(people).where(eq(people.id, dish.createdBy)))[0]?.name : null;
 
   const hasRecipe = dish.recipeAr.steps.length > 0;
-  const hasIngredients = dish.ingredients.length > 0;
 
   const recipe = (
     <section className="mt-8" dir="rtl" style={AR}>
@@ -57,14 +56,20 @@ export default async function DishPage({
     </section>
   );
 
+  const showMacros = !me.isChild && !me.simpleUi && !isCook;
   const ingredients = (
     <Ingredients
       items={dish.ingredients}
+      macros={showMacros ? dish.macros : null}
       base={dish.servings}
       lang={L}
       initial={eaters}
       big={isCook}
-      labels={{ title: t(L, "ingredients"), howMany: t(L, "howManyPeople"), forOne: t(L, "forOne"), forN: t(L, "forN") }}
+      labels={{
+        ingredients: t(L, "ingredients"), howMany: t(L, "howManyPeople"), forOne: t(L, "forOne"), forN: t(L, "forN"),
+        nutrition: t(L, "nutrition"), estimates: t(L, "estimates"), perPerson: t(L, "perPerson"), wholeDish: t(L, "wholeDish"),
+        kcal: t(L, "kcal"), protein: t(L, "protein"), carbs: t(L, "carbs"), fat: t(L, "fat"), fiber: t(L, "fiber"),
+      }}
     />
   );
 
@@ -110,34 +115,8 @@ export default async function DishPage({
       </div>
 
       {dish.status === "ready" && (
-        <>
-          {!me.isChild && !me.simpleUi && !isCook && dish.macros.kcal > 0 && (
-            <section className="mt-6 tile p-4">
-              <div className="flex items-baseline justify-between">
-                <h2 className="font-extrabold">{t(L, "nutrition")}</h2>
-                <span className="text-xs text-muted">{t(L, "estimates")}</span>
-              </div>
-              <div className="mt-3 grid grid-cols-5 gap-2 text-center">
-                {(
-                  [
-                    ["kcal", dish.macros.kcal],
-                    ["protein", dish.macros.protein_g],
-                    ["carbs", dish.macros.carbs_g],
-                    ["fat", dish.macros.fat_g],
-                    ["fiber", dish.macros.fiber_g],
-                  ] as const
-                ).map(([k, v]) => (
-                  <div key={k}>
-                    <div className="text-lg font-extrabold">{Math.round(v)}{k !== "kcal" && <span className="text-xs font-semibold text-muted">g</span>}</div>
-                    <div className="text-xs text-muted">{t(L, k)}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {isCook ? (<>{hasRecipe && recipe}{hasIngredients && ingredients}</>) : (<>{hasIngredients && ingredients}{hasRecipe && recipe}</>)}
-        </>
+        // The people row, nutrition and ingredients move together. The cook reads the recipe first.
+        isCook ? (<>{hasRecipe && recipe}{ingredients}</>) : (<>{ingredients}{hasRecipe && recipe}</>)
       )}
 
       {dish.videoUrl && (
