@@ -21,6 +21,13 @@ import morDinner from "../../data/dishes/moroccan-dinner.json";
 import mpBreakfast from "../../data/dishes/myplate-breakfast.json";
 import mpLunch from "../../data/dishes/myplate-lunch.json";
 import mpDinner from "../../data/dishes/myplate-dinner.json";
+import lib1 from "../../data/dishes/myplate-library-1.json";
+import lib2 from "../../data/dishes/myplate-library-2.json";
+import lib3 from "../../data/dishes/myplate-library-3.json";
+import lib4 from "../../data/dishes/myplate-library-4.json";
+import lib5 from "../../data/dishes/myplate-library-5.json";
+import lib6 from "../../data/dishes/myplate-library-6.json";
+import lib7 from "../../data/dishes/myplate-library-7.json";
 import photos from "../../data/photos.json";
 import lean from "../../data/lean-moroccan.json";
 import videos from "../../data/videos/all.json";
@@ -28,6 +35,8 @@ import videos from "../../data/videos/all.json";
 type Raw = {
   /** Slug of the original source recipe. Photos stay linked to it when a name is edited. */
   slug?: string;
+  /** false for a bulk import that lands in the library only, for someone to put on the menu. */
+  on_menu?: boolean;
   meal: "breakfast" | "lunch" | "dinner";
   name_en: string; name_fr: string; name_ar: string; name_latin: string;
   desc_en?: string; desc_fr?: string; cuisine?: string;
@@ -40,6 +49,8 @@ const ALL = [
   ...(nhsBreakfast as Raw[]), ...(nhsLunch as Raw[]), ...(nhsDinner as Raw[]),
   ...(morBreakfast as Raw[]), ...(morLunch as Raw[]), ...(morDinner as Raw[]),
   ...(mpBreakfast as Raw[]), ...(mpLunch as Raw[]), ...(mpDinner as Raw[]),
+  // Library only: high-protein MyPlate recipes waiting to be put on the menu.
+  ...(lib1 as Raw[]), ...(lib2 as Raw[]), ...(lib3 as Raw[]), ...(lib4 as Raw[]), ...(lib5 as Raw[]), ...(lib6 as Raw[]), ...(lib7 as Raw[]),
 ];
 const PHOTOS = photos as Record<string, Photo>;
 const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
@@ -73,6 +84,7 @@ export async function seedDishes() {
       isLean: isLean(r, slug),
       ...(VIDEOS[r.name_en]?.url ? { videoUrl: VIDEOS[r.name_en].url } : {}),
       status: "ready",
+      onMenu: r.on_menu ?? true,
       isCustom: false,
       createdAt: now,
       ...(photo

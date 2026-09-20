@@ -1,0 +1,451 @@
+[
+ {
+  "slug": "thai-pineapple-and-chicken", "meal": "dinner", "on_menu": false,
+  "name_en": "Thai pineapple chicken with rice",
+  "name_fr": "Poulet thaï à l'ananas et riz",
+  "name_ar": "دجاج تايلاندي بالأناناس والروز",
+  "name_latin": "Djaj taylandi bel ananas w roz",
+  "desc_en": "Chicken stir-fried with pepper, onion and broccoli, then fresh pineapple, lime, fish sauce and chilli sauce stirred through, over brown rice.",
+  "desc_fr": "Poulet sauté avec poivron, oignon et brocoli, puis ananas frais, citron vert, sauce de poisson et sauce chili, sur riz complet.",
+  "cuisine": "Thai", "servings": 4, "prep_min": 20, "cook_min": 20,
+  "macros": { "kcal": 533, "protein_g": 31, "carbs_g": 75, "fat_g": 12, "fiber_g": 7 },
+  "ingredients": [
+   { "en": "Chicken breast, cubed", "fr": "Blanc de poulet en cubes", "ar": "صدر ديال الدجاج مقطع حجرات", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Cooked brown rice", "fr": "Riz complet cuit", "ar": "روز كامل مطيب", "qty": 600, "unit": "g", "group": "dry" },
+   { "en": "Fresh pineapple, in chunks", "fr": "Ananas frais en morceaux", "ar": "أناناس طري مقطع حجرات", "qty": 300, "unit": "g", "group": "fresh" },
+   { "en": "Broccoli florets", "fr": "Bouquets de brocoli", "ar": "بروكلي مقطع نوارات", "qty": 200, "unit": "g", "group": "fresh" },
+   { "en": "Red pepper, in chunks", "fr": "Poivron rouge en morceaux", "ar": "فلفلة حمرا مقطعة حجرات", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Onion, in chunks", "fr": "Oignon en morceaux", "ar": "بصلة مقطعة حجرات", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Fish sauce", "fr": "Sauce de poisson", "ar": "صوص الحوت", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Sweet chilli sauce", "fr": "Sauce chili douce", "ar": "صوص الفلفلة الحلوة", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Fresh coriander, chopped", "fr": "Coriandre fraîche hachée", "ar": "قزبر طري مقطع", "qty": 1, "unit": "bunch", "group": "fresh" },
+   { "en": "Lime or lemon", "fr": "Citron vert ou jaune", "ar": "حامض", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "طيبي الروز الكامل كيما مكتوب فالعلبة.",
+   "سخني ملعقة كبيرة ديال الزيت فمقلاة كبيرة على نار قوية.",
+   "زيدي حجرات الدجاج وقليها 4 حتى 5 دقايق حتى تطيب. حيديها من المقلاة.",
+   "سخني باقي الزيت، زيدي التوما وقليها دقيقة وحدة.",
+   "زيدي الفلفلة والبصلة والبروكلي وطيبيهم 5 دقايق.",
+   "زيدي الأناناس وكملي 3 حتى 4 دقايق.",
+   "رجعي الدجاج للمقلاة، وزيدي عصير نص حامضة وصوص الحوت وصوص الفلفلة الحلوة والقزبر.",
+   "قلبي وطيبي دقيقة وحدة أخرى. قدميها فوق الروز."
+  ], "tips": [
+   "الأناناس الطري أحسن من المعلب هنا، كيبقى قاسح شوية.",
+   "ما تزيديش عصير الحامض بكري، حطيه فالآخر باش يبقى الذوق ديالو قوي."
+  ]},
+  "tags": ["chicken", "fish", "peppers", "cooked_onion"]
+ },
+ {
+  "slug": "chicken-broccoli-alfredo", "meal": "dinner", "on_menu": false,
+  "name_en": "Chicken and broccoli fettuccine",
+  "name_fr": "Fettuccine au poulet et brocoli",
+  "name_ar": "فيتوتشيني بالدجاج والبروكلي",
+  "name_latin": "Fitotchini bel djaj w lbrokoli",
+  "desc_en": "Fettuccine cooked with broccoli thrown in at the end, tossed with browned chicken in a light milk and parmesan sauce.",
+  "desc_fr": "Fettuccine cuites avec le brocoli ajouté à la fin, mêlées au poulet doré dans une sauce légère au lait et parmesan.",
+  "cuisine": "Italian", "servings": 5, "prep_min": 10, "cook_min": 20,
+  "macros": { "kcal": 413, "protein_g": 31, "carbs_g": 47, "fat_g": 10, "fiber_g": 3 },
+  "ingredients": [
+   { "en": "Chicken breast, boneless", "fr": "Blanc de poulet sans os", "ar": "صدر ديال الدجاج بلا عظام", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Fettuccine", "fr": "Fettuccine", "ar": "فيتوتشيني", "qty": 225, "unit": "g", "group": "dry" },
+   { "en": "Broccoli, chopped", "fr": "Brocoli coupé", "ar": "بروكلي مقطع", "qty": 150, "unit": "g", "group": "fresh" },
+   { "en": "Skimmed milk", "fr": "Lait écrémé", "ar": "حليب خفيف", "qty": 420, "unit": "ml", "group": "fresh" },
+   { "en": "Plain flour", "fr": "Farine", "ar": "دقيق", "qty": 30, "unit": "g", "group": "dry" },
+   { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان مبشور", "qty": 50, "unit": "g", "group": "fresh" },
+   { "en": "Butter", "fr": "Beurre", "ar": "زبدة", "qty": 2, "unit": "tbsp", "group": "fresh" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "طيبي الفيتوتشيني كيما مكتوب فالعلبة، وزيدي البروكلي فآخر 4 دقايق ديال الطياب. صفيهم.",
+   "دوبي الزبدة فمقلاة، وزيدي الدجاج المقطع. طيبيه مع التقليب حتى يتحمر ويطيب.",
+   "فطنجرة، خلطي الدقيق مع شوية ديال الحليب البارد حتى يذوب بلا كتل.",
+   "زيدي باقي الحليب وسخنيه على نار متوسطة مع التقليب حتى يغلي ويغليظ.",
+   "زيدي البارميزان والابزار وقلبي حتى يذوب الجبن.",
+   "زيدي الفيتوتشيني والبروكلي والدجاج للصالصة وقلبي حتى يسخن كلشي.",
+   "قدميها دغيا مع شوية ديال البارميزان فوقها."
+  ], "tips": [
+   "هاد الصالصة مدارة بالحليب ماشي بالكريمة، ولهذا خاصها تقلب باستمرار باش ما تلصقش.",
+   "إلا غلظات بزاف، زيدي شوية ديال ما ديال المعكرونة."
+  ]},
+  "tags": ["chicken", "dairy", "gluten"]
+ },
+ {
+  "slug": "grilled-pineapple-ginger-glazed-chicken-zucchini-and-peppers", "meal": "dinner", "on_menu": false,
+  "name_en": "Pineapple ginger glazed chicken with couscous",
+  "name_fr": "Poulet glacé ananas-gingembre et couscous",
+  "name_ar": "دجاج بصالصة الأناناس والسكينجبير مع الكسكس",
+  "name_latin": "Djaj b salsat lananas w skinjbir m3a lkoskos",
+  "desc_en": "Pineapple juice boiled down with vinegar, ginger and mustard into a sticky glaze, brushed on chicken grilled with courgette, onion and pepper.",
+  "desc_fr": "Jus d'ananas réduit avec vinaigre, gingembre et moutarde en glaçage, badigeonné sur le poulet grillé avec courgette, oignon et poivron.",
+  "cuisine": "International", "servings": 4, "prep_min": 20, "cook_min": 30,
+  "macros": { "kcal": 441, "protein_g": 31, "carbs_g": 64, "fat_g": 7, "fiber_g": 5 },
+  "ingredients": [
+   { "en": "Chicken breast, in 4 portions", "fr": "Blanc de poulet en 4 portions", "ar": "صدر ديال الدجاج مقطع 4 حصص", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Wholewheat couscous", "fr": "Couscous complet", "ar": "كسكس كامل", "qty": 180, "unit": "g", "group": "dry" },
+   { "en": "Pineapple juice", "fr": "Jus d'ananas", "ar": "عصير الأناناس", "qty": 360, "unit": "ml", "group": "dry" },
+   { "en": "Courgettes, in chunks", "fr": "Courgettes en morceaux", "ar": "كورجيط مقطعة حجرات", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Sweet onion, in wedges", "fr": "Oignon doux en quartiers", "ar": "بصلة حلوة مقطعة فلقات", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Red pepper, in chunks", "fr": "Poivron rouge en morceaux", "ar": "فلفلة حمرا مقطعة حجرات", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Cider vinegar", "fr": "Vinaigre de cidre", "ar": "خل التفاح", "qty": 60, "unit": "ml", "group": "dry" },
+   { "en": "Brown sugar", "fr": "Sucre roux", "ar": "سكر كحل", "qty": 3, "unit": "tbsp", "group": "dry" },
+   { "en": "Reduced-salt soy sauce", "fr": "Sauce soja à teneur réduite en sel", "ar": "صوص الصوجا قليل الملحة", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Fresh ginger, minced", "fr": "Gingembre frais haché", "ar": "سكينجبير طري مقطع صغير", "qty": 1, "unit": "tbsp", "group": "fresh" },
+   { "en": "Mustard", "fr": "Moutarde", "ar": "الموطارد", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 1, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "فطنجرة متوسطة، خلطي عصير الأناناس والخل والسكر الكحل وصوص الصوجا والسكينجبير والموطارد.",
+   "حطيها على نار قوية شوية وخليها تغلي 15 دقيقة حتى تنقص وتغليظ وتولي بحال العسل.",
+   "طيبي الكسكس كيما مكتوب فالعلبة.",
+   "قلبي الدجاج مع زيت الزيتون والملحة والابزار.",
+   "شوي الدجاج دقيقتين من كل جهة حتى تبان عليه خطوط الشواية.",
+   "كملي الشوي وانتي كتدهنيه بالصالصة وتقلبيه كل شوية حتى يطيب مزيان.",
+   "شوي الكورجيط والبصلة والفلفلة حداه حتى يوليو طريين ومحمرين.",
+   "قدمي الدجاج والخضرة فوق الكسكس، وصبي عليهم باقي الصالصة."
+  ], "tips": [
+   "الصالصة كتحرق بسرعة بسبب السكر. دهني بيها غير فآخر النص ديال الشوي.",
+   "إلا ما كانتش عندك شواية، دوزي مقلاة ثقيلة سخونة."
+  ]},
+  "tags": ["chicken", "peppers", "gluten", "cooked_onion"]
+ },
+ {
+  "slug": "rice-chicken-arroz-con-pollo", "meal": "dinner", "on_menu": false,
+  "name_en": "Arroz con pollo with chicken thighs",
+  "name_fr": "Arroz con pollo aux cuisses de poulet",
+  "name_ar": "أروز كون بويو بأفخاد الدجاج",
+  "name_latin": "Arroz kon poyo b afkhad djaj",
+  "desc_en": "Chicken thighs browned, then onion, pepper, cumin and oregano, rice and tomatoes cooked in the same pan until the liquid is gone.",
+  "desc_fr": "Cuisses de poulet dorées, puis oignon, poivron, cumin et origan, riz et tomates cuits dans la même poêle jusqu'à absorption.",
+  "cuisine": "Spanish", "servings": 4, "prep_min": 15, "cook_min": 35,
+  "macros": { "kcal": 415, "protein_g": 30, "carbs_g": 51, "fat_g": 9, "fiber_g": 4 },
+  "ingredients": [
+   { "en": "Chicken thighs, bone-in, skin removed", "fr": "Cuisses de poulet avec os, sans peau", "ar": "أفخاد ديال الدجاج بالعظم وبلا جلدة", "qty": 680, "unit": "g", "group": "fresh" },
+   { "en": "Long-grain white rice", "fr": "Riz long grain", "ar": "روز طويل الحبة", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Canned diced tomatoes", "fr": "Tomates en dés en conserve", "ar": "مطيشة معلبة مقطعة", "qty": 400, "unit": "g", "group": "dry" },
+   { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Bell pepper, chopped", "fr": "Poivron haché", "ar": "فلفلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 3, "unit": "piece", "group": "fresh" },
+   { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كمون مطحون", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Dried oregano", "fr": "Origan séché", "ar": "زعتر يابس", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Chicken stock", "fr": "Bouillon de volaille", "ar": "مرقة ديال الدجاج", "qty": 480, "unit": "ml", "group": "dry" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "نقي الدهن الزايد من أفخاد الدجاج ونشفيهم بورق المطبخ، وزيدي عليهم الملحة والابزار.",
+   "سخني الزيت فمقلاة عميقة على نار قوية شوية، وحمري الدجاج من الجوج ديال الجهات، تقريبا 5 دقايق لكل جهة. حيديه.",
+   "فنفس المقلاة، زيدي البصلة والفلفلة وطيبيهم حتى يوليو طريين.",
+   "زيدي التوما والكمون والزعتر وقلبي دقيقة وحدة.",
+   "زيدي الروز وقلبيه مزيان حتى يتغطى بالزيت والتوابل.",
+   "زيدي المطيشة المعلبة بالما ديالها والمرقة.",
+   "رجعي الدجاج فوق الروز، غطي المقلاة ونقصي النار.",
+   "طيبي 25 دقيقة حتى يتشرب الما ويطيب الروز. خليه يرتاح 5 دقايق قبل ما تقدميه."
+  ], "tips": [
+   "ما تقلبيش الروز ملي يبدا يطيب، خليه على راحتو.",
+   "حمري الدجاج مزيان فالبداية، هو اللي كيعطي الذوق للروز كامل."
+  ]},
+  "tags": ["chicken", "peppers", "cooked_onion"]
+ },
+ {
+  "slug": "brown-rice-sizzling-chicken-and-vegetables", "meal": "dinner", "on_menu": false,
+  "name_en": "Sizzling chicken and vegetables with brown rice",
+  "name_fr": "Poulet sauté aux légumes et riz complet",
+  "name_ar": "دجاج مقلي بالخضرة والروز الكامل",
+  "name_latin": "Djaj meqli bel khodra w roz kamel",
+  "desc_en": "Each vegetable cooked in turn in the middle of the pan and pushed aside, then everything glazed in a soy, honey and cornflour sauce.",
+  "desc_fr": "Chaque légume cuit à son tour au centre de la poêle puis poussé sur le côté, le tout glacé d'une sauce soja, miel et maïzena.",
+  "cuisine": "Asian", "servings": 4, "prep_min": 20, "cook_min": 20,
+  "macros": { "kcal": 436, "protein_g": 30, "carbs_g": 56, "fat_g": 10, "fiber_g": 6 },
+  "ingredients": [
+   { "en": "Chicken breast, cubed", "fr": "Blanc de poulet en cubes", "ar": "صدر ديال الدجاج مقطع حجرات", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Cooked brown rice", "fr": "Riz complet cuit", "ar": "روز كامل مطيب", "qty": 450, "unit": "g", "group": "dry" },
+   { "en": "Carrots, thinly sliced", "fr": "Carottes en fines rondelles", "ar": "خيزو مقطع شرايح رقاق", "qty": 3, "unit": "piece", "group": "fresh" },
+   { "en": "Broccoli florets", "fr": "Bouquets de brocoli", "ar": "بروكلي مقطع نوارات", "qty": 150, "unit": "g", "group": "fresh" },
+   { "en": "Red pepper, in pieces", "fr": "Poivron rouge en morceaux", "ar": "فلفلة حمرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Onion, in thin wedges", "fr": "Oignon en fins quartiers", "ar": "بصلة مقطعة فلقات رقاق", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Reduced-salt soy sauce", "fr": "Sauce soja à teneur réduite en sel", "ar": "صوص الصوجا قليل الملحة", "qty": 3, "unit": "tbsp", "group": "dry" },
+   { "en": "Honey", "fr": "Miel", "ar": "عسل", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Cornflour", "fr": "Maïzena", "ar": "نشا ديال الذرة", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "فكاس صغير، خلطي صوص الصوجا مع 60 مل ديال الما والعسل والنشا. خليه على جنب.",
+   "سخني الزيت فمقلاة كبيرة على نار قوية.",
+   "زيدي التوما وقليها دقيقة وحدة حتى تولي ذهبية.",
+   "زيدي الدجاج وطيبيه 5 حتى 6 دقايق، ومن بعد دفعيه للطرف ديال المقلاة.",
+   "زيدي البصلة فالوسط وطيبيها حتى ترخى شوية، ودفعيها للطرف.",
+   "عاودي نفس الشي مع الخيزو، ومن بعد البروكلي، ومن بعد الفلفلة، كل وحدة بوحدها فالوسط.",
+   "قلبي الخليط ديال الصالصة وصبيه فوق كلشي.",
+   "قلبي حتى تغليظ الصالصة وتغطي الخضرة، تقريبا دقيقة. قدميها فوق الروز الكامل."
+  ], "tips": [
+   "الطريقة ديال طياب كل خضرة بوحدها فالوسط كتخلي كل وحدة تطيب على قد ما خاصها.",
+   "الخضرة خاصها تبقى قاسحة شوية، ماشي طرية بزاف."
+  ]},
+  "tags": ["chicken", "peppers", "cooked_onion"]
+ },
+ {
+  "slug": "arroz-con-pollo-chicken-and-rice", "meal": "dinner", "on_menu": false,
+  "name_en": "Chicken and rice with peas",
+  "name_fr": "Poulet et riz aux petits pois",
+  "name_ar": "دجاج بالروز والجلبانة",
+  "name_latin": "Djaj b roz w jelbana",
+  "desc_en": "A whole chicken jointed and browned, then green pepper, onion, garlic and tomato, rice cooked in the broth, peas at the end.",
+  "desc_fr": "Un poulet découpé et doré, puis poivron vert, oignon, ail et tomate, riz cuit dans le bouillon, petits pois à la fin.",
+  "cuisine": "Spanish", "servings": 6, "prep_min": 15, "cook_min": 50,
+  "macros": { "kcal": 379, "protein_g": 30, "carbs_g": 37, "fat_g": 12, "fiber_g": 3 },
+  "ingredients": [
+   { "en": "Whole chicken, cut up, skin removed", "fr": "Poulet entier découpé, sans peau", "ar": "دجاجة كاملة مقطعة بلا جلدة", "qty": 1400, "unit": "g", "group": "fresh" },
+   { "en": "Rice", "fr": "Riz", "ar": "روز", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Tomatoes, chopped", "fr": "Tomates coupées", "ar": "مطيشة مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Green pepper, chopped", "fr": "Poivron vert haché", "ar": "فلفلة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 3, "unit": "piece", "group": "fresh" },
+   { "en": "Peas", "fr": "Petits pois", "ar": "جلبانة", "qty": 150, "unit": "g", "group": "fresh" },
+   { "en": "Chicken stock", "fr": "Bouillon de volaille", "ar": "مرقة ديال الدجاج", "qty": 540, "unit": "ml", "group": "dry" },
+   { "en": "Bay leaf", "fr": "Feuille de laurier", "ar": "ورقة ديال سيدنا موسى", "qty": 1, "unit": "piece", "group": "dry" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الزيت فمقلاة كبيرة على نار قوية شوية، وحمري قطع الدجاج من الجوج ديال الجهات.",
+   "زيدي الفلفلة الخضرا والبصلة والتوما، وطيبيهم 5 دقايق.",
+   "زيدي المطيشة والمرقة وورقة سيدنا موسى والملحة.",
+   "غطي المقلاة وطيبي 20 دقيقة.",
+   "زيدي الروز وقلبي مزيان، غطي وكملي على نار هادية من 20 حتى 30 دقيقة.",
+   "خليه حتى يتشرب الما كامل ويولي الدجاج طري.",
+   "زيدي الجلبانة وطيبيها حتى تسخن. حيدي ورقة سيدنا موسى قبل ما تقدمي."
+  ], "tips": [
+   "زيدي الروز غير من بعد ما يطيب الدجاج شوية، وإلا غادي يتهرس.",
+   "إلا نشف الما والروز مازال قاسح، زيدي شوية ديال المرقة السخونة."
+  ]},
+  "tags": ["chicken", "peppers", "cooked_onion"]
+ },
+ {
+  "slug": "european-salad", "meal": "lunch", "on_menu": false,
+  "name_en": "Chicken salad with raspberry dressing",
+  "name_fr": "Salade de poulet à la vinaigrette de framboise",
+  "name_ar": "شلاضة الدجاج بصالصة التوت",
+  "name_latin": "Chlada djaj b salsat ttout",
+  "desc_en": "Sauteed chicken on salad leaves with yellow pepper, cherry tomatoes and croutons, dressed with a blended raspberry vinaigrette.",
+  "desc_fr": "Poulet poêlé sur jeunes pousses avec poivron jaune, tomates cerises et croûtons, vinaigrette mixée à la framboise.",
+  "cuisine": "International", "servings": 4, "prep_min": 20, "cook_min": 10,
+  "macros": { "kcal": 295, "protein_g": 30, "carbs_g": 20, "fat_g": 10, "fiber_g": 5 },
+  "ingredients": [
+   { "en": "Chicken breast, sliced", "fr": "Blanc de poulet émincé", "ar": "صدر ديال الدجاج مقطع شرايح", "qty": 340, "unit": "g", "group": "fresh" },
+   { "en": "Mixed salad leaves", "fr": "Mélange de jeunes pousses", "ar": "ورق الشلاضة المخلط", "qty": 280, "unit": "g", "group": "fresh" },
+   { "en": "Yellow pepper, in strips", "fr": "Poivron jaune en lanières", "ar": "فلفلة صفرا مقطعة خيوط", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Cherry tomatoes", "fr": "Tomates cerises", "ar": "مطيشة صغيرة", "qty": 16, "unit": "piece", "group": "fresh" },
+   { "en": "Spring onions, sliced", "fr": "Oignons nouveaux émincés", "ar": "بصلة خضرا مقطعة", "qty": 3, "unit": "piece", "group": "fresh" },
+   { "en": "Wholegrain croutons", "fr": "Croûtons complets", "ar": "حجرات ديال الخبز المحمر", "qty": 60, "unit": "g", "group": "dry" },
+   { "en": "Raspberries", "fr": "Framboises", "ar": "توت أحمر", "qty": 100, "unit": "g", "group": "fresh" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 3, "unit": "tbsp", "group": "dry" },
+   { "en": "Cider vinegar", "fr": "Vinaigre de cidre", "ar": "خل التفاح", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "دوزي التوت الأحمر مع ملعقتين ديال زيت الزيتون والخل والملحة فالخلاط حتى تولي صالصة ناعمة. خليها على جنب.",
+   "زيدي الملحة والابزار على شرايح الدجاج.",
+   "سخني باقي زيت الزيتون فمقلاة كبيرة وقلي فيها الدجاج حتى يطيب مزيان. حيديه وخليه يبرد شوية.",
+   "قطعي البصلة الخضرا والفلفلة الصفرا.",
+   "خلطي ورق الشلاضة مع الفلفلة والمطيشة الصغيرة والبصلة الخضرا فطاس كبير.",
+   "وزعي الشلاضة على الطبيسل، حطي فوقها الدجاج وحجرات الخبز المحمر.",
+   "صبي الصالصة فالآخر وزيدي شوية ديال الابزار المطحون."
+  ], "tips": [
+   "الصالصة تقدر تتدار من قبل وتبقى فالتلاجة.",
+   "زيدي حجرات الخبز فآخر لحظة باش تبقى قاسحة."
+  ]},
+  "tags": ["chicken", "peppers", "gluten", "raw_onion"]
+ },
+ {
+  "slug": "chicken-stew", "meal": "lunch", "on_menu": false,
+  "name_en": "Chicken stew with potato and carrot",
+  "name_fr": "Ragoût de poulet aux pommes de terre et carottes",
+  "name_ar": "مرقة الدجاج بالبطاطا والخيزو",
+  "name_latin": "Merqa djaj bel batata w lkhizzou",
+  "desc_en": "Chicken breasts cooked slowly with tomato, garlic, onion and parsley, then potato, carrot and celery added. 211 calories, 30 g of protein.",
+  "desc_fr": "Blancs de poulet mijotés avec tomate, ail, oignon et persil, puis pomme de terre, carotte et céleri. 211 calories, 30 g de protéines.",
+  "cuisine": "International", "servings": 8, "prep_min": 15, "cook_min": 40,
+  "macros": { "kcal": 211, "protein_g": 30, "carbs_g": 14, "fat_g": 3, "fiber_g": 2 },
+  "ingredients": [
+   { "en": "Chicken breasts, boneless", "fr": "Blancs de poulet sans os", "ar": "صدور ديال الدجاج بلا عظام", "qty": 900, "unit": "g", "group": "fresh" },
+   { "en": "Tomatoes, chopped", "fr": "Tomates coupées", "ar": "مطيشة مقطعة", "qty": 3, "unit": "piece", "group": "fresh" },
+   { "en": "Potatoes, peeled and chopped", "fr": "Pommes de terre pelées et coupées", "ar": "بطاطا مقشرة ومقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Carrots, chopped", "fr": "Carottes coupées", "ar": "خيزو مقطع", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Celery, finely chopped", "fr": "Céleri haché fin", "ar": "كرافس مقطع صغير", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Fresh parsley, chopped", "fr": "Persil frais haché", "ar": "معدنوس طري مقطع", "qty": 1, "unit": "tbsp", "group": "fresh" },
+   { "en": "Bay leaves", "fr": "Feuilles de laurier", "ar": "ورق ديال سيدنا موسى", "qty": 2, "unit": "piece", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "حيدي الجلدة والدهن الزايد من الدجاج.",
+   "فمقلاة عميقة، حطي الدجاج مع كاس ديال الما والتوما والبصلة والملحة والابزار والمطيشة والمعدنوس.",
+   "غطيها مزيان وطيبي على نار هادية 25 دقيقة.",
+   "زيدي الكرافس والبطاطا والخيزو وورق سيدنا موسى.",
+   "كملي الطياب 15 دقيقة أخرى حتى يطيب الدجاج وتولي الخضرة طرية.",
+   "حيدي ورق سيدنا موسى قبل ما تقدمي."
+  ], "tips": [
+   "هاد المرقة خفيفة بزاف. زيدي معاها الخبز ولا الروز إلا بغيتي تكون أشبع.",
+   "قطعي البطاطا والخيزو حجرات كبار شوية باش ما يتهرسوش."
+  ]},
+  "tags": ["chicken", "cooked_onion"]
+ },
+ {
+  "slug": "grilled-steak-and-peppers-salad-pears", "meal": "lunch", "on_menu": false,
+  "name_en": "Grilled beef and pepper salad with pears",
+  "name_fr": "Salade de bœuf grillé, poivrons et poires",
+  "name_ar": "شلاضة اللحم المشوي بالفلفلة والإجاص",
+  "name_latin": "Chlada lham machwi bel felfla w lijas",
+  "desc_en": "Sirloin and whole peppers grilled together, sliced over pasta, rocket and fresh pear, with a light juice and vinegar dressing.",
+  "desc_fr": "Faux-filet et poivrons grillés ensemble, tranchés sur pâtes, roquette et poire fraîche, vinaigrette légère au jus et vinaigre.",
+  "cuisine": "Mediterranean", "servings": 4, "prep_min": 20, "cook_min": 20,
+  "macros": { "kcal": 443, "protein_g": 29, "carbs_g": 59, "fat_g": 12, "fiber_g": 9 },
+  "ingredients": [
+   { "en": "Beef sirloin, boneless", "fr": "Faux-filet de bœuf", "ar": "لحم البڭري ديال الشوي", "qty": 340, "unit": "g", "group": "fresh" },
+   { "en": "Wholewheat rotini pasta", "fr": "Rotini complètes", "ar": "معكرونة روتيني كاملة", "qty": 115, "unit": "g", "group": "dry" },
+   { "en": "Yellow pepper", "fr": "Poivron jaune", "ar": "فلفلة صفرا", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Red pepper", "fr": "Poivron rouge", "ar": "فلفلة حمرا", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Pears", "fr": "Poires", "ar": "إجاص", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Rocket or salad leaves", "fr": "Roquette ou jeunes pousses", "ar": "الروكا ولا ورق الشلاضة", "qty": 90, "unit": "g", "group": "fresh" },
+   { "en": "Crumbled blue cheese", "fr": "Bleu émietté", "ar": "جبن أزرق مفتت", "qty": 40, "unit": "g", "group": "fresh" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Vinegar", "fr": "Vinaigre", "ar": "الخل", "qty": 3, "unit": "tbsp", "group": "dry" },
+   { "en": "Apple or white grape juice", "fr": "Jus de pomme ou de raisin blanc", "ar": "عصير التفاح ولا العنب الأبيض", "qty": 60, "unit": "ml", "group": "dry" },
+   { "en": "Italian herb mix", "fr": "Herbes italiennes", "ar": "خلطة ديال الأعشاب الإيطالية", "qty": 1, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "فكاس صغير، خبطي زيت الزيتون والخل وعصير التفاح وخلطة الأعشاب.",
+   "طيبي المعكرونة كيما مكتوب فالعلبة، صفيها وغسليها بالما البارد.",
+   "سخني الشواية، وادهني الفلفلة كاملة بشوية ديال زيت الزيتون.",
+   "شوي الفلفلة كاملة وقلبيها حتى تبدا القشرة تتحمر وتنفخ.",
+   "شوي اللحم فنفس الوقت وقلبيه مرة وحدة، حتى يوصل للنضج اللي بغيتي.",
+   "حيديهم من الشواية وخليهم يبردو شوية.",
+   "قطعي الفلفلة خيوط وحيدي الزريعة، وقطعي اللحم شرايح رقاق.",
+   "خلطي المعكرونة والروكا والإجاص المقطع، وحطي فوقهم اللحم والفلفلة، والجبن الأزرق والصالصة."
+  ], "tips": [
+   "شوي الفلفلة كاملة بلا ما تقطعيها، من بعد كتقطعيها ساهل وبنينة أكثر.",
+   "قطعي اللحم ضد الخيوط ديالو باش يبقى طري."
+  ]},
+  "tags": ["red_meat", "dairy", "peppers", "gluten"]
+ },
+ {
+  "slug": "fiesta-lettuce-wraps-and-pepper-boats", "meal": "lunch", "on_menu": false,
+  "name_en": "Spiced fish lettuce wraps with salsa",
+  "name_fr": "Wraps de laitue au poisson épicé et salsa",
+  "name_ar": "ورق الخس معمر بالحوت المتبل والصالصة",
+  "name_latin": "Werq lkhess m3ammar bel hout metbel w salsa",
+  "desc_en": "White fish seasoned and pan-cooked, served in lettuce leaves and pepper halves with brown rice and a fresh tomato, corn and onion salsa.",
+  "desc_fr": "Poisson blanc épicé et poêlé, servi dans des feuilles de laitue et demi-poivrons avec riz complet et salsa fraîche.",
+  "cuisine": "Mexican", "servings": 4, "prep_min": 25, "cook_min": 15,
+  "macros": { "kcal": 505, "protein_g": 29, "carbs_g": 70, "fat_g": 13, "fiber_g": 6 },
+  "ingredients": [
+   { "en": "White fish fillets", "fr": "Filets de poisson blanc", "ar": "فيليهات ديال الحوت الأبيض", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Instant brown rice", "fr": "Riz complet rapide", "ar": "روز كامل سريع الطياب", "qty": 180, "unit": "g", "group": "dry" },
+   { "en": "Lettuce leaves", "fr": "Feuilles de laitue", "ar": "ورقات ديال الخس", "qty": 8, "unit": "piece", "group": "fresh" },
+   { "en": "Small sweet peppers", "fr": "Petits poivrons doux", "ar": "فلفلة صغيرة حلوة", "qty": 6, "unit": "piece", "group": "fresh" },
+   { "en": "Sweetcorn", "fr": "Maïs doux", "ar": "الذرة الحلوة", "qty": 80, "unit": "g", "group": "dry" },
+   { "en": "Tomato, diced", "fr": "Tomate en dés", "ar": "مطيشة مقطعة حجرات", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Small onion, diced", "fr": "Petit oignon en dés", "ar": "بصلة صغيرة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Green chilli, minced", "fr": "Piment vert haché", "ar": "فلفلة حارة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic clove, minced", "fr": "Gousse d'ail hachée", "ar": "فص ديال التوما مقطع صغير", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Smoky spice blend", "fr": "Mélange d'épices fumé", "ar": "خلطة ديال التوابل المدخنة", "qty": 2, "unit": "tsp", "group": "dry" },
+   { "en": "Limes or lemons", "fr": "Citrons verts ou jaunes", "ar": "حامض", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Light sour cream or yogurt", "fr": "Crème légère ou yaourt", "ar": "كريمة خفيفة ولا دانون", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "قطعي الفلفلة الصغيرة على جوج فالطول. رتبي ورق الخس و8 ديال نصاص الفلفلة فطبسيل كبير.",
+   "طيبي الروز الكامل كيما مكتوب فالعلبة.",
+   "باش تديري الصالصة: قطعي باقي الفلفلة والمطيشة والبصلة حجرات صغار، وخلطيهم مع الذرة والتوما والفلفلة الحارة ورشة ديال الملحة.",
+   "رشي الحوت بخلطة التوابل من الجوج ديال الجهات.",
+   "سخني الزيت فمقلاة ما كتلصقش على نار قوية شوية.",
+   "طيبي الحوت 3 حتى 4 دقايق لكل جهة حتى يتفصل بسهولة بالفرشيطة.",
+   "فركي الحوت قطع صغار وزيدي عليه عصير حامضة.",
+   "عمري ورق الخس ونصاص الفلفلة بالروز والحوت والصالصة، وزيدي شوية ديال الكريمة."
+  ], "tips": [
+   "الفلفلة الحارة اختيارية. حيديها ولا نقصيها إلا كان شي حد ما كيحملش الحار.",
+   "ورق الخس خاصو يكون كبير وقاسح باش يقدر يتحمل العمارة."
+  ]},
+  "tags": ["fish", "peppers", "spicy", "dairy", "raw_onion"]
+ },
+ {
+  "slug": "pineapple-avocado-chicken-salad", "meal": "lunch", "on_menu": false,
+  "name_en": "Pineapple and avocado chicken pittas",
+  "name_fr": "Pitas au poulet, ananas et avocat",
+  "name_ar": "خبز البيتا بالدجاج والأناناس والأفوكا",
+  "name_latin": "Khobz lbita bel djaj w lananas w lavoka",
+  "desc_en": "Half the avocado blended with yogurt into a dressing, the rest chopped in with pineapple, pepper, carrot, cabbage and chicken, stuffed into pitta.",
+  "desc_fr": "La moitié de l'avocat mixée au yaourt en sauce, le reste coupé avec ananas, poivron, carotte, chou et poulet, en pain pita.",
+  "cuisine": "American", "servings": 4, "prep_min": 20, "cook_min": 0,
+  "macros": { "kcal": 363, "protein_g": 29, "carbs_g": 45, "fat_g": 9, "fiber_g": 8 },
+  "ingredients": [
+   { "en": "Cooked chicken breast, cubed", "fr": "Blanc de poulet cuit en cubes", "ar": "صدر ديال الدجاج مطيب مقطع حجرات", "qty": 230, "unit": "g", "group": "fresh" },
+   { "en": "Ripe avocado", "fr": "Avocat mûr", "ar": "أفوكا طايحة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Fresh pineapple, in chunks", "fr": "Ananas frais en morceaux", "ar": "أناناس طري مقطع حجرات", "qty": 150, "unit": "g", "group": "fresh" },
+   { "en": "Wholewheat pitta pockets", "fr": "Pains pita complets", "ar": "خبز البيتا الكامل", "qty": 4, "unit": "piece", "group": "dry" },
+   { "en": "Red pepper, chopped", "fr": "Poivron rouge haché", "ar": "فلفلة حمرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Carrots, grated", "fr": "Carottes râpées", "ar": "خيزو مبشور", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Cabbage, shredded", "fr": "Chou émincé", "ar": "كرومب مقطع رقيق", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Spring onion, sliced", "fr": "Oignon nouveau émincé", "ar": "بصلة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Greek yogurt", "fr": "Yaourt grec", "ar": "دانون يوناني", "qty": 2, "unit": "tbsp", "group": "fresh" },
+   { "en": "Rice vinegar", "fr": "Vinaigre de riz", "ar": "خل ديال الروز", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "قشري الأفوكا وحيدي النوى. خدي نصها واهرسيها مع الدانون والخل والملحة حتى تولي صالصة ناعمة.",
+   "قطعي النص الآخر ديال الأفوكا حجرات صغار.",
+   "فطاس، خلطي حجرات الأفوكا والأناناس والفلفلة والخيزو والكرومب والبصلة الخضرا والدجاج.",
+   "زيدي الصالصة وقلبي بلطف.",
+   "حلي خبز البيتا وعمريه بالخليط. قدميه دغيا."
+  ], "tips": [
+   "الأناناس الطري كيعطي ذوق أحسن، ولكن المعلب المصفي كيخدم حتى هو.",
+   "إلا حضرتي الخليط بكري، زيدي عصير الحامض على الأفوكا باش ما تكحلش."
+  ]},
+  "tags": ["chicken", "dairy", "peppers", "gluten", "raw_onion"]
+ },
+ {
+  "slug": "butternut-squash-pasta-bake", "meal": "dinner", "on_menu": false,
+  "name_en": "Butternut squash and ricotta pasta bake",
+  "name_fr": "Gratin de pâtes à la courge et ricotta",
+  "name_ar": "غراتان المعكرونة بالڭرعة الحمرا والريكوتا",
+  "name_latin": "Gratan lma3karouna bel gar3a hamra w rikota",
+  "desc_en": "Roasted squash mashed with shallot, sage and garlic into a sauce, folded through pasta shells with ricotta and baked under mozzarella.",
+  "desc_fr": "Courge rôtie écrasée avec échalote, sauge et ail en sauce, mêlée aux pâtes avec ricotta et gratinée à la mozzarella.",
+  "cuisine": "Italian", "servings": 2, "prep_min": 15, "cook_min": 60,
+  "macros": { "kcal": 515, "protein_g": 29, "carbs_g": 70, "fat_g": 16, "fiber_g": 11 },
+  "ingredients": [
+   { "en": "Butternut squash", "fr": "Courge butternut", "ar": "ڭرعة حمرا", "qty": 500, "unit": "g", "group": "fresh" },
+   { "en": "Wholewheat pasta shells", "fr": "Coquillettes complètes", "ar": "معكرونة كاملة", "qty": 115, "unit": "g", "group": "dry" },
+   { "en": "Low-fat ricotta", "fr": "Ricotta allégée", "ar": "ريكوتا خفيفة", "qty": 180, "unit": "g", "group": "fresh" },
+   { "en": "Low-fat mozzarella, grated", "fr": "Mozzarella allégée râpée", "ar": "موزاريلا خفيفة مبشورة", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Shallot or small onion, diced", "fr": "Échalote ou petit oignon en dés", "ar": "بصيلة مقطعة صغيرة", "qty": 3, "unit": "tbsp", "group": "fresh" },
+   { "en": "Fresh sage, minced", "fr": "Sauge fraîche hachée", "ar": "سالمية طرية مقطعة", "qty": 1, "unit": "tbsp", "group": "fresh" },
+   { "en": "Garlic clove", "fr": "Gousse d'ail", "ar": "فص ديال التوما", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Vegetable stock", "fr": "Bouillon de légumes", "ar": "مرقة ديال الخضرة", "qty": 120, "unit": "ml", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الفرن على 220 درجة. قطعي الڭرعة على جوج وفرغيها من الزريعة.",
+   "حطيها فطاس ديال الفرن الجهة المقطوعة لتحت، وزيدي شوية ديال الما فالطاس.",
+   "شويها 45 دقيقة حتى تولي طرية، وخليها تبرد شوية.",
+   "وهي كتشوي، طيبي المعكرونة فالما المغلي حتى تولي طرية غير شوية، وصفيها.",
+   "نقصي حرارة الفرن ل190 درجة.",
+   "فرغي اللحم ديال الڭرعة واهرسيه مع البصيلة والسالمية والتوما والمرقة والملحة والابزار.",
+   "خلطي الڭرعة المهروسة مع المعكرونة والريكوتا.",
+   "صبي كلشي فطاس ديال الفرن، رشي فوقو الموزاريلا، ودخليه 15 دقيقة حتى يتحمر الوجه."
+  ], "tips": [
+   "شوي الڭرعة هو اللي كيعطيها الحلاوة. ما تسلقيهاش فالما.",
+   "هاد الوصفة لجوج ديال الناس. ضاعفي المقادير إلا كنتو أكثر."
+  ]},
+  "tags": ["vegetarian", "dairy", "gluten", "cooked_onion"]
+ }
+]

@@ -1,0 +1,562 @@
+[
+ {
+  "slug": "skillet-lasagna", "meal": "dinner", "on_menu": false,
+  "name_en": "Skillet lasagne with spinach",
+  "name_fr": "Lasagnes à la poêle aux épinards",
+  "name_ar": "لازانيا فالمقلاة بالسبانخ",
+  "name_latin": "Lazanya f lmeqla bel sbanakh",
+  "desc_en": "Lasagne layered in a frying pan instead of the oven, with ricotta, parmesan, spinach and tomato sauce, cooked on the hob under a lid.",
+  "desc_fr": "Lasagnes montées à la poêle plutôt qu'au four, avec ricotta, parmesan, épinards et sauce tomate, cuites à couvert.",
+  "cuisine": "Italian", "servings": 8, "prep_min": 20, "cook_min": 30,
+  "macros": { "kcal": 336, "protein_g": 21, "carbs_g": 35, "fat_g": 13, "fiber_g": 4 },
+  "ingredients": [
+   { "en": "Lasagne sheets or pasta", "fr": "Feuilles de lasagne ou pâtes", "ar": "ورق اللازانيا ولا معكرونة", "qty": 225, "unit": "g", "group": "dry" },
+   { "en": "Ricotta or fresh cheese", "fr": "Ricotta ou fromage frais", "ar": "ريكوتا ولا جبن طري", "qty": 425, "unit": "g", "group": "fresh" },
+   { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان مبشور", "qty": 50, "unit": "g", "group": "fresh" },
+   { "en": "Tomato pasta sauce", "fr": "Sauce tomate pour pâtes", "ar": "صالصة ديال المعكرونة بالمطيشة", "qty": 700, "unit": "ml", "group": "dry" },
+   { "en": "Spinach, thawed and squeezed dry", "fr": "Épinards décongelés et essorés", "ar": "سبانخ مذوبة ومعصورة", "qty": 280, "unit": "g", "group": "fresh" },
+   { "en": "Italian herb mix", "fr": "Herbes italiennes", "ar": "خلطة ديال الأعشاب الإيطالية", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 1, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "طيبي ورق اللازانيا كيما مكتوب فالعلبة، صفيه وخليه على جنب.",
+   "فطاس صغير، خلطي الريكوتا مع نص البارميزان وخلطة الأعشاب.",
+   "ادهني مقلاة كبيرة بزيت الزيتون. ما تحطيهاش على النار حتى تكملي التركيب.",
+   "فرشي نص الصالصة فقاع المقلاة.",
+   "حطي طبقة من ورق اللازانيا، ومن بعد نص خليط الريكوتا، ومن بعد نص السبانخ.",
+   "عاودي: ورق، ريكوتا، سبانخ، وغطي بباقي الصالصة.",
+   "رشي باقي البارميزان فوق.",
+   "حطي المقلاة على نار هادية، غطيها، وطيبي 25 حتى 30 دقيقة حتى يسخن كلشي ويذوب الجبن."
+  ], "tips": [
+   "عصري السبانخ مزيان مزيان، الما ديالها كيخسر اللازانيا.",
+   "ما تحطيش المقلاة على النار قبل ما تكملي التركيب، وإلا غادي تلصق."
+  ]},
+  "tags": ["vegetarian", "dairy", "gluten"]
+ },
+ {
+  "slug": "easy-beef-supper", "meal": "dinner", "on_menu": false,
+  "name_en": "Beef, bean and macaroni supper",
+  "name_fr": "Souper de bœuf, haricots et macaronis",
+  "name_ar": "عشا اللحم باللوبيا والمعكرونة",
+  "name_latin": "3cha lham b loubia w lma3karouna",
+  "desc_en": "Mince with onion, pepper and tomato, then macaroni, tomato juice and kidney beans simmered together in one pan. 8 g of fibre.",
+  "desc_fr": "Viande hachée avec oignon, poivron et tomate, puis macaronis, jus de tomate et haricots rouges mijotés ensemble. 8 g de fibres.",
+  "cuisine": "American", "servings": 6, "prep_min": 15, "cook_min": 30,
+  "macros": { "kcal": 306, "protein_g": 21, "carbs_g": 37, "fat_g": 8, "fiber_g": 8 },
+  "ingredients": [
+   { "en": "Lean minced beef", "fr": "Bœuf haché maigre", "ar": "لحم البڭري مفروم خفيف", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Macaroni", "fr": "Macaronis", "ar": "معكرونة", "qty": 100, "unit": "g", "group": "dry" },
+   { "en": "Canned kidney beans, drained", "fr": "Haricots rouges en conserve, égouttés", "ar": "لوبيا حمرا معلبة مصفية", "qty": 420, "unit": "g", "group": "dry" },
+   { "en": "Canned diced tomatoes, drained", "fr": "Tomates en dés en conserve, égouttées", "ar": "مطيشة معلبة مقطعة ومصفية", "qty": 800, "unit": "g", "group": "dry" },
+   { "en": "Tomato juice", "fr": "Jus de tomate", "ar": "عصير المطيشة", "qty": 600, "unit": "ml", "group": "dry" },
+   { "en": "Small onion, chopped", "fr": "Petit oignon haché", "ar": "بصلة صغيرة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Bell pepper, chopped", "fr": "Poivron haché", "ar": "فلفلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Mild chilli powder", "fr": "Piment doux en poudre", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Dried oregano", "fr": "Origan séché", "ar": "زعتر يابس", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "فمقلاة كبيرة، حمري اللحم المفروم من 8 حتى 10 دقايق على نار متوسطة. صفي الدهن.",
+   "زيدي البصلة والفلفلة والمطيشة المصفية، وطيبيهم حتى تولي البصلة ذهبية.",
+   "نقصي النار.",
+   "زيدي المعكرونة وعصير المطيشة والتوابل واللوبيا الحمرا.",
+   "قلبي كلشي مزيان.",
+   "غطي المقلاة وطيبي على نار هادية 20 دقيقة حتى تولي المعكرونة طرية."
+  ], "tips": [
+   "عصير المطيشة هو اللي كيطيب فيه المعكرونة. إلا نشف، زيدي شوية ديال الما.",
+   "هاد الطبق كيكفي 6 ديال الناس وثمنو رخيص."
+  ]},
+  "tags": ["red_meat", "legumes", "peppers", "gluten", "cooked_onion"]
+ },
+ {
+  "slug": "pot-roasted-beef", "meal": "dinner", "on_menu": false,
+  "name_en": "Pot-roasted beef with turnips",
+  "name_fr": "Rôti de bœuf braisé aux navets",
+  "name_ar": "لحم مشوي فالطنجرة باللفت",
+  "name_latin": "Lham machwi f ttanjra bel left",
+  "desc_en": "A round roast browned then finished in the oven surrounded by potato, turnip, onion and carrot. 277 calories a serving.",
+  "desc_fr": "Un rôti saisi puis cuit au four entouré de pommes de terre, navets, oignon et carottes. 277 calories par portion.",
+  "cuisine": "American", "servings": 6, "prep_min": 20, "cook_min": 100,
+  "macros": { "kcal": 277, "protein_g": 21, "carbs_g": 41, "fat_g": 3, "fiber_g": 5 },
+  "ingredients": [
+   { "en": "Beef round roast", "fr": "Rôti de bœuf", "ar": "قطعة ديال لحم البڭري ديال الشوي", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Potatoes, peeled and quartered", "fr": "Pommes de terre pelées et coupées en quatre", "ar": "بطاطا مقشرة ومقطعة على ربعة", "qty": 8, "unit": "piece", "group": "fresh" },
+   { "en": "Turnips, peeled and quartered", "fr": "Navets pelés et coupés en quatre", "ar": "لفت مقشر ومقطع على ربعة", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Carrots, chopped", "fr": "Carottes coupées", "ar": "خيزو مقطع", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Onion, in chunks", "fr": "Oignon en morceaux", "ar": "بصلة مقطعة حجرات", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Water", "fr": "Eau", "ar": "الما", "qty": 240, "unit": "ml", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الفرن على 175 درجة. زيدي الملحة والابزار على اللحم.",
+   "سخني الزيت فمقلاة كبيرة على نار متوسطة قوية.",
+   "حمري اللحم من كل الجهات من 10 حتى 12 دقيقة. صفي الدهن.",
+   "حطي اللحم فوسط طنجرة ثقيلة تدخل للفرن ولا صينية عميقة.",
+   "رتبي البطاطا واللفت والبصلة والخيزو حوالين اللحم.",
+   "صبي الما فالقاع.",
+   "غطي مزيان ودخلي كلشي للفرن ساعة ونص حتى يولي اللحم طري وتطيب الخضرة."
+  ], "tips": [
+   "التحمير فالبداية هو اللي كيعطي اللون والذوق. ما تقفزيهش.",
+   "خلي اللحم يرتاح 10 دقايق قبل ما تقطعيه شرايح."
+  ]},
+  "tags": ["red_meat", "cooked_onion"]
+ },
+ {
+  "slug": "baked-fish", "meal": "lunch", "on_menu": false,
+  "name_en": "Baked fish with onions",
+  "name_fr": "Poisson au four aux oignons",
+  "name_ar": "الحوت فالفرن بالبصلة",
+  "name_latin": "Lhout f lforn bel bsla",
+  "desc_en": "Fillets laid on foil under sliced onion, salt, pepper and a little oil, wrapped and baked. Four ingredients, 138 calories.",
+  "desc_fr": "Filets sur une feuille d'aluminium sous des oignons émincés, sel, poivre et un peu d'huile, papillotés et cuits. 138 calories.",
+  "cuisine": "International", "servings": 4, "prep_min": 10, "cook_min": 25,
+  "macros": { "kcal": 138, "protein_g": 21, "carbs_g": 4, "fat_g": 5, "fiber_g": 1 },
+  "ingredients": [
+   { "en": "White fish fillets", "fr": "Filets de poisson blanc", "ar": "فيليهات ديال الحوت الأبيض", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Onion, sliced", "fr": "Oignon émincé", "ar": "بصلة مقطعة شرايح", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tsp", "group": "dry" },
+   { "en": "Lemon pepper seasoning", "fr": "Assaisonnement citron-poivre", "ar": "خلطة الحامض والابزار", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الفرن على 175 درجة. فرشي ورقة كبيرة ديال ورق الألمنيوم.",
+   "ادهني الورق بشوية ديال الزيت.",
+   "حطي فيليهات الحوت فوسط الورق. إلا كانت فيها الجلدة، خليها لتحت.",
+   "فرشي البصلة المقطعة والملحة والابزار والزيت فوق الحوت.",
+   "زيدي خلطة الحامض والابزار إلا بغيتي.",
+   "طوي الورق وسديه مزيان باش يبقى البخار داخل.",
+   "دخليه للفرن من 20 حتى 25 دقيقة حتى يتفصل الحوت بسهولة بالفرشيطة."
+  ], "tips": [
+   "الورق المسدود كيخلي الحوت يطيب فالبخار ديالو ويبقى طري.",
+   "هاد الوصفة كتخدم مع أي حوت أبيض."
+  ]},
+  "tags": ["fish", "cooked_onion"]
+ },
+ {
+  "slug": "chicken-and-dumpling-soup", "meal": "lunch", "on_menu": false,
+  "name_en": "Chicken and dumpling soup with spinach",
+  "name_fr": "Soupe de poulet aux quenelles et épinards",
+  "name_ar": "شربة الدجاج بكويرات الدقيق والسبانخ",
+  "name_latin": "Chorba djaj b kwirat ddqiq w sbanakh",
+  "desc_en": "Carrot, onion and celery in stock with shredded chicken, thyme and bay, dumplings dropped on top and spinach stirred in at the end.",
+  "desc_fr": "Carotte, oignon et céleri au bouillon avec poulet effiloché, thym et laurier, quenelles déposées dessus et épinards à la fin.",
+  "cuisine": "American", "servings": 8, "prep_min": 20, "cook_min": 35,
+  "macros": { "kcal": 274, "protein_g": 21, "carbs_g": 32, "fat_g": 7, "fiber_g": 4 },
+  "ingredients": [
+   { "en": "Cooked chicken breast, shredded", "fr": "Blanc de poulet cuit effiloché", "ar": "صدر ديال الدجاج مطيب مفروك", "qty": 300, "unit": "g", "group": "fresh" },
+   { "en": "Chicken stock", "fr": "Bouillon de volaille", "ar": "مرقة ديال الدجاج", "qty": 1900, "unit": "ml", "group": "dry" },
+   { "en": "Carrots, chopped", "fr": "Carottes coupées", "ar": "خيزو مقطع", "qty": 250, "unit": "g", "group": "fresh" },
+   { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Celery, chopped", "fr": "Céleri haché", "ar": "كرافس مقطع", "qty": 120, "unit": "g", "group": "fresh" },
+   { "en": "Fresh spinach", "fr": "Épinards frais", "ar": "سبانخ طرية", "qty": 100, "unit": "g", "group": "fresh" },
+   { "en": "Plain flour", "fr": "Farine", "ar": "دقيق", "qty": 150, "unit": "g", "group": "dry" },
+   { "en": "Baking powder", "fr": "Levure chimique", "ar": "الخميرة الكيماوية", "qty": 2, "unit": "tsp", "group": "dry" },
+   { "en": "Skimmed milk", "fr": "Lait écrémé", "ar": "حليب خفيف", "qty": 120, "unit": "ml", "group": "fresh" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Dried thyme", "fr": "Thym séché", "ar": "زعيترة يابسة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Bay leaves", "fr": "Feuilles de laurier", "ar": "ورق ديال سيدنا موسى", "qty": 2, "unit": "piece", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الزيت فطنجرة كبيرة على نار متوسطة قوية.",
+   "قلي الخيزو والبصلة والكرافس 5 دقايق.",
+   "زيدي المرقة والدجاج والزعيترة وورق سيدنا موسى.",
+   "نقصي النار وخلي الشربة على نار هادية 20 دقيقة، مغطية نص تغطية.",
+   "فهاد الوقت، خلطي الدقيق والخميرة ورشة ديال الملحة فطاس صغير، وزيدي الحليب حتى تولي عجينة رخوة.",
+   "حطي كويرات صغار من العجينة بملعقة فوق الشربة وهي كتغلي بشوية.",
+   "غطي الطنجرة وطيبي 15 دقيقة بلا ما تحلي الغطا.",
+   "زيدي السبانخ فالآخر وخليها تذبل. حيدي ورق سيدنا موسى."
+  ], "tips": [
+   "ما تحليش الغطا وهي كتطيب، البخار هو اللي كينفخ الكويرات.",
+   "الكويرات كتكبر، خليهم صغار ملي كتحطيهم."
+  ]},
+  "tags": ["chicken", "dairy", "gluten", "cooked_onion"]
+ },
+ {
+  "slug": "chicken-salad-and-peach-sandwich", "meal": "lunch", "on_menu": false,
+  "name_en": "Chicken, peach and apple salad sandwich",
+  "name_fr": "Sandwich au poulet, pêche et pomme",
+  "name_ar": "سندويتش الدجاج بالخوخ والتفاح",
+  "name_latin": "Sandwitch ddjaj bel khoukh w tteffah",
+  "desc_en": "Diced chicken with peach, apple, celery, onion and walnuts in a little mayonnaise, on wholegrain bread. Sweet and crunchy.",
+  "desc_fr": "Poulet en dés avec pêche, pomme, céleri, oignon et noix dans un peu de mayonnaise, sur pain complet.",
+  "cuisine": "American", "servings": 2, "prep_min": 15, "cook_min": 0,
+  "macros": { "kcal": 345, "protein_g": 21, "carbs_g": 51, "fat_g": 6, "fiber_g": 8 },
+  "ingredients": [
+   { "en": "Cooked chicken, diced", "fr": "Poulet cuit en dés", "ar": "دجاج مطيب مقطع حجرات", "qty": 120, "unit": "g", "group": "fresh" },
+   { "en": "Wholegrain bread", "fr": "Pain complet", "ar": "خبز كامل", "qty": 4, "unit": "piece", "group": "dry" },
+   { "en": "Canned peach slices, diced", "fr": "Pêches en conserve coupées", "ar": "خوخ معلب مقطع", "qty": 120, "unit": "g", "group": "dry" },
+   { "en": "Apple, chopped", "fr": "Pomme coupée", "ar": "تفاحة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Celery stalk, chopped", "fr": "Branche de céleri coupée", "ar": "عود ديال الكرافس مقطع", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Small onion, chopped", "fr": "Petit oignon haché", "ar": "بصلة صغيرة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Walnuts, chopped", "fr": "Noix hachées", "ar": "الجوز مقطع", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Low-fat mayonnaise", "fr": "Mayonnaise allégée", "ar": "مايونيز خفيف", "qty": 2, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "قطعي التفاح والخوخ والكرافس والبصلة حجرات صغار.",
+   "فطاس صغير، خلطي الدجاج والتفاح والخوخ والكرافس والبصلة والجوز والمايونيز.",
+   "قلبي كلشي مزيان.",
+   "وزعي الخليط على جوج ديال شرايح الخبز.",
+   "غطي بالشرايح الأخرى وقطعي السندويتش على جوج."
+  ], "tips": [
+   "صفي الخوخ المعلب مزيان، الما ديالو كيرطب الخبز.",
+   "هاد الخليط كيصلح للشلاضة حتى بلا خبز."
+  ]},
+  "tags": ["chicken", "nuts", "gluten", "raw_onion"]
+ },
+ {
+  "slug": "peppers-stuffed-rice-beans", "meal": "lunch", "on_menu": false,
+  "name_en": "Peppers stuffed with rice and black beans",
+  "name_fr": "Poivrons farcis au riz et haricots noirs",
+  "name_ar": "فلفلة معمرة بالروز واللوبيا الكحلة",
+  "name_latin": "Felfla m3ammra bel roz w loubia kahla",
+  "desc_en": "Brown rice, black beans, salsa and tomato spooned into pepper halves, topped with cheddar and baked. 13 g of fibre, no meat.",
+  "desc_fr": "Riz complet, haricots noirs, salsa et tomate dans des demi-poivrons, gratinés au cheddar. 13 g de fibres, sans viande.",
+  "cuisine": "Mexican", "servings": 4, "prep_min": 20, "cook_min": 35,
+  "macros": { "kcal": 439, "protein_g": 21, "carbs_g": 73, "fat_g": 8, "fiber_g": 13 },
+  "ingredients": [
+   { "en": "Bell peppers", "fr": "Poivrons", "ar": "فلفلة", "qty": 6, "unit": "piece", "group": "fresh" },
+   { "en": "Brown rice", "fr": "Riz complet", "ar": "روز كامل", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Canned black beans, rinsed", "fr": "Haricots noirs en conserve, rincés", "ar": "لوبيا كحلة معلبة مغسولة", "qty": 420, "unit": "g", "group": "dry" },
+   { "en": "Salsa", "fr": "Salsa", "ar": "صالصة ديال المطيشة الحارة", "qty": 240, "unit": "ml", "group": "dry" },
+   { "en": "Reduced-fat cheddar, grated", "fr": "Cheddar allégé râpé", "ar": "شيدار خفيف مبشور", "qty": 110, "unit": "g", "group": "fresh" },
+   { "en": "Tomato, chopped", "fr": "Tomate coupée", "ar": "مطيشة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الفرن على 200 درجة. طيبي الروز الكامل كيما مكتوب فالعلبة.",
+   "قطعي الروس ديال الفلفلة وفرغيها من الزريعة.",
+   "خلي 4 ديال الفلفلات كاملين باش تعمريهم، وقطعي 2 حجرات صغار.",
+   "غسلي وصفي اللوبيا الكحلة.",
+   "فطاس، خلطي الفلفلة المقطعة واللوبيا والروز والصالصة والمطيشة والملحة.",
+   "عمري الفلفلات بالخليط.",
+   "حطيهم فطاس ديال الفرن ورشي فوقهم الشيدار.",
+   "شويهم تقريبا 30 دقيقة حتى تولي الفلفلة طرية ويذوب الجبن."
+  ], "tips": [
+   "اختاري فلفلة كتوقف بوحدها، وإلا قصي شوية من القاع باش تستوي.",
+   "إلا بغيتي الفلفلة أطرى، سلقيها 5 دقايق قبل ما تعمريها."
+  ]},
+  "tags": ["vegetarian", "legumes", "dairy", "peppers"]
+ },
+ {
+  "slug": "tex-mex-skillet", "meal": "dinner", "on_menu": false,
+  "name_en": "Tex-Mex beef and black bean skillet",
+  "name_fr": "Poêlée tex-mex au bœuf et haricots noirs",
+  "name_ar": "تكس مكس باللحم واللوبيا الكحلة",
+  "name_latin": "Teks meks bel lham w loubia kahla",
+  "desc_en": "Mince cooked with grated tomato and onion, chilli, black beans and sweetcorn, served on shredded lettuce with cheddar. 9 g of fibre.",
+  "desc_fr": "Viande hachée avec tomate et oignon râpés, piment, haricots noirs et maïs, sur laitue émincée avec cheddar. 9 g de fibres.",
+  "cuisine": "Mexican", "servings": 8, "prep_min": 20, "cook_min": 25,
+  "macros": { "kcal": 319, "protein_g": 21, "carbs_g": 39, "fat_g": 10, "fiber_g": 9 },
+  "ingredients": [
+   { "en": "Lean minced beef", "fr": "Bœuf haché maigre", "ar": "لحم البڭري مفروم خفيف", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Canned black beans, drained", "fr": "Haricots noirs en conserve, égouttés", "ar": "لوبيا كحلة معلبة مصفية", "qty": 420, "unit": "g", "group": "dry" },
+   { "en": "Sweetcorn", "fr": "Maïs doux", "ar": "الذرة الحلوة", "qty": 400, "unit": "g", "group": "fresh" },
+   { "en": "Lettuce, shredded", "fr": "Laitue émincée", "ar": "خس مقطع رقيق", "qty": 300, "unit": "g", "group": "fresh" },
+   { "en": "Large tomato, grated", "fr": "Grosse tomate râpée", "ar": "مطيشة كبيرة مبشورة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Red onion, grated", "fr": "Oignon rouge râpé", "ar": "بصلة حمرا مبشورة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Green pepper, diced", "fr": "Poivron vert en dés", "ar": "فلفلة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Green chilli, diced", "fr": "Piment vert en dés", "ar": "فلفلة حارة خضرا مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Reduced-fat cheddar, grated", "fr": "Cheddar allégé râpé", "ar": "شيدار خفيف مبشور", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Mild chilli powder", "fr": "Piment doux en poudre", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Water", "fr": "Eau", "ar": "الما", "qty": 120, "unit": "ml", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "غسلي الخس والفلفلة والمطيشة والفلفلة الحارة. قشري البصلة والتوما.",
+   "قطعي الخس رقيق، وقطعي الفلفلة والفلفلة الحارة حجرات صغار بعد ما تحيدي الزريعة.",
+   "ابشري المطيشة والبصلة فطاس صغير.",
+   "حمري اللحم المفروم فمقلاة كبيرة وصفي الدهن.",
+   "زيدي التوما والفلفلة والفلفلة الحارة والمطيشة والبصلة المبشورين والفلفلة الحلوة المطحونة والما.",
+   "طيبي 10 دقايق حتى تغليظ الصالصة.",
+   "زيدي اللوبيا الكحلة والذرة وخليهم يسخنو.",
+   "فرشي الخس فالطبيسل، حطي فوقو خليط اللحم ورشي الشيدار."
+  ], "tips": [
+   "بشر المطيشة والبصلة كيعطي صالصة ناعمة بلا ما تحتاجي خلاط.",
+   "الفلفلة الحارة اختيارية، حيديها للدراري."
+  ]},
+  "tags": ["red_meat", "legumes", "dairy", "peppers", "spicy"]
+ },
+ {
+  "slug": "turkey-stuffed-cabbage", "meal": "dinner", "on_menu": false,
+  "name_en": "Stuffed cabbage rolls",
+  "name_fr": "Roulés de chou farcis",
+  "name_ar": "ورق الكرومب المعمر باللحم",
+  "name_latin": "Werq lkromb lm3ammar bel lham",
+  "desc_en": "Cabbage leaves blanched then rolled around beef and turkey mince with onion and bread, baked in tomato with a touch of lemon.",
+  "desc_fr": "Feuilles de chou blanchies puis roulées autour de bœuf et dinde hachés, cuites dans la tomate avec un trait de citron.",
+  "cuisine": "International", "servings": 5, "prep_min": 30, "cook_min": 60,
+  "macros": { "kcal": 279, "protein_g": 21, "carbs_g": 30, "fat_g": 10, "fiber_g": 8 },
+  "ingredients": [
+   { "en": "Lean minced beef", "fr": "Bœuf haché maigre", "ar": "لحم البڭري مفروم خفيف", "qty": 225, "unit": "g", "group": "fresh" },
+   { "en": "Minced turkey", "fr": "Dinde hachée", "ar": "ديك رومي مفروم", "qty": 225, "unit": "g", "group": "fresh" },
+   { "en": "Cabbage", "fr": "Chou", "ar": "كرومب", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Canned diced tomatoes", "fr": "Tomates en dés en conserve", "ar": "مطيشة معلبة مقطعة", "qty": 400, "unit": "g", "group": "dry" },
+   { "en": "Small onion, minced", "fr": "Petit oignon haché fin", "ar": "بصلة صغيرة مقطعة مزيان", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Onion, sliced", "fr": "Oignon émincé", "ar": "بصلة مقطعة شرايح", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Stale wholewheat bread, crumbled", "fr": "Pain complet rassis émietté", "ar": "خبز كامل يابس مفتت", "qty": 1, "unit": "piece", "group": "dry" },
+   { "en": "Lemon juice", "fr": "Jus de citron", "ar": "عصير الحامض", "qty": 1, "unit": "tbsp", "group": "fresh" },
+   { "en": "Water", "fr": "Eau", "ar": "الما", "qty": 480, "unit": "ml", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "غسلي الكرومب وحيدي القلب ديالو.",
+   "حيدي 10 ديال الورقات ديال برا بالعقل، حطيهم فطنجرة وغطيهم بالما المغلي.",
+   "خليهم 5 دقايق، حيديهم ونشفيهم على ورق المطبخ.",
+   "قطعي شوية ديال الكرومب الني رقيق وخليه على جنب.",
+   "حمري اللحم المفروم والديك الرومي مع البصلة الصغيرة فمقلاة. صفي الدهن.",
+   "زيدي الخبز المفتت وعصير الحامض والابزار وقلبي.",
+   "حطي ملعقة كبيرة من الخليط فوسط كل ورقة، طوي الجنابات وليها.",
+   "رتبي اللفايف فطاس، زيدي فوقهم البصلة المقطعة والمطيشة المعلبة والما، غطي وطيبي ساعة على نار هادية."
+  ], "tips": [
+   "سلق الورق 5 دقايق كيخليه يتوى بلا ما يتقطع.",
+   "حطي اللفايف الجهة المسدودة لتحت باش ما يتحلوش."
+  ]},
+  "tags": ["red_meat", "gluten", "cooked_onion"]
+ },
+ {
+  "slug": "macaroni-cheese-broccoli", "meal": "lunch", "on_menu": false,
+  "name_en": "Macaroni cheese with broccoli",
+  "name_fr": "Macaronis au fromage et brocoli",
+  "name_ar": "معكرونة بالجبن والبروكلي",
+  "name_latin": "Ma3karouna bel jben w lbrokoli",
+  "desc_en": "Flour stirred into the hot drained macaroni, milk and cheese added straight in the pan. No separate sauce to make.",
+  "desc_fr": "Farine incorporée aux macaronis chauds égouttés, lait et fromage ajoutés directement dans la casserole.",
+  "cuisine": "American", "servings": 6, "prep_min": 10, "cook_min": 20,
+  "macros": { "kcal": 326, "protein_g": 21, "carbs_g": 39, "fat_g": 9, "fiber_g": 4 },
+  "ingredients": [
+   { "en": "Elbow macaroni", "fr": "Coudes de macaronis", "ar": "معكرونة", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Low-fat cheddar, grated", "fr": "Cheddar allégé râpé", "ar": "شيدار خفيف مبشور", "qty": 220, "unit": "g", "group": "fresh" },
+   { "en": "Low-fat milk", "fr": "Lait demi-écrémé", "ar": "حليب خفيف", "qty": 480, "unit": "ml", "group": "fresh" },
+   { "en": "Broccoli, cooked and chopped", "fr": "Brocoli cuit et haché", "ar": "بروكلي مطيب ومقطع", "qty": 250, "unit": "g", "group": "fresh" },
+   { "en": "Plain flour", "fr": "Farine", "ar": "دقيق", "qty": 4, "unit": "tbsp", "group": "dry" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "طيبي المعكرونة كيما مكتوب فالعلبة.",
+   "صفيها ورجعيها للطنجرة وهي مازال سخونة.",
+   "رشي فوقها الدقيق وقلبي مزيان حتى يتغطى كلشي.",
+   "على نار متوسطة، صبي الحليب شوية بشوية وانتي كتقلبي.",
+   "زيدي الجبن والابزار.",
+   "قلبي على نار متوسطة حتى يذوب الجبن وتغليظ الصالصة.",
+   "زيدي البروكلي المطيب وقلبي حتى يسخن. قدميها دغيا."
+  ], "tips": [
+   "الدقيق خاصو يتخلط مع المعكرونة السخونة قبل الحليب، هاكا ما كيديرش الكتل.",
+   "إلا غلظات بزاف، زيدي شوية ديال الحليب السخون."
+  ]},
+  "tags": ["vegetarian", "dairy", "gluten"]
+ },
+ {
+  "slug": "tuna-veggie-picnic-sandwich", "meal": "lunch", "on_menu": false,
+  "name_en": "Tuna and vegetable picnic sandwich",
+  "name_fr": "Sandwich pique-nique au thon et légumes",
+  "name_ar": "سندويتش التون بالخضرة",
+  "name_latin": "Sandwitch ton bel khodra",
+  "desc_en": "Tuna mixed with mustard, lemon and mayonnaise, with grated carrot, red pepper and celery through it, between romaine leaves and bread.",
+  "desc_fr": "Thon à la moutarde, citron et mayonnaise, avec carotte râpée, poivron rouge et céleri, entre des feuilles de romaine.",
+  "cuisine": "American", "servings": 6, "prep_min": 15, "cook_min": 0,
+  "macros": { "kcal": 266, "protein_g": 20, "carbs_g": 34, "fat_g": 6, "fiber_g": 5 },
+  "ingredients": [
+   { "en": "Canned tuna, drained", "fr": "Thon en conserve, égoutté", "ar": "تون معلب مصفي", "qty": 340, "unit": "g", "group": "dry" },
+   { "en": "Wholewheat bread", "fr": "Pain complet", "ar": "خبز كامل", "qty": 12, "unit": "piece", "group": "dry" },
+   { "en": "Romaine lettuce leaves", "fr": "Feuilles de laitue romaine", "ar": "ورقات ديال الخس الرومان", "qty": 6, "unit": "piece", "group": "fresh" },
+   { "en": "Carrots, shredded", "fr": "Carottes râpées", "ar": "خيزو مبشور", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Red pepper, thinly sliced", "fr": "Poivron rouge émincé", "ar": "فلفلة حمرا مقطعة رقيقة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Celery, diced", "fr": "Céleri en dés", "ar": "كرافس مقطع", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Low-fat mayonnaise", "fr": "Mayonnaise allégée", "ar": "مايونيز خفيف", "qty": 60, "unit": "g", "group": "dry" },
+   { "en": "Mustard", "fr": "Moutarde", "ar": "الموطارد", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Lemon juice", "fr": "Jus de citron", "ar": "عصير الحامض", "qty": 2, "unit": "tsp", "group": "fresh" }
+  ],
+  "recipe_ar": { "steps": [
+   "فطاس صغير، خلطي التون والمايونيز والموطارد وعصير الحامض.",
+   "زيدي الخيزو المبشور والفلفلة الحمرا والكرافس وقلبي.",
+   "قطعي ورق الخس على جوج.",
+   "حطي نص ورقة ديال الخس فوق 6 ديال شرايح الخبز.",
+   "وزعي خليط التون فوق الخس.",
+   "حطي نص ورقة أخرى ديال الخس فوق التون، وغطي بشريحة ديال الخبز."
+  ], "tips": [
+   "ورق الخس بين الخبز والتون كيمنع الخبز من الترطيب. مفيد بزاف للسندويتش ديال الرحلة.",
+   "هاد الخليط كيبقى فالتلاجة يومين."
+  ]},
+  "tags": ["fish", "peppers", "gluten"]
+ },
+ {
+  "slug": "taco-salad", "meal": "lunch", "on_menu": false,
+  "name_en": "Taco salad with beans",
+  "name_fr": "Salade taco aux haricots",
+  "name_ar": "شلاضة التاكو باللوبيا",
+  "name_latin": "Chlada ttako b loubia",
+  "desc_en": "A little mince stretched with beans, cumin and chilli over lettuce, tomato, onion, corn and cheese, with a yogurt and salsa dressing.",
+  "desc_fr": "Un peu de viande hachée allongée de haricots, cumin et piment sur laitue, tomate, oignon, maïs et fromage, sauce yaourt-salsa.",
+  "cuisine": "Mexican", "servings": 4, "prep_min": 20, "cook_min": 15,
+  "macros": { "kcal": 361, "protein_g": 20, "carbs_g": 53, "fat_g": 10, "fiber_g": 10 },
+  "ingredients": [
+   { "en": "Lean minced beef", "fr": "Bœuf haché maigre", "ar": "لحم البڭري مفروم خفيف", "qty": 115, "unit": "g", "group": "fresh" },
+   { "en": "Cooked kidney or pinto beans", "fr": "Haricots rouges ou pinto cuits", "ar": "لوبيا حمرا مطيبة", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Lettuce, torn", "fr": "Laitue déchirée", "ar": "خس مقطع باليد", "qty": 300, "unit": "g", "group": "fresh" },
+   { "en": "Tomatoes, cut up", "fr": "Tomates coupées", "ar": "مطيشة مقطعة", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Small onion, diced", "fr": "Petit oignon en dés", "ar": "بصلة صغيرة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Sweetcorn, drained", "fr": "Maïs doux égoutté", "ar": "الذرة الحلوة مصفية", "qty": 430, "unit": "g", "group": "dry" },
+   { "en": "Cheddar, grated", "fr": "Cheddar râpé", "ar": "شيدار مبشور", "qty": 60, "unit": "g", "group": "fresh" },
+   { "en": "Plain yogurt", "fr": "Yaourt nature", "ar": "دانون طبيعي", "qty": 120, "unit": "g", "group": "fresh" },
+   { "en": "Salsa", "fr": "Salsa", "ar": "صالصة ديال المطيشة الحارة", "qty": 120, "unit": "ml", "group": "dry" },
+   { "en": "Mild chilli powder", "fr": "Piment doux en poudre", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tbsp", "group": "dry" },
+   { "en": "Ground cumin", "fr": "Cumin moulu", "ar": "كمون مطحون", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Tortilla chips", "fr": "Chips de maïs", "ar": "شيبس ديال الذرة", "qty": 60, "unit": "g", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "حمري اللحم المفروم فمقلاة وصفي الدهن.",
+   "زيدي اللوبيا والكمون والفلفلة الحلوة المطحونة، وخليهم يسخنو مزيان.",
+   "فطاس كبير، خلطي الخس والمطيشة والبصلة والجبن.",
+   "زيدي الذرة المصفية.",
+   "حطي خليط اللحم واللوبيا فوق الشلاضة.",
+   "فكاس صغير، خلطي الدانون مع الصالصة باش تديري صالصة التقديم.",
+   "كسري الشيبس فوق الشلاضة وقدمي الصالصة على الجنب."
+  ], "tips": [
+   "اللوبيا هنا كتعوض معظم اللحم، وهذا اللي كيخلي الطبق رخيص وفيه فيبر بزاف.",
+   "حطي الشيبس فآخر لحظة باش يبقى مقرمش."
+  ]},
+  "tags": ["red_meat", "legumes", "dairy", "raw_onion"]
+ },
+ {
+  "slug": "one-pan-potatoes-chicken", "meal": "lunch", "on_menu": false,
+  "name_en": "One pan potatoes and chicken with salsa",
+  "name_fr": "Poêlée de pommes de terre et poulet à la salsa",
+  "name_ar": "البطاطا والدجاج فمقلاة وحدة بالصالصة",
+  "name_latin": "Lbatata w ddjaj f meqla wahda b salsa",
+  "desc_en": "Potato cubes softened first, then browned with chicken, salsa and sweetcorn stirred through. Five ingredients, one pan.",
+  "desc_fr": "Cubes de pommes de terre précuits, dorés avec poulet, salsa et maïs. Cinq ingrédients, une poêle.",
+  "cuisine": "Mexican", "servings": 6, "prep_min": 15, "cook_min": 25,
+  "macros": { "kcal": 286, "protein_g": 20, "carbs_g": 36, "fat_g": 7, "fiber_g": 4 },
+  "ingredients": [
+   { "en": "Chicken breasts, boneless and skinless", "fr": "Blancs de poulet sans os ni peau", "ar": "صدور ديال الدجاج بلا عظام وبلا جلدة", "qty": 450, "unit": "g", "group": "fresh" },
+   { "en": "Potatoes, cubed", "fr": "Pommes de terre en cubes", "ar": "بطاطا مقطعة حجرات", "qty": 4, "unit": "piece", "group": "fresh" },
+   { "en": "Salsa", "fr": "Salsa", "ar": "صالصة ديال المطيشة الحارة", "qty": 240, "unit": "ml", "group": "dry" },
+   { "en": "Sweetcorn, drained", "fr": "Maïs doux égoutté", "ar": "الذرة الحلوة مصفية", "qty": 430, "unit": "g", "group": "dry" },
+   { "en": "Vegetable oil", "fr": "Huile végétale", "ar": "زيت", "qty": 2, "unit": "tbsp", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "قطعي البطاطا حجرات صغار متساويين.",
+   "سلقيها فالما المغلي تقريبا 15 دقيقة حتى ترخى، وصفيها.",
+   "قطعي الدجاج حجرات صغار بحال البطاطا.",
+   "سخني الزيت فمقلاة كبيرة على نار متوسطة قوية.",
+   "زيدي الدجاج وطيبيه حتى يتحمر ويطيب مزيان.",
+   "زيدي البطاطا وخليها تتحمر شوية.",
+   "زيدي الصالصة والذرة وقلبي، وخلي كلشي يسخن مزيان."
+  ], "tips": [
+   "سلق البطاطا قبل كيضمن أنها تطيب من داخل وتتحمر من برا.",
+   "خلي البطاطا تشد فالمقلاة قبل ما تقلبيها."
+  ]},
+  "tags": ["chicken", "spicy"]
+ },
+ {
+  "slug": "potato-spinach-lasagna", "meal": "dinner", "on_menu": false,
+  "name_en": "Potato and spinach lasagne",
+  "name_fr": "Lasagnes de pommes de terre aux épinards",
+  "name_ar": "لازانيا البطاطا بالسبانخ",
+  "name_latin": "Lazanya lbatata bel sbanakh",
+  "desc_en": "Thin potato slices instead of pasta sheets, layered with spinach, ricotta, mozzarella and tomato, bound with egg and baked.",
+  "desc_fr": "Fines tranches de pommes de terre à la place des feuilles de lasagne, avec épinards, ricotta, mozzarella et tomate.",
+  "cuisine": "Italian", "servings": 4, "prep_min": 25, "cook_min": 45,
+  "macros": { "kcal": 433, "protein_g": 20, "carbs_g": 59, "fat_g": 14, "fiber_g": 6 },
+  "ingredients": [
+   { "en": "Small potatoes, thinly sliced", "fr": "Petites pommes de terre en fines tranches", "ar": "بطاطا صغيرة مقطعة شرايح رقاق", "qty": 7, "unit": "piece", "group": "fresh" },
+   { "en": "Baby spinach", "fr": "Jeunes pousses d'épinard", "ar": "سبانخ صغيرة", "qty": 90, "unit": "g", "group": "fresh" },
+   { "en": "Ricotta or fresh cheese", "fr": "Ricotta ou fromage frais", "ar": "ريكوتا ولا جبن طري", "qty": 180, "unit": "g", "group": "fresh" },
+   { "en": "Mozzarella, grated", "fr": "Mozzarella râpée", "ar": "موزاريلا مبشورة", "qty": 85, "unit": "g", "group": "fresh" },
+   { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان مبشور", "qty": 2, "unit": "tbsp", "group": "fresh" },
+   { "en": "Tomato passata", "fr": "Coulis de tomate", "ar": "صالصة ديال المطيشة", "qty": 360, "unit": "ml", "group": "dry" },
+   { "en": "Egg, beaten", "fr": "Œuf battu", "ar": "بيضة مخبوطة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Onion, chopped", "fr": "Oignon haché", "ar": "بصلة مقطعة", "qty": 1, "unit": "piece", "group": "fresh" },
+   { "en": "Garlic cloves, minced", "fr": "Gousses d'ail hachées", "ar": "فصوص ديال التوما مقطعين صغار", "qty": 2, "unit": "piece", "group": "fresh" },
+   { "en": "Olive oil", "fr": "Huile d'olive", "ar": "زيت الزيتون", "qty": 1, "unit": "tbsp", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الفرن على 190 درجة. غلي الما فطنجرة كبيرة.",
+   "قطعي البطاطا شرايح رقاق، زيديها للما المغلي وطيبيها 5 دقايق. صفيها وغسليها بالما البارد وصفيها مرة أخرى.",
+   "سخني زيت الزيتون فمقلاة، وقلي البصلة والتوما من 2 حتى 3 دقايق.",
+   "زيدي السبانخ وقلبي دقيقة وحدة حتى تذبل. حيديهم من النار.",
+   "فطاس، خلطي الريكوتا مع البيضة المخبوطة والبارميزان.",
+   "فطاس ديال الفرن، فرشي شوية ديال صالصة المطيشة، ومن بعد طبقة ديال البطاطا.",
+   "زيدي نص خليط الريكوتا ونص السبانخ، ومن بعد عاودي: بطاطا، ريكوتا، سبانخ.",
+   "غطي بباقي الصالصة ورشي الموزاريلا. شوي 40 دقيقة حتى يتحمر الوجه."
+  ], "tips": [
+   "سلق البطاطا 5 دقايق برك، غادي تكمل الطياب فالفرن.",
+   "البيضة فالريكوتا هي اللي كتشد الطبقات باش ما تتفرقش."
+  ]},
+  "tags": ["vegetarian", "eggs", "dairy", "cooked_onion"]
+ },
+ {
+  "slug": "stovetop-tamale-pie", "meal": "dinner", "on_menu": false,
+  "name_en": "Stovetop tamale pie",
+  "name_fr": "Tourte tamale à la poêle",
+  "name_ar": "تامالي باي فالمقلاة",
+  "name_latin": "Tamali bay f lmeqla",
+  "desc_en": "A quick chilli of beef, kidney beans and sweetcorn with a soft cornmeal topping spooned over and steamed on the hob. 10 g of fibre.",
+  "desc_fr": "Un chili rapide de bœuf, haricots rouges et maïs sous une couche de semoule de maïs, cuit à la poêle. 10 g de fibres.",
+  "cuisine": "Mexican", "servings": 4, "prep_min": 15, "cook_min": 35,
+  "macros": { "kcal": 312, "protein_g": 20, "carbs_g": 47, "fat_g": 7, "fiber_g": 10 },
+  "ingredients": [
+   { "en": "Lean minced beef", "fr": "Bœuf haché maigre", "ar": "لحم البڭري مفروم خفيف", "qty": 225, "unit": "g", "group": "fresh" },
+   { "en": "Canned kidney beans with liquid", "fr": "Haricots rouges en conserve avec leur jus", "ar": "لوبيا حمرا معلبة بالما ديالها", "qty": 440, "unit": "g", "group": "dry" },
+   { "en": "Sweetcorn, undrained", "fr": "Maïs doux non égoutté", "ar": "الذرة الحلوة بالما ديالها", "qty": 430, "unit": "g", "group": "dry" },
+   { "en": "Tomato purée", "fr": "Purée de tomate", "ar": "مركز ديال المطيشة", "qty": 240, "unit": "ml", "group": "dry" },
+   { "en": "Cornmeal or fine semolina", "fr": "Semoule de maïs ou semoule fine", "ar": "دقيق الذرة ولا سميدة رقيقة", "qty": 80, "unit": "g", "group": "dry" },
+   { "en": "Onion, minced", "fr": "Oignon haché fin", "ar": "بصلة مقطعة مزيان", "qty": 1, "unit": "tbsp", "group": "fresh" },
+   { "en": "Mild chilli powder", "fr": "Piment doux en poudre", "ar": "فلفلة حلوة مطحونة", "qty": 1, "unit": "tsp", "group": "dry" },
+   { "en": "Water", "fr": "Eau", "ar": "الما", "qty": 240, "unit": "ml", "group": "dry" },
+   { "en": "Salt", "fr": "Sel", "ar": "ملحة", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "حمري اللحم المفروم فمقلاة كبيرة سخونة حتى يولي ذهبي. صفي الدهن.",
+   "صفي اللوبيا وخبي الما ديالها.",
+   "زيدي للحم اللوبيا وشوية من الما ديالها ومركز المطيشة والبصلة والفلفلة الحلوة المطحونة.",
+   "خليهم يغليو، نقصي النار، غطي وطيبي 10 دقايق.",
+   "زيدي الذرة بالما ديالها وقلبي.",
+   "فطاس، خلطي دقيق الذرة مع الما البارد والملحة حتى يولي ناعم.",
+   "حطي الشيلي فالمقلاة على نار متوسطة، وصبي خليط دقيق الذرة فوقو بالملعقة.",
+   "غطي المقلاة وطيبي 20 دقيقة على نار هادية حتى تشد الطبقة ديال فوق."
+  ], "tips": [
+   "ما تحليش الغطا وهي كتطيب، البخار هو اللي كيطيب دقيق الذرة.",
+   "إلا ما لقيتيش دقيق الذرة، السميدة الرقيقة كتخدم بحال بحال."
+  ]},
+  "tags": ["red_meat", "legumes", "cooked_onion"]
+ },
+ {
+  "slug": "chicken-and-broccoli-bake", "meal": "dinner", "on_menu": false,
+  "name_en": "Chicken, rice and broccoli bake",
+  "name_fr": "Gratin de poulet, riz et brocoli",
+  "name_ar": "غراتان الدجاج بالروز والبروكلي",
+  "name_latin": "Gratan ddjaj bel roz w lbrokoli",
+  "desc_en": "A butter and flour sauce loosened with stock, mixed with rice, broccoli and cooked chicken, then baked. 227 calories a serving.",
+  "desc_fr": "Une sauce beurre-farine allongée au bouillon, mêlée au riz, brocoli et poulet cuit, puis gratinée. 227 calories.",
+  "cuisine": "American", "servings": 8, "prep_min": 15, "cook_min": 35,
+  "macros": { "kcal": 227, "protein_g": 20, "carbs_g": 26, "fat_g": 5, "fiber_g": 1 },
+  "ingredients": [
+   { "en": "Cooked chicken, boneless", "fr": "Poulet cuit sans os", "ar": "دجاج مطيب بلا عظام", "qty": 420, "unit": "g", "group": "fresh" },
+   { "en": "Rice", "fr": "Riz", "ar": "روز", "qty": 200, "unit": "g", "group": "dry" },
+   { "en": "Broccoli, thawed or cooked", "fr": "Brocoli décongelé ou cuit", "ar": "بروكلي مذوب ولا مطيب", "qty": 280, "unit": "g", "group": "fresh" },
+   { "en": "Chicken stock", "fr": "Bouillon de volaille", "ar": "مرقة ديال الدجاج", "qty": 480, "unit": "ml", "group": "dry" },
+   { "en": "Butter or margarine", "fr": "Beurre ou margarine", "ar": "زبدة", "qty": 2, "unit": "tbsp", "group": "fresh" },
+   { "en": "Plain flour", "fr": "Farine", "ar": "دقيق", "qty": 30, "unit": "g", "group": "dry" },
+   { "en": "Parmesan, grated", "fr": "Parmesan râpé", "ar": "بارميزان مبشور", "qty": 25, "unit": "g", "group": "fresh" },
+   { "en": "Black pepper", "fr": "Poivre noir", "ar": "ابزار كحل", "qty": 1, "unit": "pinch", "group": "dry" }
+  ],
+  "recipe_ar": { "steps": [
+   "سخني الفرن على 175 درجة. طيبي الروز كيما مكتوب فالعلبة.",
+   "دوبي الزبدة فطنجرة كبيرة.",
+   "زيدي الدقيق للزبدة المذوبة وقلبي. غادي يولي فيه الكتل، وهذا عادي.",
+   "صبي مرقة الدجاج شوية بشوية وانتي كتقلبي حتى تحيدي الكتل وتغليظ الصالصة.",
+   "زيدي البارميزان والابزار وقلبي.",
+   "زيدي الروز والبروكلي والدجاج وقلبي كلشي مزيان.",
+   "صبي كلشي فطاس ديال الفرن ودخليه من 25 حتى 30 دقيقة حتى يسخن ويتحمر الوجه."
+  ], "tips": [
+   "صبي المرقة بشوية وقلبي بلا ما توقفي، هاكا ما كتبقاش الكتل.",
+   "هاد الطبق سهل وكيكفي 8 ديال الناس."
+  ]},
+  "tags": ["chicken", "dairy", "gluten"]
+ }
+]
