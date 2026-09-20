@@ -7,7 +7,7 @@ import { people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { dishDesc, dishName, formatQty, getDish, ingredientName } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
-import { deleteDish, saveRecipe, setReviewed, setVideo } from "../actions";
+import { removeDish, restoreDish, saveRecipe, setReviewed, setVideo } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
@@ -64,7 +64,20 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
 
   return (
     <main>
-      <Link href={`/menu?meal=${dish.meal}`} className="text-muted font-semibold">{t(L, "back")}</Link>
+      <Link href={dish.removedAt ? "/menu/removed" : `/menu?meal=${dish.meal}`} className="text-muted font-semibold">{t(L, "back")}</Link>
+
+      {dish.removedAt && (
+        <section className="mt-3 tile p-4 border-accent">
+          <p className="font-bold text-accent">{t(L, "dishRemoved")}</p>
+          <p className="mt-1 text-sm text-muted">{t(L, "dishRemovedHint")}</p>
+          {me.isAdmin && (
+            <form action={restoreDish} className="mt-3">
+              <input type="hidden" name="id" value={dish.id} />
+              <button className="btn-accent w-full">{t(L, "putBack")}</button>
+            </form>
+          )}
+        </section>
+      )}
 
       <div className="mt-3 tile overflow-hidden">
         <div className="aspect-[4/3] bg-accent-soft relative">
@@ -162,10 +175,12 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
                 {t(L, "reviewed")}
               </button>
             </form>
-            <form action={deleteDish}>
-              <input type="hidden" name="id" value={dish.id} />
-              <button className="text-sm text-muted underline">{t(L, "delete")}</button>
-            </form>
+            {!dish.removedAt && (
+              <form action={removeDish}>
+                <input type="hidden" name="id" value={dish.id} />
+                <button className="text-sm text-muted underline">{t(L, "removeFromMenu")}</button>
+              </form>
+            )}
           </div>
         </details>
       )}

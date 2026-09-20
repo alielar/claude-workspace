@@ -98,6 +98,13 @@ export const dishes = sqliteTable("dishes", {
   videoUrl: text("video_url"),
   /** Darija checked by the family. */
   reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
+  /**
+   * Set when someone takes the dish off the menu. Removed dishes leave every list, every
+   * shortlist and every choice, but keep their photo and recipe and sit in the Removed
+   * library, ready to be put back. Null means the dish is on the menu.
+   */
+  removedAt: text("removed_at"),
+  removedBy: integer("removed_by"),
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
   createdBy: integer("created_by"),
   createdAt: text("created_at").notNull().default(""),

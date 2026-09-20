@@ -1,12 +1,18 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { dishes, type Dish, type Lang, type Meal, type Person } from "@/db/schema";
 
 export async function listDishes(meal?: Meal): Promise<Dish[]> {
   await ensureSchema();
-  const where = meal ? eq(dishes.meal, meal) : undefined;
+  const where = meal ? and(eq(dishes.meal, meal), isNull(dishes.removedAt)) : isNull(dishes.removedAt);
   return db.select().from(dishes).where(where).orderBy(asc(dishes.nameEn));
+}
+
+/** The Removed library: dishes taken off the menu, newest first, ready to be put back. */
+export async function listRemovedDishes(): Promise<Dish[]> {
+  await ensureSchema();
+  return db.select().from(dishes).where(isNotNull(dishes.removedAt)).orderBy(desc(dishes.removedAt));
 }
 
 export async function getDish(slug: string): Promise<Dish | null> {
@@ -17,7 +23,7 @@ export async function getDish(slug: string): Promise<Dish | null> {
 
 export async function listReadyDishes(meal: Meal): Promise<Dish[]> {
   await ensureSchema();
-  return db.select().from(dishes).where(and(eq(dishes.meal, meal), eq(dishes.status, "ready"))).orderBy(asc(dishes.nameEn));
+  return db.select().from(dishes).where(and(eq(dishes.meal, meal), eq(dishes.status, "ready"), isNull(dishes.removedAt))).orderBy(asc(dishes.nameEn));
 }
 
 /** True when the dish carries a tag this person does not eat. */

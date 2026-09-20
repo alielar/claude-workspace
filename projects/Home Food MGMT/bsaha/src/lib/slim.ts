@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { dishes, type Dish } from "@/db/schema";
@@ -33,7 +33,7 @@ export async function listSlimDishes(): Promise<SlimDish[]> {
       prepMin: dishes.prepMin, cookMin: dishes.cookMin, photoUrl: dishes.photoUrl, ingredients: dishes.ingredients,
     })
     .from(dishes)
-    .where(eq(dishes.status, "ready"))
+    .where(and(eq(dishes.status, "ready"), isNull(dishes.removedAt)))
     .orderBy(asc(dishes.nameEn));
   const data = rows.map((d) => toSlim(d as Dish));
   memo = { at: Date.now(), data };

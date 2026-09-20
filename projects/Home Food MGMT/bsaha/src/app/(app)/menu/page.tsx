@@ -20,6 +20,11 @@ export default async function Menu({ searchParams }: { searchParams: Promise<{ m
       <Link href={`/menu/add?meal=${meal}`} className="btn-soft w-full mt-6">
         {t(me.lang, "addDish")}
       </Link>
+      {me.isAdmin && (
+        <Link href="/menu/removed" className="btn-ghost w-full mt-2">
+          {t(me.lang, "removedLibrary")}
+        </Link>
+      )}
     </main>
   );
 }

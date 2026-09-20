@@ -80,6 +80,8 @@ const DDL = [
 
 /** Columns added after a table shipped. "duplicate column" is swallowed. */
 const LATE_COLUMNS = [
+  `ALTER TABLE dishes ADD COLUMN removed_at TEXT`,
+  `ALTER TABLE dishes ADD COLUMN removed_by INTEGER`,
   `ALTER TABLE people ADD COLUMN dislikes TEXT NOT NULL DEFAULT '[]'`,
   `ALTER TABLE people ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE dishes ADD COLUMN in_main INTEGER NOT NULL DEFAULT 1`,
