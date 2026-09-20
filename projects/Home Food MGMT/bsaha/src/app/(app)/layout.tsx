@@ -11,7 +11,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const tabs: Tab[] = [{ href: "/today", label: t(me.lang, "today") }];
   if (me.role !== "grocery") tabs.push({ href: "/menu", label: t(me.lang, "menu") });
-  if (me.role === "cook") tabs.push({ href: "/pool", label: t(me.lang, "tomorrow") });
+  // The cook shortlists; everyone else chooses from it. Admins reach the shortlist from Today.
+  if (me.role === "cook") tabs.push({ href: "/pool", label: t(me.lang, "shortlist") });
+  else if (me.role !== "grocery") tabs.push({ href: "/tomorrow", label: t(me.lang, "tomorrow") });
   if (me.isAdmin) tabs.push({ href: "/people", label: t(me.lang, "people") });
   tabs.push({ href: "/me", label: t(me.lang, "me") });
 

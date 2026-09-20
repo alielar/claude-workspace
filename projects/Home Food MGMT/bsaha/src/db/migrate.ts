@@ -50,6 +50,15 @@ const DDL = [
     created_by INTEGER,
     created_at TEXT NOT NULL DEFAULT ''
   )`,
+  `CREATE TABLE IF NOT EXISTS picks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    day TEXT NOT NULL,
+    meal TEXT NOT NULL,
+    dish_id INTEGER NOT NULL,
+    person_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT ''
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS picks_one_per_meal ON picks (day, meal, person_id)`,
   `CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
     person_id INTEGER NOT NULL,

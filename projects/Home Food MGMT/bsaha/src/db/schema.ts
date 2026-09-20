@@ -105,7 +105,7 @@ export const dishes = sqliteTable("dishes", {
 
 export type Dish = typeof dishes.$inferSelect;
 
-/** Tomorrow's pool: the cook picks about 5 lunches and 5 dinners; the family votes only from these. */
+/** Tomorrow's pool: the cook shortlists up to 5 dishes per meal; the family chooses only from these. */
 export const pools = sqliteTable("pools", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   /** YYYY-MM-DD, the day the meal is eaten. */
@@ -116,3 +116,20 @@ export const pools = sqliteTable("pools", {
   createdAt: text("created_at").notNull().default(""),
 });
 export type PoolRow = typeof pools.$inferSelect;
+
+/**
+ * One person's choice for one meal of one day, taken from that day's pool.
+ * At most one row per person per meal per day: choosing again replaces the earlier choice.
+ * Locked at LOCK_HOUR the evening before; after that the cook cooks what is here, and
+ * decides herself for any meal nobody chose.
+ */
+export const picks = sqliteTable("picks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  /** YYYY-MM-DD, the day the meal is eaten. */
+  day: text("day").notNull(),
+  meal: text("meal", { enum: MEALS }).notNull(),
+  dishId: integer("dish_id").notNull(),
+  personId: integer("person_id").notNull(),
+  createdAt: text("created_at").notNull().default(""),
+});
+export type PickRow = typeof picks.$inferSelect;

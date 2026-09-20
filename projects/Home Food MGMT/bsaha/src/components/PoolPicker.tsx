@@ -9,41 +9,44 @@ import { togglePool } from "@/app/(app)/pool/actions";
 
 type Sel = { meal: Meal; id: number };
 
-/** Tomorrow's pool: the selected chips on top, the browser below. Taps update at once, the server catches up. */
+/**
+ * Tomorrow's shortlist: up to `perMeal` dishes for each meal, chips on top and the browser below.
+ * Taps update at once and the server catches up; a rejected tap is rolled back.
+ */
 export function PoolPicker({
-  dishes, lang, labels, initial, cap, poolLabels,
+  dishes, lang, labels, initial, perMeal, meals, poolLabels,
 }: {
-  dishes: SlimDish[]; lang: Lang; labels: BrowserProps["labels"]; initial: Sel[]; cap: number;
-  poolLabels: { lunch: string; dinner: string; poolCount: string; poolFull: string; remove: string };
+  dishes: SlimDish[]; lang: Lang; labels: BrowserProps["labels"]; initial: Sel[]; perMeal: number; meals: Meal[];
+  poolLabels: { breakfast: string; lunch: string; dinner: string; poolCount: string; poolFull: string; remove: string };
 }) {
   const [sel, setSel] = useState<Sel[]>(initial);
-  const [full, setFull] = useState(false);
+  const [full, setFull] = useState<Meal | null>(null);
   const [, start] = useTransition();
   const byId = new Map(dishes.map((d) => [d.id, d]));
+  const countFor = (meal: Meal) => sel.filter((s) => s.meal === meal).length;
 
   const toggle = (meal: Meal, id: number) => {
     const has = sel.some((s) => s.meal === meal && s.id === id);
-    if (!has && sel.length >= cap) { setFull(true); return; }
-    setFull(false);
+    if (!has && countFor(meal) >= perMeal) { setFull(meal); return; }
+    setFull(null);
     setSel((prev) => (has ? prev.filter((s) => !(s.meal === meal && s.id === id)) : [...prev, { meal, id }]));
     start(async () => {
       const n = await togglePool(meal, id);
-      if (n === -1) { setFull(true); setSel((prev) => prev.filter((s) => !(s.meal === meal && s.id === id))); }
+      if (n === -1) { setFull(meal); setSel((prev) => prev.filter((s) => !(s.meal === meal && s.id === id))); }
     });
   };
 
   return (
     <div>
-      <p className={clsx("text-sm font-bold", sel.length >= cap ? "text-accent" : "text-muted")}>
-        {sel.length} / {cap} {poolLabels.poolCount}
-      </p>
-      {full && <p className="mt-1 text-sm text-accent">{poolLabels.poolFull}</p>}
+      {full && <p className="text-sm text-accent">{poolLabels.poolFull}</p>}
 
-      {(["lunch", "dinner"] as const).map((meal) => {
+      {meals.map((meal) => {
         const items = sel.filter((s) => s.meal === meal);
         return (
           <section key={meal} className="mt-3">
-            <h2 className="text-sm font-bold text-muted uppercase tracking-wide">{poolLabels[meal]} · {items.length}</h2>
+            <h2 className={clsx("text-sm font-bold uppercase tracking-wide", items.length >= perMeal ? "text-accent" : "text-muted")}>
+              {poolLabels[meal as keyof typeof poolLabels]} · {items.length} / {perMeal} {poolLabels.poolCount}
+            </h2>
             <div className="mt-1.5 flex flex-wrap gap-2">
               {items.map((s) => {
                 const d = byId.get(s.id);
@@ -65,7 +68,7 @@ export function PoolPicker({
           labels={labels}
           dislikes={[]}
           initialMeal="lunch"
-          pick={{ selected: sel.map((s) => s.id), onToggle: (d) => toggle(d.meal, d.id), meals: ["lunch", "dinner"] }}
+          pick={{ selected: sel.map((s) => s.id), onToggle: (d) => toggle(d.meal, d.id), meals }}
         />
       </div>
     </div>
