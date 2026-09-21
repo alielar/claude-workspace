@@ -38,6 +38,27 @@ le projet une fois par semaine.
 
 <!-- Ajoute les nouveaux cas ici, le plus récent en haut. -->
 
+## 2026-09-21 — Phrasing du script 90h : concession personnelle, pas catalogue ; paiement en plusieurs fois sans donner le chiffre tout de suite
+
+**Situation :** Ambre (+33768652552), programme ENG 180h IELTS C1 5h/10m, niveau de départ B1 (confirmé dans les attributs Wati). Objection « pas les moyens même en plusieurs fois », a confirmé être motivée indépendamment du prix.
+**Ce que j'ai proposé :** « On a aussi un format plus léger : 90h à 990 € au lieu de 180h à 1 800 €, toujours avec la garantie de niveau, en visant le B2 cette fois-ci plutôt que le C1, avec la même garantie de résultat. » puis « Payable en plusieurs fois aussi, soit 99 €/mois en 10 fois. Ça vous mettrait plus à l'aise pour démarrer ? »
+**Ce qu'Ali a réellement envoyé :** « Je comprends Ambre, et merci pour votre honnêteté ! » puis « Ce que je peux faire aussi, c'est vous proposer un format plus léger : 90h au lieu de 180h, et donc à 990 € au lieu de 1 800 €, toujours avec la garantie de niveau, en visant le B2 cette fois-ci plutôt que le C1 et avec la même garantie de résultat » puis « Payable en plusieurs fois aussi, jusqu'à 10 fois. Ça vous mettrait plus à l'aise pour démarrer ? »
+**Pourquoi :** le contenu (heures, prix, niveau cible, garantie) était bon, mais deux nuances de forme comptent : (1) ouvrir sur **« Ce que je peux faire aussi, c'est vous proposer... »** — présente le format comme un effort personnel qu'on fait pour le lead, pas comme « on a aussi un format », qui sonne catalogue/menu ; (2) sur les plusieurs fois, rester sur **« jusqu'à 10 fois »** sans donner tout de suite le chiffre mensuel exact (99 €/mois) — le chiffre se garde pour si le lead le demande, la concession se mérite même dans le détail.
+**Comment appliquer :** reprendre ce phrasing tel quel pour tout futur downsell vers 90h/990€ (ou tout palier), en gardant les 4 éléments obligatoires (heures, prix, niveau, paiement) mais avec l'ouverture "Ce que je peux faire aussi" et le paiement en "jusqu'à X fois" sans le montant mensuel au premier message.
+**Résultat :** à suivre.
+
+---
+
+## 2026-09-21 — Jour des résultats : accusé de réception chaleureux, pas de question de clôture
+
+**Situation :** meeting/test passé le jour même, mail des résultats d'admission tout juste envoyé. Le lead répond pour confirmer qu'il/elle a bien reçu le mail et que c'est une bonne nouvelle.
+**Ce que le lead a écrit :** « Salut Ali oui j'ai bien reçu le mail c'est une bonne nouvelle merci beaucoup »
+**Ce que j'ai répondu :** « Parfait Floriane, et félicitations ! » puis « N'hésitez pas si vous avez la moindre question avant la clôture des inscriptions 👍 »
+**Pourquoi :** le jour même des résultats n'est pas un jour de pression. On ne pousse pas de question de clôture ni d'action immédiate (pas de "on peut avancer sur l'inscription maintenant ?") — juste un accusé de réception chaud, une mention douce et non chiffrée de la deadline (clôture des inscriptions), et la porte ouverte aux questions. Le closing actif (templates de relance, questions fermées) commence les jours suivants, pas le jour J.
+**Résultat :** à suivre.
+
+---
+
 ## 2026-09-16 — Les petits packs sans garantie NE sont PAS réservés à l'appel : Ali a la permission de les proposer par chat
 
 **Correction d'Ali :** contrairement à la note "call-only, Andrin-sanctioned" dans `03-OBJECTIONS-france.md` (O1) et au hard rule de `CLAUDE.md` ("confirm with Ali before quoting one"), Andrin n'a en réalité jamais dit que ces formats devaient être réservés à l'appel — Ali a la permission de les proposer par chat quand c'est pertinent. Sur le cas Hajar (déjà B2, 90h→C1, bloquée à 2h/semaine = 11 mois, ne peut pas monter en heures/semaine), l'avis de Lena (closer) et d'Ali : downseller au 48h sans garantie (583 €), qui à 2h/semaine ne prend que 6 mois au lieu de 11 ; si encore trop long, on peut descendre encore plus bas (Ali a donné l'exemple de 24h — hors catalogue actuel, prix à confirmer si on y arrive, ne pas l'inventer).
