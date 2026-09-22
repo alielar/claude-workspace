@@ -28,26 +28,33 @@ export default async function DishPage({
   if (!dish) notFound();
   const L = me.lang;
   const isCook = me.role === "cook";
+  const showMacros = !me.isChild && !me.simpleUi && !isCook;
   const addedBy = dish.createdBy ? (await db.select({ name: people.name }).from(people).where(eq(people.id, dish.createdBy)))[0]?.name : null;
 
-  const hasRecipe = dish.recipeAr.steps.length > 0;
+  // The cook and Darija readers get the Darija recipe. English and French readers get theirs
+  // when the import has it, otherwise the Darija one as before.
+  const own = L === "fr" ? dish.recipeFr : L === "en" ? dish.recipeEn : null;
+  const useOwn = !isCook && own && own.steps.length > 0;
+  const shownRecipe = useOwn ? own : dish.recipeAr;
+  const recipeLang = useOwn ? L : "ar";
+  const hasRecipe = shownRecipe.steps.length > 0;
 
   const recipe = (
-    <section className="mt-8" dir="rtl" style={AR}>
-      <h2 className="text-xl font-extrabold">{t("ar", "recipe")}</h2>
+    <section className="mt-8" dir={recipeLang === "ar" ? "rtl" : "ltr"} style={recipeLang === "ar" ? AR : undefined}>
+      <h2 className="text-xl font-extrabold">{t(recipeLang, "recipe")}</h2>
       <ol className="mt-3 grid gap-3 list-none">
-        {dish.recipeAr.steps.map((s, i) => (
+        {shownRecipe.steps.map((s, i) => (
           <li key={i} className="flex gap-3">
             <span className="shrink-0 w-8 h-8 rounded-full bg-accent-soft text-accent font-extrabold flex items-center justify-center">{i + 1}</span>
             <p className={clsx("leading-relaxed", isCook ? "text-xl" : "text-lg")}>{s}</p>
           </li>
         ))}
       </ol>
-      {dish.recipeAr.tips.length > 0 && (
+      {shownRecipe.tips.length > 0 && (
         <>
-          <h3 className="mt-6 text-lg font-extrabold">{t("ar", "tips")}</h3>
+          <h3 className="mt-6 text-lg font-extrabold">{t(recipeLang, "tips")}</h3>
           <ul className="mt-2 grid gap-2 list-disc ps-6">
-            {dish.recipeAr.tips.map((s, i) => (
+            {shownRecipe.tips.map((s, i) => (
               <li key={i} className={clsx("leading-relaxed", isCook ? "text-xl" : "text-lg")}>{s}</li>
             ))}
           </ul>
@@ -56,7 +63,42 @@ export default async function DishPage({
     </section>
   );
 
-  const showMacros = !me.isChild && !me.simpleUi && !isCook;
+  // The fuller USDA table behind the macros, for adults only.
+  const n = dish.nutrition ?? {};
+  const more: [string, number | undefined, string][] = [
+    [t(L, "satFat"), n.saturated_fat_g, "g"], [t(L, "sugars"), n.sugars_g, "g"],
+    [t(L, "sodium"), n.sodium_mg, "mg"], [t(L, "cholesterol"), n.cholesterol_mg, "mg"],
+  ];
+  const moreNutrition = showMacros && more.some(([, v]) => v !== undefined) && (
+    <section className="mt-4 tile p-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="font-extrabold">{t(L, "moreNutrition")}</h2>
+        <span className="text-xs text-muted">{t(L, "perServing")}</span>
+      </div>
+      <div className="mt-2 grid grid-cols-4 gap-2 text-center">
+        {more.filter(([, v]) => v !== undefined).map(([label, v, unit]) => (
+          <div key={label}>
+            <div className="text-lg font-extrabold">{Math.round(v!)}<span className="text-xs font-semibold text-muted">{unit}</span></div>
+            <div className="text-xs text-muted">{label}</div>
+          </div>
+        ))}
+      </div>
+      {(dish.foodGroups ?? []).length > 0 && (
+        <div className="mt-4">
+          <div className="text-xs font-bold text-muted uppercase tracking-wide">{t(L, "foodGroups")}</div>
+          <ul className="mt-1.5 grid gap-1">
+            {dish.foodGroups.map((g) => (
+              <li key={g.group} className="flex justify-between text-sm">
+                <span className="font-semibold">{t(L, `g_${g.group}`)}</span>
+                <span className="text-muted">{g.amount}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+
   const ingredients = (
     <Ingredients
       items={dish.ingredients}
@@ -104,7 +146,12 @@ export default async function DishPage({
       {!me.simpleUi && dishDesc(dish, L) && <p className="mt-2 text-muted">{dishDesc(dish, L)}</p>}
 
       <div className="mt-3 flex flex-wrap gap-2 text-sm">
-        <span className="chip bg-accent-soft text-accent py-1 px-3">{t(L, dish.meal)}</span>
+        {(dish.categories ?? []).length > 0
+          ? dish.categories.map((c) => <span key={c} className="chip bg-accent-soft text-accent py-1 px-3">{t(L, `c_${c}`)}</span>)
+          : <span className="chip bg-accent-soft text-accent py-1 px-3">{t(L, dish.meal)}</span>}
+        {dish.rating != null && dish.ratingCount > 0 && !me.simpleUi && (
+          <span className="chip bg-card border border-line text-muted py-1 px-3">{dish.rating.toFixed(1)} / 5 · {dish.ratingCount} {t(L, "ratings")}</span>
+        )}
         {dish.prepMin + dish.cookMin > 0 && (
           <span className="chip bg-card border border-line text-muted py-1 px-3">{dish.prepMin + dish.cookMin} {t(L, "minutes")}</span>
         )}
@@ -116,7 +163,7 @@ export default async function DishPage({
 
       {dish.status === "ready" && (
         // The people row, nutrition and ingredients move together. The cook reads the recipe first.
-        isCook ? (<>{hasRecipe && recipe}{ingredients}</>) : (<>{ingredients}{hasRecipe && recipe}</>)
+        isCook ? (<>{hasRecipe && recipe}{ingredients}</>) : (<>{ingredients}{moreNutrition}{hasRecipe && recipe}</>)
       )}
 
       {dish.videoUrl && (
@@ -125,6 +172,11 @@ export default async function DishPage({
         </a>
       )}
 
+      {dish.sourceUrl && (
+        <p className="mt-6 text-xs text-muted">
+          {t(L, "recipeSource")}: <a href={dish.sourceUrl} className="underline">{dish.sourceText || t(L, "usdaCredit")}</a>
+        </p>
+      )}
       {dish.photoCredit && (
         <p className="mt-6 text-xs text-muted">
           {t(L, "photoCredit")}: {dish.photoSourceUrl ? <a href={dish.photoSourceUrl} className="underline">{dish.photoCredit}</a> : dish.photoCredit}

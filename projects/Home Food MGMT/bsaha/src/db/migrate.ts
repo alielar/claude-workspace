@@ -108,6 +108,17 @@ const LATE_COLUMNS = [
   `ALTER TABLE dishes ADD COLUMN in_main INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE dishes ADD COLUMN is_lean INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE dishes ADD COLUMN video_url TEXT`,
+  // USDA MyPlate Kitchen import, 2026-09-22.
+  `ALTER TABLE dishes ADD COLUMN recipe_en TEXT NOT NULL DEFAULT '{"steps":[],"tips":[]}'`,
+  `ALTER TABLE dishes ADD COLUMN recipe_fr TEXT NOT NULL DEFAULT '{"steps":[],"tips":[]}'`,
+  `ALTER TABLE dishes ADD COLUMN meals TEXT NOT NULL DEFAULT '[]'`,
+  `ALTER TABLE dishes ADD COLUMN categories TEXT NOT NULL DEFAULT '[]'`,
+  `ALTER TABLE dishes ADD COLUMN food_groups TEXT NOT NULL DEFAULT '[]'`,
+  `ALTER TABLE dishes ADD COLUMN nutrition TEXT NOT NULL DEFAULT '{}'`,
+  `ALTER TABLE dishes ADD COLUMN rating REAL`,
+  `ALTER TABLE dishes ADD COLUMN rating_count INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE dishes ADD COLUMN source_url TEXT`,
+  `ALTER TABLE dishes ADD COLUMN source_text TEXT`,
 ];
 
 /** The household on day one. Everything is renameable from the People screen. */
@@ -131,6 +142,8 @@ export function ensureSchema(): Promise<void> {
     }
     // A dish removed before the library existed is simply off the menu now.
     await db.run(sql`UPDATE dishes SET on_menu = 0 WHERE removed_at IS NOT NULL AND on_menu = 1`);
+    // Dishes from before the multi-meal column belong to their primary meal only.
+    await db.run(sql`UPDATE dishes SET meals = '["' || meal || '"]' WHERE meals = '[]'`);
     for (const fix of ONE_OFFS) {
       const seen = await db.all<{ key: string }>(sql`SELECT key FROM settings WHERE key = ${fix.key}`);
       if (seen.length) continue;

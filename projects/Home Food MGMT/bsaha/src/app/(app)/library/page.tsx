@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { CATEGORIES, type Category } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { listSlimDishes } from "@/lib/slim";
 import { t } from "@/lib/i18n/dict";
@@ -28,7 +29,7 @@ export default async function LibraryPage() {
             breakfast: t(L, "breakfast"), lunch: t(L, "lunch"), dinner: t(L, "dinner"),
             search: t(L, "search"), searchHint: t(L, "searchHint"), results: t(L, "results"),
             noResults: t(L, "noResults"), clear: t(L, "clear"),
-            f_protein: t(L, "f_protein"), f_fibre: t(L, "f_fibre"), f_quick: t(L, "f_quick"),
+            f_protein: t(L, "f_protein"), f_lowcarb: t(L, "f_lowcarb"), f_fibre: t(L, "f_fibre"), f_quick: t(L, "f_quick"),
             f_veg: t(L, "f_veg"), f_fish: t(L, "f_fish"), f_chicken: t(L, "f_chicken"), f_meat: t(L, "f_meat"),
             onMenu: t(L, "onMenu"), addToMenu: t(L, "addToMenu"), onMenuCount: t(L, "onMenuCount"),
             target: t(L, "target"), showAll: t(L, "showAll"), showOnMenu: t(L, "showOnMenu"), showOffMenu: t(L, "showOffMenu"),
@@ -36,7 +37,9 @@ export default async function LibraryPage() {
             clearAll: t(L, "clearAll"), clearAllConfirm: t(L, "clearAllConfirm"),
             deleteForever: t(L, "deleteForever"), deleteConfirm: t(L, "deleteConfirm"),
             moroccan: t(L, "moroccanMenu"), international: t(L, "mainMenu"),
-            sortProtein: t(L, "sortProtein"), sortName: t(L, "sortName"),
+            sortProtein: t(L, "sortProtein"), sortName: t(L, "sortName"), sortRating: t(L, "sortRating"),
+            allCategories: t(L, "allCategories"),
+            ...(Object.fromEntries(CATEGORIES.map((c) => [`c_${c}`, t(L, `c_${c}`)])) as Record<`c_${Category}`, string>),
           }}
         />
       </div>

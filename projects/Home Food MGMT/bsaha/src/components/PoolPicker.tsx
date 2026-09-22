@@ -68,7 +68,7 @@ export function PoolPicker({
           labels={labels}
           dislikes={[]}
           initialMeal="lunch"
-          pick={{ selected: sel.map((s) => s.id), onToggle: (d) => toggle(d.meal, d.id), meals }}
+          pick={{ selected: sel.map((s) => s.id), onToggle: (d, meal) => toggle(meal, d.id), meals }}
         />
       </div>
     </div>

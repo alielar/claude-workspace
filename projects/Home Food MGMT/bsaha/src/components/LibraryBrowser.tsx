@@ -3,28 +3,31 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import type { Lang, Meal } from "@/db/schema";
-import { fold, highFibre, highProtein, quick, slimName, type SlimDish } from "@/lib/dishMeta";
+import { CATEGORIES, type Category, type Lang, type Meal } from "@/db/schema";
+import { fold, highFibre, highProtein, inMeal, lowCarb, quick, slimName, type SlimDish } from "@/lib/dishMeta";
 import { DishImage } from "./DishImage";
 import { clearMenuForMeal, clearWholeMenu, deleteDishForGood, setOnMenu } from "@/app/(app)/library/actions";
 
 export type LibraryLabels = Record<
   | "breakfast" | "lunch" | "dinner" | "search" | "searchHint" | "results" | "noResults" | "clear"
-  | "f_protein" | "f_fibre" | "f_quick" | "f_veg" | "f_fish" | "f_chicken" | "f_meat"
+  | "f_protein" | "f_lowcarb" | "f_fibre" | "f_quick" | "f_veg" | "f_fish" | "f_chicken" | "f_meat"
   | "onMenu" | "addToMenu" | "onMenuCount" | "target" | "showAll" | "showOnMenu" | "showOffMenu"
   | "clearMeal" | "clearMealDone" | "clearAll" | "clearAllConfirm" | "deleteForever" | "deleteConfirm"
-  | "moroccan" | "international" | "sortProtein" | "sortName",
+  | "moroccan" | "international" | "sortProtein" | "sortName" | "sortRating" | "allCategories"
+  | `c_${Category}`,
   string
 >;
 
-type Filter = "protein" | "fibre" | "quick" | "veg" | "fish" | "chicken" | "meat";
-const FILTERS: Filter[] = ["protein", "fibre", "quick", "veg", "fish", "chicken", "meat"];
+type Filter = "protein" | "lowcarb" | "fibre" | "quick" | "veg" | "fish" | "chicken" | "meat";
+const FILTERS: Filter[] = ["protein", "lowcarb", "fibre", "quick", "veg", "fish", "chicken", "meat"];
 type Show = "all" | "on" | "off";
+type Sort = "rating" | "protein" | "name";
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner"];
 
 function matches(d: SlimDish, f: Filter): boolean {
   switch (f) {
     case "protein": return highProtein(d);
+    case "lowcarb": return lowCarb(d);
     case "fibre": return highFibre(d);
     case "quick": return quick(d);
     case "veg": return d.tags.includes("vegetarian");
@@ -33,6 +36,9 @@ function matches(d: SlimDish, f: Filter): boolean {
     case "meat": return d.tags.includes("red_meat");
   }
 }
+
+const chip = (on: boolean) =>
+  clsx("chip shrink-0 py-1.5 px-3 text-sm border whitespace-nowrap", on ? "bg-accent text-accent-ink border-accent" : "bg-card text-muted border-line");
 
 /**
  * The whole library, with a tick on every dish saying whether it is on the menu, and a
@@ -50,33 +56,47 @@ export function LibraryBrowser({
   const [meal, setMeal] = useState<Meal>("lunch");
   const [show, setShow] = useState<Show>("all");
   const [cuisine, setCuisine] = useState<"all" | "intl" | "moroccan">("all");
-  const [sort, setSort] = useState<"protein" | "name">("protein");
+  const [sort, setSort] = useState<Sort>("rating");
   const [q, setQ] = useState("");
+  const [category, setCategory] = useState<Category | null>(null);
   const [active, setActive] = useState<Set<Filter>>(new Set());
   const [, start] = useTransition();
 
+  const hasMoroccan = useMemo(() => dishes.some((d) => d.cuisine === "Moroccan"), [dishes]);
+
+  // On-menu counts per meal. A dish under two meals counts for both, which is what the cook sees.
   const counts = useMemo(() => {
     const c: Record<string, number> = { breakfast: 0, lunch: 0, dinner: 0 };
-    for (const d of dishes) if (onMenu[d.id] && !gone.has(d.id)) c[d.meal]++;
+    for (const d of dishes) if (onMenu[d.id] && !gone.has(d.id)) for (const m of MEALS) if (inMeal(d, m)) c[m]++;
     return c;
   }, [dishes, onMenu, gone]);
-  const totalOn = counts.breakfast + counts.lunch + counts.dinner;
+  const totalOn = useMemo(() => dishes.filter((d) => onMenu[d.id] && !gone.has(d.id)).length, [dishes, onMenu, gone]);
+
+  const categories = useMemo(() => {
+    const cs = new Set<Category>();
+    for (const d of dishes) if (inMeal(d, meal)) for (const c of d.categories) cs.add(c);
+    return CATEGORIES.filter((c) => cs.has(c));
+  }, [dishes, meal]);
 
   const shown = useMemo(() => {
     const needle = fold(q.trim());
     const list = dishes.filter((d) => {
       if (gone.has(d.id)) return false;
-      if (d.meal !== meal) return false;
+      if (!inMeal(d, meal)) return false;
       if (show === "on" && !onMenu[d.id]) return false;
       if (show === "off" && onMenu[d.id]) return false;
       if (cuisine === "moroccan" && d.cuisine !== "Moroccan") return false;
       if (cuisine === "intl" && d.cuisine === "Moroccan") return false;
+      if (category && !d.categories.includes(category)) return false;
       if (needle && !fold(`${d.nameEn} ${d.nameFr} ${d.nameAr} ${d.nameLatin} ${d.cuisine} ${d.ingredientsText}`).includes(needle)) return false;
       for (const f of active) if (!matches(d, f)) return false;
       return true;
     });
-    return list.sort((a, b) => (sort === "protein" ? b.protein - a.protein || a.nameEn.localeCompare(b.nameEn) : a.nameEn.localeCompare(b.nameEn)));
-  }, [dishes, meal, show, cuisine, q, active, sort, onMenu, gone]);
+    return list.sort((a, b) =>
+      sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) || a.nameEn.localeCompare(b.nameEn)
+      : sort === "protein" ? b.protein - a.protein || a.nameEn.localeCompare(b.nameEn)
+      : a.nameEn.localeCompare(b.nameEn));
+  }, [dishes, meal, show, cuisine, category, q, active, sort, onMenu, gone]);
 
   const toggle = (d: SlimDish) => {
     const next = !onMenu[d.id];
@@ -88,7 +108,7 @@ export function LibraryBrowser({
   };
 
   const clearMeal = () => {
-    const ids = dishes.filter((d) => d.meal === meal && onMenu[d.id]).map((d) => d.id);
+    const ids = dishes.filter((d) => inMeal(d, meal) && onMenu[d.id]).map((d) => d.id);
     if (ids.length === 0) return;
     setLocal((p) => ({ ...p, ...Object.fromEntries(ids.map((i) => [i, false])) }));
     start(async () => { await clearMenuForMeal(meal); });
@@ -111,6 +131,9 @@ export function LibraryBrowser({
 
   const toggleFilter = (f: Filter) =>
     setActive((prev) => { const n = new Set(prev); if (n.has(f)) n.delete(f); else n.add(f); return n; });
+
+  const nextSort: Record<Sort, Sort> = { rating: "protein", protein: "name", name: "rating" };
+  const sortLabel: Record<Sort, string> = { rating: labels.sortRating, protein: labels.sortProtein, name: labels.sortName };
 
   return (
     <div>
@@ -135,17 +158,19 @@ export function LibraryBrowser({
             </button>
           ))}
         </div>
-        <div className="flex gap-1 p-1 bg-card border border-line rounded-xl">
-          {(["all", "intl", "moroccan"] as const).map((v) => (
-            <button key={v} onClick={() => setCuisine(v)}
-              className={clsx("rounded-lg py-1.5 px-3 text-sm font-bold", cuisine === v ? "bg-ink text-bg" : "text-muted")}>
-              {v === "all" ? labels.showAll : v === "intl" ? labels.international : labels.moroccan}
-            </button>
-          ))}
-        </div>
-        <button onClick={() => setSort(sort === "protein" ? "name" : "protein")}
+        {hasMoroccan && (
+          <div className="flex gap-1 p-1 bg-card border border-line rounded-xl">
+            {(["all", "intl", "moroccan"] as const).map((v) => (
+              <button key={v} onClick={() => setCuisine(v)}
+                className={clsx("rounded-lg py-1.5 px-3 text-sm font-bold", cuisine === v ? "bg-ink text-bg" : "text-muted")}>
+                {v === "all" ? labels.showAll : v === "intl" ? labels.international : labels.moroccan}
+              </button>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setSort(nextSort[sort])}
           className="chip py-1.5 px-3 text-sm border border-line bg-card text-muted">
-          {sort === "protein" ? labels.sortProtein : labels.sortName}
+          {sortLabel[sort]}
         </button>
         {totalOn > 0 && (
           <div className="flex gap-2 ms-auto">
@@ -164,16 +189,23 @@ export function LibraryBrowser({
       <input value={q} onChange={(e) => setQ(e.target.value)}
         placeholder={`${labels.search} · ${labels.searchHint}`} className="input mt-3" inputMode="search" enterKeyHint="search" />
 
+      {categories.length > 1 && (
+        <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+          <button onClick={() => setCategory(null)} className={chip(category === null)}>{labels.allCategories}</button>
+          {categories.map((c) => (
+            <button key={c} onClick={() => setCategory(category === c ? null : c)} className={chip(category === c)}>{labels[`c_${c}`]}</button>
+          ))}
+        </div>
+      )}
+
       <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
         {FILTERS.map((f) => (
-          <button key={f} onClick={() => toggleFilter(f)}
-            className={clsx("chip shrink-0 py-1.5 px-3 text-sm border whitespace-nowrap",
-              active.has(f) ? "bg-accent text-accent-ink border-accent" : "bg-card text-muted border-line")}>
+          <button key={f} onClick={() => toggleFilter(f)} className={chip(active.has(f))}>
             {labels[`f_${f}` as keyof LibraryLabels]}
           </button>
         ))}
-        {(active.size > 0 || q) && (
-          <button onClick={() => { setActive(new Set()); setQ(""); }}
+        {(active.size > 0 || q || category) && (
+          <button onClick={() => { setActive(new Set()); setQ(""); setCategory(null); }}
             className="chip shrink-0 py-1.5 px-3 text-sm border border-line text-accent whitespace-nowrap">{labels.clear}</button>
         )}
       </div>
@@ -184,6 +216,7 @@ export function LibraryBrowser({
       <div className="mt-2 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {shown.map((d) => {
           const on = onMenu[d.id];
+          const cat = d.categories[0];
           return (
             <div key={d.id} className={clsx("tile overflow-hidden flex flex-col", on && "border-accent ring-2 ring-accent")}>
               <Link href={`/menu/${d.slug}`} className="block">
@@ -192,8 +225,11 @@ export function LibraryBrowser({
                 </div>
               </Link>
               <div className="p-3 flex-1 flex flex-col">
+                {cat && <div className="text-[11px] font-bold uppercase tracking-wide text-muted">{labels[`c_${cat}`]}</div>}
                 <div className="text-sm font-bold leading-tight">{slimName(d, lang)}</div>
-                <div className="text-xs text-muted mt-0.5">{d.protein} g · {d.kcal} kcal</div>
+                <div className="text-xs text-muted mt-0.5">
+                  {d.protein} g · {d.kcal} kcal{d.rating ? ` · ${d.rating.toFixed(1)}` : ""}
+                </div>
                 <button onClick={() => toggle(d)}
                   className={clsx("mt-2 w-full rounded-xl py-2 text-sm font-bold", on ? "bg-accent text-accent-ink" : "bg-accent-soft text-accent")}>
                   {on ? labels.onMenu : labels.addToMenu}

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { dishes, picks, pools, MEALS, type Meal } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
@@ -73,13 +73,15 @@ export async function clearMenuForMeal(meal: Meal): Promise<number> {
   const me = await currentPerson();
   if (!me?.isAdmin || !MEALS.includes(meal)) return 0;
 
-  const on = await db.select({ id: dishes.id }).from(dishes).where(and(eq(dishes.meal, meal), eq(dishes.onMenu, true)));
+  // A dish belongs to a meal through its `meals` list (a main dish is lunch and dinner).
+  const inMeal = sql`(${dishes.meals} LIKE ${`%"${meal}"%`} OR (${dishes.meals} = '[]' AND ${dishes.meal} = ${meal}))`;
+  const on = await db.select({ id: dishes.id }).from(dishes).where(and(inMeal, eq(dishes.onMenu, true)));
   if (on.length === 0) return 0;
 
   await db
     .update(dishes)
     .set({ onMenu: false, removedAt: new Date().toISOString(), removedBy: me.id })
-    .where(and(eq(dishes.meal, meal), eq(dishes.onMenu, true)));
+    .where(and(inMeal, eq(dishes.onMenu, true)));
   for (const d of on) {
     await db.delete(pools).where(eq(pools.dishId, d.id));
     await db.delete(picks).where(eq(picks.dishId, d.id));

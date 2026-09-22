@@ -38,6 +38,26 @@ le projet une fois par semaine.
 
 <!-- Ajoute les nouveaux cas ici, le plus récent en haut. -->
 
+## 2026-09-22 — Sur le palier sans garantie (48h/583€ etc.), nommer explicitement l'absence de garantie
+
+**Situation :** Ambre (+33768652552), déjà descendue au 90h/990€ et refusée pour budget étudiant. Étape suivante : palier 3 de la politique de downsell, petits packs sans garantie (48h/583€).
+**Consigne initiale d'Ali (2026-09-21) :** ne pas mentionner l'absence de garantie, présenter juste comme "progression générale".
+**Correction d'Ali (2026-09-22) :** pour ce cas précis, dire explicitement qu'il n'y a pas de garantie sur ce format — tout le reste du phrasing (heures/prix ancrés, "ce que je peux vous proposer", "jusqu'à 10 fois" sans le chiffre mensuel) reste identique.
+**Pourquoi/comment appliquer :** les deux approches (garantie non mentionnée vs nommée explicitement) ont chacune été demandées par Ali à un jour d'intervalle sur le même lead — donc pas une règle générale figée, à vérifier au cas par cas avant de rédiger ce palier plutôt que d'appliquer par défaut la version du 09-21.
+**Résultat :** à suivre.
+
+---
+
+## 2026-09-22 — Deux mécaniques de remboursement du 196 €, ne pas les confondre
+
+**Situation :** Omar (+32484118158), questions écrites précises par mail (garantie, remboursement, contrat). Sur sa question « en cas d'échec IELTS malgré conditions remplies, le remboursement inclut-il les 196 € d'onboarding ? », j'avais répondu par erreur que les 196 € restaient non remboursables, en appliquant la règle de la rétractation (14 jours) à la mauvaise situation.
+**Correction d'Ali :** ce sont deux mécaniques différentes — (1) **rétractation** dans les 14 premiers jours → remboursé moins les 196 € d'onboarding + les cours déjà donnés du mois 1 (`01-NUMBERS-PRODUCT-france.md` §Rétractation) ; (2) **garantie satisfait-remboursé** (échec au niveau malgré les 4 conditions remplies) → remboursement à 100 % de l'**intégralité**, 196 € compris. Ne pas appliquer la règle (1) à la situation (2).
+**Correction complémentaire :** les mensualités sont un engagement sur toute la durée (10 mois pour un 180h/5h), indépendant d'une pause éventuelle — la pause prolonge la formation et gèle les heures/la garantie, mais ne suspend pas le paiement.
+**Et sur le contrat :** « le contrat » = les CGV envoyées dans le mail d'admission (cf. Andrin, transcripts équipe : « les CGV présentes dans le lien reçu par mail font office de contrat »). Le détail du programme (nombre de leçons, durée, déroulé) est dans la présentation en slides, sur le **deuxième lien** du même mail d'admission — pas dans les CGV elles-mêmes.
+**Résultat :** à suivre.
+
+---
+
 ## 2026-09-21 — Phrasing du script 90h : concession personnelle, pas catalogue ; paiement en plusieurs fois sans donner le chiffre tout de suite
 
 **Situation :** Ambre (+33768652552), programme ENG 180h IELTS C1 5h/10m, niveau de départ B1 (confirmé dans les attributs Wati). Objection « pas les moyens même en plusieurs fois », a confirmé être motivée indépendamment du prix.

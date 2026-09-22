@@ -1,70 +1,69 @@
 /**
- * Loads the library (data/dishes/*.json + data/photos.json) into the dishes table:
- * the Moroccan catalog (Moroccan menu only) and the international library written in-house
- * (96 healthy everyday dishes, 2026-09-20). The earlier NHS and USDA MyPlate sets are archived in
- * data/dishes-archive/nhs-myplate-2026-09-20/ and are removed from the database by the stale sweep below.
+ * Loads the library into the dishes table. Since 2026-09-22 the library is the USDA MyPlate Kitchen
+ * collection (data/dishes/myplate.json, built by scripts/myplate/, public domain recipes and photos).
+ * The earlier in-house international and Moroccan sets are archived in data/dishes-archive/library-2026-09-22/.
+ *
  * Upserts by slug so re-running after a content fix updates text but keeps custom dishes,
  * the reviewed flag, any photo the cook replaced, `on_menu` and a "deleted" status (a dish deleted
- * for good in the app keeps its row as a tombstone, so this upsert cannot revive it). Anything built-in (not custom) whose
- * slug is no longer in the source files below is removed - the catalog is exactly these
- * files, nothing left over from an earlier library. The old hand-written library lives in
- * data/dishes-archive/ if it's ever needed again.
+ * for good in the app keeps its row as a tombstone, so this upsert cannot revive it). Anything built-in
+ * (not custom) whose slug is no longer in the source file is removed, together with its pool rows.
  */
 import { eq, sql, and, notInArray, inArray } from "drizzle-orm";
 import { db } from "./index";
-import { dishes, pools, type Ingredient, type Macros, type Recipe } from "./schema";
+import { dishes, pools, picks, type Category, type FoodGroupAmount, type Ingredient, type Macros, type Meal, type Nutrition, type Recipe } from "./schema";
 import { slugify } from "@/lib/slug";
-import morBreakfast from "../../data/dishes/moroccan-breakfast.json";
-import morLunch from "../../data/dishes/moroccan-lunch.json";
-import morDinner from "../../data/dishes/moroccan-dinner.json";
-import intlB1 from "../../data/dishes/intl-breakfast-1.json";
-import intlB2 from "../../data/dishes/intl-breakfast-2.json";
-import intlL1 from "../../data/dishes/intl-lunch-1.json";
-import intlL2 from "../../data/dishes/intl-lunch-2.json";
-import intlL3 from "../../data/dishes/intl-lunch-3.json";
-import intlD1 from "../../data/dishes/intl-dinner-1.json";
-import intlD2 from "../../data/dishes/intl-dinner-2.json";
-import intlD3 from "../../data/dishes/intl-dinner-3.json";
-import photos from "../../data/photos.json";
-import lean from "../../data/lean-moroccan.json";
-import videos from "../../data/videos/all.json";
+import myplate from "../../data/dishes/myplate.json";
 
+type Photo = { file: string; credit: string; license: string; source: string };
 type Raw = {
-  /** Slug of the original source recipe. Photos stay linked to it when a name is edited. */
   slug?: string;
-  /** false for a bulk import that lands in the library only, for someone to put on the menu. */
   on_menu?: boolean;
-  meal: "breakfast" | "lunch" | "dinner";
+  /** Optional: the pipeline derives it from `categories` when missing. */
+  meal?: Meal;
   name_en: string; name_fr: string; name_ar: string; name_latin: string;
   desc_en?: string; desc_fr?: string; cuisine?: string;
   servings?: number; prep_min?: number; cook_min?: number;
-  macros: Macros; ingredients: Ingredient[]; recipe_ar: Recipe; tags: string[];
+  macros: Macros; nutrition?: Nutrition; ingredients: Ingredient[];
+  recipe_ar: Recipe; recipe_en?: Recipe; recipe_fr?: Recipe;
+  tags: string[]; categories?: Category[]; food_groups?: FoodGroupAmount[];
+  rating?: number | null; rating_count?: number;
+  source_url?: string; source_text?: string;
+  photo?: Photo | null;
 };
-type Photo = { file: string; credit: string; license: string; source: string };
 
-const ALL = [
-  // The Moroccan menu, restored from the pre-NHS library (see PLAN.md).
-  ...(morBreakfast as Raw[]), ...(morLunch as Raw[]), ...(morDinner as Raw[]),
-  // The international library, rebuilt 2026-09-20: 96 well-known healthy dishes written in-house
-  // (24 breakfast, 36 lunch, 36 dinner). They land off the menu; the menu is hand-picked from them.
-  ...(intlB1 as Raw[]), ...(intlB2 as Raw[]),
-  ...(intlL1 as Raw[]), ...(intlL2 as Raw[]), ...(intlL3 as Raw[]),
-  ...(intlD1 as Raw[]), ...(intlD2 as Raw[]), ...(intlD3 as Raw[]),
-];
-const PHOTOS = photos as Record<string, Photo>;
-const LEAN = new Set(Object.values(lean as Record<string, string[] | string>).flat().filter((v) => typeof v === "string").map((n) => slugify(n)));
-const inMain = (r: Raw) => r.cuisine !== "Moroccan";
-const isLean = (r: Raw, slug: string) => r.cuisine !== "Moroccan" || LEAN.has(slug);
-const VIDEOS = videos as Record<string, { url: string }>;
+const ALL = myplate as Raw[];
+
+/**
+ * Which meal tabs a dish appears under, from its USDA courses. Mains, soups, salads, sandwiches,
+ * sides, appetizers and sauces belong to lunch and dinner; breakfast to breakfast; desserts, snacks,
+ * breads and beverages to every meal.
+ */
+export function mealsFor(categories: Category[], fallback: Meal = "lunch"): Meal[] {
+  const set = new Set<Meal>();
+  for (const c of categories) {
+    if (c === "breakfast") set.add("breakfast");
+    else if (c === "dessert" || c === "snack" || c === "bread" || c === "beverage") { set.add("breakfast"); set.add("lunch"); set.add("dinner"); }
+    else { set.add("lunch"); set.add("dinner"); }
+  }
+  if (set.size === 0) set.add(fallback);
+  return (["breakfast", "lunch", "dinner"] as Meal[]).filter((m) => set.has(m));
+}
 
 export async function seedDishes() {
   const now = new Date().toISOString();
   for (const r of ALL) {
-    const slug = slugify(r.name_en);
-    const photo = PHOTOS[slug] ?? (r.slug ? PHOTOS[r.slug] : undefined);
+    const slug = r.slug ?? slugify(r.name_en);
+    const categories = r.categories ?? [];
+    const meals = r.meal ? [r.meal] : mealsFor(categories);
+    const meal: Meal = r.meal ?? (meals.includes("lunch") ? "lunch" : meals[0]);
+    const photo = r.photo ?? undefined;
     const row = {
       slug,
-      meal: r.meal,
+      meal,
+      meals,
+      categories,
+      foodGroups: r.food_groups ?? [],
+      nutrition: r.nutrition ?? {},
       nameEn: r.name_en,
       nameFr: r.name_fr,
       nameAr: r.name_ar,
@@ -78,10 +77,15 @@ export async function seedDishes() {
       macros: r.macros,
       ingredients: r.ingredients,
       recipeAr: r.recipe_ar,
+      recipeEn: r.recipe_en ?? { steps: [], tips: [] },
+      recipeFr: r.recipe_fr ?? { steps: [], tips: [] },
       tags: r.tags ?? [],
-      inMain: inMain(r),
-      isLean: isLean(r, slug),
-      ...(VIDEOS[r.name_en]?.url ? { videoUrl: VIDEOS[r.name_en].url } : {}),
+      rating: r.rating ?? null,
+      ratingCount: r.rating_count ?? 0,
+      sourceUrl: r.source_url ?? null,
+      sourceText: r.source_text ?? null,
+      inMain: r.cuisine !== "Moroccan",
+      isLean: true,
       status: "ready",
       onMenu: r.on_menu ?? true,
       isCustom: false,
@@ -96,12 +100,14 @@ export async function seedDishes() {
       .onConflictDoUpdate({
         target: dishes.slug,
         set: {
-          meal: row.meal, nameEn: row.nameEn, nameFr: row.nameFr, nameAr: row.nameAr, nameLatin: row.nameLatin,
+          meal: row.meal, meals: row.meals, categories: row.categories, foodGroups: row.foodGroups, nutrition: row.nutrition,
+          nameEn: row.nameEn, nameFr: row.nameFr, nameAr: row.nameAr, nameLatin: row.nameLatin,
           descEn: row.descEn, descFr: row.descFr, cuisine: row.cuisine, servings: row.servings,
           prepMin: row.prepMin, cookMin: row.cookMin, macros: row.macros, ingredients: row.ingredients,
-          recipeAr: row.recipeAr, tags: row.tags, inMain: row.inMain, isLean: row.isLean,
-          // a video set by hand in the app wins over the seed list
-          ...(row.videoUrl ? { videoUrl: sql`COALESCE(video_url, ${row.videoUrl})` } : {}),
+          recipeEn: row.recipeEn, recipeFr: row.recipeFr, tags: row.tags, inMain: row.inMain, isLean: row.isLean,
+          rating: row.rating, ratingCount: row.ratingCount, sourceUrl: row.sourceUrl, sourceText: row.sourceText,
+          // a Darija recipe edited and reviewed in the app wins over the import
+          recipeAr: sql`CASE WHEN reviewed = 1 THEN recipe_ar ELSE ${JSON.stringify(row.recipeAr)} END`,
           // stock photo only fills a gap; a photo the cook took stays
           ...(photo
             ? {
@@ -115,14 +121,15 @@ export async function seedDishes() {
       });
   }
 
-  // The catalog is exactly the source files above: drop any built-in dish no longer listed.
-  const currentSlugs = ALL.map((r) => slugify(r.name_en));
+  // The catalog is exactly the source file: drop any built-in dish no longer listed, with its pool and pick rows.
+  const currentSlugs = ALL.map((r) => r.slug ?? slugify(r.name_en));
   const stale = currentSlugs.length
     ? await db.select({ id: dishes.id }).from(dishes).where(and(eq(dishes.isCustom, false), notInArray(dishes.slug, currentSlugs)))
     : await db.select({ id: dishes.id }).from(dishes).where(eq(dishes.isCustom, false));
   if (stale.length) {
     const staleIds = stale.map((d) => d.id);
     await db.delete(pools).where(inArray(pools.dishId, staleIds));
+    await db.delete(picks).where(inArray(picks.dishId, staleIds));
     await db.delete(dishes).where(inArray(dishes.id, staleIds));
   }
   // Any pool row pointing at a dish that no longer exists at all (belt and braces).
