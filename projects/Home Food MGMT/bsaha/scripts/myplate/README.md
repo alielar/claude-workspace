@@ -13,7 +13,7 @@ Pipeline, run from the `bsaha` folder:
 3. `python3 scripts/myplate/photos.py <workdir>` downloads the original USDA photo of each recipe,
    resizes it to 900 px wide into `public/dishes/<slug>.jpg` and writes `data/myplate/photos.json`.
    Then `./scripts/make-thumbs.sh`.
-4. `npx tsx --env-file=.env.local scripts/myplate/translate.ts` asks Claude for the French and Darija
+4. `npx tsx --env-file=.env.local scripts/myplate/translate-free.ts` asks a free-tier model (Gemini, or any OpenAI-compatible API such as Groq or Mistral) for the French and Darija
    names, metric ingredients in three languages, Darija and French recipes, tags and categories.
-   Resumable: one file per recipe in `data/myplate/translated/`. Needs `ANTHROPIC_API_KEY`.
+   Resumable: one file per recipe in `data/myplate/translated/`. `translate.ts` is the paid Claude fallback.
 5. `python3 scripts/myplate/merge.py` combines everything into `data/dishes/myplate.json`, which the seed reads.

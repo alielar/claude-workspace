@@ -1,18 +1,25 @@
 /**
- * Free translation pass with Google Gemini (free tier). Turns data/myplate/raw.json (parsed USDA
- * recipes, English, US units) into the trilingual, metric, halal records Bsaha needs. One JSON file
- * per recipe lands in data/myplate/translated/, so the run can stop and resume; five recipes share
- * one request to stay inside the free daily quota.
+ * Free translation pass. Turns data/myplate/raw.json (parsed USDA recipes, English, US units) into
+ * the trilingual, metric, halal records Bsaha needs. One JSON file per recipe lands in
+ * data/myplate/translated/, so the run can stop and resume; six recipes share one request to stay
+ * inside free daily quotas.
  *
- * Run: npx tsx --env-file=.env.local scripts/myplate/translate-gemini.ts [batchSize] [concurrency]
- * Needs GEMINI_API_KEY. GEMINI_MODEL overrides the model (default gemini-2.5-flash).
+ * Two kinds of provider, picked from .env.local:
+ *   - Google Gemini: GEMINI_API_KEY (+ optional GEMINI_MODEL, default gemini-3.8-flash)
+ *   - Any OpenAI-compatible free tier (Groq, Mistral, OpenRouter...): LLM_BASE_URL, LLM_API_KEY, LLM_MODEL
+ *     e.g. LLM_BASE_URL=https://api.groq.com/openai/v1  LLM_MODEL=llama-3.3-70b-versatile
+ *          LLM_BASE_URL=https://api.mistral.ai/v1       LLM_MODEL=mistral-large-latest
+ *
+ * Run: npx tsx --env-file=.env.local scripts/myplate/translate-free.ts [batchSize] [concurrency]
+ * LIMIT=6 translates only six recipes, for a test.
  */
 import fs from "node:fs";
 import path from "node:path";
 
 const KEY = process.env.GEMINI_API_KEY;
-if (!KEY) { console.error("GEMINI_API_KEY missing in .env.local"); process.exit(1); }
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const COMPAT = process.env.LLM_BASE_URL ? { base: process.env.LLM_BASE_URL.replace(/\/$/, ""), key: process.env.LLM_API_KEY ?? "", model: process.env.LLM_MODEL ?? "" } : null;
+if (!KEY && !COMPAT) { console.error("Set GEMINI_API_KEY, or LLM_BASE_URL + LLM_API_KEY + LLM_MODEL, in .env.local"); process.exit(1); }
+const MODEL = COMPAT ? COMPAT.model : (process.env.GEMINI_MODEL || "gemini-3.8-flash");
 const BATCH = Number(process.argv[2] || 6);
 const CONCURRENCY = Number(process.argv[3] || 2);
 const root = path.resolve(__dirname, "../..");
@@ -92,7 +99,48 @@ function valid(o: Out): boolean {
 
 let calls = 0, tokensIn = 0, tokensOut = 0;
 
+/** OpenAI-compatible chat completion with JSON mode (Groq, Mistral, OpenRouter, ...). */
+async function callCompat(prompt: string): Promise<string> {
+  const body = {
+    model: MODEL,
+    temperature: 0.4,
+    max_tokens: 16000,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: SYSTEM + '\n\nWrap the array in an object: {"recipes": [ ... ]}.' },
+      { role: "user", content: prompt },
+    ],
+  };
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const res = await fetch(`${COMPAT!.base}/chat/completions`, {
+      method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${COMPAT!.key}` }, body: JSON.stringify(body),
+    });
+    calls++;
+    if (res.status === 429 || res.status >= 500) {
+      const retryAfter = Number(res.headers.get("retry-after"));
+      const wait = retryAfter > 0 ? retryAfter * 1000 : res.status === 429 ? 65_000 : 15_000 * (attempt + 1);
+      console.warn(`  ${res.status}, waiting ${Math.round(wait / 1000)} s`);
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    const json = await res.json() as { choices?: { message?: { content?: string }; finish_reason?: string }[]; usage?: { prompt_tokens?: number; completion_tokens?: number } };
+    tokensIn += json.usage?.prompt_tokens ?? 0; tokensOut += json.usage?.completion_tokens ?? 0;
+    const c = json.choices?.[0];
+    if (c?.finish_reason === "length") throw new Error("max_tokens");
+    const text = c?.message?.content ?? "";
+    if (!text) throw new Error("empty reply");
+    // JSON mode returns an object; the array is under "recipes" (or is the only array value)
+    const obj = JSON.parse(text) as Record<string, unknown> | unknown[];
+    if (Array.isArray(obj)) return text;
+    const arr = (obj as Record<string, unknown>).recipes ?? Object.values(obj).find((v) => Array.isArray(v));
+    return JSON.stringify(arr ?? []);
+  }
+  throw new Error("gave up after retries");
+}
+
 async function callGemini(prompt: string): Promise<string> {
+  if (COMPAT) return callCompat(prompt);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`;
   const body = {
     systemInstruction: { parts: [{ text: SYSTEM }] },
@@ -143,7 +191,8 @@ async function translateBatch(batch: Raw[]): Promise<void> {
 }
 
 async function run() {
-  const todo = RAW.filter((r) => !fs.existsSync(path.join(OUT_DIR, `${r.slug}.json`)) && r.ingredients.length && r.directions.length);
+  let todo = RAW.filter((r) => !fs.existsSync(path.join(OUT_DIR, `${r.slug}.json`)) && r.ingredients.length && r.directions.length);
+  if (process.env.LIMIT) todo = todo.slice(0, Number(process.env.LIMIT)); // for a test run
   console.log(`${RAW.length} recipes, ${todo.length} to do, model ${MODEL}, ${BATCH} per request, ${CONCURRENCY} at a time`);
   const batches: Raw[][] = [];
   for (let i = 0; i < todo.length; i += BATCH) batches.push(todo.slice(i, i + BATCH));

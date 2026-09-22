@@ -4,7 +4,7 @@
  * run can stop and resume. Several recipes go into each request to keep the cost down.
  *
  * Run: npx tsx --env-file=.env.local scripts/myplate/translate.ts [batchSize] [concurrency]
- * Paid fallback to translate-gemini.ts. Needs ANTHROPIC_API_KEY. DISH_MODEL overrides the model (default claude-opus-5).
+ * Paid fallback to translate-free.ts. Needs ANTHROPIC_API_KEY. DISH_MODEL overrides the model (default claude-opus-5).
  */
 import fs from "node:fs";
 import path from "node:path";

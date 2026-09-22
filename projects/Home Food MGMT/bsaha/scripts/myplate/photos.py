@@ -8,12 +8,13 @@ WORK = sys.argv[1] if len(sys.argv) > 1 else '/tmp/myplate'
 TMP = os.path.join(WORK, 'photos-orig'); os.makedirs(TMP, exist_ok=True)
 DEST = os.path.join(ROOT, 'public/dishes'); os.makedirs(DEST, exist_ok=True)
 OUT = os.path.join(ROOT, 'data/myplate/photos.json')
-WORKERS = int(sys.argv[2]) if len(sys.argv) > 2 else 3
+WORKERS = int(sys.argv[2]) if len(sys.argv) > 2 else 2
+PAUSE = float(sys.argv[3]) if len(sys.argv) > 3 else 2.0
 
 def candidates(r):
-    """Best archived rendition first: the site's `large` style (800 px), then the 600 px recipe style."""
+    """The 600 px recipe-page rendition first (the `large` style is only 527 px wide), then the other."""
     urls = []
-    for u in (r.get('image_large'), r.get('image')):
+    for u in (r.get('image'), r.get('image_large')):
         if not u: continue
         if 'im_/' not in u: u = re.sub(r'/web/(\d+)/', r'/web/\1im_/', u)
         urls.append(u)
@@ -29,6 +30,7 @@ def download(u):
         try:
             req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (bsaha recipe import)'})
             with urllib.request.urlopen(req, timeout=90) as resp: data = resp.read()
+            time.sleep(PAUSE)  # the archive blocks the IP when downloads come too fast
             return data if len(data) > 5000 and data[:3] == b'\xff\xd8\xff' else None  # a placeholder page is not a JPEG
         except urllib.error.HTTPError as e:
             if e.code == 404: return None
@@ -49,7 +51,7 @@ def fetch(r):
         p = os.path.join(TMP, f'{slug}-{k}.jpg'); open(p, 'wb').write(data)
         w = width(p)
         if w > best_w: best, best_w = p, w
-        time.sleep(0.4)
+        if best_w >= 600: break  # good enough, do not spend a second request
     if not best: return slug, 'missing'
     args = ['sips', '-s', 'format', 'jpeg', '-s', 'formatOptions', '80'] + (['--resampleWidth', '900'] if best_w > 900 else []) + [best, '--out', dest]
     subprocess.run(args, check=True, capture_output=True)

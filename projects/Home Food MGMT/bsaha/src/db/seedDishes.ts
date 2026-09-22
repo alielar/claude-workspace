@@ -49,15 +49,18 @@ export function mealsFor(categories: Category[], fallback: Meal = "lunch"): Meal
   return (["breakfast", "lunch", "dinner"] as Meal[]).filter((m) => set.has(m));
 }
 
+/** Rows go to the database in batches of this many; one round trip per batch keeps the import inside a serverless timeout. */
+const BATCH = 40;
+
 export async function seedDishes() {
   const now = new Date().toISOString();
-  for (const r of ALL) {
+  const rows = ALL.map((r) => {
     const slug = r.slug ?? slugify(r.name_en);
     const categories = r.categories ?? [];
     const meals = r.meal ? [r.meal] : mealsFor(categories);
     const meal: Meal = r.meal ?? (meals.includes("lunch") ? "lunch" : meals[0]);
     const photo = r.photo ?? undefined;
-    const row = {
+    return {
       slug,
       meal,
       meals,
@@ -90,33 +93,35 @@ export async function seedDishes() {
       onMenu: r.on_menu ?? true,
       isCustom: false,
       createdAt: now,
-      ...(photo
-        ? { photoUrl: `/dishes/${photo.file}`, photoCredit: photo.credit, photoLicense: photo.license, photoSourceUrl: photo.source }
-        : {}),
+      photoUrl: photo ? `/dishes/${photo.file}` : null,
+      photoCredit: photo?.credit ?? null,
+      photoLicense: photo?.license ?? null,
+      photoSourceUrl: photo?.source ?? null,
     };
+  });
+
+  // `excluded.<col>` is the value this batch tried to insert, so one statement serves every row.
+  const ex = (col: string) => sql.raw(`excluded.${col}`);
+  for (let i = 0; i < rows.length; i += BATCH) {
     await db
       .insert(dishes)
-      .values(row)
+      .values(rows.slice(i, i + BATCH))
       .onConflictDoUpdate({
         target: dishes.slug,
         set: {
-          meal: row.meal, meals: row.meals, categories: row.categories, foodGroups: row.foodGroups, nutrition: row.nutrition,
-          nameEn: row.nameEn, nameFr: row.nameFr, nameAr: row.nameAr, nameLatin: row.nameLatin,
-          descEn: row.descEn, descFr: row.descFr, cuisine: row.cuisine, servings: row.servings,
-          prepMin: row.prepMin, cookMin: row.cookMin, macros: row.macros, ingredients: row.ingredients,
-          recipeEn: row.recipeEn, recipeFr: row.recipeFr, tags: row.tags, inMain: row.inMain, isLean: row.isLean,
-          rating: row.rating, ratingCount: row.ratingCount, sourceUrl: row.sourceUrl, sourceText: row.sourceText,
+          meal: ex("meal"), meals: ex("meals"), categories: ex("categories"), foodGroups: ex("food_groups"), nutrition: ex("nutrition"),
+          nameEn: ex("name_en"), nameFr: ex("name_fr"), nameAr: ex("name_ar"), nameLatin: ex("name_latin"),
+          descEn: ex("desc_en"), descFr: ex("desc_fr"), cuisine: ex("cuisine"), servings: ex("servings"),
+          prepMin: ex("prep_min"), cookMin: ex("cook_min"), macros: ex("macros"), ingredients: ex("ingredients"),
+          recipeEn: ex("recipe_en"), recipeFr: ex("recipe_fr"), tags: ex("tags"), inMain: ex("in_main"), isLean: ex("is_lean"),
+          rating: ex("rating"), ratingCount: ex("rating_count"), sourceUrl: ex("source_url"), sourceText: ex("source_text"),
           // a Darija recipe edited and reviewed in the app wins over the import
-          recipeAr: sql`CASE WHEN reviewed = 1 THEN recipe_ar ELSE ${JSON.stringify(row.recipeAr)} END`,
-          // stock photo only fills a gap; a photo the cook took stays
-          ...(photo
-            ? {
-                photoUrl: sql`CASE WHEN photo_url IS NULL OR photo_url LIKE '/dishes/%' THEN ${row.photoUrl} ELSE photo_url END`,
-                photoCredit: sql`CASE WHEN photo_url IS NULL OR photo_url LIKE '/dishes/%' THEN ${row.photoCredit} ELSE photo_credit END`,
-                photoLicense: sql`CASE WHEN photo_url IS NULL OR photo_url LIKE '/dishes/%' THEN ${row.photoLicense} ELSE photo_license END`,
-                photoSourceUrl: sql`CASE WHEN photo_url IS NULL OR photo_url LIKE '/dishes/%' THEN ${row.photoSourceUrl} ELSE photo_source_url END`,
-              }
-            : {}),
+          recipeAr: sql`CASE WHEN dishes.reviewed = 1 THEN dishes.recipe_ar ELSE excluded.recipe_ar END`,
+          // stock photo only fills a gap; a photo the cook took stays; an import without a photo keeps whatever is there
+          photoUrl: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_url ELSE dishes.photo_url END`,
+          photoCredit: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_credit ELSE dishes.photo_credit END`,
+          photoLicense: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_license ELSE dishes.photo_license END`,
+          photoSourceUrl: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_source_url ELSE dishes.photo_source_url END`,
         },
       });
   }
