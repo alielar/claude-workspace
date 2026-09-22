@@ -4,8 +4,8 @@ import { ensureSchema } from "@/db/migrate";
 import { dishes, picks, pools, type Dish, type Meal } from "@/db/schema";
 
 export const TZ = "Africa/Casablanca";
-/** The cook shortlists at most this many dishes per meal. */
-export const POOL_PER_MEAL = 5;
+/** Options per meal per day in the weekly plan (see week.ts). Kept for the old shortlist screen. */
+export const POOL_PER_MEAL = 2;
 export const POOL_MEALS: Meal[] = ["breakfast", "lunch", "dinner"];
 /**
  * Morocco time this evening after which tomorrow's choices are final. No scheduled job:
@@ -88,9 +88,16 @@ export async function setPick(
 ): Promise<number | null | "locked" | "not-in-pool"> {
   await ensureSchema();
   if (isLocked()) return "locked";
-  const [inPool] = await db.select({ id: pools.id }).from(pools)
-    .where(and(eq(pools.day, day), eq(pools.meal, meal), eq(pools.dishId, dishId)));
-  if (!inPool) return "not-in-pool";
+  if (meal === "breakfast") {
+    // Breakfast is individual: any breakfast dish on the menu.
+    const [d] = await db.select({ meals: dishes.meals, meal: dishes.meal, onMenu: dishes.onMenu, status: dishes.status }).from(dishes).where(eq(dishes.id, dishId));
+    const ok = d && d.onMenu && d.status === "ready" && ((d.meals ?? []).length ? d.meals.includes("breakfast") : d.meal === "breakfast");
+    if (!ok) return "not-in-pool";
+  } else {
+    const [inPool] = await db.select({ id: pools.id }).from(pools)
+      .where(and(eq(pools.day, day), eq(pools.meal, meal), eq(pools.dishId, dishId)));
+    if (!inPool) return "not-in-pool";
+  }
 
   const [mine] = await db.select().from(picks)
     .where(and(eq(picks.day, day), eq(picks.meal, meal), eq(picks.personId, personId)));
@@ -104,4 +111,11 @@ export async function setPick(
   }
   await db.insert(picks).values({ day, meal, dishId, personId, createdAt: new Date().toISOString() });
   return dishId;
+}
+
+/** Breakfast is not planned: everyone picks from every breakfast dish on the menu. */
+export async function breakfastMenu(): Promise<Dish[]> {
+  await ensureSchema();
+  const rows = await db.select().from(dishes).where(and(eq(dishes.status, "ready"), eq(dishes.onMenu, true))).orderBy(asc(dishes.nameEn));
+  return rows.filter((d) => ((d.meals ?? []).length ? d.meals.includes("breakfast") : d.meal === "breakfast"));
 }

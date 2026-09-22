@@ -19,27 +19,41 @@ def candidates(r):
         urls.append(u)
     return urls
 
+def width(path):
+    out = subprocess.run(['sips', '-g', 'pixelWidth', path], capture_output=True, text=True).stdout
+    m = re.search(r'pixelWidth: (\d+)', out)
+    return int(m.group(1)) if m else 0
+
+def download(u):
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (bsaha recipe import)'})
+            with urllib.request.urlopen(req, timeout=90) as resp: data = resp.read()
+            return data if len(data) > 5000 and data[:3] == b'\xff\xd8\xff' else None  # a placeholder page is not a JPEG
+        except urllib.error.HTTPError as e:
+            if e.code == 404: return None
+            time.sleep(10 * (attempt + 1))
+        except Exception:
+            time.sleep(15 * (attempt + 1))
+    return None
+
 def fetch(r):
+    """Try each archived rendition, keep the widest one, resize to at most 900 px wide."""
     slug = r['slug']
     dest = os.path.join(DEST, f'{slug}.jpg')
     if os.path.exists(dest) and os.path.getsize(dest) > 10000: return slug, 'have'
-    for u in candidates(r):
-        for attempt in range(4):
-            try:
-                req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (bsaha recipe import)'})
-                with urllib.request.urlopen(req, timeout=90) as resp: data = resp.read()
-                if len(data) < 5000 or not data[:3] == b'\xff\xd8\xff': break  # not a JPEG (placeholder page)
-                orig = os.path.join(TMP, f'{slug}.jpg'); open(orig, 'wb').write(data)
-                subprocess.run(['sips', '-s', 'format', 'jpeg', '-s', 'formatOptions', '80', '--resampleWidth', '900', orig, '--out', dest],
-                               check=True, capture_output=True)
-                time.sleep(0.4)
-                return slug, 'ok'
-            except urllib.error.HTTPError as e:
-                if e.code == 404: break
-                time.sleep(10 * (attempt + 1))
-            except Exception:
-                time.sleep(15 * (attempt + 1))
-    return slug, 'missing'
+    best, best_w = None, 0
+    for k, u in enumerate(candidates(r)):
+        data = download(u)
+        if not data: continue
+        p = os.path.join(TMP, f'{slug}-{k}.jpg'); open(p, 'wb').write(data)
+        w = width(p)
+        if w > best_w: best, best_w = p, w
+        time.sleep(0.4)
+    if not best: return slug, 'missing'
+    args = ['sips', '-s', 'format', 'jpeg', '-s', 'formatOptions', '80'] + (['--resampleWidth', '900'] if best_w > 900 else []) + [best, '--out', dest]
+    subprocess.run(args, check=True, capture_output=True)
+    return slug, 'ok'
 
 res = {}
 with cf.ThreadPoolExecutor(WORKERS) as ex:

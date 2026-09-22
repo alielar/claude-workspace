@@ -4,7 +4,7 @@
  * run can stop and resume. Several recipes go into each request to keep the cost down.
  *
  * Run: npx tsx --env-file=.env.local scripts/myplate/translate.ts [batchSize] [concurrency]
- * Needs ANTHROPIC_API_KEY. DISH_MODEL overrides the model (default claude-opus-5).
+ * Paid fallback to translate-gemini.ts. Needs ANTHROPIC_API_KEY. DISH_MODEL overrides the model (default claude-opus-5).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -25,29 +25,7 @@ type Raw = {
   nutrition: Record<string, number>; food_groups: { group: string; amount: string }[];
 };
 
-const SYSTEM = `You adapt recipes from the USDA MyPlate Kitchen (American, public domain) for a Moroccan household app. You are two experts in one: a registered nutritionist and a Moroccan home cook who writes for another Moroccan cook.
-
-For each recipe you receive (English text, US units) return one JSON object with these keys:
-
-- name_en: the English name. Keep it as given, unless a halal swap changes the meat (then rename, e.g. "Pork Chops with Apples" -> "Beef Chops with Apples").
-- name_fr: French as used in Morocco.
-- name_ar: the dish name in Moroccan Darija, Arabic script only.
-- name_latin: the same Darija name in Latin letters as Moroccans type it (e.g. "Djaj m3a lkhodra").
-- desc_en: the description, one or two sentences, adapted if a swap changed it. desc_fr: the same in French.
-- servings: integer, from the yield ("8 servings" -> 8, "makes 24 cookies" -> 24 if one cookie is one serving, else a sensible count).
-- prep_min, cook_min: integers in minutes; estimate honestly when the source has none.
-- ingredients: array in the source order, each {en, fr, ar, qty, unit, group}.
-  * Convert every US measure to metric: cups/ounces/pounds -> g for solids, ml for liquids (1 cup flour 125 g, 1 cup rice 185 g, 1 cup milk 240 ml, 1 pound 450 g, 1 ounce 28 g, one 14.5 oz can 400 g, one 15 oz can beans 425 g).
-  * unit is one of: g, ml, piece, bunch, tbsp, tsp, pinch. Whole items (eggs, onions, lemons, tortillas) are "piece".
-  * en/fr/ar are the ingredient names only, no quantities. Fold the preparation note into the name when it matters ("Onion, chopped"). ar is Darija the way a shopper writes a WhatsApp list ("بصلة مقطعة", "زيت العود", "معدنوس").
-  * group is "fresh" (vegetables, fruit, meat, fish, dairy, bread, herbs, eggs) or "dry" (grains, legumes, oil, spices, canned, frozen, long-life).
-  * Halal: replace pork, ham, bacon, sausage, gelatin and lard with the closest halal option (beef, turkey, chicken, halal beef sausage, agar, butter or oil). Replace wine, beer and spirits with stock, juice or vinegar. Keep everything else faithful. Prefer what is easy to buy in Morocco (souk, Marjane, Carrefour) and say so in the name when you substitute (e.g. "Cheddar or edam cheese").
-- recipe_ar: {steps: string[], tips: string[]}. The steps in Moroccan Darija, ARABIC SCRIPT ONLY, the way a Moroccan woman explains a recipe to another cook ("خودي", "قلبي", "خليه يطيب", "زيدي"). Short, concrete, with metric quantities and times, temperatures in Celsius. Skip hand-washing and food-safety boilerplate. 2 to 4 tips: the tricks that make the dish succeed, and any Moroccan substitution you made.
-- recipe_fr: {steps: string[], tips: string[]}: the same steps and tips in French, metric, Celsius.
-- tags: array from: peppers, raw_onion, cooked_onion, spicy, fish, chicken, red_meat, eggs, dairy, nuts, vegetarian, gluten, legumes. Be strict about peppers (any bell or chili pepper) and raw onion.
-- categories: one to three from: main, side, salad, soup, sandwich, appetizer, sauce, dessert, breakfast, bread, snack, beverage. The most fitting first.
-
-Return ONLY a JSON array with one object per recipe, in the order received. No prose, no code fences.`;
+const SYSTEM = fs.readFileSync(path.join(__dirname, "translate-prompt.md"), "utf8");
 
 function describe(r: Raw): string {
   const ing = r.ingredients.map((i) => `- ${i.text}${i.note ? ` ${i.note}` : ""}`).join("\n");

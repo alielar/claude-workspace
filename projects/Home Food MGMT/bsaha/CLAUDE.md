@@ -15,4 +15,5 @@ Schema changes go in `src/db/schema.ts` AND `src/db/migrate.ts` (idempotent SQL,
 - Children (`isChild`) never see macros or calories.
 - No emojis in UI labels.
 - Custom dishes are name plus photo only. No Claude API call at runtime. Admins add a recipe from the dish page.
+- Library content comes from `scripts/myplate/` (see its README); never hand-edit `data/dishes/myplate.json`.
 - Deploy: `npx vercel --prod --yes` from this folder, then `curl -X POST https://<url>/api/admin/migrate`.

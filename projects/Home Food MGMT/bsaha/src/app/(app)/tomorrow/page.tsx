@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { currentPerson } from "@/lib/session";
-import { getMyPicks, getPool, isLocked, lockLabel, POOL_MEALS, tomorrowKey } from "@/lib/pool";
+import { breakfastMenu, getMyPicks, getPool, isLocked, lockLabel, POOL_MEALS, tomorrowKey } from "@/lib/pool";
 import { toSlim } from "@/lib/slim";
 import { splitByDislikes } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
@@ -11,10 +11,12 @@ export default async function TomorrowPage() {
   if (me.role === "grocery") redirect("/today");
   const L = me.lang;
   const day = tomorrowKey();
-  const [pool, mine] = await Promise.all([getPool(day), getMyPicks(day, me.id)]);
+  const [planned, breakfasts, mine] = await Promise.all([getPool(day), breakfastMenu(), getMyPicks(day, me.id)]);
   const locked = isLocked();
 
-  // Each person sees the shortlist without the things they do not eat.
+  // Lunch and dinner come from the week plan; breakfast is everyone's own pick from the menu.
+  const pool = [...planned.filter((p) => p.meal !== "breakfast"), ...breakfasts.map((dish) => ({ meal: "breakfast" as const, dish }))];
+  // Each person sees the options without the things they do not eat.
   const { shown } = splitByDislikes(pool.map((p) => p.dish), me);
   const visible = new Set(shown.map((d) => d.id));
   const items = pool.filter((p) => visible.has(p.dish.id)).map((p) => ({ meal: p.meal, dish: toSlim(p.dish) }));
@@ -26,9 +28,9 @@ export default async function TomorrowPage() {
         {locked ? t(L, "chooseLocked") : `${t(L, "chooseIntro")} ${t(L, "deadlineIs")} ${lockLabel()}.`}
       </p>
 
-      {pool.length === 0 ? (
-        <p className="mt-8 text-muted">{t(L, "poolEmpty")}</p>
-      ) : (
+      {planned.length === 0 && <p className="mt-2 text-sm text-muted">{t(L, "poolEmpty")}</p>}
+      <p className="mt-1 text-sm text-muted">{t(L, "breakfastHint")}</p>
+      {pool.length === 0 ? null : (
         <div className="mt-6">
           <MealChooser
             pool={items}

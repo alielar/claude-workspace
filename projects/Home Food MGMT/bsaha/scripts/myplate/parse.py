@@ -20,6 +20,25 @@ NUT_KEYS = {
 GROUPS = {'Vegetables': 'vegetables', 'Fruits': 'fruits', 'Grains': 'grains', 'Protein Foods': 'protein', 'Dairy': 'dairy'}
 SKIP_STEP = re.compile(r'^wash (your )?hands', re.I)
 
+TS = {}
+try:
+    for o, t, _st in json.load(open(os.path.join(WORK, 'cdx.json')))[1:]:
+        m = re.match(r'https?://(www\.)?myplate\.gov/recipes/([a-z0-9-]+)/?$', o)
+        if m and (m.group(2) not in TS or t > TS[m.group(2)]): TS[m.group(2)] = t
+except Exception:
+    pass
+
+def archived(url, slug):
+    """An image URL as served by the Internet Archive (raw file, no toolbar)."""
+    if not url: return None
+    url = html.unescape(url)
+    m = re.match(r'https?://web\.archive\.org/web/(\d+)(?:im_|id_)?/(.*)', url)
+    if m: return f'https://web.archive.org/web/{m.group(1)}im_/{m.group(2)}'
+    if url.startswith('/web/'):
+        m = re.match(r'/web/(\d+)(?:im_|id_)?/(.*)', url)
+        return f'https://web.archive.org/web/{m.group(1)}im_/{m.group(2)}' if m else None
+    return f'https://web.archive.org/web/{TS.get(slug, "2025")}im_/{url}'
+
 def parse(s, slug):
     d = {'slug': slug, 'source_url': f'https://www.myplate.gov/recipes/{slug}'}
     ld = {}
@@ -43,15 +62,21 @@ def parse(s, slug):
     d['cook_time'] = det.get('Cook Time') or ld.get('cookTime', '')
     img = re.search(r'mp-recipe-full__image.*?<img[^>]+src="([^"]+)"', s, re.S)
     og = re.search(r'property="og:image" content="([^"]+)"', s)
-    d['image'] = html.unescape(img.group(1)) if img else None
-    d['image_large'] = html.unescape(og.group(1)) if og else None
+    d['image'] = archived(img.group(1), slug) if img else None
+    d['image_large'] = archived(og.group(1), slug) if og else None
     d['ingredients'] = []
-    ing = re.search(r'field--name-field-mp-ingredients.*?<ul[^>]*>(.*?)</ul>', s, re.S)
+    ing = re.search(r'field--name-field-(?:mp-)?ingredients(.*?)field--name-field-instructions', s, re.S)
     if ing:
-        for li in re.findall(r'<li class="field__item">(.*?)</li>', ing.group(1), re.S):
-            note = re.search(r'<span class="notes">(.*?)</span>', li, re.S)
-            main = clean(re.sub(r'<span class="notes">.*?</span>', '', li, flags=re.S))
-            d['ingredients'].append({'text': ws(main), 'note': ws(clean(note.group(1))) if note else ''})
+        # Some recipes split the list into parts ("For the Vinaigrette:"); the part name goes into the note.
+        section = ''
+        for kind, body in re.findall(r'<(b|li class="field__item")>(.*?)</(?:b|li)>', ing.group(1), re.S):
+            if kind == 'b':
+                section = ws(clean(body)).rstrip(':'); continue
+            note = re.search(r'<span class="notes">(.*?)</span>', body, re.S)
+            main = clean(re.sub(r'<span class="notes">.*?</span>', '', body, flags=re.S))
+            n = ws(clean(note.group(1))) if note else ''
+            if section: n = f'[{section}] {n}'.strip()
+            if ws(main): d['ingredients'].append({'text': ws(main), 'note': n})
     d['directions'] = []; d['directions_extra'] = ''
     ins = re.search(r'field--name-field-instructions.*?<div class="field__item">(.*?)</div>\s*</div>', s, re.S)
     if ins:
