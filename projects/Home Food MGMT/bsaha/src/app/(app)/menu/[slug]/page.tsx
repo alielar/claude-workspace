@@ -33,10 +33,11 @@ export default async function DishPage({
 
   // The cook and Darija readers get the Darija recipe. English and French readers get theirs
   // when the import has it, otherwise the Darija one as before.
-  const own = L === "fr" ? dish.recipeFr : L === "en" ? dish.recipeEn : null;
-  const useOwn = !isCook && own && own.steps.length > 0;
-  const shownRecipe = useOwn ? own : dish.recipeAr;
-  const recipeLang = useOwn ? L : "ar";
+  // French readers get the French steps, else the English original (the USDA text), else Darija.
+  const own = L === "ar" || isCook ? null : dish.recipeFr.steps.length && L === "fr" ? { r: dish.recipeFr, lang: "fr" as const }
+    : dish.recipeEn.steps.length ? { r: dish.recipeEn, lang: "en" as const } : null;
+  const shownRecipe = own ? own.r : dish.recipeAr;
+  const recipeLang = own ? own.lang : "ar";
   const hasRecipe = shownRecipe.steps.length > 0;
 
   const recipe = (

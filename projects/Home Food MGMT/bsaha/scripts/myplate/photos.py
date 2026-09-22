@@ -53,7 +53,7 @@ def fetch(r):
         if w > best_w: best, best_w = p, w
         if best_w >= 600: break  # good enough, do not spend a second request
     if not best: return slug, 'missing'
-    args = ['sips', '-s', 'format', 'jpeg', '-s', 'formatOptions', '80'] + (['--resampleWidth', '900'] if best_w > 900 else []) + [best, '--out', dest]
+    args = ['sips', '-s', 'format', 'jpeg', '-s', 'formatOptions', '65'] + (['--resampleWidth', '720'] if best_w > 720 else []) + [best, '--out', dest]
     subprocess.run(args, check=True, capture_output=True)
     return slug, 'ok'
 
