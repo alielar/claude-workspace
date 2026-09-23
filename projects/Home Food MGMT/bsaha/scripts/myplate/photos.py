@@ -31,7 +31,7 @@ def download(u):
             req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (bsaha recipe import)'})
             with urllib.request.urlopen(req, timeout=90) as resp: data = resp.read()
             time.sleep(PAUSE)  # the archive blocks the IP when downloads come too fast
-            return data if len(data) > 5000 and data[:3] == b'\xff\xd8\xff' else None  # a placeholder page is not a JPEG
+            return data if len(data) > 5000 and (data[:3] == b'\xff\xd8\xff' or data[:4] == b'\x89PNG' or data[:4] == b'RIFF') else None  # JPEG, PNG or WebP; a placeholder page is neither
         except urllib.error.HTTPError as e:
             if e.code == 404: return None
             time.sleep(10 * (attempt + 1))

@@ -221,7 +221,11 @@ export function LibraryBrowser({
             <div key={d.id} className={clsx("tile overflow-hidden flex flex-col", on && "border-accent ring-2 ring-accent")}>
               <Link href={`/menu/${d.slug}`} className="block">
                 <div className="aspect-[4/3] bg-accent-soft relative">
-                  <DishImage photo={d.photo} />
+                  {d.photo ? (
+                    <DishImage photo={d.photo} />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-accent text-4xl font-extrabold">{d.nameEn.slice(0, 1)}</div>
+                  )}
                 </div>
               </Link>
               <div className="p-3 flex-1 flex flex-col">
