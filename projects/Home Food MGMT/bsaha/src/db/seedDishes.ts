@@ -117,11 +117,11 @@ export async function seedDishes() {
           rating: ex("rating"), ratingCount: ex("rating_count"), sourceUrl: ex("source_url"), sourceText: ex("source_text"),
           // a Darija recipe edited and reviewed in the app wins over the import
           recipeAr: sql`CASE WHEN dishes.reviewed = 1 THEN dishes.recipe_ar ELSE excluded.recipe_ar END`,
-          // stock photo only fills a gap; a photo the cook took stays; an import without a photo keeps whatever is there
-          photoUrl: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_url ELSE dishes.photo_url END`,
-          photoCredit: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_credit ELSE dishes.photo_credit END`,
-          photoLicense: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_license ELSE dishes.photo_license END`,
-          photoSourceUrl: sql`CASE WHEN excluded.photo_url IS NOT NULL AND (dishes.photo_url IS NULL OR dishes.photo_url LIKE '/dishes/%') THEN excluded.photo_source_url ELSE dishes.photo_source_url END`,
+          // the import decides the stock photo (a withdrawn photo is withdrawn here too); a photo the cook took herself stays
+          photoUrl: sql`CASE WHEN dishes.photo_url IS NOT NULL AND dishes.photo_url NOT LIKE '/dishes/%' THEN dishes.photo_url ELSE excluded.photo_url END`,
+          photoCredit: sql`CASE WHEN dishes.photo_url IS NOT NULL AND dishes.photo_url NOT LIKE '/dishes/%' THEN dishes.photo_credit ELSE excluded.photo_credit END`,
+          photoLicense: sql`CASE WHEN dishes.photo_url IS NOT NULL AND dishes.photo_url NOT LIKE '/dishes/%' THEN dishes.photo_license ELSE excluded.photo_license END`,
+          photoSourceUrl: sql`CASE WHEN dishes.photo_url IS NOT NULL AND dishes.photo_url NOT LIKE '/dishes/%' THEN dishes.photo_source_url ELSE excluded.photo_source_url END`,
         },
       });
   }

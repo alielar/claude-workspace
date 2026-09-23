@@ -100,7 +100,7 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
       return true;
     });
     // Best rated first, like the source library, then by name.
-    shown.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || a.nameEn.localeCompare(b.nameEn));
+    shown.sort((a, b) => (b.photo ? 1 : 0) - (a.photo ? 1 : 0) || (b.rating ?? 0) - (a.rating ?? 0) || a.nameEn.localeCompare(b.nameEn));
     return { shown, hidden };
   }, [dishes, meal, moroccan, rich, q, category, group, active, bad]);
 

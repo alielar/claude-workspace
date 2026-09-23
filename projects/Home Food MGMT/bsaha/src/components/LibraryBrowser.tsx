@@ -92,10 +92,11 @@ export function LibraryBrowser({
       for (const f of active) if (!matches(d, f)) return false;
       return true;
     });
-    return list.sort((a, b) =>
-      sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) || a.nameEn.localeCompare(b.nameEn)
+    // dishes without a photo go last whatever the sort
+    return list.sort((a, b) => (b.photo ? 1 : 0) - (a.photo ? 1 : 0) ||
+      (sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) || a.nameEn.localeCompare(b.nameEn)
       : sort === "protein" ? b.protein - a.protein || a.nameEn.localeCompare(b.nameEn)
-      : a.nameEn.localeCompare(b.nameEn));
+      : a.nameEn.localeCompare(b.nameEn)));
   }, [dishes, meal, show, cuisine, category, q, active, sort, onMenu, gone]);
 
   const toggle = (d: SlimDish) => {

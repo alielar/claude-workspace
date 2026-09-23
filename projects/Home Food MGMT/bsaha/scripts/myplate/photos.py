@@ -15,7 +15,7 @@ def candidates(r):
     """The 600 px recipe-page rendition first (the `large` style is only 527 px wide), then the other."""
     urls = []
     for u in (r.get('image'), r.get('image_large')):
-        if not u: continue
+        if not u or 'default_images' in u: continue  # the site's generic logo, not a photo of the dish
         if 'im_/' not in u: u = re.sub(r'/web/(\d+)/', r'/web/\1im_/', u)
         urls.append(u)
     return urls

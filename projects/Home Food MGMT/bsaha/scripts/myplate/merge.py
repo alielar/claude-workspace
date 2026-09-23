@@ -12,10 +12,15 @@ def load(name, default):
 raw = {r['slug']: r for r in load('raw.json', [])}
 prepared = {p['slug']: p for p in load('prepared.json', [])}
 photos = load('photos.json', {})
+# never show the site's generic logo as a dish photo, and never reference a file that is not there
+for slug in list(photos):
+    r = raw.get(slug)
+    if not r or 'default_images' in (r.get('image') or '') or not os.path.exists(os.path.join(ROOT, 'public/dishes', photos[slug]['file'])):
+        del photos[slug]
 # photos.json is written when the download ends; until then, a file already in public/dishes counts
 for slug, r in raw.items():
     f = os.path.join(ROOT, 'public/dishes', f'{slug}.jpg')
-    if slug not in photos and os.path.exists(f) and os.path.getsize(f) > 10000:
+    if slug not in photos and 'default_images' not in (r.get('image') or '') and os.path.exists(f) and os.path.getsize(f) > 10000:
         photos[slug] = {'file': f'{slug}.jpg', 'credit': 'USDA MyPlate Kitchen', 'license': 'Public domain', 'source': r['source_url']}
 DICT = {}                                        # key -> {fr, ar}, written in chunks
 for f in sorted(glob.glob(os.path.join(D, 'ingredient-dict*.json'))): DICT.update(json.load(open(f)))
