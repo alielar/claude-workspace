@@ -641,12 +641,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/beef-and-vegetables"
  },
- "beef-noodles": {
-  "file": "beef-noodles.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/beef-noodles"
- },
  "beef-pot-roast": {
   "file": "beef-pot-roast.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -664,18 +658,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/beef-pozole-soup"
- },
- "beef-stroganoff": {
-  "file": "beef-stroganoff.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/beef-stroganoff"
- },
- "beef-vegetable-six-layer-dinner": {
-  "file": "beef-vegetable-six-layer-dinner.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/beef-vegetable-six-layer-dinner"
  },
  "beef-vegetable-soup": {
   "file": "beef-vegetable-soup.jpg",
@@ -736,12 +718,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/berry-bread-pudding"
- },
- "berry-good-dessert": {
-  "file": "berry-good-dessert.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/berry-good-dessert"
  },
  "better-baking-mix": {
   "file": "better-baking-mix.jpg",
@@ -809,18 +785,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/black-beans"
  },
- "black-eyed-pea-and-collard-greens-soup": {
-  "file": "black-eyed-pea-and-collard-greens-soup.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/black-eyed-pea-and-collard-greens-soup"
- },
- "black-skillet-beef-greens-and-red-potatoes": {
-  "file": "black-skillet-beef-greens-and-red-potatoes.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/black-skillet-beef-greens-and-red-potatoes"
- },
  "blue-corn-pan-bread": {
   "file": "blue-corn-pan-bread.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -881,29 +845,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/brazilian-rice"
  },
- "bread-bag": {
-  "file": "bread-bag.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/bread-bag"
- },
  "bread-bake-chicken-cheese-vegetables": {
   "file": "bread-bake-chicken-cheese-vegetables.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/bread-bake-chicken-cheese-vegetables"
- },
- "bread-pudding-vanilla-sauce": {
-  "file": "bread-pudding-vanilla-sauce.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/bread-pudding-vanilla-sauce"
- },
- "breakfast-burrito-salsa": {
-  "file": "breakfast-burrito-salsa.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/breakfast-burrito-salsa"
  },
  "breakfast-parfait": {
   "file": "breakfast-parfait.jpg",
@@ -922,12 +868,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/brilliant-chili-topped-walnuts"
- },
- "broccoli-alfredo": {
-  "file": "broccoli-alfredo.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/broccoli-alfredo"
  },
  "broccoli-and-corn-bake": {
   "file": "broccoli-and-corn-bake.jpg",
@@ -1025,23 +965,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/brussel-sprouts-cranberry-and-bulgur-salad"
  },
- "brussels-sprouts-mushroom-sauce": {
-  "file": "brussels-sprouts-mushroom-sauce.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/brussels-sprouts-mushroom-sauce"
- },
  "bugs-log": {
   "file": "bugs-log.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/bugs-log"
- },
- "bulgur-chickpea-salad": {
-  "file": "bulgur-chickpea-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/bulgur-chickpea-salad"
  },
  "bulgur-wheat-veggie-chickpea-salad": {
   "file": "bulgur-wheat-veggie-chickpea-salad.jpg",
@@ -1067,23 +995,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/butternut-squash-apple-soup"
  },
- "butternut-squash-black-beans": {
-  "file": "butternut-squash-black-beans.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/butternut-squash-black-beans"
- },
  "butternut-squash-pasta-bake": {
   "file": "butternut-squash-pasta-bake.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/butternut-squash-pasta-bake"
- },
- "cabbage-roll-casserole": {
-  "file": "cabbage-roll-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cabbage-roll-casserole"
  },
  "cabbage-salad": {
   "file": "cabbage-salad.jpg",
@@ -1145,12 +1061,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/caribbean-casserole"
  },
- "caribbean-pink-beans": {
-  "file": "caribbean-pink-beans.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/caribbean-pink-beans"
- },
  "carrot-cookies": {
   "file": "carrot-cookies.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1169,18 +1079,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/carrots-tomatoes-and-macaroni"
  },
- "catfish-stew-and-rice": {
-  "file": "catfish-stew-and-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/catfish-stew-and-rice"
- },
- "cauliflower-shells-cheese": {
-  "file": "cauliflower-shells-cheese.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cauliflower-shells-cheese"
- },
  "celery-apricot-blue-cheese-spread": {
   "file": "celery-apricot-blue-cheese-spread.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1198,12 +1096,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/cheese-and-corn-chowder"
- },
- "cheese-roni-bake": {
-  "file": "cheese-roni-bake.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cheese-roni-bake"
  },
  "cheese-stuffed-potatoes": {
   "file": "cheese-stuffed-potatoes.jpg",
@@ -1229,12 +1121,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/cherry-puff-pancake"
  },
- "chicken-and-beans": {
-  "file": "chicken-and-beans.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-and-beans"
- },
  "chicken-and-broccoli-bake": {
   "file": "chicken-and-broccoli-bake.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1253,18 +1139,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-and-dumpling-soup"
  },
- "chicken-and-dumplings": {
-  "file": "chicken-and-dumplings.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-and-dumplings"
- },
- "chicken-and-spanish-rice": {
-  "file": "chicken-and-spanish-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-and-spanish-rice"
- },
  "chicken-apple-salad-sandwich": {
   "file": "chicken-apple-salad-sandwich.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1277,23 +1151,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-broccoli-alfredo"
  },
- "chicken-cacciatore": {
-  "file": "chicken-cacciatore.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-cacciatore"
- },
  "chicken-casserole": {
   "file": "chicken-casserole.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-casserole"
- },
- "chicken-club-salad": {
-  "file": "chicken-club-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-club-salad"
  },
  "chicken-mole": {
   "file": "chicken-mole.jpg",
@@ -1312,12 +1174,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-noodle-soup"
- },
- "chicken-pasta-salad": {
-  "file": "chicken-pasta-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-pasta-salad"
  },
  "chicken-posole": {
   "file": "chicken-posole.jpg",
@@ -1342,18 +1198,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-ratatouille"
- },
- "chicken-rice-and-fruit-salad": {
-  "file": "chicken-rice-and-fruit-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-rice-and-fruit-salad"
- },
- "chicken-rice-salad": {
-  "file": "chicken-rice-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-rice-salad"
  },
  "chicken-rice-soup": {
   "file": "chicken-rice-soup.jpg",
@@ -1397,12 +1241,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-spaghetti"
  },
- "chicken-spanish-rice": {
-  "file": "chicken-spanish-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-spanish-rice"
- },
  "chicken-stew": {
   "file": "chicken-stew.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1414,18 +1252,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/chicken-stir-fry"
- },
- "chicken-tortilla-casserole": {
-  "file": "chicken-tortilla-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-tortilla-casserole"
- },
- "chicken-vegetable-soup-kale": {
-  "file": "chicken-vegetable-soup-kale.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/chicken-vegetable-soup-kale"
  },
  "chicken-waldorf-salad": {
   "file": "chicken-waldorf-salad.jpg",
@@ -1529,12 +1355,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/cinnamon-raisin-breakfast-mix"
  },
- "cinnamon-sugared-pumpkin-pecan-muffins": {
-  "file": "cinnamon-sugared-pumpkin-pecan-muffins.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cinnamon-sugared-pumpkin-pecan-muffins"
- },
  "cinnamon-vanilla-granola": {
   "file": "cinnamon-vanilla-granola.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1607,41 +1427,17 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/colorful-quesadillas"
  },
- "confetti-bean-salsa": {
-  "file": "confetti-bean-salsa.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/confetti-bean-salsa"
- },
  "confetti-grain-salad": {
   "file": "confetti-grain-salad.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/confetti-grain-salad"
  },
- "confetti-slaw": {
-  "file": "confetti-slaw.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/confetti-slaw"
- },
  "cooked-beans": {
   "file": "cooked-beans.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/cooked-beans"
- },
- "cookie-cutter-appetizers": {
-  "file": "cookie-cutter-appetizers.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cookie-cutter-appetizers"
- },
- "corn-and-bean-medley": {
-  "file": "corn-and-bean-medley.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/corn-and-bean-medley"
  },
  "corn-and-cucumber-salad": {
   "file": "corn-and-cucumber-salad.jpg",
@@ -1654,12 +1450,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/corn-and-green-chili-salad"
- },
- "corn-and-pepper-cups": {
-  "file": "corn-and-pepper-cups.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/corn-and-pepper-cups"
  },
  "corn-blueberry-and-wild-rice-salad": {
   "file": "corn-blueberry-and-wild-rice-salad.jpg",
@@ -1679,18 +1469,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/corn-casserole-0"
  },
- "corn-casserole": {
-  "file": "corn-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/corn-casserole"
- },
- "corn-salad-fat-free-ranch-dressing": {
-  "file": "corn-salad-fat-free-ranch-dressing.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/corn-salad-fat-free-ranch-dressing"
- },
  "corn-salad-fresh-basil-and-lemon": {
   "file": "corn-salad-fresh-basil-and-lemon.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1702,12 +1480,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/corn-soup"
- },
- "corn-toasties": {
-  "file": "corn-toasties.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/corn-toasties"
  },
  "corn-tortillas": {
   "file": "corn-tortillas.jpg",
@@ -1721,29 +1493,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/cornbread-dressing"
  },
- "cornmeal-pancakes": {
-  "file": "cornmeal-pancakes.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cornmeal-pancakes"
- },
- "country-style-potato-salad": {
-  "file": "country-style-potato-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/country-style-potato-salad"
- },
  "couscous-peas-and-onions": {
   "file": "couscous-peas-and-onions.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/couscous-peas-and-onions"
- },
- "cowboy-caviar-bean-salsa": {
-  "file": "cowboy-caviar-bean-salsa.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cowboy-caviar-bean-salsa"
  },
  "cran-apple-crisp": {
   "file": "cran-apple-crisp.jpg",
@@ -1793,12 +1547,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/cream-broccoli-soup"
  },
- "creamy-chicken-hash": {
-  "file": "creamy-chicken-hash.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/creamy-chicken-hash"
- },
  "creamy-dill-dip": {
   "file": "creamy-dill-dip.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1810,12 +1558,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/creamy-italian-herb-dressing"
- },
- "creamy-peanut-dip": {
-  "file": "creamy-peanut-dip.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/creamy-peanut-dip"
  },
  "creamy-vegetable-dip": {
   "file": "creamy-vegetable-dip.jpg",
@@ -1847,12 +1589,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/crispy-walleye-patties"
  },
- "crock-pot-vegetable-lentil-stew": {
-  "file": "crock-pot-vegetable-lentil-stew.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/crock-pot-vegetable-lentil-stew"
- },
  "crunchy-berry-parfait": {
   "file": "crunchy-berry-parfait.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1882,12 +1618,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/crusty-rice-tofu-and-vegetables"
- },
- "cuban-beans-and-rice": {
-  "file": "cuban-beans-and-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/cuban-beans-and-rice"
  },
  "cuban-salad": {
   "file": "cuban-salad.jpg",
@@ -1949,24 +1679,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/curried-chicken-salad"
  },
- "curried-chickpea-salad": {
-  "file": "curried-chickpea-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/curried-chickpea-salad"
- },
- "curried-potatoes": {
-  "file": "curried-potatoes.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/curried-potatoes"
- },
- "curried-quinoa-and-cauliflower": {
-  "file": "curried-quinoa-and-cauliflower.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/curried-quinoa-and-cauliflower"
- },
  "curried-squash-stew": {
   "file": "curried-squash-stew.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -1978,12 +1690,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/curry-dip"
- },
- "curry-vegetable-dip": {
-  "file": "curry-vegetable-dip.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/curry-vegetable-dip"
  },
  "curtido-salvadoreno-cabbage-salad": {
   "file": "curtido-salvadoreno-cabbage-salad.jpg",
@@ -2020,12 +1726,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/delicious-oven-french-fries"
- },
- "delicious-tacos": {
-  "file": "delicious-tacos.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/delicious-tacos"
  },
  "deviled-eggs": {
   "file": "deviled-eggs.jpg",
@@ -2117,12 +1817,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/easy-oven-packet-caribbean-tilapia-pears-and-carnival-roasted-potatoes"
  },
- "eating-smart-seasoning-mix": {
-  "file": "eating-smart-seasoning-mix.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/eating-smart-seasoning-mix"
- },
  "egg-foo-young": {
   "file": "egg-foo-young.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2141,12 +1835,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/eggplant-and-pepper-dip"
  },
- "eggplant-stir-fry": {
-  "file": "eggplant-stir-fry.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/eggplant-stir-fry"
- },
  "eggs-over-kale-and-sweet-potato-grits": {
   "file": "eggs-over-kale-and-sweet-potato-grits.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2164,12 +1852,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/enchilada-bake"
- },
- "enchilada-casserole": {
-  "file": "enchilada-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/enchilada-casserole"
  },
  "enchilada-rice": {
   "file": "enchilada-rice.jpg",
@@ -2273,12 +1955,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/fiesta-mix"
  },
- "fiesta-rice-salad": {
-  "file": "fiesta-rice-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/fiesta-rice-salad"
- },
  "fiesta-stuffed-avocado": {
   "file": "fiesta-stuffed-avocado.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2332,12 +2008,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/food-group-funny-face"
- },
- "four-layer-casserole": {
-  "file": "four-layer-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/four-layer-casserole"
  },
  "french-salad-dressing": {
   "file": "french-salad-dressing.jpg",
@@ -2435,12 +2105,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/fruit-and-yogurt-breakfast-shake"
  },
- "fruit-cole-slaw": {
-  "file": "fruit-cole-slaw.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/fruit-cole-slaw"
- },
  "fruit-compote": {
   "file": "fruit-compote.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2507,23 +2171,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/fruit-pizza"
  },
- "fruit-salad-jicama": {
-  "file": "fruit-salad-jicama.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/fruit-salad-jicama"
- },
  "fruit-salad-yogurt": {
   "file": "fruit-salad-yogurt.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/fruit-salad-yogurt"
- },
- "fruit-salad": {
-  "file": "fruit-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/fruit-salad"
  },
  "fruit-salsa": {
   "file": "fruit-salsa.jpg",
@@ -2554,18 +2206,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/fruit-snake"
- },
- "fruit-sorbet": {
-  "file": "fruit-sorbet.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/fruit-sorbet"
- },
- "fruit-yogurt-parfait": {
-  "file": "fruit-yogurt-parfait.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/fruit-yogurt-parfait"
  },
  "fruit-yogurt-pops": {
   "file": "fruit-yogurt-pops.jpg",
@@ -2621,12 +2261,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/garden-frittata"
  },
- "garden-orchard-salad": {
-  "file": "garden-orchard-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/garden-orchard-salad"
- },
  "garden-pan-bread": {
   "file": "garden-pan-bread.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2657,18 +2291,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/garlic-ginger-ramen-beef"
  },
- "garlic-stuffed-chicken": {
-  "file": "garlic-stuffed-chicken.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/garlic-stuffed-chicken"
- },
- "gazpacho-soup": {
-  "file": "gazpacho-soup.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/gazpacho-soup"
- },
  "gazpacho": {
   "file": "gazpacho.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2687,12 +2309,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/ginger-orange-muffins"
  },
- "gingery-quinoa-green-beans": {
-  "file": "gingery-quinoa-green-beans.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/gingery-quinoa-green-beans"
- },
  "glazed-carrots": {
   "file": "glazed-carrots.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2704,12 +2320,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/glazed-meatloaf"
- },
- "golden-split-pea-soup": {
-  "file": "golden-split-pea-soup.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/golden-split-pea-soup"
  },
  "grandmas-stuffing": {
   "file": "grandmas-stuffing.jpg",
@@ -2740,12 +2350,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/grape-salsa"
- },
- "grapefruit-spinach-salad": {
-  "file": "grapefruit-spinach-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/grapefruit-spinach-salad"
  },
  "great-northern-bean-soup": {
   "file": "great-northern-bean-soup.jpg",
@@ -2879,12 +2483,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/grilled-vegetables"
  },
- "ground-beef-stew": {
-  "file": "ground-beef-stew.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/ground-beef-stew"
- },
  "harvest-vegetable-salad": {
   "file": "harvest-vegetable-salad.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -2950,12 +2548,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/herb-potato-salad"
- },
- "herb-spinach-bake": {
-  "file": "herb-spinach-bake.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/herb-spinach-bake"
  },
  "herbed-dip": {
   "file": "herbed-dip.jpg",
@@ -3065,24 +2657,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/honey-pumpkin-bar"
  },
- "honeydew-summer-salad-wedges": {
-  "file": "honeydew-summer-salad-wedges.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/honeydew-summer-salad-wedges"
- },
- "hooked-salmon-sticks": {
-  "file": "hooked-salmon-sticks.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/hooked-salmon-sticks"
- },
- "hoppin-john-sausage-black-eyed-peas-and-rice": {
-  "file": "hoppin-john-sausage-black-eyed-peas-and-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/hoppin-john-sausage-black-eyed-peas-and-rice"
- },
  "horchata": {
   "file": "horchata.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -3112,12 +2686,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/huevos-motulenos"
- },
- "huevos-rancheros-fresh-salsa": {
-  "file": "huevos-rancheros-fresh-salsa.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/huevos-rancheros-fresh-salsa"
  },
  "hummus": {
   "file": "hummus.jpg",
@@ -3167,18 +2735,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/italian-pasta-salad"
  },
- "italian-style-vegetables": {
-  "file": "italian-style-vegetables.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/italian-style-vegetables"
- },
- "italian-vegetables": {
-  "file": "italian-vegetables.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/italian-vegetables"
- },
  "jamaican-jerk-chicken": {
   "file": "jamaican-jerk-chicken.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -3196,12 +2752,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/jiffy-oatmeal-crunch"
- },
- "jollof-rice": {
-  "file": "jollof-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/jollof-rice"
  },
  "julias-sauteed-steamed-collards": {
   "file": "julias-sauteed-steamed-collards.jpg",
@@ -3251,12 +2801,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/layered-black-bean-dip"
  },
- "leaf-finger-salad": {
-  "file": "leaf-finger-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/leaf-finger-salad"
- },
  "leafy-tofu": {
   "file": "leafy-tofu.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -3298,12 +2842,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/lemon-spinach"
- },
- "lemon-velvet-supreme": {
-  "file": "lemon-velvet-supreme.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/lemon-velvet-supreme"
  },
  "lemonade": {
   "file": "lemonade.jpg",
@@ -3509,12 +3047,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/maple-sweet-potatoes"
  },
- "marinara-sauce": {
-  "file": "marinara-sauce.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/marinara-sauce"
- },
  "marinated-beef": {
   "file": "marinated-beef.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -3580,12 +3112,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/meatloaf"
- },
- "meaty-stuffed-potatoes": {
-  "file": "meaty-stuffed-potatoes.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/meaty-stuffed-potatoes"
  },
  "mediterranean-chicken-and-white-bean-salad": {
   "file": "mediterranean-chicken-and-white-bean-salad.jpg",
@@ -3767,18 +3293,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/new-orleans-red-beans"
  },
- "no-bake-breakfast-cookies": {
-  "file": "no-bake-breakfast-cookies.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/no-bake-breakfast-cookies"
- },
- "no-bake-cookies": {
-  "file": "no-bake-cookies.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/no-bake-cookies"
- },
  "oat-bran-muffins": {
   "file": "oat-bran-muffins.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -3827,12 +3341,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/one-dish-roasted-potatoes-and-apples-chicken-sausage"
  },
- "one-pan-potatoes-chicken": {
-  "file": "one-pan-potatoes-chicken.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/one-pan-potatoes-chicken"
- },
  "one-pan-spaghetti": {
   "file": "one-pan-spaghetti.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -3880,12 +3388,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/orange-honeyed-acorn-squash"
- },
- "orange-pork-chops": {
-  "file": "orange-pork-chops.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/orange-pork-chops"
  },
  "oven-baked-potato-pancakes": {
   "file": "oven-baked-potato-pancakes.jpg",
@@ -3977,12 +3479,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/parsnip-soup"
  },
- "party-time-pasta": {
-  "file": "party-time-pasta.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/party-time-pasta"
- },
  "passover-rhubarb-cobbler": {
   "file": "passover-rhubarb-cobbler.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -4007,23 +3503,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/pasta-frittata-peas"
  },
- "pasta-greens-beans-and-chicken": {
-  "file": "pasta-greens-beans-and-chicken.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/pasta-greens-beans-and-chicken"
- },
  "pasta-primavera-ii": {
   "file": "pasta-primavera-ii.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/pasta-primavera-ii"
- },
- "pasta-primavera-salad": {
-  "file": "pasta-primavera-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/pasta-primavera-salad"
  },
  "pasta-primavera-spaghetti-sauce": {
   "file": "pasta-primavera-spaghetti-sauce.jpg",
@@ -4295,12 +3779,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/pineapple-pork"
  },
- "pineapple-rice-bake": {
-  "file": "pineapple-rice-bake.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/pineapple-rice-bake"
- },
  "pineapple-zucchini-cake": {
   "file": "pineapple-zucchini-cake.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -4312,18 +3790,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/pink-party-salad"
- },
- "pizza-eggburger": {
-  "file": "pizza-eggburger.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/pizza-eggburger"
- },
- "pizza-meat-loaf": {
-  "file": "pizza-meat-loaf.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/pizza-meat-loaf"
  },
  "plantain-cups-shredded-chicken-mofonguitos": {
   "file": "plantain-cups-shredded-chicken-mofonguitos.jpg",
@@ -4456,12 +3922,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/pumpkin-and-bean-soup"
- },
- "pumpkin-angel-food-cake": {
-  "file": "pumpkin-angel-food-cake.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/pumpkin-angel-food-cake"
  },
  "pumpkin-bread": {
   "file": "pumpkin-bread.jpg",
@@ -4631,12 +4091,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/rainbow-bell-pepper-boats-garbanzo-beans-and-kale"
  },
- "rainbow-veggie-salad": {
-  "file": "rainbow-veggie-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/rainbow-veggie-salad"
- },
  "ratatouille-0": {
   "file": "ratatouille-0.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -4667,12 +4121,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/red-beans-and-rice"
  },
- "red-beans-and-rice1": {
-  "file": "red-beans-and-rice1.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/red-beans-and-rice1"
- },
  "red-chile-stew": {
   "file": "red-chile-stew.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -4690,12 +4138,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/red-lentil-latkes"
- },
- "red-monster-smoothie": {
-  "file": "red-monster-smoothie.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/red-monster-smoothie"
  },
  "red-potato-and-cabbage-colcannon": {
   "file": "red-potato-and-cabbage-colcannon.jpg",
@@ -4750,12 +4192,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/rice-pudding1"
- },
- "rice-salad": {
-  "file": "rice-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/rice-salad"
  },
  "rise-and-shine-cobbler": {
   "file": "rise-and-shine-cobbler.jpg",
@@ -4847,23 +4283,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/roasted-tomatoes-herbs"
  },
- "round-steak-casserole": {
-  "file": "round-steak-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/round-steak-casserole"
- },
  "salad-pineapple-nuts-and-raisins": {
   "file": "salad-pineapple-nuts-and-raisins.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/salad-pineapple-nuts-and-raisins"
- },
- "salata-ma-jibna-salad-parmesan-cheese": {
-  "file": "salata-ma-jibna-salad-parmesan-cheese.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/salata-ma-jibna-salad-parmesan-cheese"
  },
  "salmon-burgers-and-sweet-potato-oven-fries": {
   "file": "salmon-burgers-and-sweet-potato-oven-fries.jpg",
@@ -4912,12 +4336,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/salt-free-all-purpose-blend"
- },
- "sanchico-tuna-salad": {
-  "file": "sanchico-tuna-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/sanchico-tuna-salad"
  },
  "sarahs-green-bean-casserole": {
   "file": "sarahs-green-bean-casserole.jpg",
@@ -4973,12 +4391,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/savory-spicy-ground-beef-succotash"
  },
- "scallion-rice": {
-  "file": "scallion-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/scallion-rice"
- },
  "scalloped-potatoes-and-chicken-fennel": {
   "file": "scalloped-potatoes-and-chicken-fennel.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5009,12 +4421,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/scrambled-eggs-zucchini"
  },
- "scrambled-tofu": {
-  "file": "scrambled-tofu.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/scrambled-tofu"
- },
  "seared-greens": {
   "file": "seared-greens.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5026,12 +4432,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/seasoned-roasted-vegetables"
- },
- "sensational-six-layer-dinner": {
-  "file": "sensational-six-layer-dinner.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/sensational-six-layer-dinner"
  },
  "sesame-turnips-and-carrots": {
   "file": "sesame-turnips-and-carrots.jpg",
@@ -5170,18 +4570,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/slow-cooker-beef-stew"
- },
- "slow-cooker-cheesy-swiss-steak": {
-  "file": "slow-cooker-cheesy-swiss-steak.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/slow-cooker-cheesy-swiss-steak"
- },
- "slow-cooker-hamburger-stew": {
-  "file": "slow-cooker-hamburger-stew.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/slow-cooker-hamburger-stew"
  },
  "slow-cooker-lentil-soup": {
   "file": "slow-cooker-lentil-soup.jpg",
@@ -5351,12 +4739,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/spicy-carrots-and-squash"
  },
- "spicy-chicken-and-potato-soup": {
-  "file": "spicy-chicken-and-potato-soup.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/spicy-chicken-and-potato-soup"
- },
  "spicy-cucumber-orange-salad": {
   "file": "spicy-cucumber-orange-salad.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5393,12 +4775,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/spinach-and-meat-cakes"
  },
- "spinach-and-mushroom-enchilada-casserole": {
-  "file": "spinach-and-mushroom-enchilada-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/spinach-and-mushroom-enchilada-casserole"
- },
  "spinach-black-bean-salad": {
   "file": "spinach-black-bean-salad.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5410,12 +4786,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/spinach-potato-pancakes"
- },
- "spinach-rice-salad": {
-  "file": "spinach-rice-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/spinach-rice-salad"
  },
  "spinach-salad-apples-and-eggs": {
   "file": "spinach-salad-apples-and-eggs.jpg",
@@ -5434,18 +4804,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/spinach-stuffed-potatoes"
- },
- "spinach-tomatoes-and-corn": {
-  "file": "spinach-tomatoes-and-corn.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/spinach-tomatoes-and-corn"
- },
- "splendid-fruit-salad": {
-  "file": "splendid-fruit-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/splendid-fruit-salad"
  },
  "split-pea-soup-0": {
   "file": "split-pea-soup-0.jpg",
@@ -5507,12 +4865,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/squash-squares"
  },
- "stewed-cauliflower-tomatoes-onions": {
-  "file": "stewed-cauliflower-tomatoes-onions.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/stewed-cauliflower-tomatoes-onions"
- },
  "stir-fried-beef": {
   "file": "stir-fried-beef.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5530,24 +4882,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/stir-fry-vegetables-and-beef"
- },
- "stove-top-casserole": {
-  "file": "stove-top-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/stove-top-casserole"
- },
- "stove-top-green-chile-chicken-enchiladas": {
-  "file": "stove-top-green-chile-chicken-enchiladas.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/stove-top-green-chile-chicken-enchiladas"
- },
- "stove-top-potato-and-cabbage-casserole": {
-  "file": "stove-top-potato-and-cabbage-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/stove-top-potato-and-cabbage-casserole"
  },
  "stovetop-tamale-pie": {
   "file": "stovetop-tamale-pie.jpg",
@@ -5663,12 +4997,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/summer-squash-italian-style"
  },
- "summer-squash-medley": {
-  "file": "summer-squash-medley.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/summer-squash-medley"
- },
  "summer-squash-squares": {
   "file": "summer-squash-squares.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5687,12 +5015,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/summer-vegetable-spaghetti"
  },
- "sunshine-rice": {
-  "file": "sunshine-rice.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/sunshine-rice"
- },
  "sunshine-salad": {
   "file": "sunshine-salad.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5704,12 +5026,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/sure-please-baked-eggs-cheese"
- },
- "surfs-tacos": {
-  "file": "surfs-tacos.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/surfs-tacos"
  },
  "sweet-acorn-squash": {
   "file": "sweet-acorn-squash.jpg",
@@ -5819,12 +5135,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/sweet-potato-pone"
  },
- "sweet-savory-peanut-butter-dip": {
-  "file": "sweet-savory-peanut-butter-dip.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/sweet-savory-peanut-butter-dip"
- },
  "sweet-sour-salad-dressing": {
   "file": "sweet-sour-salad-dressing.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -5855,29 +5165,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/taco-salad-ii"
  },
- "taco-salad": {
-  "file": "taco-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/taco-salad"
- },
  "taco-soup": {
   "file": "taco-soup.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/taco-soup"
- },
- "tangy-crisp-vegetable-and-pasta-salad": {
-  "file": "tangy-crisp-vegetable-and-pasta-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/tangy-crisp-vegetable-and-pasta-salad"
- },
- "tangy-jicama-slaw": {
-  "file": "tangy-jicama-slaw.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/tangy-jicama-slaw"
  },
  "tangy": {
   "file": "tangy.jpg",
@@ -6047,12 +5339,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/tortellini-soup"
  },
- "tortilla-pizzas": {
-  "file": "tortilla-pizzas.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/tortilla-pizzas"
- },
  "tortilla": {
   "file": "tortilla.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6070,12 +5356,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/tostadas"
- },
- "trail-mix-bars": {
-  "file": "trail-mix-bars.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/trail-mix-bars"
  },
  "trail-treat": {
   "file": "trail-treat.jpg",
@@ -6305,18 +5585,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/vegetable-pizza"
  },
- "vegetable-rice-tomatoes": {
-  "file": "vegetable-rice-tomatoes.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/vegetable-rice-tomatoes"
- },
- "vegetable-salad": {
-  "file": "vegetable-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/vegetable-salad"
- },
  "vegetable-snake": {
   "file": "vegetable-snake.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6371,12 +5639,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/vegetarian-stuffed-peppers"
  },
- "veggie-bean-wrap": {
-  "file": "veggie-bean-wrap.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/veggie-bean-wrap"
- },
  "veggie-burgers": {
   "file": "veggie-burgers.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6413,29 +5675,11 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/veggie-omelet-mug"
  },
- "veggie-pizza-pita-pockets": {
-  "file": "veggie-pizza-pita-pockets.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/veggie-pizza-pita-pockets"
- },
  "veggie-quesadillas": {
   "file": "veggie-quesadillas.jpg",
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/veggie-quesadillas"
- },
- "veggie-stir-fry-turkey": {
-  "file": "veggie-stir-fry-turkey.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/veggie-stir-fry-turkey"
- },
- "veggie-stuffed-pita": {
-  "file": "veggie-stuffed-pita.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/veggie-stuffed-pita"
  },
  "very-berry-muesli": {
   "file": "very-berry-muesli.jpg",
@@ -6497,12 +5741,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/white-chicken-chili"
  },
- "white-chili": {
-  "file": "white-chili.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/white-chili"
- },
  "white-sauce-thin": {
   "file": "white-sauce-thin.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6563,12 +5801,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/yogurt-berry-parfait"
  },
- "yogurt-fruit-salad": {
-  "file": "yogurt-fruit-salad.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/yogurt-fruit-salad"
- },
  "yogurt-pops": {
   "file": "yogurt-pops.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6581,12 +5813,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/yogurt-popsicles"
  },
- "yogurt-smoothie-bag": {
-  "file": "yogurt-smoothie-bag.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/yogurt-smoothie-bag"
- },
  "yummy-bagels": {
   "file": "yummy-bagels.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6598,12 +5824,6 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/yummy-bean-dip"
- },
- "zesty-citrus-coleslaw": {
-  "file": "zesty-citrus-coleslaw.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/zesty-citrus-coleslaw"
  },
  "zesty-herb-salad-dressing": {
   "file": "zesty-herb-salad-dressing.jpg",
@@ -6659,12 +5879,6 @@
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/zucchini-bread"
  },
- "zucchini-casserole": {
-  "file": "zucchini-casserole.jpg",
-  "credit": "USDA MyPlate Kitchen",
-  "license": "Public domain",
-  "source": "https://www.myplate.gov/recipes/zucchini-casserole"
- },
  "zucchini-coleslaw": {
   "file": "zucchini-coleslaw.jpg",
   "credit": "USDA MyPlate Kitchen",
@@ -6688,5 +5902,791 @@
   "credit": "USDA MyPlate Kitchen",
   "license": "Public domain",
   "source": "https://www.myplate.gov/recipes/zucchini-stir-fry"
+ },
+ "beef-noodles": {
+  "file": "beef-noodles.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/410842392"
+ },
+ "beef-stroganoff": {
+  "file": "beef-stroganoff.jpg",
+  "credit": "Alpha @ Flickr",
+  "license": "CC BY-SA 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=43683936"
+ },
+ "black-eyed-pea-and-collard-greens-soup": {
+  "file": "black-eyed-pea-and-collard-greens-soup.jpg",
+  "credit": "wonderyort",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/11112304@N00/4040719015"
+ },
+ "bread-bag": {
+  "file": "bread-bag.jpg",
+  "credit": "rubenerd",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/52601770@N00/4074217589"
+ },
+ "bread-pudding-vanilla-sauce": {
+  "file": "bread-pudding-vanilla-sauce.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/2407820729"
+ },
+ "breakfast-burrito-salsa": {
+  "file": "breakfast-burrito-salsa.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/1014114127"
+ },
+ "brussels-sprouts-mushroom-sauce": {
+  "file": "brussels-sprouts-mushroom-sauce.jpg",
+  "credit": "Cajsa Lilliehook from Portland",
+  "license": "CC BY-SA 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Brussels_Sprouts_with_Peppers_and_Mushrooms_(8625342540).jpg"
+ },
+ "bulgur-chickpea-salad": {
+  "file": "bulgur-chickpea-salad.jpg",
+  "credit": "HakanIST",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=75326415"
+ },
+ "cabbage-roll-casserole": {
+  "file": "cabbage-roll-casserole.jpg",
+  "credit": "Aivar Ruukel",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/59787988@N00/8425976879"
+ },
+ "caribbean-pink-beans": {
+  "file": "caribbean-pink-beans.jpg",
+  "credit": "Judgefloro",
+  "license": "CC0 1.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=98846886"
+ },
+ "catfish-stew-and-rice": {
+  "file": "catfish-stew-and-rice.jpg",
+  "credit": "Justdifference",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Rice_Served_with_Stew,_Cow_Leg_and_fish.jpg"
+ },
+ "cauliflower-shells-cheese": {
+  "file": "cauliflower-shells-cheese.jpg",
+  "credit": "@joefoodie",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/98178986@N00/4585070187"
+ },
+ "cheese-roni-bake": {
+  "file": "cheese-roni-bake.jpg",
+  "credit": "surfergirl143",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/67482943@N00/2513198345"
+ },
+ "chicken-and-beans": {
+  "file": "chicken-and-beans.jpg",
+  "credit": "Judgefloro",
+  "license": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:0647Pinto_beans_chicken_stew_01.jpg"
+ },
+ "chicken-and-dumplings": {
+  "file": "chicken-and-dumplings.jpg",
+  "credit": "karen H. nickname.{ pooh}",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/47409110@N07/4409982582"
+ },
+ "chicken-and-spanish-rice": {
+  "file": "chicken-and-spanish-rice.jpg",
+  "credit": "Kobako",
+  "license": "CC BY-SA 2.5",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=745203"
+ },
+ "chicken-cacciatore": {
+  "file": "chicken-cacciatore.jpg",
+  "credit": "Chris Bennett",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=35127951"
+ },
+ "chicken-pasta-salad": {
+  "file": "chicken-pasta-salad.jpg",
+  "credit": "ken ratcliff",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/95212304@N00/13920669598"
+ },
+ "chicken-rice-and-fruit-salad": {
+  "file": "chicken-rice-and-fruit-salad.jpg",
+  "credit": "young shanahan",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/14759783@N04/52745817698"
+ },
+ "chicken-rice-salad": {
+  "file": "chicken-rice-salad.jpg",
+  "credit": "Abraham",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:20230121_rice_with_beans_and_chicken_lettuce_salad_compote_Katowice_Panewniki.jpg"
+ },
+ "chicken-vegetable-soup-kale": {
+  "file": "chicken-vegetable-soup-kale.jpg",
+  "credit": "Tobyotter",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/78428166@N00/4391399438"
+ },
+ "cinnamon-sugared-pumpkin-pecan-muffins": {
+  "file": "cinnamon-sugared-pumpkin-pecan-muffins.jpg",
+  "credit": "moria",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/49503029034@N01/60446426"
+ },
+ "confetti-bean-salsa": {
+  "file": "confetti-bean-salsa.jpg",
+  "credit": "TheHungryDudes",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/47854142@N04/5183806698"
+ },
+ "confetti-slaw": {
+  "file": "confetti-slaw.jpg",
+  "credit": "avlxyz",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/10559879@N00/4004743372"
+ },
+ "corn-and-pepper-cups": {
+  "file": "corn-and-pepper-cups.jpg",
+  "credit": "arnold | inuyaki",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/58819758@N00/3911538178"
+ },
+ "corn-casserole": {
+  "file": "corn-casserole.jpg",
+  "credit": "ShebleyCL",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/25636851@N03/46729764982"
+ },
+ "corn-salad-fat-free-ranch-dressing": {
+  "file": "corn-salad-fat-free-ranch-dressing.jpg",
+  "credit": "Takashi(aes256)",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/46151146@N04/7107905533"
+ },
+ "corn-toasties": {
+  "file": "corn-toasties.jpg",
+  "credit": "Steve A Johnson",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/14529257@N03/5201660979"
+ },
+ "cornmeal-pancakes": {
+  "file": "cornmeal-pancakes.jpg",
+  "credit": "Rex Roof",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/18199354@N00/499002360"
+ },
+ "country-style-potato-salad": {
+  "file": "country-style-potato-salad.jpg",
+  "credit": "Nikki L.",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/22865921@N07/3686606834"
+ },
+ "cowboy-caviar-bean-salsa": {
+  "file": "cowboy-caviar-bean-salsa.jpg",
+  "credit": "sarahstierch",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7633518@N08/53579948216"
+ },
+ "creamy-chicken-hash": {
+  "file": "creamy-chicken-hash.jpg",
+  "credit": "Bex.Walton",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7831824@N04/24685400229"
+ },
+ "creole-beans": {
+  "file": "creole-beans.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/14852177528"
+ },
+ "crock-pot-vegetable-lentil-stew": {
+  "file": "crock-pot-vegetable-lentil-stew.jpg",
+  "credit": "You As A Machine",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/82815184@N03/8126652808"
+ },
+ "cuban-beans-and-rice": {
+  "file": "cuban-beans-and-rice.jpg",
+  "credit": "SaucyGlo",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/67238971@N04/6772569317"
+ },
+ "curried-chickpea-salad": {
+  "file": "curried-chickpea-salad.jpg",
+  "credit": "GetSelfSufficient",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/59269793@N08/5478727586"
+ },
+ "curried-potatoes": {
+  "file": "curried-potatoes.jpg",
+  "credit": "Vegan Feast Catering",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/25128194@N02/3363968659"
+ },
+ "curried-quinoa-and-cauliflower": {
+  "file": "curried-quinoa-and-cauliflower.jpg",
+  "credit": "kurmanstaff",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/62558987@N07/49826434726"
+ },
+ "delicious-tacos": {
+  "file": "delicious-tacos.jpg",
+  "credit": "madprime",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/66843181@N00/3850746450"
+ },
+ "eating-smart-seasoning-mix": {
+  "file": "eating-smart-seasoning-mix.jpg",
+  "credit": "John Phelan",
+  "license": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Italian_Herb_Mix,_Penzeys_Spices,_Arlington_Heights_MA.jpg"
+ },
+ "eggplant-stir-fry": {
+  "file": "eggplant-stir-fry.jpg",
+  "credit": "healthiermi",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/54781600@N05/34817157646"
+ },
+ "enchilada-casserole": {
+  "file": "enchilada-casserole.jpg",
+  "credit": "shawnzrossi",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/19517696@N00/529120841"
+ },
+ "fruit-cole-slaw": {
+  "file": "fruit-cole-slaw.jpg",
+  "credit": "cajsa.lilliehook",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/14514578@N08/26207062007"
+ },
+ "fruit-salad-jicama": {
+  "file": "fruit-salad-jicama.jpg",
+  "credit": "Pictures by Ann",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/12560758@N07/10243895656"
+ },
+ "fruit-salad": {
+  "file": "fruit-salad.jpg",
+  "credit": "Public Domain Photos",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/28958738@N06/6827886748"
+ },
+ "fruit-sorbet": {
+  "file": "fruit-sorbet.jpg",
+  "credit": "yajico",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/71912190@N00/115244287"
+ },
+ "fruit-yogurt-parfait": {
+  "file": "fruit-yogurt-parfait.jpg",
+  "credit": "rawpixel",
+  "license": "CC0 1.0",
+  "source": "https://www.rawpixel.com/image/6041023/photo-image-public-domain-plant-fruit"
+ },
+ "garlic-stuffed-chicken": {
+  "file": "garlic-stuffed-chicken.jpg",
+  "credit": "CNEcija12345",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Roasted_chicken_yogurt_ginger_garlic.jpg"
+ },
+ "gazpacho-soup": {
+  "file": "gazpacho-soup.jpg",
+  "credit": "tomatoes and friends",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/49845772@N03/4812761687"
+ },
+ "gingery-quinoa-green-beans": {
+  "file": "gingery-quinoa-green-beans.jpg",
+  "credit": "wonderyort",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/11112304@N00/5541346491"
+ },
+ "golden-split-pea-soup": {
+  "file": "golden-split-pea-soup.jpg",
+  "credit": "rusvaplauke",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7440954@N05/1827823856"
+ },
+ "grapefruit-spinach-salad": {
+  "file": "grapefruit-spinach-salad.jpg",
+  "credit": "cajsa.lilliehook",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/14514578@N08/19448584625"
+ },
+ "ground-beef-stew": {
+  "file": "ground-beef-stew.jpg",
+  "credit": "avlxyz",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/10559879@N00/37188624"
+ },
+ "honeydew-summer-salad-wedges": {
+  "file": "honeydew-summer-salad-wedges.jpg",
+  "credit": "Salil Kumar Mukherjee",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=132751320"
+ },
+ "hooked-salmon-sticks": {
+  "file": "hooked-salmon-sticks.jpg",
+  "credit": "Scott Teresi",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35903175@N02/4106520976"
+ },
+ "hoppin-john-sausage-black-eyed-peas-and-rice": {
+  "file": "hoppin-john-sausage-black-eyed-peas-and-rice.jpg",
+  "credit": "Srjenkins",
+  "license": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=5616350"
+ },
+ "huevos-rancheros-fresh-salsa": {
+  "file": "huevos-rancheros-fresh-salsa.jpg",
+  "credit": "jeffreyw",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7927684@N03/34512229055"
+ },
+ "italian-style-vegetables": {
+  "file": "italian-style-vegetables.jpg",
+  "credit": "avlxyz",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/10559879@N00/5032563879"
+ },
+ "jollof-rice": {
+  "file": "jollof-rice.jpg",
+  "credit": "Ask4ugo",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=36525278"
+ },
+ "marinara-sauce": {
+  "file": "marinara-sauce.jpg",
+  "credit": "Kevin Prichard Photography",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/18081829@N00/9559157704"
+ },
+ "meaty-stuffed-potatoes": {
+  "file": "meaty-stuffed-potatoes.jpg",
+  "credit": "Stefano A",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7917900@N02/576403183"
+ },
+ "no-bake-breakfast-cookies": {
+  "file": "no-bake-breakfast-cookies.jpg",
+  "credit": "Veganbaking.net from USA",
+  "license": "CC BY-SA 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Vegan_Peanut_Butter_Chocolate_Chip_Cookies_Baked_(4107929430).jpg"
+ },
+ "no-bake-cookies": {
+  "file": "no-bake-cookies.jpg",
+  "credit": "Crystl",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/10953991@N00/330842058"
+ },
+ "one-pan-potatoes-chicken": {
+  "file": "one-pan-potatoes-chicken.jpg",
+  "credit": "J Wynia",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/73451168@N00/28929623122"
+ },
+ "pasta-greens-beans-and-chicken": {
+  "file": "pasta-greens-beans-and-chicken.jpg",
+  "credit": "avlxyz",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/10559879@N00/3143290193"
+ },
+ "pasta-primavera-salad": {
+  "file": "pasta-primavera-salad.jpg",
+  "credit": "Jeremy Keith",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=14932146"
+ },
+ "pineapple-rice-bake": {
+  "file": "pineapple-rice-bake.jpg",
+  "credit": "T.Tseng",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/68147320@N02/44521460541"
+ },
+ "pizza-eggburger": {
+  "file": "pizza-eggburger.jpg",
+  "credit": "Mudwater",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=46581630"
+ },
+ "pizza-meat-loaf": {
+  "file": "pizza-meat-loaf.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/9826909173"
+ },
+ "pumpkin-angel-food-cake": {
+  "file": "pumpkin-angel-food-cake.jpg",
+  "credit": "Kim Siever",
+  "license": "Public domain 1.0",
+  "source": "https://www.flickr.com/photos/57873306@N00/4877968590"
+ },
+ "rainbow-veggie-salad": {
+  "file": "rainbow-veggie-salad.jpg",
+  "credit": "Paul Goyette",
+  "license": "CC BY-SA 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=1043632"
+ },
+ "red-beans-and-rice1": {
+  "file": "red-beans-and-rice1.jpg",
+  "credit": "Arnold Gatilao from Fremont, CA, USA",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=10554440"
+ },
+ "red-monster-smoothie": {
+  "file": "red-monster-smoothie.jpg",
+  "credit": "WDnet Studio",
+  "license": "CC0 1.0",
+  "source": "https://stocksnap.io/photo/strawberry-smoothies-4L8M6ANLZL"
+ },
+ "rice-salad": {
+  "file": "rice-salad.jpg",
+  "credit": "Stacy Spensley",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/21001756@N06/4628721914"
+ },
+ "salata-ma-jibna-salad-parmesan-cheese": {
+  "file": "salata-ma-jibna-salad-parmesan-cheese.jpg",
+  "credit": "Fatimahope",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Cabbage_And_Carrot_Salad.jpg"
+ },
+ "sanchico-tuna-salad": {
+  "file": "sanchico-tuna-salad.jpg",
+  "credit": "purdman1",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/11550160@N03/2397936712"
+ },
+ "scrambled-tofu": {
+  "file": "scrambled-tofu.jpg",
+  "credit": "olga666flickr",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/40814068@N03/3971621877"
+ },
+ "slow-cooker-cheesy-swiss-steak": {
+  "file": "slow-cooker-cheesy-swiss-steak.jpg",
+  "credit": "marcalandavis",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/74161230@N00/45109952"
+ },
+ "slow-cooker-hamburger-stew": {
+  "file": "slow-cooker-hamburger-stew.jpg",
+  "credit": "Akahito Yamabe",
+  "license": "CC0 1.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=105918979"
+ },
+ "spinach-and-mushroom-enchilada-casserole": {
+  "file": "spinach-and-mushroom-enchilada-casserole.jpg",
+  "credit": "hindyg",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7304600@N07/8696602139"
+ },
+ "spinach-rice-salad": {
+  "file": "spinach-rice-salad.jpg",
+  "credit": "Qfamily",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/98545783@N00/2268428057"
+ },
+ "stewed-cauliflower-tomatoes-onions": {
+  "file": "stewed-cauliflower-tomatoes-onions.jpg",
+  "credit": "leesean",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/84979541@N00/8422923216"
+ },
+ "summer-squash-medley": {
+  "file": "summer-squash-medley.jpg",
+  "credit": "Laurel Fan",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/18295242@N00/2780459174"
+ },
+ "sunshine-rice": {
+  "file": "sunshine-rice.jpg",
+  "credit": "robanhk",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35747367@N00/3133986064"
+ },
+ "surfs-tacos": {
+  "file": "surfs-tacos.jpg",
+  "credit": "The Marmot",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/38142119@N00/13877217994"
+ },
+ "sweet-savory-peanut-butter-dip": {
+  "file": "sweet-savory-peanut-butter-dip.jpg",
+  "credit": "jasleen_kaur",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/25384802@N08/4952165613"
+ },
+ "taco-salad": {
+  "file": "taco-salad.jpg",
+  "credit": "larryjh1234",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/83886716@N00/4169114233"
+ },
+ "tangy-jicama-slaw": {
+  "file": "tangy-jicama-slaw.jpg",
+  "credit": "twohelmetscooking",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/34338566@N08/3368838927"
+ },
+ "tortilla-pizzas": {
+  "file": "tortilla-pizzas.jpg",
+  "credit": "jeffreyw",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=23109616"
+ },
+ "trail-mix-bars": {
+  "file": "trail-mix-bars.jpg",
+  "credit": "Hanonimas",
+  "license": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=44345699"
+ },
+ "vegetable-rice-tomatoes": {
+  "file": "vegetable-rice-tomatoes.jpg",
+  "credit": "Anthrocopy",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/49318478@N04/4520916726"
+ },
+ "veggie-pizza-pita-pockets": {
+  "file": "veggie-pizza-pita-pockets.jpg",
+  "credit": "Mark Ittleman",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/126855742@N07/23984361818"
+ },
+ "white-chili": {
+  "file": "white-chili.jpg",
+  "credit": "Thriving Vegetarian",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=95264712"
+ },
+ "yogurt-fruit-salad": {
+  "file": "yogurt-fruit-salad.jpg",
+  "credit": "cajsa.lilliehook",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/14514578@N08/19966167360"
+ },
+ "zucchini-casserole": {
+  "file": "zucchini-casserole.jpg",
+  "credit": "jennifer.overly",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/38395507@N07/22127715261"
+ },
+ "stove-top-potato-and-cabbage-casserole": {
+  "file": "stove-top-potato-and-cabbage-casserole.jpg",
+  "credit": "VegaTeam",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/59256189@N04/5532418361"
+ },
+ "beef-vegetable-six-layer-dinner": {
+  "file": "beef-vegetable-six-layer-dinner.jpg",
+  "credit": "SodanieChea",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/41942551@N02/8227698373"
+ },
+ "berry-good-dessert": {
+  "file": "berry-good-dessert.jpg",
+  "credit": "|| UggBoy♥UggGirl || PHOTO || WORLD || TRAVEL ||",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=74473297"
+ },
+ "black-skillet-beef-greens-and-red-potatoes": {
+  "file": "black-skillet-beef-greens-and-red-potatoes.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/360828903"
+ },
+ "broccoli-alfredo": {
+  "file": "broccoli-alfredo.jpg",
+  "credit": "aMichiganMom",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/11172002@N05/3818033788"
+ },
+ "chicken-club-salad": {
+  "file": "chicken-club-salad.jpg",
+  "credit": "roolrool",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/71317184@N00/4363544350"
+ },
+ "chicken-spanish-rice": {
+  "file": "chicken-spanish-rice.jpg",
+  "credit": "Jeff Barnes",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=4595592"
+ },
+ "chicken-tortilla-casserole": {
+  "file": "chicken-tortilla-casserole.jpg",
+  "credit": "EBKauai",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/13470115@N08/5249969019"
+ },
+ "corn-and-bean-medley": {
+  "file": "corn-and-bean-medley.jpg",
+  "credit": "Rocky Mountain Feline Rescue",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/77562960@N00/405709165"
+ },
+ "creamy-peanut-dip": {
+  "file": "creamy-peanut-dip.jpg",
+  "credit": "Crystl",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/10953991@N00/252041504"
+ },
+ "curry-vegetable-dip": {
+  "file": "curry-vegetable-dip.jpg",
+  "credit": "TheUjulala on Pixabay",
+  "license": "CC0 1.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=57690626"
+ },
+ "fiesta-rice-salad": {
+  "file": "fiesta-rice-salad.jpg",
+  "credit": "Stacy Spensley",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/21001756@N06/4628721914"
+ },
+ "four-layer-casserole": {
+  "file": "four-layer-casserole.jpg",
+  "credit": "megh28",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/156883244@N04/35120290724"
+ },
+ "garden-orchard-salad": {
+  "file": "garden-orchard-salad.jpg",
+  "credit": "photophnatic",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/70098064@N00/5578642179"
+ },
+ "herb-spinach-bake": {
+  "file": "herb-spinach-bake.jpg",
+  "credit": "Shockingly Tasty",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/49506223@N00/6570846793"
+ },
+ "italian-vegetables": {
+  "file": "italian-vegetables.jpg",
+  "credit": "tristankenney",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/14764065@N02/5993516082"
+ },
+ "leaf-finger-salad": {
+  "file": "leaf-finger-salad.jpg",
+  "credit": "Kent Wang",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/27454212@N00/151304321"
+ },
+ "lemon-velvet-supreme": {
+  "file": "lemon-velvet-supreme.jpg",
+  "credit": "MCL Abigail",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/23573629@N02/2424622260"
+ },
+ "orange-pork-chops": {
+  "file": "orange-pork-chops.jpg",
+  "credit": "ysksmz",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/124697177@N05/15386096818"
+ },
+ "party-time-pasta": {
+  "file": "party-time-pasta.jpg",
+  "credit": "Geoffreyrabbit",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=84432315"
+ },
+ "round-steak-casserole": {
+  "file": "round-steak-casserole.jpg",
+  "credit": "jeffreyw",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/7927684@N03/39021241444"
+ },
+ "scallion-rice": {
+  "file": "scallion-rice.jpg",
+  "credit": "Sharon Chen from Austin, United States",
+  "license": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Salmon_Fried_Rice_with_Green_Onion_1_(28456521054).jpg"
+ },
+ "sensational-six-layer-dinner": {
+  "file": "sensational-six-layer-dinner.jpg",
+  "credit": "whatleydude",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/85318305@N00/4287234333"
+ },
+ "spicy-chicken-and-potato-soup": {
+  "file": "spicy-chicken-and-potato-soup.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/4366537480"
+ },
+ "spinach-tomatoes-and-corn": {
+  "file": "spinach-tomatoes-and-corn.jpg",
+  "credit": "T.Tseng",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/68147320@N02/15106827698"
+ },
+ "splendid-fruit-salad": {
+  "file": "splendid-fruit-salad.jpg",
+  "credit": "David Philippi",
+  "license": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=71672709"
+ },
+ "stove-top-casserole": {
+  "file": "stove-top-casserole.jpg",
+  "credit": "LoopZilla",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/24987280@N00/3204882770"
+ },
+ "stove-top-green-chile-chicken-enchiladas": {
+  "file": "stove-top-green-chile-chicken-enchiladas.jpg",
+  "credit": "jeffk",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/44124372247@N01/31574605"
+ },
+ "tangy-crisp-vegetable-and-pasta-salad": {
+  "file": "tangy-crisp-vegetable-and-pasta-salad.jpg",
+  "credit": "Javcon117*",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/27346873@N04/8107521711"
+ },
+ "vegetable-salad": {
+  "file": "vegetable-salad.jpg",
+  "credit": "Roenashy",
+  "license": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=165095010"
+ },
+ "veggie-bean-wrap": {
+  "file": "veggie-bean-wrap.jpg",
+  "credit": "inazakira",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/47573122@N05/4739386598"
+ },
+ "veggie-stir-fry-turkey": {
+  "file": "veggie-stir-fry-turkey.jpg",
+  "credit": "Rusty Clark ~ 100K Photos",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/23206546@N04/8678641594"
+ },
+ "yogurt-smoothie-bag": {
+  "file": "yogurt-smoothie-bag.jpg",
+  "credit": "MattBerggren",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/39327122@N00/3421999068"
+ },
+ "zesty-citrus-coleslaw": {
+  "file": "zesty-citrus-coleslaw.jpg",
+  "credit": "stu_spivack",
+  "license": "CC BY-SA 2.0",
+  "source": "https://www.flickr.com/photos/35034346243@N01/258178606"
+ },
+ "butternut-squash-black-beans": {
+  "file": "butternut-squash-black-beans.jpg",
+  "credit": "Fimb",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/48573253@N00/3285949476"
+ },
+ "veggie-stuffed-pita": {
+  "file": "veggie-stuffed-pita.jpg",
+  "credit": "ReneS",
+  "license": "CC BY 2.0",
+  "source": "https://www.flickr.com/photos/63504485@N00/6268366426"
  }
 }

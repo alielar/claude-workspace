@@ -17,3 +17,11 @@ Pipeline, run from the `bsaha` folder:
    names, metric ingredients in three languages, Darija and French recipes, tags and categories.
    Resumable: one file per recipe in `data/myplate/translated/`. `translate.ts` is the paid Claude fallback.
 5. `python3 scripts/myplate/merge.py` combines everything into `data/dishes/myplate.json`, which the seed reads.
+
+## Free-licence photos for recipes USDA never photographed
+`data/myplate/no-photo.json` lists the 132 recipes whose only USDA image was the site logo. `photos-free.py` finds a
+CC0 / CC BY / CC BY-SA / public-domain photo for each on Openverse (Flickr etc.) then Wikimedia Commons, using the
+plain dish name in `data/myplate/photo-queries.json` (a `slug#2` key is a second-choice search). A photo is accepted
+only when every word of the query appears in its title and nothing suggests pork, alcohol, raw ingredients or
+non-food; the result is logged in `photos-free-review.json` and credited on the dish page. Rerun a slug with
+`python3 scripts/myplate/photos-free.py <slug>` after changing its query; then `./scripts/make-thumbs.sh` and `merge.py`.

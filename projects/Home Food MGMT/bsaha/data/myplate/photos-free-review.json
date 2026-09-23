@@ -1,0 +1,788 @@
+{
+ "beef-noodles": {
+  "query": "beef noodles",
+  "via": "openverse",
+  "title": "beef noodles",
+  "source": "https://www.flickr.com/photos/35034346243@N01/410842392"
+ },
+ "beef-stroganoff": {
+  "query": "beef stroganoff",
+  "via": "openverse",
+  "title": "Beef Stroganoff",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=43683936"
+ },
+ "black-eyed-pea-and-collard-greens-soup": {
+  "query": "black-eyed pea soup",
+  "via": "openverse",
+  "title": "Spicy black eyed pea soup",
+  "source": "https://www.flickr.com/photos/11112304@N00/4040719015"
+ },
+ "bread-bag": {
+  "query": "homemade bread loaf",
+  "via": "openverse",
+  "title": "Another homemade bread loaf attempt",
+  "source": "https://www.flickr.com/photos/52601770@N00/4074217589"
+ },
+ "bread-pudding-vanilla-sauce": {
+  "query": "bread pudding",
+  "via": "openverse",
+  "title": "bread pudding",
+  "source": "https://www.flickr.com/photos/35034346243@N01/2407820729"
+ },
+ "breakfast-burrito-salsa": {
+  "query": "breakfast burrito",
+  "via": "openverse",
+  "title": "breakfast burrito",
+  "source": "https://www.flickr.com/photos/35034346243@N01/1014114127"
+ },
+ "brussels-sprouts-mushroom-sauce": {
+  "query": "brussels sprouts mushrooms",
+  "via": "commons",
+  "title": "Brussels Sprouts with Peppers and Mushrooms (8625342540)",
+  "source": "https://commons.wikimedia.org/wiki/File:Brussels_Sprouts_with_Peppers_and_Mushrooms_(8625342540).jpg"
+ },
+ "bulgur-chickpea-salad": {
+  "query": "bulgur salad",
+  "via": "openverse",
+  "title": "Bulgur salad",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=75326415"
+ },
+ "cabbage-roll-casserole": {
+  "query": "cabbage casserole",
+  "via": "openverse",
+  "title": "Cabbage casserole",
+  "source": "https://www.flickr.com/photos/59787988@N00/8425976879"
+ },
+ "caribbean-pink-beans": {
+  "query": "pinto beans stew",
+  "via": "openverse",
+  "title": "0647Pinto beans chicken stew 08",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=98846886"
+ },
+ "catfish-stew-and-rice": {
+  "query": "fish stew rice",
+  "via": "commons",
+  "title": "Rice Served with Stew, Cow Leg and fish",
+  "source": "https://commons.wikimedia.org/wiki/File:Rice_Served_with_Stew,_Cow_Leg_and_fish.jpg"
+ },
+ "cauliflower-shells-cheese": {
+  "query": "macaroni cheese cauliflower",
+  "via": "openverse",
+  "title": "Homemade Macaroni & Cheese with broccoli and cauliflower",
+  "source": "https://www.flickr.com/photos/98178986@N00/4585070187"
+ },
+ "cheese-roni-bake": {
+  "query": "baked pasta cheese",
+  "via": "openverse",
+  "title": "baked pasta. cheese-E.",
+  "source": "https://www.flickr.com/photos/67482943@N00/2513198345"
+ },
+ "chicken-and-beans": {
+  "query": "chicken beans stew",
+  "via": "commons",
+  "title": "0647Pinto beans chicken stew 01",
+  "source": "https://commons.wikimedia.org/wiki/File:0647Pinto_beans_chicken_stew_01.jpg"
+ },
+ "chicken-and-dumplings": {
+  "query": "chicken and dumplings",
+  "via": "openverse",
+  "title": "chicken and dumplings",
+  "source": "https://www.flickr.com/photos/47409110@N07/4409982582"
+ },
+ "chicken-and-spanish-rice": {
+  "query": "arroz con pollo",
+  "via": "openverse",
+  "title": "Arroz-con-Pollo",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=745203"
+ },
+ "chicken-cacciatore": {
+  "query": "chicken cacciatore",
+  "via": "openverse",
+  "title": "Chicken cacciatore",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=35127951"
+ },
+ "chicken-pasta-salad": {
+  "query": "chicken pasta salad",
+  "via": "openverse",
+  "title": "chicken pasta salad",
+  "source": "https://www.flickr.com/photos/95212304@N00/13920669598"
+ },
+ "chicken-rice-and-fruit-salad": {
+  "query": "chicken rice salad",
+  "via": "openverse",
+  "title": "Chicken & rice, salad and . . . pasta?",
+  "source": "https://www.flickr.com/photos/14759783@N04/52745817698"
+ },
+ "chicken-rice-salad": {
+  "query": "chicken rice salad lettuce",
+  "via": "commons",
+  "title": "20230121 rice with beans and chicken lettuce salad compote Katowice Panewniki",
+  "source": "https://commons.wikimedia.org/wiki/File:20230121_rice_with_beans_and_chicken_lettuce_salad_compote_Katowice_Panewniki.jpg"
+ },
+ "chicken-vegetable-soup-kale": {
+  "query": "chicken vegetable soup",
+  "via": "openverse",
+  "title": "Chicken-Vegetable Soup",
+  "source": "https://www.flickr.com/photos/78428166@N00/4391399438"
+ },
+ "cinnamon-sugared-pumpkin-pecan-muffins": {
+  "query": "pumpkin muffins",
+  "via": "openverse",
+  "title": "Pumpkin Muffins",
+  "source": "https://www.flickr.com/photos/49503029034@N01/60446426"
+ },
+ "confetti-bean-salsa": {
+  "query": "black bean corn salsa",
+  "via": "openverse",
+  "title": "Black Bean & Roasted Corn Salsa Salad (1)",
+  "source": "https://www.flickr.com/photos/47854142@N04/5183806698"
+ },
+ "confetti-slaw": {
+  "query": "coleslaw carrots",
+  "via": "openverse",
+  "title": "Alpha's Cabbage, Carrot, Celery, Apple Coleslaw with Plum Sauce",
+  "source": "https://www.flickr.com/photos/10559879@N00/4004743372"
+ },
+ "corn-and-pepper-cups": {
+  "query": "stuffed green peppers",
+  "via": "openverse",
+  "title": "Stuffed Green Peppers",
+  "source": "https://www.flickr.com/photos/58819758@N00/3911538178"
+ },
+ "corn-casserole": {
+  "query": "corn casserole",
+  "via": "openverse",
+  "title": "Corn Casserole Recipe",
+  "source": "https://www.flickr.com/photos/25636851@N03/46729764982"
+ },
+ "corn-salad-fat-free-ranch-dressing": {
+  "query": "corn salad",
+  "via": "openverse",
+  "title": "Corn salad",
+  "source": "https://www.flickr.com/photos/46151146@N04/7107905533"
+ },
+ "corn-toasties": {
+  "query": "cornbread muffins",
+  "via": "openverse",
+  "title": "Cornbread Muffins",
+  "source": "https://www.flickr.com/photos/14529257@N03/5201660979"
+ },
+ "cornmeal-pancakes": {
+  "query": "cornmeal pancakes",
+  "via": "openverse",
+  "title": "cornmeal pancakes",
+  "source": "https://www.flickr.com/photos/18199354@N00/499002360"
+ },
+ "country-style-potato-salad": {
+  "query": "potato salad",
+  "via": "openverse",
+  "title": "Potato Salad",
+  "source": "https://www.flickr.com/photos/22865921@N07/3686606834"
+ },
+ "cowboy-caviar-bean-salsa": {
+  "query": "cowboy caviar",
+  "via": "openverse",
+  "title": "Cowboy caviar",
+  "source": "https://www.flickr.com/photos/7633518@N08/53579948216"
+ },
+ "creamy-chicken-hash": {
+  "query": "chicken hash",
+  "via": "openverse",
+  "title": "Chicken hash at VQ",
+  "source": "https://www.flickr.com/photos/7831824@N04/24685400229"
+ },
+ "creole-beans": {
+  "query": "creole beans",
+  "via": "openverse",
+  "title": "creole green beans",
+  "source": "https://www.flickr.com/photos/35034346243@N01/14852177528"
+ },
+ "crock-pot-vegetable-lentil-stew": {
+  "query": "lentil stew",
+  "via": "openverse",
+  "title": "Lentil Stew",
+  "source": "https://www.flickr.com/photos/82815184@N03/8126652808"
+ },
+ "cuban-beans-and-rice": {
+  "query": "cuban black beans rice",
+  "via": "openverse",
+  "title": "Cuban black beans & rice",
+  "source": "https://www.flickr.com/photos/67238971@N04/6772569317"
+ },
+ "curried-chickpea-salad": {
+  "query": "chickpea salad",
+  "via": "openverse",
+  "title": "Chickpea salad",
+  "source": "https://www.flickr.com/photos/59269793@N08/5478727586"
+ },
+ "curried-potatoes": {
+  "query": "curried potatoes",
+  "via": "openverse",
+  "title": "Curried Potatoes",
+  "source": "https://www.flickr.com/photos/25128194@N02/3363968659"
+ },
+ "curried-quinoa-and-cauliflower": {
+  "query": "quinoa cauliflower",
+  "via": "openverse",
+  "title": "Cauliflower Quinoa Cakes",
+  "source": "https://www.flickr.com/photos/62558987@N07/49826434726"
+ },
+ "delicious-tacos": {
+  "query": "vegetarian tacos",
+  "via": "openverse",
+  "title": "Vegetarian tacos",
+  "source": "https://www.flickr.com/photos/66843181@N00/3850746450"
+ },
+ "eating-smart-seasoning-mix": {
+  "query": "spice mix herbs",
+  "via": "commons",
+  "title": "Italian Herb Mix, Penzeys Spices, Arlington Heights MA",
+  "source": "https://commons.wikimedia.org/wiki/File:Italian_Herb_Mix,_Penzeys_Spices,_Arlington_Heights_MA.jpg"
+ },
+ "eggplant-stir-fry": {
+  "query": "eggplant stir fry",
+  "via": "openverse",
+  "title": "Eggplant Stir Fry",
+  "source": "https://www.flickr.com/photos/54781600@N05/34817157646"
+ },
+ "enchilada-casserole": {
+  "query": "enchilada casserole",
+  "via": "openverse",
+  "title": "Enchilada casserole",
+  "source": "https://www.flickr.com/photos/19517696@N00/529120841"
+ },
+ "fruit-cole-slaw": {
+  "query": "coleslaw",
+  "via": "openverse",
+  "title": "Turnip Cabbage Coleslaw",
+  "source": "https://www.flickr.com/photos/14514578@N08/26207062007"
+ },
+ "fruit-salad-jicama": {
+  "query": "jicama salad",
+  "via": "openverse",
+  "title": "Jicama Salad",
+  "source": "https://www.flickr.com/photos/12560758@N07/10243895656"
+ },
+ "fruit-salad": {
+  "query": "fruit salad",
+  "via": "openverse",
+  "title": "Natural-Fruit-Salad-Bowls__34699",
+  "source": "https://www.flickr.com/photos/28958738@N06/6827886748"
+ },
+ "fruit-sorbet": {
+  "query": "peach sorbet",
+  "via": "openverse",
+  "title": "peach sorbet",
+  "source": "https://www.flickr.com/photos/71912190@N00/115244287"
+ },
+ "fruit-yogurt-parfait": {
+  "query": "yogurt parfait",
+  "via": "openverse",
+  "title": "Blueberry yogurt parfait",
+  "source": "https://www.rawpixel.com/image/6041023/photo-image-public-domain-plant-fruit"
+ },
+ "garlic-stuffed-chicken": {
+  "query": "roast chicken garlic",
+  "via": "commons",
+  "title": "Roasted chicken yogurt ginger garlic",
+  "source": "https://commons.wikimedia.org/wiki/File:Roasted_chicken_yogurt_ginger_garlic.jpg"
+ },
+ "gazpacho-soup": {
+  "query": "gazpacho",
+  "via": "openverse",
+  "title": "Gazpacho",
+  "source": "https://www.flickr.com/photos/49845772@N03/4812761687"
+ },
+ "gingery-quinoa-green-beans": {
+  "query": "quinoa green beans",
+  "via": "openverse",
+  "title": "Quinoa and bean chilli with green beans and mushrooms",
+  "source": "https://www.flickr.com/photos/11112304@N00/5541346491"
+ },
+ "golden-split-pea-soup": {
+  "query": "split pea soup",
+  "via": "openverse",
+  "title": "Southwestern Split-Pea Soup",
+  "source": "https://www.flickr.com/photos/7440954@N05/1827823856"
+ },
+ "grapefruit-spinach-salad": {
+  "query": "spinach grapefruit salad",
+  "via": "openverse",
+  "title": "Bulgur Salad with Celery, Pomegranates, Cilantro, Spinach, Almonds, Grapefruit and Feta",
+  "source": "https://www.flickr.com/photos/14514578@N08/19448584625"
+ },
+ "ground-beef-stew": {
+  "query": "beef stew",
+  "via": "openverse",
+  "title": "Beef Stew",
+  "source": "https://www.flickr.com/photos/10559879@N00/37188624"
+ },
+ "honeydew-summer-salad-wedges": {
+  "query": "honeydew melon",
+  "via": "openverse",
+  "title": "Honeydew melon",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=132751320"
+ },
+ "hooked-salmon-sticks": {
+  "query": "salmon patties",
+  "via": "openverse",
+  "title": "Salmon patties",
+  "source": "https://www.flickr.com/photos/35903175@N02/4106520976"
+ },
+ "hoppin-john-sausage-black-eyed-peas-and-rice": {
+  "query": "hoppin john",
+  "via": "openverse",
+  "title": "Hoppin-john-bowl",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=5616350"
+ },
+ "huevos-rancheros-fresh-salsa": {
+  "query": "huevos rancheros",
+  "via": "openverse",
+  "title": "Huevos Rancheros",
+  "source": "https://www.flickr.com/photos/7927684@N03/34512229055"
+ },
+ "italian-style-vegetables": {
+  "query": "zucchini green beans",
+  "via": "openverse",
+  "title": "Green beans, zucchini, mint - Barbagallo AUD11",
+  "source": "https://www.flickr.com/photos/10559879@N00/5032563879"
+ },
+ "jollof-rice": {
+  "query": "jollof rice",
+  "via": "openverse",
+  "title": "JOLLOF RICE",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=36525278"
+ },
+ "marinara-sauce": {
+  "query": "marinara sauce",
+  "via": "openverse",
+  "title": "Heirloom Tomato Marinara Sauce",
+  "source": "https://www.flickr.com/photos/18081829@N00/9559157704"
+ },
+ "meaty-stuffed-potatoes": {
+  "query": "stuffed baked potato",
+  "via": "openverse",
+  "title": "Stuffed Baked Potato",
+  "source": "https://www.flickr.com/photos/7917900@N02/576403183"
+ },
+ "no-bake-breakfast-cookies": {
+  "query": "no-bake cookies peanut butter",
+  "via": "commons",
+  "title": "Vegan Peanut Butter Chocolate Chip Cookies Baked (4107929430)",
+  "source": "https://commons.wikimedia.org/wiki/File:Vegan_Peanut_Butter_Chocolate_Chip_Cookies_Baked_(4107929430).jpg"
+ },
+ "no-bake-cookies": {
+  "query": "no-bake cookies",
+  "via": "openverse",
+  "title": "bake cookies",
+  "source": "https://www.flickr.com/photos/10953991@N00/330842058"
+ },
+ "one-pan-potatoes-chicken": {
+  "query": "chicken potatoes skillet",
+  "via": "openverse",
+  "title": "Skillet chicken with potatoes and onions.",
+  "source": "https://www.flickr.com/photos/73451168@N00/28929623122"
+ },
+ "pasta-greens-beans-and-chicken": {
+  "query": "pasta chicken beans",
+  "via": "openverse",
+  "title": "Pasta, Zucchini, Borlotti Bean and Leftover Roast Chicken Soup",
+  "source": "https://www.flickr.com/photos/10559879@N00/3143290193"
+ },
+ "pasta-primavera-salad": {
+  "query": "pasta primavera",
+  "via": "openverse",
+  "title": "Pasta primavera",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=14932146"
+ },
+ "pineapple-rice-bake": {
+  "query": "rice pudding pineapple",
+  "via": "openverse",
+  "title": "Pineapple sticky rice: sticky rice pudding, compressed pineapple, thai green curry sorbet",
+  "source": "https://www.flickr.com/photos/68147320@N02/44521460541"
+ },
+ "pizza-eggburger": {
+  "query": "egg sandwich",
+  "via": "openverse",
+  "title": "Pepper-and-egg-sandwich-01",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=46581630"
+ },
+ "pizza-meat-loaf": {
+  "query": "meatloaf",
+  "via": "openverse",
+  "title": "meatloaf",
+  "source": "https://www.flickr.com/photos/35034346243@N01/9826909173"
+ },
+ "pumpkin-angel-food-cake": {
+  "query": "angel food cake",
+  "via": "openverse",
+  "title": "Angel Food Cake",
+  "source": "https://www.flickr.com/photos/57873306@N00/4877968590"
+ },
+ "rainbow-veggie-salad": {
+  "query": "bean salad",
+  "via": "openverse",
+  "title": "Colourful bean salad",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=1043632"
+ },
+ "red-beans-and-rice1": {
+  "query": "red beans and rice",
+  "via": "openverse",
+  "title": "Red Beans and Rice",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=10554440"
+ },
+ "red-monster-smoothie": {
+  "query": "strawberry smoothie",
+  "via": "openverse",
+  "title": "Strawberry Smoothies",
+  "source": "https://stocksnap.io/photo/strawberry-smoothies-4L8M6ANLZL"
+ },
+ "rice-salad": {
+  "query": "rice salad",
+  "via": "openverse",
+  "title": "brown rice salad",
+  "source": "https://www.flickr.com/photos/21001756@N06/4628721914"
+ },
+ "salata-ma-jibna-salad-parmesan-cheese": {
+  "query": "cabbage carrot salad",
+  "via": "commons",
+  "title": "Cabbage And Carrot Salad",
+  "source": "https://commons.wikimedia.org/wiki/File:Cabbage_And_Carrot_Salad.jpg"
+ },
+ "sanchico-tuna-salad": {
+  "query": "tuna salad avocado",
+  "via": "openverse",
+  "title": "Seared Tuna and Avocado Salad with Sesame-Soy Dressing",
+  "source": "https://www.flickr.com/photos/11550160@N03/2397936712"
+ },
+ "scrambled-tofu": {
+  "query": "scrambled tofu",
+  "via": "openverse",
+  "title": "Scrambled tofu",
+  "source": "https://www.flickr.com/photos/40814068@N03/3971621877"
+ },
+ "slow-cooker-cheesy-swiss-steak": {
+  "query": "swiss steak",
+  "via": "openverse",
+  "title": "Swiss Steak?",
+  "source": "https://www.flickr.com/photos/74161230@N00/45109952"
+ },
+ "slow-cooker-hamburger-stew": {
+  "query": "hamburger stew",
+  "via": "openverse",
+  "title": "Stewed hamburger patty",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=105918979"
+ },
+ "spinach-and-mushroom-enchilada-casserole": {
+  "query": "spinach enchiladas",
+  "via": "openverse",
+  "title": "Spinach-and-Tofu-Enchiladas-with-Cheese",
+  "source": "https://www.flickr.com/photos/7304600@N07/8696602139"
+ },
+ "spinach-rice-salad": {
+  "query": "spinach rice",
+  "via": "openverse",
+  "title": "Greek Spinach & Rice",
+  "source": "https://www.flickr.com/photos/98545783@N00/2268428057"
+ },
+ "stewed-cauliflower-tomatoes-onions": {
+  "query": "cauliflower tomato stew",
+  "via": "openverse",
+  "title": "Cauliflower Tomato Peanut Butter Stew",
+  "source": "https://www.flickr.com/photos/84979541@N00/8422923216"
+ },
+ "stove-top-potato-and-cabbage-casserole": {
+  "query": "colcannon",
+  "via": "openverse",
+  "title": "Colcannon",
+  "source": "https://www.flickr.com/photos/59256189@N04/5532418361"
+ },
+ "summer-squash-medley": {
+  "query": "sauteed summer squash",
+  "via": "openverse",
+  "title": "Summer Squash and Snapper",
+  "source": "https://www.flickr.com/photos/18295242@N00/2780459174"
+ },
+ "sunshine-rice": {
+  "query": "rice pilaf",
+  "via": "openverse",
+  "title": "persian rice pilaf",
+  "source": "https://www.flickr.com/photos/35747367@N00/3133986064"
+ },
+ "surfs-tacos": {
+  "query": "tuna tacos",
+  "via": "openverse",
+  "title": "Tuna Tacos",
+  "source": "https://www.flickr.com/photos/38142119@N00/13877217994"
+ },
+ "sweet-savory-peanut-butter-dip": {
+  "query": "peanut sauce",
+  "via": "openverse",
+  "title": "peanut sauce",
+  "source": "https://www.flickr.com/photos/25384802@N08/4952165613"
+ },
+ "taco-salad": {
+  "query": "taco salad",
+  "via": "openverse",
+  "title": "Taco Salad",
+  "source": "https://www.flickr.com/photos/83886716@N00/4169114233"
+ },
+ "tangy-jicama-slaw": {
+  "query": "jicama slaw",
+  "via": "openverse",
+  "title": "Mango-tomatillo salsa, jicama-apple slaw",
+  "source": "https://www.flickr.com/photos/34338566@N08/3368838927"
+ },
+ "tortilla-pizzas": {
+  "query": "tortilla pizza",
+  "via": "openverse",
+  "title": "Tortilla pizza",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=23109616"
+ },
+ "trail-mix-bars": {
+  "query": "cereal bars",
+  "via": "openverse",
+  "title": "サンザシ cereal bar",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=44345699"
+ },
+ "vegetable-rice-tomatoes": {
+  "query": "rice tomatoes",
+  "via": "openverse",
+  "title": "Beans, Rice, Tomatoes",
+  "source": "https://www.flickr.com/photos/49318478@N04/4520916726"
+ },
+ "veggie-pizza-pita-pockets": {
+  "query": "pita pizza",
+  "via": "openverse",
+  "title": "Pita Pizza",
+  "source": "https://www.flickr.com/photos/126855742@N07/23984361818"
+ },
+ "white-chili": {
+  "query": "white bean chili",
+  "via": "openverse",
+  "title": "Roasted Tomatillo and White Bean Chili",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=95264712"
+ },
+ "yogurt-fruit-salad": {
+  "query": "fruit salad yogurt",
+  "via": "openverse",
+  "title": "Cucumber Fruit Salad with Tarragon Yogurt Dressing",
+  "source": "https://www.flickr.com/photos/14514578@N08/19966167360"
+ },
+ "zucchini-casserole": {
+  "query": "zucchini casserole",
+  "via": "openverse",
+  "title": "261) Zucchini Casserole",
+  "source": "https://www.flickr.com/photos/38395507@N07/22127715261"
+ },
+ "beef-vegetable-six-layer-dinner": {
+  "query": "ground beef potato casserole",
+  "via": "openverse",
+  "title": "Shepherd's Pie",
+  "source": "https://www.flickr.com/photos/41942551@N02/8227698373"
+ },
+ "berry-good-dessert": {
+  "query": "strawberry gelatin dessert",
+  "via": "openverse",
+  "title": "Strawberry dessert",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=74473297"
+ },
+ "black-skillet-beef-greens-and-red-potatoes": {
+  "query": "beef skillet potatoes",
+  "via": "openverse",
+  "title": "beef and potatoes",
+  "source": "https://www.flickr.com/photos/35034346243@N01/360828903"
+ },
+ "broccoli-alfredo": {
+  "query": "broccoli pasta alfredo",
+  "via": "openverse",
+  "title": "Broccoli Pasta Salad",
+  "source": "https://www.flickr.com/photos/11172002@N05/3818033788"
+ },
+ "chicken-club-salad": {
+  "query": "chicken salad romaine",
+  "via": "openverse",
+  "title": "Chicken Salad",
+  "source": "https://www.flickr.com/photos/71317184@N00/4363544350"
+ },
+ "chicken-spanish-rice": {
+  "query": "spanish rice chicken",
+  "via": "openverse",
+  "title": "Spanish rice",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=4595592"
+ },
+ "chicken-tortilla-casserole": {
+  "query": "chicken tortilla casserole",
+  "via": "openverse",
+  "title": "Solar Chicken Enchilada Casserole",
+  "source": "https://www.flickr.com/photos/13470115@N08/5249969019"
+ },
+ "corn-and-bean-medley": {
+  "query": "corn kidney beans",
+  "via": "openverse",
+  "title": "Succotash",
+  "source": "https://www.flickr.com/photos/77562960@N00/405709165"
+ },
+ "creamy-peanut-dip": {
+  "query": "peanut butter dip",
+  "via": "openverse",
+  "title": "despite warning, eat peanut containing peanut butter (with honey crisp apple slices)",
+  "source": "https://www.flickr.com/photos/10953991@N00/252041504"
+ },
+ "curry-vegetable-dip": {
+  "query": "yogurt dip vegetables",
+  "via": "openverse",
+  "title": "Arabic-Shells-Dips-Sauces-Dumplings-Appetizers-Vegetables-1626976",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=57690626"
+ },
+ "fiesta-rice-salad": {
+  "query": "rice salad vegetables",
+  "via": "openverse",
+  "title": "brown rice salad",
+  "source": "https://www.flickr.com/photos/21001756@N06/4628721914"
+ },
+ "four-layer-casserole": {
+  "query": "beef potato casserole",
+  "via": "openverse",
+  "title": "Hamburger Casserole",
+  "source": "https://www.flickr.com/photos/156883244@N04/35120290724"
+ },
+ "garden-orchard-salad": {
+  "query": "broccoli apple salad",
+  "via": "openverse",
+  "title": "broccoli salad",
+  "source": "https://www.flickr.com/photos/70098064@N00/5578642179"
+ },
+ "herb-spinach-bake": {
+  "query": "spinach rice casserole",
+  "via": "openverse",
+  "title": "spinach leek casserole",
+  "source": "https://www.flickr.com/photos/49506223@N00/6570846793"
+ },
+ "italian-vegetables": {
+  "query": "steamed vegetables broccoli cauliflower",
+  "via": "openverse",
+  "title": "steamed vegetables",
+  "source": "https://www.flickr.com/photos/14764065@N02/5993516082"
+ },
+ "leaf-finger-salad": {
+  "query": "lettuce cucumber salad",
+  "via": "openverse",
+  "title": "Micro-green salad",
+  "source": "https://www.flickr.com/photos/27454212@N00/151304321"
+ },
+ "lemon-velvet-supreme": {
+  "query": "lemon yogurt dessert",
+  "via": "openverse",
+  "title": "Lemon dessert",
+  "source": "https://www.flickr.com/photos/23573629@N02/2424622260"
+ },
+ "orange-pork-chops": {
+  "query": "pork chops sweet potato",
+  "via": "openverse",
+  "title": "Lamb chop",
+  "source": "https://www.flickr.com/photos/124697177@N05/15386096818"
+ },
+ "party-time-pasta": {
+  "query": "pasta ground turkey",
+  "via": "openverse",
+  "title": "Pasta with meat sauce",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=84432315"
+ },
+ "round-steak-casserole": {
+  "query": "steak casserole",
+  "via": "openverse",
+  "title": "steak and potatoes",
+  "source": "https://www.flickr.com/photos/7927684@N03/39021241444"
+ },
+ "scallion-rice": {
+  "query": "rice scallions",
+  "via": "commons",
+  "title": "Salmon Fried Rice with Green Onion 1 (28456521054)",
+  "source": "https://commons.wikimedia.org/wiki/File:Salmon_Fried_Rice_with_Green_Onion_1_(28456521054).jpg"
+ },
+ "sensational-six-layer-dinner": {
+  "query": "ground beef carrot potato casserole",
+  "via": "openverse",
+  "title": "Beef Casserole",
+  "source": "https://www.flickr.com/photos/85318305@N00/4287234333"
+ },
+ "spicy-chicken-and-potato-soup": {
+  "query": "chicken potato soup",
+  "via": "openverse",
+  "title": "chicken soup",
+  "source": "https://www.flickr.com/photos/35034346243@N01/4366537480"
+ },
+ "spinach-tomatoes-and-corn": {
+  "query": "spinach tomato corn",
+  "via": "openverse",
+  "title": "Braised goat, spinach, tomato",
+  "source": "https://www.flickr.com/photos/68147320@N02/15106827698"
+ },
+ "splendid-fruit-salad": {
+  "query": "apple banana fruit salad",
+  "via": "openverse",
+  "title": "<div class='fn'> Apple Fruit Salad 2</div>",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=71672709"
+ },
+ "stove-top-casserole": {
+  "query": "potato cabbage skillet",
+  "via": "openverse",
+  "title": "Cauliflower Cheese, Cabbage, Potatoes",
+  "source": "https://www.flickr.com/photos/24987280@N00/3204882770"
+ },
+ "stove-top-green-chile-chicken-enchiladas": {
+  "query": "green chile chicken enchiladas",
+  "via": "openverse",
+  "title": "Chicken Enchiladas",
+  "source": "https://www.flickr.com/photos/44124372247@N01/31574605"
+ },
+ "tangy-crisp-vegetable-and-pasta-salad": {
+  "query": "pasta salad vegetables",
+  "via": "openverse",
+  "title": "Pasta Salad",
+  "source": "https://www.flickr.com/photos/27346873@N04/8107521711"
+ },
+ "vegetable-salad": {
+  "query": "chickpea corn salad",
+  "via": "openverse",
+  "title": "Colorful mixed vegetable salad",
+  "source": "https://commons.wikimedia.org/w/index.php?curid=165095010"
+ },
+ "veggie-bean-wrap": {
+  "query": "black bean wrap",
+  "via": "openverse",
+  "title": "Veggie Wrap",
+  "source": "https://www.flickr.com/photos/47573122@N05/4739386598"
+ },
+ "veggie-stir-fry-turkey": {
+  "query": "turkey stir fry",
+  "via": "openverse",
+  "title": "Vegetable Stir-fry",
+  "source": "https://www.flickr.com/photos/23206546@N04/8678641594"
+ },
+ "yogurt-smoothie-bag": {
+  "query": "yogurt smoothie",
+  "via": "openverse",
+  "title": "Smoothie",
+  "source": "https://www.flickr.com/photos/39327122@N00/3421999068"
+ },
+ "zesty-citrus-coleslaw": {
+  "query": "coleslaw mandarin",
+  "via": "openverse",
+  "title": "chicken cabbage salad",
+  "source": "https://www.flickr.com/photos/35034346243@N01/258178606"
+ },
+ "butternut-squash-black-beans": {
+  "query": "roasted butternut squash",
+  "via": "openverse",
+  "title": "Roasted butternut squash risotto 2",
+  "source": "https://www.flickr.com/photos/48573253@N00/3285949476"
+ },
+ "veggie-stuffed-pita": {
+  "query": "pita sandwich",
+  "via": "openverse",
+  "title": "20100602-pita-sandwich-large",
+  "source": "https://www.flickr.com/photos/63504485@N00/6268366426"
+ }
+}

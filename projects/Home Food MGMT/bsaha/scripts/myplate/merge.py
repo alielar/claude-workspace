@@ -15,7 +15,8 @@ photos = load('photos.json', {})
 # never show the site's generic logo as a dish photo, and never reference a file that is not there
 for slug in list(photos):
     r = raw.get(slug)
-    if not r or 'default_images' in (r.get('image') or '') or not os.path.exists(os.path.join(ROOT, 'public/dishes', photos[slug]['file'])):
+    usda = photos[slug].get('credit') == 'USDA MyPlate Kitchen'
+    if not r or (usda and 'default_images' in (r.get('image') or '')) or not os.path.exists(os.path.join(ROOT, 'public/dishes', photos[slug]['file'])):
         del photos[slug]
 # photos.json is written when the download ends; until then, a file already in public/dishes counts
 for slug, r in raw.items():

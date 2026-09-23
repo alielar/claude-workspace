@@ -16147,7 +16147,12 @@
   ],
   "rating": 3.91,
   "rating_count": 53,
-  "photo": null
+  "photo": {
+   "file": "beef-noodles.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/410842392"
+  }
  },
  {
   "slug": "beef-pot-roast",
@@ -16814,7 +16819,12 @@
   ],
   "rating": 3.46,
   "rating_count": 111,
-  "photo": null
+  "photo": {
+   "file": "beef-stroganoff.jpg",
+   "credit": "Alpha @ Flickr",
+   "license": "CC BY-SA 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=43683936"
+  }
  },
  {
   "slug": "beef-vegetable-six-layer-dinner",
@@ -16959,7 +16969,12 @@
   ],
   "rating": 4.18,
   "rating_count": 222,
-  "photo": null
+  "photo": {
+   "file": "beef-vegetable-six-layer-dinner.jpg",
+   "credit": "SodanieChea",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/41942551@N02/8227698373"
+  }
  },
  {
   "slug": "beef-vegetable-soup",
@@ -18638,7 +18653,12 @@
   ],
   "rating": 3.35,
   "rating_count": 34,
-  "photo": null
+  "photo": {
+   "file": "berry-good-dessert.jpg",
+   "credit": "|| UggBoy♥UggGirl || PHOTO || WORLD || TRAVEL ||",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=74473297"
+  }
  },
  {
   "slug": "better-baking-mix",
@@ -20609,7 +20629,12 @@
   ],
   "rating": 3.0,
   "rating_count": 2,
-  "photo": null
+  "photo": {
+   "file": "black-eyed-pea-and-collard-greens-soup.jpg",
+   "credit": "wonderyort",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/11112304@N00/4040719015"
+  }
  },
  {
   "slug": "black-skillet-beef-greens-and-red-potatoes",
@@ -20825,7 +20850,12 @@
   ],
   "rating": 3.85,
   "rating_count": 60,
-  "photo": null
+  "photo": {
+   "file": "black-skillet-beef-greens-and-red-potatoes.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/360828903"
+  }
  },
  {
   "slug": "blue-corn-pan-bread",
@@ -22672,7 +22702,12 @@
   ],
   "rating": 3.27,
   "rating_count": 99,
-  "photo": null
+  "photo": {
+   "file": "bread-bag.jpg",
+   "credit": "rubenerd",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/52601770@N00/4074217589"
+  }
  },
  {
   "slug": "bread-bake-chicken-cheese-vegetables",
@@ -23052,7 +23087,12 @@
   ],
   "rating": 3.5,
   "rating_count": 36,
-  "photo": null
+  "photo": {
+   "file": "bread-pudding-vanilla-sauce.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/2407820729"
+  }
  },
  {
   "slug": "breakfast-burrito-salsa",
@@ -23231,7 +23271,12 @@
   ],
   "rating": 3.42,
   "rating_count": 172,
-  "photo": null
+  "photo": {
+   "file": "breakfast-burrito-salsa.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/1014114127"
+  }
  },
  {
   "slug": "breakfast-parfait",
@@ -23864,7 +23909,12 @@
   ],
   "rating": 3.24,
   "rating_count": 99,
-  "photo": null
+  "photo": {
+   "file": "broccoli-alfredo.jpg",
+   "credit": "aMichiganMom",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/11172002@N05/3818033788"
+  }
  },
  {
   "slug": "broccoli-and-corn-bake",
@@ -26556,7 +26606,12 @@
   ],
   "rating": 3.37,
   "rating_count": 67,
-  "photo": null
+  "photo": {
+   "file": "brussels-sprouts-mushroom-sauce.jpg",
+   "credit": "Cajsa Lilliehook from Portland",
+   "license": "CC BY-SA 2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Brussels_Sprouts_with_Peppers_and_Mushrooms_(8625342540).jpg"
+  }
  },
  {
   "slug": "bugs-log",
@@ -26894,7 +26949,12 @@
   ],
   "rating": 3.74,
   "rating_count": 65,
-  "photo": null
+  "photo": {
+   "file": "bulgur-chickpea-salad.jpg",
+   "credit": "HakanIST",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=75326415"
+  }
  },
  {
   "slug": "bulgur-wheat-veggie-chickpea-salad",
@@ -27683,7 +27743,12 @@
   ],
   "rating": 3.52,
   "rating_count": 139,
-  "photo": null
+  "photo": {
+   "file": "butternut-squash-black-beans.jpg",
+   "credit": "Fimb",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/48573253@N00/3285949476"
+  }
  },
  {
   "slug": "butternut-squash-pasta-bake",
@@ -27995,7 +28060,12 @@
   ],
   "rating": 3.38,
   "rating_count": 45,
-  "photo": null
+  "photo": {
+   "file": "cabbage-roll-casserole.jpg",
+   "credit": "Aivar Ruukel",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/59787988@N00/8425976879"
+  }
  },
  {
   "slug": "cabbage-salad",
@@ -29625,7 +29695,12 @@
   ],
   "rating": 3.5,
   "rating_count": 66,
-  "photo": null
+  "photo": {
+   "file": "caribbean-pink-beans.jpg",
+   "credit": "Judgefloro",
+   "license": "CC0 1.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=98846886"
+  }
  },
  {
   "slug": "carrot-cookies",
@@ -30265,7 +30340,12 @@
   ],
   "rating": 3.28,
   "rating_count": 122,
-  "photo": null
+  "photo": {
+   "file": "catfish-stew-and-rice.jpg",
+   "credit": "Justdifference",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Rice_Served_with_Stew,_Cow_Leg_and_fish.jpg"
+  }
  },
  {
   "slug": "cauliflower-shells-cheese",
@@ -30416,7 +30496,12 @@
   ],
   "rating": 3.25,
   "rating_count": 4,
-  "photo": null
+  "photo": {
+   "file": "cauliflower-shells-cheese.jpg",
+   "credit": "@joefoodie",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/98178986@N00/4585070187"
+  }
  },
  {
   "slug": "celery-apricot-blue-cheese-spread",
@@ -30981,7 +31066,12 @@
   ],
   "rating": 3.54,
   "rating_count": 35,
-  "photo": null
+  "photo": {
+   "file": "cheese-roni-bake.jpg",
+   "credit": "surfergirl143",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/67482943@N00/2513198345"
+  }
  },
  {
   "slug": "cheese-stuffed-potatoes",
@@ -31753,7 +31843,12 @@
   ],
   "rating": 3.71,
   "rating_count": 66,
-  "photo": null
+  "photo": {
+   "file": "chicken-and-beans.jpg",
+   "credit": "Judgefloro",
+   "license": "CC0",
+   "source": "https://commons.wikimedia.org/wiki/File:0647Pinto_beans_chicken_stew_01.jpg"
+  }
  },
  {
   "slug": "chicken-and-broccoli-bake",
@@ -32437,7 +32532,12 @@
   ],
   "rating": 3.76,
   "rating_count": 87,
-  "photo": null
+  "photo": {
+   "file": "chicken-and-dumplings.jpg",
+   "credit": "karen H. nickname.{ pooh}",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/47409110@N07/4409982582"
+  }
  },
  {
   "slug": "chicken-and-spanish-rice",
@@ -32600,7 +32700,12 @@
   ],
   "rating": 3.33,
   "rating_count": 89,
-  "photo": null
+  "photo": {
+   "file": "chicken-and-spanish-rice.jpg",
+   "credit": "Kobako",
+   "license": "CC BY-SA 2.5",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=745203"
+  }
  },
  {
   "slug": "chicken-apple-salad-sandwich",
@@ -33073,7 +33178,12 @@
   ],
   "rating": 3.4,
   "rating_count": 75,
-  "photo": null
+  "photo": {
+   "file": "chicken-cacciatore.jpg",
+   "credit": "Chris Bennett",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=35127951"
+  }
  },
  {
   "slug": "chicken-casserole",
@@ -33364,7 +33474,12 @@
   ],
   "rating": 3.52,
   "rating_count": 56,
-  "photo": null
+  "photo": {
+   "file": "chicken-club-salad.jpg",
+   "credit": "roolrool",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/71317184@N00/4363544350"
+  }
  },
  {
   "slug": "chicken-mole",
@@ -34021,7 +34136,12 @@
   ],
   "rating": 3.34,
   "rating_count": 79,
-  "photo": null
+  "photo": {
+   "file": "chicken-pasta-salad.jpg",
+   "credit": "ken ratcliff",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/95212304@N00/13920669598"
+  }
  },
  {
   "slug": "chicken-posole",
@@ -34895,7 +35015,12 @@
   ],
   "rating": 3.95,
   "rating_count": 94,
-  "photo": null
+  "photo": {
+   "file": "chicken-rice-and-fruit-salad.jpg",
+   "credit": "young shanahan",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/14759783@N04/52745817698"
+  }
  },
  {
   "slug": "chicken-rice-salad",
@@ -35059,7 +35184,12 @@
   ],
   "rating": 3.93,
   "rating_count": 69,
-  "photo": null
+  "photo": {
+   "file": "chicken-rice-salad.jpg",
+   "credit": "Abraham",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:20230121_rice_with_beans_and_chicken_lettuce_salad_compote_Katowice_Panewniki.jpg"
+  }
  },
  {
   "slug": "chicken-rice-soup",
@@ -36350,7 +36480,12 @@
   ],
   "rating": 3.29,
   "rating_count": 80,
-  "photo": null
+  "photo": {
+   "file": "chicken-spanish-rice.jpg",
+   "credit": "Jeff Barnes",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=4595592"
+  }
  },
  {
   "slug": "chicken-stew",
@@ -36870,7 +37005,12 @@
   ],
   "rating": 3.25,
   "rating_count": 55,
-  "photo": null
+  "photo": {
+   "file": "chicken-tortilla-casserole.jpg",
+   "credit": "EBKauai",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/13470115@N08/5249969019"
+  }
  },
  {
   "slug": "chicken-vegetable-soup-kale",
@@ -37042,7 +37182,12 @@
   ],
   "rating": 3.91,
   "rating_count": 406,
-  "photo": null
+  "photo": {
+   "file": "chicken-vegetable-soup-kale.jpg",
+   "credit": "Tobyotter",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/78428166@N00/4391399438"
+  }
  },
  {
   "slug": "chicken-waldorf-salad",
@@ -39571,7 +39716,12 @@
   ],
   "rating": 3.38,
   "rating_count": 48,
-  "photo": null
+  "photo": {
+   "file": "cinnamon-sugared-pumpkin-pecan-muffins.jpg",
+   "credit": "moria",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/49503029034@N01/60446426"
+  }
  },
  {
   "slug": "cinnamon-vanilla-granola",
@@ -41537,7 +41687,12 @@
   ],
   "rating": 3.47,
   "rating_count": 108,
-  "photo": null
+  "photo": {
+   "file": "confetti-bean-salsa.jpg",
+   "credit": "TheHungryDudes",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/47854142@N04/5183806698"
+  }
  },
  {
   "slug": "confetti-grain-salad",
@@ -41824,7 +41979,12 @@
   ],
   "rating": 3.59,
   "rating_count": 85,
-  "photo": null
+  "photo": {
+   "file": "confetti-slaw.jpg",
+   "credit": "avlxyz",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/10559879@N00/4004743372"
+  }
  },
  {
   "slug": "cooked-beans",
@@ -42168,7 +42328,12 @@
   ],
   "rating": 3.28,
   "rating_count": 39,
-  "photo": null
+  "photo": {
+   "file": "corn-and-bean-medley.jpg",
+   "credit": "Rocky Mountain Feline Rescue",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/77562960@N00/405709165"
+  }
  },
  {
   "slug": "corn-and-cucumber-salad",
@@ -42611,7 +42776,12 @@
   ],
   "rating": 3.75,
   "rating_count": 28,
-  "photo": null
+  "photo": {
+   "file": "corn-and-pepper-cups.jpg",
+   "credit": "arnold | inuyaki",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/58819758@N00/3911538178"
+  }
  },
  {
   "slug": "corn-blueberry-and-wild-rice-salad",
@@ -43229,7 +43399,12 @@
   ],
   "rating": 3.21,
   "rating_count": 24,
-  "photo": null
+  "photo": {
+   "file": "corn-casserole.jpg",
+   "credit": "ShebleyCL",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/25636851@N03/46729764982"
+  }
  },
  {
   "slug": "corn-salad-fat-free-ranch-dressing",
@@ -43354,7 +43529,12 @@
   ],
   "rating": 3.5,
   "rating_count": 40,
-  "photo": null
+  "photo": {
+   "file": "corn-salad-fat-free-ranch-dressing.jpg",
+   "credit": "Takashi(aes256)",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/46151146@N04/7107905533"
+  }
  },
  {
   "slug": "corn-salad-fresh-basil-and-lemon",
@@ -43794,7 +43974,12 @@
   ],
   "rating": 3.28,
   "rating_count": 152,
-  "photo": null
+  "photo": {
+   "file": "corn-toasties.jpg",
+   "credit": "Steve A Johnson",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/14529257@N03/5201660979"
+  }
  },
  {
   "slug": "corn-tortillas",
@@ -44224,7 +44409,12 @@
   ],
   "rating": 3.89,
   "rating_count": 130,
-  "photo": null
+  "photo": {
+   "file": "cornmeal-pancakes.jpg",
+   "credit": "Rex Roof",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/18199354@N00/499002360"
+  }
  },
  {
   "slug": "country-style-potato-salad",
@@ -44377,7 +44567,12 @@
   ],
   "rating": 4.0,
   "rating_count": 74,
-  "photo": null
+  "photo": {
+   "file": "country-style-potato-salad.jpg",
+   "credit": "Nikki L.",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/22865921@N07/3686606834"
+  }
  },
  {
   "slug": "couscous-peas-and-onions",
@@ -44692,7 +44887,12 @@
   ],
   "rating": 3.5,
   "rating_count": 40,
-  "photo": null
+  "photo": {
+   "file": "cowboy-caviar-bean-salsa.jpg",
+   "credit": "sarahstierch",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7633518@N08/53579948216"
+  }
  },
  {
   "slug": "cran-apple-crisp",
@@ -46078,7 +46278,12 @@
   ],
   "rating": 3.26,
   "rating_count": 31,
-  "photo": null
+  "photo": {
+   "file": "creamy-chicken-hash.jpg",
+   "credit": "Bex.Walton",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7831824@N04/24685400229"
+  }
  },
  {
   "slug": "creamy-dill-dip",
@@ -46398,7 +46603,12 @@
   ],
   "rating": 3.35,
   "rating_count": 37,
-  "photo": null
+  "photo": {
+   "file": "creamy-peanut-dip.jpg",
+   "credit": "Crystl",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/10953991@N00/252041504"
+  }
  },
  {
   "slug": "creamy-vegetable-dip",
@@ -46682,7 +46892,12 @@
   ],
   "rating": 3.21,
   "rating_count": 29,
-  "photo": null
+  "photo": {
+   "file": "creole-beans.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/14852177528"
+  }
  },
  {
   "slug": "crispy-oven-baked-fries",
@@ -47484,7 +47699,12 @@
   ],
   "rating": 3.18,
   "rating_count": 62,
-  "photo": null
+  "photo": {
+   "file": "crock-pot-vegetable-lentil-stew.jpg",
+   "credit": "You As A Machine",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/82815184@N03/8126652808"
+  }
  },
  {
   "slug": "crunchy-berry-parfait",
@@ -48436,7 +48656,12 @@
   ],
   "rating": 3.94,
   "rating_count": 160,
-  "photo": null
+  "photo": {
+   "file": "cuban-beans-and-rice.jpg",
+   "credit": "SaucyGlo",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/67238971@N04/6772569317"
+  }
  },
  {
   "slug": "cuban-salad",
@@ -50181,7 +50406,12 @@
   ],
   "rating": 3.86,
   "rating_count": 72,
-  "photo": null
+  "photo": {
+   "file": "curried-chickpea-salad.jpg",
+   "credit": "GetSelfSufficient",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/59269793@N08/5478727586"
+  }
  },
  {
   "slug": "curried-potatoes",
@@ -50312,7 +50542,12 @@
   ],
   "rating": 3.48,
   "rating_count": 33,
-  "photo": null
+  "photo": {
+   "file": "curried-potatoes.jpg",
+   "credit": "Vegan Feast Catering",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/25128194@N02/3363968659"
+  }
  },
  {
   "slug": "curried-quinoa-and-cauliflower",
@@ -50515,7 +50750,12 @@
   ],
   "rating": 3.11,
   "rating_count": 19,
-  "photo": null
+  "photo": {
+   "file": "curried-quinoa-and-cauliflower.jpg",
+   "credit": "kurmanstaff",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/62558987@N07/49826434726"
+  }
  },
  {
   "slug": "curried-squash-stew",
@@ -50905,7 +51145,12 @@
   "food_groups": [],
   "rating": 3.44,
   "rating_count": 55,
-  "photo": null
+  "photo": {
+   "file": "curry-vegetable-dip.jpg",
+   "credit": "TheUjulala on Pixabay",
+   "license": "CC0 1.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=57690626"
+  }
  },
  {
   "slug": "curtido-salvadoreno-cabbage-salad",
@@ -52009,7 +52254,12 @@
   ],
   "rating": 3.55,
   "rating_count": 31,
-  "photo": null
+  "photo": {
+   "file": "delicious-tacos.jpg",
+   "credit": "madprime",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/66843181@N00/3850746450"
+  }
  },
  {
   "slug": "deviled-eggs",
@@ -54272,7 +54522,12 @@
   ],
   "rating": 3.33,
   "rating_count": 21,
-  "photo": null
+  "photo": {
+   "file": "eating-smart-seasoning-mix.jpg",
+   "credit": "John Phelan",
+   "license": "CC BY-SA 3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Italian_Herb_Mix,_Penzeys_Spices,_Arlington_Heights_MA.jpg"
+  }
  },
  {
   "slug": "egg-foo-young",
@@ -54848,7 +55103,12 @@
   ],
   "rating": 3.57,
   "rating_count": 72,
-  "photo": null
+  "photo": {
+   "file": "eggplant-stir-fry.jpg",
+   "credit": "healthiermi",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/54781600@N05/34817157646"
+  }
  },
  {
   "slug": "eggs-over-kale-and-sweet-potato-grits",
@@ -55469,7 +55729,12 @@
   ],
   "rating": 3.67,
   "rating_count": 3,
-  "photo": null
+  "photo": {
+   "file": "enchilada-casserole.jpg",
+   "credit": "shawnzrossi",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/19517696@N00/529120841"
+  }
  },
  {
   "slug": "enchilada-rice",
@@ -58530,7 +58795,12 @@
   ],
   "rating": 3.43,
   "rating_count": 178,
-  "photo": null
+  "photo": {
+   "file": "fiesta-rice-salad.jpg",
+   "credit": "Stacy Spensley",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/21001756@N06/4628721914"
+  }
  },
  {
   "slug": "fiesta-stuffed-avocado",
@@ -59990,7 +60260,12 @@
   ],
   "rating": 3.34,
   "rating_count": 38,
-  "photo": null
+  "photo": {
+   "file": "four-layer-casserole.jpg",
+   "credit": "megh28",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/156883244@N04/35120290724"
+  }
  },
  {
   "slug": "french-salad-dressing",
@@ -62484,7 +62759,12 @@
   ],
   "rating": 3.09,
   "rating_count": 78,
-  "photo": null
+  "photo": {
+   "file": "fruit-cole-slaw.jpg",
+   "credit": "cajsa.lilliehook",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/14514578@N08/26207062007"
+  }
  },
  {
   "slug": "fruit-compote",
@@ -64089,7 +64369,12 @@
   ],
   "rating": 3.91,
   "rating_count": 97,
-  "photo": null
+  "photo": {
+   "file": "fruit-salad-jicama.jpg",
+   "credit": "Pictures by Ann",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/12560758@N07/10243895656"
+  }
  },
  {
   "slug": "fruit-salad-yogurt",
@@ -64342,7 +64627,12 @@
   ],
   "rating": 3.52,
   "rating_count": 185,
-  "photo": null
+  "photo": {
+   "file": "fruit-salad.jpg",
+   "credit": "Public Domain Photos",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/28958738@N06/6827886748"
+  }
  },
  {
   "slug": "fruit-salsa",
@@ -65044,7 +65334,12 @@
   ],
   "rating": 3.5,
   "rating_count": 4,
-  "photo": null
+  "photo": {
+   "file": "fruit-sorbet.jpg",
+   "credit": "yajico",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/71912190@N00/115244287"
+  }
  },
  {
   "slug": "fruit-yogurt-parfait",
@@ -65167,7 +65462,12 @@
   ],
   "rating": 3.9,
   "rating_count": 126,
-  "photo": null
+  "photo": {
+   "file": "fruit-yogurt-parfait.jpg",
+   "credit": "rawpixel",
+   "license": "CC0 1.0",
+   "source": "https://www.rawpixel.com/image/6041023/photo-image-public-domain-plant-fruit"
+  }
  },
  {
   "slug": "fruit-yogurt-pops",
@@ -66671,7 +66971,12 @@
   ],
   "rating": 3.65,
   "rating_count": 40,
-  "photo": null
+  "photo": {
+   "file": "garden-orchard-salad.jpg",
+   "credit": "photophnatic",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/70098064@N00/5578642179"
+  }
  },
  {
   "slug": "garden-pan-bread",
@@ -67558,7 +67863,12 @@
   ],
   "rating": 3.64,
   "rating_count": 36,
-  "photo": null
+  "photo": {
+   "file": "garlic-stuffed-chicken.jpg",
+   "credit": "CNEcija12345",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Roasted_chicken_yogurt_ginger_garlic.jpg"
+  }
  },
  {
   "slug": "gazpacho-soup",
@@ -67706,7 +68016,12 @@
   ],
   "rating": 3.59,
   "rating_count": 34,
-  "photo": null
+  "photo": {
+   "file": "gazpacho-soup.jpg",
+   "credit": "tomatoes and friends",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/49845772@N03/4812761687"
+  }
  },
  {
   "slug": "gazpacho",
@@ -68351,7 +68666,12 @@
   ],
   "rating": 3.68,
   "rating_count": 37,
-  "photo": null
+  "photo": {
+   "file": "gingery-quinoa-green-beans.jpg",
+   "credit": "wonderyort",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/11112304@N00/5541346491"
+  }
  },
  {
   "slug": "glazed-carrots",
@@ -68847,7 +69167,12 @@
   ],
   "rating": 3.63,
   "rating_count": 48,
-  "photo": null
+  "photo": {
+   "file": "golden-split-pea-soup.jpg",
+   "credit": "rusvaplauke",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7440954@N05/1827823856"
+  }
  },
  {
   "slug": "grandmas-stuffing",
@@ -69781,7 +70106,12 @@
   ],
   "rating": 3.47,
   "rating_count": 30,
-  "photo": null
+  "photo": {
+   "file": "grapefruit-spinach-salad.jpg",
+   "credit": "cajsa.lilliehook",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/14514578@N08/19448584625"
+  }
  },
  {
   "slug": "great-northern-bean-soup",
@@ -73513,7 +73843,12 @@
   ],
   "rating": 3.86,
   "rating_count": 70,
-  "photo": null
+  "photo": {
+   "file": "ground-beef-stew.jpg",
+   "credit": "avlxyz",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/10559879@N00/37188624"
+  }
  },
  {
   "slug": "harvest-vegetable-salad",
@@ -75405,7 +75740,12 @@
   ],
   "rating": 2.71,
   "rating_count": 14,
-  "photo": null
+  "photo": {
+   "file": "herb-spinach-bake.jpg",
+   "credit": "Shockingly Tasty",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/49506223@N00/6570846793"
+  }
  },
  {
   "slug": "herbed-dip",
@@ -77986,7 +78326,12 @@
   ],
   "rating": 3.95,
   "rating_count": 387,
-  "photo": null
+  "photo": {
+   "file": "honeydew-summer-salad-wedges.jpg",
+   "credit": "Salil Kumar Mukherjee",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=132751320"
+  }
  },
  {
   "slug": "hooked-salmon-sticks",
@@ -78107,7 +78452,12 @@
   ],
   "rating": 3.75,
   "rating_count": 91,
-  "photo": null
+  "photo": {
+   "file": "hooked-salmon-sticks.jpg",
+   "credit": "Scott Teresi",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35903175@N02/4106520976"
+  }
  },
  {
   "slug": "hoppin-john-sausage-black-eyed-peas-and-rice",
@@ -78258,7 +78608,12 @@
   ],
   "rating": 4.2,
   "rating_count": 10,
-  "photo": null
+  "photo": {
+   "file": "hoppin-john-sausage-black-eyed-peas-and-rice.jpg",
+   "credit": "Srjenkins",
+   "license": "CC BY-SA 3.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=5616350"
+  }
  },
  {
   "slug": "horchata",
@@ -79105,7 +79460,12 @@
   ],
   "rating": 4.2,
   "rating_count": 5,
-  "photo": null
+  "photo": {
+   "file": "huevos-rancheros-fresh-salsa.jpg",
+   "credit": "jeffreyw",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7927684@N03/34512229055"
+  }
  },
  {
   "slug": "hummus",
@@ -80414,7 +80774,12 @@
   ],
   "rating": 3.4,
   "rating_count": 5,
-  "photo": null
+  "photo": {
+   "file": "italian-style-vegetables.jpg",
+   "credit": "avlxyz",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/10559879@N00/5032563879"
+  }
  },
  {
   "slug": "italian-vegetables",
@@ -80577,7 +80942,12 @@
   ],
   "rating": 3.52,
   "rating_count": 23,
-  "photo": null
+  "photo": {
+   "file": "italian-vegetables.jpg",
+   "credit": "tristankenney",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/14764065@N02/5993516082"
+  }
  },
  {
   "slug": "jamaican-jerk-chicken",
@@ -81262,7 +81632,12 @@
   ],
   "rating": 3.28,
   "rating_count": 149,
-  "photo": null
+  "photo": {
+   "file": "jollof-rice.jpg",
+   "credit": "Ask4ugo",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=36525278"
+  }
  },
  {
   "slug": "julias-sauteed-steamed-collards",
@@ -82620,7 +82995,12 @@
   ],
   "rating": 3.15,
   "rating_count": 59,
-  "photo": null
+  "photo": {
+   "file": "leaf-finger-salad.jpg",
+   "credit": "Kent Wang",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/27454212@N00/151304321"
+  }
  },
  {
   "slug": "leafy-tofu",
@@ -83753,7 +84133,12 @@
   ],
   "rating": 3.29,
   "rating_count": 45,
-  "photo": null
+  "photo": {
+   "file": "lemon-velvet-supreme.jpg",
+   "credit": "MCL Abigail",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/23573629@N02/2424622260"
+  }
  },
  {
   "slug": "lemonade",
@@ -88830,7 +89215,12 @@
   ],
   "rating": 3.67,
   "rating_count": 3,
-  "photo": null
+  "photo": {
+   "file": "marinara-sauce.jpg",
+   "credit": "Kevin Prichard Photography",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/18081829@N00/9559157704"
+  }
  },
  {
   "slug": "marinated-beef",
@@ -90579,7 +90969,12 @@
   ],
   "rating": 3.8,
   "rating_count": 85,
-  "photo": null
+  "photo": {
+   "file": "meaty-stuffed-potatoes.jpg",
+   "credit": "Stefano A",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7917900@N02/576403183"
+  }
  },
  {
   "slug": "mediterranean-chicken-and-white-bean-salad",
@@ -95206,7 +95601,12 @@
   ],
   "rating": 3.66,
   "rating_count": 197,
-  "photo": null
+  "photo": {
+   "file": "no-bake-breakfast-cookies.jpg",
+   "credit": "Veganbaking.net from USA",
+   "license": "CC BY-SA 2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Vegan_Peanut_Butter_Chocolate_Chip_Cookies_Baked_(4107929430).jpg"
+  }
  },
  {
   "slug": "no-bake-cookies",
@@ -95369,7 +95769,12 @@
   ],
   "rating": 3.22,
   "rating_count": 65,
-  "photo": null
+  "photo": {
+   "file": "no-bake-cookies.jpg",
+   "credit": "Crystl",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/10953991@N00/330842058"
+  }
  },
  {
   "slug": "oat-bran-muffins",
@@ -96806,7 +97211,12 @@
   ],
   "rating": 3.85,
   "rating_count": 39,
-  "photo": null
+  "photo": {
+   "file": "one-pan-potatoes-chicken.jpg",
+   "credit": "J Wynia",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/73451168@N00/28929623122"
+  }
  },
  {
   "slug": "one-pan-spaghetti",
@@ -98024,7 +98434,12 @@
   ],
   "rating": 3.94,
   "rating_count": 52,
-  "photo": null
+  "photo": {
+   "file": "orange-pork-chops.jpg",
+   "credit": "ysksmz",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/124697177@N05/15386096818"
+  }
  },
  {
   "slug": "oven-baked-potato-pancakes",
@@ -100175,7 +100590,12 @@
   ],
   "rating": 4.02,
   "rating_count": 56,
-  "photo": null
+  "photo": {
+   "file": "party-time-pasta.jpg",
+   "credit": "Geoffreyrabbit",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=84432315"
+  }
  },
  {
   "slug": "passover-rhubarb-cobbler",
@@ -101077,7 +101497,12 @@
   ],
   "rating": 3.29,
   "rating_count": 42,
-  "photo": null
+  "photo": {
+   "file": "pasta-greens-beans-and-chicken.jpg",
+   "credit": "avlxyz",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/10559879@N00/3143290193"
+  }
  },
  {
   "slug": "pasta-primavera-ii",
@@ -101340,7 +101765,12 @@
   ],
   "rating": 3.17,
   "rating_count": 18,
-  "photo": null
+  "photo": {
+   "file": "pasta-primavera-salad.jpg",
+   "credit": "Jeremy Keith",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=14932146"
+  }
  },
  {
   "slug": "pasta-primavera-spaghetti-sauce",
@@ -108056,7 +108486,12 @@
   ],
   "rating": 3.71,
   "rating_count": 21,
-  "photo": null
+  "photo": {
+   "file": "pineapple-rice-bake.jpg",
+   "credit": "T.Tseng",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/68147320@N02/44521460541"
+  }
  },
  {
   "slug": "pineapple-zucchini-cake",
@@ -108531,7 +108966,12 @@
   ],
   "rating": 4.06,
   "rating_count": 17,
-  "photo": null
+  "photo": {
+   "file": "pizza-eggburger.jpg",
+   "credit": "Mudwater",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=46581630"
+  }
  },
  {
   "slug": "pizza-meat-loaf",
@@ -108666,7 +109106,12 @@
   ],
   "rating": 3.69,
   "rating_count": 45,
-  "photo": null
+  "photo": {
+   "file": "pizza-meat-loaf.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/9826909173"
+  }
  },
  {
   "slug": "plantain-cups-shredded-chicken-mofonguitos",
@@ -112396,7 +112841,12 @@
   "food_groups": [],
   "rating": 3.34,
   "rating_count": 29,
-  "photo": null
+  "photo": {
+   "file": "pumpkin-angel-food-cake.jpg",
+   "credit": "Kim Siever",
+   "license": "Public domain 1.0",
+   "source": "https://www.flickr.com/photos/57873306@N00/4877968590"
+  }
  },
  {
   "slug": "pumpkin-bread",
@@ -116807,7 +117257,12 @@
   ],
   "rating": 3.08,
   "rating_count": 25,
-  "photo": null
+  "photo": {
+   "file": "rainbow-veggie-salad.jpg",
+   "credit": "Paul Goyette",
+   "license": "CC BY-SA 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=1043632"
+  }
  },
  {
   "slug": "ratatouille-0",
@@ -117798,7 +118253,12 @@
   ],
   "rating": 3.19,
   "rating_count": 205,
-  "photo": null
+  "photo": {
+   "file": "red-beans-and-rice1.jpg",
+   "credit": "Arnold Gatilao from Fremont, CA, USA",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=10554440"
+  }
  },
  {
   "slug": "red-chile-stew",
@@ -118396,7 +118856,12 @@
   ],
   "rating": 3.24,
   "rating_count": 42,
-  "photo": null
+  "photo": {
+   "file": "red-monster-smoothie.jpg",
+   "credit": "WDnet Studio",
+   "license": "CC0 1.0",
+   "source": "https://stocksnap.io/photo/strawberry-smoothies-4L8M6ANLZL"
+  }
  },
  {
   "slug": "red-potato-and-cabbage-colcannon",
@@ -119920,7 +120385,12 @@
   ],
   "rating": 3.0,
   "rating_count": 8,
-  "photo": null
+  "photo": {
+   "file": "rice-salad.jpg",
+   "credit": "Stacy Spensley",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/21001756@N06/4628721914"
+  }
  },
  {
   "slug": "rise-and-shine-cobbler",
@@ -122203,7 +122673,12 @@
   ],
   "rating": 3.59,
   "rating_count": 68,
-  "photo": null
+  "photo": {
+   "file": "round-steak-casserole.jpg",
+   "credit": "jeffreyw",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7927684@N03/39021241444"
+  }
  },
  {
   "slug": "salad-pineapple-nuts-and-raisins",
@@ -122524,7 +122999,12 @@
   ],
   "rating": 3.1,
   "rating_count": 20,
-  "photo": null
+  "photo": {
+   "file": "salata-ma-jibna-salad-parmesan-cheese.jpg",
+   "credit": "Fatimahope",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Cabbage_And_Carrot_Salad.jpg"
+  }
  },
  {
   "slug": "salmon-burgers-and-sweet-potato-oven-fries",
@@ -123939,7 +124419,12 @@
   ],
   "rating": 4.2,
   "rating_count": 5,
-  "photo": null
+  "photo": {
+   "file": "sanchico-tuna-salad.jpg",
+   "credit": "purdman1",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/11550160@N03/2397936712"
+  }
  },
  {
   "slug": "sarahs-green-bean-casserole",
@@ -125471,7 +125956,12 @@
   ],
   "rating": 3.54,
   "rating_count": 71,
-  "photo": null
+  "photo": {
+   "file": "scallion-rice.jpg",
+   "credit": "Sharon Chen from Austin, United States",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Salmon_Fried_Rice_with_Green_Onion_1_(28456521054).jpg"
+  }
  },
  {
   "slug": "scalloped-potatoes-and-chicken-fennel",
@@ -126415,7 +126905,12 @@
   ],
   "rating": 3.85,
   "rating_count": 65,
-  "photo": null
+  "photo": {
+   "file": "scrambled-tofu.jpg",
+   "credit": "olga666flickr",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/40814068@N03/3971621877"
+  }
  },
  {
   "slug": "seared-greens",
@@ -126829,7 +127324,12 @@
   ],
   "rating": 4.18,
   "rating_count": 222,
-  "photo": null
+  "photo": {
+   "file": "sensational-six-layer-dinner.jpg",
+   "credit": "whatleydude",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/85318305@N00/4287234333"
+  }
  },
  {
   "slug": "sesame-turnips-and-carrots",
@@ -130497,7 +130997,12 @@
   ],
   "rating": 3.78,
   "rating_count": 54,
-  "photo": null
+  "photo": {
+   "file": "slow-cooker-cheesy-swiss-steak.jpg",
+   "credit": "marcalandavis",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/74161230@N00/45109952"
+  }
  },
  {
   "slug": "slow-cooker-hamburger-stew",
@@ -130648,7 +131153,12 @@
   ],
   "rating": 3.22,
   "rating_count": 54,
-  "photo": null
+  "photo": {
+   "file": "slow-cooker-hamburger-stew.jpg",
+   "credit": "Akahito Yamabe",
+   "license": "CC0 1.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=105918979"
+  }
  },
  {
   "slug": "slow-cooker-lentil-soup",
@@ -135145,7 +135655,12 @@
   ],
   "rating": 4.0,
   "rating_count": 4,
-  "photo": null
+  "photo": {
+   "file": "spicy-chicken-and-potato-soup.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/4366537480"
+  }
  },
  {
   "slug": "spicy-cucumber-orange-salad",
@@ -136196,7 +136711,12 @@
   ],
   "rating": 3.23,
   "rating_count": 69,
-  "photo": null
+  "photo": {
+   "file": "spinach-and-mushroom-enchilada-casserole.jpg",
+   "credit": "hindyg",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/7304600@N07/8696602139"
+  }
  },
  {
   "slug": "spinach-black-bean-salad",
@@ -136679,7 +137199,12 @@
   ],
   "rating": 3.29,
   "rating_count": 35,
-  "photo": null
+  "photo": {
+   "file": "spinach-rice-salad.jpg",
+   "credit": "Qfamily",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/98545783@N00/2268428057"
+  }
  },
  {
   "slug": "spinach-salad-apples-and-eggs",
@@ -137231,7 +137756,12 @@
   ],
   "rating": 3.79,
   "rating_count": 42,
-  "photo": null
+  "photo": {
+   "file": "spinach-tomatoes-and-corn.jpg",
+   "credit": "T.Tseng",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/68147320@N02/15106827698"
+  }
  },
  {
   "slug": "splendid-fruit-salad",
@@ -137351,7 +137881,12 @@
   ],
   "rating": 3.04,
   "rating_count": 23,
-  "photo": null
+  "photo": {
+   "file": "splendid-fruit-salad.jpg",
+   "credit": "David Philippi",
+   "license": "CC BY-SA 3.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=71672709"
+  }
  },
  {
   "slug": "split-pea-soup-0",
@@ -139007,7 +139542,12 @@
   ],
   "rating": 3.04,
   "rating_count": 24,
-  "photo": null
+  "photo": {
+   "file": "stewed-cauliflower-tomatoes-onions.jpg",
+   "credit": "leesean",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/84979541@N00/8422923216"
+  }
  },
  {
   "slug": "stir-fried-beef",
@@ -139684,7 +140224,12 @@
   ],
   "rating": 3.71,
   "rating_count": 48,
-  "photo": null
+  "photo": {
+   "file": "stove-top-casserole.jpg",
+   "credit": "LoopZilla",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/24987280@N00/3204882770"
+  }
  },
  {
   "slug": "stove-top-green-chile-chicken-enchiladas",
@@ -139868,7 +140413,12 @@
   ],
   "rating": 3.05,
   "rating_count": 55,
-  "photo": null
+  "photo": {
+   "file": "stove-top-green-chile-chicken-enchiladas.jpg",
+   "credit": "jeffk",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/44124372247@N01/31574605"
+  }
  },
  {
   "slug": "stove-top-potato-and-cabbage-casserole",
@@ -140012,7 +140562,12 @@
   ],
   "rating": 3.71,
   "rating_count": 48,
-  "photo": null
+  "photo": {
+   "file": "stove-top-potato-and-cabbage-casserole.jpg",
+   "credit": "VegaTeam",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/59256189@N04/5532418361"
+  }
  },
  {
   "slug": "stovetop-tamale-pie",
@@ -142865,7 +143420,12 @@
   ],
   "rating": 3.68,
   "rating_count": 28,
-  "photo": null
+  "photo": {
+   "file": "summer-squash-medley.jpg",
+   "credit": "Laurel Fan",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/18295242@N00/2780459174"
+  }
  },
  {
   "slug": "summer-squash-squares",
@@ -143498,7 +144058,12 @@
   ],
   "rating": 3.0,
   "rating_count": 25,
-  "photo": null
+  "photo": {
+   "file": "sunshine-rice.jpg",
+   "credit": "robanhk",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35747367@N00/3133986064"
+  }
  },
  {
   "slug": "sunshine-salad",
@@ -143945,7 +144510,12 @@
   ],
   "rating": 4.11,
   "rating_count": 37,
-  "photo": null
+  "photo": {
+   "file": "surfs-tacos.jpg",
+   "credit": "The Marmot",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/38142119@N00/13877217994"
+  }
  },
  {
   "slug": "sweet-acorn-squash",
@@ -146667,7 +147237,12 @@
   ],
   "rating": 3.55,
   "rating_count": 132,
-  "photo": null
+  "photo": {
+   "file": "sweet-savory-peanut-butter-dip.jpg",
+   "credit": "jasleen_kaur",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/25384802@N08/4952165613"
+  }
  },
  {
   "slug": "sweet-sour-salad-dressing",
@@ -147476,7 +148051,12 @@
   ],
   "rating": 4.15,
   "rating_count": 114,
-  "photo": null
+  "photo": {
+   "file": "taco-salad.jpg",
+   "credit": "larryjh1234",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/83886716@N00/4169114233"
+  }
  },
  {
   "slug": "taco-soup",
@@ -147801,7 +148381,12 @@
   ],
   "rating": 3.35,
   "rating_count": 34,
-  "photo": null
+  "photo": {
+   "file": "tangy-crisp-vegetable-and-pasta-salad.jpg",
+   "credit": "Javcon117*",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/27346873@N04/8107521711"
+  }
  },
  {
   "slug": "tangy-jicama-slaw",
@@ -147921,7 +148506,12 @@
   ],
   "rating": 3.1,
   "rating_count": 21,
-  "photo": null
+  "photo": {
+   "file": "tangy-jicama-slaw.jpg",
+   "credit": "twohelmetscooking",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/34338566@N08/3368838927"
+  }
  },
  {
   "slug": "tangy",
@@ -152773,7 +153363,12 @@
   ],
   "rating": 3.4,
   "rating_count": 167,
-  "photo": null
+  "photo": {
+   "file": "tortilla-pizzas.jpg",
+   "credit": "jeffreyw",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=23109616"
+  }
  },
  {
   "slug": "tortilla",
@@ -153371,7 +153966,12 @@
   ],
   "rating": 4.2,
   "rating_count": 5,
-  "photo": null
+  "photo": {
+   "file": "trail-mix-bars.jpg",
+   "credit": "Hanonimas",
+   "license": "CC BY-SA 3.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=44345699"
+  }
  },
  {
   "slug": "trail-treat",
@@ -159501,7 +160101,12 @@
   ],
   "rating": 3.46,
   "rating_count": 50,
-  "photo": null
+  "photo": {
+   "file": "vegetable-rice-tomatoes.jpg",
+   "credit": "Anthrocopy",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/49318478@N04/4520916726"
+  }
  },
  {
   "slug": "vegetable-salad",
@@ -159665,7 +160270,12 @@
   ],
   "rating": 3.99,
   "rating_count": 302,
-  "photo": null
+  "photo": {
+   "file": "vegetable-salad.jpg",
+   "credit": "Roenashy",
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=165095010"
+  }
  },
  {
   "slug": "vegetable-snake",
@@ -161267,7 +161877,12 @@
   ],
   "rating": 3.78,
   "rating_count": 67,
-  "photo": null
+  "photo": {
+   "file": "veggie-bean-wrap.jpg",
+   "credit": "inazakira",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/47573122@N05/4739386598"
+  }
  },
  {
   "slug": "veggie-burgers",
@@ -162367,7 +162982,12 @@
   ],
   "rating": 3.81,
   "rating_count": 16,
-  "photo": null
+  "photo": {
+   "file": "veggie-pizza-pita-pockets.jpg",
+   "credit": "Mark Ittleman",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/126855742@N07/23984361818"
+  }
  },
  {
   "slug": "veggie-quesadillas",
@@ -162673,7 +163293,12 @@
   ],
   "rating": 3.0,
   "rating_count": 40,
-  "photo": null
+  "photo": {
+   "file": "veggie-stir-fry-turkey.jpg",
+   "credit": "Rusty Clark ~ 100K Photos",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/23206546@N04/8678641594"
+  }
  },
  {
   "slug": "veggie-stuffed-pita",
@@ -162842,7 +163467,12 @@
   ],
   "rating": 3.34,
   "rating_count": 82,
-  "photo": null
+  "photo": {
+   "file": "veggie-stuffed-pita.jpg",
+   "credit": "ReneS",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/63504485@N00/6268366426"
+  }
  },
  {
   "slug": "very-berry-muesli",
@@ -164701,7 +165331,12 @@
   ],
   "rating": 3.54,
   "rating_count": 103,
-  "photo": null
+  "photo": {
+   "file": "white-chili.jpg",
+   "credit": "Thriving Vegetarian",
+   "license": "CC BY 2.0",
+   "source": "https://commons.wikimedia.org/w/index.php?curid=95264712"
+  }
  },
  {
   "slug": "white-sauce-thin",
@@ -166358,7 +166993,12 @@
   ],
   "rating": 3.04,
   "rating_count": 23,
-  "photo": null
+  "photo": {
+   "file": "yogurt-fruit-salad.jpg",
+   "credit": "cajsa.lilliehook",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/14514578@N08/19966167360"
+  }
  },
  {
   "slug": "yogurt-pops",
@@ -166687,7 +167327,12 @@
   ],
   "rating": 3.49,
   "rating_count": 49,
-  "photo": null
+  "photo": {
+   "file": "yogurt-smoothie-bag.jpg",
+   "credit": "MattBerggren",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/39327122@N00/3421999068"
+  }
  },
  {
   "slug": "yummy-bagels",
@@ -167070,7 +167715,12 @@
   ],
   "rating": 3.18,
   "rating_count": 114,
-  "photo": null
+  "photo": {
+   "file": "zesty-citrus-coleslaw.jpg",
+   "credit": "stu_spivack",
+   "license": "CC BY-SA 2.0",
+   "source": "https://www.flickr.com/photos/35034346243@N01/258178606"
+  }
  },
  {
   "slug": "zesty-herb-salad-dressing",
@@ -168622,7 +169272,12 @@
   ],
   "rating": 3.57,
   "rating_count": 54,
-  "photo": null
+  "photo": {
+   "file": "zucchini-casserole.jpg",
+   "credit": "jennifer.overly",
+   "license": "CC BY 2.0",
+   "source": "https://www.flickr.com/photos/38395507@N07/22127715261"
+  }
  },
  {
   "slug": "zucchini-coleslaw",
