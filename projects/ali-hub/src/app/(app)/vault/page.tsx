@@ -494,7 +494,6 @@ export default function VaultPage() {
         <PassphraseInput value={pass} onChange={setPass} placeholder="Passphrase" autoComplete="current-password" onEnter={unlock} autoFocus />
         {error && <div role="alert" style={{ color: "var(--neg)", fontSize: 14.5 }}>{error}</div>}
         <button className="cc-btn cc-btn-primary" onClick={unlock} disabled={busy || !pass} style={{ minHeight: 52, borderRadius: 14, fontSize: 17 }}>{busy ? "Unlocking…" : "Unlock"}</button>
-        <div style={{ fontSize: 13.5, color: "var(--ink-4)", lineHeight: 1.5 }}>Unlocking takes about a second · the key is computed here on the phone. It locks again after 5 minutes without a tap, or a minute after you leave the app.</div>
       </div></div>
     </div>
   );

@@ -2,7 +2,7 @@
  * Train · kettlebell era. Types, defaults and pure helpers shared by API + screens.
  */
 
-// "kb1" (the KB Hour) is the one live workout since 2026-09-10; the old keys stay
+// "kb1" (Kettlebell 30) is the one live workout since 2026-09-10; the old keys stay
 // in the type so session history keeps rendering.
 export type WorkoutKey = "w1" | "w2" | "w3" | "kb1";
 export const PRIMARY_KEY: WorkoutKey = "kb1";
@@ -50,7 +50,9 @@ export type TrainSession = {
 
 /** One movement inside a round: work time only (on-demand rest is kept apart). */
 export type MoveLog = { id: string; ms: number };
-/** One completed round: per-move work times, the rest taken inside the round, and `ms` = work time of the round. */
+/** One completed round: the rest taken inside the round and `ms` = work time of the round.
+ * `moves` is per-move work time · EMPTY since 2026-09-24 (no tap per movement any more; sessions
+ * before that still carry it). */
 export type RoundLog = { moves: MoveLog[]; restMs: number; ms: number };
 /** The 3 × 20 incline bench after the clock (2026-09-20). `reps` = what was done per set. */
 export type BenchLog = { mode: "dumbbells" | "machine"; weightKg: number; reps: number[] };
@@ -72,9 +74,8 @@ export type SessionLog =
   | { sets?: Record<string, boolean[]> };         // w2: exerciseId → set done flags
 
 // ─── Work-only metrics (2026-09-20) ──────────────────────────────────────────
-// With 2 min rest between rounds, "rounds in 40 minutes" also measures how long you
-// rested. The comparison that stays honest week to week is the WORK-ONLY average
-// round time · rest excluded · lower is better.
+// "Rounds in 30 minutes" also measures how long you rested. The comparison that stays
+// honest week to week is the WORK-ONLY average round time · rest excluded · lower is better.
 
 export type WorkStats = {
   rounds: number;
@@ -196,9 +197,11 @@ const kb = (id: string, name: string, reps: number, perSide = false, eachWay = f
 export const KB1_RETIRED_IDS = ["snatch", "crush-thruster", "squat"];
 
 /**
- * The KB Hour (2026-09-10, Ali) · the ONE workout on Train. Audited and rebuilt
- * 2026-09-20: AMRAP 40 min, 11 moves, on-demand rest inside a round, 2 min rest
- * between rounds (`restSeconds`), then 3 × 20 incline bench after the clock.
+ * Kettlebell 30 (2026-09-10, Ali · "KB Hour" until 2026-09-24) · the ONE workout on Train.
+ * Audited and rebuilt 2026-09-20 (11 moves); cut to AMRAP 30 min on 2026-09-24 with NO tap
+ * per movement: the player shows the sequence, a Rest button and a Round Done button, nothing
+ * else. Rest is on demand only (`restSeconds` 0 = no automatic rest between rounds); then
+ * 3 × 20 incline bench after the clock.
  *
  * Order (the logic, in priority order):
  *  1. most explosive / most technical first, while fresh → swings open the round;
@@ -215,10 +218,10 @@ export const KB1_RETIRED_IDS = ["snatch", "crush-thruster", "squat"];
 export const DEFAULT_WORKOUTS: TrainWorkout[] = [
   {
     key: "kb1",
-    name: "KB Hour",
+    name: "Kettlebell 30",
     format: "amrap",
-    amrapMinutes: 40,
-    restSeconds: 120,   // rest between rounds (on-demand rest inside a round is untimed)
+    amrapMinutes: 30,
+    restSeconds: 0,     // 0 = no automatic rest between rounds · rest is the Rest button, whenever
     // Saturdays (Ali, 2026-09-11) · Mon/Wed/Fri are Speediance machine days,
     // which live as checklist rows, not Train workouts.
     assignedDays: ["sat"],
@@ -342,7 +345,7 @@ export function fmtScheduleDate(ymd: string, today: string): string {
   return new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(new Date(ymd + "T12:00:00Z"));
 }
 
-/** One workout since 2026-09-10: the next session is always the KB Hour. */
+/** One workout since 2026-09-10: the next session is always Kettlebell 30. */
 export function nextWorkoutKey(_sessions: TrainSession[]): WorkoutKey {
   return PRIMARY_KEY;
 }

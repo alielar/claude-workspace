@@ -10,7 +10,18 @@ import type { NewsCategory } from "@/lib/news-brief";
 
 /** Video categories = the four news interests + "tools" (Claude / AI tooling, 2026-09-12). */
 export type VideoCategory = NewsCategory | "tools";
-export type YtChannel = { id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number; custom?: boolean; edited?: boolean };
+export type YtChannel = {
+  id: string; name: string; category: VideoCategory; why: string; maxAgeHours?: number; custom?: boolean; edited?: boolean;
+  /** A daily news overview (2026-09-24 research) · listed in its own "Daily briefs" group in Settings. */
+  daily?: boolean;
+  /** Shipped switched OFF · Ali tries it and switches it on; "null = all on" skips these. */
+  defaultOff?: boolean;
+};
+
+/** The enabled ids when `news_channels` is null ("all on") · every channel except the ones shipped off. */
+export function defaultEnabledIds(list: YtChannel[]): string[] {
+  return list.filter((c) => !c.defaultOff).map((c) => c.id);
+}
 export const VIDEO_CATEGORIES: { key: VideoCategory; label: string }[] = [
   { key: "football",    label: "Football" },
   { key: "geopolitics", label: "Geopolitics" },
@@ -53,7 +64,7 @@ export function allChannels(custom: CustomChannel[] = []): YtChannel[] {
   for (const c of YT_CHANNELS) {
     const o = byId.get(c.id);
     if (o?.removed) continue;
-    builtIns.push(o ? { ...c, name: o.name, category: o.category, edited: true, maxAgeHours: o.category === "tools" ? 240 : c.maxAgeHours } : c);
+    builtIns.push(o ? { ...c, name: o.name, category: o.category, edited: true, maxAgeHours: o.category === "tools" ? 240 : c.maxAgeHours, defaultOff: false } : c);
   }
   const own: YtChannel[] = custom.filter((c) => !c.removed && !isBuiltIn(c.id)).map((c) => ({
     id: c.id, name: c.name, category: c.category, custom: true,
@@ -90,6 +101,17 @@ export const YT_CHANNELS: YtChannel[] = [
   { id: "UCMwVTLZIRRUyyVrkjDpn4pA", name: "Cole Medin",         category: "tools", maxAgeHours: 240, why: "AI coding workflows, context and safety for agents that touch real systems" },
   { id: "UCrXSVX9a1mj8l0CMLwKgMVw", name: "AI Jason",           category: "tools", maxAgeHours: 240, why: "context engineering and agent loops, tested hands-on" },
   { id: "UCelfWQr9sXVMTvBzviPGlFw", name: "AI LABS",            category: "tools", maxAgeHours: 240, why: "Claude skills, rules and tools, week by week" },
+  // Daily news overviews (2026-09-24 research, Ali: "similar to my podcast · tech, AI, sometimes
+  // geopolitics · 10-15 min · there in the morning"). Shipped OFF: he tries them and keeps the
+  // ones he likes. Cadence checked against each channel's feed on 2026-09-24. TLDR Daily (the
+  // obvious candidate) ended its daily briefing in August 2025 and is not listed.
+  { id: "UCKelCK4ZaO6HeEI1KQjqzWA", name: "The AI Daily Brief", category: "tech",        daily: true, defaultOff: true, why: "one AI story a day, 15-20 min, calm · posts in the US evening, so it is there at breakfast" },
+  { id: "UCeeFfhMcJa1kjtfZAGskOCA", name: "TechLinked",         category: "tech",        daily: true, defaultOff: true, why: "tech news in 8-10 min, Mon · Wed · Fri, Linus Media Group · posts around 01:00 Madrid" },
+  { id: "UCawZsQWqfGSbCI5yjkdVkTA", name: "Matthew Berman",     category: "tech",        daily: true, defaultOff: true, why: "AI news almost daily, 15-20 min · titles run hot, content is solid" },
+  { id: "UCqcbQf6yw5KzRoDDcZ_wBSw", name: "Wes Roth",           category: "tech",        daily: true, defaultOff: true, why: "AI news most days, 15-25 min, opinionated · clickbait titles, skip if that grates" },
+  { id: "UC0p5jTq6Xx_DosDFxVXnWaQ", name: "The Economist",      category: "geopolitics", daily: true, defaultOff: true, why: "one world story a day, 5-15 min · posts around noon, so you see yesterday's in the morning" },
+  { id: "UCknLrEdhRCp1aegoMqRaCZg", name: "DW News",            category: "geopolitics", daily: true, defaultOff: true, why: "German public broadcaster, several world reports a day · the freshest one shows" },
+  { id: "UCXW9oUSOwt7mcTT5d_5hQcA", name: "Good Times Bad Times", category: "geopolitics", daily: true, defaultOff: true, why: "geopolitics in 10-15 min, twice a week · maps, no shouting" },
 ];
 
 /** Tools videos must be about the craft · one of these words in the title … */
@@ -158,7 +180,9 @@ export async function fetchChannelVideos(ch: YtChannel, maxAgeHours = ch.maxAgeH
  * newest first but never two from the same channel when another has something.
  */
 export async function fetchBriefVideos(enabledIds: string[] | null, custom: CustomChannel[] = [], perCategory = 2): Promise<NewsVideo[]> {
-  const channels = allChannels(custom).filter((c) => !enabledIds || enabledIds.includes(c.id));
+  const list = allChannels(custom);
+  const on = enabledIds ?? defaultEnabledIds(list);
+  const channels = list.filter((c) => on.includes(c.id));
   const lists = await Promise.all(channels.map((c) => fetchChannelVideos(c)));
   const all = lists.flat().sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
   const picked: NewsVideo[] = [];

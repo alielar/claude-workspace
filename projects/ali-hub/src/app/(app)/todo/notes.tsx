@@ -174,7 +174,7 @@ export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", 
 
   return (
     <div style={{ display: "grid", gap: ordered ? 2 : 0 }}>
-      {items.length === 0 && <div style={{ fontSize: 14.5, color: "var(--ink-3)", padding: "6px 2px" }}>Nothing open · add one below. A ticked line disappears.</div>}
+
       {items.map((s, i) => (
         <SubtaskEditRow key={i} s={s} ordered={ordered}
           onTick={() => write(items.filter((_, j) => j !== i))}
@@ -192,9 +192,6 @@ export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", 
           placeholder={placeholder} style={{ fontSize: 16, minHeight: 44, borderRadius: 10 }} />
         {ordered && <button type="button" onClick={() => add()} disabled={!draft.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 44, minWidth: 44, borderRadius: 10, fontSize: 18, padding: 0, marginLeft: 8 }} aria-label="Add item">+</button>}
       </div>
-      {items.length > 0 && (
-        <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 0" }}>{items.length} open · Return adds the next one · tick one and it goes</div>
-      )}
     </div>
   );
 }

@@ -340,7 +340,6 @@ export default function StretchPage() {
             >
               Next · start{track === "off" ? " in silence" : ` with ${STRETCH_TRACKS.find((m) => m.slug === track)?.title}`}
             </button>
-            <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 10px 4px" }}>All tracks are Creative Commons · the artist and license are shown under each title.</div>
           </div>
         </section>
 

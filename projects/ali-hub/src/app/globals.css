@@ -320,6 +320,13 @@ html, body {
 }
 @media (min-width: 768px) { .todo-addbar { bottom: 0; left: 56px; } }
 
+/* ─── To-do segments · on a wide laptop the selector sits fixed in the empty space on the left (2026-09-24) ── */
+.todo-seg-side { display: none; }
+@media (min-width: 1180px) {
+  .todo-seg-top { display: none !important; }
+  .todo-seg-side { display: grid; position: fixed; left: 88px; top: 40px; width: 180px; z-index: 20; }
+}
+
 /* ─── Mobile nav ─────────────────────────────────────────────────────────── */
 .cc-mobile-nav {
   position: fixed;

@@ -1,28 +1,26 @@
 "use client";
 
 /**
- * AmrapGame · the KB Hour player (/train/kb1). Rebuilt 2026-09-20 (Ali's audit brief).
+ * AmrapGame · the Kettlebell 30 player (/train/kb1). Rebuilt 2026-09-24 (Ali: "fewer taps").
  *
  * The session
- *   - 40:00 counts down from Start (w.amrapMinutes) · no pause: it's a race
- *   - a round = the moves in order; the big middle card is the CURRENT move (name, reps,
- *     a running work timer, last round's time for it) · tapping it = "done, next"
- *   - REST inside a round is on demand: the Rest button pauses the move timer and counts the
- *     rest up; "Back to it" resumes · the goal is rounds with no rest at all, so rest is
- *     logged apart from work and never hidden
- *   - finishing the last move = the round · burst / record moment, then the rest BETWEEN
- *     rounds starts by itself (w.restSeconds, 2 min): a countdown, "Start round N" to cut
- *     it short, "+30 s" to extend · music ducks while resting
- *   - time up (mid-move or mid-rest) → the bench block: 3 × 20 incline bench with a 90 s
- *     rest countdown between sets, dumbbells (20 kg = his max pair) or machine, remembered
- *   - summary: rounds, WORK-ONLY average round time against last week's, rest total,
- *     the bench, the slowest moves
+ *   - 30:00 counts down from Start (w.amrapMinutes) · no pause: it's a race
+ *   - the screen shows the MOVEMENT SEQUENCE in order (one card, every move with its reps, a
+ *     how-to ▶ where a move has one), a running work timer for the current round, and two
+ *     buttons: REST (pauses the work timer, counts the rest up, amber · "Back to it" resumes)
+ *     and ROUND DONE (counts the round). No tap per movement any more · the per-move times of
+ *     the 2026-09-20 player are gone with it; per-ROUND work time still comes from the Round
+ *     Done taps, so the weekly work-only pace keeps working.
+ *   - there is no automatic rest between rounds: rest is the button, whenever you want it
+ *   - time up (or End) → the bench block: 3 × 20 incline bench with a 90 s rest countdown between
+ *     sets, dumbbells (20 kg = his max pair) or machine, remembered
+ *   - summary: rounds, WORK-ONLY average round time against last week's, rest total, the bench
  *   The score you see big is still rounds; the weekly comparison uses work-only round time
- *   (see types.ts, "Work-only metrics") because rest between rounds makes raw counts noisy.
+ *   (see types.ts, "Work-only metrics").
  *
- * The phone keeps the session AND the live cursor (which move, timers, rest) on every tap,
- * so a locked phone or a crash loses nothing. Old sessions (13 moves, no per-move log) still
- * render on the hub; only v2 logs feed the pace numbers.
+ * The phone keeps the session AND the live cursor (round timer, rest) on every tap, so a locked
+ * phone or a crash loses nothing. Sessions from the tap-per-move era keep their per-move logs in
+ * the DB; nothing here reads them.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -33,7 +31,7 @@ import { readCache, writeCache } from "@/lib/local/store";
 import {
   BENCH_DEFAULT, PRIMARY_KEY, fmtClock, isoWeekKey, newClientId, newExerciseId, numberToBeat, paceToBeat, repsLabel,
   weeklyBests, weeklyPaces, workStats,
-  type AmrapLog, type BenchLog, type MoveLog, type TrainExercise, type TrainSession, type WorkoutKey,
+  type AmrapLog, type BenchLog, type TrainExercise, type TrainSession, type WorkoutKey,
 } from "@/lib/train/types";
 import { TRAIN_TRACKS, TRAIN_TRACK_KEY, trackUrl } from "@/lib/train/music";
 import { checklistToday } from "@/lib/checklist/day";
@@ -44,19 +42,22 @@ type Status = "idle" | "running" | "bench" | "summary";
 
 /** Where you are inside the running session · persisted with the session on every tap. */
 type Live = {
-  moveIdx: number;
-  moveStartedAt: number;      // wall clock · start of the current WORK segment of this move
-  moveWorkMs: number;         // work already banked on this move before the current segment (after a rest)
-  roundMoves: MoveLog[];      // moves finished so far in this round
-  roundRestMs: number;        // on-demand rest taken so far in this round
-  rest: { kind: "move" | "round"; startedAt: number } | null;
-  roundRestTargetMs: number;  // countdown length of the current between-rounds rest
+  roundStartedAt: number;   // wall clock · start of the current WORK segment of this round
+  roundWorkMs: number;      // work already banked on this round before the current segment (after a rest)
+  roundRestMs: number;      // rest taken so far in this round
+  rest: { startedAt: number } | null;
 };
 
 const LIVE_KEY = "train-live";
 const BENCH_KEY = "cc-bench-last";
-const readLive = () => readCache<Live>(LIVE_KEY)?.data ?? null;
+/** A cursor saved by the tap-per-move player (before 2026-09-24) has `moveIdx` · start the round afresh. */
+const readLive = (): Live | null => {
+  const l = readCache<Live & { moveIdx?: number }>(LIVE_KEY)?.data ?? null;
+  if (!l || typeof l.roundStartedAt !== "number") return null;
+  return { roundStartedAt: l.roundStartedAt, roundWorkMs: l.roundWorkMs ?? 0, roundRestMs: l.roundRestMs ?? 0, rest: l.rest ? { startedAt: l.rest.startedAt } : null };
+};
 const writeLive = (l: Live | null) => { if (l) writeCache(LIVE_KEY, l); else { try { localStorage.removeItem("cc:v1:" + LIVE_KEY); } catch { /* ignore */ } } };
+const freshLive = (t: number): Live => ({ roundStartedAt: t, roundWorkMs: 0, roundRestMs: 0, rest: null });
 
 /** Wall clock for tap handlers · read here so a handler's timestamp is never mistaken for render-time state. */
 const nowMs = () => Date.now();
@@ -68,9 +69,8 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   const { workouts, saveWorkout } = useWorkouts();
   const { data: ov, refresh } = useOverview();
   const w = workoutByKey(workouts, workoutKey);
-  const minutes = w.amrapMinutes ?? 40;
+  const minutes = w.amrapMinutes ?? 30;
   const totalMs = minutes * 60_000;
-  const roundRestMs = (w.restSeconds || 120) * 1000;
   const kg = ov?.kettlebellKg ?? 12;
   const today = checklistToday();
 
@@ -92,13 +92,6 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   const lastTap = useRef(0);
   const recordShown = useRef(false);
   const wakeLock = useRef<WakeLockSentinel | null>(null);
-  // The strip of moves under the card keeps the current one in view (DOM scroll only, no state).
-  const stripRef = useRef<HTMLDivElement | null>(null);
-  const moveIdx = live?.moveIdx ?? -1;
-  useEffect(() => {
-    const el = stripRef.current?.querySelector<HTMLElement>("[data-now]");
-    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
-  }, [moveIdx]);
 
   // ── Music ─────────────────────────────────────────────────────────────────
   const [track, setTrack] = useState<string>("off");
@@ -123,7 +116,7 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   }, []);
   const preview = (slug: string) => { if (previewing === slug) { stopMusic(); return; } playTrack(slug, 0.5); setPreviewing(slug); };
   // Music follows the session · full during work, ducked during rest and the bench, off at the summary.
-  const resting = live?.rest !== null && live?.rest !== undefined;
+  const resting = !!live?.rest;
   useEffect(() => {
     if (track === "off") { haltAudio(); return; }
     if (status === "running") playTrack(track, resting ? 0.18 : 0.4);
@@ -136,14 +129,13 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   useEffect(() => {
     const a = readActiveSession();
     if (a && a.workoutKey === workoutKey && a.finishedAt === null) {
-      const l = readLive();
       // eslint-disable-next-line react-hooks/set-state-in-effect -- restoring from localStorage after mount
       setSession(a);
-      setLive(l ?? { moveIdx: 0, moveStartedAt: Date.now(), moveWorkMs: 0, roundMoves: [], roundRestMs: 0, rest: null, roundRestTargetMs: roundRestMs });
+      setLive(readLive() ?? freshLive(Date.now()));
       setStatus((a.log as AmrapLog).bench !== undefined ? "bench" : Date.now() - a.startedAt >= totalMs ? "bench" : "running");
       recordShown.current = toBeat !== null && (a.rounds ?? 0) > toBeat;
     }
-  }, [toBeat, workoutKey, totalMs, roundRestMs]);
+  }, [toBeat, workoutKey, totalMs]);
 
   // Wake lock while the clock or the bench is on screen
   useEffect(() => {
@@ -160,7 +152,6 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   const rounds = session?.rounds ?? 0;
   const log = (session?.log ?? {}) as AmrapLog;
   const exercises = w.exercises;
-  const cur = live ? exercises[Math.min(live.moveIdx, exercises.length - 1)] : null;
 
   const persist = (s: TrainSession, l: Live | null) => { writeActiveSession(s); writeLive(l); setSession(s); setLive(l); };
 
@@ -173,29 +164,18 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
     setStatus("bench");
   }, [totalMs]);
 
-  /** End the between-rounds rest (the button, or the countdown reaching zero in the tick below). */
-  const startNextRound = useCallback((s: TrainSession, l: Live, t: number, spoken: boolean) => {
-    if (!l.rest || l.rest.kind !== "round") return;
-    const s2: TrainSession = { ...s, log: { ...(s.log as AmrapLog), roundRestMs: [...((s.log as AmrapLog).roundRestMs ?? []), t - l.rest.startedAt] } };
-    persist(s2, { ...l, rest: null, moveStartedAt: t, moveWorkMs: 0 });
-    if (spoken) cues.work(`Round ${(s.rounds ?? 0) + 1}`); else cues.work();
-  }, []);
-
-  // The 250 ms tick · also where "time up" and "rest over → next round" are detected (inside the
-  // tick callback, never in render or an effect body).
+  // The 250 ms tick · also where "time up" is detected (inside the tick callback, never in render).
   useEffect(() => {
     if (status !== "running" && status !== "bench") return;
     const id = setInterval(() => {
       const t = Date.now();
       setNow(t);
-      if (status !== "running" || !session) return;
-      if (t - session.startedAt >= totalMs) { timeUp(session); return; }
-      if (live?.rest?.kind === "round" && t - live.rest.startedAt >= live.roundRestTargetMs) startNextRound(session, live, t, true);
+      if (status === "running" && session && t - session.startedAt >= totalMs) timeUp(session);
     }, 250);
     return () => clearInterval(id);
-  }, [status, session, live, totalMs, timeUp, startNextRound]);
+  }, [status, session, totalMs, timeUp]);
 
-  // Last 10 seconds of the clock, and last 3 of a between-rounds rest: soft ticks
+  // Last 10 seconds of the clock: soft ticks
   const lastTick = useRef(-1);
   useEffect(() => {
     if (status !== "running") return;
@@ -211,7 +191,7 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
       clientId: newClientId(), workoutKey, date: today, startedAt: t, finishedAt: null, durationSeconds: null,
       rounds: 0, weightKg: kg, log: { roundsAt: [], v: 2, roundLogs: [], roundRestMs: [] }, notes: null,
     };
-    persist(s, { moveIdx: 0, moveStartedAt: t, moveWorkMs: 0, roundMoves: [], roundRestMs: 0, rest: null, roundRestTargetMs: roundRestMs });
+    persist(s, freshLive(t));
     setNow(t);
     setPreviewing(null);
     recordShown.current = false;
@@ -219,89 +199,53 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
     cues.work("Go");
   };
 
-  /** Tap on the move card: this move is done · next one, or the round when it was the last. */
-  const nextMove = () => {
-    if (!session || !live || live.rest) return;
+  /** Round Done · the one counting tap. A rest still running is closed into this round first. */
+  const roundDone = () => {
+    if (!session || !live) return;
     const t = nowMs();
     if (t - lastTap.current < 700) return;
     lastTap.current = t;
-    const ms = live.moveWorkMs + (t - live.moveStartedAt);
-    const roundMoves = [...live.roundMoves, { id: exercises[live.moveIdx].id, ms }];
-    if (live.moveIdx < exercises.length - 1) {
-      persist(session, { ...live, moveIdx: live.moveIdx + 1, moveStartedAt: t, moveWorkMs: 0, roundMoves });
-      try { navigator.vibrate?.(20); } catch { /* ignore */ }
-      return;
-    }
-    // Round complete
+    const restMs = live.roundRestMs + (live.rest ? t - live.rest.startedAt : 0);
+    const workMs = live.rest ? live.roundWorkMs : live.roundWorkMs + (t - live.roundStartedAt);
     const nextRounds = rounds + 1;
-    const workMs = roundMoves.reduce((a, m) => a + m.ms, 0);
     const s: TrainSession = {
       ...session, rounds: nextRounds,
-      log: { ...log, roundsAt: [...(log.roundsAt ?? []), t - session.startedAt], roundLogs: [...(log.roundLogs ?? []), { moves: roundMoves, restMs: live.roundRestMs, ms: workMs }] },
+      log: { ...log, roundsAt: [...(log.roundsAt ?? []), t - session.startedAt], roundLogs: [...(log.roundLogs ?? []), { moves: [], restMs, ms: workMs }] },
     };
-    persist(s, { moveIdx: 0, moveStartedAt: t, moveWorkMs: 0, roundMoves: [], roundRestMs: 0, rest: { kind: "round", startedAt: t }, roundRestTargetMs: roundRestMs });
+    persist(s, freshLive(t));
     const above = toBeat !== null && nextRounds > toBeat;
     if (above && !recordShown.current) { recordShown.current = true; setRecord(true); cues.record(); setTimeout(() => setRecord(false), 2600); }
     else cues.round(above);
     setBurst({ id: t, above });
+    if (live.rest) cues.work();
   };
 
   const toggleRest = () => {
     if (!session || !live) return;
     const t = nowMs();
-    if (live.rest?.kind === "move") {
-      persist(session, { ...live, rest: null, roundRestMs: live.roundRestMs + (t - live.rest.startedAt), moveStartedAt: t });
+    if (live.rest) {
+      persist(session, { ...live, rest: null, roundRestMs: live.roundRestMs + (t - live.rest.startedAt), roundStartedAt: t });
       cues.work();
-    } else if (!live.rest) {
-      persist(session, { ...live, rest: { kind: "move", startedAt: t }, moveWorkMs: live.moveWorkMs + (t - live.moveStartedAt) });
+    } else {
+      persist(session, { ...live, rest: { startedAt: t }, roundWorkMs: live.roundWorkMs + (t - live.roundStartedAt) });
       try { navigator.vibrate?.(30); } catch { /* ignore */ }
     }
   };
 
-  const extendRest = () => { if (live?.rest?.kind === "round" && session) persist(session, { ...live, roundRestTargetMs: live.roundRestTargetMs + 30_000 }); };
-
-  // Between-rounds countdown: soft ticks in the last 3 s (the tick above starts the next round at zero).
-  const roundRestLeft = live?.rest?.kind === "round" ? Math.max(0, live.roundRestTargetMs - (now - live.rest.startedAt)) : null;
-  const lastRestTick = useRef(-1);
-  useEffect(() => {
-    if (status !== "running" || roundRestLeft === null) return;
-    const sec = Math.ceil(roundRestLeft / 1000);
-    if (sec <= 3 && sec >= 1 && sec !== lastRestTick.current) { lastRestTick.current = sec; cues.tick(); }
-  }, [roundRestLeft, status]);
-
+  /** Take back the last Round Done · the round continues where it was. */
   const undo = () => {
-    if (!session || !live) return;
+    if (!session || !live || rounds === 0) return;
     const t = Date.now();
-    if (live.roundMoves.length > 0 && !live.rest) {
-      const prev = live.roundMoves[live.roundMoves.length - 1];
-      persist(session, { ...live, moveIdx: live.moveIdx - 1, moveStartedAt: t, moveWorkMs: prev.ms, roundMoves: live.roundMoves.slice(0, -1) });
-      return;
-    }
-    if (rounds > 0 && live.roundMoves.length === 0) {
-      // Take back the last round (during its rest, or right after): back onto its last move.
-      const rl = log.roundLogs ?? [];
-      const last = rl[rl.length - 1];
-      const s: TrainSession = { ...session, rounds: rounds - 1, log: { ...log, roundsAt: (log.roundsAt ?? []).slice(0, -1), roundLogs: rl.slice(0, -1) } };
-      const moves = last?.moves ?? [];
-      const tail = moves[moves.length - 1];
-      persist(s, { ...live, rest: null, moveIdx: Math.max(0, moves.length - 1), moveStartedAt: t, moveWorkMs: tail?.ms ?? 0, roundMoves: moves.slice(0, -1), roundRestMs: last?.restMs ?? 0 });
-      recordShown.current = toBeat !== null && rounds - 1 > toBeat;
-    }
-  };
-
-  const moveRest = live?.rest?.kind === "move";
-  const inRoundRest = live?.rest?.kind === "round";
-  // One tap on the card, whatever the state: start the next round early · get back to it · move done.
-  const onCardTap = () => {
-    if (!session || !live) return;
-    if (inRoundRest) startNextRound(session, live, nowMs(), false);
-    else if (moveRest) toggleRest();
-    else nextMove();
+    const rl = log.roundLogs ?? [];
+    const last = rl[rl.length - 1];
+    const s: TrainSession = { ...session, rounds: rounds - 1, log: { ...log, roundsAt: (log.roundsAt ?? []).slice(0, -1), roundLogs: rl.slice(0, -1) } };
+    persist(s, { roundStartedAt: t, roundWorkMs: (last?.ms ?? 0) + live.roundWorkMs + (live.rest ? 0 : t - live.roundStartedAt), roundRestMs: (last?.restMs ?? 0) + live.roundRestMs, rest: null });
+    recordShown.current = toBeat !== null && rounds - 1 > toBeat;
   };
 
   const endEarly = () => { if (session && confirm("End the clock now and go to the bench?")) timeUp(session); };
   /** End: a false start (nothing done yet) is discarded, anything else goes to the bench and is saved. */
-  const onEnd = () => { if (rounds === 0 && (live?.roundMoves.length ?? 0) === 0) discard(); else endEarly(); };
+  const onEnd = () => { if (rounds === 0) discard(); else endEarly(); };
   const discard = () => {
     if (!confirm("Discard this workout? Nothing will be saved.")) return;
     writeActiveSession(null); writeLive(null);
@@ -335,7 +279,7 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>{w.name}</h1>
-            <div className="sub">AMRAP {minutes} min · {kg} kg · {Math.round(roundRestMs / 60000)} min between rounds · then 3 × {BENCH_DEFAULT.reps} incline bench</div>
+            <div className="sub">AMRAP {minutes} min · {kg} kg · then 3 × {BENCH_DEFAULT.reps} incline bench</div>
           </div>
         </div>
 
@@ -389,7 +333,6 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
                 </div>
               );
             })}
-            <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 4px" }}>All tracks are Creative Commons · the artist and license are shown under each title.</div>
           </div>
         </section>
 
@@ -435,8 +378,6 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
     const tied = toBeat !== null && rounds === toBeat;
     const st = workStats(session);
     const bench = (session.log as AmrapLog).bench;
-    const slowest = st ? Object.entries(st.moveAvgMs).sort((a, b) => b[1] - a[1]).slice(0, 3) : [];
-    const nameOf = (id: string) => exercises.find((e) => e.id === id)?.name ?? id;
     const paceDelta = st && pace ? st.avgRoundMs - pace.avgRoundMs : null;
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", overflowY: "auto", padding: "calc(env(safe-area-inset-top) + 24px) 24px calc(env(safe-area-inset-bottom) + 24px)" }}>
@@ -452,7 +393,6 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
                 <Row k="Average round" v={`${fmtClock(st.avgRoundMs / 1000)}${paceDelta !== null ? ` · ${paceDelta <= 0 ? "−" : "+"}${fmtClock(Math.abs(paceDelta) / 1000)} vs ${pace!.label.toLowerCase()}` : ""}`} good={paceDelta !== null ? paceDelta <= 0 : undefined} />
                 <Row k="Fastest round" v={fmtClock(st.bestRoundMs / 1000)} />
                 <Row k="Worked · rested" v={`${fmtClock(st.workMs / 1000)} · ${fmtClock(st.restMs / 1000)}`} />
-                {slowest.length > 0 && <Row k="Slowest moves" v={slowest.map(([id, ms]) => `${nameOf(id)} ${fmtClock(ms / 1000)}`).join(" · ")} />}
               </div>
             </div>
           )}
@@ -466,20 +406,16 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   }
 
   // ═════════════════════════════════════════════════════════════════════════
-  // Running
+  // Running · the sequence, Rest, Round Done
   // ═════════════════════════════════════════════════════════════════════════
-  if (!session || !live || !cur) return null;
+  if (!session || !live) return null;
   const urgent = remainingMs < 60_000;
   const aboveBar = toBeat !== null && rounds > toBeat;
-  const moveMs = moveRest ? live.moveWorkMs : live.moveWorkMs + (now - live.moveStartedAt);
+  const roundMs = live.rest ? live.roundWorkMs : live.roundWorkMs + (now - live.roundStartedAt);
   const restMs = live.rest ? now - live.rest.startedAt : 0;
   const lastRound = (log.roundLogs ?? [])[rounds - 1];
-  const lastTimeForMove = lastRound?.moves.find((m) => m.id === cur.id)?.ms ?? null;
-  const nextUp = live.moveIdx < exercises.length - 1 ? exercises[live.moveIdx + 1] : null;
-  const roundSoFarMs = live.roundMoves.reduce((a, m) => a + m.ms, 0) + (inRoundRest ? 0 : moveMs);
   const stSoFar = workStats(session);
   const accent = aboveBar ? "var(--pos)" : "var(--violet)";
-  const big: React.CSSProperties = { minHeight: 64, borderRadius: 16, fontSize: 17 };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 10px)", gap: 10 }}>
@@ -499,95 +435,60 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 }}>
         <div style={{ ...mono, letterSpacing: "0.08em" }}>TO BEAT <span style={{ fontSize: 20, color: "var(--ink)", fontWeight: 600, letterSpacing: 0 }}>{toBeat ?? "…"}</span></div>
         <div className="tabular-nums" style={{ fontSize: 36, fontWeight: 300, color: urgent ? "var(--neg)" : "var(--ink)" }}>{fmtClock(remainingMs / 1000)}</div>
-        <div style={{ ...mono, letterSpacing: "0.08em", textAlign: "right", whiteSpace: "nowrap" }}>{inRoundRest ? "DONE" : "ROUND"} <span style={{ fontSize: 20, color: accent, fontWeight: 600, letterSpacing: 0 }}>{inRoundRest ? rounds : rounds + 1}</span></div>
+        <div style={{ ...mono, letterSpacing: "0.08em", textAlign: "right", whiteSpace: "nowrap" }}>ROUND <span style={{ fontSize: 20, color: accent, fontWeight: 600, letterSpacing: 0 }}>{rounds + 1}</span></div>
       </div>
       <div className="cc-progress-track" style={{ height: 3 }}>
         <div className="cc-progress-fill" style={{ width: `${(elapsedMs / totalMs) * 100}%`, transition: "width 0.25s linear", background: aboveBar ? "var(--pos)" : undefined }} />
       </div>
 
-      {/* The card · current move (tap = done), or the rest */}
-      <button onClick={onCardTap}
-        aria-label={inRoundRest ? `Start round ${rounds + 1}` : moveRest ? "Back to it" : `${cur.name} done, next move`} className="amrap-tap"
-        style={{
-          flex: 1, borderRadius: 24, border: `2px solid ${inRoundRest ? "var(--line-hi)" : moveRest ? "var(--warn)" : accent}`,
-          background: "var(--fill-1)", color: "inherit", cursor: "pointer", position: "relative", overflow: "hidden",
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 16px",
-          WebkitTapHighlightColor: "transparent", touchAction: "manipulation", transition: "border-color 0.3s var(--easeOut)",
-          ["--c" as string]: accent,
-        }}>
+      {/* Round timer · work time of this round (rest counted apart, amber while resting) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "baseline", gap: 10, padding: "2px 4px" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+          <span className="tabular-nums" style={{ fontSize: 40, fontWeight: 200, lineHeight: 1, letterSpacing: "-0.03em", color: live.rest ? "var(--warn)" : "var(--ink)" }}>{fmtClock((live.rest ? restMs : roundMs) / 1000)}</span>
+          <span style={{ fontSize: 14, color: live.rest ? "var(--warn)" : "var(--ink-3)" }}>{live.rest ? `resting · ${fmtClock(roundMs / 1000)} worked` : "this round"}</span>
+        </div>
+        <span style={{ fontSize: 13.5, color: "var(--ink-4)", textAlign: "right" }}>
+          {lastRound ? `last ${fmtClock(lastRound.ms / 1000)}` : ""}{stSoFar && stSoFar.rounds > 1 ? ` · avg ${fmtClock(stSoFar.avgRoundMs / 1000)}` : ""}{pace ? ` · beat ${fmtClock(pace.avgRoundMs / 1000)}` : ""}
+        </span>
+      </div>
+
+      {/* The sequence · every move in order, nothing to tap (a ▶ opens a how-to) */}
+      <div className="amrap-seq" style={{ flex: 1, minHeight: 0, overflowY: "auto", borderRadius: 20, border: `2px solid ${live.rest ? "var(--warn)" : accent}`, background: "var(--fill-1)", position: "relative", padding: "4px 12px", transition: "border-color 0.3s var(--easeOut)", ["--c" as string]: accent }}>
         {burst && (
           <span key={burst.id} aria-hidden className="amrap-burst">
             <span className="amrap-burst-glow" /><span className="amrap-burst-ring" /><span className="amrap-burst-ring" style={{ animationDelay: "0.1s" }} /><span className="amrap-plus">+1</span>
           </span>
         )}
-        {inRoundRest ? (
-          <>
-            <div style={{ ...mono, color: "var(--pos)", position: "relative" }}>Round {rounds} done{aboveBar ? " · above the bar" : ""}</div>
-            <div className="tabular-nums" style={{ fontSize: "clamp(88px, 28vw, 150px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", position: "relative" }}>{fmtClock((roundRestLeft ?? 0) / 1000)}</div>
-            <div style={{ fontSize: 15, color: "var(--ink-3)", position: "relative" }}>
-              rest · {lastRound ? `that round ${fmtClock(lastRound.ms / 1000)} work` : ""}{stSoFar && stSoFar.rounds > 1 ? ` · avg ${fmtClock(stSoFar.avgRoundMs / 1000)}` : ""}{pace ? ` · to beat ${fmtClock(pace.avgRoundMs / 1000)}` : ""}
-            </div>
-            <div style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 8, position: "relative" }}>tap to start round {rounds + 1} early</div>
-          </>
-        ) : moveRest ? (
-          <>
-            <div style={{ ...mono, color: "var(--warn)", position: "relative" }}>Resting · round {rounds + 1}</div>
-            <div className="tabular-nums" style={{ fontSize: "clamp(88px, 28vw, 150px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", color: "var(--warn)", position: "relative" }}>{fmtClock(restMs / 1000)}</div>
-            <div style={{ fontSize: 16, color: "var(--ink-2)", position: "relative" }}>{cur.name} · {repsLabel(cur)} · {fmtClock(moveMs / 1000)} in</div>
-            <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 8, position: "relative" }}>tap to get back to it</div>
-          </>
-        ) : (
-          <>
-            <div style={{ ...mono, position: "relative" }}>Move {live.moveIdx + 1} of {exercises.length}{lastTimeForMove !== null ? ` · last round ${fmtClock(lastTimeForMove / 1000)}` : ""}</div>
-            <div style={{ fontSize: "clamp(28px, 8.5vw, 40px)", fontWeight: 600, lineHeight: 1.12, letterSpacing: "-0.02em", textAlign: "center", position: "relative", textWrap: "balance" } as React.CSSProperties}>{cur.name}</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, position: "relative" }}>
-              <span className="tabular-nums" style={{ fontSize: "clamp(64px, 20vw, 104px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", color: accent }}>{cur.reps}</span>
-              <span style={{ fontSize: 18, color: "var(--ink-2)" }}>{cur.eachWay ? "each way" : cur.perSide ? "per side" : "reps"}</span>
-            </div>
-            <div className="tabular-nums" style={{ fontSize: 30, fontWeight: 300, color: "var(--ink-2)", position: "relative" }}>{fmtClock(moveMs / 1000)}</div>
-            <div style={{ fontSize: 15, color: "var(--ink-3)", position: "relative" }}>tap when done · round so far {fmtClock(roundSoFarMs / 1000)}</div>
-            {nextUp && <div style={{ fontSize: 15, color: "var(--ink-4)", marginTop: 10, position: "relative" }}>next · {nextUp.name} · {repsLabel(nextUp)}</div>}
-          </>
-        )}
-      </button>
-
-      {/* The rest of the round · one line that scrolls, the current move marked; a move with a reel is a link */}
-      <div ref={stripRef} style={{ display: "flex", gap: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", padding: "2px 0", scrollbarWidth: "none" }}>
-        {exercises.map((e, i) => {
-          const state = inRoundRest ? "next" : i < live.moveIdx ? "done" : i === live.moveIdx ? "now" : "next";
-          const style: React.CSSProperties = {
-            flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 5, minHeight: 40, padding: "0 10px", borderRadius: 10, fontSize: 13.5, fontFamily: "var(--f-mono)", whiteSpace: "nowrap", textDecoration: "none",
-            border: `1px solid ${state === "now" ? accent : "transparent"}`, background: state === "now" ? "var(--accent-soft)" : "var(--fill-1)",
-            color: state === "done" ? "var(--ink-4)" : state === "now" ? "var(--ink)" : "var(--ink-2)", textDecorationLine: state === "done" ? "line-through" : "none",
-          };
-          const label = <>{e.reps}{e.perSide ? "/s" : ""} {e.name.toLowerCase()}</>;
-          return e.videoUrl
-            ? <a key={e.id} data-now={state === "now" || undefined} href={e.videoUrl} target="_blank" rel="noopener noreferrer" style={style} aria-label={`How to do ${e.name}`}>{label}<span aria-hidden style={{ color: "var(--violet)", fontSize: 10 }}>▶</span></a>
-            : <span key={e.id} data-now={state === "now" || undefined} style={style}>{label}</span>;
-        })}
+        {exercises.map((e, i) => (
+          <div key={e.id} style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", alignItems: "center", gap: 8, minHeight: 46, borderBottom: i < exercises.length - 1 ? "1px solid var(--line)" : "none", position: "relative" }}>
+            <span className="tabular-nums" style={{ fontSize: 12.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{String(i + 1).padStart(2, "0")}</span>
+            <span style={{ fontSize: "clamp(16px, 4.6vw, 19px)", fontWeight: 500, lineHeight: 1.2, minWidth: 0 }}>{e.name}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span className="tabular-nums" style={{ fontSize: 15, fontFamily: "var(--f-mono)", color: accent, whiteSpace: "nowrap" }}>{repsLabel(e)}</span>
+              {e.videoUrl && <a href={e.videoUrl} target="_blank" rel="noopener noreferrer" aria-label={`How to do ${e.name}`} style={{ minWidth: 40, minHeight: 40, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--violet)", textDecoration: "none", fontSize: 13, marginRight: -10 }}>▶</a>}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Bottom controls · big, no precision needed */}
-      <div style={{ display: "grid", gridTemplateColumns: inRoundRest ? "1fr auto auto auto" : "1fr auto auto", gap: 8, alignItems: "stretch" }}>
-        {inRoundRest ? (
-          <>
-            <button onClick={onCardTap} className="cc-btn cc-btn-primary" style={{ ...big, padding: "0 10px" }}>Start round {rounds + 1}</button>
-            <button onClick={extendRest} className="cc-btn cc-btn-ghost" style={{ ...big, minWidth: 66, padding: 0, fontSize: 15 }}>+30 s</button>
-            <button onClick={undo} className="cc-btn cc-btn-ghost" style={{ ...big, minWidth: 64, padding: 0, fontSize: 15 }} aria-label="Undo the round">Undo</button>
-          </>
-        ) : (
-          <>
-            <button onClick={toggleRest} className={`cc-btn ${moveRest ? "cc-btn-primary" : "cc-btn-secondary"}`} style={big}>{moveRest ? "Back to it" : "Rest"}</button>
-            <button onClick={undo} className="cc-btn cc-btn-ghost" style={{ ...big, minWidth: 84 }} disabled={live.roundMoves.length === 0 && rounds === 0}>Undo</button>
-          </>
-        )}
-        <button onClick={onEnd} className="cc-btn cc-btn-ghost" style={{ ...big, minWidth: 60, padding: 0, color: "var(--neg)", fontSize: 15 }} aria-label="End the clock">End</button>
+      {/* Two buttons · Rest (or Back to it) and Round Done. Undo and End stay small below. */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 8 }}>
+        <button onClick={toggleRest} className={`cc-btn ${live.rest ? "cc-btn-primary" : "cc-btn-secondary"}`} style={{ minHeight: 76, borderRadius: 18, fontSize: 18, ...(live.rest ? { background: "var(--warn)", borderColor: "var(--warn)", color: "#06060B" } : {}) }}>
+          {live.rest ? "Back to it" : "Rest"}
+        </button>
+        <button onClick={roundDone} className="cc-btn cc-btn-primary amrap-tap" style={{ minHeight: 76, borderRadius: 18, fontSize: 20, fontWeight: 600, background: aboveBar ? "var(--pos)" : undefined, borderColor: aboveBar ? "var(--pos)" : undefined }} aria-label={`Round ${rounds + 1} done`}>
+          Round done
+        </button>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", padding: "0 4px" }}>
+        <button onClick={undo} disabled={rounds === 0} style={{ minHeight: 40, background: "transparent", border: "none", color: rounds === 0 ? "var(--ink-4)" : "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer", padding: "0 6px" }}>Undo round</button>
+        <button onClick={onEnd} style={{ minHeight: 40, background: "transparent", border: "none", color: "var(--neg)", font: "inherit", fontSize: 14, cursor: "pointer", padding: "0 6px" }} aria-label="End the clock">End</button>
       </div>
 
       <style>{`
-        .amrap-tap:active { background: var(--fill-2) !important; }
-        @keyframes amrap-pop { 0% { transform: scale(1.22); filter: drop-shadow(0 0 28px var(--c)); } 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } }
-        .amrap-burst { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+        .amrap-tap:active { filter: brightness(1.15); }
+        .amrap-seq { scrollbar-width: none; }
+        .amrap-burst { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 2; }
         .amrap-burst-glow { position: absolute; width: 70vmin; height: 70vmin; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--c) 42%, transparent) 0%, transparent 62%); animation: amrap-glow 0.9s var(--easeOut) forwards; }
         @keyframes amrap-glow { 0% { transform: scale(0.3); opacity: 1; } 100% { transform: scale(1.7); opacity: 0; } }
         .amrap-burst-ring { position: absolute; width: 40vmin; height: 40vmin; border-radius: 50%; border: 2px solid var(--c); animation: amrap-ring 0.85s var(--easeOut) forwards; }

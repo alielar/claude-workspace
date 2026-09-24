@@ -195,6 +195,29 @@ export type QuickParse = {
  *              mon…sunday · next fri · in 3 days · 15/9 or 15-09 · 9am 18:30 ·
  *              #project · ! / !! · someday
  */
+const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+function fromMonthName(today: string, day: number, mon: string, year?: string): string | null {
+  const month = MONTHS[mon.toLowerCase()];
+  if (!month || day < 1 || day > 31) return null;
+  let y = year ? parseInt(year, 10) : parseInt(today.slice(0, 4), 10);
+  let ymd = `${y}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  if (!year && ymd < today) { y += 1; ymd = `${y}-${ymd.slice(5)}`; } // "3 Jan" said in December means next year
+  return ymd;
+}
+const WORDS: Record<string, number> = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7 };
+const numberWord = (s: string) => WORDS[s.toLowerCase()] ?? parseInt(s, 10);
+/** Minutes since midnight on Ali's clock (Europe/Madrid). */
+function madridMinutes(): number {
+  const p = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Madrid" }).formatToParts(new Date());
+  const h = Number(p.find((x) => x.type === "hour")?.value ?? 0) % 24, m = Number(p.find((x) => x.type === "minute")?.value ?? 0);
+  return h * 60 + m;
+}
+
+/**
+ * One typed line → a task. Every natural way of writing a day or an hour is understood and
+ * STRIPPED from the title ("Shave Friday at 11am" → "Shave", Friday 11:00); what was read is
+ * listed in `tokens` so the quick-add bar can show it before the task is saved (2026-09-24).
+ */
 export function parseQuickAdd(input: string, today: string): QuickParse {
   let text = ` ${input.trim()} `;
   const out: QuickParse = { title: "", dueDate: null, dueTime: null, evening: false, someday: false, project: null, priority: 0, tokens: [] };
@@ -209,22 +232,42 @@ export function parseQuickAdd(input: string, today: string): QuickParse {
   eat(/\s#([\p{L}\p{N}_-]{1,24})(?=\s)/u, (m) => { out.project = m[1].toLowerCase(); });
   eat(/\s(!{1,3})(?=\s)/, (m) => { out.priority = m[1].length >= 2 ? 2 : 1; });
   eat(/\s(someday|later|one day)(?=\s)/i, () => { out.someday = true; });
-  eat(/\s(tonight|this evening|evening)(?=\s)/i, () => { out.evening = true; out.dueDate = out.dueDate ?? today; });
-  eat(/\s(tomorrow|tmrw|tmr)\s+(evening|night)(?=\s)/i, () => { out.dueDate = addDays(today, 1); out.evening = true; });
+  eat(/\s(tonight|this evening|evening|(?:at|in the)\s+night|tomorrow\s+night|night)(?=\s)/i, (m) => {
+    out.evening = true;
+    out.dueDate = /tomorrow/i.test(m[1]) ? addDays(today, 1) : out.dueDate ?? today; // a day named later in the line overrides
+  });
+  eat(/\s(tomorrow|tmrw|tmr)\s+(evening)(?=\s)/i, () => { out.dueDate = addDays(today, 1); out.evening = true; });
   eat(/\s(tomorrow|tmrw|tmr)(?=\s)/i, () => { out.dueDate = addDays(today, 1); });
   eat(/\s(today)(?=\s)/i, () => { out.dueDate = today; });
-  eat(/\s(this\s+)?(weekend)(?=\s)/i, () => { out.dueDate = nextWeekend(today); });
+  eat(/\s(?:this\s+|on the\s+|at the\s+)?(weekend)(?=\s)/i, () => { out.dueDate = nextWeekend(today); });
   eat(/\s(next\s+week)(?=\s)/i, () => { out.dueDate = nextMonday(today); });
-  eat(/\s(next\s+)?(sun|sunday|mon|monday|tue|tues|tuesday|wed|weds|wednesday|thu|thur|thurs|thursday|fri|friday|sat|saturday)(?=\s)/i, (m) => {
+  eat(/\s(next\s+month)(?=\s)/i, () => { const d = new Date(`${today}T12:00:00Z`); out.dueDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1, 12)).toISOString().slice(0, 10); });
+  eat(/\s(end of (?:the )?week)(?=\s)/i, () => { out.dueDate = endOfWeek(today); });
+  eat(/\s(end of (?:the )?month)(?=\s)/i, () => { const d = new Date(`${today}T12:00:00Z`); out.dueDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0, 12)).toISOString().slice(0, 10); });
+  // "Friday" · "on Friday" · "this Friday" · "next Friday" (the one after this coming one when it's still this week)
+  eat(/\s(?:on\s+|this\s+)?(next\s+)?(sun|sunday|mon|monday|tue|tues|tuesday|wed|weds|wednesday|thu|thur|thurs|thursday|fri|friday|sat|saturday)(?=\s)/i, (m) => {
     const dow = DOW[m[2].toLowerCase()];
     let d = nextWeekday(today, dow);
-    if (m[1]) d = addDays(d, weekday(today) < dow || weekday(today) === dow ? 7 : 0); // "next fri" = the one after this coming one when it's still this week
+    if (m[1]) d = addDays(d, weekday(today) < dow || weekday(today) === dow ? 7 : 0);
     out.dueDate = d;
   });
-  eat(/\sin\s+(\d{1,2})\s+(day|days|week|weeks)(?=\s)/i, (m) => {
-    const n = parseInt(m[1], 10) * (m[2].startsWith("week") ? 7 : 1);
-    out.dueDate = addDays(today, n);
+  eat(/\sin\s+(\d{1,2}|a|an|one|two|three|four|five|six|seven)\s+(day|days|week|weeks|month|months)(?=\s)/i, (m) => {
+    const n = numberWord(m[1]);
+    if (m[2].startsWith("month")) { const d = new Date(`${today}T12:00:00Z`); d.setUTCMonth(d.getUTCMonth() + n); out.dueDate = d.toISOString().slice(0, 10); }
+    else out.dueDate = addDays(today, n * (m[2].startsWith("week") ? 7 : 1));
   });
+  // "in 2 hours" · "in 30 minutes" · a time today (Europe/Madrid clock)
+  eat(/\sin\s+(\d{1,3}|a|an|one|two|three|four|five|six|seven|half an)\s+(hour|hours|hr|hrs|minute|minutes|min|mins)(?=\s)/i, (m) => {
+    const n = m[1].toLowerCase() === "half an" ? 0.5 : numberWord(m[1]);
+    const mins = Math.round(n * (m[2].startsWith("h") ? 60 : 1));
+    const nowMin = madridMinutes();
+    const t = Math.min(23 * 60 + 59, nowMin + mins);
+    out.dueTime = `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+    out.dueDate = today;
+  });
+  // "24 sep" · "24th of September" · "Sep 24" · "September 24th, 2027"
+  eat(/\s(?:on\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?(?:,?\s+(\d{4}))?(?=\s)/i, (m) => { out.dueDate = fromMonthName(today, parseInt(m[1], 10), m[2], m[3]); });
+  eat(/\s(?:on\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?(?=\s)/i, (m) => { out.dueDate = fromMonthName(today, parseInt(m[2], 10), m[1], m[3]); });
   eat(/\s(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?(?=\s)/, (m) => {
     const day = parseInt(m[1], 10), month = parseInt(m[2], 10);
     let year = m[3] ? parseInt(m[3], 10) : parseInt(today.slice(0, 4), 10);
@@ -235,20 +278,34 @@ export function parseQuickAdd(input: string, today: string): QuickParse {
       out.dueDate = ymd;
     }
   });
-  eat(/\s(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s?(am|pm)(?=\s)/i, (m) => {
+  // "11am" · "at 11 am" · "11:30pm" · "11.30 p.m." · "at 9 in the morning"
+  eat(/\s(?:at\s+|@\s*)?(\d{1,2})(?:[:.](\d{2}))?\s?(a\.?m\.?|p\.?m\.?)(?=\s)/i, (m) => {
     let h = parseInt(m[1], 10) % 12;
-    if (m[3].toLowerCase() === "pm") h += 12;
-    out.dueTime = `${String(h).padStart(2, "0")}:${m[2] ?? "00"}`;
+    if (m[3].toLowerCase().startsWith("p")) h += 12;
+    if (h <= 23) out.dueTime = `${String(h).padStart(2, "0")}:${m[2] ?? "00"}`;
   });
-  eat(/\s(?:at\s+)?(\d{1,2}):(\d{2})(?=\s)/, (m) => {
+  eat(/\s(?:at\s+|@\s*)?(noon|midday)(?=\s)/i, () => { out.dueTime = "12:00"; });
+  eat(/\s(?:at\s+|@\s*)?(midnight)(?=\s)/i, () => { out.dueTime = "23:59"; out.evening = true; });
+  eat(/\s(?:at\s+|@\s*)?(\d{1,2})[:h](\d{2})(?=\s)/i, (m) => {
     const h = parseInt(m[1], 10);
-    if (h <= 23) out.dueTime = `${String(h).padStart(2, "0")}:${m[2]}`;
+    if (h <= 23 && parseInt(m[2], 10) <= 59) out.dueTime = `${String(h).padStart(2, "0")}:${m[2]}`;
   });
-  eat(/\s(?:at\s+)(\d{1,2})h?(?=\s)/i, (m) => {
+  eat(/\s(?:at\s+|@\s*)(\d{1,2})h?(?=\s)/i, (m) => {
     const h = parseInt(m[1], 10);
     if (h <= 23) out.dueTime = `${String(h).padStart(2, "0")}:00`;
   });
-
+  // "tomorrow morning" · "Friday afternoon" · "this morning" · "in the morning" → a default hour
+  // (morning 09:00, afternoon 15:00). Only when a day was named or the phrase is explicit, so a
+  // title like "Morning run" keeps its word.
+  {
+    const m = text.match(/\s(?:(?:in the|this)\s+)?(morning|afternoon)(?=\s)/i);
+    if (m && (out.dueDate || /(in the|this)/i.test(m[0]))) {
+      out.dueTime = m[1].toLowerCase() === "morning" ? "09:00" : "15:00";
+      out.dueDate = out.dueDate ?? today;
+      out.tokens.push(m[0].trim());
+      text = text.replace(m[0], " ");
+    }
+  }
   if (out.dueTime && !out.dueDate && !out.someday) out.dueDate = today;
   if (out.dueTime && parseInt(out.dueTime.slice(0, 2), 10) >= 19) out.evening = true;
   if (out.someday) { out.dueDate = null; out.dueTime = null; out.evening = false; }

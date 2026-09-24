@@ -27,6 +27,14 @@
  *
  * Machine days (gym-push/pull/legs) and the kettlebell Saturday (gym-kb) are checklist rows
  * with a Train/Start button · shown, never counted (the server's streak uses the same rule).
+ *
+ * THREE KINDS OF DAY (Ali 2026-09-24, `dayKindOf` in lib/morning/plan.ts):
+ *   weekday  · the spine as configured (times from /checklist and the morning plan)
+ *   saturday · the same routine, every timed step AND the wake/calls clock later by
+ *              `saturdayShiftMin` (60 by default, Settings → Morning routine) · to-dos keep
+ *              their own times, they were typed on purpose
+ *   sunday   · no clock: one card, every step and to-do in a plain list, nothing folded
+ * The header names the kind, so it is never a hidden setting.
  */
 
 import { Linkify } from "@/components/Linkify";
@@ -45,7 +53,7 @@ import { PodcastCard } from "@/components/PodcastCard";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import { useBirthdays } from "@/lib/birthdays/useBirthdays";
 import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
-import { parseMorningPlan, computeMorning } from "@/lib/morning/plan";
+import { parseMorningPlan, computeMorning, dayKindOf, shiftHM, type DayKind, type MorningPlan } from "@/lib/morning/plan";
 import { useOverview } from "@/lib/train/useTrain";
 import { addDays, fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
 import { Sheet } from "../todo/sheet";
@@ -160,6 +168,14 @@ function displayNotes(item: ChecklistItem, currentBook: string | null): string |
 }
 
 const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-");
+
+/** The day's rows as Today shows them: yesterday's ticks cleared on a stale copy, Saturday hours shifted, Sunday hours dropped. */
+function dayItems(base: ChecklistItem[], clearTicks: boolean, kind: DayKind, shiftMin: number): ChecklistItem[] {
+  const fresh = clearTicks ? base.map((i) => ({ ...i, completedToday: false })) : base;
+  if (kind === "saturday" && shiftMin > 0) return fresh.map((i) => (i.atTime ? { ...i, atTime: shiftHM(i.atTime, shiftMin) } : i));
+  if (kind === "sunday") return fresh.map((i) => (i.atTime ? { ...i, atTime: null } : i));
+  return fresh;
+}
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
@@ -299,6 +315,13 @@ export default function TodayPage() {
 
   const { data, loading, stale, setData, refresh } = useCached<ChecklistData>("checklist", () => fetchJson<ChecklistData>("/api/checklist"));
   useEffect(() => { ensureMigrate(); }, []);
+  const { data: settings } = useCached<{ morningPlan?: string | null }>("settings", () => fetchJson("/api/settings"));
+  const planJson = settings?.morningPlan ?? null;
+  const plan = useMemo(() => parseMorningPlan(planJson), [planJson]);
+  // From the clock, not from `today`: the React Compiler treats a call taking `today` as a possible
+  // mutation of it and then refuses to keep the memos below that depend on it.
+  const kind: DayKind = dayKindOf(checklistToday(now));
+  const shiftMin = kind === "saturday" ? plan.saturdayShiftMin : 0;
 
   // The book being read right now · from the phone's saved copy of /books (no extra request here).
   const [currentBook, setCurrentBook] = useState<string | null>(null);
@@ -325,11 +348,8 @@ export default function TodayPage() {
       if (data) localStorage.setItem("cc:v1:checklist-day", today);
     } catch { /* ignore */ }
   }, [data, today]);
-  const items = useMemo(() => {
-    const list = data?.items ?? [];
-    if (cachedDay && cachedDay !== today && stale) return list.map((i) => ({ ...i, completedToday: false }));
-    return list;
-  }, [data, cachedDay, today, stale]);
+  // Saturday: every planned hour moves later · Sunday: no hours at all (see the header comment).
+  const items = dayItems(data?.items ?? [], cachedDay !== null && cachedDay !== today && stale, kind, shiftMin);
 
   const toggle = useCallback(async (item: ChecklistItem) => {
     const next = !item.completedToday;
@@ -385,6 +405,8 @@ export default function TodayPage() {
         <div style={{ fontSize: 15, color: "var(--ink-3)", marginTop: 4 }}>
           {longDate(today)}
           <span style={{ fontFamily: "var(--f-mono)" }}> · {clock(now)}</span>
+          {kind === "saturday" && shiftMin > 0 && <span style={{ color: "var(--violet)" }}> · routine {shiftMin === 60 ? "one hour" : `${shiftMin} min`} later</span>}
+          {kind === "sunday" && <span style={{ color: "var(--violet)" }}> · no schedule, do it whenever</span>}
           {!online && <span style={{ color: "var(--warn)" }}> · offline, changes will sync</span>}
           {online && stale && <span> · showing saved copy</span>}
         </div>
@@ -422,6 +444,40 @@ export default function TodayPage() {
     };
     const segs = PARTS.map(segFor);
     const nowIdx = PARTS.indexOf(part);
+
+    // Sunday · one plain card, no hours, nothing folded · steps first, then the to-dos that carry a time.
+    if (kind === "sunday") {
+      const sundayTodos = [...timedTodos].sort((a, b) => (a.dueTime! < b.dueTime! ? -1 : 1));
+      const open = items.filter((i) => !i.completedToday && i.kind !== "habit").length + sundayTodos.length;
+      return (
+        <>
+          {loose.length > 0 && (
+            <section className="cc-card">
+              <div className="cc-card-head"><span className="title">Loose ends</span><span className="tail">{loose.length}</span></div>
+              <div style={{ padding: "0 14px" }}>
+                {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
+              </div>
+            </section>
+          )}
+          <section className="cc-card" style={{ borderColor: "var(--violet)" }}>
+            <div className="cc-card-head">
+              <span className="title">Sunday</span>
+              <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                whenever · {open === 0 ? "done" : `${open} to do`}
+                <Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>
+              </span>
+            </div>
+            <div style={{ padding: "0 14px" }}>
+              <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />
+              {loading && !data && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
+              {items.map((i) => <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} />)}
+              {sundayTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} />)}
+              {items.length === 0 && sundayTodos.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
+            </div>
+          </section>
+        </>
+      );
+    }
 
     return (
       <>
@@ -469,7 +525,7 @@ export default function TodayPage() {
                           </span>
                         </div>
                         <div style={{ padding: "0 14px" }}>
-                          {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} />}
+                          {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />}
                           {loading && !data && s.status === "now" && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
                           {s.rows.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
                           {s.rows.map((r) => r.node)}
@@ -528,17 +584,19 @@ export default function TodayPage() {
   );
 }
 
-/** One quiet line inside the spine's Morning segment: the wake time, tap → Settings. */
-function MorningCardLine({ machineDay }: { machineDay: boolean }) {
-  const { data: settings } = useCached<{ morningPlan?: string | null }>("settings", () => fetchJson("/api/settings"));
+/** One quiet line inside the spine's Morning segment: the wake time (Saturday: shifted), tap → Settings. */
+function MorningCardLine({ machineDay, plan, kind }: { machineDay: boolean; plan: MorningPlan; kind: DayKind }) {
   const { data: ov } = useOverview();
-  const plan = parseMorningPlan(settings?.morningPlan);
   const sched = ov?.schedule ?? null;
   const isTraining = machineDay || (sched ? sched.todayKey !== null : true);
-  const { wake, bufferMin } = computeMorning(plan, isTraining);
+  const { wake, callsAt, bufferMin } = computeMorning(plan, isTraining, kind);
+  const link: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 36, padding: "6px 4px", fontSize: 13.5, color: "var(--ink-4)", textDecoration: "none", borderBottom: "1px solid var(--line)" };
+  if (kind === "sunday") {
+    return <Link href="/settings" style={link}><span>Sunday · no fixed times · {isTraining ? "training day" : "rest day"}</span></Link>;
+  }
   return (
-    <Link href="/settings" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 36, padding: "6px 4px", fontSize: 13.5, color: "var(--ink-4)", textDecoration: "none", borderBottom: "1px solid var(--line)" }}>
-      <span>Wake {wake} · {isTraining ? "training day" : "rest day"} · calls {plan.callsAt}</span>
+    <Link href="/settings" style={link}>
+      <span>Wake {wake} · {isTraining ? "training day" : "rest day"} · calls {callsAt}{kind === "saturday" ? ` · Saturday, +${plan.saturdayShiftMin} min` : ""}</span>
       <span style={{ color: bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>{bufferMin >= 0 ? `${bufferMin} min spare` : `${-bufferMin} min over`}</span>
     </Link>
   );

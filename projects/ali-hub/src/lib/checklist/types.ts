@@ -81,7 +81,7 @@ export const ROUTINE_SEED: {
   // Speediance machine days (Ali, 2026-09-14): three a week · Sun push, Tue pull, Thu legs+core
   // (he trained Sunday 13th, next Tuesday 15th and Thursday 17th). Tickable morning rows, NOT
   // counted in the day streak (excluded in the checklist route by the gym- prefix); Saturday's
-  // kettlebell hour is the KB Hour on Train (kb_workouts.assigned_days = ["sat"]). The days are
+  // kettlebell session is Kettlebell 30 on Train (kb_workouts.assigned_days = ["sat"]). The days are
   // seeds only · Ali edits them on Today → Edit; the migrate route moves rows still on the old
   // Mon/Wed/Fri defaults, never ones he changed.
   { routineKey: "gym-push", title: "Push day · machine", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "Speediance · chest, shoulders, triceps", sortOrder: -45, weekdays: ["sun"] },
@@ -89,7 +89,7 @@ export const ROUTINE_SEED: {
   { routineKey: "gym-legs", title: "Legs and core · machine", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "Speediance · squats, hinges, core", sortOrder: -45, weekdays: ["thu"] },
   // Kettlebell Saturday (Ali 2026-09-14 evening: "Saturday needs to be a kettlebell day like push/pull/legs, with the Train button").
   // Ticked automatically when a KB session is finished that day (checklist route); the Train button opens /train/kb1.
-  { routineKey: "gym-kb",   title: "Kettlebell · KB Hour",    emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 60 · 13 moves × 5 reps", sortOrder: -45, weekdays: ["sat"] },
+  { routineKey: "gym-kb",   title: "Kettlebell",              emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 30 · 11 moves", sortOrder: -45, weekdays: ["sat"] },
   { routineKey: "breathe", title: "Wim Hof breathing",   emoji: "🫁", timeOfDay: "morning", kind: "routine", color: "cyan",   notes: `30 breaths · ${BREATHING_VIDEO_URL}`, sortOrder: -40 },
   { routineKey: "supp-am", title: "Morning supplements", emoji: "💊", timeOfDay: "morning", kind: "routine", color: "green",  notes: "Zinc · Omega-3 · Creatine", sortOrder: -30 },
   { routineKey: "supp-pm", title: "Magnesium",           emoji: "🌙", timeOfDay: "evening", kind: "routine", color: "violet", notes: "Night supplement", sortOrder: -20 },

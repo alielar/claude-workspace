@@ -4,21 +4,28 @@ import { eq } from "drizzle-orm";
 import { DEFAULT_WORKOUTS, KB1_RETIRED_IDS, type TrainExercise, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 
 /**
- * 2026-09-20 recipe change. A stored kb1 row still holding a retired move (snatch,
- * crush thruster, plain squat) is on the old 13-move / 60-minute recipe: replace its
- * exercises, length and round rest with the new defaults, KEEPING the how-to links
- * Ali attached to each move (matched by id · a renamed or new move starts without one).
- * Runs once; a row already on the new recipe is left exactly as he has edited it.
+ * Two one-off recipe changes on the stored kb1 row, each applied once:
+ *  - 2026-09-20 · a row still holding a retired move (snatch, crush thruster, plain squat) is
+ *    on the old 13-move recipe: replace its exercises with the defaults, KEEPING the how-to
+ *    links Ali attached to each move (matched by id · a renamed or new move starts without one).
+ *  - 2026-09-24 · "KB Hour" became Kettlebell 30: name, 30 minutes, no automatic rest between
+ *    rounds. Exercises he edited are left exactly as they are.
  */
 async function migrateKb1(row: typeof kbWorkouts.$inferSelect): Promise<typeof kbWorkouts.$inferSelect> {
   if (row.key !== "kb1") return row;
+  const fresh = DEFAULT_WORKOUTS.find((w) => w.key === "kb1")!;
   let old: TrainExercise[] = [];
   try { old = JSON.parse(row.exercises); } catch { return row; }
-  if (!old.some((e) => KB1_RETIRED_IDS.includes(e.id))) return row;
-  const fresh = DEFAULT_WORKOUTS.find((w) => w.key === "kb1")!;
-  const links = new Map(old.filter((e) => e.videoUrl).map((e) => [e.id, e.videoUrl!]));
-  const exercises = fresh.exercises.map((e) => ({ ...e, videoUrl: links.get(e.id) ?? null }));
-  const patch = { exercises: JSON.stringify(exercises), amrapMinutes: fresh.amrapMinutes, restSeconds: fresh.restSeconds, updatedAt: new Date() };
+  const patch: Partial<typeof kbWorkouts.$inferSelect> = {};
+  if (old.some((e) => KB1_RETIRED_IDS.includes(e.id))) {
+    const links = new Map(old.filter((e) => e.videoUrl).map((e) => [e.id, e.videoUrl!]));
+    patch.exercises = JSON.stringify(fresh.exercises.map((e) => ({ ...e, videoUrl: links.get(e.id) ?? null })));
+  }
+  if (row.name === "KB Hour" || (row.amrapMinutes ?? 0) > fresh.amrapMinutes! || row.restSeconds !== fresh.restSeconds) {
+    patch.name = fresh.name; patch.amrapMinutes = fresh.amrapMinutes; patch.restSeconds = fresh.restSeconds;
+  }
+  if (Object.keys(patch).length === 0) return row;
+  patch.updatedAt = new Date();
   await db.update(kbWorkouts).set(patch).where(eq(kbWorkouts.id, row.id));
   return { ...row, ...patch };
 }
@@ -41,7 +48,7 @@ export function rowToWorkout(r: typeof kbWorkouts.$inferSelect): TrainWorkout {
 }
 
 /** The live templates, seeding the defaults on first call. Rows for retired keys
- * (w1/w2/w3, replaced by the KB Hour 2026-09-10) stay in the DB for session
+ * (w1/w2/w3, replaced by the kettlebell workout 2026-09-10) stay in the DB for session
  * history but are not returned or playable. */
 export async function loadOrSeedWorkouts(userId: string): Promise<TrainWorkout[]> {
   const rows = await db.select().from(kbWorkouts).where(eq(kbWorkouts.userId, userId));

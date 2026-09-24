@@ -346,8 +346,9 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
   // The latest edits live in a ref as well: Done and the tap-away backdrop read from it, so a
   // change made a moment ago (the add box committing on blur) is never missed by a stale closure.
   const dRef = useRef<Todo>(t);
+  useEffect(() => { dRef.current = d; }, [d]);
   const draftRef = useRef("");
-  const set = (p: Partial<Todo>) => { dRef.current = { ...dRef.current, ...p }; setD(dRef.current); };
+  const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
   const close = () => {
     const cur = { ...dRef.current, notes: withDraftSubtask(dRef.current.notes ?? null, draftRef.current) };
     if (cur.title.trim()) onSave({ ...cur, title: cur.title.trim() });
@@ -433,8 +434,9 @@ export function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onC
   // The latest edits live in a ref as well: Done and the tap-away backdrop read from it, so a
   // change made a moment ago (the add box committing on blur) is never missed by a stale closure.
   const dRef = useRef<Todo>(t);
+  useEffect(() => { dRef.current = d; }, [d]);
   const draftRef = useRef("");
-  const set = (p: Partial<Todo>) => { dRef.current = { ...dRef.current, ...p }; setD(dRef.current); };
+  const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
   const close = () => {
     const cur = { ...dRef.current, notes: withDraftSubtask(dRef.current.notes ?? null, draftRef.current) };
     if (cur.title.trim()) onSave({ ...cur, title: cur.title.trim() });

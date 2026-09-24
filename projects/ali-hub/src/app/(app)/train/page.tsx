@@ -2,8 +2,8 @@
 
 /**
  * /train · the Train tab.
- *   hero: the KB Hour (the one workout since 2026-09-10), one big Start
- *   weekly bests (rounds of the KB Hour), number to beat
+ *   hero: Kettlebell 30 (the one workout since 2026-09-10), one big Start
+ *   weekly bests (rounds), number to beat
  *   recent sessions
  * Everything renders from the phone's copy first; works offline.
  */
@@ -49,7 +49,6 @@ export default function TrainPage() {
   const nextKey: WorkoutKey = ov?.next ?? PRIMARY_KEY;
   const next = workouts.find((w) => w.key === nextKey);
   const others = workouts.filter((w) => w.key !== nextKey);
-  const kg = ov?.kettlebellKg ?? 12;
   const loading = wLoading && oLoading && !ov;
   const target = ov?.target ?? SESSIONS_PER_WEEK;
   const today = checklistToday();
@@ -75,9 +74,6 @@ export default function TrainPage() {
               {ov.weekStreak} wk
             </span>
           )}
-          <Link href="/settings" className="cc-pill" style={{ textDecoration: "none", fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>
-            {kg} kg
-          </Link>
         </div>
       </div>
 
@@ -100,7 +96,7 @@ export default function TrainPage() {
 
       {restToday && (
         <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>
-          Rest day today{sched?.next ? ` · ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} is ${fmtScheduleDate(sched.next.date, today)}` : ""}. Training anyway is fine.
+          Rest day{sched?.next ? ` · ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} ${fmtScheduleDate(sched.next.date, today)}` : ""}
         </div>
       )}
 
@@ -156,7 +152,7 @@ export default function TrainPage() {
         <div style={{ padding: "4px 14px" }}>
           {!ov && <div className="cc-skeleton" style={{ height: 44, margin: "10px 0" }} />}
           {ov && ov.weeklyBests.length === 0 && (
-            <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>No rounds logged yet. The first session sets the number to beat.</div>
+            <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>No rounds yet.</div>
           )}
           {ov?.weeklyBests.slice(0, 8).map((b, i, arr) => {
             const prev = arr[i + 1];

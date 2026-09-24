@@ -1,28 +1,22 @@
 "use client";
 
 /**
- * /settings · the few things worth a setting.
- *
- *  1. Appearance: follow phone / light / dark
- *  2. News topics
- *  3. Install on iPhone (hint, only when not installed)
- *  4. Archive (old modules, out of the navigation, one tap away)
- *  5. App: version, force-update
+ * /settings · the few things worth a setting. No explanations (Ali 2026-09-24: "remove every
+ * filler sentence · Settings is the worst offender") · a card is its control and its state.
  */
 
 import React, { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue } from "@/lib/useClientValue";
-import { useCached, fetchJson, readCache, writeCache, isOnline } from "@/lib/local/store";
+import { useCached, fetchJson, isOnline } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
-import { VIDEO_CATEGORIES, allChannels, isBuiltIn, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
+import { VIDEO_CATEGORIES, allChannels, defaultEnabledIds, isBuiltIn, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
 import type { ChannelHit } from "@/lib/news/youtubeSearch";
 import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 import { parseMorningPlan, computeMorning, type MorningPlan } from "@/lib/morning/plan";
-import { STRETCH_TOTAL_SECONDS } from "@/lib/routine/stretching";
 
 type UserSettings = {
   timezone: string;
@@ -41,13 +35,6 @@ function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb); window.addEventListener("offline", cb);
   return () => { window.removeEventListener("online", cb); window.removeEventListener("offline", cb); };
 }
-
-const KETTLEBELLS = [
-  { key: "12", label: "12 kg" },
-  { key: "16", label: "16 kg" },
-  { key: "20", label: "20 kg" },
-  { key: "24", label: "24 kg" },
-];
 
 const NEWS_TOPICS = [
   { key: "football",    label: "Football" },
@@ -140,7 +127,6 @@ function AppleWatchCard() {
     <section className="cc-card">
       <div className="cc-card-head"><span className="title">Apple Watch</span><span className="tail" style={tail === "quiet for days" ? { color: "var(--warn)" } : undefined}>{tail}</span></div>
       <div className="cc-card-body" style={{ display: "grid", gap: 8, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-        <p style={{ margin: 0 }}>Sleep, workouts and heart data arrive from the Health Auto Export app whenever the phone is unlocked · not at a fixed time.</p>
         <div style={{ display: "grid", gap: 2, fontSize: 14, color: "var(--ink-3)" }}>
           <span>Sleep · {data ? (data.lastSleep ? `night of ${data.lastSleep.date}${fmtMin(data.lastSleep.totalMin)} · received ${stamp(data.lastSleep.receivedAt)}` : "nothing yet") : "—"}</span>
           <span>Workouts · {data ? (data.lastWorkout ? `${data.lastWorkout.type} on ${data.lastWorkout.date} · received ${stamp(data.lastWorkout.receivedAt)}` : "nothing yet") : "—"}</span>
@@ -270,6 +256,7 @@ export default function SettingsPage() {
     savePlan({ ...plan, steps: plan.steps.map((s) => (s.id === id ? { ...s, minutes: Math.max(0, Math.min(180, Math.round(minutes))) } : s)) });
   const trainDay = computeMorning(plan, true);
   const restDay = computeMorning(plan, false);
+  const saturday = computeMorning(plan, true, "saturday");
 
   // One-tap schema update · the migrate route is idempotent, safe to tap any time.
   const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
@@ -279,25 +266,13 @@ export default function SettingsPage() {
     setMigrateMsg(r ? "Database is up to date." : "Failed · try again in a moment.");
   };
 
-  const kettlebell = String(settings?.kettlebellKg ?? 12);
-  const setKettlebell = async (key: string) => {
-    if (!settings) return;
-    const kg = Number(key);
-    setData({ ...settings, kettlebellKg: kg });
-    try {
-      // Also refresh the Train tab's cached copy of the weight right away.
-      const ov = readCache<{ kettlebellKg: number }>("train-overview");
-      if (ov) writeCache("train-overview", { ...ov.data, kettlebellKg: kg });
-      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { kettlebellKg: kg }, dedupeKey: "settings:kettlebellKg" });
-    } catch { /* keep optimistic state */ }
-  };
-
   // YouTube channels for the brief: built-ins + Ali's additions; newsChannels = enabled ids, null = all on.
   const custom = parseCustomChannels(settings?.newsCustomChannels);
   const channelList = allChannels(custom);
+  // null = the defaults (every channel except the ones shipped off, e.g. the daily briefs to try).
   const channels: string[] = (() => {
-    try { return settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : channelList.map((c) => c.id); }
-    catch { return channelList.map((c) => c.id); }
+    try { return settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : defaultEnabledIds(channelList); }
+    catch { return defaultEnabledIds(channelList); }
   })();
   const [showChannels, setShowChannels] = useState(false);
   const saveChannels = async (enabled: string[] | null, nextCustom: CustomChannel[]) => {
@@ -384,7 +359,6 @@ export default function SettingsPage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Settings</h1>
-          <div className="sub">Appearance, kettlebell, training days, news, books</div>
         </div>
       </div>
 
@@ -393,15 +367,6 @@ export default function SettingsPage() {
         <div className="cc-card-head"><span className="title">Appearance</span><span className="tail">{THEMES.find((t) => t.key === theme)?.hint}</span></div>
         <div className="cc-card-body">
           <Segmented value={theme} options={THEMES} onChange={setTheme} />
-          <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 2px" }}>Automatic follows the phone by day and turns to Night from 20:00 to 07:00. Light, Dark or Night picked here stays that way at any hour until you change it.</div>
-        </div>
-      </section>
-
-      {/* Kettlebell */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Kettlebell</span><span className="tail">16 once every move is mastered</span></div>
-        <div className="cc-card-body">
-          <Segmented value={kettlebell} options={KETTLEBELLS} onChange={setKettlebell} />
         </div>
       </section>
 
@@ -431,11 +396,6 @@ export default function SettingsPage() {
               </div>
             </div>
           ))}
-          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
-            {plannedCount
-              ? "Today shows the planned workout, or a quiet rest day. You can always train anyway."
-              : "Leave everything off to keep “4 a week, any days, alternating”."}
-          </p>
         </div>
       </section>
 
@@ -478,7 +438,7 @@ export default function SettingsPage() {
       {/* YouTube channels · built-ins per topic + live search to add your own (2026-09-12) */}
       <section className="cc-card">
         <button onClick={() => setShowChannels((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showChannels ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-          <span className="title">YouTube channels in the brief</span>
+          <span className="title">YouTube channels</span>
           <span className="tail">{settings ? `${channels.filter((id) => channelList.some((c) => c.id === id)).length} of ${channelList.length} on` : "…"} {showChannels ? "▴" : "▾"}</span>
         </button>
         {showChannels && (
@@ -497,7 +457,7 @@ export default function SettingsPage() {
                   {VIDEO_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>
-              {!online && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Offline. Your channels below still work; search comes back with the connection.</div>}
+              {!online && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Offline · search needs a connection.</div>}
               {searchActive && searchError && <div style={{ fontSize: 14, color: "var(--warn)" }}>{searchError}</div>}
               {searchActive && searching && !hits && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Searching…</div>}
               {searchActive && hits && hits.length === 0 && !searching && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>No channels found.</div>}
@@ -523,9 +483,10 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* Current selection, per topic */}
-            {VIDEO_CATEGORIES.map((g) => {
-              const rows = channelList.filter((c) => c.category === g.key);
+            {/* Daily briefs to try (2026-09-24 research) first, then the topics */}
+            {[{ key: "daily", label: "Daily news briefs · try one" }, ...VIDEO_CATEGORIES].map((g) => {
+              const rows = g.key === "daily" ? channelList.filter((c) => c.daily) : channelList.filter((c) => c.category === g.key && !c.daily);
+              if (g.key === "daily" && rows.length === 0) return null;
               const onCount = rows.filter((c) => channels.includes(c.id)).length;
               return (
                 <div key={g.key}>
@@ -565,7 +526,6 @@ export default function SettingsPage() {
                             <span style={{ flex: 1 }} />
                             <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Remove ${c.name} from the brief?`)) removeChannel(c.id); }} style={{ minHeight: 44, padding: "0 12px", fontSize: 14, color: "var(--neg)" }}>Remove</button>
                           </div>
-                          <div style={{ fontSize: 13, color: "var(--ink-4)" }}>{c.custom ? "Added by you." : c.edited ? "A built-in channel, edited by you." : "A built-in channel. Edit, move it to another topic or remove it · all reversible."}</div>
                         </div>
                       )}
                     </React.Fragment>
@@ -575,10 +535,11 @@ export default function SettingsPage() {
                 </div>
               );
             })}
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", padding: "10px 2px 0" }}>
-              <span style={{ flex: 1, fontSize: 14, color: "var(--ink-4)", lineHeight: 1.5, minWidth: 200 }}>Every channel here is yours: switch off, edit, move to another topic or remove · the built-ins too. Videos update on the next News refresh.</span>
-              {builtInOverrides.length > 0 && <button className="cc-btn cc-btn-ghost" onClick={restoreAll} style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>Restore built-ins ({builtInOverrides.length})</button>}
-            </div>
+            {builtInOverrides.length > 0 && (
+              <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 2px 0" }}>
+                <button className="cc-btn cc-btn-ghost" onClick={restoreAll} style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>Restore built-ins ({builtInOverrides.length})</button>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -586,10 +547,7 @@ export default function SettingsPage() {
       {/* Mobility player (route /stretch) · a second door, so it is reachable even when the Today row is ticked */}
       <Link href="/stretch" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-          <span>
-            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Mobility</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>2 sessions, alternating · 10 s rests · {Math.floor(STRETCH_TOTAL_SECONDS / 60)}:{String(STRETCH_TOTAL_SECONDS % 60).padStart(2, "0")} each</span>
-          </span>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>Mobility</span>
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>
       </Link>
@@ -599,7 +557,7 @@ export default function SettingsPage() {
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
           <span>
             <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Home-screen widget</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Open the script, select all, copy, paste over &ldquo;ALI&rdquo; in Scriptable</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Scriptable script · copy, paste over &ldquo;ALI&rdquo;</span>
           </span>
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>
@@ -608,10 +566,7 @@ export default function SettingsPage() {
       {/* Books */}
       <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-          <span>
-            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Books</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>The waiting list of physical books</span>
-          </span>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>Books</span>
           <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
         </div>
       </Link>
@@ -622,15 +577,15 @@ export default function SettingsPage() {
           <div className="cc-card-head"><span className="title">Install on your phone</span></div>
           <div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
             {isIOS
-              ? <>In Safari, tap <strong>Share</strong> → <strong>Add to Home Screen</strong>. The app then opens full-screen and works offline.</>
-              : <>Use your browser&rsquo;s <strong>Install app</strong> / <strong>Add to Home Screen</strong> option. The app then opens full-screen and works offline.</>}
+              ? <>Safari · <strong>Share</strong> → <strong>Add to Home Screen</strong></>
+              : <>Browser menu · <strong>Install app</strong></>}
           </div>
         </section>
       )}
 
       {/* Morning routine · Ali-approved sequence, every number editable */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Morning routine</span><span className="tail">before calls at {plan.callsAt}</span></div>
+        <div className="cc-card-head"><span className="title">Morning routine</span><span className="tail">calls {plan.callsAt}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 12, fontSize: 15, color: "var(--ink-2)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
             {([["Wake · training", plan.trainWake, (v: string) => savePlan({ ...plan, trainWake: v })],
@@ -653,10 +608,21 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+          <div style={{ display: "grid", gap: 2 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center", minHeight: 44, borderBottom: "1px solid var(--line)" }}>
+              <span style={{ fontSize: 15 }}>Saturday · later by<span style={{ fontSize: 12.5, color: "var(--ink-4)" }}> · wake {saturday.wake}, calls {saturday.callsAt}, every timed step</span></span>
+              <input className="cc-input" type="number" inputMode="numeric" min={0} max={240} step={15} value={plan.saturdayShiftMin}
+                onChange={(e) => savePlan({ ...plan, saturdayShiftMin: Math.max(0, Math.min(240, Math.round(Number(e.target.value) || 0))) })}
+                style={{ fontSize: 16, minHeight: 40, width: 64, boxSizing: "border-box", textAlign: "right" }} />
+              <span style={{ fontSize: 13, color: "var(--ink-4)" }}>min</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 44, fontSize: 15 }}>
+              <span>Sunday</span><span style={{ fontSize: 13, color: "var(--ink-4)" }}>no fixed times</span>
+            </div>
+          </div>
           <p style={{ margin: 0, fontSize: 13.5, color: trainDay.bufferMin < 0 || restDay.bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>
-            Training day ends {trainDay.rows.at(-1)?.end ?? "—"} · {trainDay.bufferMin} min spare. Rest day ends {restDay.rows.at(-1)?.end ?? "—"} · {restDay.bufferMin} min spare.
+            Training day ends {trainDay.rows.at(-1)?.end ?? "—"} · {trainDay.bufferMin} min spare · rest day ends {restDay.rows.at(-1)?.end ?? "—"} · {restDay.bufferMin} min spare
           </p>
-          <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-4)" }}>Which days are training days comes from the Training days card above · the wake time and sequence follow automatically.</p>
         </div>
       </section>
 
@@ -667,10 +633,9 @@ export default function SettingsPage() {
       <section className="cc-card">
         <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "…" : "off"}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          <p style={{ margin: 0 }}>A to-do that’s due and not ticked gets a notification every 30 minutes until you tick it. Quiet from 23:00 to 08:00. Personal and Work nag separately.</p>
-          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>On iPhone this only works from the installed app · add A L I to the home screen first, then come back here.</p>}
-          {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Notifications are blocked for this app in iOS Settings → Notifications → A L I.</p>}
-          {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>This browser can’t receive notifications.</p>}
+          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>Works from the installed app only.</p>}
+          {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Blocked in iOS Settings → Notifications → A L I.</p>}
+          {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>Not supported in this browser.</p>}
           {pushInfo && (() => {
             const mins = pushInfo.lastTickAt ? Math.round((Date.now() - pushInfo.lastTickAt) / 60000) : null;
             const stale = mins === null || mins > 30;
@@ -683,7 +648,7 @@ export default function SettingsPage() {
           })()}
           {pushInfo && pushInfo.devices.length > 0 && (
             <div style={{ display: "grid", gap: 2 }}>
-              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>Registered devices · a stale one is removed automatically the first time a send to it fails</div>
+              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>Devices</div>
               {pushInfo.devices.map((d) => (
                 <div key={d.endpoint} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 8, minHeight: 44 }}>
                   <span style={{ fontSize: 14, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -697,7 +662,7 @@ export default function SettingsPage() {
             </div>
           )}
           {push === "on" && pushInfo?.count === 0 && (
-            <p style={{ margin: 0, fontSize: 14, color: "var(--warn)" }}>This phone thinks reminders are on but the server has no registered device · turn them off and on again below.</p>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--warn)" }}>No device registered on the server · turn reminders off and on again.</p>
           )}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
@@ -713,8 +678,7 @@ export default function SettingsPage() {
       {me?.required && (
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Account</span><span className="tail">{me.email ?? ""}</span></div>
-          <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)" }}>
-            <p style={{ margin: 0 }}>Signed in with Google. This stays signed in on this device; only your account can get in.</p>
+          <div className="cc-card-body">
             <form method="post" action="/api/auth/logout"><button type="submit" className="cc-btn cc-btn-ghost">Sign out</button></form>
           </div>
         </section>
@@ -722,14 +686,13 @@ export default function SettingsPage() {
 
       {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-09-12</span></div>
-        <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Not seeing the latest version?</span>
-          <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>
-        </div>
-        <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, borderTop: "1px solid var(--line)" }}>
-          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>{migrateMsg ?? "After an update that adds features:"}</span>
-          <button className="cc-btn cc-btn-ghost" onClick={runMigrate}>Update database</button>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-09-24</span></div>
+        <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{migrateMsg ?? ""}</span>
+          <span style={{ display: "flex", gap: 8 }}>
+            <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>
+            <button className="cc-btn cc-btn-ghost" onClick={runMigrate}>Update database</button>
+          </span>
         </div>
       </section>
     </div>

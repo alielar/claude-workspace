@@ -130,7 +130,7 @@ async function ensureColumns() {
   // (completions move to the oldest row) and a UNIQUE index so it cannot happen again.
   for (const ddl of DEDUPE_ROUTINE_ROWS) { try { await db.run(sql.raw(ddl)); } catch { /* best-effort */ } }
 
-  // KB Hour → Saturdays (Ali, 2026-09-11) · fills only an unset schedule, so a
+  // Kettlebell → Saturdays (Ali, 2026-09-11) · fills only an unset schedule, so a
   // later manual change in Settings is never overwritten.
   try { await db.run(sql.raw(`UPDATE kb_workouts SET assigned_days = '["sat"]' WHERE key = 'kb1' AND assigned_days IS NULL`)); } catch { /* table may not exist yet */ }
 }
@@ -212,14 +212,14 @@ export async function GET(req?: Request) {
   const thisWeekCount = sessionsPerWeek(trainSessions).get(isoWeekKey(today)) ?? 0;
   const target = scheduled ? workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0) : SESSIONS_PER_WEEK;
   const restDay = scheduled && !todayTrain && todayKey === null;
-  const workoutName = (k: string) => (k === "kb1" ? "KB Hour" : k === "w1" ? "Workout 1" : k === "w3" ? "Workout 3" : "Workout 2");
+  const workoutName = (k: string) => (k === "kb1" ? "Kettlebell 30" : k === "w1" ? "Workout 1" : k === "w3" ? "Workout 3" : "Workout 2");
   const workoutRow = {
     id: -1,
     title: todayTrain
       ? `${workoutName(todayTrain.workoutKey)} done${todayTrain.rounds ? ` · ${todayTrain.rounds} rounds` : ""}`
       : restDay
         ? "Rest day"
-        : `Train · ${workoutName(nextKey)} (AMRAP 60)`,
+        : `Train · ${workoutName(nextKey)} (AMRAP 30)`,
     emoji: null,
     sortOrder: -5,
     timeOfDay: "anytime" as TimeOfDay,

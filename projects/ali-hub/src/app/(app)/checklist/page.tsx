@@ -79,7 +79,6 @@ function Sheet({ item, onClose, onSave, onDelete }: {
     title: item?.title ?? "", timeOfDay: item?.timeOfDay ?? "anytime", notes: item?.notes ?? "",
     kind: item?.kind ?? "manual", weekdays: item?.weekdays ?? [], atTime: item?.atTime ?? "",
   });
-  const builtIn = !!item?.routineKey;
   const gym = !!item?.routineKey?.startsWith("gym-");
   const set = (p: Partial<Draft>) => setD((x) => ({ ...x, ...p }));
   const toggleDay = (k: string) => set({ weekdays: d.weekdays.includes(k) ? d.weekdays.filter((x) => x !== k) : [...d.weekdays, k] });
@@ -103,7 +102,7 @@ function Sheet({ item, onClose, onSave, onDelete }: {
             mobility should sit at the hour they are actually planned for. Setting one also moves the
             item into the matching part of the day, so nothing can contradict itself. */}
         <div style={{ display: "grid", gap: 4 }}>
-          <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>At what time · optional, places it on Today&rsquo;s timeline</span>
+          <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>Time · optional</span>
           <div style={{ display: "grid", gridTemplateColumns: d.atTime ? "1fr auto" : "1fr", gap: 8 }}>
             <input type="time" className="cc-input" value={d.atTime}
               onChange={(e) => set(e.target.value ? { atTime: e.target.value, timeOfDay: partOfTime(e.target.value) } : { atTime: "" })}
@@ -126,11 +125,10 @@ function Sheet({ item, onClose, onSave, onDelete }: {
           </div>
         </div>
 
-        <label style={{ display: "grid", gap: 4, fontSize: 13.5, color: "var(--ink-3)" }}>Note or link · shown under the name on Today; a link opens with one tap
+        <label style={{ display: "grid", gap: 4, fontSize: 13.5, color: "var(--ink-3)" }}>Note or link
           <input className="cc-input" value={d.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="e.g. Speediance · chest, shoulders, triceps  or  https://…" autoCapitalize="none" style={{ fontSize: 16, minHeight: 44 }} />
         </label>
 
-        {builtIn && <div style={{ fontSize: 13.5, color: "var(--ink-4)", lineHeight: 1.5 }}>Part of the built-in routine. You can change everything here, including deleting it · it will not come back by itself.</div>}
 
         <div style={{ display: "grid", gridTemplateColumns: item ? "1fr auto" : "1fr", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={save} disabled={!d.title.trim()} style={{ minHeight: 48, borderRadius: 14, fontSize: 17 }}>{item ? "Save" : "Add"}</button>

@@ -73,11 +73,20 @@ function firstLine(notes: string | null): string | null {
 
 // ─── Swipe left to delete (shared by task rows and list rows) ─────────────────
 
+/**
+ * A quick horizontal flick (2026-09-24) switches Personal ↔ Work ↔ Docs from anywhere on the
+ * page; a slow drag on a row still reveals Delete. Both handlers see the same touch, so the
+ * rule lives here once.
+ */
+export function isFlick(dx: number, dy: number, ms: number): boolean {
+  return ms < 320 && Math.abs(dx) > 70 && Math.abs(dx) > 2.2 * Math.abs(dy);
+}
+
 function useSwipeDelete(onDelete: () => void) {
   const [offset, setOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const gesture = useRef<{ x: number; y: number; base: number; active: boolean } | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => { gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, base: offset, active: false }; };
+  const gesture = useRef<{ x: number; y: number; t: number; base: number; active: boolean } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => { gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp, base: offset, active: false }; };
   const onTouchMove = (e: React.TouchEvent) => {
     const g = gesture.current;
     if (!g) return;
@@ -89,9 +98,11 @@ function useSwipeDelete(onDelete: () => void) {
     }
     setOffset(Math.min(0, Math.max(-170, g.base + dx)));
   };
-  const onTouchEnd = () => {
+  const onTouchEnd = (e: React.TouchEvent) => {
     const g = gesture.current; gesture.current = null; setDragging(false);
     if (!g || !g.active) return;
+    const c = e.changedTouches[0];
+    if (c && isFlick(c.clientX - g.x, c.clientY - g.y, e.timeStamp - g.t)) { setOffset(0); return; } // the page switches segment
     setOffset((o) => {
       if (o < -140) { onDelete(); return 0; }
       return o < -48 ? -88 : 0;
@@ -255,7 +266,10 @@ export default function TodoPage() {
   const { data, loading, stale, upsert, toggleDone, remove } = useTodos(today);
   const all = useMemo(() => (data?.todos ?? []).filter((t) => !t.deleted), [data]);
 
-  const [text, setText] = useState("");
+  const [text, setTextState] = useState("");
+  // "Keep as typed" (2026-09-24): the line is saved word for word, no date read out of it.
+  const [literal, setLiteral] = useState(false);
+  const setText = (v: string) => { setTextState(v); setLiteral(false); };
   const [area, setAreaState] = useState<Area>("personal");
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
@@ -281,7 +295,24 @@ export default function TodoPage() {
   };
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const parsed = useMemo(() => (!isLists && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists]);
+  const parsed = useMemo(() => (!isLists && !literal && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists, literal]);
+
+  // Flick left / right anywhere on the page → next / previous segment (phone). Sheets and inputs are left alone.
+  const flick = useRef<{ x: number; y: number; t: number } | null>(null);
+  const onPageTouchStart = (e: React.TouchEvent) => {
+    const el = e.target as HTMLElement;
+    flick.current = el.closest('[role="dialog"], input, textarea, select') ? null : { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp };
+  };
+  const onPageTouchEnd = (e: React.TouchEvent) => {
+    const g = flick.current; flick.current = null;
+    const c = e.changedTouches[0];
+    if (!g || !c) return;
+    const dx = c.clientX - g.x;
+    if (!isFlick(dx, c.clientY - g.y, e.timeStamp - g.t)) return;
+    const i = SEGMENTS.findIndex((s) => s.key === area);
+    const next = SEGMENTS[i + (dx < 0 ? 1 : -1)];
+    if (next) setArea(next.key);
+  };
   const projects = useMemo(() => [...new Set(all.filter((t) => (t.area ?? "personal") === area).map((t) => t.project).filter((p): p is string => !!p))].sort(), [all, area]);
 
   // "+" opens the full sheet so every detail is set at creation. For tasks the typed
@@ -290,7 +321,7 @@ export default function TodoPage() {
     const ts = Date.now();
     setDraft({
       clientId: newTodoId(),
-      title: isLists ? text.trim() : parsed?.title ?? "",
+      title: isLists || literal ? text.trim() : parsed?.title || text.trim(),
       area, notes: null,
       project: isLists ? filter : parsed?.project ?? filter,
       dueDate: isLists ? null : parsed?.dueDate ?? null,
@@ -327,9 +358,29 @@ export default function TodoPage() {
     parsed.project ? `#${parsed.project}` : filter ? `#${filter}` : null,
     parsed.priority === 2 ? "urgent" : parsed.priority === 1 ? "important" : null,
   ].filter(Boolean) : [];
+  const readSomething = !!parsed && parsed.tokens.length > 0;
+
+  // Personal · Work · Docs · once at the top (phone, narrow laptop) and once fixed on the left (wide laptop, CSS decides).
+  const segments = (vertical: boolean) => (
+    <div role="tablist" aria-label="List" className={vertical ? "todo-seg todo-seg-side" : "todo-seg todo-seg-top"}
+      style={{ display: vertical ? undefined : "grid", gridTemplateColumns: vertical ? "1fr" : `repeat(${SEGMENTS.length}, 1fr)`, gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
+      {SEGMENTS.map((a) => {
+        const on = a.key === area;
+        const n = badgeCount(all, today, a.key);
+        return (
+          <button key={a.key} role="tab" aria-selected={on} onClick={() => setArea(a.key)}
+            className={a.key === "list" && !vertical ? "seg-docs" : undefined}
+            style={{ minHeight: 44, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: vertical ? "space-between" : "center", gap: 8, padding: vertical ? "0 12px" : 0, WebkitTapHighlightColor: "transparent" }}>
+            {a.label}
+            {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
-    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84 }}>
+    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84 }} onTouchStart={onPageTouchStart} onTouchEnd={onPageTouchEnd}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
@@ -342,21 +393,9 @@ export default function TodoPage() {
         </div>
       </div>
 
-      {/* Personal · Work · Lists */}
-      <div role="tablist" aria-label="List" style={{ display: "grid", gridTemplateColumns: `repeat(${SEGMENTS.length}, 1fr)`, gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
-        {SEGMENTS.map((a) => {
-          const on = a.key === area;
-          const n = badgeCount(all, today, a.key);
-          return (
-            <button key={a.key} role="tab" aria-selected={on} onClick={() => setArea(a.key)}
-              className={a.key === "list" ? "seg-docs" : undefined}
-              style={{ minHeight: 44, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, WebkitTapHighlightColor: "transparent" }}>
-              {a.label}
-              {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
-            </button>
-          );
-        })}
-      </div>
+      {/* Personal · Work · Docs · flick left/right on the phone; fixed on the left on a wide laptop */}
+      {segments(false)}
+      {segments(true)}
 
       {/* Tag chips · tasks use projects, docs use tags; same mechanism */}
       {projects.length > 0 && (
@@ -378,7 +417,6 @@ export default function TodoPage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Passwords</span>
-                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Logins, API keys, recovery codes · encrypted on this phone</span>
               </span>
               <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
             </div>
@@ -389,7 +427,6 @@ export default function TodoPage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 6v3M8 6v3M16 6v3" /><path d="M4 21v-7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7" /><path d="M4 21h16" /><path d="M4 15c1 1 2 1 3 0s2-1 3 0 2 1 3 0 2-1 3 0 2 1 3 0" /></svg>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Birthdays</span>
-                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Names and dates worth remembering · reminds you ahead</span>
               </span>
               <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
             </div>
@@ -402,7 +439,7 @@ export default function TodoPage() {
 
           {data && lists.length === 0 && (
             <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              {q ? `Nothing matches “${query}”.` : "Notes and running lists to keep, not to do. Type a name below and start writing."}
+              {q ? `Nothing matches “${query}”.` : "No docs yet."}
             </div></div>
           )}
 
@@ -423,7 +460,7 @@ export default function TodoPage() {
 
           {data && openTasks.length === 0 && (
             <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              Nothing on the {area} list{filter ? ` in #${filter}` : ""}. Type below to add one.
+              Nothing here.
             </div></div>
           )}
 
@@ -485,7 +522,6 @@ export default function TodoPage() {
                   <span style={{ fontSize: 13, color: "var(--ink-4)" }}>›</span>
                 </button>
               ))}
-              <div style={{ padding: "10px 16px 4px", fontSize: 13, color: "var(--ink-4)" }}>On its wake day an item comes back to your normal lists with one notification.</div>
             </div>
           )}
         </section>
@@ -498,9 +534,16 @@ export default function TodoPage() {
       {mounted && createPortal(
       <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); submit(); }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
-          {previewBits.length > 0 && (
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 14, fontFamily: "var(--f-mono)", color: "var(--cyan)" }}>
-              {previewBits.map((b) => <span key={b as string}>{b}</span>)}
+          {(readSomething || literal) && text.trim() && !isLists && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, minHeight: 28 }}>
+              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {literal
+                  ? <span style={{ color: "var(--ink-3)" }}>Saved as typed</span>
+                  : <><span style={{ color: "var(--ink)" }}>{parsed!.title || "(no title)"}</span><span style={{ color: "var(--cyan)", fontFamily: "var(--f-mono)" }}>{previewBits.length ? ` · ${previewBits.join(" · ")}` : ""}</span></>}
+              </span>
+              <button type="button" onClick={() => setLiteral((v) => !v)} className="cc-pill" style={{ minHeight: 28, padding: "0 10px", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {literal ? "Read the date" : "Keep as typed"}
+              </button>
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>

@@ -1,6 +1,6 @@
 "use client";
 
-/** /train/kb1 · the KB Hour: every kettlebell movement, 5 reps each, AMRAP 60 min. */
+/** /train/kb1 · Kettlebell 30: the 11-move round, AMRAP 30 min, no tap per movement. */
 
 import { AmrapGame } from "@/components/train/AmrapGame";
 
