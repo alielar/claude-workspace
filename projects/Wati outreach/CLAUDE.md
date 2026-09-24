@@ -169,3 +169,21 @@ large share of his weekly credits.
   Trust what is written in the thread over the label.
 - The free 20-minute interview, the level test and the admission email happen outside
   WhatsApp. When you need to know what was said on the call, ask Ali — do not assume.
+
+## Wati Inbox (the phone app) — `veille` and suggestions
+
+`../wati-inbox` is the self-hosted app that notifies Ali's phone and laptop when a lead
+writes on the France Sales number, and lets him reply from there. Suggestions shown in
+that app are written **by this session**, never by another model:
+
+- **Signal: `veille`** (alone, as the whole message): run `node watch-pending.mjs` under
+  the Monitor tool and stay on it. Each `PENDING <waId> <name> — …` line is a lead waiting
+  for a reply with no suggestion yet. For each one: `node --env-file=.env lead.mjs <waId>`,
+  quick card (playbook only if needed), draft 2–3 options, then
+  `node suggest.mjs <waId> '<json>'` with `[{bubbles:[…], why:"…"}, …]` — bubbles in the
+  exact house format (2–3 short bubbles, question last), `why` = the two "Pourquoi" lines.
+  Print a one-line summary per lead in the chat; no need to repeat the full drafts here.
+- **`c` / `C`** also posts its drafts to the app with `suggest.mjs`, in addition to
+  showing them in the chat.
+- The watcher reads the app's SQLite file directly; the app must be running
+  (launchd job `com.ali.wati-inbox`, log in `../wati-inbox/logs/server.log`).

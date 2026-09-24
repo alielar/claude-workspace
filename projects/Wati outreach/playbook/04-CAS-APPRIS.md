@@ -172,3 +172,40 @@ le projet une fois par semaine.
 **Ce qu'Ali a instruit :** lui proposer un acompte de 196 €, déduit du montant total, qui ne nécessite pas de vérification de numéro de téléphone — présenté comme une exception accordée vu sa situation. Il règle le solde de sa première mensualité lundi ou mardi à son retour en France.
 **Pourquoi :** tranche (au moins pour ce cas précis) l'ambiguïté notée le 2026-09-16 entre `01-NUMBERS-PRODUCT-france.md` (qui affirme qu'il n'existe pas de palier d'acompte en France, le 196 € n'étant que le frais d'onboarding) et la pratique déjà observée sur Da et Boubou. Ali confirme que le mécanisme acompte 196 €/solde ensuite est bien utilisable en France, présenté comme une exception liée à la situation du lead (ici : accès téléphone bloqué), pas comme un article de catalogue standard.
 **Résultat :** à suivre.
+
+## 2026-09-24 — Changer de rythme hebdomadaire : possible le 1er mois seulement, pas « à tout moment »
+
+**Situation :** Diana (+41762207532), ENG 180h IELTS B2 5h/10m, inscription calée au 25/09. Elle demande : « si tout d'un coup je me rends compte que je n'arrive pas à soutenir les 5h, est-ce possible de descendre à 4 par exemple ? »
+**Ce que j'avais proposé :** « Et oui, vous pourrez passer à 4h par semaine si besoin : le total de 180h et le prix ne changent pas, c'est simplement la durée qui s'allonge, autour de 11 mois. »
+**Correction d'Ali (envoyée telle quelle) :** « Et oui, le premier mois, vous pourrez ajuster comme bon vous semble, et passer à 4h par semaine si besoin, mais à partir du deuxième mois on planifie le cours pour toute sa durée car la continuité es un élément important de notre méthode d'apprentissage »
+**Pourquoi :** l'ajustement du rythme hebdomadaire est une fenêtre du **premier mois**, pas une flexibilité permanente. Dès le 2e mois le planning est posé pour toute la durée du parcours, et la raison donnée au lead est pédagogique (la continuité fait partie de la méthode), jamais administrative. Ne plus écrire « vous pourrez passer à 4h si besoin » sans borner au premier mois. La correspondance heures/semaine → durée (6h/8 mois, 5h/10 mois, 4h/11 mois, total et prix inchangés) reste valable, mais elle sert à **choisir** le rythme à l'inscription, pas à en changer en cours de route.
+**Résultat :** à suivre (paiement prévu le 25/09 au matin).
+
+## 2026-09-24 — Client suisse : toujours chiffrer en francs (CHF), jamais en euros
+
+**Situation :** Mondher (+41763799060), Suisse, ENG 180h IELTS B2 pour son fils. Je lui avais annoncé « 1 800 € au total, 180 €/mois ».
+**Correction d'Ali :** s'excuser et corriger immédiatement — pour un lead suisse, tous les montants se disent en francs suisses, dans les messages comme à l'oral. Message envoyé : « Pardon Mondher, une correction de ma part : pour la Suisse c'est en francs, pas en euros. Le programme est à 1 800 CHF au total, soit 180 CHF/mois »
+**Pourquoi :** vérifier le pays du lead (attribut `country`, indicatif +41) **avant** de citer le moindre chiffre, et basculer toute la conversation en CHF. Les montants de la quick card s'appliquent tels quels, seule la devise change.
+**Résultat :** à suivre.
+
+## 2026-09-24 — « 180h ÷ durée du cours » : le lead calcule sa mensualité sur la durée du parcours, pas sur l'échéancier
+
+**Situation :** Mondher (+41763799060), format 180h à 2h/semaine sur ~22 mois. Après l'annonce de 180/mois en 10 fois, il répond « Part ce ne pas 80€ sur une base 2h part semaine », puis insiste : « Désolé mais pour moi dans mon calcul c'est 80 frs par mois ». Il divisait 1 800 par les 22 mois de cours.
+**Ce qu'Ali a instruit :** ne pas downseller — expliquer qu'on ne paie pas leçon par leçon mais le programme complet, que le fils suit bien ses 2h/semaine pendant ~22 mois, mais que l'échelonnement va jusqu'à 10 mois maximum (1 800 ÷ 10 = 180/mois, plus rien à régler ensuite), puis **finir par une question de diagnostic** : est-ce le montant total qui pose problème, ou était-ce juste un malentendu sur la mensualité ?
+**Pourquoi :** sur un format long à faible rythme hebdomadaire (2h/semaine, 22 mois), l'écart entre durée du cours et durée de l'échéancier crée mécaniquement cette incompréhension — l'anticiper. Une question sur le calcul n'est **pas** une objection prix : tant que le lead n'a pas dit que le total le bloque, on clarifie, on ne concède rien. La question finale sert justement à trancher entre malentendu et vraie objection avant de bouger d'une marche.
+**Résultat :** à suivre.
+
+## 2026-09-24 — Une mensualité annoncée sans le format ne vend rien
+**Situation :** Naelle (+33784060878), juste après l'entretien, annonce qu'elle laisse sa place. Blocage nommé : le budget, plus une attente venue de la pub Instagram (« pouvoir choisir son nombre d'heures et payer en fonction, genre 5 cours par mois pour 50 € »).
+**Ce que le lead a écrit :** « Pour être totalement honnête c'est le budget. Avec l'annonce sur Instagram je pensais vraiment qu'on pouvait soi-même decider de son nombre d'heures et payer en fonction de ça : par exemple 5 cours par mois pour 50€ ou un truc du genre. » puis, après la réponse : « Oui je comprends tout à fait mais je ne voudrai pas m'engager pour me désister plus tard […] je ne vais pas pouvoir donner suite à votre proposition. »
+**Ce que j'ai répondu :** le refus O9 (pas de cours à l'unité, programme structuré + garantie), puis directement « En 10 fois sans frais ça revient à 99 €/mois, c'est le plus grand étalement qu'on puisse proposer. À 99 €/mois, est-ce que ça reste compliqué pour vous ? » — sans la bulle qui nommait le format (90h à 990 € au lieu de 180h à 1 800 €).
+**Pourquoi :** une mensualité envoyée seule laisse le lead la comparer à son propre ancrage (ici 50 €/mois) au lieu de comparer le nouveau total à l'offre d'origine. Dans tout downsell, la bulle « X h au lieu de 180h, Y € au lieu de 1 800 € » doit précéder la mensualité, jamais l'inverse.
+**Résultat :** à suivre — refus n°2 poli, mais Ali a tranché de ne PAS clôturer (voir cas suivant).
+
+## 2026-09-24 — Deux refus polis ne valent pas une sortie propre si l'objection a changé
+**Situation :** même lead (Naelle, +33784060878). Après le downsell mal cadré, elle écrit un deuxième refus poli. J'ai proposé la clôture chaleureuse (règle « deux refus nets = sortie propre »).
+**Ce que le lead a écrit :** « Je ne voudrai pas m'engager pour me désister plus tard […] je ne vais pas pouvoir donner suite à votre proposition. Mais merci quand même pour votre écoute. »
+**Correction d'Ali :** ne pas clôturer. Diagnostiquer d'abord ce qui bloque réellement (prix / motivation / timing), puis envisager de descendre jusqu'au format 48h.
+**Pourquoi :** un refus poli qui arrive avec une objection NOUVELLE (ici la peur de s'engager et d'abandonner, plus le prix) n'est pas un refus ferme — c'est un blocage non traité. La règle des deux refus vaut quand le lead répète le même non, pas quand il en donne un motif différent à chaque fois.
+**Comment appliquer :** avant toute sortie propre, vérifier si le dernier message répète l'objection précédente ou en introduit une autre. S'il en introduit une autre → une question de diagnostic, et le cran suivant de l'échelle si la réponse le permet.
+**Résultat :** à suivre.
