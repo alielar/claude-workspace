@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Linkify, LinkChips } from "@/components/Linkify";
-import { SubtaskEditor, SectionsView, GrowInput } from "./notes";
+import { SubtaskEditor, SectionsView, GrowInput, withDraftSubtask } from "./notes";
 import {
   addDays, AREAS, fmtDue, nextMonday, nextWeekend, docFormat, taskFormat, DOC_FORMATS, TASK_FORMATS,
   type Format, type Priority, type Todo,
@@ -343,8 +343,16 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
 }) {
   useLockBodyScroll();
   const [d, setD] = useState<Todo>(t);
-  const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
-  const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
+  // The latest edits live in a ref as well: Done and the tap-away backdrop read from it, so a
+  // change made a moment ago (the add box committing on blur) is never missed by a stale closure.
+  const dRef = useRef<Todo>(t);
+  const draftRef = useRef("");
+  const set = (p: Partial<Todo>) => { dRef.current = { ...dRef.current, ...p }; setD(dRef.current); };
+  const close = () => {
+    const cur = { ...dRef.current, notes: withDraftSubtask(dRef.current.notes ?? null, draftRef.current) };
+    if (cur.title.trim()) onSave({ ...cur, title: cur.title.trim() });
+    onClose();
+  };
   const when = (dueDate: string | null, evening = false, someday = false) => set({ dueDate, evening, someday, dueTime: someday ? null : d.dueTime });
   const isWhen = (dueDate: string | null, evening: boolean, someday: boolean) => d.someday === someday && (someday || (d.dueDate === dueDate && d.evening === evening));
   // Fixed order, three per row (Ali 2026-09-15): Today · Tomorrow · Someday / Weekend · Next week · Pick a date.
@@ -403,7 +411,7 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
 
         {/* Notes / Subtasks · last field on purpose: with the keyboard open the sheet parks at its bottom, notes right above Done. */}
         {taskFormat(d) === "checklist"
-          ? <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} />
+          ? <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} draftRef={draftRef} />
           : <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" rows={3} />}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
@@ -422,8 +430,16 @@ export function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onC
 }) {
   useLockBodyScroll();
   const [d, setD] = useState<Todo>(t);
-  const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
-  const close = () => { if (d.title.trim()) onSave({ ...d, title: d.title.trim() }); onClose(); };
+  // The latest edits live in a ref as well: Done and the tap-away backdrop read from it, so a
+  // change made a moment ago (the add box committing on blur) is never missed by a stale closure.
+  const dRef = useRef<Todo>(t);
+  const draftRef = useRef("");
+  const set = (p: Partial<Todo>) => { dRef.current = { ...dRef.current, ...p }; setD(dRef.current); };
+  const close = () => {
+    const cur = { ...dRef.current, notes: withDraftSubtask(dRef.current.notes ?? null, draftRef.current) };
+    if (cur.title.trim()) onSave({ ...cur, title: cur.title.trim() });
+    onClose();
+  };
   const [remind, setRemind] = useState(!!t.dueDate);
 
   // Five shapes for the same stored text (Ali 2026-09-12): List, Checklist, Document,
@@ -491,7 +507,7 @@ export function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onC
         {mode === "doc" ? (
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : mode === "checklist" ? (
-          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} ordered />
+          <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} ordered draftRef={draftRef} />
         ) : mode === "sections" || mode === "accordion" ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>

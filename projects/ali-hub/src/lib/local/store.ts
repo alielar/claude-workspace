@@ -56,12 +56,21 @@ type State<T> = {
  *
  * `setData` updates both the screen and the local copy (use it for optimistic edits).
  */
-export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
+export function useCached<T>(key: string, fetcher: () => Promise<T | null>, opts?: {
+  /**
+   * Combine what the server sent with what the phone has. Modules whose rows carry their own
+   * `updatedAt` (to-dos) use it so a server answer can never revert a newer local edit, however
+   * the requests were ordered on the wire. Without it the server copy replaces the local one.
+   */
+  merge?: (local: T | null, server: T) => T;
+}) {
   const [state, setState] = useState<State<T>>({
     data: null, savedAt: null, loading: true, refreshing: false, stale: false,
   });
   const fetcherRef = useRef(fetcher);
   useEffect(() => { fetcherRef.current = fetcher; }, [fetcher]);
+  const mergeRef = useRef(opts?.merge);
+  useEffect(() => { mergeRef.current = opts?.merge; }, [opts?.merge]);
 
   // Guards a race that made a tick "come back" and need a second tap: a background
   // refresh started BEFORE an optimistic setData (e.g. the 45s interval, or a focus
@@ -70,7 +79,12 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
   // If a local edit landed after this refresh began, its answer is stale · skip it and
   // let the next refresh (the outbox-flush one right after the write lands, or the next
   // interval tick) pick up the truth.
+  //
+  // 2026-09-24: the same guard now also covers the WRITE. `markEdit()` is called again when
+  // the PUT has landed, so a GET that started while the PUT was still in flight (it can
+  // answer with pre-edit rows even though it began after the tap) is discarded too.
   const lastEditRef = useRef(0);
+  const markEdit = useCallback(() => { lastEditRef.current = Date.now(); }, []);
 
   const refresh = useCallback(async () => {
     if (!isOnline()) {
@@ -86,8 +100,16 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
         return;
       }
       if (fresh !== null && fresh !== undefined) {
-        writeCache(key, fresh);
-        setState({ data: fresh, savedAt: Date.now(), loading: false, refreshing: false, stale: false });
+        setState((s) => {
+          if (isWorkerCopy(fresh)) {
+            // The worker's old copy: only worth showing when the phone has nothing at all.
+            if (s.data !== null) return { ...s, refreshing: false, loading: false, stale: true };
+            return { data: fresh, savedAt: s.savedAt, loading: false, refreshing: false, stale: true };
+          }
+          const next = mergeRef.current ? mergeRef.current(s.data, fresh) : fresh;
+          writeCache(key, next);
+          return { data: next, savedAt: Date.now(), loading: false, refreshing: false, stale: false };
+        });
       } else {
         setState((s) => ({ ...s, refreshing: false, loading: false }));
       }
@@ -141,10 +163,19 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>) {
     });
   }, [key]);
 
-  return { ...state, setData, refresh };
+  return { ...state, setData, refresh, markEdit };
 }
 
-/** Small helper: GET a JSON endpoint, null on any failure. */
+/**
+ * Small helper: GET a JSON endpoint, null on any failure.
+ *
+ * An answer the service worker served from ITS cache (header `x-ali-cache`, set in
+ * public/sw.js when the network was slow or down) is flagged (`isWorkerCopy`). That copy is
+ * older than the phone's own localStorage copy and must never be applied as if the server
+ * had just said it · before 2026-09-24 it was, which is why a ticked to-do could "come back"
+ * (the GET after the tick timed out, the worker handed back yesterday's list, the store
+ * believed it) and why the laptop could sit on stale rows until a hard reload.
+ */
 export async function fetchJson<T>(url: string): Promise<T | null> {
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (res.status === 401 && typeof window !== "undefined" && !location.pathname.startsWith("/login")) {
@@ -152,5 +183,13 @@ export async function fetchJson<T>(url: string): Promise<T | null> {
     location.assign("/login");
   }
   if (!res.ok) return null;
-  return (await res.json()) as T;
+  const body = (await res.json()) as T;
+  if (res.headers.get("x-ali-cache") === "1" && body && typeof body === "object") workerCopies.add(body as object);
+  return body;
+}
+
+/** Bodies the service worker served from its cache · `useCached` only uses one when it has nothing at all. */
+const workerCopies = new WeakSet<object>();
+export function isWorkerCopy(v: unknown): boolean {
+  return !!v && typeof v === "object" && workerCopies.has(v as object);
 }

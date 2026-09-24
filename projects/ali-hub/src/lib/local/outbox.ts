@@ -40,6 +40,11 @@ export function outboxSize(): number {
   return load().length;
 }
 
+/** Is a write with this dedupeKey still waiting to be sent? */
+export function outboxHas(dedupeKey: string): boolean {
+  return load().some((e) => e.dedupeKey === dedupeKey);
+}
+
 function enqueue(entry: Omit<OutboxEntry, "id" | "createdAt">) {
   const entries = load().filter((e) => !entry.dedupeKey || e.dedupeKey !== entry.dedupeKey);
   entries.push({ ...entry, id: Math.random().toString(36).slice(2), createdAt: Date.now() });

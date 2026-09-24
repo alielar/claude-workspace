@@ -144,15 +144,29 @@ export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; o
  *
  * DOCS (`ordered`): the arrows and the ✕ stay, because a doc may hold real steps.
  */
-export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", autoFocus = false, ordered = false }: {
+/** Notes plus whatever is still typed in the add box · what a sheet must save, however it was left. */
+export function withDraftSubtask(notes: string | null, draft: string): string | null {
+  const text = draft.trim();
+  if (!text) return notes;
+  return serializeSubtasks([...parseSubtasks(notes), { text, done: false }]);
+}
+
+export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", autoFocus = false, ordered = false, draftRef }: {
   notes: string | null; onChange: (notes: string | null) => void; placeholder?: string; autoFocus?: boolean; ordered?: boolean;
+  /** Mirrors the add box as typed, so the sheet can save an uncommitted line on Done / tap-away (Ali 2026-09-24: "subtasks get lost"). */
+  draftRef?: React.MutableRefObject<string>;
 }) {
   const items = parseSubtasks(notes);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraftState] = useState("");
+  const setDraft = (v: string) => { if (draftRef) draftRef.current = v; setDraftState(v); };
   const addBox = useRef<HTMLInputElement | null>(null);
   const write = (next: SubTask[]) => onChange(next.length ? serializeSubtasks(next) : null);
   // Return in the add box appends and keeps the caret there · the next subtask is immediate.
-  const add = () => { if (!draft.trim()) return; write([...items, { text: draft.trim(), done: false }]); setDraft(""); addBox.current?.focus(); };
+  const add = (refocus = true) => {
+    if (!draft.trim()) return;
+    write([...items, { text: draft.trim(), done: false }]); setDraft("");
+    if (refocus) addBox.current?.focus();
+  };
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir; if (j < 0 || j >= items.length) return;
     const next = [...items]; [next[i], next[j]] = [next[j], next[i]]; write(next);
@@ -174,8 +188,9 @@ export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", 
         <span aria-hidden style={{ color: "var(--ink-4)", fontSize: 19, textAlign: "center" }}>+</span>
         <input ref={addBox} className="cc-input" value={draft} autoFocus={autoFocus} onChange={(e) => setDraft(e.target.value)} enterKeyHint="next"
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          onBlur={() => add(false)}
           placeholder={placeholder} style={{ fontSize: 16, minHeight: 44, borderRadius: 10 }} />
-        {ordered && <button type="button" onClick={add} disabled={!draft.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 44, minWidth: 44, borderRadius: 10, fontSize: 18, padding: 0, marginLeft: 8 }} aria-label="Add item">+</button>}
+        {ordered && <button type="button" onClick={() => add()} disabled={!draft.trim()} className="cc-btn cc-btn-secondary" style={{ minHeight: 44, minWidth: 44, borderRadius: 10, fontSize: 18, padding: 0, marginLeft: 8 }} aria-label="Add item">+</button>}
       </div>
       {items.length > 0 && (
         <div style={{ fontSize: 13, color: "var(--ink-4)", padding: "8px 2px 0" }}>{items.length} open · Return adds the next one · tick one and it goes</div>

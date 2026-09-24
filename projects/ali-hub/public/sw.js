@@ -13,7 +13,7 @@
  * (see src/lib/local/outbox.ts) and replays when back online.
  */
 
-const VERSION = "cc-v17";
+const VERSION = "cc-v18";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const API = `${VERSION}-api`;
@@ -98,17 +98,26 @@ self.addEventListener("fetch", (event) => {
   // The vault is never cached here · not even ciphertext (2026-09-12).
   if (url.pathname.startsWith("/api/vault")) return;
 
-  // API reads: network-first (3s), then cache.
+  // API reads: network-first (8s), then cache.
+  //
+  // A cached answer is MARKED (`x-ali-cache: 1`) so the app can tell it from a fresh one ·
+  // the app already keeps its own newer copy in localStorage, so a worker-cache fallback is
+  // only ever for a cold open with nothing local. The late network answer still lands in the
+  // cache after a timeout (before 2026-09-24 it was dropped, so a slow first reply left the
+  // worker serving an old list for as long as the server stayed slow).
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       caches.open(API).then(async (cache) => {
+        const network = fetch(req).then((res) => { if (res.ok) cache.put(req, res.clone()); return res; });
         try {
-          const res = await withTimeout(fetch(req), 3000);
-          if (res.ok) cache.put(req, res.clone());
-          return res;
+          return await withTimeout(network, 8000);
         } catch {
+          event.waitUntil(network.catch(() => null));
           const hit = await cache.match(req);
-          return hit || new Response("null", { status: 503, headers: { "Content-Type": "application/json" } });
+          if (!hit) return new Response("null", { status: 503, headers: { "Content-Type": "application/json" } });
+          const headers = new Headers(hit.headers);
+          headers.set("x-ali-cache", "1");
+          return new Response(await hit.blob(), { status: hit.status, statusText: hit.statusText, headers });
         }
       })
     );

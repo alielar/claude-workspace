@@ -460,10 +460,11 @@ export default function TodayPage() {
                       </button>
                     ) : (
                       <>
-                        <div className="cc-card-head">
+                        <div className="cc-card-head" onClick={s.status === "past" ? () => setOpened((o) => { const n = new Set(o); n.delete(s.p); return n; }) : undefined}
+                          role={s.status === "past" ? "button" : undefined} style={s.status === "past" ? { cursor: "pointer" } : undefined}>
                           <span className="title">{PART_TITLE[s.p]}</span>
                           <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                            {s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}
+                            {s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}{s.status === "past" && <span aria-hidden> ▴</span>}
                             {s.status === "now" && <Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
                           </span>
                         </div>
