@@ -1,0 +1,12 @@
+{
+  "name": "wati-inbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env server.mjs",
+    "keys": "node --env-file=.env setup-keys.mjs"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

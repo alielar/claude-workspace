@@ -14,8 +14,6 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = new URL((event.notification.data && event.notification.data.url) || '/', self.location.origin).href;
-  // External target (Wati): always a new window; our own pages reuse the open one.
-  if (!url.startsWith(self.location.origin)) return event.waitUntil(self.clients.openWindow(url));
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
     const open = list.find((c) => 'focus' in c);
     if (open) { open.navigate(url); return open.focus(); }

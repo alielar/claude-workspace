@@ -38,6 +38,22 @@ le projet une fois par semaine.
 
 <!-- Ajoute les nouveaux cas ici, le plus récent en haut. -->
 
+## 2026-09-25 — Lien d'inscription envoyé seul, sans reformuler ce qui a déjà été expliqué la veille
+
+**Situation :** Diana (+41762207532), admise, place gardée pour octobre. La veille, rythme et flexibilité (ajustement 5h→4h le premier mois, replanification) avaient déjà été expliqués en détail et le lead avait dit « Oui merci ». Ce matin Ali relance pour la place, elle répond « Oui ».
+**Ce que j'ai proposé :** lien + « Est-ce qu'il fonctionne bien ? » (règle maison) + rappel du rythme ajustable et du paiement échelonné en CHF.
+**Ce qu'Ali a réellement envoyé :** une seule bulle, le lien seul, sans la question de vérification ni le rappel rythme/paiement.
+**Pourquoi :** même logique que le cas Anissa du jour — quand tout ce qu'il y a à dire a déjà été couvert la veille et que le lead vient de confirmer, Ali n'en rajoute pas dans la bulle d'action, il envoie juste ce qui fait avancer (le lien). **Point à vérifier avant d'appliquer comme règle systématique :** ça contredit la règle maison « tout lien est suivi de est-ce qu'il fonctionne bien » — peut-être un oubli ponctuel plutôt qu'un choix ; à confirmer si ça se reproduit sur un futur envoi de lien avant de le traiter comme un cas normal.
+**Résultat :** à suivre.
+
+## 2026-09-25 — Demande de rythme allégé (2h/semaine au lieu de 3h) juste avant finalisation : valider en une seule bulle courte, sans chiffres ni lien ni question
+
+**Situation :** Anissa (+33751005021), déjà admise, ravie, en train de finaliser l'inscription (lien envoyé la veille). Elle demande à passer de 3h à 2h/semaine par peur de ne pas suivre le rythme.
+**Ce que j'ai proposé :** 2-3 bulles complètes — validation + durée allongée (22 mois au lieu de 15, prix/heures inchangés) + rappel du lien d'inscription + question de clôture ("vous pouvez finaliser ce matin ?").
+**Ce qu'Ali a réellement envoyé :** une seule bulle, très courte : « Bonjour Anissa, bien sûr, 2h par semaine c'est possible, la régularité compte plus que l'intensité. » Rien sur la durée, rien sur le lien, pas de question.
+**Pourquoi :** quand le lead est déjà chaud et en train de s'inscrire de lui-même, une demande d'ajustement de rythme n'a besoin que d'un feu vert bref — pas de resservir tout de suite les chiffres (durée/prix) ni de repousser vers le lien ou une clôture, ça peut alourdir un message qui n'appelle qu'un « oui ». Les détails (durée, lien) peuvent attendre une question du lead ou un silence à relancer, plutôt que d'être poussés par anticipation.
+**Résultat :** à suivre.
+
 ## 2026-09-22 — Sur le palier sans garantie (48h/583€ etc.), nommer explicitement l'absence de garantie
 
 **Situation :** Ambre (+33768652552), déjà descendue au 90h/990€ et refusée pour budget étudiant. Étape suivante : palier 3 de la politique de downsell, petits packs sans garantie (48h/583€).
@@ -209,3 +225,48 @@ le projet une fois par semaine.
 **Pourquoi :** un refus poli qui arrive avec une objection NOUVELLE (ici la peur de s'engager et d'abandonner, plus le prix) n'est pas un refus ferme — c'est un blocage non traité. La règle des deux refus vaut quand le lead répète le même non, pas quand il en donne un motif différent à chaque fois.
 **Comment appliquer :** avant toute sortie propre, vérifier si le dernier message répète l'objection précédente ou en introduit une autre. S'il en introduit une autre → une question de diagnostic, et le cran suivant de l'échelle si la réponse le permet.
 **Résultat :** à suivre.
+
+## 2026-09-25 — Lead qui a lui-même fixé la prochaine étape : accuser réception en une bulle, sans question
+
+**Situation :** deux cas le même matin, via Wati Inbox. Wilson (+33782833041, entretien la veille) écrit « bien sûr le mail oui, je vous ferai un retour cette après-midi comme prévu ✅ ». Anissa (+33751005021, admise, en train de finaliser) demande à passer de 3h à 2h/semaine.
+**Ce que j'avais proposé :** pour Wilson, ancrer une heure (« Vers quelle heure cet après-midi ? ») ou faire remonter une objection avant sa décision ; pour Anissa, trois bulles (validation, explication 180h/22 mois, « vous pouvez finaliser ce matin ? »).
+**Ce qu'Ali a envoyé :** Wilson → « Parfait Wilson, je reste disponible si une question se pose avant cet après-midi 👍 » (une bulle, pas de question). Anissa → « Bonjour Anissa, bien sûr, 2h par semaine c'est possible, la régularité compte plus que l'intensité » (une bulle courte, pas d'explication de durée, pas de question de clôture dans le premier envoi).
+**Pourquoi :** la règle « toujours finir par une question tant que le lead décide » a une exception : quand le lead a **lui-même** posé la prochaine étape (une heure de retour, une modalité qu'il demande et qu'on accepte), une question de plus est perçue comme de la pression ou du bavardage. On accuse réception en une bulle, on confirme la disponibilité, et on laisse le rendez-vous qu'il a fixé faire le travail. Même logique que l'exception « veille de deadline » de la carte : pas d'urgence à créer, clôture chaleureuse. Ne pas ré-expliquer la mécanique du catalogue (durée, rythme) à un lead déjà décidé qui n'a posé qu'une question fermée — répondre à la question, point.
+**Résultat :** à suivre (retour de Wilson attendu l'après-midi ; Anissa a reçu ensuite le lien mis à jour).
+
+## 2026-09-25 — Leads suisses : tout chiffrer en francs suisses
+**Situation :** Sara (+41763914912, Suisse), avant de confirmer sa place, pose quatre questions dont les modalités de paiement. J'avais rédigé la réponse en euros, en reprenant les « 1 800 € » de la présentation.
+**Correction d'Ali :** « Il faut toujours parler en francs suisses pour les étudiants suisses. »
+**Comment appliquer :** pour tout lead en Suisse, convertir chaque montant cité (prix total, mensualité, frais d'onboarding, frais d'examen) en CHF — et si le montant en CHF n'est pas connu, le demander à Ali plutôt que de citer l'euro ou de convertir soi-même.
+**Résultat :** règle permanente.
+
+## 2026-09-25 — Paiement : 10 fois est le maximum sans frais, le 12 fois existe avec frais
+**Situation :** même lead. La présentation qu'elle a reçue mentionne « 12 mensualités de 150 € », alors que l'entretien parlait de 10 fois. Elle demande quelles modalités s'appliquent et s'il y a des frais ou intérêts.
+**Correction d'Ali :** le 12 fois sur la présentation est une erreur. Le maximum **sans frais supplémentaires** est **10 fois**. Le 12 fois reste activable sur demande, **avec des frais en plus** — à proposer seulement si le lead le demande explicitement.
+**Comment appliquer :** annoncer l'erreur franchement (« c'est une erreur de notre côté »), donner le 10 fois et sa mensualité, puis présenter le 12 fois comme une option payante que le closer peut activer.
+**Résultat :** règle permanente.
+
+## 2026-09-25 — Frais d'examen IELTS : répondre par ce qui est pris en charge
+**Situation :** même lead, elle demande si les frais d'inscription à l'IELTS sont inclus dans le prix.
+**Correction d'Ali :** ne pas répondre sèchement « non, à votre charge ». Pencher vers l'avantage : oui elle règle l'examen elle-même, mais la préparation, la réservation de la session et toute la logistique sont prises en charge par nous.
+**Comment appliquer :** sur toute question de frais annexes, la bulle contient le fait (réglé directement au centre) **et** ce qui est couvert, dans la même phrase, en terminant sur ce qu'on fait pour l'élève.
+**Résultat :** règle permanente.
+
+## 2026-09-25 — « Confirmer ma place » : répondre par l'étape suivante, pas par le contrat
+**Situation :** même lead, elle demande si cliquer sur « Confirmer ma place » l'engage fermement au paiement total ou s'il reste une étape de validation. J'avais répondu par la rétractation 14 jours et la retenue des 196 € d'onboarding.
+**Correction d'Ali :** répondre que la première mensualité confirme directement sa place, que c'est la dernière étape, qu'elle choisit ensuite sa date de démarrage et qu'il lui envoie les prochaines étapes sur WhatsApp.
+**Pourquoi :** sortir le droit de rétractation et les frais non remboursables à un lead prêt à confirmer introduit un doute qu'elle n'avait pas — les conditions de remboursement se répondent si elle les demande, pas avant.
+**Résultat :** règle permanente.
+
+## 2026-09-25 — Formulation de référence pour les deux paliers de downsell à 990 € (remplace celle du 18/09)
+**Ce qu'Ali a instruit :** phrasing fixe à utiliser désormais pour proposer le 90h avec garantie et le 96h sans garantie, plus simple que la version précédente (elle ne nomme plus le niveau cible ni la mensualité actuelle en comparaison).
+
+**90h AVEC garantie :**
+> « Un format de cours plus réduit vous conviendrait peut-être mieux pour démarrer ? Par exemple, 90 heures au lieu de 180, pour 990 € au lieu de 1 800 €. Vous pourriez aussi payer cela en plusieurs fois. La garantie de niveau [X] serait toujours incluse, et vous pourriez toujours continuer par la suite. Qu'en pensez-vous ? »
+
+**96h SANS garantie :**
+> « Je comprends ; sinon, il existe un format pour progresser en anglais de façon générale, sans garantie de réussite, sur 96 heures pour 990 €. Vous pourriez également payer cela en plusieurs fois. Est-ce que ce serait mieux adapté pour démarrer ? Qu'en pensez-vous ? »
+
+**Pourquoi :** formulation validée par Ali le 25/09, à utiliser telle quelle. Le niveau [X] reste une variable à remplir selon le lead (jamais inventé, jamais copié d'un autre cas) quand on la mentionne, mais n'est plus une clause obligatoire de la phrase comme dans la version du 18/09.
+**Comment appliquer :** utiliser ces deux formulations par défaut pour tout downsell vers le palier 990 €, à la place du script du 18/09 (qui ajoutait la mensualité actuelle en comparaison et le niveau visé nommé systématiquement). Le choix 90h vs 96h reste déterminé par le niveau du lead (A2+ → 90h avec garantie ; A0/A1 → 96h sans garantie), logique inchangée.
+**Résultat :** règle permanente, remplace l'entrée du 2026-09-17/18.

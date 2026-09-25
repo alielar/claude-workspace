@@ -1,16 +1,4 @@
-# Wati notifications (notification-only mode since 2026-09-25)
-
-What runs now: the poller + push. Every new lead message on the **France Sales** number → a
-notification on Ali's phone and laptop; tapping it opens Wati. Ali replies in Wati and asks
-Claude for suggestions in the chat. Everything else (inbox, replies, templates, suggestions,
-veille) is archived in `projects/_archive/wati-inbox-2026-09-25/` — `RESTORE.md` there brings
-it back in ~10 minutes (`NOTIFY_ONLY=1` in `.env` is the switch).
-
-Keep: Mac awake (sleep disabled), launchd job `com.ali.wati-inbox`, Tailscale on if the phone
-ever needs to re-enable notifications (its home-screen app lives on the Tailscale address).
-
----
-
+# Wati Inbox
 
 Self-hosted app (runs on Ali's Mac) that notifies phone + laptop when a lead writes on the
 **France Sales** WhatsApp number, shows the thread, and lets Ali reply — free text while the

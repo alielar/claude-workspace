@@ -7,6 +7,7 @@
 // Each option: bubbles = the messages to send, in order; why = two lines of reasoning.
 
 import { DatabaseSync } from 'node:sqlite';
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 
 const [waId, inline] = process.argv.slice(2);
@@ -17,8 +18,9 @@ if (!Array.isArray(options) || !options.length || !options.every((o) => Array.is
   console.error('Expected [{bubbles:[string,…], why?:string}, …]'); process.exit(1);
 }
 
-const db = new DatabaseSync(new URL('../wati-inbox/data/inbox.sqlite', import.meta.url).pathname);
+const db = new DatabaseSync(fileURLToPath(new URL('../wati-inbox/data/inbox.sqlite', import.meta.url)));
 db.exec('PRAGMA busy_timeout = 3000');
 const t = db.prepare('SELECT name FROM threads WHERE wa_id = ?').get(waId);
 db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed) VALUES (?, ?, ?, 0)').run(waId, new Date().toISOString(), JSON.stringify(options.map((o) => ({ bubbles: o.bubbles.map((b) => b.trim()), why: String(o.why || '') }))));
+db.prepare('UPDATE threads SET wanted = 0 WHERE wa_id = ?').run(waId);
 console.log(`${options.length} suggestion(s) saved for ${t?.name || waId} — the phone will be notified within 10 s.`);

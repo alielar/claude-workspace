@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Monitor",
+      "Bash(node watch-pending.mjs:*)",
+      "Bash(node --env-file=.env lead.mjs:*)",
+      "Bash(node suggest.mjs:*)",
+      "Bash(node compare-sent.mjs:*)",
+      "Bash(cat playbook/:*)",
+      "Bash(grep:*)",
+      "Bash(sed -n:*)",
+      "Read(playbook/**)",
+      "Edit(playbook/04-CAS-APPRIS.md)"
+    ]
+  }
+}

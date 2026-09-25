@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.ali.wati-inbox</string>
+  <key>ProgramArguments</key><array><string>/Users/alielaraki/.nvm/versions/node/v24.14.0/bin/node</string><string>--env-file=.env</string><string>server.mjs</string></array>
+  <key>WorkingDirectory</key><string>/Users/alielaraki/claude-workspace/projects/wati-inbox</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>LimitLoadToSessionType</key><string>Aqua</string>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin</string><key>HOME</key><string>/Users/alielaraki</string></dict>
+  <key>StandardOutPath</key><string>/Users/alielaraki/claude-workspace/projects/wati-inbox/logs/server.log</string>
+  <key>StandardErrorPath</key><string>/Users/alielaraki/claude-workspace/projects/wati-inbox/logs/server.log</string>
+</dict></plist>

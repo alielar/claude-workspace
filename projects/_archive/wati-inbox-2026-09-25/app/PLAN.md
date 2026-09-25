@@ -1,7 +1,5 @@
 # Feature Implementation Plan — Wati Inbox (France Sales), self-hosted on the Mac
 
-> **Archived 2026-09-25** — Ali kept only the notifications; full app in `projects/_archive/wati-inbox-2026-09-25/` (see `RESTORE.md`).
-
 **Overall Progress:** `100%`
 
 ## TLDR

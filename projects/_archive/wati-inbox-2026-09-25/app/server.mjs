@@ -48,13 +48,6 @@ async function api(req, res, path) {
   }
   if (!authed(req)) return json(res, 401, { error: 'login' });
 
-  // Notification-only mode (since 2026-09-25): the reply/suggestion features are archived.
-  if (process.env.NOTIFY_ONLY === '1' && !['/api/push', '/api/status'].includes(path)) return json(res, 410, { error: 'Fonction archivée — mode notifications seules' });
-  if (path === '/api/status') {
-    const recent = inbox().slice(0, 8).map((t) => ({ name: t.name || t.wa_id, at: t.last_inbound_at, text: (t.last_text || '').slice(0, 80) }));
-    return json(res, 200, { lastPoll: db.prepare("SELECT value FROM state WHERE key = 'last_poll'").get()?.value ?? null, devices: subscriptions().length, recent });
-  }
-
   if (path === '/api/inbox') {
     return json(res, 200, { threads: inbox().map((t) => ({ ...t, windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24, hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null })) });
   }
