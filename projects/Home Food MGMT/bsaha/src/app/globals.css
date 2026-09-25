@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Warm, single light theme. Kids and the cook see the same calm palette. */
+/* Warm palette in a light and a dark version. Each person picks light, dark or "follow the phone" on Me. */
 :root {
   --bg: #fbf5ec;
   --card: #ffffff;
@@ -23,7 +23,35 @@
   --color-accent-soft: var(--accent-soft);
 }
 
-html { color-scheme: light; }
+:root[data-theme="dark"] {
+  --bg: #161311;
+  --card: #221e1a;
+  --ink: #f3ece2;
+  --muted: #a89e92;
+  --line: #352e27;
+  --accent: #f0813f;
+  --accent-ink: #1b120c;
+  --accent-soft: #3b2417;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161311;
+    --card: #221e1a;
+    --ink: #f3ece2;
+    --muted: #a89e92;
+    --line: #352e27;
+    --accent: #f0813f;
+    --accent-ink: #1b120c;
+    --accent-soft: #3b2417;
+  }
+}
+
+html { color-scheme: light dark; }
+html[data-theme="light"] { color-scheme: light; }
+html[data-theme="dark"] { color-scheme: dark; }
+/* Photos read a touch quieter on a dark screen. */
+:root[data-theme="dark"] img { filter: brightness(0.92); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) img { filter: brightness(0.92); } }
 
 body {
   background: var(--bg);

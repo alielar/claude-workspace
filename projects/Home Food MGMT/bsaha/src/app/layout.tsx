@@ -14,7 +14,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbf5ec",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbf5ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#161311" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -24,7 +27,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const me = await currentPerson().catch(() => null);
   const lang = me?.lang ?? "en";
   return (
-    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className={`${latin.variable} ${arabic.variable}`}>
+    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className={`${latin.variable} ${arabic.variable}`}
+      data-theme={me?.theme && me.theme !== "system" ? me.theme : undefined}>
       <body className="min-h-dvh antialiased">{children}</body>
     </html>
   );

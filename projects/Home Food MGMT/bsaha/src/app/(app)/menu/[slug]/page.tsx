@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import clsx from "clsx";
 import { eq } from "drizzle-orm";
@@ -7,22 +6,36 @@ import { people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { dishDesc, dishName, getDish } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
+import { BackLink } from "@/components/BackLink";
 import { DeleteDishButton } from "@/components/DeleteDishButton";
 import { Ingredients } from "@/components/Ingredients";
 import { putOnMenu, saveRecipe, setReviewed, setVideo, takeOffMenu } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
+/** Where "Back" lands when there is no history to return to: the screen that opened the dish. */
+function backTarget(from: string | undefined, onMenu: boolean, meal: string) {
+  switch (from) {
+    case "library": return "/library";
+    case "week": return "/week";
+    case "today": return "/today";
+    case "tomorrow": return "/tomorrow";
+    case "menu": return `/menu?meal=${meal}`;
+    default: return onMenu ? `/menu?meal=${meal}` : "/library";
+  }
+}
+
 export default async function DishPage({
   params, searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  /** `people`: how many ordered this dish, set by the cook's orders screen. */
-  searchParams: Promise<{ people?: string }>;
+  /** `people`: how many ordered this dish, set by the cook's orders screen. `from`: the screen that opened it. */
+  searchParams: Promise<{ people?: string; from?: string }>;
 }) {
   const me = (await currentPerson())!;
   const { slug } = await params;
-  const wanted = Number((await searchParams).people);
+  const sp = await searchParams;
+  const wanted = Number(sp.people);
   const eaters = Number.isInteger(wanted) && wanted > 0 && wanted <= 20 ? wanted : undefined;
   const dish = await getDish(slug);
   if (!dish) notFound();
@@ -118,7 +131,7 @@ export default async function DishPage({
 
   return (
     <main>
-      <Link href={!dish.onMenu ? "/library" : `/menu?meal=${dish.meal}`} className="text-muted font-semibold">{t(L, "back")}</Link>
+      <BackLink fallback={backTarget(sp.from, dish.onMenu, dish.meal)} className="text-muted font-semibold">{t(L, "back")}</BackLink>
 
       {!dish.onMenu && (
         <section className="mt-3 tile p-4 border-accent">

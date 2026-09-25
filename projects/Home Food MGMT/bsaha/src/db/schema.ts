@@ -2,6 +2,9 @@ import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const LANGS = ["en", "fr", "ar"] as const;
 export type Lang = (typeof LANGS)[number];
+/** Light or dark screens; "system" follows the phone. */
+export const THEMES = ["system", "light", "dark"] as const;
+export type Theme = (typeof THEMES)[number];
 
 export const ROLES = ["family", "cook", "grocery"] as const;
 export type Role = (typeof ROLES)[number];
@@ -12,6 +15,7 @@ export const people = sqliteTable("people", {
   name: text("name").notNull(),
   role: text("role", { enum: ROLES }).notNull().default("family"),
   lang: text("lang", { enum: LANGS }).notNull().default("en"),
+  theme: text("theme", { enum: THEMES }).notNull().default("system"),
   isAdmin: integer("is_admin", { mode: "boolean" }).notNull().default(false),
   /** The platform owner (Ali). Can switch person on any device and release devices. */
   isOwner: integer("is_owner", { mode: "boolean" }).notNull().default(false),

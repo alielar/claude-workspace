@@ -29,6 +29,8 @@ export type BrowserProps = {
   /** Cook's pool picker: which dishes are already in, a tap toggles instead of navigating. */
   pick?: { selected: number[]; onToggle: (dish: SlimDish, meal: Meal) => void; meals: Meal[] };
   hideMoroccanToggle?: boolean;
+  /** Which screen this browser sits on, so a dish page can send the reader back to it. */
+  from?: string;
 };
 
 function matches(d: SlimDish, f: Filter): boolean {
@@ -57,7 +59,7 @@ function ChipRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, initialMeal = "lunch", pick, hideMoroccanToggle }: BrowserProps) {
+export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, initialMeal = "lunch", pick, hideMoroccanToggle, from }: BrowserProps) {
   const meals: Meal[] = pick?.meals ?? ["breakfast", "lunch", "dinner"];
   const [meal, setMeal] = useState<Meal>(meals.includes(initialMeal) ? initialMeal : meals[0]);
   const [moroccan, setMoroccan] = useState(false);
@@ -223,7 +225,7 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
               {inner}
             </button>
           ) : (
-            <Link key={d.id} href={`/menu/${d.slug}`} className="tile overflow-hidden block">
+            <Link key={d.id} href={`/menu/${d.slug}${from ? `?from=${from}` : ""}`} className="tile overflow-hidden block">
               {inner}
             </Link>
           );

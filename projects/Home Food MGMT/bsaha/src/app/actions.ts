@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
-import { LANGS, ROLES, devices, people, type Lang } from "@/db/schema";
+import { LANGS, ROLES, THEMES, devices, people, type Lang, type Theme } from "@/db/schema";
 import { currentSession, deviceId, deviceLabel, setDeviceCookie } from "@/lib/session";
 
 /**
@@ -50,6 +50,14 @@ export async function switchPerson() {
   const session = await currentSession();
   if (!session?.device.ownerDevice) redirect("/today");
   redirect("/?switch=1");
+}
+
+export async function setMyTheme(formData: FormData) {
+  const session = await currentSession();
+  const theme = String(formData.get("theme")) as Theme;
+  if (!session || !THEMES.includes(theme)) return;
+  await db.update(people).set({ theme }).where(eq(people.id, session.person.id));
+  revalidatePath("/", "layout");
 }
 
 export async function setMyLanguage(formData: FormData) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useRemembered } from "@/lib/useRemembered";
 import Link from "next/link";
 import clsx from "clsx";
 import { CATEGORIES, type Category, type Lang, type Meal } from "@/db/schema";
@@ -53,13 +54,17 @@ export function LibraryBrowser({
     Object.fromEntries(dishes.map((d) => [d.id, d.onMenu])));
   /** Deleted on this screen, hidden at once without waiting for a reload. */
   const [gone, setGone] = useState<Set<number>>(new Set());
-  const [meal, setMeal] = useState<Meal>("lunch");
-  const [show, setShow] = useState<Show>("all");
-  const [cuisine, setCuisine] = useState<"all" | "intl" | "moroccan">("all");
-  const [sort, setSort] = useState<Sort>("rating");
-  const [q, setQ] = useState("");
-  const [category, setCategory] = useState<Category | null>(null);
-  const [active, setActive] = useState<Set<Filter>>(new Set());
+  // Filters survive opening a dish and coming back, so the admin continues where they were.
+  const [meal, setMeal] = useRemembered<Meal>("library.meal", "lunch");
+  const [show, setShow] = useRemembered<Show>("library.show", "all");
+  const [cuisine, setCuisine] = useRemembered<"all" | "intl" | "moroccan">("library.cuisine", "all");
+  const [sort, setSort] = useRemembered<Sort>("library.sort", "rating");
+  const [q, setQ] = useRemembered("library.q", "");
+  const [category, setCategory] = useRemembered<Category | null>("library.category", null);
+  const [activeList, setActiveList] = useRemembered<Filter[]>("library.filters", []);
+  const active = useMemo(() => new Set(activeList), [activeList]);
+  const setActive = (next: Set<Filter> | ((prev: Set<Filter>) => Set<Filter>)) =>
+    setActiveList([...(typeof next === "function" ? next(new Set(activeList)) : next)]);
   const [, start] = useTransition();
 
   const hasMoroccan = useMemo(() => dishes.some((d) => d.cuisine === "Moroccan"), [dishes]);
@@ -220,7 +225,7 @@ export function LibraryBrowser({
           const cat = d.categories[0];
           return (
             <div key={d.id} className={clsx("tile overflow-hidden flex flex-col", on && "border-accent ring-2 ring-accent")}>
-              <Link href={`/menu/${d.slug}`} className="block">
+              <Link href={`/menu/${d.slug}?from=library`} className="block">
                 <div className="aspect-[4/3] bg-accent-soft relative">
                   {d.photo ? (
                     <DishImage photo={d.photo} />

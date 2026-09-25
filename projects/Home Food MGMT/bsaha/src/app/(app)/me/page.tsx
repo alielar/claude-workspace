@@ -1,8 +1,8 @@
 import clsx from "clsx";
-import { DISLIKE_TAGS, LANGS } from "@/db/schema";
+import { DISLIKE_TAGS, LANGS, THEMES } from "@/db/schema";
 import { currentSession } from "@/lib/session";
 import { LANG_LABEL, t } from "@/lib/i18n/dict";
-import { setMyLanguage, switchPerson } from "@/app/actions";
+import { setMyLanguage, setMyTheme, switchPerson } from "@/app/actions";
 import { toggleDislike } from "@/app/(app)/menu/actions";
 
 export default async function Me() {
@@ -27,6 +27,20 @@ export default async function Me() {
                 style={lang === "ar" ? { fontFamily: "var(--font-arabic)" } : undefined}
               >
                 {LANG_LABEL[lang]}
+              </button>
+            </form>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-bold text-muted uppercase tracking-wide">{t(me.lang, "appearance")}</h2>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {THEMES.map((theme) => (
+            <form key={theme} action={setMyTheme}>
+              <input type="hidden" name="theme" value={theme} />
+              <button className={clsx("tile w-full px-2 py-4 text-base font-bold", theme === me.theme && "border-accent text-accent")}>
+                {t(me.lang, theme === "system" ? "themeSystem" : theme === "light" ? "themeLight" : "themeDark")}
               </button>
             </form>
           ))}

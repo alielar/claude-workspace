@@ -16,7 +16,7 @@ export default async function Menu({ searchParams }: { searchParams: Promise<{ m
   return (
     <main>
       <h1 className="text-3xl font-extrabold mb-4">{t(me.lang, "menu")}</h1>
-      <DishBrowser dishes={dishes} lang={me.lang} labels={browserLabels(me.lang)} simple={me.simpleUi} child={me.isChild} dislikes={me.dislikes ?? []} initialMeal={meal} />
+      <DishBrowser dishes={dishes} lang={me.lang} labels={browserLabels(me.lang)} simple={me.simpleUi} child={me.isChild} dislikes={me.dislikes ?? []} initialMeal={meal} from="menu" />
       <Link href={`/menu/add?meal=${meal}`} className="btn-soft w-full mt-6">
         {t(me.lang, "addDish")}
       </Link>
