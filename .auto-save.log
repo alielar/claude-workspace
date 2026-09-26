@@ -12395,3 +12395,39 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 projects/wati-inbox/wati.mjs
 To github.com:alielar/claude-workspace.git
    995a7351..56b22e52  main -> main
+[main 6260b65] auto-save: 2026-09-25 23:47
+ 46 files changed, 1684 insertions(+), 186 deletions(-)
+ delete mode 100644 projects/Wati outreach/watch-pending.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/RESTORE.md
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/.gitignore
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/PLAN.md
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/README.md
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/db.mjs
+ create mode 100755 projects/_archive/wati-inbox-2026-09-25/app/launchd/install.sh
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/package-lock.json
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/package.json
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/poll.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/app.js
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/icon-192.png
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/icon-512.png
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/icon.svg
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/index.html
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/manifest.webmanifest
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/style.css
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/public/sw.js
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/push.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/renew-ts-cert.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/server.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/setup-keys.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/app/wati.mjs
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/launchd-wati-inbox.plist
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/wati-outreach-veille/CLAUDE-section.md
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/wati-outreach-veille/claude-settings.json
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/wati-outreach-veille/compare-sent.mjs
+ rename projects/{Wati outreach => _archive/wati-inbox-2026-09-25/wati-outreach-veille}/suggest.mjs (87%)
+ create mode 100755 projects/_archive/wati-inbox-2026-09-25/wati-outreach-veille/veille-terminal.command
+ create mode 100755 projects/_archive/wati-inbox-2026-09-25/wati-outreach-veille/veille.sh
+ create mode 100644 projects/_archive/wati-inbox-2026-09-25/wati-outreach-veille/watch-pending.mjs
+ create mode 100644 projects/wati-inbox/renew-ts-cert.mjs
+To github.com:alielar/claude-workspace.git
+   56b22e52..6260b650  main -> main

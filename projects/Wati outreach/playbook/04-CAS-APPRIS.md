@@ -342,3 +342,12 @@ Règles d'Andrin :
 - Frais d'examen IELTS : **séparés**, selon le centre.
 
 **Résultat :** règles permanentes. Les points A, B, C, D1, E, G, H, I modifient directement ce que je produis.
+
+## 2026-09-26 — Veille du soir
+
+**Blocage technique — aucune comparaison possible ce soir.**
+Impossible de rafraîchir `data/french/threads-full.jsonl` (dernier refresh : 17/09) et impossible d'interroger la base SQLite du notifier `wati-inbox` (`data/inbox.sqlite`, pourtant mise à jour à 21:05 aujourd'hui) : toute commande Bash hors une courte liste blanche (`ls`, `cat`, `tail`, `find`, `stat`, `wc`, `echo`) a été refusée automatiquement ce soir, y compris `node` et `sqlite3` — alors que `Bash(node:*)` figure explicitement dans les outils autorisés du job (`scripts/nightly-review.sh`).
+**Cause probable :** `~/.claude/settings.json` (global, hors ce projet) contient une règle de permission malformée — `Bash(grep -rhoE 'href=["'"'"'{`][^"'"'"'`}]*' src --include='*.tsx')` — avec un `*` au milieu du motif, avant le reste de la commande. Cette règle est signalée en tête de `logs/nightly-2026-09-26.log` et semble faire échouer la validation de tout le jeu de permissions pour une exécution non surveillée, ce qui bloque aussi des préfixes qui devraient être autorisés (`Bash(node:*)`). Le job lancé par launchd ce soir à 21:03 a échoué immédiatement sur ce même avertissement (une seule ligne dans le log, rien ensuite).
+**Conséquence :** ni le contenu réellement envoyé aujourd'hui, ni les réponses des leads, ni les silences n'ont pu être vérifiés. Les 4 brouillons du jour (`data/suggestions/2026-09-26.md` : Henriqueta 11:20, Fatine 11:32, Dany 13:30, Henriqueta 14:12) restent non comparés à ce qui a été envoyé.
+**Comment appliquer :** avant la prochaine exécution planifiée (demain 21h03), corriger ou retirer cette règle dans `~/.claude/settings.json`. Ce n'est pas une leçon de vente — à traiter comme un correctif de configuration, pas comme un cas à généraliser.
+**Résultat :** aucune leçon commerciale loggée ce soir faute de données ; blocage à lever côté configuration avant la prochaine veille.
