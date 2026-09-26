@@ -97,6 +97,8 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [ ] 🟥 Layla-mode review with her, adjust tile sizes and wording
 
 ## Notes
+- 2026-09-26: menu became per meal (a lunch pick is not a dinner pick); dishes already on the menu were kept on every meal they had, to be pruned by hand. Library reorganised for picking 30 per meal: pinned progress bar, category sections, paged lists. Dark mode per person. Add-a-dish takes a photo from gallery, file or clipboard (stored in the `photos` table), web-link field removed.
+- 2026-09-23: 131 of the 132 USDA recipes without a photo got a free-licence one (Openverse then Wikimedia Commons, strict title matching, no pork or alcohol) via `scripts/myplate/photos-free.py`; only "Cookie Cutter Appetizers" has none.
 - Live URL: https://bsaha-pink.vercel.app (bsaha.vercel.app belongs to someone else). Vercel project `bsaha`, linked from `bsaha/.vercel`.
 - Production database: Bsaha needs its own Turso database. Creating one needs a login to Ali's Turso account, which cannot be done from a non-interactive session. Two commands once logged in: `turso db create bsaha` and `turso db tokens create bsaha`, then set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on the Vercel project.
 - Photos: 116 of 120 dishes have a free-licence photo from Wikimedia Commons or Openverse, each checked by eye, credit and licence stored in `data/photos.json`. Four have none yet (date and almond bites, sardine kefta, turkey escalopes, and one more) and show a plain tile until the cook photographs them.
