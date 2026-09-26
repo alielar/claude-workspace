@@ -53,4 +53,7 @@ export const fold = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[ً-ْ]/g, "");
 
 /** Thumbnail for a stock photo, the original for anything else. */
-export const thumb = (url: string | null) => (url && url.startsWith("/dishes/") ? url.replace("/dishes/", "/dishes/thumb/") : url);
+export const thumb = (url: string | null) =>
+  url && url.startsWith("/dishes/") ? url.replace("/dishes/", "/dishes/thumb/")
+  : url && url.startsWith("/api/photo/") ? `${url}?t=1`
+  : url;

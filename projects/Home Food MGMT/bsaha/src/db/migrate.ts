@@ -81,6 +81,15 @@ const DDL = [
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL DEFAULT ''
   )`,
+  `CREATE TABLE IF NOT EXISTS photos (
+    id TEXT PRIMARY KEY,
+    dish_id INTEGER,
+    mime TEXT NOT NULL DEFAULT 'image/jpeg',
+    bytes BLOB NOT NULL,
+    thumb BLOB,
+    created_by INTEGER,
+    created_at TEXT NOT NULL
+  )`,
 ];
 
 /**

@@ -1,4 +1,4 @@
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { blob, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const LANGS = ["en", "fr", "ar"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -158,6 +158,21 @@ export const dishes = sqliteTable("dishes", {
 export type Dish = typeof dishes.$inferSelect;
 
 /** Tomorrow's pool: the cook shortlists up to 5 dishes per meal; the family chooses only from these. */
+/**
+ * Photos the family adds themselves (from a phone gallery, a laptop file or the clipboard).
+ * Stored in the database because the server has no disk of its own; served by /api/photo/[id].
+ * `bytes` is the photo at up to 1200px, `thumb` a 480px copy for grids.
+ */
+export const photos = sqliteTable("photos", {
+  id: text("id").primaryKey(),
+  dishId: integer("dish_id"),
+  mime: text("mime").notNull().default("image/jpeg"),
+  bytes: blob("bytes", { mode: "buffer" }).notNull(),
+  thumb: blob("thumb", { mode: "buffer" }),
+  createdBy: integer("created_by"),
+  createdAt: text("created_at").notNull(),
+});
+
 export const pools = sqliteTable("pools", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   /** YYYY-MM-DD, the day the meal is eaten. */

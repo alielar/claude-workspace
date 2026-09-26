@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MEALS, type Meal } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { t } from "@/lib/i18n/dict";
+import { PhotoField } from "@/components/PhotoField";
 import { addDish } from "../actions";
 
 export default async function AddDish({ searchParams }: { searchParams: Promise<{ meal?: string }> }) {
@@ -28,10 +29,13 @@ export default async function AddDish({ searchParams }: { searchParams: Promise<
             </label>
           ))}
         </div>
-        <label className="grid gap-1.5">
-          <span className="text-sm font-bold text-muted">{t(me.lang, "photoLink")}</span>
-          <input name="photo" className="input" inputMode="url" placeholder="https://" />
-        </label>
+        <div className="grid gap-1.5">
+          <span className="text-sm font-bold text-muted">{t(me.lang, "photo")}</span>
+          <PhotoField labels={{
+            add: t(me.lang, "photoAdd"), change: t(me.lang, "photoChange"), remove: t(me.lang, "photoRemove"),
+            hint: t(me.lang, "photoHint"), bad: t(me.lang, "photoBad"),
+          }} />
+        </div>
         <button className="btn-accent">{t(me.lang, "save")}</button>
       </form>
     </main>
