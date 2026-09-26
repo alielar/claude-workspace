@@ -39,6 +39,8 @@ export default async function LibraryPage() {
             moroccan: t(L, "moroccanMenu"), international: t(L, "mainMenu"),
             sortProtein: t(L, "sortProtein"), sortName: t(L, "sortName"), sortRating: t(L, "sortRating"),
             allCategories: t(L, "allCategories"),
+            leftToPick: t(L, "leftToPick"), menuComplete: t(L, "menuComplete"), overTarget: t(L, "overTarget"),
+            showMore: t(L, "showMore"), seeAll: t(L, "seeAll"), showLess: t(L, "showLess"), pickedSoFar: t(L, "pickedSoFar"),
             ...(Object.fromEntries(CATEGORIES.map((c) => [`c_${c}`, t(L, `c_${c}`)])) as Record<`c_${Category}`, string>),
           }}
         />
