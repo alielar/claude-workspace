@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { dishes, people, picks, pools, type Dish, type Meal, type Person } from "@/db/schema";
 import { dayKey, getPool, type PoolDish, type PickedDish } from "./pool";
-import { inMeal } from "./dishMeta";
+import { onMenuFor } from "./dishMeta";
 import { toSlim } from "./slim";
 
 export const PLAN_MEALS: Meal[] = ["lunch", "dinner"];
@@ -120,7 +120,7 @@ export async function suggestWeek(days: string[], by: number | null): Promise<nu
       const chosen: Dish[] = [...have];
       while (chosen.length < PLAN_PER_MEAL) {
         const partner = chosen[0] ?? null;
-        const candidates = all.filter((d) => !used.has(d.id) && inMeal(slim.get(d.id)!, meal) && (d.categories ?? []).some((c) => c === "main" || c === "soup" || c === "salad" || c === "sandwich") || (!used.has(d.id) && inMeal(slim.get(d.id)!, meal) && (d.categories ?? []).length === 0));
+        const candidates = all.filter((d) => !used.has(d.id) && onMenuFor(slim.get(d.id)!, meal) && (d.categories ?? []).some((c) => c === "main" || c === "soup" || c === "salad" || c === "sandwich") || (!used.has(d.id) && onMenuFor(slim.get(d.id)!, meal) && (d.categories ?? []).length === 0));
         if (candidates.length === 0) break;
         const scored = candidates.map((d) => {
           let s = (d.rating ?? 3) + Math.min(2, (d.macros?.protein_g ?? 0) / 15);

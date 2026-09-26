@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { dishes, type Dish, type Lang, type Meal, type Person } from "@/db/schema";
@@ -8,10 +8,12 @@ import { dishes, type Dish, type Lang, type Meal, type Person } from "@/db/schem
  * cannot bring it back. Every reader below skips it; only the row's existence is remembered.
  */
 const live = eq(dishes.status, "ready");
+/** On the menu for this meal. */
+const onMenuFor = (meal: Meal) => sql`${dishes.menuMeals} LIKE ${`%"${meal}"%`}`;
 
 export async function listDishes(meal?: Meal): Promise<Dish[]> {
   await ensureSchema();
-  const where = meal ? and(live, eq(dishes.meal, meal), eq(dishes.onMenu, true)) : and(live, eq(dishes.onMenu, true));
+  const where = meal ? and(live, onMenuFor(meal)) : and(live, eq(dishes.onMenu, true));
   return db.select().from(dishes).where(where).orderBy(asc(dishes.nameEn));
 }
 
@@ -26,7 +28,7 @@ export async function menuCounts(): Promise<Record<string, number>> {
   await ensureSchema();
   const rows = await db.select().from(dishes).where(and(live, eq(dishes.onMenu, true)));
   const out: Record<string, number> = { breakfast: 0, lunch: 0, dinner: 0 };
-  for (const r of rows) out[r.meal] = (out[r.meal] ?? 0) + 1;
+  for (const r of rows) for (const m of r.menuMeals ?? []) out[m] = (out[m] ?? 0) + 1;
   return out;
 }
 
@@ -38,7 +40,7 @@ export async function getDish(slug: string): Promise<Dish | null> {
 
 export async function listReadyDishes(meal: Meal): Promise<Dish[]> {
   await ensureSchema();
-  return db.select().from(dishes).where(and(live, eq(dishes.meal, meal), eq(dishes.onMenu, true))).orderBy(asc(dishes.nameEn));
+  return db.select().from(dishes).where(and(live, onMenuFor(meal))).orderBy(asc(dishes.nameEn));
 }
 
 /** True when the dish carries a tag this person does not eat. */

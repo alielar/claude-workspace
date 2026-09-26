@@ -146,7 +146,9 @@ export const dishes = sqliteTable("dishes", {
    * family and the cook actually see - about 30 per meal. Taking a dish off the menu leaves
    * it in the library with its photo and recipe intact, ready to be put back.
    */
-  onMenu: integer("on_menu", { mode: "boolean" }).notNull().default(true),
+  onMenu: integer("on_menu", { mode: "boolean" }).notNull().default(false),
+  /** The meals this dish is on the menu for: a main dish can be a lunch pick without being a dinner pick. `onMenu` mirrors "not empty". */
+  menuMeals: text("menu_meals", { mode: "json" }).$type<Meal[]>().notNull().default([]),
   /** When it last left the menu, so the library can show the recent ones first. */
   removedAt: text("removed_at"),
   removedBy: integer("removed_by"),

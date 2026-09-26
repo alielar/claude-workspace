@@ -9,7 +9,7 @@ import { t } from "@/lib/i18n/dict";
 import { BackLink } from "@/components/BackLink";
 import { DeleteDishButton } from "@/components/DeleteDishButton";
 import { Ingredients } from "@/components/Ingredients";
-import { putOnMenu, saveRecipe, setReviewed, setVideo, takeOffMenu } from "../actions";
+import { saveRecipe, setMenuMeal, setReviewed, setVideo } from "../actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
@@ -133,16 +133,29 @@ export default async function DishPage({
     <main>
       <BackLink fallback={backTarget(sp.from, dish.onMenu, dish.meal)} className="text-muted font-semibold">{t(L, "back")}</BackLink>
 
-      {!dish.onMenu && (
+      {!dish.onMenu && !me.isAdmin && (
         <section className="mt-3 tile p-4 border-accent">
           <p className="font-bold text-accent">{t(L, "dishRemoved")}</p>
           <p className="mt-1 text-sm text-muted">{t(L, "dishRemovedHint")}</p>
-          {me.isAdmin && (
-            <form action={putOnMenu} className="mt-3">
-              <input type="hidden" name="id" value={dish.id} />
-              <button className="btn-accent w-full">{t(L, "putBack")}</button>
-            </form>
-          )}
+        </section>
+      )}
+      {me.isAdmin && (
+        // One chip per meal the dish can be served at: lit when it is on that meal's menu.
+        <section className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-bold text-muted">{t(L, "menuFor")}</span>
+          {(dish.meals?.length ? dish.meals : [dish.meal]).map((m) => {
+            const on = (dish.menuMeals ?? []).includes(m);
+            return (
+              <form key={m} action={setMenuMeal}>
+                <input type="hidden" name="id" value={dish.id} />
+                <input type="hidden" name="meal" value={m} />
+                <input type="hidden" name="on" value={on ? "0" : "1"} />
+                <button className={clsx("chip py-1.5 px-3 text-sm border", on ? "bg-accent text-accent-ink border-accent" : "bg-card text-muted border-line")}>
+                  {t(L, m)}
+                </button>
+              </form>
+            );
+          })}
         </section>
       )}
 
@@ -227,12 +240,6 @@ export default async function DishPage({
               </button>
             </form>
             <div className="flex items-center gap-4">
-              {dish.onMenu && (
-                <form action={takeOffMenu}>
-                  <input type="hidden" name="id" value={dish.id} />
-                  <button className="text-sm text-muted underline">{t(L, "removeFromMenu")}</button>
-                </form>
-              )}
               <DeleteDishButton id={dish.id} label={t(L, "deleteForever")} confirmText={t(L, "deleteConfirm")} />
             </div>
           </div>

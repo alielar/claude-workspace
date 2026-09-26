@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { CATEGORIES, FOOD_GROUPS, type Category, type FoodGroup, type Lang, type Meal } from "@/db/schema";
-import { fold, highFibre, highProtein, inMeal, lightness, lowCarb, quick, slimName, type SlimDish } from "@/lib/dishMeta";
+import { fold, highFibre, highProtein, lightness, lowCarb, onMenuFor, quick, slimName, type SlimDish } from "@/lib/dishMeta";
 import { DishImage } from "./DishImage";
 
 type Labels = Record<
@@ -80,7 +80,7 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
     const cs = new Set<Category>();
     const gs = new Set<FoodGroup>();
     for (const d of dishes) {
-      if (!inMeal(d, meal)) continue;
+      if (!onMenuFor(d, meal)) continue;
       if (moroccan ? d.cuisine !== "Moroccan" : !d.inMain) continue;
       for (const c of d.categories) cs.add(c);
       for (const g of d.foodGroups) gs.add(g);
@@ -92,7 +92,7 @@ export function DishBrowser({ dishes, lang, labels, simple, child, dislikes, ini
     const needle = fold(q.trim());
     let hidden = 0;
     const shown = dishes.filter((d) => {
-      if (!inMeal(d, meal)) return false;
+      if (!onMenuFor(d, meal)) return false;
       if (moroccan ? d.cuisine !== "Moroccan" || d.lean === rich : !d.inMain) return false;
       if (category && !d.categories.includes(category)) return false;
       if (group && !d.foodGroups.includes(group)) return false;

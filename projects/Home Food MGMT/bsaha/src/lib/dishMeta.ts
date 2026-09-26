@@ -17,6 +17,8 @@ export type SlimDish = {
   cuisine: string;
   inMain: boolean;
   onMenu: boolean;
+  /** Meals this dish is on the menu for. */
+  menuMeals: Meal[];
   lean: boolean;
   tags: string[];
   kcal: number;
@@ -44,6 +46,8 @@ export const highFibre = (d: SlimDish) => d.fiber >= 10;
 export const quick = (d: SlimDish) => d.minutes > 0 && d.minutes <= 30;
 /** True when the dish belongs under this meal tab. Old rows without `meals` fall back to `meal`. */
 export const inMeal = (d: SlimDish, meal: Meal) => (d.meals.length ? d.meals.includes(meal) : d.meal === meal);
+/** True when the admin put this dish on the menu of this meal. */
+export const onMenuFor = (d: Pick<SlimDish, "menuMeals">, meal: Meal) => d.menuMeals.includes(meal);
 
 export function slimName(d: SlimDish, lang: Lang) {
   return lang === "ar" ? d.nameAr : lang === "fr" ? d.nameFr : d.nameEn;

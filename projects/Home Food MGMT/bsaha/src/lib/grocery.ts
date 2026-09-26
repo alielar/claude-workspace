@@ -10,8 +10,6 @@ import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
 import { dishes, type Dish, type Ingredient, type Lang } from "@/db/schema";
 import { scaleQty } from "./scale";
-import { inMeal } from "./dishMeta";
-import { toSlim } from "./slim";
 import { getWeekPlan, headcount, ingredientKey, PLAN_MEALS } from "./week";
 
 export type GroceryLine = {
@@ -83,7 +81,7 @@ export async function buildGroceryList(days: string[]): Promise<GroceryList> {
 
   // Breakfast: the staples behind the breakfast dishes on the menu.
   const bf = (await db.select().from(dishes).where(and(eq(dishes.status, "ready"), eq(dishes.onMenu, true))))
-    .filter((d: Dish) => inMeal(toSlim(d), "breakfast"));
+    .filter((d: Dish) => (d.menuMeals ?? []).includes("breakfast"));
   const breakfast: GroceryLine[] = [];
   if (bf.length > 0) {
     const stat = new Map<string, { line: GroceryLine; dishesUsing: number; perServing: number }>();

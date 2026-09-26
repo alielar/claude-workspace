@@ -90,8 +90,8 @@ export async function setPick(
   if (isLocked()) return "locked";
   if (meal === "breakfast") {
     // Breakfast is individual: any breakfast dish on the menu.
-    const [d] = await db.select({ meals: dishes.meals, meal: dishes.meal, onMenu: dishes.onMenu, status: dishes.status }).from(dishes).where(eq(dishes.id, dishId));
-    const ok = d && d.onMenu && d.status === "ready" && ((d.meals ?? []).length ? d.meals.includes("breakfast") : d.meal === "breakfast");
+    const [d] = await db.select({ menuMeals: dishes.menuMeals, status: dishes.status }).from(dishes).where(eq(dishes.id, dishId));
+    const ok = d && d.status === "ready" && (d.menuMeals ?? []).includes("breakfast");
     if (!ok) return "not-in-pool";
   } else {
     const [inPool] = await db.select({ id: pools.id }).from(pools)
@@ -117,5 +117,5 @@ export async function setPick(
 export async function breakfastMenu(): Promise<Dish[]> {
   await ensureSchema();
   const rows = await db.select().from(dishes).where(and(eq(dishes.status, "ready"), eq(dishes.onMenu, true))).orderBy(asc(dishes.nameEn));
-  return rows.filter((d) => ((d.meals ?? []).length ? d.meals.includes("breakfast") : d.meal === "breakfast"));
+  return rows.filter((d) => (d.menuMeals ?? []).includes("breakfast"));
 }

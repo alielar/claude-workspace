@@ -55,8 +55,10 @@ export function LibraryBrowser({
 }: {
   dishes: SlimDish[]; lang: Lang; labels: LibraryLabels; target: number;
 }) {
-  const [onMenu, setLocal] = useState<Record<number, boolean>>(() =>
-    Object.fromEntries(dishes.map((d) => [d.id, d.onMenu])));
+  /** Which meals each dish is on the menu for, kept here so a tap shows at once. */
+  const [menuMeals, setLocal] = useState<Record<number, Meal[]>>(() =>
+    Object.fromEntries(dishes.map((d) => [d.id, d.menuMeals])));
+  const isOn = (id: number, m: Meal) => (menuMeals[id] ?? []).includes(m);
   /** Deleted on this screen, hidden at once without waiting for a reload. */
   const [gone, setGone] = useState<Set<number>>(new Set());
   // Filters survive opening a dish and coming back, so the admin continues where they were.
@@ -80,23 +82,24 @@ export function LibraryBrowser({
   // On-menu counts per meal. A dish under two meals counts for both, which is what the cook sees.
   const counts = useMemo(() => {
     const c: Record<string, number> = { breakfast: 0, lunch: 0, dinner: 0 };
-    for (const d of dishes) if (onMenu[d.id] && !gone.has(d.id)) for (const m of MEALS) if (inMeal(d, m)) c[m]++;
+    for (const d of dishes) if (!gone.has(d.id)) for (const m of menuMeals[d.id] ?? []) c[m]++;
     return c;
-  }, [dishes, onMenu, gone]);
-  const totalOn = useMemo(() => dishes.filter((d) => onMenu[d.id] && !gone.has(d.id)).length, [dishes, onMenu, gone]);
+  }, [dishes, menuMeals, gone]);
+  const totalOn = useMemo(() => dishes.filter((d) => (menuMeals[d.id] ?? []).length && !gone.has(d.id)).length, [dishes, menuMeals, gone]);
 
   /** What the picked dishes of this meal are made of, so the 30 end up varied. */
   const mix = useMemo(() => {
     const m = { chicken: 0, fish: 0, meat: 0, veg: 0 };
     for (const d of dishes) {
-      if (!onMenu[d.id] || gone.has(d.id) || !inMeal(d, meal)) continue;
+      if (!isOn(d.id, meal) || gone.has(d.id)) continue;
       if (d.tags.includes("chicken")) m.chicken++;
       else if (d.tags.includes("fish")) m.fish++;
       else if (d.tags.includes("red_meat")) m.meat++;
       else if (d.tags.includes("vegetarian")) m.veg++;
     }
     return m;
-  }, [dishes, onMenu, gone, meal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dishes, menuMeals, gone, meal]);
 
   const categories = useMemo(() => {
     const cs = new Set<Category>();
@@ -109,8 +112,8 @@ export function LibraryBrowser({
     const list = dishes.filter((d) => {
       if (gone.has(d.id)) return false;
       if (!inMeal(d, meal)) return false;
-      if (show === "on" && !onMenu[d.id]) return false;
-      if (show === "off" && onMenu[d.id]) return false;
+      if (show === "on" && !isOn(d.id, meal)) return false;
+      if (show === "off" && isOn(d.id, meal)) return false;
       if (cuisine === "moroccan" && d.cuisine !== "Moroccan") return false;
       if (cuisine === "intl" && d.cuisine === "Moroccan") return false;
       if (category && !d.categories.includes(category)) return false;
@@ -123,7 +126,8 @@ export function LibraryBrowser({
       (sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) || a.nameEn.localeCompare(b.nameEn)
       : sort === "protein" ? b.protein - a.protein || a.nameEn.localeCompare(b.nameEn)
       : a.nameEn.localeCompare(b.nameEn)));
-  }, [dishes, meal, show, cuisine, category, q, active, sort, onMenu, gone]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dishes, meal, show, cuisine, category, q, active, sort, menuMeals, gone]);
 
   // Browsing (no search, category or filter, not "picked only") is grouped by category.
   const grouped = !q.trim() && !category && active.size === 0 && show !== "on";
@@ -141,25 +145,28 @@ export function LibraryBrowser({
   // A new search or filter starts the flat list from the top again.
   useEffect(() => { setLimit({}); }, [q, category, activeList, show, meal, cuisine, sort]);
 
+  const withMeal = (list: Meal[], m: Meal, on: boolean) => (on ? MEALS.filter((x) => x === m || list.includes(x)) : list.filter((x) => x !== m));
+
+  /** Adds or removes the dish for the meal tab that is open, and no other. */
   const toggle = (d: SlimDish) => {
-    const next = !onMenu[d.id];
-    setLocal((p) => ({ ...p, [d.id]: next }));
+    const next = !isOn(d.id, meal);
+    setLocal((p) => ({ ...p, [d.id]: withMeal(p[d.id] ?? [], meal, next) }));
     start(async () => {
-      const ok = await setOnMenu(d.id, next);
-      if (!ok) setLocal((p) => ({ ...p, [d.id]: !next }));
+      const ok = await setOnMenu(d.id, meal, next);
+      if (!ok) setLocal((p) => ({ ...p, [d.id]: withMeal(p[d.id] ?? [], meal, !next) }));
     });
   };
 
   const clearMeal = () => {
-    const ids = dishes.filter((d) => inMeal(d, meal) && onMenu[d.id]).map((d) => d.id);
+    const ids = dishes.filter((d) => isOn(d.id, meal)).map((d) => d.id);
     if (ids.length === 0) return;
-    setLocal((p) => ({ ...p, ...Object.fromEntries(ids.map((i) => [i, false])) }));
+    setLocal((p) => ({ ...p, ...Object.fromEntries(ids.map((i) => [i, withMeal(p[i] ?? [], meal, false)])) }));
     start(async () => { await clearMenuForMeal(meal); });
   };
 
   const clearAll = () => {
     if (totalOn === 0 || !window.confirm(labels.clearAllConfirm)) return;
-    setLocal(Object.fromEntries(dishes.map((d) => [d.id, false])));
+    setLocal(Object.fromEntries(dishes.map((d) => [d.id, []])));
     start(async () => { await clearWholeMenu(); });
   };
 
@@ -185,7 +192,7 @@ export function LibraryBrowser({
   const pct = Math.min(100, Math.round((counts[meal] / target) * 100));
 
   const card = (d: SlimDish) => {
-    const on = onMenu[d.id];
+    const on = isOn(d.id, meal);
     const cat = d.categories[0];
     return (
       <div key={d.id} className={clsx("tile overflow-hidden flex flex-col", on && "border-accent ring-2 ring-accent")}>
@@ -328,7 +335,7 @@ export function LibraryBrowser({
       {grouped ? (
         sections.map(({ c, list }) => {
           const open = expanded.includes(c);
-          const picked = list.filter((d) => onMenu[d.id]).length;
+          const picked = list.filter((d) => isOn(d.id, meal)).length;
           return (
             <section key={c} className="mt-6">
               <div className="flex items-baseline justify-between gap-2">

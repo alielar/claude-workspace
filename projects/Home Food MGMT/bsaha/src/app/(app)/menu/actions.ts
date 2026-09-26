@@ -90,37 +90,32 @@ export async function saveRecipe(formData: FormData) {
 }
 
 /**
- * Take a dish off the menu. It stays in the library with its photo, recipe and everything else,
- * ready to be put back. It leaves any shortlist and clears any choice that pointed at it, so
- * nobody is told they are getting a dish that is no longer offered.
+ * The dish page's menu chips: put the dish on one meal's menu or take it off. Taking it off a
+ * meal also drops it from that meal's shortlists and choices, so nobody is told they are getting
+ * a dish that is no longer offered.
  */
-export async function takeOffMenu(formData: FormData) {
+export async function setMenuMeal(formData: FormData) {
   const me = await currentPerson();
   if (!me?.isAdmin) return;
   const id = Number(formData.get("id"));
-  if (!Number.isFinite(id)) return;
-  await db.update(dishes).set({ onMenu: false, removedAt: new Date().toISOString(), removedBy: me.id }).where(eq(dishes.id, id));
-  await db.delete(pools).where(eq(pools.dishId, id));
-  await db.delete(picks).where(eq(picks.dishId, id));
+  const meal = String(formData.get("meal")) as Meal;
+  const on = String(formData.get("on")) === "1";
+  if (!Number.isFinite(id) || !MEALS.includes(meal)) return;
+  const [d] = await db.select({ menuMeals: dishes.menuMeals }).from(dishes).where(eq(dishes.id, id));
+  if (!d) return;
+  const set = new Set(d.menuMeals ?? []);
+  if (on) set.add(meal); else set.delete(meal);
+  const next = MEALS.filter((m) => set.has(m));
+  await db.update(dishes)
+    .set(next.length ? { menuMeals: next, onMenu: true, removedAt: null, removedBy: null }
+      : { menuMeals: next, onMenu: false, removedAt: new Date().toISOString(), removedBy: me.id })
+    .where(eq(dishes.id, id));
+  if (!on) {
+    await db.delete(pools).where(and(eq(pools.dishId, id), eq(pools.meal, meal)));
+    await db.delete(picks).where(and(eq(picks.dishId, id), eq(picks.meal, meal)));
+  }
   forgetSlimDishes();
   revalidatePath("/", "layout");
-  redirect("/library");
-}
-
-/** Put a dish from the library onto the menu. */
-export async function putOnMenu(formData: FormData) {
-  const me = await currentPerson();
-  if (!me?.isAdmin) return;
-  const id = Number(formData.get("id"));
-  if (!Number.isFinite(id)) return;
-  const [back] = await db
-    .update(dishes)
-    .set({ onMenu: true, removedAt: null, removedBy: null })
-    .where(and(eq(dishes.id, id), eq(dishes.onMenu, false)))
-    .returning({ slug: dishes.slug });
-  forgetSlimDishes();
-  revalidatePath("/", "layout");
-  if (back) redirect(`/menu/${back.slug}`);
 }
 
 /** Admin: set or clear the YouTube link for a dish. */

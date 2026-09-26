@@ -90,7 +90,7 @@ export async function seedDishes() {
       inMain: r.cuisine !== "Moroccan",
       isLean: true,
       status: "ready",
-      onMenu: r.on_menu ?? true,
+      onMenu: r.on_menu ?? false,
       isCustom: false,
       createdAt: now,
       photoUrl: photo ? `/dishes/${photo.file}` : null,

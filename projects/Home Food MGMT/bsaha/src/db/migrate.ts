@@ -99,6 +99,13 @@ const DDL = [
  */
 const ONE_OFFS: { key: string; run: () => Promise<void> }[] = [
   {
+    // The menu became per meal on 2026-09-26. Dishes already on it stay on for every meal they had, to be pruned by hand.
+    key: "menu_meals_filled_2026_09_26",
+    run: async () => {
+      await db.run(sql`UPDATE dishes SET menu_meals = CASE WHEN meals = '[]' THEN '["' || meal || '"]' ELSE meals END WHERE on_menu = 1 AND menu_meals = '[]'`);
+    },
+  },
+  {
     key: "menu_emptied_2026_09_20",
     run: async () => {
       const now = new Date().toISOString();
@@ -114,6 +121,7 @@ const LATE_COLUMNS = [
   `ALTER TABLE dishes ADD COLUMN removed_by INTEGER`,
   `ALTER TABLE people ADD COLUMN dislikes TEXT NOT NULL DEFAULT '[]'`,
   `ALTER TABLE people ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE dishes ADD COLUMN menu_meals TEXT NOT NULL DEFAULT '[]'`,
   `ALTER TABLE people ADD COLUMN theme TEXT NOT NULL DEFAULT 'system'`,
   `ALTER TABLE dishes ADD COLUMN in_main INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE dishes ADD COLUMN is_lean INTEGER NOT NULL DEFAULT 1`,
@@ -160,6 +168,8 @@ export function ensureSchema(): Promise<void> {
       await fix.run();
       await db.run(sql`INSERT INTO settings (key, value) VALUES (${fix.key}, ${new Date().toISOString()})`);
     }
+    // `on_menu` is only a summary of `menu_meals`.
+    await db.run(sql`UPDATE dishes SET on_menu = CASE WHEN menu_meals = '[]' THEN 0 ELSE 1 END WHERE on_menu != (CASE WHEN menu_meals = '[]' THEN 0 ELSE 1 END)`);
     const [row] = await db.select({ n: sql<number>`count(*)` }).from(people);
     if (Number(row?.n ?? 0) === 0) {
       const now = new Date().toISOString();
