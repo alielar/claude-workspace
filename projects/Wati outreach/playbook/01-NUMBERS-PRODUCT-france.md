@@ -121,6 +121,15 @@ Le 10 % en chat n'existe que parce que le paiement en plusieurs fois a échoué.
 proposer à quelqu'un qui n'a jamais soulevé de problème de moyen de paiement, c'est
 donner 180 € pour rien.
 
+## CPF — compensation (tranché par Ali le 26/09/2026)
+
+Le CPF ne peut pas servir de paiement (société suisse). Compensation : **20 % d'heures en
+plus**, proportionnel au format acheté — **36h sur le 180h**, **18h sur le 90h**. C'est
+toujours l'offre de départ ; ce n'est jamais une remise en euros. Conditions : capture
+d'écran des fonds CPF disponibles, solde qui couvrait toute la formation, appliqué à la
+première inscription seulement. (Les « 4h offertes » de la note d'Andrin ne sont pas la
+règle en vigueur.)
+
 ## Autres réponses argent
 
 - Inscription groupée : 50 € remboursés par personne, remboursés après l'inscription,
@@ -169,6 +178,12 @@ tout le cours, mais « contactez-nous, on trouve toujours une solution ».
 - Horaires : par défaut à l'oral → « Lun-Dim, 8h-22h ». Réel : Lun-Ven 8h-22h, Sam-Dim
   8h-19h — ne mentionner 19h que si le lead demande le week-end ou ne peut faire que ça.
 - Toutes les leçons sont enregistrées et revisionnables à tout moment.
+- Travail plateforme (exercices obligatoires pour la garantie) : **1 à 2h/semaine en
+  moyenne sur le programme**, jamais un chiffre fixe — 30 à 60 min/semaine les premiers
+  mois (speaking + grammaire), 3 à 5h/semaine pendant la préparation IELTS (Andrin,
+  26/09/2026).
+- Programme leçon par leçon : communiqué après inscription uniquement. Avant, on
+  explique la progression globale (ex. ce qui se passe de B1 à B2), pas le détail.
 - Inclus, sans coût supplémentaire : plateforme + appli, planning, matériel,
   exercices, entraîneur de vocabulaire, entraîneur de grammaire, tuteur IA, jeu de
   vocabulaire, Student Support + équipe de coaching proactive. Accès illimité même

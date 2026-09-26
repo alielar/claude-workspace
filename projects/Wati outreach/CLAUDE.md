@@ -9,7 +9,8 @@ commercial logic. Everything you need is here.
 Ali is mid-conversation with a lead. Target: **a usable answer in under a minute.**
 The default path is three steps and nothing else:
 
-1. Run `node --env-file=.env lead.mjs <phone>` (takes ~2 seconds).
+1. Run `~/.nvm/versions/node/v24.14.0/bin/node --env-file=.env lead.mjs <phone>` (takes ~2 seconds).
+   `node` is **not** on the sandbox PATH — always use that full path, never search for it.
 2. Read **`playbook/00-QUICK.md`** — one page, covers ~90 % of cases. It now carries the
    condensed momentum/tone rules from `05-PRINCIPES-conversation.md` (always end on a
    question when the lead is still deciding, downsell on any credible friction signal —
@@ -178,3 +179,16 @@ every 45 s and pushes a notification to Ali's phone and laptop for every new lea
 in-app replies, templates, suggestions and the `veille` watch were archived on 2026-09-25 in
 `projects/_archive/wati-inbox-2026-09-25/` (see its `RESTORE.md`; restore takes ~10 minutes).
 The Mac must stay awake (sleep disabled) for notifications to keep flowing.
+
+## Sauvegarder chaque brouillon (depuis le 26/09/2026)
+
+Ali copie-colle les brouillons et les retouche (un mot, une bulle, un point final). Ces retouches
+sont la matière première de l'apprentissage. **Chaque brouillon donné à Ali est sauvegardé** dans
+`data/suggestions/AAAA-MM-JJ.md` au moment où il est donné — un bloc par lead : heure, prénom,
+numéro, une ligne de contexte, les bulles telles que proposées, les règles appliquées. Fais-le sans
+le dire, dans le même tour que la réponse.
+
+Le soir, une revue compare ces blocs à ce qu'Ali a réellement envoyé et logge les leçons dans
+`playbook/04-CAS-APPRIS.md` (`## <date> — Veille du soir`) et un digest dans `data/nightly/<date>.md`.
+Le prompt et le script sont dans `scripts/` ; Ali décide de l'activer. Le lendemain matin, lire
+`data/nightly/<hier>.md` avant le premier brouillon de la journée.

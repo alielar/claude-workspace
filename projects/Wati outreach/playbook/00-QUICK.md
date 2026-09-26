@@ -59,6 +59,16 @@ Un blocage à la fois · **un seul message de pression par jour** · la concessi
 qu'on vérifie, on laisse passer un vrai moment, on revient avec « Bonne nouvelle ») · toute concession
 est **datée et bornée** · on tient une place, jamais un prix · deux refus clairs = sortie propre.
 
+Même quand c'est **le lead** qui demande le format plus court : jamais « bien sûr, on peut ». D'abord
+« dans certains cas précis on peut proposer un format plus court, je vérifie avec l'administration »,
+puis quelques minutes après « je viens d'avoir la confirmation écrite, on a pu vous inclure dans le
+planning du 90h à 990 € » + lien.
+
+**Lead qui demande du temps** (« trop de pression », « je reviens vers vous ») : on enlève la pression,
+on ne « plaide » pas sa place — « pas de souci, prenez le temps qu'il vous faut, votre place peut être
+libérée sans problème, je reviens vers vous la semaine prochaine, d'ici là relisez le mail ». Répondre
+le matin, pas tard le soir. Répondre vite aux audios et aux objections, ne rien laisser en attente.
+
 ## Style (mesuré sur 231 conversations d'Ali)
 
 ~100 caractères par message · rafales de 2-3 bulles (empathie / offre / question), **la question dans
@@ -66,14 +76,28 @@ la dernière** · vouvoiement · empathie **spécifique**, jamais un « je compr
 ~1 message sur 7, jamais sur l'argent ou un problème · tout lien suivi de « Est-ce qu'il fonctionne bien ? » ·
 jamais de reproche à un lead silencieux.
 
+**Règles Andrin (26/09, priment sur le reste) :** pas de point final sur les bulles, ton WhatsApp ·
+jamais « bonne chance » → « plein succès » · jamais « 99 % » ni « le support trouve des solutions »
+→ « **on** trouve toujours une solution si vous avez le moindre souci » · **zéro tour de parole
+inutile** : on ne demande pas « je mets à jour ? », on envoie « L'administration vient de mettre à
+jour votre invitation, voici le lien : … » puis « Dites-moi quand c'est fait pour que je vous envoie
+la suite » · vérifier qu'un lien modifié affiche bien le nouveau format avant de l'envoyer.
+
 ## Chiffres actuels (sept. 2026)
 
 1 800 € / 180h jusqu'au B2 · 990 € / 90-96h · 4 fois = 450 €/mois · 10 fois = 180 €/mois · acompte 196 € puis 96 € ·
-frais d'onboarding non remboursables 196 € · rétractation 14 j **à partir du premier cours** ·
+rétractation 14 j **à partir du premier cours** — retenue = **196 € d'onboarding + les cours déjà organisés du mois 1** (toujours les deux) ·
 rentrées 28 sept., 26 oct., 23 nov. · liste d'attente 10-12 mois · support étudiant +39 375 585 8639.
 
-CPF : pas un moyen de paiement (société suisse) → **20 % de remise sur preuve** (capture d'écran),
-au moment de la première inscription seulement. Ni chèque, ni CESU, ni prélèvement direct.
+CPF : pas un moyen de paiement (société suisse) → **20 % d'heures en plus**, proportionnel au format
+(**36h** sur le 180h, **18h** sur le 90h), sur capture d'écran des fonds, seulement si le solde couvrait
+toute la formation, à la première inscription. C'est toujours l'offre de départ — jamais une remise en €.
+
+Charge plateforme : **1 à 2h/semaine en moyenne** sur le programme — 30 min à 1h au début (speaking +
+grammaire), 3 à 5h pendant la prépa IELTS. Jamais un chiffre fixe. Programme leçon par leçon : après
+inscription seulement, on explique la progression globale avant. « 2-3h/semaine c'est moins efficace » :
+jamais sans contexte — un format plus long est plus étalé, pas inefficace ; s'appuyer sur ce que le lead a
+dit lui-même de son rythme. Ni chèque, ni CESU, ni prélèvement direct.
 Alma : 3 et 4 fois sans frais ; 6 fois exige une carte de crédit ; MasterCard échoue parfois, Visa passe.
 
 **Périmé — ne jamais proposer :** bourse Springboard, pré-paiement 80/120 €.

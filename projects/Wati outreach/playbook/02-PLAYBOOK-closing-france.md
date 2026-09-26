@@ -87,7 +87,7 @@ annoncer à un lead**, la grille a pu bouger.
 - Le 6 fois exige une **carte de crédit** ; le 3 fois passe en carte de débit.
 - Les MasterCard échouent parfois, les Visa passent.
 - Virement possible (aucune remise dans ce cas) ; société suisse, donc pas de K-bis français.
-- Le CPF ne peut pas servir de moyen de paiement (société suisse). À la place : **20 % de réduction**
+- Le CPF ne peut pas servir de moyen de paiement (société suisse). À la place : **20 % d'heures en plus** (36h sur le 180h, 18h sur le 90h)
   sur preuve d'éligibilité (une capture d'écran suffit) — exemples réels : 1 800 → 1 440 €, 900 → 720 €,
   848 → 678 €. Cette réduction s'applique **au moment de la première inscription**, jamais après coup.
 - Ni chèque, ni CESU, ni mensualités prélevées en direct. Le virement est en une fois (des exceptions en
@@ -321,7 +321,7 @@ pas de notre calendrier : « Lors de la réunion, vous m'aviez semblé très mot
 | « Je ne peux pas payer avant de commencer » | « S'inscrire ne veut pas dire commencer. Vous réservez votre place maintenant et vous choisissez votre date de démarrage après, même dans plusieurs mois. » |
 | « Pourquoi payer avant le premier cours ? » | « Si le paiement est demandé à la confirmation, c'est uniquement parce qu'on a un nombre de places limité par groupe et qu'on doit réserver vos enseignants en amont. » |
 | « Vous pouvez me faire une remise ? » | « Malheureusement, nous n'offrons pas de réductions. Cependant, il est possible de régler en jusqu'à 10 mensualités via Alma. Cela vous conviendrait-il ? » |
-| « Je peux payer avec mon CPF » | « Nous sommes une entreprise suisse, nous ne pouvons pas accepter le CPF. En revanche, nous pouvons appliquer une réduction sur présentation d'une preuve d'éligibilité — une simple capture d'écran suffit. » (la réduction doit être appliquée à la première inscription, jamais après) |
+| « Je peux payer avec mon CPF » | « Nous sommes une entreprise suisse, nous ne pouvons pas accepter le CPF. En revanche, nous pouvons vous offrir 20 % d'heures en plus sur présentation d'une preuve d'éligibilité — une simple capture d'écran suffit. » (les heures offertes s'appliquent à la première inscription, jamais après) |
 | « Je dois en parler à mon conjoint » | « Je comprends, une décision à deux c'est normal. Dites-moi juste : est-ce qu'il reste un point précis à trancher, le budget, le rythme, autre chose ? Ça m'aide à voir si je peux débloquer quelque chose de mon côté. » |
 | « Il y a beaucoup de frais en plus » | Expliquer clairement ce que recouvrent les frais, puis reposer la question de l'inscription. Ne jamais laisser un flou sur un montant : c'est le sujet qui crée le plus de méfiance |
 | « Je préfère attendre janvier » | « Je comprends, et avant qu'on se recontacte : qu'est-ce qui vous ferait hésiter encore ? Sachez simplement que les places et les tarifs actuels ne sont pas garantis dans le temps. » |
@@ -599,7 +599,7 @@ a du sens.
 
 ## 22. Financement — ce qui existe vraiment
 
-**CPF.** Ne peut pas servir de paiement. La compensation est une réduction sur preuve (capture d'écran),
+**CPF.** Ne peut pas servir de paiement. La compensation est 20 % d'heures en plus sur preuve (capture d'écran),
 appliquée en quelques minutes. Le meilleur argument, trop peu utilisé : « cela vous permet de **garder
 votre CPF pour une formation dans un autre domaine** ». Attention : beaucoup de leads veulent surtout
 *dépenser* leur CPF, et partent chez un concurrent éligible. C'est une cause de perte fréquente, et la

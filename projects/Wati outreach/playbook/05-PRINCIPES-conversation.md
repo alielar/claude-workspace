@@ -335,6 +335,50 @@ Si le lead répond avec une période, même vague ("en janvier", "dans quelques 
 marquer CITF avec cette date, ne pas relancer avant. Si le lead ne répond pas ou reste
 sans date → ne plus relancer du tout, considérer le dossier clos.
 
+## 15ter. Lead qui demande du temps — enlever la pression, répondre vite (Andrin, 26/09)
+
+Cas de référence : Fatine (+33613478524). Profil méthodique, questions très précises,
+puis un audio disant qu'elle avait d'autres priorités et voulait au moins 7 jours. La
+réponse « je plaide votre cause auprès de l'administration pour une semaine de plus » a
+été perçue comme une pression supplémentaire → « trop de pression », lead perdue.
+
+Règles :
+- Quand un lead demande du temps, **ne jamais lui donner l'impression qu'on garde sa
+  place contre lui**. Pas d'extension « négociée », pas de liste d'attente, pas de
+  deadline.
+- Confirmer que sa place **peut être libérée** sans problème, dire qu'on **la
+  recontacte la semaine suivante**, l'encourager à **relire le mail** reçu.
+- **Répondre vite** aux audios et aux objections — jamais les laisser en attente
+  plusieurs heures. Mais répondre **le matin, pas tard le soir** quand le sujet est
+  « j'ai besoin de temps ».
+
+Script :
+```
+Bonjour [prénom], pas de souci, prenez le temps qu'il vous faut, votre place peut être libérée sans problème
+```
+```
+Je reviens vers vous la semaine prochaine, d'ici là n'hésitez pas à relire le mail avec tous les détails
+```
+
+## 15quater. Réduire les tours de parole (Andrin, 26/09)
+
+Chaque question qui demande une permission (« je mets à jour l'invitation ? ») coûte un
+tour de plus avant l'inscription. Quand la décision est prise, on **agit et on envoie** :
+```
+L'administration vient de mettre à jour votre invitation, voici le lien pour vous inscrire : [lien]
+```
+```
+Dites-moi quand c'est fait pour que je vous envoie la suite ?
+```
+Avant d'envoyer un lien modifié, vérifier qu'il affiche bien le nouveau format (cas
+Maurizio : 4 tours perdus parce que le lien montrait encore 1 800 €). En cas de doute,
+renvoyer vers le lien du mail de confirmation, qui est à jour.
+
+Même logique pour le downsell demandé par le lead : pas « bien sûr, on peut » mais
+« dans certains cas précis on peut proposer un format plus court, je vérifie avec
+l'administration », puis « je viens d'avoir la confirmation écrite, on a pu vous inclure
+dans le planning du… » + lien.
+
 ## 16. Checklist avant d'envoyer un message
 
 1. Identifier la vraie question, objection ou signal du lead.
@@ -343,6 +387,11 @@ sans date → ne plus relancer du tout, considérer le dossier clos.
 4. Langage calme et factuel — pas d'adjectifs gonflés, pas de réassurance insistante.
 5. Ne pas valider le prix, la pression ou l'engagement comme excessifs (section 7).
 6. Pas de formule générique qui irait pour n'importe quel lead.
+7. Pas de point final sur les bulles, ton WhatsApp.
+8. Jamais « bonne chance » (→ « plein succès »), jamais « 99 % », jamais « le support
+   trouve des solutions » (→ « **on** trouve toujours une solution »).
+9. Le message ne demande pas une permission qu'on peut remplacer par une action + un lien.
+10. Rétractation citée = 196 € **et** les cours déjà organisés du mois 1, jamais l'un sans l'autre.
 7. Garder l'urgence quand une vraie deadline ou une vraie intention d'achat est en jeu.
 8. Terminer par une question directe ou une action demandée si le lead est encore en
    train de décider (section 2) — sauf exception veille de deadline sans urgence.

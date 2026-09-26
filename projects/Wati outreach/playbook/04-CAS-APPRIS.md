@@ -270,3 +270,75 @@ le projet une fois par semaine.
 **Pourquoi :** formulation validée par Ali le 25/09, à utiliser telle quelle. Le niveau [X] reste une variable à remplir selon le lead (jamais inventé, jamais copié d'un autre cas) quand on la mentionne, mais n'est plus une clause obligatoire de la phrase comme dans la version du 18/09.
 **Comment appliquer :** utiliser ces deux formulations par défaut pour tout downsell vers le palier 990 €, à la place du script du 18/09 (qui ajoutait la mensualité actuelle en comparaison et le niveau visé nommé systématiquement). Le choix 90h vs 96h reste déterminé par le niveau du lead (A2+ → 90h avec garantie ; A0/A1 → 96h sans garantie), logique inchangée.
 **Résultat :** règle permanente, remplace l'entrée du 2026-09-17/18.
+
+## 2026-09-26 — Feedback d'Andrin sur les transcripts de closing (commentaires Google Doc + note écrite)
+
+Andrin a relu trois transcripts (Maurizio, Sara, Fatine, Naelle) et laissé des commentaires + une note structurée. Bilan global : « réponses solides ». Axe principal : **suivi rapide et moins de pression quand un lead demande du temps**. Tout ce qui suit **prime sur la carte rapide** et sur les formulations que je proposais avant.
+
+### A. Style WhatsApp
+
+**A1. Pas de point final, ton conversationnel.** Andrin : « I'd leave out trailing ".", make it conversational, WhatsApp-ish messages. » → Les bulles ne se terminent pas par un point. Une bulle = une phrase ou deux, sans ponctuation finale, sauf « ? » quand c'est une question.
+
+**A2. Jamais « bonne chance ».** Sur « je vous souhaite bonne chance pour votre parcours » → « Maybe not good luck but best of success ». Utiliser : « plein succès pour vos cours », « belle réussite dans votre parcours ». « Bonne chance » sous-entend que ça pourrait rater.
+
+**A3. « NOUS trouvons toujours une solution » — jamais 99 %, jamais « le support ».** Ali avait écrit : « je ne dirai pas 100 %, mais notre support étudiant trouve des solutions 99 % du temps ». Andrin : « This I don't like lol. I'd just say "But don't worry, generally speaking WE always find a solution should you have any problem during your course". Not "99 %", always. Not student support, or them, or someone else he doesn't know and trust — WE (you included). »
+→ Formulation : « Ne vous inquiétez pas, de manière générale on trouve toujours une solution si vous avez le moindre souci pendant votre cours ». Le lead fait confiance à Ali, pas à une équipe qu'il ne connaît pas.
+
+### B. Réduire les tours de parole
+
+**B1. Ne jamais demander une permission qui coûte un tour.** Ali avait écrit « Je mets à jour l'invitation pour ce format ? » → Andrin : « Always try to remove as many steps/turns as possible. Instead of "Should I update it?" requiring another reply from him before sign up, write : "Administration just updated your invitation, here also again the link to sign up: (link)" — 2nd bubble : "Can you let me know when you were able to sign up so I can send you the next steps?" »
+→ Quand la décision est prise, on agit et on envoie le lien. On ne demande pas « je fais ? ». Deux bulles : (1) fait + lien, (2) « dites-moi quand c'est fait pour que je vous envoie la suite ».
+
+**B2. Vérifier que le lien affiche bien le nouveau format avant de l'envoyer.** Cas Maurizio : le lien mis à jour affichait encore 1 800 € / 180h, 4 tours perdus (« Strange, can you send me a screenshot? »). Andrin : « What happened here? » → Avant d'envoyer un lien modifié, s'assurer côté admin que le changement est visible ; sinon envoyer le lien du mail de confirmation, qui est à jour.
+
+### C. Downsell : la concession se mérite, même quand le lead la demande
+
+**C1.** Ali avait répondu « Bien sûr Maurizio, on peut faire ça aussi » quand le lead a demandé le format plus court. Andrin : « I'd usually say "Yes in some specific cases we can offer a shorter program, let me quickly check with admin" and then "I just got written confirmation, we were able to include you in the planning of…" »
+→ Script en deux temps :
+1. « Oui, dans certains cas précis on peut proposer un format plus court, je vérifie rapidement avec l'administration »
+2. (quelques minutes plus tard) « Je viens d'avoir la confirmation écrite, on a pu vous inclure dans le planning du format 90h à 990 €… » + lien + « dites-moi quand c'est fait ».
+Même logique que la carte (« on annonce qu'on vérifie, on laisse passer un vrai moment, on revient avec bonne nouvelle ») — elle s'applique aussi quand c'est le lead qui demande le format réduit.
+
+### D. Rétractation et garantie — formulation exacte
+
+**D1. Rétractation 14 jours : 196 € + les cours déjà organisés.** Ali avait écrit « 196 € de frais d'inscription sont retenus ». Andrin : « 196 € + already organized lessons ». → Toujours dire les deux : « les 196 € de frais d'onboarding et les cours déjà organisés du premier mois ». (Déjà dans `01-NUMBERS`, mais la bulle l'avait omis.)
+
+**D2. Alternative à la rétractation, plutôt pour l'appel :** Andrin propose aussi d'argumenter « nos programmes sont des programmes complets pour atteindre un objectif précis, c'est pour ça qu'on peut offrir une garantie satisfait-remboursé » — à garder pour l'oral, l'explication rétractation reste bonne en chat.
+
+**D3. Garantie : formulation précise.** Liée à une **progression de deux niveaux CECRL en sept mois** (pour le 180h à 7h/sem). Si les 4 conditions sont remplies et le niveau n'est pas atteint → **100 % des 1 800 € remboursés**. Renvoyer au contrat de garantie reçu par mail et à l'article concerné, ne pas improviser de détails.
+
+### E. Charge de travail plateforme — ne pas promettre un chiffre fixe
+
+Ali avait dit « les exercices représentent en général 1 à 2h par semaine ». Andrin : c'est **1 à 2h en moyenne sur l'ensemble du programme**, et ça varie selon la phase :
+- premiers mois (speaking + grammaire) : **30 à 60 min par semaine**
+- préparation IELTS : **3 à 5h par semaine**
+→ Formulation : « en moyenne 1 à 2h par semaine sur le programme — plutôt 30 min à 1h au début, et jusqu'à 3 à 5h pendant la préparation IELTS ».
+
+### F. Programme détaillé avant inscription
+
+Ne pas envoyer le programme leçon par leçon avant l'inscription. On peut expliquer la progression globale (ce qui se passe de B1 à B2, ce qu'implique le saut de niveau), et positionner le programme détaillé comme quelque chose qu'on reçoit une fois inscrit. (La réponse d'Ali à Fatine était bonne sur ce point.)
+
+### G. Pourquoi 7 mois — ne pas dire « 2-3h/semaine c'est moins efficace » sans contexte
+
+Ali avait écrit « à 2h ou 3h par semaine, oui ce serait moins efficace ». Andrin : un format plus long n'est pas automatiquement inefficace, il est plus étalé. Ne pas affirmer ça de façon générale — ça sonne large et non étayé. **Utiliser le contexte du lead** : s'il a lui-même dit que 1-3h/semaine lui semblait insuffisant, s'appuyer dessus pour montrer que la régularité et un volume hebdomadaire suffisant entretiennent l'élan. Le but est de montrer pourquoi 7h/semaine soutient la progression, pas de dénigrer les rythmes plus lents.
+
+### H. Objection CPF — tranché par Ali le 26/09
+
+Andrin proposait « 4 heures gratuites » ; la carte disait « 20 % de remise ». **Ali a tranché : 20 % d'heures en plus, proportionnel au format — 36h sur le 180h, 18h sur le 90h — et c'est toujours l'offre de départ.** Jamais une remise en euros. Conditions inchangées : capture d'écran des fonds CPF disponibles, solde qui couvrait toute la formation, première inscription seulement.
+Script : « On est une société suisse, donc pas agréés CPF. En revanche, si vous m'envoyez une capture de vos fonds CPF montrant que vous auriez pu financer toute la formation avec, on vous offre 20 % d'heures en plus, soit 36h supplémentaires ».
+
+### I. Quand un lead demande du temps : enlever la pression, répondre vite
+
+Cas Fatine : sa raison de décliner, c'est que la fenêtre de décision lui semblait trop courte — elle voulait **au moins 7 jours** et avait d'autres priorités. Elle a fini par écrire « trop de pression ».
+Règles d'Andrin :
+- Quand un lead demande du temps, **ne pas lui donner l'impression qu'on garde sa place contre lui** (l'extension « obtenue auprès de l'administration » a été perçue comme une pression de plus, pas comme un soulagement).
+- **Répondre vite aux audios et aux objections** — ne pas les laisser en attente.
+- Sur ce cas, l'approche convenue aurait été : répondre **le lendemain matin, pas tard le soir** ; confirmer que sa place **peut être libérée** ; dire qu'on **la recontactera la semaine suivante** ; l'encourager à **relire le mail** qu'elle a reçu.
+→ Script type : « Bonjour [prénom], pas de souci, prenez le temps qu'il vous faut, votre place peut être libérée sans problème. Je reviens vers vous la semaine prochaine, d'ici là n'hésitez pas à relire le mail avec tous les détails ». Zéro deadline, zéro liste d'attente, zéro « je plaide votre cause ».
+
+### J. Rappels confirmés (rien à changer, à garder tels quels)
+- Groupes de speaking : **2-3 élèves max**.
+- Changement de créneau/groupe : pas une absence si replanifié **au moins 1h avant**.
+- Frais d'examen IELTS : **séparés**, selon le centre.
+
+**Résultat :** règles permanentes. Les points A, B, C, D1, E, G, H, I modifient directement ce que je produis.
