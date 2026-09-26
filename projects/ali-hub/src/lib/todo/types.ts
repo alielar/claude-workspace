@@ -286,9 +286,14 @@ export function parseQuickAdd(input: string, today: string): QuickParse {
   });
   eat(/\s(?:at\s+|@\s*)?(noon|midday)(?=\s)/i, () => { out.dueTime = "12:00"; });
   eat(/\s(?:at\s+|@\s*)?(midnight)(?=\s)/i, () => { out.dueTime = "23:59"; out.evening = true; });
-  eat(/\s(?:at\s+|@\s*)?(\d{1,2})[:h](\d{2})(?=\s)/i, (m) => {
+  eat(/\s(?:at\s+|@\s*)?(\d{1,2}):(\d{2})(?=\s)/i, (m) => {
     const h = parseInt(m[1], 10);
     if (h <= 23 && parseInt(m[2], 10) <= 59) out.dueTime = `${String(h).padStart(2, "0")}:${m[2]}`;
+  });
+  // "17h" · "9H" · "9h30" · "17H00" (Ali 2026-09-26) · the h makes it an hour, no "at" needed
+  eat(/\s(?:at\s+|@\s*)?(\d{1,2})[hH](\d{2})?(?=\s)/, (m) => {
+    const h = parseInt(m[1], 10), mm = m[2] ?? "00";
+    if (h <= 23 && parseInt(mm, 10) <= 59) out.dueTime = `${String(h).padStart(2, "0")}:${mm}`;
   });
   eat(/\s(?:at\s+|@\s*)(\d{1,2})h?(?=\s)/i, (m) => {
     const h = parseInt(m[1], 10);
