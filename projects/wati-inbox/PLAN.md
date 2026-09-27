@@ -66,3 +66,11 @@ A small web app that runs **on Ali's Mac** (no Vercel, no Turso, no external pro
   runs `claude -p` (Sonnet, headless, `--json-schema`) in `Wati outreach` — `suggest-engine.mjs`. Auto
   draft 90 s after a lead's last bubble (switch in the app), on-demand button, daily cap, drafts saved
   to `data/suggestions/<date>.md` for the nightly review. The `veille` watcher and its launchd job stay archived.
+
+## 2026-09-27 (evening) — one draft, Ali's consigne, learning on every send
+- 🟩 One set of bubbles per suggestion (no more "Option 1 / Option 2"), in the app and from the chat (`suggest.mjs` keeps the first).
+- 🟩 Box under the suggestion: Ali types what is wrong → `POST /api/thread/:id/suggest {instruction}` → Claude redrafts
+  with the refused draft and his words in the prompt; stored with `instruction` + `parent_id`, shown as "Consigne : …".
+- 🟩 `learn-engine.mjs`: after every send from the app, sent-as-drafted → "validé tel quel" line (no Claude run);
+  edited or free text → one short Sonnet run → lesson block / "retouche" line in `04-CAS-APPRIS.md` under
+  `## <date> — Appris dans l'app`. `lessons` table; "Appris …" line in the thread. Nightly review told not to duplicate.

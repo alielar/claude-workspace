@@ -1,10 +1,11 @@
 // Writes reply suggestions for one lead into the Wati Inbox app (they appear on
 // Ali's phone with a push "Suggestions prêtes"). Used by Claude Code after drafting.
 //
-//   node suggest.mjs 33612345678 '[{"bubbles":["…","…"],"why":"…"}, {"bubbles":["…"],"why":"…"}]'
+//   node suggest.mjs 33612345678 '[{"bubbles":["…","…"],"why":"…"}]'
 //   node suggest.mjs 33612345678 < options.json
 //
-// Each option: bubbles = the messages to send, in order; why = two lines of reasoning.
+// ONE option only (Ali's rule, 2026-09-27): bubbles = the messages to send, in order; why = two lines
+// of reasoning. A second option is dropped.
 
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +22,7 @@ if (!Array.isArray(options) || !options.length || !options.every((o) => Array.is
 const db = new DatabaseSync(fileURLToPath(new URL('../wati-inbox/data/inbox.sqlite', import.meta.url)));
 db.exec('PRAGMA busy_timeout = 3000');
 const t = db.prepare('SELECT name FROM threads WHERE wa_id = ?').get(waId);
-db.prepare("INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source) VALUES (?, ?, ?, 0, ?, 'chat')").run(waId, new Date().toISOString(), JSON.stringify(options.map((o) => ({ bubbles: o.bubbles.map((b) => b.trim()), why: String(o.why || '') }))), process.env.SUGGEST_NOTE || null);
+if (options.length > 1) console.error('One set of bubbles per suggestion — keeping the first, dropping', options.length - 1);
+db.prepare("INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source) VALUES (?, ?, ?, 0, ?, 'chat')").run(waId, new Date().toISOString(), JSON.stringify(options.slice(0, 1).map((o) => ({ bubbles: o.bubbles.map((b) => b.trim()), why: String(o.why || '') }))), process.env.SUGGEST_NOTE || null);
 db.prepare('UPDATE threads SET wanted = 0 WHERE wa_id = ?').run(waId);
-console.log(`${options.length} suggestion(s) saved for ${t?.name || waId} — the phone will be notified within 10 s.`);
+console.log(`Suggestion saved for ${t?.name || waId} — the phone will be notified within 10 s.`);

@@ -68,3 +68,8 @@ button.busy::before { content: ''; display: inline-block; width: 10px; height: 1
 .sending { border-color: var(--accent); color: var(--accent); font-size: 14px; }
 .sending::before { content: ''; display: inline-block; width: 10px; height: 10px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; margin-right: 8px; vertical-align: -1px; animation: spin 1s linear infinite; }
 .sending.failed { border-color: var(--danger); color: var(--danger); } .sending.failed::before { display: none; }
+
+/* prompt box under the suggestion + what the app learned (2026-09-27) */
+.refine textarea { min-height: 64px; }
+.consigne { color: var(--accent); margin: -4px 0 8px; }
+.learn { margin: 2px 0 12px; }

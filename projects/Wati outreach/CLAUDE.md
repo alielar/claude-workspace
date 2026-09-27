@@ -185,8 +185,16 @@ for the evening review.
 
 - **In this chat**, a draft you give Ali can also be posted to his phone:
   `node suggest.mjs <waId> '[{"bubbles":["…","…"],"why":"…"}]'` — do it when Ali asks for it on
-  the phone, or on `c`/`C` (one call per lead). `node compare-sent.mjs <waId>` shows a
+  the phone, or on `c`/`C` (one call per lead). **One set of bubbles per suggestion, never two
+  options** (Ali's rule, 2026-09-27) — in the app and here. `node compare-sent.mjs <waId>` shows a
   suggestion next to what Ali actually sent.
+- **The app learns by itself** (since 2026-09-27): under each suggestion Ali has a box where he
+  types what is wrong ("plus court", "propose l'acompte") and Claude redrafts with his words. After
+  every send from the app, the app compares the draft, his consigne and what he really sent, and
+  writes the result at the end of `playbook/04-CAS-APPRIS.md` under `## <date> — Appris dans l'app`
+  (one line "validé tel quel" = rule confirmed, one line "retouche" = small change, a titled block
+  = a lesson). Every next draft reads those blocks first. Engine: `../wati-inbox/learn-engine.mjs`,
+  prompt `learn-prompt.md`, log `../wati-inbox/logs/suggest.log` (tag `learn`).
 - Server log: `../wati-inbox/logs/server.log`; every headless run: `../wati-inbox/logs/suggest.log`.
 - The Mac must stay awake (lid open, screen may lock) and Tailscale on for the phone on 4G.
 

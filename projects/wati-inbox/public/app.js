@@ -99,7 +99,7 @@ async function renderInbox({ fromCache = false } = {}) {
 }
 
 // ── thread ───────────────────────────────────────────────────────────────────
-let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '';
+let composer = '', composerFrom = null, instruction = '', lastThreadKey = '', threadBusy = false, openedWaId = '';
 async function sendBubbles(waId, bubbles, meta = {}) {
   if (!bubbles.length) return false;
   const r = await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, ...meta } });
@@ -133,7 +133,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}`;
   // Something is still moving (Wati being re-read, bubbles going out): look again in a few seconds.
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error)) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), 3000);
@@ -146,13 +146,22 @@ async function renderThread(waId, { quiet = false } = {}) {
   const opts = d.suggestion?.options || [];
   const sendLock = !!sending && !sending.error; // bubbles still going out: no second send meanwhile
   // Suggestion button: idle → ask; queued/drafting → progress; error → retry with the reason.
-  const askLabel = threadBusy ? (st.state === 'drafting' ? 'Claude rédige… (≈ 1 min)' : 'Claude va rédiger…') : (opts.length ? 'Nouvelle suggestion' : 'Demander une suggestion');
+  const askLabel = threadBusy ? (st.state === 'drafting' ? (st.instruction ? 'Claude refait avec votre consigne… (≈ 1 min)' : 'Claude rédige… (≈ 1 min)') : 'Claude va rédiger…') : (opts.length ? 'Nouvelle suggestion' : 'Demander une suggestion');
   const askBtn = `<button id="ask" class="small ${threadBusy ? 'busy' : ''}" ${threadBusy ? 'disabled' : ''}>${askLabel}</button>${st?.state === 'error' ? `<span class="err small">Échec : ${esc(st.error)} — réessayez</span>` : ''}`;
-  const sugg = opts.length
-    ? `<p class="muted small">Suggestions de Claude · ${ago(d.suggestion.created_at)}${d.suggestion.source === 'ali' ? ' · sur demande' : d.suggestion.source === 'chat' ? ' · depuis le chat' : ''}</p>`
+  // What the app learned from the last send on this thread (confirmed = sent as drafted; lesson = logged in 04-CAS-APPRIS).
+  const learnLine = d.learning && (d.learning.state === 'waiting' || d.learning.state === 'learning')
+    ? '<p class="muted small learn">Claude note ce que vous avez envoyé…</p>'
+    : d.learning?.state === 'error' ? `<p class="err small">Leçon non notée : ${esc(d.learning.error)}</p>`
+    : d.lastLesson && (!d.suggestion || d.lastLesson.at >= d.suggestion.created_at) ? `<p class="muted small learn">Appris ${ago(d.lastLesson.at)} : ${d.lastLesson.kind === 'confirmed' ? 'brouillon validé tel quel' : d.lastLesson.kind === 'lesson' ? `leçon notée — ${esc(d.lastLesson.title || '')}` : d.lastLesson.kind === 'minor' ? 'retouche notée' : 'rien à retenir'}</p>` : '';
+  // One set of bubbles per suggestion. Under it, Ali can say what is wrong and get a redraft that follows his words.
+  const refine = `<div class="card refine"><textarea id="ins" placeholder="${opts.length ? 'Pas la bonne réponse ? Dites à Claude quoi changer (ex. plus court, propose l’acompte, sans question, plus ferme)' : 'Une consigne pour Claude avant qu’il rédige (facultatif)'}" ${threadBusy ? 'disabled' : ''}>${esc(instruction)}</textarea><div class="row"><button id="redo" class="primary small" ${threadBusy ? 'disabled' : ''}>${opts.length ? 'Refaire avec cette consigne' : 'Rédiger avec cette consigne'}</button><span class="muted small">Claude relit la conversation, ≈ 1 min</span></div></div>`;
+  const sugg = (opts.length
+    ? `<p class="muted small">Suggestion de Claude · ${ago(d.suggestion.created_at)}${d.suggestion.instruction ? ' · refaite sur votre consigne' : d.suggestion.source === 'ali' ? ' · sur demande' : d.suggestion.source === 'chat' ? ' · depuis le chat' : ''}</p>`
+      + (d.suggestion.instruction ? `<p class="consigne small">Consigne : ${esc(d.suggestion.instruction)}</p>` : '')
       + (d.suggestion.note ? `<p class="note small">À savoir : ${esc(d.suggestion.note)}</p>` : '')
-      + opts.map((o, i) => `<div class="card opt" data-i="${i}">${opts.length > 1 ? `<div class="opt-head">Option ${i + 1}${i === 0 ? ' <span class="muted">· la plus probable</span>' : ''}</div>` : ''}${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`).join('')
-    : (threadBusy ? '<p class="muted small">Claude lit la conversation et le playbook, la suggestion arrive ici dans environ une minute — une notification vous préviendra.</p>' : '<p class="muted small">Pas de suggestion pour ce message. Touchez « Demander une suggestion » : Claude la rédige sur le Mac en une minute environ.</p>');
+      + opts.map((o, i) => `<div class="card opt" data-i="${i}">${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`).join('')
+    : (threadBusy ? '<p class="muted small">Claude lit la conversation et le playbook, la suggestion arrive ici dans environ une minute — une notification vous préviendra.</p>' : '<p class="muted small">Pas de suggestion pour ce message. Touchez « Demander une suggestion » : Claude la rédige sur le Mac en une minute environ.</p>'))
+    + refine + learnLine;
   const tplBox = `<input id="tplq" placeholder="Filtrer les templates (ex. followup, noshow)"><select id="tpl" style="margin-top:8px"><option value="">Chargement des templates français…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Envoyer le template</button><span id="stt"></span></div>`;
   const sendBox = sending
     ? `<div class="card sending ${sending.error ? 'failed' : ''}">${sending.error ? esc(sending.error) : `Envoi ${sending.sent}/${sending.total} — les bulles partent une par une, 5 à 10 s entre chaque`}</div>`
@@ -167,7 +176,10 @@ async function renderThread(waId, { quiet = false } = {}) {
     <div class="row"><button id="hd" class="small" ${t.pending ? '' : 'disabled'}>Marquer comme traité</button><button id="mute" class="small">${t.muted ? 'Réactiver les notifications' : 'Ne plus notifier ce lead'}</button><button id="rf" class="small">↻</button></div>`;
   // A redraw of the same conversation keeps the scroll; a fresh open lands on the newest message.
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
-  $('#ask').onclick = async () => { $('#ask').disabled = true; $('#ask').textContent = 'Demande envoyée…'; try { await api(`/api/thread/${waId}/suggest`, { method: 'POST' }); toast('Claude rédige — environ une minute'); lastThreadKey = ''; route(); } catch (e) { toast(e.message); $('#ask').disabled = false; } };
+  const askClaude = async (btn, ins) => { btn.disabled = true; btn.textContent = 'Demande envoyée…'; try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body: { instruction: ins } }); if (ins) instruction = ''; toast(ins ? 'Claude refait la réponse avec votre consigne — environ une minute' : 'Claude rédige — environ une minute'); lastThreadKey = ''; route(); } catch (e) { toast(e.message); btn.disabled = false; } };
+  $('#ask').onclick = () => askClaude($('#ask'), '');
+  $('#ins').oninput = (e) => { instruction = e.target.value; };
+  $('#redo').onclick = () => { const ins = $('#ins').value.trim(); if (!ins) { $('#ins').focus(); toast('Écrivez d’abord ce que Claude doit changer'); return; } askClaude($('#redo'), ins); };
   document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { const i = Number(b.dataset.use); composer = opts[i].bubbles.join('\n\n'); composerFrom = { suggestionId: d.suggestion.id, option: i }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } });
   document.querySelectorAll('[data-send]').forEach((b) => armed(b, 'Envoyer telle quelle', async () => { const i = Number(b.dataset.send); b.disabled = true; try { await sendBubbles(waId, opts[i].bubbles, { suggestionId: d.suggestion.id, option: i, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => { const [i, j] = b.dataset.copy.split(':').map(Number); copyText(opts[i].bubbles[j], b); });
@@ -210,7 +222,7 @@ async function renderThread(waId, { quiet = false } = {}) {
 // ── router ───────────────────────────────────────────────────────────────────
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
-  if (!m) { composer = ''; composerFrom = null; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
+  if (!m) { composer = ''; composerFrom = null; instruction = ''; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
   document.body.classList.add('busy');
   try { m ? await renderThread(m[1]) : await renderInbox(); if (!m) window.scrollTo(0, 0); }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a></header><p class="err">${esc(e.message)}</p>`; }

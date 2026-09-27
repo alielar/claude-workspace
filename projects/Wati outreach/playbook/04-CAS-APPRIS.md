@@ -399,3 +399,16 @@ Scan demandé par Ali de toutes les conversations France Sales depuis le 25/09, 
 **Résultat :** refus ; lead se dit potentiellement intéressé "l'année prochaine, au prix".
 
 **Résultat global :** 6 points loggés, dont un (le point 1, acompte 96 vs 196) à trancher explicitement avec Ali avant de généraliser.
+
+## 2026-09-27 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+- 17:55 · Karima · **validé tel quel** — « Bonjour Karima, je comprends que le prix vous freine » / « Avant de regarder une solution ensemble, quel budget pourriez-vous investir, mensuel ou total ? » / « Et indépendamment de ça, la formation vous motive toujours autant ? »
+  Règle confirmée : Variante si vous préférez d'abord cadrer son budget avant de proposer un chiffre (barreau 3 isolé, avant l'étalement). Utile si elle ne connaît peut-être plus le prix exact vu le mois écoulé. Relance si silence : demain 
+### 17:55 · Valentin — Client déjà inscrit avec question logistique pure : une bulle, sans salutation ni question de clôture, contact concret si pertinent
+**Situation :** Valentin, déjà payé et onboardé (bienvenue envoyée), demande si ses disponibilités hebdomadaires validées peuvent changer chaque semaine — question purement opérationnelle post-vente, aucune décision d'achat en cours.
+**Ce qui était proposé :** « Hello Valentin » / « Le 1er mois vous variez librement chaque semaine, ensuite un rythme hebdo se stabilise, mais vous gardez la possibilité de reprogrammer un cours jusqu'à 1h avant sans le perdre » / « Ça correspond à ce que vous cherchez ? »
+**Ce qu'Ali a envoyé :** Une seule bulle : « Le 1er mois vous variez librement chaque semaine, ensuite un rythme hebdo se stabilise, mais surtout, vous gardez la possibilité de reprogrammer un cours jusqu'à 1h avant sans le perdre, le support étudiant pourra vous accompagner dans ce processus, vous avez leur numéro Whatsapp sur le message de bienvenu »
+**Pourquoi :** Ali a supprimé la salutation d'ouverture (déjà la règle CLAUDE.md : prénom en milieu de message, pas en salutation systématique), fusionné en une seule bulle, retiré la question de clôture, et ajouté le renvoi vers le support étudiant déjà donné dans le message de bienvenue. Le principe 05-PRINCIPES §2 impose une question de clôture « tant que le lead est en train de décider » un achat — ici le lead a déjà acheté et pose une question opérationnelle fermée ; sa réponse « Merci beaucoup! » confirme que la réponse seule suffisait, pas de fil à relancer.
+**Comment appliquer :** Pour un lead déjà inscrit qui pose une question purement logistique (pas une objection, pas une décision en cours), répondre en une seule bulle factuelle sans salutation ni question de clôture forcée, et rattacher si pertinent une ressource concrète déjà communiquée (ex. le contact support étudiant).

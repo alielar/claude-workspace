@@ -11,10 +11,11 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus, autoEnabled, setAuto } from './suggest-engine.mjs';
+import { learnFromSend, learnStatus } from './learn-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -63,7 +64,7 @@ function sendRest(waId, t, bubbles, meta) {
     }
     await refreshThread(waId, t.name, { notify: false }).catch(() => {});
     if (state.error) setTimeout(() => sending.delete(waId), 90_000); // keep the failure on screen for a while
-    else sending.delete(waId);
+    else { sending.delete(waId); learnFromSend(waId, bubbles, meta); } // every bubble out: learn from what Ali sent
   })();
 }
 
@@ -122,14 +123,21 @@ async function api(req, res, path) {
       windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24,
       hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null,
       templatesSent: sentTemplates(waId).map((s) => ({ at: s.at, name: JSON.parse(s.payload).template })),
-      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '' } : null,
+      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '' } : null,
       suggesting: suggestStatus(waId),
+      learning: learnStatus(waId),
+      lastLesson: latestLesson(waId) || null,
       stale,
       sending: sending.get(waId) || null,
     });
   }
   if (action === 'refresh') { await refreshThread(waId, storedThread(waId)?.name, { notify: false }); return json(res, 200, { ok: true }); }
-  if (action === 'suggest') { if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' }); wantSuggestion(waId); requestSuggestion(waId, 'ali'); return json(res, 200, { ok: true }); }
+  if (action === 'suggest') {
+    if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' });
+    const b = req.method === 'POST' ? await body(req) : {};
+    wantSuggestion(waId); requestSuggestion(waId, 'ali', String(b.instruction || '').trim()); // Ali's own words → a redraft that follows them
+    return json(res, 200, { ok: true });
+  }
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
   if (action === 'handled') { const t = storedThread(waId); if (t) saveThread({ ...t, pending: 0 }); return json(res, 200, { ok: true }); }
   if (action === 'send' && req.method === 'POST') {
@@ -139,13 +147,20 @@ async function api(req, res, path) {
     const t = storedThread(waId);
     if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) return json(res, 409, { error: 'Fenêtre de 24h fermée — utilisez un template' });
     if (sending.has(waId) && !sending.get(waId).error) return json(res, 409, { error: 'Envoi en cours pour ce lead — attendez que les bulles soient parties' });
-    const meta = b.suggestionId ? { suggestionId: b.suggestionId, option: b.option ?? null, edited: !!b.edited } : {};
+    // What was on screen when Ali sent: the fresh suggestion (even if he typed his own text), so the
+    // learning step can compare. edited is recomputed here from the real bubbles.
+    const shown = latestSuggestion(waId);
+    const freshShown = shown && (!t.last_inbound_at || shown.created_at >= t.last_inbound_at) ? shown : null;
+    const ref = b.suggestionId && (!freshShown || freshShown.id === b.suggestionId) ? b.suggestionId : freshShown?.id ?? null;
+    const opt = ref ? (JSON.parse((ref === freshShown?.id ? freshShown : latestSuggestion(waId)).options)[b.option ?? 0] || null) : null;
+    const same = !!opt && opt.bubbles.length === bubbles.length && opt.bubbles.every((x, i) => x.trim() === bubbles[i]);
+    const meta = ref ? { suggestionId: ref, option: b.option ?? 0, edited: !same, fromSuggestion: !!b.suggestionId, batch: String(Date.now()) } : { batch: String(Date.now()) };
     // First bubble right away, so a refusal (window closed, Wati down) comes back to the screen.
     try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
     catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }
     saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
-    if (bubbles.length === 1) refreshThread(waId, t.name, { notify: false }).catch(() => {});
-    else sendRest(waId, t, bubbles, meta); // the others follow in the background, one every 5–10 s
+    if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
+    else sendRest(waId, t, bubbles, meta); // the others follow in the background, one every 5–10 s; learning runs when the last one is out
     return json(res, 200, { ok: true, sent: 1, total: bubbles.length });
   }
   if (action === 'template' && req.method === 'POST') {
