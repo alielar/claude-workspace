@@ -278,7 +278,7 @@ function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
       <button type="button" onClick={() => onOpen(t)} style={{ background: "transparent", border: "none", padding: 0, font: "inherit", textAlign: "left", color: "inherit", minWidth: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 16, lineHeight: 1.3 }}><Linkify text={t.title} /></span>
         <span style={{ display: "block", fontSize: 14, color: late ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}{t.project ? ` · #${t.project}` : ""}
+          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}
         </span>
       </button>
       {actions && (
@@ -391,9 +391,6 @@ export default function TodayPage() {
 
   // The task sheet, opened by tapping a to-do row (same component as /todo).
   const [openTodo, setOpenTodo] = useState<Todo | null>(null);
-  const projects = useMemo(
-    () => [...new Set((todoData?.todos ?? []).filter((t) => !t.deleted && t.project).map((t) => t.project!))].sort(),
-    [todoData]);
 
   const [opened, setOpened] = useState<Set<DayPart>>(new Set()); // past segments reopened by tap
 
@@ -572,7 +569,7 @@ export default function TodayPage() {
 
       {/* The task sheet · same one as /todo, so a time or date is one tap away from here. */}
       {openTodo && (
-        <Sheet t={openTodo} today={today} projects={projects}
+        <Sheet t={openTodo} today={today}
           onSave={(t) => upsert(t)} onDelete={() => remove(openTodo)} onClose={() => setOpenTodo(null)} />
       )}
 

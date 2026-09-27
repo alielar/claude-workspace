@@ -281,28 +281,6 @@ export function NagSelect({ value, onChange }: { value: number | null | undefine
   );
 }
 
-// Project · rarely used, so one quiet line (Ali 2026-09-11: it was a full-size
-// field). Tap to reveal a compact input with the known projects as suggestions.
-export function ProjectField({ value, onChange, projects, listId, label = "project" }: { value: string | null | undefined; onChange: (v: string | null) => void; projects: string[]; listId: string; label?: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
-        style={{ all: "unset", cursor: "pointer", fontSize: 13.5, color: value ? "var(--ink-3)" : "var(--ink-4)", minHeight: 32, display: "flex", alignItems: "center", gap: 6 }}>
-        {value ? `#${value}` : `+ ${label}`} <span aria-hidden>{open ? "▴" : "▾"}</span>
-      </button>
-      {open && (
-        <>
-          <input className="cc-input" list={listId} value={value ?? ""} autoFocus onChange={(e) => onChange(e.target.value.toLowerCase().replace(/[^\p{L}\p{N}_-]/gu, "") || null)} placeholder="none"
-            style={{ fontSize: 16, minHeight: 36, width: 150, padding: "0 10px", borderRadius: 10 }} />
-          <datalist id={listId}>{projects.map((p) => <option key={p} value={p} />)}</datalist>
-          {value && <button type="button" onClick={() => onChange(null)} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13 }}>Clear</button>}
-        </>
-      )}
-    </div>
-  );
-}
-
 // Title field that grows with its text · long titles wrap instead of hiding
 // their end behind horizontal scroll. Enter closes the keyboard.
 export function TitleInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
@@ -337,8 +315,8 @@ export function VaultField({ wakeDate, setWake, today }: { wakeDate: string | nu
 
 // ─── Task detail sheet ────────────────────────────────────────────────────────
 
-export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onClose }: {
-  t: Todo; today: string; projects: string[]; isNew?: boolean;
+export function Sheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
+  t: Todo; today: string; isNew?: boolean;
   onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
 }) {
   useLockBodyScroll();
@@ -397,9 +375,8 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
         </div>
         {!!d.dueDate && !d.dueTime && !d.someday && <span style={{ fontSize: 12.5, color: "var(--ink-4)", marginTop: -6 }}>no time = reminds from 9:00</span>}
 
-        {/* project · Vault · Notes/Subtasks switch on one quiet line */}
+        {/* Vault · Subtasks/Notes switch on one quiet line (Projects removed 2026-09-27 · Ali never used them) */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-          <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={projects} listId="todo-projects" />
           <VaultField wakeDate={d.wakeDate} setWake={(v) => set({ wakeDate: v })} today={today} />
           <span style={{ flex: 1 }} />
           <div role="tablist" aria-label="Notes shape" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, padding: 2, borderRadius: 10, background: "var(--fill-1)" }}>
@@ -425,8 +402,8 @@ export function Sheet({ t, today, projects, isNew = false, onSave, onDelete, onC
 
 // ─── List sheet (Lists segment) · a place to write, not to schedule ──────────
 
-export function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onClose }: {
-  t: Todo; today: string; tags: string[]; isNew?: boolean;
+export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }: {
+  t: Todo; today: string; isNew?: boolean;
   onSave: (t: Todo) => void; onDelete: () => void; onClose: () => void;
 }) {
   useLockBodyScroll();
@@ -554,7 +531,6 @@ export function ListSheet({ t, today, tags, isNew = false, onSave, onDelete, onC
           <button onClick={() => set({ priority: d.priority > 0 ? 0 : 1 })} style={chipStyle(d.priority > 0)} aria-pressed={d.priority > 0}>{d.priority > 0 ? "Pinned" : "Pin"}</button>
           <button onClick={() => { if (remind) { set({ dueDate: null, dueTime: null }); } setRemind(!remind); }} style={chipStyle(remind)} aria-pressed={remind}>Remind me</button>
           {remind && !!d.dueDate && <NagSelect value={d.nagMinutes} onChange={(m) => set({ nagMinutes: m })} />}
-          <ProjectField value={d.project} onChange={(v) => set({ project: v })} projects={tags} listId="doc-tags" label="tag" />
         </div>
 
         {remind && (

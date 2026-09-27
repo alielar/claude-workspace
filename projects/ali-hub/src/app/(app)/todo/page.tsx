@@ -3,10 +3,13 @@
 /**
  * /todo · the To-do tab (spec §4.5 + §7c item 7).
  *
- * Three segments at the top, remembered on the phone:
- *   Personal · Work · tasks: buckets (Overdue · Today · Evening · Tomorrow · This week · then folded
- *     Next week · Next month · Later · Someday),
- *     one-line quick add with natural-language dates, detail sheet, one-tap defer, swipe to delete.
+ * Three segments at the top, remembered on the phone · on the phone the page follows the finger
+ * left / right between them (a real slide, 2026-09-27); on a wide laptop the selector sits fixed
+ * on the left at eye level.
+ *   Personal · Work · tasks: buckets (Overdue · Today always open · Someday open by default ·
+ *     everything else folded by default, a fold's state is remembered),
+ *     one-line quick add with natural-language dates, detail sheet, one-tap defer. Delete lives in
+ *     the sheet (swipe-to-delete on rows was retired for the page slide).
  *   Docs · things to KEEP, not do (spec §7c item 7): notes and running lists.
  *     No checkboxes, no buckets, no nagging. Type a name → straight into the editor. Pin the ones
  *     you reach for; search finds the rest (titles and content). A list can carry one optional
@@ -33,20 +36,20 @@ import {
 
 const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Docs" }];
 
-// Far buckets are folded by default (Ali 2026-09-11: "Upcoming" was one lump);
-// a task moves up into This week → Tomorrow → Today on its own as the date nears.
-const BUCKETS: { key: Bucket; label: string; color: string; folded?: boolean; dated?: boolean }[] = [
+// Fold defaults (Ali 2026-09-27): Today and Someday open, every other section closed. Overdue is
+// never folded (late work must not hide). A section tapped open or closed stays that way across
+// visits (openGroups, remembered on the phone). A task moves up into This week → Tomorrow → Today
+// on its own as the date nears.
+const BUCKETS: { key: Bucket; label: string; color: string; foldable?: boolean; openByDefault?: boolean; dated?: boolean }[] = [
   { key: "overdue",   label: "Overdue",      color: "var(--neg)",    dated: true },
   { key: "today",     label: "Today",        color: "var(--violet)" },
-  { key: "evening",   label: "This evening", color: "var(--cyan)" },
-  { key: "tomorrow",  label: "Tomorrow",     color: "var(--ink-2)" },
-  { key: "week",      label: "This week",    color: "var(--ink-2)",  dated: true },
-  { key: "nextWeek",  label: "Next week",    color: "var(--ink-3)",  dated: true, folded: true },
-  { key: "nextMonth", label: "Next month",   color: "var(--ink-3)",  dated: true, folded: true },
-  { key: "later",     label: "Later",        color: "var(--ink-3)",  dated: true, folded: true },
-  // Someday folds too (Ali 2026-09-12) · closed by default, and once opened it stays
-  // open until closed again (openGroups is remembered on the phone).
-  { key: "someday",   label: "Someday",      color: "var(--ink-3)",  folded: true },
+  { key: "evening",   label: "This evening", color: "var(--cyan)",   foldable: true },
+  { key: "tomorrow",  label: "Tomorrow",     color: "var(--ink-2)",  foldable: true },
+  { key: "week",      label: "This week",    color: "var(--ink-2)",  dated: true, foldable: true },
+  { key: "nextWeek",  label: "Next week",    color: "var(--ink-3)",  dated: true, foldable: true },
+  { key: "nextMonth", label: "Next month",   color: "var(--ink-3)",  dated: true, foldable: true },
+  { key: "later",     label: "Later",        color: "var(--ink-3)",  dated: true, foldable: true },
+  { key: "someday",   label: "Someday",      color: "var(--ink-3)",  foldable: true, openByDefault: true },
 ];
 
 const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)", 2: "var(--neg)" };
@@ -71,63 +74,11 @@ function firstLine(notes: string | null): string | null {
   return null;
 }
 
-// ─── Swipe left to delete (shared by task rows and list rows) ─────────────────
+// ─── Gestures ─────────────────────────────────────────────────────────────────
 
-/**
- * A quick horizontal flick (2026-09-24) switches Personal ↔ Work ↔ Docs from anywhere on the
- * page; a slow drag on a row still reveals Delete. Both handlers see the same touch, so the
- * rule lives here once.
- */
+/** A quick horizontal flick: short, long enough, mostly sideways. Also switches segment before the drag threshold. */
 export function isFlick(dx: number, dy: number, ms: number): boolean {
   return ms < 320 && Math.abs(dx) > 70 && Math.abs(dx) > 2.2 * Math.abs(dy);
-}
-
-function useSwipeDelete(onDelete: () => void) {
-  const [offset, setOffset] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const gesture = useRef<{ x: number; y: number; t: number; base: number; active: boolean } | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => { gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp, base: offset, active: false }; };
-  const onTouchMove = (e: React.TouchEvent) => {
-    const g = gesture.current;
-    if (!g) return;
-    const dx = e.touches[0].clientX - g.x, dy = e.touches[0].clientY - g.y;
-    if (!g.active) {
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      if (Math.abs(dy) > Math.abs(dx)) { gesture.current = null; return; } // vertical scroll wins
-      g.active = true; setDragging(true);
-    }
-    setOffset(Math.min(0, Math.max(-170, g.base + dx)));
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const g = gesture.current; gesture.current = null; setDragging(false);
-    if (!g || !g.active) return;
-    const c = e.changedTouches[0];
-    if (c && isFlick(c.clientX - g.x, c.clientY - g.y, e.timeStamp - g.t)) { setOffset(0); return; } // the page switches segment
-    setOffset((o) => {
-      if (o < -140) { onDelete(); return 0; }
-      return o < -48 ? -88 : 0;
-    });
-  };
-  return {
-    offset,
-    handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd },
-    style: {
-      background: "var(--bg-card)", position: "relative", touchAction: "pan-y",
-      transform: `translateX(${offset}px)`, transition: dragging ? "none" : "transform 0.18s ease",
-    } as React.CSSProperties,
-  };
-}
-
-function SwipeWrap({ swipe, onDelete, children }: { swipe: ReturnType<typeof useSwipeDelete>; onDelete: () => void; children: React.ReactNode }) {
-  return (
-    <div style={{ position: "relative", overflow: "hidden", borderBottom: "1px solid var(--line)" }} className="todo-row-wrap">
-      <button onClick={onDelete} tabIndex={-1} aria-label="Delete"
-        style={{ position: "absolute", inset: "0 0 0 auto", width: 96, border: "none", background: "var(--neg)", color: "#fff", fontSize: 15, fontWeight: 600, font: "inherit", cursor: "pointer", opacity: swipe.offset < -10 ? 1 : 0 }}>
-        Delete
-      </button>
-      {children}
-    </div>
-  );
 }
 
 // One tap must open a date/time picker. Left alone, the first tap on iOS often
@@ -141,12 +92,11 @@ function nextFullHour(): string {
   return h > 23 ? "23:30" : `${String(h).padStart(2, "0")}:00`;
 }
 
-function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, onDelete }: {
+function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater }: {
   t: Todo; today: string; showDate: boolean;
-  onToggle: () => void; onOpen: () => void; onNotes: (notes: string | null) => void; onDefer?: () => void; onLater?: (time: string) => void; onDelete: () => void;
+  onToggle: () => void; onOpen: () => void; onNotes: (notes: string | null) => void; onDefer?: () => void; onLater?: (time: string) => void;
 }) {
   const done = t.doneAt !== null;
-  const swipe = useSwipeDelete(onDelete);
   // Ticking should feel rewarding: chime + pop + strike-through sweep, then the
   // row folds away and the real state change lands. Un-ticking stays instant.
   const [celebrating, setCelebrating] = useState(false);
@@ -169,13 +119,12 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
     t.dueTime,
     subtasks && subtasks.length ? `${subtasks.filter((s) => s.done).length}/${subtasks.length}` : null,
     t.evening && !showDate && t.dueDate === today ? null : t.evening && t.dueDate ? "evening" : null,
-    t.project ? `#${t.project}` : null,
   ].filter(Boolean).join(" · ");
 
   return (
-    <SwipeWrap swipe={swipe} onDelete={onDelete}>
-    <div className={`todo-row${celebrating ? " cc-done-row" : ""}`} {...swipe.handlers}
-      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes && !subtasks ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", paddingRight: 8, ...swipe.style }}>
+    <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
+    <div className={`todo-row${celebrating ? " cc-done-row" : ""}`}
+      style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes && !subtasks ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", paddingRight: 8, background: "var(--bg-card)" }}>
       <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
@@ -212,18 +161,17 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater, 
       )}
     </div>
     {t.notes && !done && !celebrating && (subtasks || peek) && (
-      <div style={{ background: "var(--bg-card)", transform: `translateX(${swipe.offset}px)` }}>
+      <div style={{ background: "var(--bg-card)" }}>
         {subtasks ? <SubtaskList notes={t.notes} onChange={onNotes} /> : <NotesPreview notes={t.notes} />}
       </div>
     )}
-    </SwipeWrap>
+    </div>
   );
 }
 
 // ─── List row (Lists segment · kept things, no checkbox) ──────────────────────
 
-function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelete: () => void }) {
-  const swipe = useSwipeDelete(onDelete);
+function ListRow({ t, onOpen }: { t: Todo; onOpen: () => void }) {
   const preview = firstLine(t.notes);
   const fmt = docFormat(t);
   const shape = (() => {
@@ -235,25 +183,29 @@ function ListRow({ t, onOpen, onDelete }: { t: Todo; onOpen: () => void; onDelet
   const sub = [
     t.priority > 0 ? "Pinned" : null,
     t.dueDate ? `remind ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
-    t.project ? `#${t.project}` : null,
     shape,
     fmtAgo(t.updatedAt),
   ].filter(Boolean).join(" · ");
 
   return (
-    <SwipeWrap swipe={swipe} onDelete={onDelete}>
-      <button onClick={onOpen} className="todo-row" {...swipe.handlers}
-        style={{ display: "grid", gridTemplateColumns: "1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 16px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...swipe.style }}>
+    <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
+      <button onClick={onOpen} className="todo-row"
+        style={{ display: "grid", gridTemplateColumns: "1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 16px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", background: "var(--bg-card)" }}>
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
           <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty · tap to write"}</span>
         </span>
       </button>
-    </SwipeWrap>
+    </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+/** The slide between segments · dx follows the finger, `settle` turns the transition on, `w` = pane width. */
+type Slide = { dx: number; settle: boolean; w: number };
+const SLIDE_MS = 230;
+const SLIDE_EASE = `transform ${SLIDE_MS}ms cubic-bezier(.2,.8,.2,1)`;
 
 export default function TodoPage() {
   // true only on the client after hydration (the quick-add bar is portalled into <body>)
@@ -275,16 +227,14 @@ export default function TodoPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
     try { const a = localStorage.getItem("cc-todo-area"); if (a === "work" || a === "list") setAreaState(a); } catch { /* ignore */ }
   }, []);
-  const setArea = (a: Area) => { setAreaState(a); setText(""); setFilter(null); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
+  const setArea = (a: Area) => { setAreaState(a); setText(""); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
   const isLists = area === "list";
-  const [filter, setFilter] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<Todo | null>(null);
   const [draft, setDraft] = useState<Todo | null>(null); // new entry being composed in a sheet
   const [showDone, setShowDone] = useState(false);
   const [showVault, setShowVault] = useState(false);
-  // Folded buckets (Next week · Next month · Later · Someday): closed by default, an
-  // opened one stays open across visits until closed (localStorage cc-todo-open-groups).
+  // Fold state per section · true = open, false = closed; a missing key = the section's default.
   const [openGroups, setOpenGroupsState] = useState<Record<string, boolean>>({});
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
@@ -297,33 +247,63 @@ export default function TodoPage() {
 
   const parsed = useMemo(() => (!isLists && !literal && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists, literal]);
 
-  // Flick left / right anywhere on the page → next / previous segment (phone). Sheets and inputs are left alone.
-  const flick = useRef<{ x: number; y: number; t: number } | null>(null);
+  // ── The slide between Personal · Work · Docs (phone) ──
+  // The page follows the finger (Ali 2026-09-27: "it needs to feel like a real swipe"): the
+  // current pane moves with dx, the next pane rides alongside, clipped to the current height.
+  // Release past a third of the width (or a flick) → both glide the rest of the way, then the
+  // segment changes and the new pane is already in place. Otherwise everything glides back.
+  // At an edge (no next pane) the page only gives a little · a rubber band.
+  const idx = SEGMENTS.findIndex((s) => s.key === area);
+  const [slide, setSlide] = useState<Slide>({ dx: 0, settle: false, w: 0 });
+  const gesture = useRef<{ x: number; y: number; t: number; w: number; axis: "" | "x" | "y" } | null>(null);
+  const paneRef = useRef<HTMLDivElement>(null);
+  const switching = useRef<number | null>(null);
+  useEffect(() => () => { if (switching.current) clearTimeout(switching.current); }, []);
+  const neighbour = slide.dx < 0 ? SEGMENTS[idx + 1] : slide.dx > 0 ? SEGMENTS[idx - 1] : undefined;
   const onPageTouchStart = (e: React.TouchEvent) => {
     const el = e.target as HTMLElement;
-    flick.current = el.closest('[role="dialog"], input, textarea, select') ? null : { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp };
+    if (switching.current || el.closest('[role="dialog"], input, textarea, select, .todo-addbar')) { gesture.current = null; return; }
+    gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp, w: paneRef.current?.clientWidth ?? window.innerWidth, axis: "" };
+  };
+  const onPageTouchMove = (e: React.TouchEvent) => {
+    const g = gesture.current;
+    if (!g) return;
+    const dx = e.touches[0].clientX - g.x, dy = e.touches[0].clientY - g.y;
+    if (!g.axis) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      g.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y"; // the first clear direction wins for the whole touch
+    }
+    if (g.axis !== "x") return;
+    const hasNext = dx < 0 ? idx < SEGMENTS.length - 1 : idx > 0;
+    setSlide({ dx: hasNext ? dx : dx * 0.25, settle: false, w: g.w });
   };
   const onPageTouchEnd = (e: React.TouchEvent) => {
-    const g = flick.current; flick.current = null;
+    const g = gesture.current; gesture.current = null;
+    if (!g || g.axis !== "x") return;
     const c = e.changedTouches[0];
-    if (!g || !c) return;
+    if (!c) { setSlide({ dx: 0, settle: true, w: g.w }); return; }
     const dx = c.clientX - g.x;
-    if (!isFlick(dx, c.clientY - g.y, e.timeStamp - g.t)) return;
-    const i = SEGMENTS.findIndex((s) => s.key === area);
-    const next = SEGMENTS[i + (dx < 0 ? 1 : -1)];
-    if (next) setArea(next.key);
+    const next = SEGMENTS[idx + (dx < 0 ? 1 : -1)];
+    if (next && (Math.abs(dx) > g.w / 3 || isFlick(dx, c.clientY - g.y, e.timeStamp - g.t))) {
+      setSlide({ dx: dx < 0 ? -g.w : g.w, settle: true, w: g.w });
+      switching.current = window.setTimeout(() => {
+        switching.current = null;
+        setArea(next.key);
+        setSlide({ dx: 0, settle: false, w: g.w });
+      }, SLIDE_MS);
+    } else {
+      setSlide({ dx: 0, settle: true, w: g.w });
+    }
   };
-  const projects = useMemo(() => [...new Set(all.filter((t) => (t.area ?? "personal") === area).map((t) => t.project).filter((p): p is string => !!p))].sort(), [all, area]);
 
   // "+" opens the full sheet so every detail is set at creation. For tasks the typed
-  // line is already parsed in ("fri 9am #money !!"); for lists the line is the name.
+  // line is already parsed in ("fri 9am !!"); for lists the line is the name.
   const submit = () => {
     const ts = Date.now();
     setDraft({
       clientId: newTodoId(),
       title: isLists || literal ? text.trim() : parsed?.title || text.trim(),
-      area, notes: null,
-      project: isLists ? filter : parsed?.project ?? filter,
+      area, notes: null, project: null,
       dueDate: isLists ? null : parsed?.dueDate ?? null,
       dueTime: isLists ? null : parsed?.dueTime ?? null,
       evening: !isLists && (parsed?.evening ?? false),
@@ -335,27 +315,27 @@ export default function TodoPage() {
 
   // The Vault: items sleeping until a future wake date · out of every list, one place to browse.
   const sleeping = all.filter((t) => !t.doneAt && isSleeping(t, today)).sort((a, b) => (a.wakeDate ?? "").localeCompare(b.wakeDate ?? ""));
-  const inArea = all.filter((t) => (t.area ?? "personal") === area && !isSleeping(t, today));
-  const visible = filter ? inArea.filter((t) => t.project === filter) : inArea;
-
-  // Tasks (Personal / Work)
-  const openTasks = visible.filter((t) => !t.doneAt);
-  const doneToday = visible.filter((t) => t.doneAt !== null).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0));
-  const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
+  const q = query.trim().toLowerCase();
+  /** Everything one segment shows · computed for the current segment and, mid-slide, for the next one. */
+  const forArea = (a: Area) => {
+    const inArea = all.filter((t) => (t.area ?? "personal") === a && !isSleeping(t, today));
+    const openTasks = inArea.filter((t) => !t.doneAt);
+    const doneToday = inArea.filter((t) => t.doneAt !== null).sort((x, y) => (y.doneAt ?? 0) - (x.doneAt ?? 0));
+    const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
+    // Lists · pinned first, then most recently touched; search covers names and content.
+    const lists = a !== "list" ? [] : inArea
+      .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q))
+      .sort((x, y) => (y.priority > 0 ? 1 : 0) - (x.priority > 0 ? 1 : 0) || y.updatedAt - x.updatedAt);
+    return { inArea, openTasks, doneToday, groups, lists };
+  };
+  const cur = forArea(area);
   // "due today" = the badge rule (overdue + today, evening included), so the header, the
   // home-screen badge and the widget all say the same number (Ali 2026-09-14).
-  const dueCount = badgeCount(visible, today);
-
-  // Lists · pinned first, then most recently touched; search covers names and content.
-  const q = query.trim().toLowerCase();
-  const lists = (isLists ? visible : [])
-    .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q))
-    .sort((a, b) => (b.priority > 0 ? 1 : 0) - (a.priority > 0 ? 1 : 0) || b.updatedAt - a.updatedAt);
+  const dueCount = badgeCount(cur.inArea, today);
 
   const previewBits = parsed ? [
     parsed.someday ? "Someday" : parsed.dueDate ? fmtDue(parsed.dueDate, today) : null,
     parsed.dueTime, parsed.evening && !parsed.someday ? "evening" : null,
-    parsed.project ? `#${parsed.project}` : filter ? `#${filter}` : null,
     parsed.priority === 2 ? "urgent" : parsed.priority === 1 ? "important" : null,
   ].filter(Boolean) : [];
   const readSomething = !!parsed && parsed.tokens.length > 0;
@@ -379,128 +359,135 @@ export default function TodoPage() {
     </div>
   );
 
+  /** One segment's content · rendered for the current segment and, while sliding, for the next. */
+  const pane = (a: Area) => {
+    const { inArea, openTasks, doneToday, groups, lists } = forArea(a);
+    if (a === "list") return (
+      <>
+        {/* Passwords · a doc type of its own: end-to-end encrypted, its own page (2026-09-12) */}
+        <Link href="/vault" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+          <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Passwords</span>
+            </span>
+            <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
+          </div>
+        </Link>
+        {/* Birthdays · names and dates worth remembering, with a push a few days ahead (2026-09-19) */}
+        <Link href="/birthdays" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+          <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 6v3M8 6v3M16 6v3" /><path d="M4 21v-7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7" /><path d="M4 21h16" /><path d="M4 15c1 1 2 1 3 0s2-1 3 0 2 1 3 0 2-1 3 0 2 1 3 0" /></svg>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Birthdays</span>
+            </span>
+            <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
+          </div>
+        </Link>
+        {inArea.length > 3 && (
+          <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
+        )}
+
+        {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 48 }} />)}</div></div>}
+
+        {data && lists.length === 0 && (
+          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
+            {q ? `Nothing matches “${query}”.` : "No docs yet."}
+          </div></div>
+        )}
+
+        {lists.length > 0 && (
+          <section className="cc-card">
+            <div className="cc-card-list">
+              {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => setOpen(t)} />)}
+            </div>
+          </section>
+        )}
+      </>
+    );
+    return (
+      <>
+        {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
+
+        {data && openTasks.length === 0 && (
+          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
+            Nothing here.
+          </div></div>
+        )}
+
+        {groups.filter((g) => g.items.length > 0).map((g) => {
+          const isOpen = openGroups[g.key] ?? !!g.openByDefault;
+          const folded = !!g.foldable && !isOpen;
+          const nowish = g.key === "overdue" || g.key === "today" || g.key === "evening";
+          return (
+            <section key={g.key} className="cc-card">
+              {g.foldable ? (
+                <button onClick={() => setOpenGroups((o) => ({ ...o, [g.key]: !(o[g.key] ?? !!g.openByDefault) }))} className="cc-card-head" aria-expanded={!folded}
+                  style={{ width: "100%", background: "transparent", border: "none", borderBottom: folded ? "none" : undefined, color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+                  <span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length} {folded ? "▾" : "▴"}</span>
+                </button>
+              ) : (
+                <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
+              )}
+              {!folded && (
+                <div className="cc-card-list">
+                  {g.items.map((t) => (
+                    <Row key={t.clientId} t={t} today={today} showDate={!!g.dated}
+                      onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })}
+                      onDefer={nowish ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined}
+                      onLater={nowish ? (time) => upsert({ ...t, dueDate: today, dueTime: time, evening: false }) : undefined} />
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
+
+        {doneToday.length > 0 && (
+          <section className="cc-card">
+            <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+              <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
+            </button>
+            {showDone && <div className="cc-card-list">{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} />)}</div>}
+          </section>
+        )}
+      </>
+    );
+  };
+
+  const moving = slide.dx !== 0 || slide.settle;
   return (
-    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84 }} onTouchStart={onPageTouchStart} onTouchEnd={onPageTouchEnd}>
+    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}
+      onTouchStart={onPageTouchStart} onTouchMove={onPageTouchMove} onTouchEnd={onPageTouchEnd} onTouchCancel={onPageTouchEnd}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
           <div className="sub">
             {loading && !data ? "…"
-              : isLists ? `${inArea.length} doc${inArea.length === 1 ? "" : "s"} kept`
-              : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${openTasks.length ? ` · ${openTasks.length} open` : ""}`}
+              : isLists ? `${cur.inArea.length} doc${cur.inArea.length === 1 ? "" : "s"} kept`
+              : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${cur.openTasks.length ? ` · ${cur.openTasks.length} open` : ""}`}
             {stale ? " · saved copy" : ""}
           </div>
         </div>
       </div>
 
-      {/* Personal · Work · Docs · flick left/right on the phone; fixed on the left on a wide laptop */}
+      {/* Personal · Work · Docs · slide left/right on the phone; fixed on the left on a wide laptop */}
       {segments(false)}
       {segments(true)}
 
-      {/* Tag chips · tasks use projects, docs use tags; same mechanism */}
-      {projects.length > 0 && (
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
-          {[null, ...projects].map((p) => (
-            <button key={p ?? "all"} onClick={() => setFilter(p)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", background: filter === p ? "var(--accent-soft)" : undefined, borderColor: filter === p ? "var(--violet)" : undefined, color: filter === p ? "var(--ink)" : undefined }}>
-              {p ? `#${p}` : "All"}
-            </button>
-          ))}
+      {/* The panes · the current one in flow, the next one riding alongside while the finger is down */}
+      <div ref={paneRef} style={{ position: "relative", overflow: moving ? "hidden" : undefined }}>
+        <div style={{ display: "grid", gap: 16, transform: moving ? `translateX(${slide.dx}px)` : undefined, transition: slide.settle ? SLIDE_EASE : "none" }}
+          onTransitionEnd={() => setSlide((s) => (s.dx === 0 ? { ...s, settle: false } : s))}>
+          {pane(area)}
         </div>
-      )}
-
-      {/* ── Docs segment ── */}
-      {isLists && (
-        <>
-          {/* Passwords · a doc type of its own: end-to-end encrypted, its own page (2026-09-12) */}
-          <Link href="/vault" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-            <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
-              <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Passwords</span>
-              </span>
-              <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
-            </div>
-          </Link>
-          {/* Birthdays · names and dates worth remembering, with a push a few days ahead (2026-09-19) */}
-          <Link href="/birthdays" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-            <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 6v3M8 6v3M16 6v3" /><path d="M4 21v-7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7" /><path d="M4 21h16" /><path d="M4 15c1 1 2 1 3 0s2-1 3 0 2 1 3 0 2-1 3 0 2 1 3 0" /></svg>
-              <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Birthdays</span>
-              </span>
-              <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
-            </div>
-          </Link>
-          {inArea.length > 3 && (
-            <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
-          )}
-
-          {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 48 }} />)}</div></div>}
-
-          {data && lists.length === 0 && (
-            <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              {q ? `Nothing matches “${query}”.` : "No docs yet."}
-            </div></div>
-          )}
-
-          {lists.length > 0 && (
-            <section className="cc-card">
-              <div className="cc-card-list">
-                {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => setOpen(t)} onDelete={() => remove(t)} />)}
-              </div>
-            </section>
-          )}
-        </>
-      )}
-
-      {/* ── Tasks segments ── */}
-      {!isLists && (
-        <>
-          {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
-
-          {data && openTasks.length === 0 && (
-            <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-              Nothing here.
-            </div></div>
-          )}
-
-          {groups.filter((g) => g.items.length > 0).map((g) => {
-            const folded = !!g.folded && !openGroups[g.key];
-            const nowish = g.key === "overdue" || g.key === "today" || g.key === "evening";
-            return (
-              <section key={g.key} className="cc-card">
-                {g.folded ? (
-                  <button onClick={() => setOpenGroups((o) => ({ ...o, [g.key]: !o[g.key] }))} className="cc-card-head" aria-expanded={!folded}
-                    style={{ width: "100%", background: "transparent", border: "none", borderBottom: folded ? "none" : undefined, color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-                    <span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length} {folded ? "▾" : "▴"}</span>
-                  </button>
-                ) : (
-                  <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
-                )}
-                {!folded && (
-                  <div className="cc-card-list">
-                    {g.items.map((t) => (
-                      <Row key={t.clientId} t={t} today={today} showDate={!!g.dated}
-                        onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)}
-                        onDefer={nowish ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined}
-                        onLater={nowish ? (time) => upsert({ ...t, dueDate: today, dueTime: time, evening: false }) : undefined} />
-                    ))}
-                  </div>
-                )}
-              </section>
-            );
-          })}
-
-          {doneToday.length > 0 && (
-            <section className="cc-card">
-              <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-                <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
-              </button>
-              {showDone && <div className="cc-card-list">{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} onDelete={() => remove(t)} />)}</div>}
-            </section>
-          )}
-        </>
-      )}
+        {neighbour && (
+          <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", overflow: "hidden", display: "grid", gap: 16, alignContent: "start",
+            transform: `translateX(${slide.dx + (slide.dx < 0 ? slide.w : -slide.w)}px)`, transition: slide.settle ? SLIDE_EASE : "none" }}>
+            {pane(neighbour.key)}
+          </div>
+        )}
+      </div>
 
       {/* Vault · far-future items, all areas together */}
       {sleeping.length > 0 && (
@@ -548,7 +535,7 @@ export default function TodoPage() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
-              placeholder={isLists ? "New doc…" : filter ? `Add to #${filter}…` : area === "work" ? "Add a work task…" : "Add a task…"}
+              placeholder={isLists ? "New doc…" : area === "work" ? "Add a work task…" : "Add a task…"}
               enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>
@@ -556,14 +543,14 @@ export default function TodoPage() {
       </form>, document.body)}
 
       {open && ((open.area ?? "personal") === "list"
-        ? <ListSheet t={open} today={today} tags={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
-        : <Sheet t={open} today={today} projects={projects} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />)}
+        ? <ListSheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
+        : <Sheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />)}
       {draft && (draft.area === "list"
-        ? <ListSheet t={draft} today={today} tags={projects} isNew
+        ? <ListSheet t={draft} today={today} isNew
             onSave={(t) => { upsert(t); setText(""); }}
             onDelete={() => { /* discard the draft */ }}
             onClose={() => setDraft(null)} />
-        : <Sheet t={draft} today={today} projects={projects} isNew
+        : <Sheet t={draft} today={today} isNew
             onSave={(t) => { upsert(t); setText(""); }}
             onDelete={() => { /* discard the draft */ }}
             onClose={() => setDraft(null)} />)}

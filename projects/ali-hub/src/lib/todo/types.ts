@@ -4,7 +4,7 @@
  * Borrowed ideas (researched: Things, Todoist, TickTick, Notion):
  *  - Things:  "Today / This evening / Anytime / Someday" · schedule by intent, not just by date.
  *  - Todoist: one quick-add line that understands dates ("tomorrow 9am", "fri", "next week"),
- *             "#project" and "!!" priority · nothing to tap through.
+ *             "!!" priority · nothing to tap through.
  *  - TickTick: one-tap defer ("tomorrow", "weekend") from the list.
  *  Ignored on purpose: databases, sub-tasks, sharing, filters · convenience, not a database.
  *
@@ -27,7 +27,7 @@ export type Todo = {
   title: string;
   area: Area;                  // work | personal · each list has its own due counts and reminders
   notes: string | null;
-  project: string | null;      // free-form "#tag", lower-case
+  project: string | null;      // legacy · Projects were removed from the UI 2026-09-27, the column stays for old rows
   dueDate: string | null;      // YYYY-MM-DD (Europe/Madrid day) · null = Anytime / Someday
   dueTime: string | null;      // HH:MM
   evening: boolean;            // "This evening" (Things) · shown in the evening block of that day
@@ -57,7 +57,8 @@ export type TodosData = { todos: Todo[] };
 
 export const FORMATS = ["doc", "checklist", "list", "sections", "accordion"] as const;
 export type Format = (typeof FORMATS)[number];
-export const TASK_FORMATS: { key: Format; label: string }[] = [{ key: "doc", label: "Notes" }, { key: "checklist", label: "Subtasks" }];
+// Subtasks first · the primary shape of a task's details (Ali 2026-09-27); Notes is the alternative.
+export const TASK_FORMATS: { key: Format; label: string }[] = [{ key: "checklist", label: "Subtasks" }, { key: "doc", label: "Notes" }];
 export const DOC_FORMATS: { key: Format; label: string; hint: string }[] = [
   { key: "list",      label: "List",      hint: "plain items, reorder by hand" },
   { key: "checklist", label: "Checklist", hint: "items you tick · a ticked one goes" },
@@ -71,7 +72,8 @@ export function taskFormat(t: Pick<Todo, "format" | "notes">): "doc" | "checklis
   if (t.format === "checklist") return "checklist";
   if (t.format) return "doc";
   const lines = (t.notes ?? "").split("\n").filter((l) => l.trim());
-  return lines.length > 0 && lines.every((l) => /^\s*- \[[ xX]\] /.test(l)) ? "checklist" : "doc";
+  // Nothing written yet → Subtasks (the primary shape) · free text → Notes · tick lines → Subtasks
+  return lines.length === 0 || lines.every((l) => /^\s*- \[[ xX]\] /.test(l)) ? "checklist" : "doc";
 }
 
 /** The doc's format: the saved choice, else List when every line is an item, else Document. */
@@ -182,18 +184,17 @@ export type QuickParse = {
   dueTime: string | null;
   evening: boolean;
   someday: boolean;
-  project: string | null;
   priority: Priority;
   /** which words were consumed (for the live preview) */
   tokens: string[];
 };
 
 /**
- * "Call the bank tomorrow 10am #money !!" →
- *   title "Call the bank", dueDate tomorrow, dueTime 10:00, project "money", priority 2.
+ * "Call the bank tomorrow 10am !!" →
+ *   title "Call the bank", dueDate tomorrow, dueTime 10:00, priority 2.
  * Understands: today · tonight/this evening · tomorrow · tmrw · weekend · next week ·
  *              mon…sunday · next fri · in 3 days · 15/9 or 15-09 · 9am 18:30 ·
- *              #project · ! / !! · someday
+ *              ! / !! · someday
  */
 const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
 function fromMonthName(today: string, day: number, mon: string, year?: string): string | null {
@@ -220,7 +221,7 @@ function madridMinutes(): number {
  */
 export function parseQuickAdd(input: string, today: string): QuickParse {
   let text = ` ${input.trim()} `;
-  const out: QuickParse = { title: "", dueDate: null, dueTime: null, evening: false, someday: false, project: null, priority: 0, tokens: [] };
+  const out: QuickParse = { title: "", dueDate: null, dueTime: null, evening: false, someday: false, priority: 0, tokens: [] };
   const eat = (re: RegExp, fn: (m: RegExpMatchArray) => void) => {
     const m = text.match(re);
     if (!m) return;
@@ -229,7 +230,6 @@ export function parseQuickAdd(input: string, today: string): QuickParse {
     text = text.replace(re, " ");
   };
 
-  eat(/\s#([\p{L}\p{N}_-]{1,24})(?=\s)/u, (m) => { out.project = m[1].toLowerCase(); });
   eat(/\s(!{1,3})(?=\s)/, (m) => { out.priority = m[1].length >= 2 ? 2 : 1; });
   eat(/\s(someday|later|one day)(?=\s)/i, () => { out.someday = true; });
   eat(/\s(tonight|this evening|evening|(?:at|in the)\s+night|tomorrow\s+night|night)(?=\s)/i, (m) => {
