@@ -351,3 +351,51 @@ Impossible de rafraîchir `data/french/threads-full.jsonl` (dernier refresh : 17
 **Conséquence :** ni le contenu réellement envoyé aujourd'hui, ni les réponses des leads, ni les silences n'ont pu être vérifiés. Les 4 brouillons du jour (`data/suggestions/2026-09-26.md` : Henriqueta 11:20, Fatine 11:32, Dany 13:30, Henriqueta 14:12) restent non comparés à ce qui a été envoyé.
 **Comment appliquer :** avant la prochaine exécution planifiée (demain 21h03), corriger ou retirer cette règle dans `~/.claude/settings.json`. Ce n'est pas une leçon de vente — à traiter comme un correctif de configuration, pas comme un cas à généraliser.
 **Résultat :** aucune leçon commerciale loggée ce soir faute de données ; blocage à lever côté configuration avant la prochaine veille.
+
+## 2026-09-27 — Revue des conversations des deux derniers jours (42 threads, 155 messages)
+
+Scan demandé par Ali de toutes les conversations France Sales depuis le 25/09, pour repérer ce qui n'était pas encore appris. Six points en sont ressortis.
+
+### 1. L'acompte par défaut observé est 96€, pas 196€, pour un blocage de place lié au TIMING (à confirmer avec Ali)
+**Situation :** sur les 3 cas récents où un acompte a servi à bloquer une place en attendant un paiement complet plus tard — Massi (+33745243036), Jacques (+33749378357), Antonio (+33626834421) — aucun n'est une objection de prix, tous sont des cas de "clôture aujourd'hui / démarrage repoussé / weekend".
+**Ce qu'Ali a envoyé les 3 fois :** 96€ directement, jamais précédé de 196€.
+**Ce que dit la carte actuelle :** "Acompte 196€, puis 96€ en seconde concession — jamais l'inverse" (`00-QUICK.md`), confirmé par la correction du 18/09 sur le cas Carole.
+**Pourquoi c'est peut-être différent :** la règle 196€→96€ semble établie sur des objections de PRIX (palier 990€). Ici il s'agit d'un délai de paiement, pas d'un montant trop élevé — un blocage différent, où 96€ pourrait être la règle propre.
+**Comment appliquer d'ici confirmation :** blocage lié au TIMING (pas au prix) → 96€ en première offre. Blocage lié au PRIX (palier 990€ qui coince encore) → garder 196€ en première offre comme la carte le dit.
+**Résultat :** observation, pas encore tranchée avec Ali.
+
+### 2. Une promesse de retour même vague désamorce la règle "toujours finir par une question"
+**Situation :** deux suggestions où j'avais proposé d'ancrer un délai précis par une question — Guillaume (+33630767957 : "je vous tiendrai au courant", sans échéance) et Eliane (+32470131598 : "je suis en train de régler ça", sans échéance). Même schéma déjà vu chez Antonio le 25/09 ("je regarde à cela demain").
+**Ce qu'Ali a réellement envoyé les deux fois :** une seule bulle chaleureuse, sans question — « Pas de souci Guillaume, prenez le temps qu'il faut ! Je suis là si besoin 👍 » / « Pas de souci Eliane, n'hésitez pas si vous avez des questions qui se posent d'ici là ».
+**Pourquoi :** la règle "lead qui a fixé sa propre prochaine étape → accuser réception en une bulle, sans question" (cas Wilson/Anissa du 25/09) s'applique même quand la promesse de retour est vague et sans échéance chiffrée. Poser une question de relance ici est perçu comme remettre de la pression sur un lead qui vient de dire qu'il gère déjà la situation.
+**Comment appliquer :** dès qu'un lead répond avec une raison de délai (vague ou précise) suivie d'une intention de revenir vers nous, répondre en une seule bulle chaleureuse et disponible, sans question de clôture — même sans échéance donnée. Réserver la question ouverte diagnostique ("le prix, le timing, la méthode, ou autre chose ?") aux cas de silence pur, pas à un lead qui vient de répondre avec une explication.
+**Résultat :** règle à appliquer par défaut désormais.
+
+### 3. Virement bancaire : l'échelonnement peut suivre la durée du programme, pas le plafond de 10 fois
+**Situation :** Sara (+41763914912), bloquée à l'étranger sans accès carte/banque en ligne, programme 7h/semaine sur 7 mois. Alma (10 fois) indisponible ; Ali a activé un virement bancaire.
+**Ce qu'Ali a envoyé :** virement par défaut = paiement unique (1785.- CHF) ; proposé d'abord 3 fois (~600 CHF), puis réévalué à 7 fois (~255 CHF) — « vu que votre programme est sur 7 mois à 7h/semaine, on peut aller dans ce cas jusqu'à 7 mensualités... ça reste en dessous des 10 fois que vous aviez via carte ».
+**Pourquoi :** par virement (hors Alma), le nombre de fois n'est pas plafonné à 10 — il peut suivre la durée réelle du programme en mois. Ali le présente honnêtement comme "en dessous" de l'option carte plutôt que comme un avantage.
+**Comment appliquer :** pour un lead qui doit payer par virement, l'échelonnement peut suivre la durée du programme concerné — vérifier le nombre de mois du format avant de proposer un chiffre.
+**Résultat :** à suivre (place bloquée jusqu'au 5 octobre).
+
+### 4. Bloquer une place sans aucun acompte, quand le blocage est un problème d'accès et non d'argent
+**Situation :** même lead, Sara. Après plusieurs jours d'aller-retour (carte bloquée par vérification bancaire, virement inaccessible depuis l'étranger), elle ne peut matériellement rien payer avant son retour le 5 octobre, mais reste motivée et réactive à chaque message.
+**Ce qu'Ali a envoyé :** « Bonne nouvelle Sara ! J'ai pu plaidé votre cause et votre place est bloquée jusqu'au 5 octobre » puis « On vous recontactera à ce moment-là pour finaliser l'inscription » — **aucun acompte demandé**, contrairement à tous les autres cas de blocage de place.
+**Pourquoi :** avant d'accorder ça, Ali avait posé une limite honnête (« je ne peux pas vous garantir en revanche qu'ils accepteront de bloquer votre place jusqu'au 5 octobre ») plutôt que de promettre d'emblée — la concession n'a été confirmée qu'après, en "bonne nouvelle". Le blocage ici est un problème d'ACCÈS (aucun moyen de paiement utilisable), pas de volonté ou de budget.
+**Comment appliquer :** ne proposer "place tenue sans acompte" que quand le lead a démontré sur plusieurs échanges qu'il ne PEUT physiquement payer par aucun moyen disponible — jamais pour une simple préférence ou un délai de convenance, où l'acompte (96€/196€) reste la règle.
+**Résultat :** à suivre, retour prévu le 5 octobre.
+
+### 5. Lead qui répond après la clôture : reconnaître qu'elle est passée, puis proposer de vérifier
+**Situation :** Henriqueta (+32487513159), répond le lendemain matin à une clôture fixée la veille à 20h, dépassée sans le vouloir.
+**Ce qu'Ali a envoyé :** « la clôture des inscriptions était à 20h, donc on l'a dépassée. Voulez-vous que j'essaye de vérifier avec l'administration s'ils peuvent l'étendre pour vous ? » puis, après sa confirmation : « bonne nouvelle ! Je viens d'avoir la confirmation écrite de l'administration : ils ont pu rouvrir votre inscription ».
+**Pourquoi :** contrairement à une deadline qui approche encore, ici elle est déjà dépassée — on le dit factuellement d'abord, on demande explicitement si elle veut qu'on vérifie (pas automatique), et on ne confirme la réouverture qu'après un vrai aller-retour.
+**Comment appliquer :** pour un lead qui recontacte après une deadline passée, la nommer comme dépassée plutôt que l'ignorer ou la traiter comme toujours active, proposer de vérifier, puis "bonne nouvelle" seulement après confirmation de son côté — le format "je vérifie" → "bonne nouvelle" de la carte s'applique aussi post-deadline.
+**Résultat :** a payé (Sale).
+
+### 6. Au format 48h/583€ (dernier cran), certains leads objectent que le volume d'heures est insuffisant
+**Situation :** Hamza (+32484508865), contrainte financière réelle (~100€/mois trop élevé), descendu au format 48h/583€ sans garantie (58,30€/mois). Rassuré sur la taille de groupe (toujours 2-3 élèves), il refuse finalement sur le volume : « 48 heures c'est à peu près 24 cours... pas assez pour apprendre une langue ».
+**Pourquoi c'est utile à savoir :** au dernier cran de la politique de downsell, résoudre l'objection budget peut en faire apparaître une nouvelle sur le VOLUME perçu comme insuffisant — ce n'est pas la même objection que le prix, et le format n'a plus de garantie à mettre en avant pour rassurer.
+**Comment appliquer :** en proposant un format sans garantie très réduit, anticiper la question du volume avant qu'elle arrive — resituer les heures dans un objectif réaliste ("progresser sur un point précis", pas "atteindre un niveau complet") plutôt que laisser le lead comparer silencieusement à l'objectif initial.
+**Résultat :** refus ; lead se dit potentiellement intéressé "l'année prochaine, au prix".
+
+**Résultat global :** 6 points loggés, dont un (le point 1, acompte 96 vs 196) à trancher explicitement avec Ali avant de généraliser.
