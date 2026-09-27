@@ -204,6 +204,22 @@ function SubtaskEditRow({ s, ordered, onTick, onText, onEnter, onRemove, onMove,
 }) {
   const [celebrating, start] = useCelebration();
   const cols = ordered ? "40px 1fr auto" : "40px 1fr";
+  // The row keeps the text AS TYPED while it has focus. The stored line is trimmed on every
+  // save (serializeSubtasks / parseSubtasks), so a write-through field lost a trailing space
+  // before the next letter arrived: no space could ever be typed into an existing subtask
+  // (Ali 2026-09-27). `expect` = the trimmed text the parent should now hold; while it matches,
+  // the typed text is shown. An emptied line is removed on blur, never mid-typing.
+  const [local, setLocal] = useState<{ typed: string; expect: string } | null>(null);
+  const value = local && local.expect === s.text ? local.typed : s.text;
+  const change = (v: string) => {
+    const t = v.trim();
+    setLocal((l) => ({ typed: v, expect: t || l?.expect || s.text }));
+    if (t) onText(v);
+  };
+  const commit = () => {
+    if (local && !local.typed.trim()) onText("");
+    setLocal(null);
+  };
   return (
     <div style={{ display: "grid", gridTemplateColumns: cols, alignItems: "center", minHeight: 46, borderBottom: "1px solid var(--line)" }}>
       <TickBox done={s.done} celebrating={celebrating} onTick={() => (s.done ? onTick() : start(onTick))} />
@@ -212,7 +228,7 @@ function SubtaskEditRow({ s, ordered, onTick, onText, onEnter, onRemove, onMove,
         // (a textarea cannot carry the sweep animation) · Ali 2026-09-15: subtasks had no strike and no sound.
         <span className="cc-done-strike" style={{ display: "inline-block", fontSize: 16, lineHeight: 1.4, color: "var(--ink-3)", padding: "8px 10px", overflowWrap: "anywhere" }}>{s.text}</span>
       ) : (
-        <GrowInput value={s.text} onChange={onText} onEnter={onEnter} ariaLabel="Subtask"
+        <GrowInput value={value} onChange={change} onCommit={commit} onEnter={onEnter} ariaLabel="Subtask"
           style={{ background: "transparent", border: "none", borderRadius: 0, padding: "8px 10px 8px 0" }} />
       )}
       {ordered && (
