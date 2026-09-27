@@ -8,22 +8,12 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureSchema } from "@/db/migrate";
-import { dishes, type Dish, type Ingredient, type Lang } from "@/db/schema";
+import { dishes, type Dish, type Ingredient } from "@/db/schema";
 import { scaleQty } from "./scale";
 import { getWeekPlan, headcount, ingredientKey, PLAN_MEALS } from "./week";
 
-export type GroceryLine = {
-  key: string;
-  /** Names in the three languages, from the most common spelling among the dishes. */
-  en: string; fr: string; ar: string;
-  unit: string;
-  qty: number;
-  group: "fresh" | "dry";
-  /** Which dishes need it (English names), for the reader who wonders why. */
-  dishes: string[];
-};
-
-export type GroceryList = { people: number; days: string[]; fresh: GroceryLine[]; dry: GroceryLine[]; breakfast: GroceryLine[] };
+import { type GroceryLine, type GroceryList } from "./groceryText";
+export { lineName, type GroceryLine, type GroceryList } from "./groceryText";
 
 type Acc = Map<string, GroceryLine>;
 
@@ -112,6 +102,3 @@ export async function buildGroceryList(days: string[]): Promise<GroceryList> {
   return { people, days, fresh, dry, breakfast };
 }
 
-export function lineName(l: GroceryLine, lang: Lang): string {
-  return lang === "ar" ? l.ar : lang === "fr" ? l.fr : l.en;
-}

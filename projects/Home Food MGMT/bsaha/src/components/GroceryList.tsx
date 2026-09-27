@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import clsx from "clsx";
 import type { Lang } from "@/db/schema";
 import { formatQty } from "@/lib/scale";
-import { lineName, type GroceryLine, type GroceryList as List } from "@/lib/grocery";
+import { lineName, type GroceryLine, type GroceryList as List } from "@/lib/groceryText";
 import { setGroceryTicks } from "@/app/(app)/week/actions";
 
 export type GroceryLabels = { fresh: string; dry: string; breakfastStaples: string; copyList: string; copied: string; nothingPlanned: string; forDishes: string };

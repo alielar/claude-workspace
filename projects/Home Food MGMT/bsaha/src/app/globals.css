@@ -65,6 +65,9 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic), var(--font-latin), system-ui, sans-serif;
 }
 
+/* Older Android browsers without dynamic viewport units still get a full-height page. */
+@supports not (min-height: 100dvh) { .min-h-dvh { min-height: 100vh; } }
+
 /* Bottom tab bar sits above the phone's home indicator. */
 .safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
 .pad-tabs { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }

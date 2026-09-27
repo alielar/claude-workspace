@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Nunito, Noto_Sans_Arabic } from "next/font/google";
 import { currentPerson } from "@/lib/session";
 import { isRtl } from "@/lib/i18n/dict";
+import { RegisterSw } from "@/components/RegisterSw";
 import "./globals.css";
 
 const latin = Nunito({ subsets: ["latin"], variable: "--font-latin", display: "swap" });
@@ -29,7 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className={`${latin.variable} ${arabic.variable}`}
       data-theme={me?.theme && me.theme !== "system" ? me.theme : undefined}>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">{children}<RegisterSw /></body>
     </html>
   );
 }
