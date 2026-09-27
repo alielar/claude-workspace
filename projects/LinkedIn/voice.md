@@ -14,9 +14,10 @@
 - Contrarian takes are welcome when honest.
 
 ## Rules
-- 5 to 15 short lines.
+- 12 to 20 short lines. Go into the story and its implications, not just the headline.
 - No emojis. No hashtags.
-- Ends with a question that invites people to share their view in the comments.
+- Opens with the signature line, always with "Hello friends" and a variation: "Hello friends, coming to share a thought", "Hello friends, I have another thought for you today", "Hello friends, coming back with a thought about ...".
+- Ends with an open invitation, not a question: "Don't hesitate to let me know what you think, or if you have doubts about this", with variations.
 - Keep the company and its tools vague. Well-known tools (Claude, ChatGPT, Microsoft Copilot) can be named.
 - Own automations: describe the intent and what changed, not the technical details.
 - Each post gets a picture suggestion (free stock photo search or a screenshot idea).
