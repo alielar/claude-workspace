@@ -5,9 +5,10 @@
  *
  * GET               · the chat feed: newest 40 requests (images only on the newest 8) + worker heartbeat
  * GET ?queued=1     · the worker's poll: stamps the heartbeat, returns queued requests with images
- * POST              · a new request {clientId, text, images[]} · idempotent on clientId
+ * POST              · a new request {clientId, text, images[]} · idempotent on clientId · lands as "held"
+ *                     (nothing is built until Ali taps Ship now → /api/fix/ship flips held → queued)
  * PATCH             · {id, status, reply?, commitSha?, batchId?} · the worker's progress, the
- *                     page's cancel (queued → skipped) and retry (failed → queued).
+ *                     page's cancel (held/queued → skipped) and retry (failed → held).
  *                     shipped / failed → one push to every device.
  */
 
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
   }
   const now = new Date();
   try {
-    await db.insert(fixRequests).values({ userId, clientId, text, images: images.length ? JSON.stringify(images) : null, status: "queued", createdAt: now, updatedAt: now });
+    await db.insert(fixRequests).values({ userId, clientId, text, images: images.length ? JSON.stringify(images) : null, status: "held", createdAt: now, updatedAt: now });
   } catch { /* same clientId sent twice (an offline replay) · the first one stands */ }
   const [row] = await db.select().from(fixRequests).where(eq(fixRequests.clientId, clientId));
   return NextResponse.json({ request: toRequest(row, true) });
@@ -105,7 +106,7 @@ export async function PATCH(req: Request) {
   if (typeof b.commitSha === "string") set.commitSha = b.commitSha.trim().slice(0, 40) || null;
   if (typeof b.batchId === "string") set.batchId = b.batchId.slice(0, 40);
   if (status === "building") { set.startedAt = now; set.finishedAt = null; }
-  if (status === "queued") { set.startedAt = null; set.finishedAt = null; set.reply = null; set.commitSha = null; }
+  if (status === "queued" || status === "held") { set.startedAt = null; set.finishedAt = null; set.reply = null; set.commitSha = null; }
   if (status === "shipped" || status === "failed" || status === "skipped") set.finishedAt = now;
   await db.update(fixRequests).set(set).where(eq(fixRequests.id, id));
   const [row] = await db.select().from(fixRequests).where(eq(fixRequests.id, id));
@@ -116,7 +117,7 @@ export async function PATCH(req: Request) {
       await sendToUser(userId, {
         title: status === "shipped" ? "Fix shipped" : "Fix needs you",
         body: `${head}${row.reply ? ` · ${row.reply.slice(0, 120)}` : ""}`,
-        tag: `fix-${id}`, url: "/fix",
+        tag: `fix-${id}`, url: "/alai",
       });
     } catch { /* push is a courtesy */ }
   }

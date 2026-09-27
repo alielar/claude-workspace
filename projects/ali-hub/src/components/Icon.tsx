@@ -4,7 +4,7 @@
  */
 
 import {
-  Sun, Newspaper, Settings, Dumbbell, ListChecks,
+  Sun, Newspaper, Settings, Dumbbell, ListChecks, Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -14,6 +14,7 @@ const ICONS = {
   settings: Settings,
   train:    Dumbbell,
   todo:     ListChecks,
+  alai:     Sparkles,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

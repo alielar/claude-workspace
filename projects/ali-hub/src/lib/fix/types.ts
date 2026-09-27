@@ -1,12 +1,14 @@
 /**
- * Fix chat (2026-09-27) · Ali types what he wants changed (with screenshots) inside the app;
- * a job on his Mac (`fix-worker/worker.mjs`) picks the queue up, runs Claude Code headless in
- * this repository, ships, and writes a plain-language reply back into the chat.
+ * ALAI (2026-09-27) · Ali types what he wants changed (with screenshots) inside the app; the
+ * messages wait ("held") until he taps Ship now; then a job on his Mac (`fix-worker/worker.mjs`)
+ * takes everything released as one batch, runs Claude Code headless in this repository, ships,
+ * and writes a plain-language reply back into the chat.
  *
  * Shapes shared by the page, the API and the worker.
  */
 
-export type FixStatus = "queued" | "building" | "shipped" | "failed" | "skipped";
+/** held = written, waiting for Ali's "Ship now" (the default) · queued = released, the Mac may take it. */
+export type FixStatus = "held" | "queued" | "building" | "shipped" | "failed" | "skipped";
 
 export type FixRequest = {
   id: number;
@@ -34,6 +36,6 @@ export type FixFeed = {
 export const MAX_IMAGES = 4;
 export const MAX_IMAGE_BYTES = 600_000;   // per data URL, after the phone shrank it
 export const MAX_TEXT = 4000;
-export const STATUSES: FixStatus[] = ["queued", "building", "shipped", "failed", "skipped"];
+export const STATUSES: FixStatus[] = ["held", "queued", "building", "shipped", "failed", "skipped"];
 
 export const newFixId = () => `f-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;

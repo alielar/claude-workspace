@@ -3,8 +3,8 @@
 /**
  * Sidebar · desktop only (hidden <768px via CSS). 56px icon rail, ALWAYS collapsed
  * (Ali 2026-09-27 · it used to widen to 200px on hover); the label shows as a small
- * tooltip beside the icon. Settings sits at the BOTTOM of the rail (Ali, 2026-09-01),
- * Train follows it because Train is last in NAV. Same NAV list as the phone tab bar.
+ * tooltip beside the icon. Same NAV list as the phone bar; Settings, last in NAV, sits alone
+ * at the BOTTOM of the rail (Ali, 2026-09-01 and again 2026-09-27: "keep it on the bottom").
  */
 
 import Link from "next/link";

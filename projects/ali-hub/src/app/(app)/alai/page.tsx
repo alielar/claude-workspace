@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * /fix · the Fix chat (2026-09-27). Ali says what he wants changed, in his words, with
- * screenshots; the request queues here, the Mac picks it up (fix-worker), builds, ships and
- * answers in this same thread. Reached from Settings → App → Fix chat.
+ * /alai · ALAI, the fifth tab (2026-09-27). Ali says what he wants changed, in his words, with
+ * screenshots (camera roll, paste, or drag and drop on the laptop). Messages WAIT here · nothing
+ * is built until he taps Ship now ("hold until I say go"); then the Mac (fix-worker) takes every
+ * released message as one batch, builds, ships and answers in this same thread.
  *
  * One thread, newest at the bottom. Ali's bubbles on the right; under each one a quiet status
- * line (queued · building · live) and, once built, the worker's reply on the left. The header
- * says whether the Mac is listening · the worker only runs while the Mac is awake.
+ * line (waiting · queued · building · live) and, once built, the worker's reply on the left. The
+ * header says whether the Mac is listening · the worker only runs while the Mac is awake.
  * Behind the login gate: the page and /api/fix both need the session cookie.
  */
 
@@ -38,7 +39,14 @@ function elapsed(from: number, to: number): string {
 
 /** Shrink a photo on the phone: longest side 1400 px, JPEG · lower the quality until it fits. */
 async function shrink(file: File): Promise<string> {
-  const bmp = await createImageBitmap(file);
+  const bmp = await createImageBitmap(file).catch(() => null);
+  if (!bmp) {
+    // The browser could not decode it (an odd format, a damaged file) · a small one goes as it is.
+    if (file.size <= MAX_IMAGE_BYTES && /^image\/(jpeg|png|webp)$/.test(file.type)) {
+      return new Promise<string>((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(r.error); r.readAsDataURL(file); });
+    }
+    throw new Error("cannot decode");
+  }
   const scale = Math.min(1, 1400 / Math.max(bmp.width, bmp.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale);
@@ -56,9 +64,9 @@ async function shrink(file: File): Promise<string> {
   return small.toDataURL("image/jpeg", 0.6);
 }
 
-const STATUS_LABEL: Record<FixStatus, string> = { queued: "Queued", building: "Building", shipped: "Live", failed: "Needs you", skipped: "Cancelled" };
+const STATUS_LABEL: Record<FixStatus, string> = { held: "Waiting", queued: "Queued", building: "Building", shipped: "Live", failed: "Needs you", skipped: "Cancelled" };
 
-export default function FixPage() {
+export default function AlaiPage() {
   // true only on the client after hydration (the composer is portalled into <body>)
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const feed = useCached<FixFeed>("fixes", () => fetchJson<FixFeed>("/api/fix"));
@@ -104,13 +112,16 @@ export default function FixPage() {
     } catch { setErr("Could not read that image"); }
   };
 
+  const addFilesRef = useRef(addFiles);
+  useEffect(() => { addFilesRef.current = addFiles; });
+
   const send = async () => {
     const t = text.trim();
     if ((!t && images.length === 0) || busy) return;
     setBusy(true); setErr(null);
     const clientId = newFixId();
     const now = Date.now();
-    const optimistic: FixRequest = { id: -now, clientId, text: t, images, imageCount: images.length, status: "queued", reply: null, commitSha: null, batchId: null, createdAt: now, updatedAt: now, startedAt: null, finishedAt: null };
+    const optimistic: FixRequest = { id: -now, clientId, text: t, images, imageCount: images.length, status: "held", reply: null, commitSha: null, batchId: null, createdAt: now, updatedAt: now, startedAt: null, finishedAt: null };
     feed.setData((cur) => ({ requests: [...(cur?.requests ?? []), optimistic], worker: cur?.worker ?? { seenAt: null, note: null } }));
     try {
       const res = await fetch("/api/fix", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId, text: t, images }) });
@@ -126,7 +137,7 @@ export default function FixPage() {
   };
 
   const patch = async (id: number, status: FixStatus) => {
-    feed.setData((cur) => ({ requests: (cur?.requests ?? []).map((r) => (r.id === id ? { ...r, status, reply: status === "queued" ? null : r.reply } : r)), worker: cur?.worker ?? { seenAt: null, note: null } }));
+    feed.setData((cur) => ({ requests: (cur?.requests ?? []).map((r) => (r.id === id ? { ...r, status, reply: status === "held" ? null : r.reply } : r)), worker: cur?.worker ?? { seenAt: null, note: null } }));
     try { await fetch("/api/fix", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) }); feed.markEdit(); }
     catch { feed.refresh(); }
   };
@@ -140,6 +151,43 @@ export default function FixPage() {
   }, [worker.seenAt, now]);
 
   const canSend = (text.trim().length > 0 || images.length > 0) && !busy;
+
+  // Ship now · every waiting message is released together; the Mac takes them within 30 s.
+  const heldCount = requests.filter((r) => r.status === "held").length;
+  const queuedCount = requests.filter((r) => r.status === "queued").length;
+  const [shipping, setShipping] = useState(false);
+  const shipNow = async () => {
+    if (!heldCount || shipping) return;
+    setShipping(true); setErr(null);
+    feed.setData((cur) => ({ requests: (cur?.requests ?? []).map((r) => (r.status === "held" ? { ...r, status: "queued" } : r)), worker: cur?.worker ?? { seenAt: null, note: null } }));
+    try {
+      const res = await fetch("/api/fix/ship", { method: "POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      feed.markEdit();
+    } catch (e) { setErr(`Not shipped · ${(e as Error).message}`); feed.refresh(); }
+    finally { setShipping(false); }
+  };
+
+  // Drag a picture anywhere onto the page (laptop) · a violet veil says "drop it".
+  const [dragging, setDragging] = useState(false);
+  useEffect(() => {
+    let depth = 0;
+    const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const enter = (e: DragEvent) => { if (!hasFiles(e)) return; depth++; setDragging(true); };
+    const leave = () => { depth = Math.max(0, depth - 1); if (depth === 0) setDragging(false); };
+    const over = (e: DragEvent) => { if (hasFiles(e)) e.preventDefault(); };
+    const drop = (e: DragEvent) => {
+      depth = 0; setDragging(false);
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      const dt = e.dataTransfer;
+      const files = dt?.files.length ? Array.from(dt.files) : Array.from(dt?.items ?? []).map((it) => it.getAsFile()).filter((f): f is File => !!f);
+      if (files.length) addFilesRef.current(files);
+    };
+    window.addEventListener("dragenter", enter); window.addEventListener("dragleave", leave);
+    window.addEventListener("dragover", over); window.addEventListener("drop", drop);
+    return () => { window.removeEventListener("dragenter", enter); window.removeEventListener("dragleave", leave); window.removeEventListener("dragover", over); window.removeEventListener("drop", drop); };
+  }, []);
 
   // The Mac is connected once, with one line pasted in Terminal · the command carries the app key,
   // so it is fetched by the signed-in browser only (GET /api/fix/setup refuses the key header).
@@ -156,10 +204,10 @@ export default function FixPage() {
   const needsMac = feed.data && (!worker.seenAt || now - worker.seenAt > 15 * 60_000);
 
   return (
-    <div style={{ display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 190 + Math.min(images.length, 1) * 84 }}>
+    <div style={{ display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 190 + Math.min(images.length, 1) * 84 + (heldCount + queuedCount > 0 ? 44 : 0) }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 600 }}>Fix chat</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 600 }}>ALAI</h1>
           <div className="sub" style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: workerLine.tone, boxShadow: workerLine.tone === "var(--pos)" ? "0 0 0 3px color-mix(in srgb, var(--pos) 22%, transparent)" : undefined }} />
             <span style={{ color: workerLine.tone === "var(--warn)" ? "var(--warn)" : undefined }}>{workerLine.text}</span>
@@ -189,13 +237,13 @@ export default function FixPage() {
           <div style={{ fontSize: 40, marginBottom: 8, color: "var(--violet)" }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.6 9.6a2 2 0 0 1-2.8-2.8l9.6-9.6" /><path d="M3 21l3-3" /></svg>
           </div>
-          Nothing sent yet.
+          Nothing written yet.
         </div>
       )}
 
       {/* The thread */}
       <div style={{ display: "grid", gap: 18 }}>
-        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "queued")} />)}
+        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} />)}
         <div ref={endRef} />
       </div>
 
@@ -216,6 +264,19 @@ export default function FixPage() {
               </div>
             )}
             {err && <div style={{ fontSize: 13.5, color: "var(--neg)" }}>{err}</div>}
+            {(heldCount > 0 || queuedCount > 0) && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 36 }}>
+                <span style={{ fontSize: 14, color: "var(--ink-3)", flex: 1 }}>
+                  {heldCount > 0 ? `${heldCount} waiting` : ""}{heldCount > 0 && queuedCount > 0 ? " · " : ""}{queuedCount > 0 ? `${queuedCount} on the way to the Mac` : ""}
+                </span>
+                {heldCount > 0 && (
+                  <button type="button" onClick={shipNow} disabled={shipping} className="cc-btn cc-btn-primary" style={{ minHeight: 36, padding: "0 14px", borderRadius: 10, fontSize: 15, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+                    Ship now
+                  </button>
+                )}
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "44px 1fr 44px", gap: 8, alignItems: "end" }}>
               <button type="button" onClick={() => fileRef.current?.click()} className="cc-btn cc-btn-ghost" aria-label="Add a screenshot" title="Add a screenshot"
                 style={{ minHeight: 44, minWidth: 44, borderRadius: 14, padding: 0, color: images.length ? "var(--violet)" : undefined }}>
@@ -233,6 +294,13 @@ export default function FixPage() {
             </div>
           </div>
         </form>, document.body)}
+
+      {/* Drop veil */}
+      {dragging && (
+        <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 55, background: "color-mix(in srgb, var(--violet) 14%, transparent)", border: "3px dashed var(--violet)", borderRadius: 18, margin: 10, display: "grid", placeItems: "center", pointerEvents: "none" }}>
+          <span style={{ background: "var(--bg-card)", color: "var(--ink)", padding: "10px 16px", borderRadius: 12, fontSize: 16, fontWeight: 600, border: "1px solid var(--line)" }}>Drop the picture</span>
+        </div>
+      )}
 
       {/* Lightbox */}
       {zoom && (
@@ -282,17 +350,17 @@ function Bubble({ r, now, onZoom, onCancel, onRetry }: { r: FixRequest; now: num
         {r.status === "building"
           ? <span className="fix-dots" aria-hidden><span /><span /><span /></span>
           : <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: tone, flex: "0 0 auto" }} />}
-        <span style={{ color: r.status === "failed" ? "var(--warn)" : r.status === "shipped" ? "var(--pos)" : undefined, fontWeight: r.status === "queued" || r.status === "skipped" ? 400 : 600 }}>{STATUS_LABEL[r.status]}</span>
+        <span style={{ color: r.status === "failed" ? "var(--warn)" : r.status === "shipped" ? "var(--pos)" : undefined, fontWeight: r.status === "held" || r.status === "queued" || r.status === "skipped" ? 400 : 600 }}>{STATUS_LABEL[r.status]}</span>
         {r.status === "building" && r.startedAt && <span>· {elapsed(r.startedAt, now)}</span>}
         {r.status === "shipped" && r.startedAt && r.finishedAt && <span>· built in {elapsed(r.startedAt, r.finishedAt)}</span>}
         {r.status === "shipped" && r.commitSha && <span style={{ fontFamily: "var(--f-mono)" }}>· {r.commitSha.slice(0, 7)}</span>}
         <span style={{ flex: 1 }} />
-        {r.status === "queued" && <button type="button" onClick={onCancel} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Cancel</button>}
+        {(r.status === "held" || r.status === "queued") && <button type="button" onClick={onCancel} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Cancel</button>}
         {(r.status === "failed" || r.status === "skipped") && <button type="button" onClick={onRetry} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Send again</button>}
       </div>
 
       {/* The worker's reply */}
-      {r.reply && r.status !== "queued" && r.status !== "building" && (
+      {r.reply && r.status !== "held" && r.status !== "queued" && r.status !== "building" && (
         <div style={{ justifySelf: "start", maxWidth: "88%", background: "var(--bg-card)", border: "1px solid var(--line)", borderLeft: `3px solid ${tone}`, padding: "10px 14px", borderRadius: "6px 18px 18px 18px", fontSize: 15.5, lineHeight: 1.5, color: "var(--ink)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", WebkitUserSelect: "text", userSelect: "text" }}>
           <Linkify text={r.reply} />
         </div>
