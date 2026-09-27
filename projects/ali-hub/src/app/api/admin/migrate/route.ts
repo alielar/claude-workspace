@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { HEALTH_DDL } from "@/lib/health/server";
 import { VAULT_DDL } from "@/lib/vault/server";
 import { BIRTHDAY_DDL } from "@/lib/birthdays/server";
+import { FIX_DDL } from "@/lib/fix/server";
 import { DEDUPE_ROUTINE_ROWS } from "@/app/api/checklist/route";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -433,6 +434,7 @@ export async function POST() {
 
     // ── Birthdays & important dates (2026-09-19) · same DDL as src/lib/birthdays/server.ts
     ...BIRTHDAY_DDL,
+    ...FIX_DDL,
   ];
 
   const results: string[] = [];

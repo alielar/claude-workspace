@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# fix chat worker (the Mac job) · its logs, temp batches and env stay local
+/fix-worker/tmp/
+/fix-worker/logs/

@@ -690,6 +690,7 @@ export default function SettingsPage() {
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{migrateMsg ?? ""}</span>
           <span style={{ display: "flex", gap: 8 }}>
+            <Link href="/fix" className="cc-btn cc-btn-ghost" style={{ textDecoration: "none" }}>Fix chat</Link>
             <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>
             <button className="cc-btn cc-btn-ghost" onClick={runMigrate}>Update database</button>
           </span>

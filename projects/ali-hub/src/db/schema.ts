@@ -197,6 +197,30 @@ export const birthdays = sqliteTable("birthdays", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 });
 
+// ─── Fix chat (2026-09-27) · Ali's requests from /fix, built and shipped by headless Claude on the Mac ──
+export const fixRequests = sqliteTable("fix_requests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: text("client_id").notNull().unique(),
+  text: text("text").notNull(),
+  images: text("images"),                       // JSON array of data URLs (JPEG, shrunk on the phone)
+  status: text("status").notNull().default("queued"), // queued · building · shipped · failed · skipped
+  reply: text("reply"),                         // the worker's plain-language answer for Ali
+  commitSha: text("commit_sha"),
+  batchId: text("batch_id"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  startedAt: integer("started_at", { mode: "timestamp_ms" }),
+  finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+});
+export const fixWorker = sqliteTable("fix_worker", {
+  userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  seenAt: integer("seen_at", { mode: "timestamp_ms" }).notNull(),
+  note: text("note"),
+});
+
 // ─── Calendar (Google iCal feeds → tickable work blocks on Today) ─────────────
 
 /** One tick = "I was productive in this block". Unique per user+day+block. */

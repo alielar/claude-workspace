@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * Sidebar · desktop only (hidden <768px via CSS). 56px icon rail,
- * Settings sits at the BOTTOM of the rail (Ali, 2026-09-01);
- * expands to show labels on hover. Same NAV list as the phone tab bar.
+ * Sidebar · desktop only (hidden <768px via CSS). 56px icon rail, ALWAYS collapsed
+ * (Ali 2026-09-27 · it used to widen to 200px on hover); the label shows as a small
+ * tooltip beside the icon. Settings sits at the BOTTOM of the rail (Ali, 2026-09-01),
+ * Train follows it because Train is last in NAV. Same NAV list as the phone tab bar.
  */
 
 import Link from "next/link";
@@ -25,6 +26,7 @@ export function Sidebar() {
               href={item.href}
               className={`cc-sidebar-link${active ? " active" : ""}`}
               aria-label={item.label}
+              title={item.label}
               style={item.icon === "settings" ? { marginTop: "auto" } : undefined}
             >
               <span className="cc-sidebar-icon">

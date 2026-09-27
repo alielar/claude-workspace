@@ -1,7 +1,7 @@
 /**
  * Navigation · single source of truth for the tab bar (phone) and sidebar (desktop).
  *
- * Today · Train · To-do · News · Settings. Keep this list short on purpose —
+ * Today · To-do · News · Settings · Train. Keep this list short on purpose —
  * if something needs a second thought about where it lives, the nav is wrong.
  *
  * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
@@ -16,12 +16,13 @@ export type NavItem = {
   match?: string[]; // extra route prefixes that mark this item active
 };
 
+// Order (Ali 2026-09-27): To-do second, Train last · on the desktop rail Settings and Train sit at the bottom.
 export const NAV: NavItem[] = [
   { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/breathe", "/books"] },
-  { href: "/train",    label: "Train",    icon: "train" },
-  { href: "/todo",     label: "To-do",    icon: "todo",     match: ["/todo", "/vault"] },
+  { href: "/todo",     label: "To-do",    icon: "todo",     match: ["/todo", "/vault", "/birthdays"] },
   { href: "/news",     label: "News",     icon: "news" },
-  { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
+  { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive", "/fix"] },
+  { href: "/train",    label: "Train",    icon: "train" },
 ];
 
 /** Whether a nav item is active for the current pathname. */

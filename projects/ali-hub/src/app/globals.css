@@ -217,7 +217,7 @@ html, body {
    cc-* Component library
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ─── Sidebar (desktop vertical nav, collapses to 56px, expands to 200px on hover) ─── */
+/* ─── Sidebar (desktop vertical nav · a 56px icon rail, always collapsed · Ali 2026-09-27) ─── */
 .cc-sidebar {
   position: fixed;
   top: 0; left: 0; bottom: 0;
@@ -226,15 +226,11 @@ html, body {
   display: none;          /* hidden on mobile */
   flex-direction: column;
   padding: 10px 0;
-  overflow: hidden;       /* clip label text when collapsed */
+  overflow: visible;      /* the label tooltip sits outside the rail */
   background: var(--bg-chrome);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   border-right: 1px solid var(--border);
-  transition: width 0.22s var(--easeOut);
-}
-.cc-sidebar:hover {
-  width: 200px;
 }
 @media (min-width: 768px) {
   .cc-sidebar { display: flex; }
@@ -292,14 +288,14 @@ html, body {
 
 /* Label — fades in as sidebar expands */
 .cc-sidebar-label {
-  font-size: 13px;
-  font-weight: 450;
-  letter-spacing: -0.01em;
-  color: inherit;
-  opacity: 0;
-  transition: opacity 0.15s var(--easeOut);
+  position: absolute; left: 52px; top: 50%; transform: translateY(-50%);
+  padding: 5px 9px; border-radius: 8px;
+  background: var(--bg-card); color: var(--ink); border: 1px solid var(--line);
+  font-size: 13px; font-weight: 500; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.12s var(--easeOut);
 }
-.cc-sidebar:hover .cc-sidebar-label {
+.cc-sidebar-link:hover .cc-sidebar-label, .cc-sidebar-link:focus-visible .cc-sidebar-label {
   opacity: 1;
 }
 
