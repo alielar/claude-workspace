@@ -260,12 +260,14 @@ export default function TodoPage() {
   const switching = useRef<number | null>(null);
   useEffect(() => () => { if (switching.current) clearTimeout(switching.current); }, []);
   const neighbour = slide.dx < 0 ? SEGMENTS[idx + 1] : slide.dx > 0 ? SEGMENTS[idx - 1] : undefined;
-  const onPageTouchStart = (e: React.TouchEvent) => {
+  // The listeners sit on the document, so the slide works from anywhere on the screen, empty
+  // space under a short list included · not only on the page's own box.
+  const onPageTouchStart = (e: TouchEvent) => {
     const el = e.target as HTMLElement;
-    if (switching.current || el.closest('[role="dialog"], input, textarea, select, .todo-addbar')) { gesture.current = null; return; }
+    if (switching.current || el.closest('[role="dialog"], input, textarea, select, .todo-addbar, .cc-mobile-nav, header, nav')) { gesture.current = null; return; }
     gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp, w: paneRef.current?.clientWidth ?? window.innerWidth, axis: "" };
   };
-  const onPageTouchMove = (e: React.TouchEvent) => {
+  const onPageTouchMove = (e: TouchEvent) => {
     const g = gesture.current;
     if (!g) return;
     const dx = e.touches[0].clientX - g.x, dy = e.touches[0].clientY - g.y;
@@ -277,7 +279,7 @@ export default function TodoPage() {
     const hasNext = dx < 0 ? idx < SEGMENTS.length - 1 : idx > 0;
     setSlide({ dx: hasNext ? dx : dx * 0.25, settle: false, w: g.w });
   };
-  const onPageTouchEnd = (e: React.TouchEvent) => {
+  const onPageTouchEnd = (e: TouchEvent) => {
     const g = gesture.current; gesture.current = null;
     if (!g || g.axis !== "x") return;
     const c = e.changedTouches[0];
@@ -295,6 +297,21 @@ export default function TodoPage() {
       setSlide({ dx: 0, settle: true, w: g.w });
     }
   };
+  const touchHandlers = useRef({ start: onPageTouchStart, move: onPageTouchMove, end: onPageTouchEnd });
+  useEffect(() => { touchHandlers.current = { start: onPageTouchStart, move: onPageTouchMove, end: onPageTouchEnd }; });
+  useEffect(() => {
+    const start = (e: TouchEvent) => touchHandlers.current.start(e);
+    const move = (e: TouchEvent) => touchHandlers.current.move(e);
+    const end = (e: TouchEvent) => touchHandlers.current.end(e);
+    document.addEventListener("touchstart", start, { passive: true });
+    document.addEventListener("touchmove", move, { passive: true });
+    document.addEventListener("touchend", end, { passive: true });
+    document.addEventListener("touchcancel", end, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", start); document.removeEventListener("touchmove", move);
+      document.removeEventListener("touchend", end); document.removeEventListener("touchcancel", end);
+    };
+  }, []);
 
   // "+" opens the full sheet so every detail is set at creation. For tasks the typed
   // line is already parsed in ("fri 9am !!"); for lists the line is the name.
@@ -457,8 +474,7 @@ export default function TodoPage() {
 
   const moving = slide.dx !== 0 || slide.settle;
   return (
-    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}
-      onTouchStart={onPageTouchStart} onTouchMove={onPageTouchMove} onTouchEnd={onPageTouchEnd} onTouchCancel={onPageTouchEnd}>
+    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
