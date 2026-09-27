@@ -97,6 +97,7 @@ Bsaha is a standalone phone-first web app (installable, no app store) for one ho
   - [ ] 🟥 Layla-mode review with her, adjust tile sizes and wording
 
 ## Notes
+- 2026-09-27: menu filled to 30 per meal. Library has a "Fill the rest with the best rated" button (also `POST /api/admin/fill-menu`, `?dry=1` to preview): keeps every pick, breakfast from breakfast dishes, lunch and dinner from mains dealt alternately so both get equal quality, rating weighted by vote count, near-duplicate names skipped. A dish is a lunch pick or a dinner pick, never both: the 17 left on both by the per-meal split were moved (6 lunch, 8 dinner, 3 snacks back to breakfast). The menu is now 30/30/30.
 - 2026-09-26: menu became per meal (a lunch pick is not a dinner pick); dishes already on the menu were kept on every meal they had, to be pruned by hand. Library reorganised for picking 30 per meal: pinned progress bar, category sections, paged lists. Dark mode per person. Add-a-dish takes a photo from gallery, file or clipboard (stored in the `photos` table), web-link field removed.
 - 2026-09-23: 131 of the 132 USDA recipes without a photo got a free-licence one (Openverse then Wikimedia Commons, strict title matching, no pork or alcohol) via `scripts/myplate/photos-free.py`; only "Cookie Cutter Appetizers" has none.
 - Live URL: https://bsaha-pink.vercel.app (bsaha.vercel.app belongs to someone else). Vercel project `bsaha`, linked from `bsaha/.vercel`.
