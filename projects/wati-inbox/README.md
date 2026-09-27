@@ -33,6 +33,17 @@ bubble has **Copier**, each option has **Envoyer telle quelle** (two taps), **Mo
 envoi** (fills the composer) and **Tout copier**. "Pourquoi" is folded under each option; "À
 savoir" above them carries what Claude wants Ali to check (window closed, a number to confirm).
 
+Opening a conversation is instant (stored copy first, Wati re-read in the background) and lands
+on the newest message; a redraw keeps the scroll and never happens while Ali is typing.
+**Bubbles go out one by one**: the first at once, each next one 5–10 s later (5 s + 20 ms per
+character), from the Mac, so the phone can lock. The thread shows "Envoi 2/3…" meanwhile and
+refuses a second send for that lead until the queue is done.
+
+## Addresses
+- On the Mac itself: https://localhost:8443
+- Any device on Tailscale (phone, another laptop): https://alis-macbook-pro.tail7ec20e.ts.net:8443
+- Same Wi-Fi without Tailscale: https://alis-macbook-pro.local:8443 (needs the local CA trusted)
+
 ## Setup (done once)
 1. `npm install`, `node setup-keys.mjs` → writes `.env` (Wati keys copied from
    `../Wati outreach/.env`, app password, push key pair). The password is printed.

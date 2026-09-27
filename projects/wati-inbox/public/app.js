@@ -26,6 +26,7 @@ async function api(path, { method = 'GET', body } = {}) {
   return d;
 }
 
+try { history.scrollRestoration = 'manual'; } catch {}
 const go = (path) => { history.pushState(null, '', path); route(); };
 window.addEventListener('popstate', route);
 document.addEventListener('click', (e) => { const a = e.target.closest('a[data-nav]'); if (a) { e.preventDefault(); go(a.getAttribute('href')); } });
@@ -77,8 +78,9 @@ const setBadge = (n) => { try { n ? navigator.setAppBadge?.(n) : navigator.clear
 // ── inbox ────────────────────────────────────────────────────────────────────
 let inboxFilter = '';
 const suggPill = (t) => t.suggesting === 'drafting' || t.suggesting === 'queued' ? '<span class="pill work">Claude rédige…</span>' : t.suggested ? '<span class="pill ready">brouillon prêt</span>' : '';
-async function renderInbox() {
-  const { threads, suggestAuto } = await api('/api/inbox');
+let inboxCache = null;
+async function renderInbox({ fromCache = false } = {}) {
+  const { threads, suggestAuto } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
   const q = inboxFilter.trim().toLowerCase();
   const shown = q ? threads.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : threads;
   const pending = shown.filter((t) => t.pending && !t.muted), done = shown.filter((t) => !t.pending || t.muted);
@@ -93,17 +95,26 @@ async function renderInbox() {
     ${done.length ? `<p class="muted small" style="margin-top:18px">Récents</p>${done.map(row).join('')}` : ''}`;
   $('#rf').onclick = route; bindPush();
   $('#auto').onclick = async () => { $('#auto').disabled = true; try { await api('/api/settings', { method: 'POST', body: { suggestAuto: !suggestAuto } }); toast(suggestAuto ? 'Claude ne rédige plus que sur demande' : 'Claude rédige pour chaque lead qui écrit'); } catch (e) { toast(e.message); } route(); };
-  $('#q').oninput = (e) => { inboxFilter = e.target.value; clearTimeout(window._qt); window._qt = setTimeout(() => { const pos = e.target.selectionStart; renderInbox().then(() => { const i = $('#q'); i.focus(); i.setSelectionRange(pos, pos); }); }, 250); };
+  $('#q').oninput = (e) => { inboxFilter = e.target.value; const pos = e.target.selectionStart; renderInbox({ fromCache: true }).then(() => { const i = $('#q'); i.focus(); i.setSelectionRange(pos, pos); }); };
 }
 
 // ── thread ───────────────────────────────────────────────────────────────────
-let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false;
+let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '';
 async function sendBubbles(waId, bubbles, meta = {}) {
   if (!bubbles.length) return false;
-  await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, ...meta } });
-  composer = ''; composerFrom = null; toast('Envoyé');
+  const r = await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, ...meta } });
+  composer = ''; composerFrom = null;
+  toast(r.total > 1 ? `Bulle 1/${r.total} envoyée — les suivantes partent toutes seules` : 'Envoyé');
   return true;
 }
+// First open of a conversation: the newest message just under the header, the suggestions right below it.
+function scrollToLast() {
+  const last = document.querySelector('.thread .msg:last-child') || $('.thread');
+  if (!last) return;
+  const top = last.getBoundingClientRect().top + window.scrollY - ($('header')?.offsetHeight || 0) - 6;
+  window.scrollTo(0, Math.max(0, top));
+}
+const typing = () => /^(TEXTAREA|INPUT|SELECT)$/.test(document.activeElement?.tagName || '');
 // Two taps to send: the first turns the button into "Confirmer …" for 5 s, the second sends.
 // (Browser confirm() pop-ups get silently blocked after a few uses, which looked like a dead button.)
 function armed(btn, label, fn) {
@@ -113,14 +124,22 @@ function armed(btn, label, fn) {
     btn._t = setTimeout(() => { delete btn.dataset.armed; btn.textContent = was; }, 5000);
   };
 }
+let threadTimer;
 async function renderThread(waId, { quiet = false } = {}) {
+  if (quiet && typing()) return; // Ali is writing: a redraw would close the keyboard
   const d = await api(`/api/thread/${waId}`);
+  if (!location.pathname.startsWith(`/t/${waId}`)) return; // he left the screen while we were loading
   const t = d.thread;
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}`;
+  const sending = d.sending;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}`;
+  // Something is still moving (Wati being re-read, bubbles going out): look again in a few seconds.
+  clearTimeout(threadTimer);
+  if (d.stale || (sending && !sending.error)) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), 3000);
   if (quiet && key === lastThreadKey) return; // background refresh: nothing changed, keep the screen as is
   lastThreadKey = key;
+  const sameScreen = openedWaId === waId, y = window.scrollY;
   let lastDay = '';
   const msgs = d.messages.map((m) => { const day = fmtDay(m.at); const h = (day !== lastDay ? `<div class="day">${day}</div>` : '') + `<div class="msg ${m.who}">${esc(m.text)}<time>${fmtTime(m.at)}${m.tpl ? ' · template' : ''}</time></div>`; lastDay = day; return h; }).join('');
   const ctx = [t.stage && `<b>${esc(t.stage)}</b>`, t.meeting && `entretien ${esc(t.meeting)}`, t.country && `${esc(t.country)}${t.country === 'Switzerland' ? ' · <b>prix en CHF</b>' : ''}`, d.templatesSent.length && `templates app : ${d.templatesSent.map((s) => esc(s.name)).join(', ')}`].filter(Boolean).join(' · ');
@@ -131,17 +150,23 @@ async function renderThread(waId, { quiet = false } = {}) {
   const sugg = opts.length
     ? `<p class="muted small">Suggestions de Claude · ${ago(d.suggestion.created_at)}${d.suggestion.source === 'ali' ? ' · sur demande' : d.suggestion.source === 'chat' ? ' · depuis le chat' : ''}</p>`
       + (d.suggestion.note ? `<p class="note small">À savoir : ${esc(d.suggestion.note)}</p>` : '')
-      + opts.map((o, i) => `<div class="card opt" data-i="${i}">${opts.length > 1 ? `<div class="opt-head">Option ${i + 1}${i === 0 ? ' <span class="muted">· la plus probable</span>' : ''}</div>` : ''}${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}">Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`).join('')
+      + opts.map((o, i) => `<div class="card opt" data-i="${i}">${opts.length > 1 ? `<div class="opt-head">Option ${i + 1}${i === 0 ? ' <span class="muted">· la plus probable</span>' : ''}</div>` : ''}${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`).join('')
     : (threadBusy ? '<p class="muted small">Claude lit la conversation et le playbook, la suggestion arrive ici dans environ une minute — une notification vous préviendra.</p>' : '<p class="muted small">Pas de suggestion pour ce message. Touchez « Demander une suggestion » : Claude la rédige sur le Mac en une minute environ.</p>');
   const tplBox = `<input id="tplq" placeholder="Filtrer les templates (ex. followup, noshow)"><select id="tpl" style="margin-top:8px"><option value="">Chargement des templates français…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Envoyer le template</button><span id="stt"></span></div>`;
+  const sendLock = sending && !sending.error;
+  const sendBox = sending
+    ? `<div class="card sending ${sending.error ? 'failed' : ''}">${sending.error ? esc(sending.error) : `Envoi ${sending.sent}/${sending.total} — les bulles partent une par une, 5 à 10 s entre chaque`}</div>`
+    : '';
   const compose = d.windowOpen
-    ? `<div class="card"><p class="muted small">Une bulle par paragraphe (ligne vide entre deux bulles).</p><div class="emojis">${['😊','👍','😁','🙂','🙏','💪','✅','🚀','🎉','😉'].map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Votre réponse…">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() ? '' : 'disabled'}>Envoyer</button><button id="clr">Effacer</button><span id="st"></span></div></div><details class="card"><summary>Envoyer un template à la place</summary>${tplBox}</details>`
+    ? `<div class="card"><p class="muted small">Une bulle par paragraphe (ligne vide entre deux bulles).</p><div class="emojis">${['😊','👍','😁','🙂','🙏','💪','✅','🚀','🎉','😉'].map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Votre réponse…">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Envoyer</button><button id="clr">Effacer</button><span id="st"></span></div></div><details class="card"><summary>Envoyer un template à la place</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? 'Fenêtre de 24h fermée — seul un template peut partir.' : 'Aucune conversation lisible pour ce numéro (jamais écrit sur le numéro Sales, ou lead TM) — un template peut partir.'}</p>${tplBox}</div>`;
   app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}</header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}
     <div class="thread">${msgs}</div>
-    <div class="row" style="margin:6px 0 10px">${askBtn}</div>${sugg}${compose}
+    <div class="row" style="margin:6px 0 10px">${askBtn}</div>${sendBox}${sugg}${compose}
     <div class="row"><button id="hd" class="small" ${t.pending ? '' : 'disabled'}>Marquer comme traité</button><button id="mute" class="small">${t.muted ? 'Réactiver les notifications' : 'Ne plus notifier ce lead'}</button><button id="rf" class="small">↻</button></div>`;
+  // A redraw of the same conversation keeps the scroll; a fresh open lands on the newest message.
+  if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
   $('#ask').onclick = async () => { $('#ask').disabled = true; $('#ask').textContent = 'Demande envoyée…'; try { await api(`/api/thread/${waId}/suggest`, { method: 'POST' }); toast('Claude rédige — environ une minute'); lastThreadKey = ''; route(); } catch (e) { toast(e.message); $('#ask').disabled = false; } };
   document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { const i = Number(b.dataset.use); composer = opts[i].bubbles.join('\n\n'); composerFrom = { suggestionId: d.suggestion.id, option: i }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } });
   document.querySelectorAll('[data-send]').forEach((b) => armed(b, 'Envoyer telle quelle', async () => { const i = Number(b.dataset.send); b.disabled = true; try { await sendBubbles(waId, opts[i].bubbles, { suggestionId: d.suggestion.id, option: i, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
@@ -152,7 +177,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   $('#mute').onclick = async () => { await api(`/api/thread/${waId}/mute`, { method: 'POST', body: { muted: !t.muted } }); lastThreadKey = ''; route(); };
   if (d.windowOpen) {
     document.querySelectorAll('[data-emoji]').forEach((b) => b.onclick = () => { const ta = $('#tx'); const a = ta.selectionStart ?? ta.value.length, z = ta.selectionEnd ?? a; ta.value = ta.value.slice(0, a) + b.dataset.emoji + ta.value.slice(z); ta.selectionStart = ta.selectionEnd = a + b.dataset.emoji.length; ta.focus(); ta.dispatchEvent(new Event('input')); });
-    $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim(); if (composerFrom) composerFrom.edited = composer !== opts[composerFrom.option]?.bubbles.join('\n\n'); };
+    $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim() || sendLock; if (composerFrom) composerFrom.edited = composer !== opts[composerFrom.option]?.bubbles.join('\n\n'); };
     $('#clr').onclick = () => { composer = ''; composerFrom = null; $('#tx').value = ''; $('#send').disabled = true; };
     armed($('#send'), 'Envoyer', async () => {
       const bubbles = $('#tx').value.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
@@ -180,16 +205,16 @@ async function renderThread(waId, { quiet = false } = {}) {
       catch (e) { $('#stt').innerHTML = `<span class="err">${esc(e.message)}</span>`; $('#sendt').disabled = false; }
     });
   }
-  // Open at the end of the conversation (the newest message), not at the top.
-  if (!quiet) requestAnimationFrame(() => { const last = document.querySelector('.thread .msg:last-child'); (last || $('.thread')).scrollIntoView({ block: 'start' }); });
 }
 
 // ── router ───────────────────────────────────────────────────────────────────
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
-  if (!m) { composer = ''; composerFrom = null; lastThreadKey = ''; threadBusy = false; }
-  try { m ? await renderThread(m[1]) : await renderInbox(); }
+  if (!m) { composer = ''; composerFrom = null; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
+  document.body.classList.add('busy');
+  try { m ? await renderThread(m[1]) : await renderInbox(); if (!m) window.scrollTo(0, 0); }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a></header><p class="err">${esc(e.message)}</p>`; }
+  finally { document.body.classList.remove('busy'); }
 }
 route();
 // Background refresh while the app is on screen: open thread every 30 s (every 8 s while Claude is drafting),

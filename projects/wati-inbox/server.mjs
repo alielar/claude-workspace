@@ -35,8 +35,36 @@ const hoursSince = (iso) => (Date.now() - new Date(iso).getTime()) / 3600e3;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.pem': 'application/x-pem-file' };
 
 function serveStatic(res, file, mime) {
-  res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': file.endsWith('sw.js') ? 'no-store' : 'max-age=300' });
+  const fresh = /\.(html|js|css|webmanifest)$/.test(file); // the app itself: always revalidate, so an update reaches the phone on the next open
+  res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': fresh ? 'no-cache' : 'max-age=86400' });
   res.end(readFileSync(file));
+}
+
+const refreshing = new Set(); // wa_id → a background Wati read is running
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ── bubble queue ─────────────────────────────────────────────────────────────
+// A reply is 2–3 bubbles. WhatsApp shows them as three separate messages, so they must not
+// land in the same second: the first goes out at once, each following one waits 5–10 s
+// (5 s + 20 ms per character, capped) — about the time it takes to type it. The queue lives
+// here so the phone can lock or lose the network and the bubbles still go out.
+const sending = new Map(); // wa_id → { sent, total, error }
+const typingGap = (text) => 5000 + Math.min(5000, text.length * 20);
+function sendRest(waId, t, bubbles, meta) {
+  const state = { sent: 1, total: bubbles.length, error: null };
+  sending.set(waId, state);
+  (async () => {
+    for (let i = 1; i < bubbles.length; i++) {
+      await sleep(typingGap(bubbles[i]));
+      try { await sendText(waId, bubbles[i]); logSend(waId, 'text', { text: bubbles[i], ...meta }, true); state.sent = i + 1; }
+      catch (e) { logSend(waId, 'text', { text: bubbles[i] }, false, e.message); state.error = `Bulle ${i + 1}/${bubbles.length} non envoyée : ${e.message}`; console.error('send', waId, e.message); break; }
+      saveThread({ ...storedThread(waId), pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[i].slice(0, 200) });
+      refreshThread(waId, t.name, { notify: false }).catch(() => {});
+    }
+    await refreshThread(waId, t.name, { notify: false }).catch(() => {});
+    if (state.error) setTimeout(() => sending.delete(waId), 90_000); // keep the failure on screen for a while
+    else sending.delete(waId);
+  })();
 }
 
 // ── API ──────────────────────────────────────────────────────────────────────
@@ -70,7 +98,14 @@ async function api(req, res, path) {
 
   if (!action && req.method === 'GET') {
     let t = storedThread(waId);
-    if (!t || hoursSince(t.updated_at || 0) > 1 / 120) { try { await refreshThread(waId, t?.name, { notify: false }); } catch (e) { console.error('refresh', waId, e.message); } t = storedThread(waId); }
+    let stale = false;
+    if (!t) { try { await refreshThread(waId, null, { notify: false }); } catch (e) { console.error('refresh', waId, e.message); } t = storedThread(waId); }
+    else if (hoursSince(t.updated_at || 0) > 1 / 120 && !refreshing.has(waId)) {
+      // Known thread, last read more than 30 s ago: answer now from the store (the screen opens
+      // instantly) and read Wati in the background; the app re-reads the thread a few seconds later.
+      stale = true; refreshing.add(waId);
+      refreshThread(waId, t.name, { notify: false }).catch((e) => console.error('refresh', waId, e.message)).finally(() => refreshing.delete(waId));
+    }
     if (!t) {
       // Number never seen on the Sales number (TM lead, or a fresh contact): keep a row so a
       // template can be sent and the reply tracked, with the CRM name when Wati has one.
@@ -89,6 +124,8 @@ async function api(req, res, path) {
       templatesSent: sentTemplates(waId).map((s) => ({ at: s.at, name: JSON.parse(s.payload).template })),
       suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '' } : null,
       suggesting: suggestStatus(waId),
+      stale,
+      sending: sending.get(waId) || null,
     });
   }
   if (action === 'refresh') { await refreshThread(waId, storedThread(waId)?.name, { notify: false }); return json(res, 200, { ok: true }); }
@@ -101,15 +138,15 @@ async function api(req, res, path) {
     if (!bubbles.length) return json(res, 400, { error: 'Message vide' });
     const t = storedThread(waId);
     if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) return json(res, 409, { error: 'Fenêtre de 24h fermée — utilisez un template' });
-    const sent = [];
+    if (sending.has(waId) && !sending.get(waId).error) return json(res, 409, { error: 'Envoi en cours pour ce lead — attendez que les bulles soient parties' });
     const meta = b.suggestionId ? { suggestionId: b.suggestionId, option: b.option ?? null, edited: !!b.edited } : {};
-    for (const text of bubbles) {
-      try { await sendText(waId, text); sent.push(text); logSend(waId, 'text', { text, ...meta }, true); }
-      catch (e) { logSend(waId, 'text', { text }, false, e.message); return json(res, 502, { error: e.message, sent }); }
-    }
-    saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: sent[sent.length - 1].slice(0, 200) });
-    refreshThread(waId, t.name, { notify: false }).catch(() => {});
-    return json(res, 200, { ok: true, sent });
+    // First bubble right away, so a refusal (window closed, Wati down) comes back to the screen.
+    try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
+    catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }
+    saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+    if (bubbles.length === 1) refreshThread(waId, t.name, { notify: false }).catch(() => {});
+    else sendRest(waId, t, bubbles, meta); // the others follow in the background, one every 5–10 s
+    return json(res, 200, { ok: true, sent: 1, total: bubbles.length });
   }
   if (action === 'template' && req.method === 'POST') {
     const b = await body(req);
