@@ -28,26 +28,28 @@ const project = path.resolve(here, "..");                  // projects/ali-hub
 const workspace = path.resolve(project, "../..");          // claude-workspace (Vercel is linked here)
 const NODE_BIN = "/Users/alielaraki/.nvm/versions/node/v24.14.0/bin";
 
-// ── env ──
-for (const f of [path.join(here, ".env")]) {
-  if (!fs.existsSync(f)) continue;
-  for (const line of fs.readFileSync(f, "utf8").split("\n")) {
+// ── env · fix-worker/.env is written by the one-line command from Settings → Fix chat ("Connect the Mac").
+// Missing key → the job waits and re-reads the file every minute instead of dying (launchd would only restart it).
+const ENV_FILE = path.join(here, ".env");
+function loadEnv() {
+  if (!fs.existsSync(ENV_FILE)) return;
+  for (const line of fs.readFileSync(ENV_FILE, "utf8").split("\n")) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*"?([^"\n]*)"?\s*$/);
-    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
+    if (m) process.env[m[1]] = m[2];
   }
 }
-const KEY = process.env.APP_KEY;
+loadEnv();
+const KEY = () => process.env.APP_KEY;
 const BASE = (process.env.FIX_BASE_URL || "https://ali-hub.vercel.app").replace(/\/$/, "");
 const CLAUDE = process.env.CLAUDE_BIN || path.join(NODE_BIN, "claude");
 const MAX_MIN = Number(process.env.FIX_MAX_MINUTES || 50);
 const POLL_MS = 30_000;
-if (!KEY) { console.error("APP_KEY missing · put it in fix-worker/.env"); process.exit(1); }
 
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function api(method, p, body) {
-  const res = await fetch(BASE + p, { method, headers: { "x-app-key": KEY, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+  const res = await fetch(BASE + p, { method, headers: { "x-app-key": KEY(), "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
   if (!res.ok) throw new Error(`${method} ${p} → ${res.status} ${(await res.text()).slice(0, 200)}`);
   return res.json();
 }
@@ -151,7 +153,13 @@ async function cycle() {
 }
 
 log(`fix worker up · ${BASE} · claude at ${CLAUDE}`);
+let saidNoKey = false;
 for (;;) {
+  if (!KEY()) {
+    loadEnv();
+    if (!KEY()) { if (!saidNoKey) { log("no APP_KEY yet · waiting for fix-worker/.env (Settings → Fix chat → Connect the Mac)"); saidNoKey = true; } await sleep(60_000); continue; }
+    log("APP_KEY found · connecting"); saidNoKey = false;
+  }
   try { await cycle(); } catch (e) { log(`cycle error: ${e.message}`); }
   await sleep(POLL_MS);
 }

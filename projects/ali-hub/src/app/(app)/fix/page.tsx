@@ -141,6 +141,20 @@ export default function FixPage() {
 
   const canSend = (text.trim().length > 0 || images.length > 0) && !busy;
 
+  // The Mac is connected once, with one line pasted in Terminal · the command carries the app key,
+  // so it is fetched by the signed-in browser only (GET /api/fix/setup refuses the key header).
+  const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
+  const connectMac = async () => {
+    try {
+      const res = await fetch("/api/fix/setup", { cache: "no-store" });
+      if (!res.ok) throw new Error(String(res.status));
+      await navigator.clipboard.writeText((await res.text()).trim());
+      setCopied("done");
+    } catch { setCopied("failed"); }
+    setTimeout(() => setCopied("idle"), 4000);
+  };
+  const needsMac = feed.data && (!worker.seenAt || now - worker.seenAt > 15 * 60_000);
+
   return (
     <div style={{ display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 190 + Math.min(images.length, 1) * 84 }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
@@ -153,6 +167,18 @@ export default function FixPage() {
           </div>
         </div>
       </div>
+
+      {needsMac && (
+        <section className="cc-card">
+          <div className="cc-card-head"><span className="title">Connect the Mac</span><span className="tail">{worker.seenAt ? `last seen ${ago(worker.seenAt, now)}` : "never"}</span></div>
+          <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{worker.seenAt ? "Wake the Mac, or run the command again." : "Paste the command in Terminal on the Mac, once."}</span>
+            <button type="button" onClick={connectMac} className="cc-btn cc-btn-secondary" style={{ minHeight: 40, borderRadius: 10 }}>
+              {copied === "done" ? "Copied" : copied === "failed" ? "Could not copy" : "Copy the command"}
+            </button>
+          </div>
+        </section>
+      )}
 
       {feed.loading && !feed.data && (
         <div style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 56, borderRadius: 16, width: i % 2 ? "70%" : "85%", justifySelf: i % 2 ? "start" : "end" }} />)}</div>

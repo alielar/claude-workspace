@@ -16,6 +16,7 @@
 |---|---|---|---|
 | `com.ali.wati-inbox` (launchd) | always, restarts on crash | Reads Wati every 45 s, notifies the phone, serves the app, drafts suggestions with headless Claude | `projects/wati-inbox/logs/server.log`, `logs/suggest.log` |
 | `com.ali.wati-nightly-review` (launchd) | 21:03 every day | Headless Claude compares the day's drafts with what Ali sent, logs lessons in the playbook | `projects/Wati outreach/logs/nightly-<date>.log` |
+| `com.ali.ali-hub-fix-worker` (launchd) | always, restarts on crash | Every 30 s asks ali-hub for queued Fix-chat requests; when there are some, runs Claude Code headless in `projects/ali-hub`, ships, reports back (one batch at a time) | `projects/ali-hub/fix-worker/logs/launchd.log`, `logs/batch-<id>.log` |
 | `auto-save.sh` (cron) | 23:47 every day | Commits and pushes everything in the workspace to GitHub | `.auto-save.log` at the workspace root |
 
 The Mac must stay awake (lid open, screen may lock) for the first two.
