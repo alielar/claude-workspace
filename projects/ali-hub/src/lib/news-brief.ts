@@ -188,7 +188,15 @@ async function fetchFeed(feed: FeedConfig): Promise<{ stories: NewsStory[]; cate
     });
     if (!res.ok) return { stories: [], category: feed.category };
     const xml = await res.text();
-    const items = parseRSSItems(xml);
+    // A feed with `keywords` contributes only the items that name one of them (the field
+    // was declared from the start but never applied until 2026-09-27 · a general Moroccan
+    // feed under "business" would otherwise bring its weather and politics along).
+    const kws = (feed.keywords ?? []).map((k) => k.toLowerCase());
+    const items = parseRSSItems(xml).filter((item) => {
+      if (!kws.length) return true;
+      const text = `${item.title} ${item.description}`.toLowerCase();
+      return kws.some((k) => text.includes(k));
+    });
 
     const stories: NewsStory[] = items.slice(0, 15).map((item) => {
       const t = item.pubDate ? Date.parse(item.pubDate) : NaN;
