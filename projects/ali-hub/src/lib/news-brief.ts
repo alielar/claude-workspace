@@ -82,6 +82,8 @@ const FEEDS: FeedConfig[] = [
   { url: "https://feeds.bbci.co.uk/news/business/rss.xml", category: "business" },
   { url: "https://www.cnbc.com/id/100003114/device/rss/rss.html", category: "business" },
   { url: "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", category: "business" },
+  // Morocco's economy (Ali 2026-09-27: business opportunities in Morocco, when there is something real) · English, economy items only
+  { url: "https://en.hespress.com/feed", category: "business", keywords: ["invest", "econom", "startup", "bank", "trade", "export", "import", "tourism", "factory", "plant", "fund", "port", "tanger med", "ocp", "renewable", "hydrogen", "solar", "automotive", "aerospace", "gdp", "dirham", "inflation", "business", "company", "industry", "real estate", "billion", "million", "tax", "budget", "airline", "rail", "logistics"] },
 
   // Tech & AI · product launches, AI research, industry shifts
   { url: "https://feeds.arstechnica.com/arstechnica/index", category: "tech" },
@@ -94,7 +96,7 @@ const FEEDS: FeedConfig[] = [
 const INTEREST_KEYWORDS: Record<NewsCategory, string[]> = {
   football: ["real madrid", "madrid", "bernabéu", "bernabeu", "mbappé", "mbappe", "vinícius", "vinicius", "bellingham", "xabi alonso", "morocco", "atlas lions", "moroccan", "frmf", "regragui", "hakimi", "achraf", "en-nesyri", "mazraoui", "amrabat", "ziyech", "ounahi", "diaz", "brahim", "aguerd", "bounou", "el kaabi", "champions league", "clásico", "clasico", "la liga", "africa cup", "afcon", "caf"],
   geopolitics: ["morocco", "rabat", "sahara", "mena", "africa", "middle east", "israel", "palestine", "ukraine", "nato", "eu", "trump", "election", "casablanca", "fes", "marrakech", "king mohammed"],
-  business: ["markets", "stock", "earnings", "gdp", "recession", "startup", "ipo", "acquisition", "apple", "google", "amazon", "tesla"],
+  business: ["markets", "stock", "earnings", "gdp", "recession", "startup", "ipo", "acquisition", "apple", "google", "amazon", "tesla", "morocco", "moroccan", "casablanca", "tangier", "tanger", "rabat"],
   tech: ["ai", "artificial intelligence", "openai", "anthropic", "claude", "gpt", "llm", "apple", "google", "chip", "semiconductor", "robot", "machine learning", "deepmind", "chatbot", "agent"],
 };
 

@@ -6,7 +6,19 @@
  * retries; ~5 min guide, longer when the day earns it) → a deterministic date lint
  * (no "yesterday"/"last night" about events · see auditDates) →
  * Microsoft neural voice via msedge-tts (free, unofficial — can break; that's why
- * the app falls back to showing the script and keeps retrying) → MP3 in Vercel Blob.
+ * the app falls back to showing the script and keeps retrying) → MP3 base64 in Turso.
+ *
+ * Content order (Ali 2026-09-27): AI and tech first and deepest · business and ventures,
+ * Morocco included when there is something real · geopolitics last. NO football in the
+ * podcast (the News page keeps its highlights; `PODCAST_SKIP` filters the brief here).
+ *
+ * Why it sounded "AI-generated" (three attempts, all in the prompt): partly the writing
+ * (the same three-beat shape for every story, a bridge sentence opening every chapter),
+ * partly the voicing: the script was cut into ~380-character pieces voiced independently,
+ * so the intonation reset every 25 seconds and there was no pause between thoughts.
+ * Now: paragraphs are the unit (one thought each), each paragraph is voiced whole, half a
+ * second of silence is spliced between two paragraphs, and the voice is a constant below
+ * with the candidates.
  *
  * Failure behaviour (Ali's explicit requirement, never a silent morning):
  *  · script exists but audio failed → the play card shows "voice is down · read it
@@ -22,8 +34,23 @@ import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
 
-// Brian: calm, low-key, sincere · early-morning listenable but still a serious news read.
+// Free Microsoft voices worth hearing for a breakfast brief (Edge "Conversation" set):
+//   en-US-BrianMultilingualNeural  · approachable, casual, sincere (the current one)
+//   en-US-AndrewMultilingualNeural · warm, confident, the most "talking to you" of the set
+//   en-GB-RyanNeural               · British, friendly, a little more formal
+// Samples of the same paragraph were sent to Ali on 2026-09-27; change this one line to switch.
 const VOICE = "en-US-BrianMultilingualNeural";
+// A breath between two thoughts: 23 silent MPEG-2 Layer III frames (24 kHz · 48 kbps · mono ·
+// exactly the format the voice returns; header ff f3 64 c4 + zero body = silence, 24 ms each,
+// 552 ms in all). Edge's endpoint rejects SSML <break/>, so the pause is spliced in as audio.
+// Same bitrate, so the byte → seconds mapping for chapters stays exact.
+const SILENT_FRAME = Buffer.alloc(144);
+Buffer.from([0xff, 0xf3, 0x64, 0xc4]).copy(SILENT_FRAME);
+const PARAGRAPH_GAP = Buffer.concat(Array.from({ length: 23 }, () => SILENT_FRAME));
+/** Brief categories that never reach the podcast (Ali 2026-09-27: football is News-only). */
+const PODCAST_SKIP = new Set(["football"]);
+/** The podcast's running order · the writer sees the stories grouped this way. */
+const PODCAST_ORDER = ["ai", "tech", "business", "geopolitics", "other"];
 // Ali (2026-09-11): slow the narration down slightly · SSML prosody rate, relative.
 const SPEAKING_RATE = "-8%";
 const MAX_ATTEMPTS = 8;
@@ -129,8 +156,10 @@ function storiesBlock(brief: NewsBrief, max = 20): string {
     const h = Math.max(0, Math.round((now - t) / 3600_000));
     return `published ${weekdayTime(new Date(t))} Madrid time · about ${h} hour${h === 1 ? "" : "s"} before this episode`;
   };
+  const rank = (c: string) => { const i = PODCAST_ORDER.indexOf(c); return i < 0 ? PODCAST_ORDER.length : i; };
   return [...brief.stories]
-    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || (b.score ?? 0) - (a.score ?? 0))
+    .filter((s) => !PODCAST_SKIP.has(s.category))
+    .sort((a, b) => rank(a.category) - rank(b.category) || (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || (b.score ?? 0) - (a.score ?? 0))
     .slice(0, max)
     .map((s) => `[${s.category}${s.featured ? " · featured" : ""} · ${stamp(s.publishedAt)}]\n${s.headline}\n${s.summary}\n${(s.keyPoints ?? []).join(" · ")}`)
     .join("\n\n");
@@ -163,21 +192,23 @@ const MIN_SEC = 240;   // 4 min · below this the day was under-told
 const MAX_SEC = 600;   // 10 min · above this it stops being a breakfast brief
 const wordCount = (s: string) => s.replace(/^###.*$/gm, "").split(/\s+/).filter(Boolean).length;
 
-const TONE_RULES = `TONE AND LANGUAGE (Ali's brief, 2026-09-11):
-- You are a smart friend who follows the news closely, sitting across the breakfast table, explaining what is going on in the world to someone who has the basics but is NOT an expert in geopolitics, AI or finance. Friendly, transparent, plain words.
-- Every story follows the same three beats in plain words: here is what happened · here is why it happened · here is what it means. The third beat is the point of the whole podcast (Ali 2026-09-14: "go deeper on what it actually means"): give it two to four sentences, not one. Say concretely who gains and who loses, what changes next (prices, jobs, a country's options, a company's next move), what to watch for in the coming days, and, when it is real, what it means for Europe or for Ali. If the honest answer is "nobody knows yet", say what the two likely outcomes are.
-- Explain names, places and terms in a few words the first time ("Enflame, a Chinese company that makes the chips AI runs on"). Assume he does not know the background; give it in one or two sentences.
-- Simple vocabulary. Short sentences. The words you would say out loud. No jargon and no business-speak: never "leverage", "headwinds", "stakeholders", "ecosystem", "calculus", "signals", "narrative", "paradigm", "unprecedented", "dynamics", "geopolitical landscape". If a technical word is unavoidable, say it, then say what it means.
-- Numbers written for the ear ("two hundred million", "about a third").
-- ZERO FILLER (Ali 2026-09-14). Every sentence must carry a fact, a cause or a consequence; if a sentence could be deleted and nothing would be lost, delete it. Banned outright: "it's worth noting", "interestingly", "notably", "let's dive in", "let's get into it", "stay tuned", "that's all for", "as always", "in other news", "moving on", "without further ado", "at the end of the day", "the bottom line is", "make no mistake", "time will tell", "only time will tell", "remains to be seen", "one thing is clear", "buckle up". No headline-style teasers, no recaps of what was just said, no sentence that only announces the next sentence, no "so, to sum up" inside a chapter, no rhetorical questions used as padding.
-- Transitions: when the topic changes, one natural linking sentence so it never feels like a jump ("That's the money side. Now to something closer to home for you: AI." · "Leaving politics for a moment..."). Every chapter after the first opens with such a bridge.`;
+const TONE_RULES = `HOW IT SOUNDS (Ali's brief, 2026-09-27 · "a friend explaining what's happening, something I actually want to listen to"):
+- You are Ali's friend who follows this stuff closely, talking to him over breakfast. Not a presenter, not an anchor, not an explainer video. You talk the way people talk: contractions (it's, they've, that's), short sentences mixed with a longer one, the occasional one-word sentence. You may react in one honest line ("that's a lot of money", "I didn't expect that one") as long as the facts stay exactly what the stories say.
+- Explain what happened, why, and what it means · but NEVER in the same shape twice in a row. Sometimes lead with the consequence, sometimes with the surprising detail, sometimes with the question Ali would ask. If two stories read like the same paragraph with the nouns swapped, rewrite one.
+- Go deepest on "what it means": who gains, who loses, what changes next, what to watch. For AI and tech, this is where you spend your time. When the honest answer is "nobody knows yet", say what the two likely outcomes are.
+- Explain names, places and terms in a few words the first time ("Enflame, a Chinese company that makes the chips AI runs on"). Assume he has the basics and none of the background.
+- Plain words. No jargon, no business-speak: never "leverage", "headwinds", "stakeholders", "ecosystem", "calculus", "signals", "narrative", "paradigm", "unprecedented", "dynamics", "landscape", "pivotal", "game-changer", "underscores", "delve". A technical word you can't avoid: say it, then say what it means.
+- Numbers for the ear ("two hundred million", "about a third", "roughly one in five").
+- Zero filler. Every sentence carries a fact, a cause, a consequence or one honest reaction. Banned: "it's worth noting", "interestingly", "notably", "let's dive in", "stay tuned", "that's all for", "as always", "in other news", "moving on", "without further ado", "at the end of the day", "the bottom line is", "make no mistake", "time will tell", "remains to be seen", "one thing is clear", "buckle up", "so, to sum up". No teasers, no recaps, no sentence that only announces the next sentence, no rhetorical questions as padding.
+- Changing subject: do it the way a person does, in half a sentence, and vary it ("Okay. Money." · "Closer to home for you now." · "Right, the world." · sometimes nothing at all, just the next story). Never the same bridge twice, never a bridge that describes the structure of the podcast.
+- FORMAT FOR THE VOICE: write in SHORT PARAGRAPHS, one thought each (two to four sentences), separated by a blank line. The voice takes a breath at every blank line, so a new paragraph = a new thought. Punctuate for speech: commas where you would pause, a full stop where you would stop. No lists, no bullets, no headings besides the ### chapter lines.`
 
 /** The one Haiku call of the day: brief → spoken script, split into titled chapters. */
 async function writeScript(brief: NewsBrief, date: string): Promise<string | null> {
   const ctx = dayContext(date);
   const prompt = `You write Ali's private morning news podcast. He listens over breakfast at about 07:30 Madrid time. The whole point: give him a clear overview of what is going on in the world. Simple. Nothing cleverer than that.
 
-ABOUT ALI (mention only when a story genuinely touches him): runs easypeasy, a small company teaching languages; loves AI and tech; follows business and geopolitics; follows Real Madrid and the Morocco national team.
+ABOUT ALI (mention only when a story genuinely touches him): runs easypeasy, a small company teaching languages online; builds with AI every day and loves the tech; follows business and geopolitics; Moroccan, lives in Spain, interested in business opportunities in Morocco. Football is NOT part of this podcast, even if a story mentions it.
 
 ${TONE_RULES}
 
@@ -189,13 +220,15 @@ DATES AND TIMING — ABSOLUTE RULES (a past episode called a Tuesday match "yest
 - If you are not sure when something happened, leave the timing out. Never guess.
 - Never present something that already happened as upcoming. Never invent results, numbers or facts that are not in the stories. If the stories do not say who won, do not say who won.
 
-STRUCTURE — chapters, each starting with a line "### <short title>" (2-4 words):
-- First chapter: one warm good-morning line with the weekday and date, then straight into the most important story of the day (not football).
-- Then chapters by theme (the world and politics, AI and tech, business and money, anything else that matters). Group related stories. Cover the stories that matter; skip the trivial ones.
-- "### Football": Real Madrid and Morocco only, results and confirmed news, near the end and short.
-- Last chapter, "### For the day": two or three sentences to start the day well. General and human, about the day itself, NOT about sales, work, clients or productivity. Then a simple goodbye.
+STRUCTURE — chapters, each starting with a line "### <short title>" (2-4 words), in THIS order:
+1. Open: one warm good-morning line with the weekday and date, then straight into the biggest AI or tech story of the day. No preamble about what's coming.
+2. "### AI and tech" (one or several chapters if the day is big): this is the heart of the podcast · go deepest here. Models, chips, companies, what people are building, what it means for someone who builds with these tools.
+3. "### Business" (or a sharper title): companies, markets, money, ventures. When a story touches Morocco (investment, a company setting up there, an industry taking off, a rule changing) include it and say plainly why it could matter for someone who might do business there. Never invent a Moroccan angle when there isn't one.
+4. "### The world": geopolitics, kept to what actually matters and why.
+5. Last, "### For the day": two or three human sentences to start the day well, about the day itself, NOT about sales, work or productivity. Then a simple goodbye.
+Skip trivial stories. Never a football story, never a football result, never a football chapter.
 
-LENGTH: five minutes is the guide, not the cap. Aim for roughly 800-1000 words. Go longer, up to ${MAX_WORDS} words, when there are genuinely that many stories worth telling (four in geopolitics and five in AI is a real morning). Never pad a thin day; never cut a story worth hearing to fit. Under ${MIN_WORDS} words is too short.
+LENGTH: five minutes is the guide, not the cap. Aim for roughly 800-1000 words. Go longer, up to ${MAX_WORDS} words, when there are genuinely that many stories worth telling (five in AI and tech, three in business and three in the world is a real morning). Never pad a thin day; never cut a story worth hearing to fit. Under ${MIN_WORDS} words is too short.
 
 Output ONLY the chapter lines and the spoken text. No markdown besides the ### lines, no stage directions.
 
@@ -234,32 +267,45 @@ async function reviseScriptLength(script: string, targetWords: number): Promise<
     : "Extend it: give the existing stories more of the plain-words explanation (what happened, why, what it means) already implied by the script's facts, or split a dense sentence into two. NEVER invent facts, names, numbers or outcomes that are not already in the script.";
   const prompt = `This podcast script is ${current} words; it must be about ${targetWords} words (hard range ${MIN_WORDS}-${MAX_WORDS}). ${direction}
 
-Keep EXACTLY the same chapter structure and "### Title" lines, the same order, the same friendly plain-words tone, football near the end and short, the "For the day" closing last. Keep every weekday reference exactly as it is and do not introduce "yesterday", "last night" or "today" for events. Output only the revised script.
+Keep EXACTLY the same chapter structure and "### Title" lines, the same order, the same friend-over-breakfast tone, the short paragraphs separated by blank lines, the "For the day" closing last. Keep every weekday reference exactly as it is and do not introduce "yesterday", "last night" or "today" for events. Output only the revised script.
 
 ${script}`;
   const out = await haiku(prompt, 3400);
   return out && /^###/m.test(out) ? out : null;
 }
 
-/** Split on sentence ends into pieces the voice service reliably finishes (~1 min each). */
-function splitScript(script: string, max = 380): string[] {
-  const sentences = script.split(/(?<=[.!?])\s+/);
-  const parts: string[] = [];
-  let cur = "";
-  for (const s of sentences) {
-    if (cur && cur.length + s.length + 1 > max) { parts.push(cur); cur = s; }
-    else cur = cur ? `${cur} ${s}` : s;
+/** The library drops the text into the SSML body as is · escape it, then add our own tags. */
+const xmlEscape = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * Paragraphs are the unit (one thought each, the writer is told so): every paragraph is
+ * voiced whole, so the intonation runs through the thought. A paragraph over ~900
+ * characters (≈ 55 s · what the service reliably finishes) is cut at sentence ends. Before
+ * 2026-09-27 the script was cut every ~380 characters regardless of meaning and each cut
+ * voiced on its own, so the intonation restarted mid-thought and nothing ever paused.
+ */
+function splitScript(script: string, max = 900): string[] {
+  const sep = /\n\s*\n/.test(script) ? /\n\s*\n/ : /\n/;
+  const paras = script.split(sep).map((p) => p.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
+  const units: string[] = [];
+  for (const p of paras) {
+    if (p.length <= max) { units.push(p); continue; }
+    let cur = "";
+    for (const sentence of p.split(/(?<=[.!?])\s+/)) {
+      if (cur && cur.length + sentence.length + 1 > max) { units.push(cur); cur = sentence; }
+      else cur = cur ? `${cur} ${sentence}` : sentence;
+    }
+    if (cur) units.push(cur);
   }
-  if (cur) parts.push(cur);
-  return parts;
+  return units;
 }
 
-/** One piece → MP3 buffer. */
-async function synthesizePiece(text: string): Promise<Buffer> {
+/** One piece (SSML body) → MP3 buffer. */
+async function synthesizePiece(ssml: string): Promise<Buffer> {
   const { MsEdgeTTS, OUTPUT_FORMAT } = await import("msedge-tts");
   const tts = new MsEdgeTTS();
   await tts.setMetadata(VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-  const { audioStream } = await tts.toStream(text, { rate: SPEAKING_RATE });
+  const { audioStream } = await tts.toStream(ssml, { rate: SPEAKING_RATE });
   const chunks: Buffer[] = [];
   await new Promise<void>((resolve, reject) => {
     const guard = setTimeout(() => reject(new Error("tts timeout")), 60_000);
@@ -286,9 +332,9 @@ function parseScriptChapters(script: string): { title: string; text: string }[] 
   return out.length ? out : [{ title: "Morning brief", text: script.trim() }];
 }
 
-/** ~400-char pieces, 3 workers, one retry each (the service drops long/occasional streams). */
+/** One paragraph per piece, 3 workers, one retry each (the service drops the occasional stream) · a breath between pieces. */
 async function synthesizeText(text: string): Promise<Buffer> {
-  const pieces = splitScript(text);
+  const pieces = splitScript(text).map(xmlEscape);
   const buffers: Buffer[] = new Array(pieces.length);
   let i = 0;
   const worker = async () => {
@@ -299,7 +345,7 @@ async function synthesizeText(text: string): Promise<Buffer> {
     }
   };
   await Promise.all([worker(), worker(), worker()]);
-  return Buffer.concat(buffers);
+  return Buffer.concat(buffers.flatMap((b, idx) => (idx ? [PARAGRAPH_GAP, b] : [b])));
 }
 
 const CBR_BYTES_PER_SEC = 6000; // 48 kbps constant-bitrate mono
