@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { dishes, picks, pools, MEALS, type Meal } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { forgetSlimDishes } from "@/lib/slim";
+import { fillMenu, type FillReport } from "@/lib/menuFill";
 
 /** A dish's menu meals after adding or removing one. */
 function withMeal(current: Meal[], meal: Meal, on: boolean): Meal[] {
@@ -36,6 +37,15 @@ export async function setOnMenu(id: number, meal: Meal, on: boolean): Promise<bo
   forgetSlimDishes();
   revalidatePath("/", "layout");
   return true;
+}
+
+/** Fill every meal up to the target with the best rated dishes, keeping what is already picked. */
+export async function fillMenuRest(): Promise<FillReport | null> {
+  const me = await currentPerson();
+  if (!me?.isAdmin) return null;
+  const report = await fillMenu();
+  revalidatePath("/", "layout");
+  return report;
 }
 
 /** Take every dish off the menu, all three meals, to build the whole menu again from scratch. */

@@ -4,9 +4,7 @@ import { currentPerson } from "@/lib/session";
 import { listSlimDishes } from "@/lib/slim";
 import { t } from "@/lib/i18n/dict";
 import { LibraryBrowser } from "@/components/LibraryBrowser";
-
-/** How many dishes per meal the menu is meant to hold. */
-export const MENU_TARGET = 30;
+import { MENU_TARGET } from "@/lib/menuFill";
 
 export default async function LibraryPage() {
   const me = (await currentPerson())!;
@@ -35,6 +33,7 @@ export default async function LibraryPage() {
             target: t(L, "target"), showAll: t(L, "showAll"), showOnMenu: t(L, "showOnMenu"), showOffMenu: t(L, "showOffMenu"),
             clearMeal: t(L, "clearMeal"), clearMealDone: t(L, "clearMealDone"),
             clearAll: t(L, "clearAll"), clearAllConfirm: t(L, "clearAllConfirm"),
+            fillRest: t(L, "fillRest"), fillRestDone: t(L, "fillRestDone"),
             deleteForever: t(L, "deleteForever"), deleteConfirm: t(L, "deleteConfirm"),
             moroccan: t(L, "moroccanMenu"), international: t(L, "mainMenu"),
             sortProtein: t(L, "sortProtein"), sortName: t(L, "sortName"), sortRating: t(L, "sortRating"),

@@ -7,13 +7,13 @@ import clsx from "clsx";
 import { CATEGORIES, type Category, type Lang, type Meal } from "@/db/schema";
 import { fold, highFibre, highProtein, inMeal, lowCarb, quick, slimName, type SlimDish } from "@/lib/dishMeta";
 import { DishImage } from "./DishImage";
-import { clearMenuForMeal, clearWholeMenu, deleteDishForGood, setOnMenu } from "@/app/(app)/library/actions";
+import { clearMenuForMeal, clearWholeMenu, deleteDishForGood, fillMenuRest, setOnMenu } from "@/app/(app)/library/actions";
 
 export type LibraryLabels = Record<
   | "breakfast" | "lunch" | "dinner" | "search" | "searchHint" | "results" | "noResults" | "clear"
   | "f_protein" | "f_lowcarb" | "f_fibre" | "f_quick" | "f_veg" | "f_fish" | "f_chicken" | "f_meat"
   | "onMenu" | "addToMenu" | "onMenuCount" | "target" | "showAll" | "showOnMenu" | "showOffMenu"
-  | "clearMeal" | "clearMealDone" | "clearAll" | "clearAllConfirm" | "deleteForever" | "deleteConfirm"
+  | "clearMeal" | "clearMealDone" | "clearAll" | "clearAllConfirm" | "fillRest" | "fillRestDone" | "deleteForever" | "deleteConfirm"
   | "moroccan" | "international" | "sortProtein" | "sortName" | "sortRating" | "allCategories"
   | "leftToPick" | "menuComplete" | "overTarget" | "showMore" | "seeAll" | "showLess" | "pickedSoFar"
   | `c_${Category}`,
@@ -170,6 +170,25 @@ export function LibraryBrowser({
     start(async () => { await clearWholeMenu(); });
   };
 
+  /** How many the last fill added, shown for a moment next to the button. */
+  const [filled, setFilled] = useState<number | null>(null);
+  const fillRest = () => {
+    start(async () => {
+      const r = await fillMenuRest();
+      if (!r) return;
+      const byName = new Map(dishes.map((d) => [d.nameEn, d.id]));
+      setLocal((p) => {
+        const next = { ...p };
+        for (const m of MEALS) for (const name of r.added[m]) {
+          const id = byName.get(name);
+          if (id != null) next[id] = withMeal(next[id] ?? [], m, true);
+        }
+        return next;
+      });
+      setFilled(MEALS.reduce((n, m) => n + r.added[m].length, 0));
+    });
+  };
+
   const remove = (d: SlimDish) => {
     if (!window.confirm(labels.deleteConfirm)) return;
     setGone((p) => new Set(p).add(d.id));
@@ -291,8 +310,13 @@ export function LibraryBrowser({
           className="chip py-1.5 px-3 text-sm border border-line bg-card text-muted">
           {sortLabel[sort]}
         </button>
-        {totalOn > 0 && (
+        {(totalOn > 0 || MEALS.some((m) => counts[m] < target)) && (
           <div className="flex gap-2 ms-auto">
+            {MEALS.some((m) => counts[m] < target) && (
+              <button onClick={fillRest} className="chip py-1.5 px-3 text-sm border border-accent bg-card text-accent">
+                {filled != null ? `${filled} ${labels.fillRestDone}` : labels.fillRest}
+              </button>
+            )}
             {counts[meal] > 0 && (
               <button onClick={clearMeal} className="chip py-1.5 px-3 text-sm border border-line bg-card text-accent">
                 {labels.clearMeal}
