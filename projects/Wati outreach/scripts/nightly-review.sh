@@ -15,7 +15,7 @@ echo "=== nightly review start $(date) ===" >> "$LOG"
 claude -p "$(cat scripts/nightly-review-prompt.md)" \
   --model claude-sonnet-5 \
   --permission-mode acceptEdits \
-  --setting-sources project,local \
+  --setting-sources user,project,local \
   --allowedTools "Bash(node:*),Bash(/Users/alielaraki/.nvm/versions/node/v24.14.0/bin/node:*),Bash(~/.nvm/versions/node/v24.14.0/bin/node:*),Bash(python3:*),Bash(date:*),Bash(ls:*),Bash(cat:*),Bash(head:*),Bash(tail:*),Bash(grep:*),Bash(sed:*),Bash(wc:*),Bash(stat:*),Read,Edit,Write,Grep,Glob" \
   --max-turns 60 \
   >> "$LOG" 2>&1

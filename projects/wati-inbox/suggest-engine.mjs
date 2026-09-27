@@ -129,8 +129,8 @@ function runClaude(prompt) {
     env.PATH = `${NODE_DIR}:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin`;
     const leadRules = [process.execPath, process.execPath.replace(env.HOME, '~'), 'node'].map((n) => `Bash(${n} --env-file=.env lead.mjs:*)`);
     const args = ['-p', prompt, '--model', MODEL, '--max-turns', '30', '--output-format', 'json', '--no-session-persistence',
-      // user settings are skipped on purpose: a malformed rule in ~/.claude/settings.json makes every tool call fail in headless mode
-      '--setting-sources', 'project,local',
+      // user settings included again since 2026-09-27 (global file cleaned; the ask/deny gates apply here too)
+      '--setting-sources', 'user,project,local',
       '--allowedTools', ...leadRules, 'Read', 'Grep', 'Glob', 'Bash(cat:*)', 'Bash(sed -n:*)', 'Bash(head:*)', 'Bash(tail:*)', 'Bash(grep:*)', 'Bash(date:*)', 'Bash(wc:*)',
       '--json-schema', JSON.stringify(SCHEMA)];
     const t0 = Date.now();

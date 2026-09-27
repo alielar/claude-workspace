@@ -26,5 +26,5 @@ Then commit and push. Test a draft from the terminal with
   in it. Ali's own number `34695064884` is the test thread.
 - Never change the suggestion prompt's rules without reading `../Wati outreach/CLAUDE.md`; the
   playbook there is the source of truth.
-- Headless runs keep `--setting-sources project,local` until Ali's global settings file is clean.
+- Headless runs load user, project and local settings (global file cleaned on 2026-09-27).
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.
