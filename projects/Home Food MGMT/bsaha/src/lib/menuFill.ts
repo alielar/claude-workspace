@@ -33,24 +33,44 @@ export type FillReport = {
   before: Record<Meal, number>;
   after: Record<Meal, number>;
   added: Record<Meal, string[]>;
-  /** Dishes that were already on both lunch and dinner. Left as they are. */
-  onBoth: string[];
+  /** Dishes that were on both lunch and dinner and now sit on one of them (or on breakfast only). */
+  moved: Record<"lunch" | "dinner" | "breakfast", string[]>;
 };
 
 /**
  * Fills each meal of the menu up to the target with the best rated dishes, keeping every dish
  * already picked. Breakfast takes breakfast dishes. Lunch and dinner take main dishes and never
- * share one: the ranked list is dealt to whichever of the two has more empty spots, so both get
- * dishes of the same quality. Nothing is ever removed. `dry` only reports what would change.
+ * share one: a dish found on both is kept on the meal with more room (a snack found there goes
+ * back to breakfast only), then the ranked list is dealt to whichever of the two has more empty
+ * spots, so both get dishes of the same quality. `dry` only reports what would change.
  */
 export async function fillMenu(dry = false): Promise<FillReport> {
   await ensureSchema();
   const all = (await db.select().from(dishes).where(eq(dishes.status, "ready"))).filter((d) => d.photoUrl);
-  const count = (m: Meal) => all.filter((d) => on(d, m)).length;
-  const before = Object.fromEntries(MEALS.map((m) => [m, count(m)])) as Record<Meal, number>;
   const byScore = (a: Dish, b: Dish) => ratingScore(b) - ratingScore(a) || (b.ratingCount ?? 0) - (a.ratingCount ?? 0);
   const plan = new Map<number, Meal[]>();
   const added: Record<Meal, string[]> = { breakfast: [], lunch: [], dinner: [] };
+  const moved: FillReport["moved"] = { lunch: [], dinner: [], breakfast: [] };
+
+  // A dish is a lunch pick or a dinner pick, never both.
+  const have = { lunch: all.filter((d) => on(d, "lunch") && !on(d, "dinner")).length, dinner: all.filter((d) => on(d, "dinner") && !on(d, "lunch")).length };
+  for (const d of all.filter((d) => on(d, "lunch") && on(d, "dinner")).sort(byScore)) {
+    const rest: Meal[] = (d.menuMeals ?? []).filter((m) => m !== "lunch" && m !== "dinner");
+    if (!isMain(d)) {
+      const keep: Meal[] = isBreakfast(d) && !rest.includes("breakfast") ? ["breakfast", ...rest] : rest;
+      d.menuMeals = MEALS.filter((m) => keep.includes(m));
+      moved.breakfast.push(d.nameEn);
+    } else {
+      const meal: "lunch" | "dinner" = have.lunch <= have.dinner ? "lunch" : "dinner";
+      have[meal]++;
+      d.menuMeals = MEALS.filter((m) => m === meal || rest.includes(m));
+      moved[meal].push(d.nameEn);
+    }
+    plan.set(d.id, d.menuMeals);
+  }
+
+  const count = (m: Meal) => all.filter((d) => on(d, m)).length;
+  const before = Object.fromEntries(MEALS.map((m) => [m, count(m)])) as Record<Meal, number>;
   /** Names already on the menu (any meal) plus the ones chosen here, so no near-duplicate gets in. */
   const taken = new Set(all.filter((d) => (d.menuMeals ?? []).length).map((d) => sameName(d.nameEn)));
   const fresh = (d: Dish) => !taken.has(sameName(d.nameEn));
@@ -84,12 +104,15 @@ export async function fillMenu(dry = false): Promise<FillReport> {
 
   if (!dry) {
     for (const [id, menuMeals] of plan) {
-      await db.update(dishes).set({ menuMeals, onMenu: true, removedAt: null, removedBy: null }).where(eq(dishes.id, id));
+      await db.update(dishes)
+        .set(menuMeals.length
+          ? { menuMeals, onMenu: true, removedAt: null, removedBy: null }
+          : { menuMeals, onMenu: false, removedAt: new Date().toISOString() })
+        .where(eq(dishes.id, id));
     }
     forgetSlimDishes();
   }
 
   const after = Object.fromEntries(MEALS.map((m) => [m, before[m] + added[m].length])) as Record<Meal, number>;
-  const onBoth = all.filter((d) => on(d, "lunch") && on(d, "dinner")).map((d) => d.nameEn);
-  return { before, after, added, onBoth };
+  return { before, after, added, moved };
 }
