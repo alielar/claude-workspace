@@ -5,6 +5,7 @@
 import { recentContacts, getThread, getContact, FR } from './wati.mjs';
 import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed } from './db.mjs';
 import { pushAll } from './push.mjs';
+import { requestSuggestion, startSuggesting } from './suggest-engine.mjs';
 
 export const POLL_MS = 45_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -40,8 +41,9 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   }
   const isNew = !!lastIn && (!before || (before.last_inbound_at || '') < lastIn.at);
   if (isNew && notify && before && !before.muted) {
-    await pushAll({ title: name || waId, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: process.env.NOTIFY_ONLY === '1' ? (process.env.WATI_WEB || 'https://eu.wati.io/') : `/t/${waId}` });
+    await pushAll({ title: name || waId, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
     log('new message from', name || waId);
+    if (pending) requestSuggestion(waId, 'lead'); // Claude drafts ~90 s after the last bubble
   }
   return { isNew, pending };
 }
@@ -79,12 +81,13 @@ async function pushSuggestions() {
 }
 
 export function startPolling() {
+  startSuggesting();
   const loop = async () => {
     try { await tick(); } catch (e) { log('poll error:', e.message); }
-    if (process.env.NOTIFY_ONLY !== '1') { try { await pushSuggestions(); } catch (e) { log('suggestion push error:', e.message); } }
+    try { await pushSuggestions(); } catch (e) { log('suggestion push error:', e.message); }
     setTimeout(loop, POLL_MS);
   };
   loop();
   // Suggestions written by Claude should reach the phone faster than the poll rhythm.
-  if (process.env.NOTIFY_ONLY !== '1') setInterval(() => pushSuggestions().catch(() => {}), 10_000);
+  setInterval(() => pushSuggestions().catch(() => {}), 10_000);
 }

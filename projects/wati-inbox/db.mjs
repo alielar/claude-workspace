@@ -57,6 +57,10 @@ db.exec(`
 for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL DEFAULT 0', 'stage TEXT', 'meeting TEXT', 'country TEXT', 'email TEXT', 'contact_at TEXT']) {
   try { db.exec(`ALTER TABLE threads ADD COLUMN ${col}`); } catch {}
 }
+// note = what Ali should know before sending; source = auto | ali (app button) | chat (Claude Code session)
+for (const col of ['note TEXT', 'source TEXT']) {
+  try { db.exec(`ALTER TABLE suggestions ADD COLUMN ${col}`); } catch {}
+}
 
 export const getState = (k) => db.prepare('SELECT value FROM state WHERE key = ?').get(k)?.value ?? null;
 export const setState = (k, v) => db.prepare('INSERT INTO state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(k, String(v));
@@ -86,6 +90,9 @@ export const setMuted = (waId, muted) => db.prepare('UPDATE threads SET muted = 
 export const saveContact = (waId, c) => db.prepare('UPDATE threads SET name = COALESCE(NULLIF(?, \'\'), name), stage = ?, meeting = ?, country = ?, email = ?, contact_at = ? WHERE wa_id = ?').run(c.name, c.stage, c.meeting, c.country, c.email, new Date().toISOString(), waId);
 export const wantSuggestion = (waId) => db.prepare('UPDATE threads SET wanted = 1 WHERE wa_id = ?').run(waId);
 export const latestSuggestion = (waId) => db.prepare('SELECT * FROM suggestions WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);
+export const insertSuggestion = (waId, options, note, source) => Number(db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source) VALUES (?, ?, ?, 0, ?, ?)').run(waId, new Date().toISOString(), JSON.stringify(options), note || null, source).lastInsertRowid);
+export const autoSuggestionsSince = (iso) => db.prepare("SELECT count(*) n FROM suggestions WHERE created_at >= ? AND source = 'auto'").get(iso).n;
+export const pendingRecent = (hours) => db.prepare('SELECT * FROM threads WHERE pending = 1 AND muted = 0 AND last_inbound_at > ?').all(new Date(Date.now() - hours * 3600e3).toISOString());
 export const unpushedSuggestions = () => db.prepare('SELECT s.*, t.name FROM suggestions s LEFT JOIN threads t ON t.wa_id = s.wa_id WHERE s.pushed = 0').all();
 export const markSuggestionPushed = (id) => db.prepare('UPDATE suggestions SET pushed = 1 WHERE id = ?').run(id);
 

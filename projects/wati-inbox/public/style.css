@@ -46,3 +46,12 @@ textarea { min-height: 110px; resize: vertical; }
 
 .emojis { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
 .emojis button { font-size: 18px; padding: 4px 8px; min-height: 36px; line-height: 1; }
+
+/* suggestions (2026-09-27) */
+.pill.ready { background: var(--us); } .pill.work { background: var(--lead); }
+button.on { border-color: var(--accent); color: var(--accent); }
+button.done { border-color: var(--accent); color: var(--accent); }
+button.busy::before { content: ''; display: inline-block; width: 10px; height: 10px; border: 2px solid var(--muted); border-top-color: transparent; border-radius: 50%; margin-right: 7px; vertical-align: -1px; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.opt-head { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.note { color: var(--warn); }

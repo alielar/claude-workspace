@@ -171,14 +171,24 @@ large share of his weekly credits.
 - The free 20-minute interview, the level test and the admission email happen outside
   WhatsApp. When you need to know what was said on the call, ask Ali — do not assume.
 
-## Wati notifications (the Mac notifier)
+## Wati Inbox (the phone app) — replies and suggestions, restored 2026-09-27
 
-`../wati-inbox` runs on the Mac in **notification-only mode**: it reads the France Sales threads
-every 45 s and pushes a notification to Ali's phone and laptop for every new lead message
-(tap → opens Wati). Ali replies in Wati and asks for suggestions **here, in the chat** — the
-in-app replies, templates, suggestions and the `veille` watch were archived on 2026-09-25 in
-`projects/_archive/wati-inbox-2026-09-25/` (see its `RESTORE.md`; restore takes ~10 minutes).
-The Mac must stay awake (sleep disabled) for notifications to keep flowing.
+`../wati-inbox` runs on the Mac (launchd job `com.ali.wati-inbox`, reads the France Sales threads
+every 45 s). Ali gets a push for every lead message, opens the thread in the app on his phone,
+and replies from there — free text while the 24h window is open, French templates when it is
+closed. Reply suggestions appear in the app **without any Claude Code session open**: the app
+itself runs `claude -p --model claude-sonnet-5` headless in this folder (`wati-inbox/suggest-engine.mjs`,
+prompt in `wati-inbox/suggest-prompt.md`), so this CLAUDE.md and the playbook apply. One draft
+per lead about 90 s after their last bubble ("Suggestions auto" switch in the app), or on demand
+when Ali taps "Demander une suggestion". Every draft is also saved to `data/suggestions/<date>.md`
+for the evening review.
+
+- **In this chat**, a draft you give Ali can also be posted to his phone:
+  `node suggest.mjs <waId> '[{"bubbles":["…","…"],"why":"…"}]'` — do it when Ali asks for it on
+  the phone, or on `c`/`C` (one call per lead). `node compare-sent.mjs <waId>` shows a
+  suggestion next to what Ali actually sent.
+- Server log: `../wati-inbox/logs/server.log`; every headless run: `../wati-inbox/logs/suggest.log`.
+- The Mac must stay awake (lid open, screen may lock) and Tailscale on for the phone on 4G.
 
 ## Sauvegarder chaque brouillon (depuis le 26/09/2026)
 

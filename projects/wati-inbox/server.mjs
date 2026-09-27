@@ -14,6 +14,7 @@ import { extname, join, normalize } from 'node:path';
 import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
+import { requestSuggestion, suggestStatus, autoEnabled, setAuto } from './suggest-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -48,15 +49,13 @@ async function api(req, res, path) {
   }
   if (!authed(req)) return json(res, 401, { error: 'login' });
 
-  // Notification-only mode (since 2026-09-25): the reply/suggestion features are archived.
-  if (process.env.NOTIFY_ONLY === '1' && !['/api/push', '/api/status'].includes(path)) return json(res, 410, { error: 'Fonction archivée — mode notifications seules' });
-  if (path === '/api/status') {
-    const recent = inbox().slice(0, 8).map((t) => ({ name: t.name || t.wa_id, at: t.last_inbound_at, text: (t.last_text || '').slice(0, 80) }));
-    return json(res, 200, { lastPoll: db.prepare("SELECT value FROM state WHERE key = 'last_poll'").get()?.value ?? null, devices: subscriptions().length, recent });
-  }
-
   if (path === '/api/inbox') {
-    return json(res, 200, { threads: inbox().map((t) => ({ ...t, windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24, hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null })) });
+    const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return !!s && (!t.last_inbound_at || s.created_at >= t.last_inbound_at); };
+    return json(res, 200, { suggestAuto: autoEnabled(), threads: inbox().map((t) => ({ ...t, windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24, hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null, suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null })) });
+  }
+  if (path === '/api/settings') {
+    if (req.method === 'POST') { const b = await body(req); if ('suggestAuto' in b) setAuto(!!b.suggestAuto); }
+    return json(res, 200, { suggestAuto: autoEnabled() });
   }
   if (path === '/api/push') {
     if (req.method === 'GET') return json(res, 200, { publicKey: process.env.VAPID_PUBLIC_KEY || null, endpoints: subscriptions().map((s) => s.endpoint) });
@@ -88,11 +87,12 @@ async function api(req, res, path) {
       windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24,
       hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null,
       templatesSent: sentTemplates(waId).map((s) => ({ at: s.at, name: JSON.parse(s.payload).template })),
-      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options) } : null,
+      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '' } : null,
+      suggesting: suggestStatus(waId),
     });
   }
   if (action === 'refresh') { await refreshThread(waId, storedThread(waId)?.name, { notify: false }); return json(res, 200, { ok: true }); }
-  if (action === 'suggest') { if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' }); wantSuggestion(waId); return json(res, 200, { ok: true }); }
+  if (action === 'suggest') { if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' }); wantSuggestion(waId); requestSuggestion(waId, 'ali'); return json(res, 200, { ok: true }); }
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
   if (action === 'handled') { const t = storedThread(waId); if (t) saveThread({ ...t, pending: 0 }); return json(res, 200, { ok: true }); }
   if (action === 'send' && req.method === 'POST') {

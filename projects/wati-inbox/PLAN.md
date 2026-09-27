@@ -1,7 +1,5 @@
 # Feature Implementation Plan — Wati Inbox (France Sales), self-hosted on the Mac
 
-> **Archived 2026-09-25** — Ali kept only the notifications; full app in `projects/_archive/wati-inbox-2026-09-25/` (see `RESTORE.md`).
-
 **Overall Progress:** `100%`
 
 ## TLDR
@@ -61,3 +59,10 @@ A small web app that runs **on Ali's Mac** (no Vercel, no Turso, no external pro
 - 🟩 Learning loop: `LESSON` events when Ali deviates from a suggestion → `compare-sent.mjs` → case logged silently in `04-CAS-APPRIS.md`.
 - 🟩 Daily veille session at 09:00 Morocco time (`veille.sh` + launchd), Sonnet model, stops at 21:00 Madrid.
 - 🟩 Tailscale certificate renewal moved to `renew-ts-cert.mjs` (run from the morning Terminal; a background job blocks on macOS privacy rules).
+
+## 2026-09-27 — full app restored, suggestions without a session
+- 🟩 Notification-only mode (25/09) reverted: inbox, thread, replies, templates back on the phone.
+- 🟩 Suggestions no longer need a Terminal with `claude … veille` open, nor Remote Control: the server
+  runs `claude -p` (Sonnet, headless, `--json-schema`) in `Wati outreach` — `suggest-engine.mjs`. Auto
+  draft 90 s after a lead's last bubble (switch in the app), on-demand button, daily cap, drafts saved
+  to `data/suggestions/<date>.md` for the nightly review. The `veille` watcher and its launchd job stay archived.
