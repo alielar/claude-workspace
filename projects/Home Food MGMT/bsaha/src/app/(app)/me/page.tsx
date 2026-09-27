@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import Link from "next/link";
 import { DISLIKE_TAGS, LANGS, THEMES } from "@/db/schema";
 import { currentSession } from "@/lib/session";
 import { LANG_LABEL, t } from "@/lib/i18n/dict";
@@ -11,6 +12,16 @@ export default async function Me() {
     <main>
       <h1 className="text-3xl font-extrabold">{me.name}</h1>
       <p className="mt-1 text-muted">{t(me.lang, me.role === "cook" ? "cook" : me.role === "grocery" ? "grocery" : "family")}</p>
+
+      {me.isAdmin && (
+        <section className="mt-8">
+          <h2 className="text-sm font-bold text-muted uppercase tracking-wide">{t(me.lang, "admin")}</h2>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link href="/library" className="tile px-5 py-4 text-lg font-bold text-accent text-center">{t(me.lang, "library")}</Link>
+            <Link href="/people" className="tile px-5 py-4 text-lg font-bold text-accent text-center">{t(me.lang, "people")}</Link>
+          </div>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-sm font-bold text-muted uppercase tracking-wide">{t(me.lang, "yourLanguage")}</h2>

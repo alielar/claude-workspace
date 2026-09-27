@@ -18,7 +18,7 @@ export function TabBar({ tabs, appName }: { tabs: Tab[]; appName: string }) {
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 bg-card border-t border-line safe-bottom lg:hidden">
-        <ul className="max-w-md mx-auto flex">
+        <ul className="max-w-md md:max-w-3xl mx-auto flex">
           {tabs.map((tab) => {
             const active = isActive(path, tab.href);
             return (
