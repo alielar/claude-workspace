@@ -1025,6 +1025,88 @@ button, a, label, input, select, textarea, [role="button"] { touch-action: manip
   :root:not([data-theme="dark"]) ::-webkit-scrollbar-thumb { background: rgba(20,20,40,0.15); }
 }
 
+/* ─── Split — light screen, black side rail + tab bar (Ali 2026-09-27: "the side bar is black
+   and the main screen is light"). The page takes the Light tokens; the chrome elements
+   re-declare the dark ones for their own subtree, so everything inside the bar (icons, active
+   pill, tooltip) reads as the Dark theme while the content stays Light. Sits after the
+   prefers-color-scheme block on purpose: same specificity, so this one must come last. ─── */
+:root[data-theme="split"] {
+  color-scheme: light;
+  --bg-deep:   #F3F4F7;
+  --bg:        #F3F4F7;
+  --bg-card:   #FFFFFF;
+  --bg-card-2: #F7F7FA;
+  --bg-chrome: #0B0B10;
+  --accent-soft: #ECE9FB;
+  --on-accent: #FFFFFF;
+
+  --violet: #5B4BD6;
+  --cyan:   #2E8A82;
+  --grad:   var(--violet);
+  --grad-soft: var(--accent-soft);
+
+  --ink:   #15161D;
+  --ink-2: #4B4E5C;
+  --ink-3: #6F7280;
+  --ink-4: #9A9DAB;
+  --ink-5: #D9DBE3;
+
+  --pos:  #2F8F5B;
+  --neg:  #C4453F;
+  --warn: #B8791A;
+
+  --c-politics: #C4453F;
+  --c-tech:     #2E8A82;
+  --c-ai:       #5B4BD6;
+  --c-mena:     #B8791A;
+  --c-biz:      #2F8F5B;
+
+  --border:       #E1E3EA;
+  --border-hi:    #D3D6DF;
+  --border-focus: rgba(91, 75, 214, 0.50);
+  --border-strong: #C4C7D1;
+  --line:        #E6E8EE;
+  --line-hi:     #D9DCE4;
+  --line-strong: #C4C7D1;
+
+  --bg-input:   #F7F7FA;
+  --bg-input-2: #F1F1F6;
+  --fill-1: #F4F4F8;
+  --fill-2: #ECEDF2;
+  --fill-3: #DFE1E8;
+  --bg-elevated:   #FFFFFF;
+  --bg-elevated-2: #F7F7FA;
+  --bg-elevated-3: #EFEFF4;
+
+  --shadow-card: none;
+  --glow-violet: none;
+  --glow-violet-hi: none;
+}
+:root[data-theme="split"] ::-webkit-scrollbar-thumb { background: rgba(20,20,40,0.15); }
+/* The black bars keep the Dark palette inside them. */
+:root[data-theme="split"] .cc-sidebar,
+:root[data-theme="split"] .cc-mobile-nav {
+  --bg-card:   #15161C;
+  --bg-card-2: #1B1C24;
+  --violet: #8B7CF0;
+  --grad:   var(--violet);
+  --accent-soft: #232041;
+  --ink:   #EDEDF2;
+  --ink-2: #B3B6C3;
+  --ink-3: #8A8D9B;
+  --ink-4: #5C5F6E;
+  --border: #262833;
+  --line:   #262833;
+  --line-hi: #31343F;
+  --fill-1: #1A1B22;
+  --fill-2: #22232C;
+  --fill-3: #2E3039;
+  color: var(--ink);
+  color-scheme: dark;
+}
+/* The quick-add bar belongs to the page, not the bar: it stays light. */
+:root[data-theme="split"] .todo-addbar { background: var(--bg-card); }
+
 /* ── To-do completion (2026-09-08) · quiet reward: pop, ring, sweep, collapse ── */
 @keyframes cc-done-pop {
   0% { transform: scale(1); }

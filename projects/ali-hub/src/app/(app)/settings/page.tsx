@@ -45,10 +45,11 @@ const NEWS_TOPICS = [
 ];
 
 const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
-  { key: "system", label: "Automatic", hint: "Phone by day · Night 20:00–07:00" },
-  { key: "light",  label: "Light",     hint: "" },
-  { key: "dark",   label: "Dark",      hint: "" },
-  { key: "night",  label: "Night",     hint: "Warm · less blue light" },
+  { key: "system", label: "Auto",  hint: "Phone by day · Night 20:00–07:00" },
+  { key: "light",  label: "Light", hint: "" },
+  { key: "dark",   label: "Dark",  hint: "" },
+  { key: "night",  label: "Night", hint: "Warm · less blue light" },
+  { key: "split",  label: "Split", hint: "Light screen · black bar" },
 ];
 
 function parseTopics(s: string | undefined): string[] {
@@ -60,7 +61,7 @@ function Segmented<T extends string>({ value, options, onChange }: {
 }) {
   return (
     <div role="radiogroup" style={{
-      display: "grid", gridTemplateColumns: `repeat(${options.length}, 1fr)`,
+      display: "grid", gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))`,
       gap: 4, padding: 4, borderRadius: 12, background: "var(--fill-1)", border: "1px solid var(--line)",
     }}>
       {options.map((o) => {
@@ -72,7 +73,7 @@ function Segmented<T extends string>({ value, options, onChange }: {
             aria-checked={on}
             onClick={() => onChange(o.key)}
             style={{
-              minHeight: 40, borderRadius: 10, border: "none", cursor: "pointer",
+              minHeight: 40, borderRadius: 10, border: "none", cursor: "pointer", padding: "0 4px",
               fontSize: 15, fontWeight: on ? 600 : 500, font: "inherit",
               background: on ? "var(--bg-card-2)" : "transparent",
               color: on ? "var(--ink)" : "var(--ink-3)",

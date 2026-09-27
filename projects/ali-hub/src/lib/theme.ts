@@ -1,14 +1,15 @@
 "use client";
 
 /**
- * Theme: "system" (default) | "light" | "dark" | "night" (warm, low blue light).
+ * Theme: "system" (default) | "light" | "dark" | "night" (warm, low blue light)
+ * | "split" (light screen, black side rail + tab bar · Ali 2026-09-27).
  * Stored in localStorage as "cc-theme"; applied as <html data-theme="…">.
  * The root layout runs a tiny inline script that applies it before first paint.
  */
 
 import { useSyncExternalStore } from "react";
 
-export type ThemeChoice = "system" | "light" | "dark" | "night";
+export type ThemeChoice = "system" | "light" | "dark" | "night" | "split";
 
 const KEY = "cc-theme";
 const EVENT = "cc:theme";
@@ -16,7 +17,7 @@ const EVENT = "cc:theme";
 export function readTheme(): ThemeChoice {
   try {
     const v = localStorage.getItem(KEY);
-    return v === "light" || v === "dark" || v === "night" ? v : "system";
+    return v === "light" || v === "dark" || v === "night" || v === "split" ? v : "system";
   } catch {
     return "system";
   }
@@ -30,7 +31,7 @@ function inSunsetWindow(d = new Date()): boolean {
 
 /** Recompute the <html data-theme> attribute from the stored choice + the clock.
  * Automatic (the default): follows the phone by day and is Night (warm, low blue light)
- * from 20:00 to 07:00. Light / Dark / Night picked by hand hold at any hour until changed
+ * from 20:00 to 07:00. Light / Dark / Night / Split picked by hand hold at any hour until changed
  * (Ali 2026-09-14: "by default automatic, but I can move it whenever I want" · before this
  * the night window overrode every choice). Keep in sync with THEME_BOOT in app/layout.tsx. */
 export function refreshThemeAttr() {
