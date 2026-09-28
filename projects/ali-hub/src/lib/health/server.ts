@@ -6,7 +6,7 @@
  */
 
 import { db } from "@/db";
-import { healthMetrics, healthSleep, healthWorkouts } from "@/db/schema";
+import { healthMetrics, healthSleep, healthWorkouts, healthWorkoutSeries } from "@/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { sleepScore, type Parsed, type SleepNight } from "./types";
 
@@ -30,6 +30,11 @@ export const HEALTH_DDL = [
     hr_avg INTEGER, hr_min INTEGER, hr_max INTEGER,
     steps INTEGER, elevation_m INTEGER, intensity_met REAL, source TEXT,
     raw TEXT NOT NULL DEFAULT '{}',
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`,
+  `CREATE TABLE IF NOT EXISTS health_workout_series (
+    hk_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    route TEXT, hr TEXT, splits TEXT,
     updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`,
   `CREATE TABLE IF NOT EXISTS health_metrics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,6 +100,17 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
       steps: w.steps, elevationM: w.elevationM, intensityMet: w.intensityMet, source: w.source, raw: JSON.stringify(w.raw), updatedAt: now,
     };
     await db.insert(healthWorkouts).values(row).onConflictDoUpdate({ target: healthWorkouts.hkId, set: keepKnown(row, ["userId", "hkId"]) });
+    if (w.series) {
+      // A thinner repost (HAE "since last sync" without the route) must not blank a trace we already hold.
+      const sr = {
+        hkId: w.hkId, userId,
+        route: w.series.route.length ? JSON.stringify(w.series.route) : null,
+        hr: w.series.hr.length ? JSON.stringify(w.series.hr) : null,
+        splits: w.series.splits.length ? JSON.stringify(w.series.splits) : null,
+        updatedAt: now,
+      };
+      await db.insert(healthWorkoutSeries).values(sr).onConflictDoUpdate({ target: healthWorkoutSeries.hkId, set: keepKnown(sr, ["userId", "hkId"]) });
+    }
   }
   for (const m of p.metrics) {
     const row = { userId, date: m.date, metric: m.metric, qty: m.qty, min: m.min, avg: m.avg, max: m.max, units: m.units, updatedAt: now };

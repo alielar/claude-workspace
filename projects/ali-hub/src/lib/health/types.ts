@@ -7,6 +7,10 @@
  * (Europe/Madrid for Ali). Everything here is defensive: users report fields
  * that differ from the docs, so every number is optional and the raw record is
  * kept by the caller for the first weeks.
+ *
+ * Since 2026-09-28 the heavy arrays are kept too (Ali wants the map and the splits):
+ * the GPS route, the heart-rate trace and kilometre splits computed here, stored in
+ * their own table so the workout list stays light.
  */
 
 export type SleepNight = {
@@ -43,7 +47,24 @@ export type WatchWorkout = {
   intensityMet: number | null;
   source: string | null;
   raw: Record<string, unknown>; // the workout minus the heavy arrays (route, HR series)
+  series: WorkoutSeries | null; // the heavy arrays, compacted · stored apart (health_workout_series)
 };
+
+/** [lat, lon, altitude m | null, ms] · lat/lon to 5 decimals (~1 m), at most ROUTE_MAX_POINTS. */
+export type RoutePoint = [number, number, number | null, number];
+/** [ms, bpm] */
+export type HrPoint = [number, number];
+/** One kilometre of a run (the last one may be partial). */
+export type Split = {
+  km: number;               // 1, 2, 3 … (the partial last split keeps its ordinal)
+  distKm: number;           // 1 for a full split, the fraction for the last one
+  sec: number;              // time spent in this split
+  paceSec: number | null;   // seconds per km (sec / distKm)
+  hrAvg: number | null;
+  elevM: number | null;     // climb in this split (positive deltas only)
+  partial?: true;
+};
+export type WorkoutSeries = { route: RoutePoint[]; hr: HrPoint[]; splits: Split[] };
 
 export type DailyMetric = {
   date: string;
@@ -147,6 +168,141 @@ export function sleepScore(n: Pick<SleepNight, "totalMin" | "deepMin" | "awakeMi
 
 const HEAVY_KEYS = new Set(["route", "heartRateData", "heartRateRecovery", "stepCount", "walkingAndRunningDistance", "activeEnergy", "elevation"]);
 
+const ROUTE_MAX_POINTS = 2400; // ~1 point every 2–3 s on a 10 km run · a map needs no more
+const R_EARTH_M = 6371008.8;
+
+/** Metres between two lat/lon points (haversine). */
+export function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R_EARTH_M * Math.asin(Math.sqrt(a));
+}
+
+/** HAE route points ({lat, lon, altitude, timestamp} · also latitude/longitude/date) → compact, time-ordered, noisy fixes dropped. */
+function parseRoute(v: unknown): RoutePoint[] {
+  if (!Array.isArray(v)) return [];
+  const pts: RoutePoint[] = [];
+  for (const p of v as Record<string, unknown>[]) {
+    if (!p || typeof p !== "object") continue;
+    const lat = num(p.lat ?? p.latitude), lon = num(p.lon ?? p.lng ?? p.longitude);
+    const t = parseHaeDate(p.timestamp ?? p.date ?? p.time);
+    if (lat === null || lon === null || t === null || Math.abs(lat) > 90 || Math.abs(lon) > 180) continue;
+    const acc = num(p.horizontalAccuracy);
+    if (acc !== null && acc > 50) continue;
+    const alt = num(p.altitude ?? p.alt);
+    pts.push([Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5, alt === null ? null : Math.round(alt * 10) / 10, t]);
+  }
+  pts.sort((a, b) => a[3] - b[3]);
+  if (pts.length <= ROUTE_MAX_POINTS) return pts;
+  const step = pts.length / ROUTE_MAX_POINTS;
+  const out: RoutePoint[] = [];
+  for (let i = 0; i < ROUTE_MAX_POINTS; i++) out.push(pts[Math.floor(i * step)]);
+  if (out[out.length - 1] !== pts[pts.length - 1]) out.push(pts[pts.length - 1]);
+  return out;
+}
+
+/** HAE heart-rate samples ({date, Avg|qty}) → [ms, bpm], time-ordered. */
+function parseHrSeries(v: unknown): HrPoint[] {
+  if (!Array.isArray(v)) return [];
+  const out: HrPoint[] = [];
+  for (const p of v as Record<string, unknown>[]) {
+    if (!p || typeof p !== "object") continue;
+    const t = parseHaeDate(p.date ?? p.timestamp), bpm = num(p.Avg ?? p.avg ?? p.qty);
+    if (t !== null && bpm !== null && bpm > 20 && bpm < 260) out.push([t, Math.round(bpm)]);
+  }
+  return out.sort((a, b) => a[0] - b[0]);
+}
+
+/** Cumulative distance over time: [ms, metres so far] · from the route (haversine) or, failing that, HAE's distance samples. */
+function distanceCurve(route: RoutePoint[], distSamples: unknown): [number, number][] {
+  if (route.length >= 2) {
+    const curve: [number, number][] = [[route[0][3], 0]];
+    let d = 0;
+    for (let i = 1; i < route.length; i++) {
+      const a = route[i - 1], b = route[i];
+      const seg = haversineM(a[0], a[1], b[0], b[1]);
+      const dt = (b[3] - a[3]) / 1000;
+      // a jump faster than 12 m/s is a GPS glitch, not running
+      if (dt <= 0 || seg / dt > 12) { curve.push([b[3], d]); continue; }
+      d += seg;
+      curve.push([b[3], d]);
+    }
+    return curve;
+  }
+  if (!Array.isArray(distSamples)) return [];
+  const rows = (distSamples as Record<string, unknown>[])
+    .map((p) => ({ t: parseHaeDate(p?.date ?? p?.timestamp), m: (() => { const km = toKm({ qty: p?.qty, units: p?.units ?? "km" }); return km === null ? null : km * 1000; })() }))
+    .filter((r): r is { t: number; m: number } => r.t !== null && r.m !== null)
+    .sort((a, b) => a.t - b.t);
+  if (!rows.length) return [];
+  // A sample is the distance covered from its stamp to the next one · the total is reached at the interval's END.
+  const gaps = rows.slice(1).map((r, i) => r.t - rows[i].t).sort((a, b) => a - b);
+  const gap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 60_000;
+  const curve: [number, number][] = [[rows[0].t, 0]];
+  let d = 0;
+  rows.forEach((r, i) => { d += r.m; curve.push([rows[i + 1]?.t ?? r.t + gap, d]); });
+  return curve;
+}
+
+function avgBetween(hr: HrPoint[], t0: number, t1: number): number | null {
+  let sum = 0, n = 0;
+  for (const [t, bpm] of hr) { if (t >= t0 && t <= t1) { sum += bpm; n++; } }
+  return n ? Math.round(sum / n) : null;
+}
+
+/** Climb with 3 m hysteresis: barometer jitter is ignored, a steady gentle slope still counts. */
+function climbBetween(route: RoutePoint[], t0: number, t1: number): number | null {
+  let base: number | null = null, gain = 0;
+  for (const p of route) {
+    if (p[3] < t0 || p[3] > t1 || p[2] === null) continue;
+    if (base === null) { base = p[2]; continue; }
+    if (p[2] - base >= 3) { gain += p[2] - base; base = p[2]; }
+    else if (p[2] < base) base = p[2];
+  }
+  return base === null ? null : Math.round(gain);
+}
+
+/** Kilometre splits from a distance curve · time at each km boundary is interpolated. */
+export function computeSplits(curve: [number, number][], route: RoutePoint[], hr: HrPoint[]): Split[] {
+  if (curve.length < 2) return [];
+  const splits: Split[] = [];
+  let km = 1, tPrev = curve[0][0];
+  for (let i = 1; i < curve.length; i++) {
+    const [t0, d0] = curve[i - 1], [t1, d1] = curve[i];
+    while (d1 >= km * 1000) {
+      const frac = d1 === d0 ? 1 : (km * 1000 - d0) / (d1 - d0);
+      const tCross = t0 + frac * (t1 - t0);
+      const sec = Math.round((tCross - tPrev) / 1000);
+      splits.push({ km, distKm: 1, sec, paceSec: sec, hrAvg: avgBetween(hr, tPrev, tCross), elevM: climbBetween(route, tPrev, tCross) });
+      tPrev = tCross; km++;
+    }
+  }
+  const [tEnd, dEnd] = curve[curve.length - 1];
+  const rest = dEnd - (km - 1) * 1000;
+  if (rest >= 50 && tEnd > tPrev) {
+    const distKm = Math.round(rest) / 1000, sec = Math.round((tEnd - tPrev) / 1000);
+    splits.push({ km, distKm, sec, paceSec: Math.round(sec / distKm), hrAvg: avgBetween(hr, tPrev, tEnd), elevM: climbBetween(route, tPrev, tEnd), partial: true });
+  }
+  return splits;
+}
+
+/** The heavy arrays of one workout, compacted · null when the record carries none. */
+function parseWorkoutSeries(w: Record<string, unknown>): WorkoutSeries | null {
+  const route = parseRoute(w.route);
+  const hr = parseHrSeries(w.heartRateData);
+  const splits = computeSplits(distanceCurve(route, w.walkingAndRunningDistance), route, hr);
+  if (!route.length && !hr.length && !splits.length) return null;
+  return { route, hr, splits };
+}
+
+/** min:ss per km for a pace in seconds · "5:24". */
+export function fmtPace(sec: number | null): string {
+  if (sec === null || !Number.isFinite(sec) || sec <= 0) return "—";
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
   const startMs = parseHaeDate(w.start);
   if (startMs === null) return null;
@@ -183,6 +339,7 @@ function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
     intensityMet: rnd(num(w.intensity), 1),
     source: typeof w.source === "string" ? w.source : typeof w.device === "string" ? w.device : null,
     raw,
+    series: parseWorkoutSeries(w),
   };
 }
 

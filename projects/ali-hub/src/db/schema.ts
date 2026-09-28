@@ -718,6 +718,16 @@ export const healthWorkouts = sqliteTable("health_workouts", {
   updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
 });
 
+/** The heavy part of a workout, one row per hk_id: GPS route, heart-rate trace, km splits (JSON) · read only on a run's own page. */
+export const healthWorkoutSeries = sqliteTable("health_workout_series", {
+  hkId: text("hk_id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  route: text("route"),
+  hr: text("hr"),
+  splits: text("splits"),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
+});
+
 /** Daily metrics as HAE names them (resting_heart_rate, heart_rate_variability, …) · one row per day + metric. */
 export const healthMetrics = sqliteTable("health_metrics", {
   id: integer("id").primaryKey({ autoIncrement: true }),
