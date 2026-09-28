@@ -8,10 +8,10 @@ export function useMind() {
   const c = useCached<MindToday>("mind-today", () => fetchJson<MindToday>("/api/mind/today"));
   const [writing, setWriting] = useState(false);
 
-  /** Ask the server to write today's brief now (≈ 20 s). */
-  const writeBrief = useCallback(async () => {
+  /** Ask the server to write today's brief now (≈ 20 s) · `swap` drops the waiting one first. */
+  const writeBrief = useCallback(async (swap = false) => {
     setWriting(true);
-    try { const d = await fetchJson<MindToday>("/api/mind/today?make=1"); if (d) { c.setData(d); c.markEdit(); } }
+    try { const d = await fetchJson<MindToday>(swap ? "/api/mind/today?swap=1" : "/api/mind/today?make=1"); if (d) { c.setData(d); c.markEdit(); } }
     catch { /* shown as still empty · tap again */ }
     finally { setWriting(false); }
   }, [c]);

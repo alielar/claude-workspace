@@ -101,7 +101,7 @@ type HealthStatus = {
 const HAE_STEPS = [
   "App Store → Health Auto Export (JSON+CSV) → install, allow Health access (Sleep, Workouts, Heart Rate, Resting Heart Rate, HRV, Respiratory Rate, Blood Oxygen).",
   "Inside the app: Premium → yearly plan (7-day trial). Only Premium runs automations in the background.",
-  "Automations → + → REST API · name “ALI sleep” · URL below · Add header: key x-app-key, value = the key below · JSON · Summarize on · group by day · date range Default · metrics: Sleep Analysis, Resting Heart Rate, Heart Rate Variability, Heart Rate, Respiratory Rate, Blood Oxygen · every 1 hour · Save.",
+  "Automations → + → REST API · name “ALI sleep” · URL below · Add header: key x-app-key, value = the key below · JSON · Summarize on · group by day · date range Previous 7 days · metrics: Select all (Sleep Analysis included) · every 1 hour · Save.",
   "Automations → + → REST API · name “ALI workouts” · same URL and header · metrics none, Workouts on · date range Previous 7 days · every 1 hour · Save.",
   "Tap Run on each automation once, then come back here: the two lines above should show today’s stamp.",
   "iPhone Settings → Apps → Health Auto Export → Background App Refresh on. Add its “Automations” widget to a home screen: one tap = sync now.",

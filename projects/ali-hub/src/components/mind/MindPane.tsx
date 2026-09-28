@@ -3,16 +3,17 @@
 /**
  * Train → Mind · one session on one screen, in order:
  *   1 Callback · a past topic due today (spaced repetition): PREP reminder, record 2 min, graded.
- *   2 New topic · today's brief: read it (10–15 min), close it, PREP reminder, record 2 min, graded.
+ *   2 New topic · today's brief: read it against a timer (its length at READ_WPM, 3–8 min · closes
+ *     itself at zero), PREP reminder, record 2 min, graded with one-decimal scores.
  *   then the week-by-week progress and the topics with their next callback day.
  * Recording uses the phone's microphone (MediaRecorder, audio/mp4 on iOS); the file
  * goes to /api/mind/grade and is not kept. Both parts done → the "Mental training"
  * routine row ticks itself, like Mobility does.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMind } from "@/lib/mind/useMind";
-import { MAX_SPEAK_SEC, PREP, fmtSec, type MindPart, type MindSession, type MindTopic } from "@/lib/mind/types";
+import { MAX_SPEAK_SEC, PREP, fmtSec, readSeconds, type MindPart, type MindSession, type MindTopic } from "@/lib/mind/types";
 import { readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { checklistToday } from "@/lib/checklist/day";
@@ -40,6 +41,41 @@ function Brief({ md }: { md: string }) {
         if (t.split("\n").every((l) => /^[-*] /.test(l))) return <ul key={i} style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 4 }}>{t.split("\n").map((l, j) => <li key={j}>{inline(l.replace(/^[-*] /, ""))}</li>)}</ul>;
         return <p key={i} style={{ margin: 0 }}>{inline(t.replace(/\n/g, " "))}</p>;
       })}
+    </div>
+  );
+}
+
+/**
+ * The brief under a reading timer (Ali 2026-09-29: "enforce a reading pace on me"): a thin bar that
+ * stays at the top while he scrolls, counting down the minutes the brief's length allows; at zero
+ * the brief closes by itself and the recorder takes over. The close button sits in the flow at the
+ * end (a sticky one used to cover the last lines while reading).
+ */
+function Reading({ md, onClose }: { md: string; onClose: () => void }) {
+  const total = readSeconds(md);
+  const [left, setLeft] = useState(total);
+  const done = useRef(false);
+  useEffect(() => {
+    const t0 = Date.now();
+    const id = window.setInterval(() => {
+      const l = total - Math.floor((Date.now() - t0) / 1000);
+      setLeft(Math.max(0, l));
+      if (l <= 0 && !done.current) { done.current = true; window.clearInterval(id); onClose(); }
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [total, onClose]);
+  const pct = Math.max(0, Math.min(100, (left / total) * 100));
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      <div style={{ position: "sticky", top: "calc(env(safe-area-inset-top) + 6px)", zIndex: 2, background: "var(--bg-card)", borderRadius: 10, padding: "8px 10px", display: "grid", gap: 6, border: "1px solid var(--line)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "var(--ink-3)" }}>
+          <span>Reading · {Math.round(total / 60)} min · then it closes</span>
+          <span className="tabular-nums" style={{ fontFamily: "var(--f-mono)", fontSize: 18, fontWeight: 600, color: left <= 30 ? "var(--warn)" : "var(--ink)" }}>{fmtSec(left)}</span>
+        </div>
+        <span className="cc-progress-track" style={{ height: 4, display: "block" }}><span className="cc-progress-fill" style={{ display: "block", height: "100%", width: `${pct}%`, transition: "width 0.5s linear" }} /></span>
+      </div>
+      <Brief md={md} />
+      <button className="cc-btn cc-btn-primary" onClick={onClose} style={{ minHeight: 56, fontSize: 18, borderRadius: 14 }}>Close the brief and speak</button>
     </div>
   );
 }
@@ -118,7 +154,7 @@ function Recorder({ part, topic, onDone }: { part: MindPart; topic: MindTopic; o
 function Score({ label, v }: { label: string; v: number }) {
   return (
     <div style={{ display: "grid", gap: 2, justifyItems: "center" }}>
-      <span className="tabular-nums" style={{ fontSize: 30, fontWeight: 600, fontFamily: "var(--f-mono)", color: v >= 4 ? "var(--pos)" : v >= 3 ? "var(--warn)" : "var(--neg)", lineHeight: 1 }}>{v}</span>
+      <span className="tabular-nums" style={{ fontSize: 30, fontWeight: 600, fontFamily: "var(--f-mono)", color: v >= 4 ? "var(--pos)" : v >= 3 ? "var(--warn)" : "var(--neg)", lineHeight: 1 }}>{v.toFixed(1)}</span>
       <span style={{ fontSize: 12, color: "var(--ink-3)" }}>{label}</span>
     </div>
   );
@@ -157,6 +193,7 @@ export function MindPane() {
   const [closed, setClosed] = useState(false);
   const today = data?.today ?? checklistToday();
   useEffect(() => { if (data?.done.callback && data?.done.new) void tickMindRow(); }, [data?.done.callback, data?.done.new]);
+  const closeBrief = useCallback(() => { setReading(false); setClosed(true); window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
 
   if (!data && loading) return <div className="cc-skeleton" style={{ height: 160 }} />;
   if (!data) return <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Could not load today&apos;s session.</div>;
@@ -196,7 +233,7 @@ export function MindPane() {
           ) : !nt ? (
             <>
               <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{writing ? "Writing today's brief · about 20 seconds" : data.aiReady ? "Today's brief is not written yet." : "AI not connected · ANTHROPIC_API_KEY missing"}</div>
-              {!writing && data.aiReady && <button className="cc-btn cc-btn-primary" onClick={writeBrief} style={{ minHeight: 52, fontSize: 17, borderRadius: 14 }}>Write today&apos;s brief</button>}
+              {!writing && data.aiReady && <button className="cc-btn cc-btn-primary" onClick={() => writeBrief()} style={{ minHeight: 52, fontSize: 17, borderRadius: 14 }}>Write today&apos;s brief</button>}
               {writing && <div className="cc-skeleton" style={{ height: 52 }} />}
             </>
           ) : (
@@ -204,15 +241,17 @@ export function MindPane() {
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em" }}>{nt.title}</div>
                 {nt.hook && <div style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 4 }}>{nt.hook}</div>}
-                <div style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{Math.round(nt.brief.split(/\s+/).length / 180)} min read · then 2 min spoken from memory</div>
+                <div style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{Math.round(readSeconds(nt.brief) / 60)} min to read, timed · then 2 min spoken from memory</div>
               </div>
-              {!reading && !closed && <button className="cc-btn cc-btn-primary" onClick={() => setReading(true)} style={{ minHeight: 56, fontSize: 18, borderRadius: 14 }}>Read the brief</button>}
-              {reading && (
+              {!reading && !closed && (
                 <>
-                  <Brief md={nt.brief} />
-                  <button className="cc-btn cc-btn-primary" onClick={() => { setReading(false); setClosed(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, position: "sticky", bottom: "calc(var(--tabbar-h) + 12px)" }}>Close the brief and speak</button>
+                  <button className="cc-btn cc-btn-primary" onClick={() => setReading(true)} style={{ minHeight: 56, fontSize: 18, borderRadius: 14 }}>Read the brief · {Math.round(readSeconds(nt.brief) / 60)} min</button>
+                  {writing
+                    ? <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Writing another brief · about 20 seconds</div>
+                    : <button className="cc-btn cc-btn-ghost" onClick={() => writeBrief(true)} style={{ minHeight: 40, justifySelf: "start" }}>Another topic</button>}
                 </>
               )}
+              {reading && <Reading md={nt.brief} onClose={closeBrief} />}
               {closed && (
                 <>
                   <Prep />

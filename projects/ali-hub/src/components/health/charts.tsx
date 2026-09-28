@@ -110,6 +110,42 @@ export function Spark({ points, fmt, height = 64, band }: {
   );
 }
 
+/** A plain 2 px trend, no labels, no tap · for compact rows. */
+export function Line({ points, height = 28, width = 64 }: { points: (number | null)[]; height?: number; width?: number }) {
+  const vals = points.filter((v): v is number => v !== null);
+  if (vals.length < 2) return <span style={{ display: "inline-block", width, height }} aria-hidden />;
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const W = 100, pad = 3;
+  const x = (i: number) => (i / Math.max(points.length - 1, 1)) * W;
+  const y = (v: number) => height - pad - ((v - lo) / span) * (height - pad * 2);
+  const d = points.map((v, i) => (v === null ? null : `${x(i).toFixed(2)},${y(v).toFixed(2)}`)).reduce<string>((acc, pt, i) => (pt === null ? acc : acc + (acc && points[i - 1] !== null ? " L" : " M") + pt), "").trim();
+  return (
+    <svg viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" style={{ width, height, display: "block" }} aria-hidden>
+      <path d={d} fill="none" style={{ stroke: "var(--violet)", strokeWidth: 1.6 }} vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/**
+ * The Vitals band: a track, your typical range as the raised segment, tonight's value as the dot.
+ * Without a range yet, only the track (the dot sits mid-way) · the row's text says "day n of 7".
+ */
+export function RangeBar({ value, range, outside }: { value: number | null; range: { lo: number; hi: number } | null; outside: boolean }) {
+  const H = 14;
+  if (value === null) return <span style={{ display: "block", height: H }} aria-hidden />;
+  // Scale: the range fills the middle 50 % of the track; values are clamped to the ends.
+  const lo = range ? range.lo : value, hi = range ? range.hi : value;
+  const span = hi - lo || 1, pad = span * 0.5;
+  const x = (v: number) => Math.max(2, Math.min(98, ((v - (lo - pad)) / (span * 2)) * 100));
+  return (
+    <svg viewBox={`0 0 100 ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H, display: "block" }} aria-hidden>
+      <rect x={0} y={H / 2 - 1.5} width={100} height={3} rx={1.5} style={{ fill: "var(--fill-2)" }} />
+      {range && <rect x={x(range.lo)} y={H / 2 - 3} width={Math.max(0, x(range.hi) - x(range.lo))} height={6} rx={3} style={{ fill: "var(--accent-soft)" }} />}
+      <circle cx={range ? x(value) : 50} cy={H / 2} r={4.5} style={{ fill: outside ? "var(--warn)" : range ? "var(--violet)" : "var(--ink-4)", stroke: "var(--bg-card)", strokeWidth: 1.5 }} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
 /** The run's route, fitted to the box · start dot, finish dot, a small mark at every kilometre. */
 export function RouteMap({ route, height = 220 }: { route: RoutePoint[]; height?: number }) {
   const geo = useMemo(() => {

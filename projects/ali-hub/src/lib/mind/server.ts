@@ -10,7 +10,7 @@ import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
 import {
-  DOMAINS, INTERVALS, RUBRIC, addDays, computeMetrics, isoWeekOf, nextStage, verbatim,
+  DOMAINS, INTERVALS, READ_WPM, RUBRIC, SCORE_DECIMALS, addDays, computeMetrics, isoWeekOf, nextStage, verbatim,
   type MindMetrics, type MindPart, type MindScores, type MindSession, type MindToday, type MindTopic, type MindWeek, type Word,
 } from "./types";
 
@@ -72,32 +72,75 @@ function jsonIn<T>(text: string | null): T | null {
   try { return JSON.parse(m[0]) as T; } catch { return null; }
 }
 
-/** Write today's brief · the curriculum rotates domains and may build on earlier topics. */
+/** Which news categories feed a Mind domain · the brief is about the idea behind a story, not the story. */
+const NEWS_FOR_DOMAIN: Record<string, string[]> = {
+  "AI and tech": ["tech", "ai"],
+  "geopolitics and politics": ["geopolitics"],
+  business: ["business"],
+  economics: ["business", "geopolitics"],
+};
+
+/** The last three days of A L I's own news brief, reduced to headline + summary · what is actually going on right now. */
+async function recentStories(userId: string, date: string, domain: string): Promise<string[]> {
+  const cats = NEWS_FOR_DOMAIN[domain];
+  if (!cats) return [];
+  const rows = await db.all<{ content: string }>(sql`SELECT content FROM news_briefs WHERE user_id = ${userId} AND date >= ${addDays(date, -3)} ORDER BY date DESC LIMIT 3`).catch(() => []);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const r of rows) {
+    const stories = J<{ stories?: { headline?: string; summary?: string; category?: string }[] }>(r.content, {}).stories ?? [];
+    for (const s of stories) {
+      if (!s.headline || !cats.includes(String(s.category ?? "")) || seen.has(s.headline)) continue;
+      seen.add(s.headline);
+      out.push(`${s.headline}${s.summary ? ` · ${s.summary.slice(0, 220)}` : ""}`);
+      if (out.length >= 12) return out;
+    }
+  }
+  return out;
+}
+
+/**
+ * Write today's brief · the curriculum rotates domains, never repeats a title, and (Ali 2026-09-29)
+ * takes its AI/tech, politics and business ideas from what is in his news RIGHT NOW rather than
+ * from the model's memory (which handed him GPT-2-era scaling laws). Short, fixed shape, plain words.
+ */
 export async function writeTopic(userId: string, date: string): Promise<MindTopic | null> {
   await ensureMindTables();
   const past = await db.all<{ title: string; domain: string }>(sql`SELECT title, domain FROM mind_topics WHERE user_id = ${userId} ORDER BY id DESC LIMIT 60`);
   const recentDomains = past.slice(0, DOMAINS.length - 1).map((p) => p.domain);
   const domain = DOMAINS.find((d) => !recentDomains.includes(d)) ?? DOMAINS[past.length % DOMAINS.length];
-  const prompt = `You write one daily brief for Ali, who trains his memory and his speaking on it. He reads it once for 10–15 minutes, closes it, then explains the topic aloud for 2 minutes from memory and is graded on what he recalled.
+  const news = await recentStories(userId, date, domain);
+  const prompt = `You write one short brief for Ali, who trains his memory and his speaking on it. He is curious and sharp but NOT an expert in any of these fields. He reads the brief ONCE against a timer of about ${Math.ceil(700 / READ_WPM)} minutes, closes it, then explains the idea aloud for 2 minutes from memory and is graded on what he recalled.
 
-Today's domain: ${domain}.
-Topics already covered (never repeat, build on one when it fits): ${past.length ? past.map((p) => `${p.title} (${p.domain})`).join("; ") : "none yet"}.
+Today is ${date}. Today's domain: ${domain}.
+${news.length ? `IN HIS NEWS RIGHT NOW (prefer the concept behind one of these when it fits the domain · the brief is about the IDEA, not the news item):\n${news.map((n) => `- ${n}`).join("\n")}\n` : ""}
+Already covered (never repeat, build on one when it fits): ${past.length ? past.map((p) => `${p.title} (${p.domain})`).join("; ") : "none yet"}.
 
-Choose ONE topic a well-informed person should understand: a real idea, event, mechanism, thinker or debate with substance · nothing trivial, nothing so vast it cannot be held in the head. Then write the brief, distilled, not Wikipedia:
-1. The core idea in plain words.
-2. The reasoning behind it · why it is the way it is, what it explains, where it fails.
-3. The key details and context a listener would expect from someone who knows it.
-4. Two or three specific facts, numbers or examples worth remembering.
-1100–1400 words, markdown with 4–6 short "## " headings, short paragraphs, plain words (no jargon without a plain-word gloss). Write for a smart adult who has the basics and none of the background. No preamble, no "in this brief".
+Choose ONE idea worth understanding in ${date.slice(0, 4)}: something people are deciding, arguing about or building NOW, or a timeless concept shown through a current example. Not a history of versions or dates, not a textbook definition, not anything a curious person would call old news.
+
+Write it the way a sharp friend explains it over coffee: concepts, why, what follows. Plain words only · every technical term is replaced by what it means, or dropped. A number only when one number carries the point. No names of papers, no model version numbers, no acronyms he will never say again.
+
+600–800 words, markdown, EXACTLY these five sections in this order:
+## The idea · what it is, in two or three sentences
+## How it works · the mechanism, with one everyday analogy
+## Why it matters · who it changes, what follows, what it costs
+## The argument · the strongest case for it and the strongest case against, one short paragraph each
+## Remember · five short lines: the facts a good recall must contain
 
 Answer with JSON only, in exactly this shape:
-{"title": "...", "hook": "one line on why this matters to Ali", "brief": "the markdown", "keyFacts": ["5 short, checkable statements a good recall must contain"]}`;
-  const out = jsonIn<{ title: string; hook: string; brief: string; keyFacts: string[] }>(await ask(prompt, 4000));
-  if (!out || !out.title || !out.brief || out.brief.length < 1500) return null;
+{"title": "...", "hook": "one line on why this matters to Ali", "brief": "the markdown", "keyFacts": ["the same five Remember lines, each one checkable"]}`;
+  const out = jsonIn<{ title: string; hook: string; brief: string; keyFacts: string[] }>(await ask(prompt, 2600));
+  if (!out || !out.title || !out.brief || out.brief.length < 1800) return null;
   const facts = Array.isArray(out.keyFacts) ? out.keyFacts.filter((f) => typeof f === "string").slice(0, 6) : [];
   const res = await db.run(sql`INSERT INTO mind_topics (user_id, date, title, domain, hook, brief, key_facts) VALUES (${userId}, ${date}, ${out.title.slice(0, 200)}, ${domain}, ${String(out.hook ?? "").slice(0, 300)}, ${out.brief}, ${JSON.stringify(facts)})`);
   const [row] = await db.all<TopicRow>(sql`SELECT * FROM mind_topics WHERE id = ${Number(res.lastInsertRowid)}`);
   return row ? topicOf(row) : null;
+}
+
+/** Remove the waiting brief (never read to the end: no session on it) so another can be written. */
+export async function dropPendingTopic(userId: string): Promise<void> {
+  await ensureMindTables();
+  await db.run(sql`DELETE FROM mind_topics WHERE user_id = ${userId} AND learned_at IS NULL AND id NOT IN (SELECT topic_id FROM mind_sessions WHERE user_id = ${userId})`);
 }
 
 // ── Deepgram ──────────────────────────────────────────────────────────────────
@@ -127,6 +170,8 @@ async function grade(topic: MindTopic, transcript: string, metrics: MindMetrics)
 
 ${RUBRIC}
 
+${SCORE_DECIMALS}
+
 THE BRIEF
 ${topic.brief.slice(0, 9000)}
 
@@ -138,10 +183,10 @@ MEASURED (do not re-judge these · use them in a note only if they matter): ${me
 VERBATIM TRANSCRIPT (fillers and pauses kept, "[2.1 s]" = a pause)
 ${transcript.slice(0, 6000)}
 
-Answer with JSON only: {"accuracy": 1-5, "structure": 1-5, "clarity": 1-5, "recalled": ["key facts he got, quoted from the list"], "missed": ["key facts absent or wrong"], "notes": ["2 or 3 specific, actionable notes"]}`;
+Answer with JSON only: {"accuracy": 1.0-5.0, "structure": 1.0-5.0, "clarity": 1.0-5.0, "recalled": ["key facts he got, quoted from the list"], "missed": ["key facts absent or wrong"], "notes": ["2 or 3 specific, actionable notes"]}`;
   const out = jsonIn<{ accuracy: number; structure: number; clarity: number; recalled: string[]; missed: string[]; notes: string[] }>(await ask(prompt, 900));
   if (!out) return null;
-  const clamp = (n: unknown) => Math.max(1, Math.min(5, Math.round(Number(n) || 1)));
+  const clamp = (n: unknown) => Math.max(1, Math.min(5, Math.round((Number(n) || 1) * 10) / 10));
   const strs = (v: unknown, n: number) => (Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, n) : []);
   return { scores: { accuracy: clamp(out.accuracy), structure: clamp(out.structure), clarity: clamp(out.clarity) }, notes: strs(out.notes, 3), recalled: strs(out.recalled, 8), missed: strs(out.missed, 8) };
 }

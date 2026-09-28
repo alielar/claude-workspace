@@ -145,6 +145,22 @@ STRUCTURE (PREP) · did the talk follow Point → Reason → Example → Point:
 CLARITY · could a listener follow the argument:
  1 = lost · 2 = hard to follow · 3 = followable with effort · 4 = easy to follow · 5 = effortless, every sentence earns its place.`;
 
+/**
+ * One-decimal resolution on the same anchors (Ali 2026-09-29: "so I can see progress even if it is 0.1").
+ * This ADDS to the rubric, it does not reword it: an integer score means exactly what the anchor says,
+ * the decimal is how far the talk sits toward the next anchor. Old integer scores stay comparable.
+ */
+export const SCORE_DECIMALS = `Give each score with ONE decimal (for example 3.4). The whole number is the highest anchor the talk fully meets; the decimal is how far it has moved toward the next anchor (.0 = just meets it, .5 = halfway, .9 = one small thing short of the next). Decide the whole number first from the anchors, then the decimal from the criteria only, never from mood.`;
+
+/** Reading pace the brief timer assumes · a careful first read, not skimming. */
+export const READ_WPM = 150;
+
+/** Seconds allowed for reading a brief: its word count at READ_WPM, rounded up to a whole minute, 3–8 min. */
+export function readSeconds(brief: string): number {
+  const words = brief.split(/\s+/).filter(Boolean).length;
+  return Math.max(180, Math.min(480, Math.ceil(words / READ_WPM) * 60));
+}
+
 export function fmtSec(s: number): string { return `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`; }
 
 export function isoWeekOf(date: string): string {

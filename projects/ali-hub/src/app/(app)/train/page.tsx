@@ -3,12 +3,14 @@
 /**
  * /train · the Train tab · two halves, Body and Mind (Ali 2026-09-28), a switch under the title,
  * remembered on the phone (`cc-train-half`); `?mind=1` (Today's "Mental training" row) opens Mind.
- * BODY:
- *   hero: Kettlebell 30 (the one workout since 2026-09-10), one big Start
- *   weekly bests (rounds), number to beat
- *   recent sessions
- *   Runs · Strength (Speediance) · Other · every Apple Watch workout, sorted by kind
- *   (2026-09-28, from /api/health/summary); a run opens /train/run/<id>.
+ * BODY = three subsections (Ali 2026-09-29), a chip row, remembered in `cc-train-body`:
+ *   Runs       · every Watch run (km · time · pace), this week's totals, 8 weeks of km as bars,
+ *                walks and rides under "Other activity"; a row opens /train/run/<id>
+ *   Strength   · Speediance sessions and any Watch strength workout (a Saturday one with a
+ *                Kettlebell 30 session that day is labelled so)
+ *   Kettlebell · everything about Kettlebell 30: week dots, rest day, the hero with Start,
+ *                weekly bests (rounds), recent sessions
+ * The sub line under the title sums the week across the three.
  * MIND: Mental Training · src/components/mind/MindPane.tsx.
  * Everything renders from the phone's copy first; works offline (Mind needs a connection to grade).
  */
@@ -21,7 +23,8 @@ import { useClientValue } from "@/lib/useClientValue";
 import { useEffect, useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import { MindPane } from "@/components/mind/MindPane";
-import { fmtDay, fmtDur, fmtKm, fmtPace, kindLabel, paceOf, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
+import { fmtDay, fmtDur, fmtKm, fmtPace, isoWeekOf, kindLabel, paceOf, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
+import { Bars } from "@/components/health/charts";
 
 function describe(w: TrainWorkout): string {
   if (w.format === "amrap") return `AMRAP ${w.amrapMinutes} min · ${w.exercises.length} moves per round`;
@@ -51,48 +54,67 @@ function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[
 }
 
 /** One Watch workout line · a run shows km · time · pace, a strength session time · kcal · bpm. */
-function WatchLine({ w, today }: { w: WorkoutRow; today: string }) {
+function WatchLine({ w, today, note }: { w: WorkoutRow; today: string; note?: string }) {
   const kind = workoutKind(w.type);
   const right = kind === "run"
     ? `${fmtKm(w.distanceKm)} · ${fmtDur(w.durationSec)} · ${fmtPace(paceOf(w))}`
     : `${fmtDur(w.durationSec)}${w.activeKcal !== null ? ` · ${w.activeKcal} kcal` : ""}${w.hrAvg !== null ? ` · ${w.hrAvg} bpm` : ""}`;
+  const source = note ?? (w.source && /speediance/i.test(w.source) ? "Speediance" : null);
   return (
     <Link href={`/train/run/${encodeURIComponent(w.hkId)}`} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, minHeight: 52, alignItems: "center", padding: "6px 0", borderBottom: "1px solid var(--line)", textDecoration: "none", color: "inherit" }}>
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{kindLabel(w.type)}</span>
-        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{fmtDay(w.date, today)}{w.source && /speediance/i.test(w.source) ? " · Speediance" : ""}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{fmtDay(w.date, today)}{source ? ` · ${source}` : ""}</span>
       </span>
       <span className="tabular-nums" style={{ fontSize: 15, color: "var(--ink-2)", textAlign: "right", whiteSpace: "nowrap" }}>{right} <span style={{ color: "var(--ink-4)" }}>›</span></span>
     </Link>
   );
 }
 
-function WatchCard({ title, tail, rows, today, empty }: { title: string; tail?: string; rows: WorkoutRow[]; today: string; empty: string }) {
+function WatchCard({ title, tail, rows, today, empty, limit = 8, noteFor, children }: { title: string; tail?: string; rows: WorkoutRow[]; today: string; empty: string; limit?: number; noteFor?: (w: WorkoutRow) => string | undefined; children?: React.ReactNode }) {
   return (
     <section className="cc-card">
       <div className="cc-card-head"><span className="title">{title}</span>{tail && <span className="tail">{tail}</span>}</div>
+      {children && <div className="cc-card-body" style={{ paddingBottom: 6 }}>{children}</div>}
       <div style={{ padding: "0 14px" }}>
         {rows.length === 0 && <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>{empty}</div>}
-        {rows.slice(0, 6).map((w) => <WatchLine key={w.hkId} w={w} today={today} />)}
+        {rows.slice(0, limit).map((w) => <WatchLine key={w.hkId} w={w} today={today} note={noteFor?.(w)} />)}
       </div>
     </section>
   );
 }
 
+/** km per ISO week over the last 8 weeks, oldest first · tap a bar to read it. */
+function weekKm(runs: WorkoutRow[], today: string): { labels: string[]; km: number[]; count: number[] } {
+  const weeks: string[] = [];
+  const d = new Date(today + "T12:00:00");
+  for (let i = 7; i >= 0; i--) { const x = new Date(d); x.setDate(d.getDate() - i * 7); weeks.push(isoWeekOf(x.toISOString().slice(0, 10))); }
+  const km = weeks.map((w) => Math.round(runs.filter((r) => isoWeekOf(r.date) === w).reduce((s, r) => s + (r.distanceKm ?? 0), 0) * 10) / 10);
+  const count = weeks.map((w) => runs.filter((r) => isoWeekOf(r.date) === w).length);
+  return { labels: weeks.map((w, i) => (i === 7 ? "now" : `W${w.slice(-2).replace(/^0/, "")}`)), km, count };
+}
+
 type Half = "body" | "mind";
+type Part = "runs" | "strength" | "kettlebell";
+const PARTS: { key: Part; label: string }[] = [{ key: "runs", label: "Runs" }, { key: "strength", label: "Strength" }, { key: "kettlebell", label: "Kettlebell" }];
 
 export default function TrainPage() {
   const [half, setHalfState] = useState<Half>("body");
+  const [part, setPartState] = useState<Part>("kettlebell");
   useEffect(() => {
-    let h: Half | null = null;
+    let h: Half | null = null, p: Part | null = null;
     try {
       if (new URLSearchParams(window.location.search).get("mind") === "1") h = "mind";
       else if (localStorage.getItem("cc-train-half") === "mind") h = "mind";
+      const saved = localStorage.getItem("cc-train-body");
+      if (saved === "runs" || saved === "strength" || saved === "kettlebell") p = saved;
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the URL and localStorage after mount
     if (h) setHalfState(h);
+    if (p) setPartState(p);
   }, []);
   const setHalf = (h: Half) => { setHalfState(h); try { localStorage.setItem("cc-train-half", h); } catch { /* ignore */ } };
+  const setPart = (p: Part) => { setPartState(p); try { localStorage.setItem("cc-train-body", p); } catch { /* ignore */ } };
   const { data: health } = useHealthSummary();
   const watch = health?.workouts ?? [];
   const runs = watch.filter((w) => workoutKind(w.type) === "run");
@@ -115,22 +137,20 @@ export default function TrainPage() {
   const paces = ov ? weeklyPaces(ov.sessions, today) : [];
   const pace = paceToBeat(paces, today);
   const wk = weekTotals(runs, today);
+  const thisWeek = isoWeekOf(today);
+  const strengthWk = strength.filter((w) => isoWeekOf(w.date) === thisWeek).length;
+  const kbDays = new Set((ov?.sessions ?? []).filter((s) => s.finishedAt !== null).map((s) => s.date));
+  const runWeeks = weekKm(runs, today);
+  const bodySub = ov
+    ? `This week · ${wk.runs} run${wk.runs === 1 ? "" : "s"}${wk.runs ? ` ${wk.km} km` : ""} · ${strengthWk} strength · ${ov.thisWeekSessions} of ${target} kettlebell`
+    : "This week · —";
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Train</h1>
-          <div className="sub">
-            {half === "mind" ? "Mental training · a callback, then a new topic · 4 a week" : <>{ov ? `${ov.thisWeekSessions} of ${target} this week` : `${target} a week`} · {sched ? planned : "any days"}</>}
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          {ov && ov.weekStreak > 0 && (
-            <span className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }} title="weeks in a row with 4 sessions">
-              {ov.weekStreak} wk
-            </span>
-          )}
+          <div className="sub">{half === "mind" ? "Mental training · a callback, then a new topic · 4 a week" : bodySub}</div>
         </div>
       </div>
 
@@ -146,11 +166,44 @@ export default function TrainPage() {
       {half === "mind" && <MindPane />}
 
       {half === "body" && <>
-      {/* Week progress: 4 dots */}
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        {Array.from({ length: target }).map((_, i) => (
-          <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: ov && i < ov.thisWeekSessions ? "var(--violet)" : "var(--fill-3)" }} />
+      {/* The three parts of Body */}
+      <div role="tablist" aria-label="Body" style={{ display: "flex", gap: 8 }}>
+        {PARTS.map((p) => (
+          <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
+            style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
+            {p.label}
+          </button>
         ))}
+      </div>
+
+      {part === "runs" && <>
+        <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : "nothing this week yet"} rows={runs} today={today} empty="No runs from the Watch yet. Start an Outdoor Run on the Watch and it lands here after the run.">
+          {runs.length > 0 && <Bars values={runWeeks.km} labels={runWeeks.labels} height={64} fmt={(v, i) => `${v} km · ${runWeeks.count[i]} run${runWeeks.count[i] === 1 ? "" : "s"}`} />}
+        </WatchCard>
+        {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
+      </>}
+
+      {part === "strength" && (
+        <WatchCard title="Strength" tail={strengthWk ? `this week ${strengthWk} session${strengthWk === 1 ? "" : "s"}` : "Speediance and the Watch"} rows={strength} today={today}
+          noteFor={(w) => (kbDays.has(w.date) ? "Kettlebell 30" : undefined)}
+          empty="No strength sessions from the Watch yet. Log a Speediance session as Traditional Strength Training on the Watch." />
+      )}
+
+      {part === "kettlebell" && <>
+      {/* Week progress: 4 dots · rest day · streak */}
+      <div style={{ display: "grid", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {Array.from({ length: target }).map((_, i) => (
+            <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: ov && i < ov.thisWeekSessions ? "var(--violet)" : "var(--fill-3)" }} />
+          ))}
+          {ov && ov.weekStreak > 0 && (
+            <span className="cc-pill cc-pill-warn" style={{ fontSize: 13, padding: "3px 8px", whiteSpace: "nowrap" }} title="weeks in a row with every session done">{ov.weekStreak} wk</span>
+          )}
+        </div>
+        <div style={{ fontSize: 14, color: "var(--ink-3)", padding: "0 2px" }}>
+          {ov ? `${ov.thisWeekSessions} of ${target} this week · ${sched ? planned : "any days"}` : `${target} a week`}
+          {restToday && sched?.next ? ` · rest day, next ${fmtScheduleDate(sched.next.date, today)}` : ""}
+        </div>
       </div>
 
       {/* Unfinished session */}
@@ -161,12 +214,6 @@ export default function TrainPage() {
             <span className="cc-btn cc-btn-primary" style={{ minHeight: 40 }}>Resume</span>
           </div>
         </Link>
-      )}
-
-      {restToday && (
-        <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>
-          Rest day{sched?.next ? ` · ${workouts.find((w) => w.key === sched.next!.key)?.name ?? ""} ${fmtScheduleDate(sched.next.date, today)}` : ""}
-        </div>
       )}
 
       {/* Hero: next workout */}
@@ -253,11 +300,7 @@ export default function TrainPage() {
           {ov?.sessions.slice(0, 6).map((s) => <SessionLine key={s.clientId} s={s} workouts={workouts} />)}
         </div>
       </section>
-
-      {/* From the Watch */}
-      <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : undefined} rows={runs} today={today} empty="No runs from the Watch yet." />
-      <WatchCard title="Strength" tail="Speediance and the Watch" rows={strength} today={today} empty="No strength sessions from the Watch yet." />
-      {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
+      </>}
       </>}
 
     </div>

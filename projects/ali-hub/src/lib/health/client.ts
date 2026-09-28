@@ -98,40 +98,139 @@ export const STAGES: { key: "deepMin" | "coreMin" | "remMin" | "awakeMin"; label
   { key: "awakeMin", label: "Awake", color: "var(--stage-awake)" },
 ];
 
-export type MetricInfo = { label: string; unit: string; meaning: string; better: "lower" | "higher" | "steady"; field: "qty" | "avg" };
+export type MetricGroup = "overnight" | "heart" | "activity" | "fitness";
 
-/** The daily metrics worth a card, in display order · anything else HAE sends is listed plainly. */
-export const METRIC_INFO: Record<string, MetricInfo> = {
-  resting_heart_rate:      { label: "Resting heart rate", unit: "bpm", better: "lower",  field: "qty", meaning: "Lower is fitter. A jump of 5 or more over your usual often means strain, a bad night or an illness on its way." },
-  heart_rate_variability:  { label: "Heart rate variability", unit: "ms", better: "higher", field: "qty", meaning: "Higher means more recovered. Only your own 30-day average is a fair comparison, not other people's numbers." },
-  respiratory_rate:        { label: "Breathing rate in sleep", unit: "/min", better: "steady", field: "qty", meaning: "Steady is good. A rise of 1 to 2 above your usual can show up a day before you feel ill." },
-  blood_oxygen_saturation: { label: "Blood oxygen", unit: "%", better: "steady", field: "qty", meaning: "95 to 100 % is normal. Repeated dips under 90 % during sleep are worth a doctor's look." },
-  heart_rate:              { label: "Heart rate range", unit: "bpm", better: "steady", field: "avg", meaning: "Your day's range: the low end tracks rest, the high end your hardest effort." },
-  vo2_max:                 { label: "VO2 max", unit: "", better: "higher", field: "qty", meaning: "Apple's fitness estimate. Higher is better; it moves slowly, over months of running." },
-  walking_heart_rate_average: { label: "Walking heart rate", unit: "bpm", better: "lower", field: "qty", meaning: "Heart rate on ordinary walks. Falls as fitness builds." },
+export type MetricInfo = {
+  label: string; unit: string; meaning: string; better: "lower" | "higher" | "steady"; field: "qty" | "avg" | "sum";
+  /** Short name where a row is narrow (the Vitals card, the Activity tiles). */
+  short?: string;
+  group: MetricGroup;
+  /** Half-width floor of the typical range (the Vitals band never gets thinner than this). */
+  floor: number;
+  /** Shown on the Vitals card (the five Apple checks each night, plus sleep length). */
+  vital?: boolean;
+  /** Decimals when written. */
+  dp?: number;
 };
 
-export function metricValue(p: MetricPoint, info: MetricInfo): number | null {
-  return info.field === "avg" ? p.avg ?? p.qty : p.qty ?? p.avg;
+/**
+ * Every daily Watch metric A L I knows how to read, keyed by Health Auto Export's name.
+ * Display order inside each group = the order here. Anything else HAE sends is listed plainly.
+ */
+export const METRIC_INFO: Record<string, MetricInfo> = {
+  // Overnight · what Apple's Vitals checks while you sleep
+  resting_heart_rate:      { group: "overnight", vital: true, label: "Resting heart rate", short: "Resting HR", unit: "bpm", better: "lower",  field: "qty", floor: 3, meaning: "Lower is fitter. A jump of 5 or more over your usual often means strain, a bad night or an illness on its way." },
+  heart_rate_variability:  { group: "overnight", vital: true, label: "Heart rate variability", short: "HRV", unit: "ms", better: "higher", field: "qty", floor: 8, meaning: "Higher means more recovered. Only your own range is a fair comparison, not other people's numbers." },
+  respiratory_rate:        { group: "overnight", vital: true, label: "Breathing rate", unit: "/min", better: "steady", field: "qty", floor: 1, dp: 1, meaning: "Breaths per minute in sleep. Steady is good. A rise of 1 to 2 above your usual can show up a day before you feel ill." },
+  apple_sleeping_wrist_temperature: { group: "overnight", vital: true, label: "Wrist temperature", short: "Wrist temp", unit: "°C", better: "steady", field: "qty", floor: 0.3, dp: 1, meaning: "Skin temperature in sleep. Only the change matters: +0.5 °C or more over your usual points to illness, a hard day or alcohol." },
+  blood_oxygen_saturation: { group: "overnight", vital: true, label: "Blood oxygen", unit: "%", better: "steady", field: "qty", floor: 1.5, dp: 1, meaning: "95 to 100 % is normal. Repeated dips under 90 % during sleep are worth a doctor's look." },
+  // Heart
+  heart_rate:              { group: "heart", label: "Heart rate range", unit: "bpm", better: "steady", field: "avg", floor: 5, meaning: "Your day's range: the low end tracks rest, the high end your hardest effort." },
+  walking_heart_rate_average: { group: "heart", label: "Walking heart rate", unit: "bpm", better: "lower", field: "qty", floor: 4, meaning: "Heart rate on ordinary walks. Falls as fitness builds." },
+  cardio_recovery:         { group: "heart", label: "Cardio recovery", unit: "bpm", better: "higher", field: "qty", floor: 4, meaning: "How far the heart rate drops one minute after a workout ends. Above 25 is good, above 40 very fit; it rises with training." },
+  // Activity · the rings, as numbers
+  step_count:              { group: "activity", label: "Steps", unit: "", better: "higher", field: "sum", floor: 1500, meaning: "Daily steps. 7,000 to 10,000 covers most of the benefit; the trend beats any single day." },
+  active_energy:           { group: "activity", label: "Active energy", short: "Active", unit: "kcal", better: "higher", field: "sum", floor: 100, meaning: "Calories burned by moving, on top of what the body burns at rest." },
+  apple_exercise_time:     { group: "activity", label: "Exercise", short: "Exercise", unit: "min", better: "higher", field: "sum", floor: 10, meaning: "Minutes at a brisk-walk effort or above. 150 a week is the health baseline; 30 a day closes the ring." },
+  apple_stand_hour:        { group: "activity", label: "Stand hours", short: "Stand", unit: "h", better: "higher", field: "sum", floor: 2, meaning: "Hours with at least a minute on your feet. 12 closes the ring." },
+  walking_running_distance: { group: "activity", label: "Distance on foot", unit: "km", better: "higher", field: "sum", floor: 1, dp: 1, meaning: "Walking and running together." },
+  flights_climbed:         { group: "activity", label: "Floors climbed", unit: "", better: "higher", field: "sum", floor: 3, meaning: "Ten floors is about 30 m of climb." },
+  time_in_daylight:        { group: "activity", label: "Daylight", unit: "min", better: "higher", field: "sum", floor: 15, meaning: "Minutes outdoors in daylight. 20 or more in the morning sets the body clock and helps the next night's sleep." },
+  physical_effort:         { group: "activity", label: "Physical effort", unit: "MET", better: "steady", field: "avg", floor: 0.3, dp: 1, meaning: "Average intensity of the day, where 1 is sitting still." },
+  // Fitness · slow-moving estimates
+  vo2_max:                 { group: "fitness", label: "VO2 max", unit: "", better: "higher", field: "qty", floor: 1, dp: 1, meaning: "Apple's fitness estimate from your runs and walks. Higher is better; it moves slowly, over months." },
+  walking_speed:           { group: "fitness", label: "Walking speed", unit: "km/h", better: "higher", field: "avg", floor: 0.3, dp: 1, meaning: "Your natural walking pace on flat ground. A steady fall is an early sign of fatigue or injury." },
+  six_minute_walking_test_distance: { group: "fitness", label: "6-minute walk", unit: "m", better: "higher", field: "qty", floor: 20, meaning: "Apple's estimate of how far you could walk in six minutes. Over 500 m is good." },
+};
+
+export const METRIC_GROUPS: { key: MetricGroup; title: string }[] = [
+  { key: "overnight", title: "Overnight" },
+  { key: "heart",     title: "Heart" },
+  { key: "activity",  title: "Activity" },
+  { key: "fitness",   title: "Fitness" },
+];
+
+/** HAE's name → our key · tolerant of the few naming variants HAE has used. */
+export function metricKey(name: string): string | null {
+  if (METRIC_INFO[name]) return name;
+  const s = name.toLowerCase();
+  if (s.includes("wrist_temperature")) return "apple_sleeping_wrist_temperature";
+  if (s.includes("exercise_time")) return "apple_exercise_time";
+  if (s.includes("stand_hour")) return "apple_stand_hour";
+  if (s === "steps" || s.includes("step_count")) return "step_count";
+  if (s.includes("active_energy")) return "active_energy";
+  if (s.includes("heart_rate_recovery")) return "cardio_recovery";
+  if (s.includes("oxygen")) return "blood_oxygen_saturation";
+  if (s.includes("distance_walking")) return "walking_running_distance";
+  return null;
 }
 
-export function fmtMetric(v: number | null, unit: string): string {
+/** The value of a day in the unit we display · converts the few units HAE may send differently. */
+export function metricValue(p: MetricPoint, info: MetricInfo, units?: string | null): number | null {
+  const raw = info.field === "avg" ? p.avg ?? p.qty : p.qty ?? p.avg;
+  if (raw === null) return null;
+  const u = (units ?? "").toLowerCase();
+  if (info.unit === "kcal" && u === "kj") return raw / 4.184;
+  if (info.unit === "km" && u === "mi") return raw * 1.609344;
+  if (info.unit === "m" && u === "mi") return raw * 1609.344;
+  if (info.unit === "km/h" && (u === "m/s" || u === "mps")) return raw * 3.6;
+  if (info.unit === "km/h" && u === "mph") return raw * 1.609344;
+  if (info.unit === "°C" && (u === "degf" || u === "°f")) return (raw - 32) / 1.8;
+  return raw;
+}
+
+export function fmtMetric(v: number | null, unit: string, dp?: number): string {
   if (v === null) return "—";
-  const n = Math.abs(v) >= 100 || Number.isInteger(v) ? Math.round(v).toString() : v.toFixed(1);
+  const n = dp !== undefined ? v.toFixed(dp) : Math.abs(v) >= 100 || Number.isInteger(v) ? Math.round(v).toLocaleString("en-GB") : v.toFixed(1);
   return unit ? `${n} ${unit}` : n;
 }
 
 export function avg(xs: number[]): number | null { return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null; }
 
-/** "vs your 30 days: +4" style delta of the latest value against the 30-day average. */
-export function deltaLine(points: MetricPoint[], info: MetricInfo): { latest: number | null; mean30: number | null; delta: number | null; tone: "pos" | "neg" | "flat" } {
-  const vals = points.map((p) => metricValue(p, info)).filter((v): v is number => v !== null);
+export const RANGE_DAYS = 7; // values needed before a typical range is drawn (Apple's Vitals waits 7 nights too)
+
+/**
+ * Your typical range for a metric, from its earlier values (the latest one excluded so it can be
+ * judged against it): mean ± 1.5 standard deviations, never thinner than the metric's floor.
+ * null until there are RANGE_DAYS values.
+ */
+export function typicalRange(earlier: number[], floor: number): { lo: number; hi: number; mean: number } | null {
+  const xs = earlier.slice(-28);
+  if (xs.length < RANGE_DAYS) return null;
+  const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
+  const sd = Math.sqrt(xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length);
+  const w = Math.max(1.5 * sd, floor);
+  return { lo: mean - w, hi: mean + w, mean };
+}
+
+export type VitalState = "typical" | "high" | "low";
+export function vitalState(v: number, r: { lo: number; hi: number }): VitalState { return v > r.hi ? "high" : v < r.lo ? "low" : "typical"; }
+
+/** One rule-based sentence over the night's checks · the same numbers read the same every day. */
+export function vitalsRead(rows: { label: string; state: VitalState | null }[]): string {
+  const known = rows.filter((r) => r.state !== null);
+  if (!known.length) return "Your ranges appear after 7 nights.";
+  const off = known.filter((r) => r.state !== "typical");
+  if (!off.length) return "Everything in your usual range.";
+  if (off.length === 1) return `${off[0].label} is ${off[0].state} for you · one outlier is usually noise.`;
+  return `${off.length} outliers · ${off.map((r) => `${r.label.toLowerCase()} ${r.state}`).join(", ")}. Take today easier.`;
+}
+
+/** The latest value against the 30-day average · tone follows `better`. Before RANGE_DAYS values there is no fair comparison. */
+export function deltaLine(points: MetricPoint[], info: MetricInfo, units?: string | null): { latest: number | null; mean30: number | null; delta: number | null; tone: "pos" | "neg" | "flat"; n: number } {
+  const vals = points.map((p) => metricValue(p, info, units)).filter((v): v is number => v !== null);
   const latest = vals.length ? vals[vals.length - 1] : null;
-  const mean30 = avg(vals);
+  const mean30 = vals.length >= RANGE_DAYS ? avg(vals) : null;
   const delta = latest !== null && mean30 !== null ? latest - mean30 : null;
   let tone: "pos" | "neg" | "flat" = "flat";
-  if (delta !== null && Math.abs(delta) >= Math.max(1, Math.abs(mean30 ?? 0) * 0.05)) {
+  if (delta !== null && Math.abs(delta) >= Math.max(info.floor, Math.abs(mean30 ?? 0) * 0.05)) {
     tone = info.better === "steady" ? "neg" : (delta > 0) === (info.better === "higher") ? "pos" : "neg";
   }
-  return { latest, mean30, delta, tone };
+  return { latest, mean30, delta, tone, n: vals.length };
+}
+
+/** "+4" / "-0.3" for a delta, with the metric's decimals. */
+export function fmtDelta(d: number, dp?: number): string {
+  const s = dp !== undefined ? d.toFixed(dp) : Math.abs(d) >= 10 ? Math.round(d).toString() : d.toFixed(1);
+  return d > 0 ? `+${s}` : s;
 }
