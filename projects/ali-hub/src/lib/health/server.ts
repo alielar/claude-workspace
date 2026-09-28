@@ -128,6 +128,21 @@ export async function logRaw(automation: string | null, body: string, summary: s
   } catch { /* debugging aid only */ }
 }
 
+/** The last raw posts, reduced to what each one carried (metric names + sample counts, workout types) · for checking the HAE automation set-up. */
+export async function rawPosts(limit = 12): Promise<Array<{ receivedAt: number; automation: string | null; summary: string; bytes: number; metrics: Record<string, number>; workouts: string[] }>> {
+  await ensureHealthTables();
+  const rows = await db.all<{ received_at: number; automation: string | null; summary: string; bytes: number; body: string }>(sql`SELECT received_at, automation, summary, bytes, body FROM health_raw ORDER BY id DESC LIMIT ${limit}`).catch(() => []);
+  return rows.map((r) => {
+    const metrics: Record<string, number> = {}; const workouts: string[] = [];
+    try {
+      const j = JSON.parse(r.body) as { data?: { metrics?: Array<{ name?: string; data?: unknown[] }>; workouts?: Array<{ name?: string }> } };
+      for (const m of j.data?.metrics ?? []) if (m?.name) metrics[m.name] = Array.isArray(m.data) ? m.data.length : 0;
+      for (const w of j.data?.workouts ?? []) if (w?.name) workouts.push(w.name);
+    } catch { /* truncated body */ }
+    return { receivedAt: r.received_at, automation: r.automation, summary: r.summary, bytes: r.bytes, metrics, workouts };
+  });
+}
+
 export type HealthStatus = {
   lastSleep: { date: string; totalMin: number | null; score: number | null; receivedAt: number } | null;
   lastWorkout: { date: string; type: string; receivedAt: number } | null;

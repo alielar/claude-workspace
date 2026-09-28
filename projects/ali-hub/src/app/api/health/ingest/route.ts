@@ -17,7 +17,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserId } from "@/lib/user";
 import { parseHaePayload } from "@/lib/health/types";
-import { healthStatus, logRaw, storeParsed } from "@/lib/health/server";
+import { healthStatus, logRaw, rawPosts, storeParsed } from "@/lib/health/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -47,9 +47,10 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, ...result, skipped: parsed.skipped.slice(0, 10) });
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (new URL(req.url).searchParams.get("raw")) return NextResponse.json({ posts: await rawPosts() }, { headers: { "Cache-Control": "no-store" } });
   const status = await healthStatus(session.user.id);
   return NextResponse.json({
     ...status,
