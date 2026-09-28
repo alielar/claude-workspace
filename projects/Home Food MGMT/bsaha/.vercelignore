@@ -1,0 +1,15 @@
+# Files the live app never reads. Kept in git, left off Vercel so each deployment stays small
+# (Vercel's free plan counts every deployment's files against 10 GB of storage).
+data/dishes-archive
+data/candidates2
+data/myplate
+data/videos
+data/dish-list.json
+data/photo-queries.json
+public/dishes-archive
+scripts
+local.db
+local.db-*
+*.log
+.env*
+!.env.example
