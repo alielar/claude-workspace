@@ -20,4 +20,5 @@ Schema changes go in `src/db/schema.ts` AND `src/db/migrate.ts` (idempotent SQL,
 - Family photos live in the `photos` table and are served by `/api/photo/[id]` (`?t=1` = grid size). The add-dish form shrinks them client-side (`PhotoField`).
 - Theme is per person (`people.theme`: system, light, dark) and applied as `data-theme` on `<html>`; colours are the CSS tokens in `globals.css` only.
 - Dish pages use `BackLink` (history first) and links carry `?from=<screen>`; browsers remember filters with `useRemembered`.
-- Deploy: `npx vercel --prod --yes` from this folder, then `curl -X POST https://<url>/api/admin/migrate`. Vercel's own Git deploys fail (they build from the workspace root) and can be ignored.
+- Deploy: `npx vercel --prod --yes` from this folder, then `curl -X POST https://<url>/api/admin/migrate`. The Vercel project is not linked to Git (disconnected 2026-09-28, its automatic builds failed from the workspace root and emailed Ali); the CLI is the only way to deploy.
+- Ali eats from his own menu (`people.own_menu`, `src/lib/mine.ts`): keep the family flow and his flow apart; the cook's Today shows both.
