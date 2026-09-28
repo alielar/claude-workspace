@@ -72,6 +72,13 @@ function jsonIn<T>(text: string | null): T | null {
   try { return JSON.parse(m[0]) as T; } catch { return null; }
 }
 
+/** The three kinds of topic, rotated in turn (Ali 2026-09-29: "either up to date, or a landmark in history, or a concept everyone should get · not the 2019 scaling law"). */
+const KINDS = [
+  { name: "CURRENT", rule: "something that happened or came to a head in the last one or two months, that people are deciding, arguing about or building right now · when the news list above fits the domain, take the idea behind one of those stories." },
+  { name: "LANDMARK", rule: "a turning point in the history of this field that changed how the world works · an event, a discovery, a decision, a person's idea (the printing press, Bretton Woods, the discovery of DNA, the first web browser, the fall of the Berlin Wall) · explained for its meaning, not its dates." },
+  { name: "CONCEPT", rule: "a famous idea an educated person is expected to understand and usually cannot explain · relativity, compound interest, natural selection, game theory, the separation of powers, supply and demand, the categorical imperative · make him able to explain it at dinner." },
+];
+
 /** Which news categories feed a Mind domain · the brief is about the idea behind a story, not the story. */
 const NEWS_FOR_DOMAIN: Record<string, string[]> = {
   "AI and tech": ["tech", "ai"],
@@ -110,13 +117,17 @@ export async function writeTopic(userId: string, date: string): Promise<MindTopi
   const recentDomains = past.slice(0, DOMAINS.length - 1).map((p) => p.domain);
   const domain = DOMAINS.find((d) => !recentDomains.includes(d)) ?? DOMAINS[past.length % DOMAINS.length];
   const news = await recentStories(userId, date, domain);
+  // Rotate the kind of topic (Ali 2026-09-29): something from the last months · a landmark idea or
+  // event of the field · a well-known concept. Never a niche milestone.
+  const kind = past.length % KINDS.length;
   const prompt = `You write one short brief for Ali, who trains his memory and his speaking on it. He is curious and sharp but NOT an expert in any of these fields. He reads the brief ONCE against a timer of about ${Math.ceil(700 / READ_WPM)} minutes, closes it, then explains the idea aloud for 2 minutes from memory and is graded on what he recalled.
 
 Today is ${date}. Today's domain: ${domain}.
-${news.length ? `IN HIS NEWS RIGHT NOW (prefer the concept behind one of these when it fits the domain · the brief is about the IDEA, not the news item):\n${news.map((n) => `- ${n}`).join("\n")}\n` : ""}
+${news.length ? `IN HIS NEWS RIGHT NOW (for a CURRENT topic, prefer the idea behind one of these · the brief is about the IDEA, not the news item):\n${news.map((n) => `- ${n}`).join("\n")}\n` : ""}
 Already covered (never repeat, build on one when it fits): ${past.length ? past.map((p) => `${p.title} (${p.domain})`).join("; ") : "none yet"}.
 
-Choose ONE idea worth understanding in ${date.slice(0, 4)}: something people are deciding, arguing about or building NOW, or a timeless concept shown through a current example. Not a history of versions or dates, not a textbook definition, not anything a curious person would call old news.
+Choose ONE topic of ${KINDS[kind].name} kind: ${KINDS[kind].rule}
+The test for any topic: a well-read person would recognise it and be glad to explain it well. NEVER a niche milestone of a field (a 2019 research paper, a version of a product, a benchmark) · that is trivia, not understanding.
 
 Write it the way a sharp friend explains it over coffee: concepts, why, what follows. Plain words only · every technical term is replaced by what it means, or dropped. A number only when one number carries the point. No names of papers, no model version numbers, no acronyms he will never say again.
 
