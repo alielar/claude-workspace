@@ -12436,3 +12436,12 @@ To github.com:alielar/claude-workspace.git
  create mode 100644 projects/Wati outreach/data/nightly/2026-09-26.md
 To github.com:alielar/claude-workspace.git
    b53722d8..c3706591  main -> main
+[main 3aaa0504] auto-save: 2026-09-27 23:52
+ 7 files changed, 14 insertions(+), 351 deletions(-)
+ delete mode 100644 projects/LinkedIn/.DS_Store
+ delete mode 100644 projects/LinkedIn/PLAN.md
+ delete mode 100644 projects/LinkedIn/posts/2026-10.md
+ delete mode 100644 projects/LinkedIn/topics.md
+ delete mode 100644 projects/LinkedIn/voice.md
+To github.com:alielar/claude-workspace.git
+   0d9e3f1f..3aaa0504  main -> main

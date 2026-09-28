@@ -474,3 +474,9 @@ Scan demandé par Ali de toutes les conversations France Sales depuis le 25/09, 
 **Résultat :** règle à appliquer par défaut désormais (3e confirmation).
 
 **Résultat global :** 7 points loggés — 2 nouvelles leçons tranchées (Eliane, points 1 et 2), 1 règle confirmée à intégrer dans `00-QUICK.md` (point 7), et 3 points à trancher explicitement avec Ali avant de généraliser (points 3, 5, 6).
+
+## 2026-09-28 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+- 21:15 · Enkamgalan · **retouche** — Clôture de politesse pure : pas de prénom, un emoji léger accepté (Ali retire le prénom sur une simple formule de politesse en fin d'échange et ajoute un emoji léger — cohérent avec la règle du style maison (prénom pas systématique, emoji toléré hors sujet argent/contrat/problème))
