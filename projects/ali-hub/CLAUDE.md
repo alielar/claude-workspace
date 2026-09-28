@@ -206,7 +206,7 @@ Icons for new nav entries go in `src/components/Icon.tsx`. All API routes and ta
 
 **UI** — phone layout first, then widen. Every card: `.cc-card` + `.cc-card-head` + `.cc-card-body`. Use `—` or `.cc-skeleton` while loading, never spinners. No fixed pixel widths wider than `min(Npx, 100vw - 32px)`. No hover-only controls. Inputs ≥16px on the phone.
 
-**Copy** — no em dashes in UI text, use `·` or a period. No emojis in UI labels (the `emoji` field on older `ROUTINE_SEED` rows is legacy data; new rows leave it empty). **No filler** (Ali 2026-09-24): no sentence that explains what a control does or how the app behaves · a label, a state, a value. Warnings and one-line instructions (an install step, an ISBN hint) may stay.
+**Copy** — no em dashes ANYWHERE, UI text or AI-written text (Ali 2026-09-29): use `·`, a comma or a period. Every AI text is passed through `noDash` in `src/lib/utils.ts` before it is stored (Mind briefs, hooks, key facts, grader notes; news summaries and deep dives; the podcast script) and the prompts say so too. No emojis in UI labels (the `emoji` field on older `ROUTINE_SEED` rows is legacy data; new rows leave it empty). **No filler** (Ali 2026-09-24): no sentence that explains what a control does or how the app behaves · a label, a state, a value. Warnings and one-line instructions (an install step, an ISBN hint) may stay.
 
 **Data** — optimistic updates with rollback; writes through `sendOrQueue`; reads through `useCached`. Idempotent endpoints with unique constraints + silent catch on duplicates.
 

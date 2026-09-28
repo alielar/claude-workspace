@@ -7,6 +7,7 @@
  */
 
 import type { NewsStory } from "../news-brief";
+import { noDash } from "@/lib/utils";
 
 let genAI: InstanceType<typeof import("@google/generative-ai").GoogleGenerativeAI> | null = null;
 
@@ -92,8 +93,8 @@ ${storyList}`;
     for (const item of parsed) {
       const story = stories[item.index];
       if (story && item.summary) {
-        story.summary = item.summary;
-        story.keyPoints = item.keyPoints ?? [];
+        story.summary = noDash(item.summary);
+        story.keyPoints = (item.keyPoints ?? []).map(noDash);
       }
     }
   } catch {
@@ -146,11 +147,11 @@ ${storyList}`;
       const story = stories[item.index];
       if (story && item.whatHappened) {
         story.deepDive = {
-          whatHappened: item.whatHappened,
-          whyItMatters: item.whyItMatters ?? "",
-          context: item.context ?? "",
-          implications: item.implications ?? "",
-          whatsNext: item.whatsNext ?? "",
+          whatHappened: noDash(item.whatHappened),
+          whyItMatters: noDash(item.whyItMatters ?? ""),
+          context: noDash(item.context ?? ""),
+          implications: noDash(item.implications ?? ""),
+          whatsNext: noDash(item.whatsNext ?? ""),
           vocabulary: (item.vocabulary ?? []).filter((v) => v?.advanced && v?.simple).slice(0, 6),
         };
       }

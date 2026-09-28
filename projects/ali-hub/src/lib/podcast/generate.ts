@@ -28,6 +28,7 @@
  */
 
 import { db } from "@/db";
+import { noDash } from "@/lib/utils";
 import { podcastEpisodes } from "@/db/schema";
 import { and, eq, lt, desc } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
@@ -429,6 +430,7 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
       if (!revised) break; // reviser down · voice the original rather than ship nothing
       script = revised;
     }
+    script = noDash(script); // the captions show the script · no em dashes anywhere on the hub
     await db.update(podcastEpisodes).set({ script }).where(eq(podcastEpisodes.id, row.id));
   }
 

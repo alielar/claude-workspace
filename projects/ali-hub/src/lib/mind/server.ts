@@ -9,6 +9,7 @@
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
+import { noDash } from "@/lib/utils";
 import {
   DOMAINS, INTERVALS, READ_WPM, RUBRIC, SCORE_DECIMALS, addDays, computeMetrics, isoWeekOf, nextStage, verbatim,
   type MindMetrics, type MindPart, type MindScores, type MindSession, type MindToday, type MindTopic, type MindWeek, type Word,
@@ -129,7 +130,7 @@ Already covered (never repeat, build on one when it fits): ${past.length ? past.
 Choose ONE topic of ${KINDS[kind].name} kind: ${KINDS[kind].rule}
 The test for any topic: a well-read person would recognise it and be glad to explain it well. NEVER a niche milestone of a field (a 2019 research paper, a version of a product, a benchmark) · that is trivia, not understanding.
 
-Write it the way a sharp friend explains it over coffee: concepts, why, what follows. Plain words only · every technical term is replaced by what it means, or dropped. A number only when one number carries the point. No names of papers, no model version numbers, no acronyms he will never say again.
+Write it the way a sharp friend explains it over coffee: concepts, why, what follows. Plain words only · every technical term is replaced by what it means, or dropped. A number only when one number carries the point. No names of papers, no model version numbers, no acronyms he will never say again. Never an em dash: commas and full stops only.
 
 600–800 words, markdown, EXACTLY these five sections in this order:
 ## The idea · what it is, in two or three sentences
@@ -142,8 +143,8 @@ Answer with JSON only, in exactly this shape:
 {"title": "...", "hook": "one line on why this matters to Ali", "brief": "the markdown", "keyFacts": ["the same five Remember lines, each one checkable"]}`;
   const out = jsonIn<{ title: string; hook: string; brief: string; keyFacts: string[] }>(await ask(prompt, 2600));
   if (!out || !out.title || !out.brief || out.brief.length < 1800) return null;
-  const facts = Array.isArray(out.keyFacts) ? out.keyFacts.filter((f) => typeof f === "string").slice(0, 6) : [];
-  const res = await db.run(sql`INSERT INTO mind_topics (user_id, date, title, domain, hook, brief, key_facts) VALUES (${userId}, ${date}, ${out.title.slice(0, 200)}, ${domain}, ${String(out.hook ?? "").slice(0, 300)}, ${out.brief}, ${JSON.stringify(facts)})`);
+  const facts = Array.isArray(out.keyFacts) ? out.keyFacts.filter((f) => typeof f === "string").map(noDash).slice(0, 6) : [];
+  const res = await db.run(sql`INSERT INTO mind_topics (user_id, date, title, domain, hook, brief, key_facts) VALUES (${userId}, ${date}, ${noDash(out.title).slice(0, 200)}, ${domain}, ${noDash(String(out.hook ?? "")).slice(0, 300)}, ${noDash(out.brief)}, ${JSON.stringify(facts)})`);
   const [row] = await db.all<TopicRow>(sql`SELECT * FROM mind_topics WHERE id = ${Number(res.lastInsertRowid)}`);
   return row ? topicOf(row) : null;
 }
@@ -177,7 +178,7 @@ export async function transcribe(audio: ArrayBuffer, mime: string): Promise<{ wo
 // ── Grading ───────────────────────────────────────────────────────────────────
 
 async function grade(topic: MindTopic, transcript: string, metrics: MindMetrics): Promise<{ scores: MindScores; notes: string[]; recalled: string[]; missed: string[] } | null> {
-  const prompt = `You grade one 2-minute spoken recall for Ali's mental training. Be strict and consistent: the same talk must get the same scores next month. Judge ACCURACY only against the brief and key facts below · never reward things that are not in them. Generic praise is worthless; every note must name something specific from the transcript and say what to do next time.
+  const prompt = `You grade one 2-minute spoken recall for Ali's mental training. Be strict and consistent: the same talk must get the same scores next month. Judge ACCURACY only against the brief and key facts below · never reward things that are not in them. Generic praise is worthless; every note must name something specific from the transcript and say what to do next time. No em dashes in the notes.
 
 ${RUBRIC}
 
@@ -198,7 +199,7 @@ Answer with JSON only: {"accuracy": 1.0-5.0, "structure": 1.0-5.0, "clarity": 1.
   const out = jsonIn<{ accuracy: number; structure: number; clarity: number; recalled: string[]; missed: string[]; notes: string[] }>(await ask(prompt, 900));
   if (!out) return null;
   const clamp = (n: unknown) => Math.max(1, Math.min(5, Math.round((Number(n) || 1) * 10) / 10));
-  const strs = (v: unknown, n: number) => (Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, n) : []);
+  const strs = (v: unknown, n: number) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").map(noDash).slice(0, n) : []);
   return { scores: { accuracy: clamp(out.accuracy), structure: clamp(out.structure), clarity: clamp(out.clarity) }, notes: strs(out.notes, 3), recalled: strs(out.recalled, 8), missed: strs(out.missed, 8) };
 }
 

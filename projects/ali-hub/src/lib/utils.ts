@@ -35,6 +35,20 @@ export function epley1rm(weight: number, reps: number): number {
 }
 
 /** Today's date as YYYY-MM-DD in a given timezone */
+/**
+ * No em dashes anywhere on the hub (Ali 2026-09-29) · applied to every AI-written text before it
+ * is stored: a dash between clauses becomes a comma, a dash opening a list or an aside a colon-like
+ * pause is not needed, so a comma serves there too. Hyphens and en dashes between numbers stay.
+ */
+export function noDash(s: string): string {
+  return s
+    .replace(/\s*—\s*/g, ", ")          // em dash between clauses
+    .replace(/\s+–\s+/g, ", ")          // spaced en dash used as one
+    .replace(/,\s*([.,;:!?])/g, "$1")    // ", ." left by a dash before punctuation
+    .replace(/([:;])\s*,\s*/g, "$1 ")     // ":," left by a dash after a colon
+    .replace(/(^|\n)\s*,\s*/g, "$1");    // a dash that opened a line
+}
+
 export function todayInTz(tz: string): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: tz });
 }
