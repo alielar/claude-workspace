@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import clsx from "clsx";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { people } from "@/db/schema";
+import { myMenu, people } from "@/db/schema";
 import { currentPerson } from "@/lib/session";
 import { dishDesc, dishName, getDish } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
@@ -10,6 +10,7 @@ import { BackLink } from "@/components/BackLink";
 import { DeleteDishButton } from "@/components/DeleteDishButton";
 import { Ingredients } from "@/components/Ingredients";
 import { saveRecipe, setMenuMeal, setReviewed, setVideo } from "../actions";
+import { setMine } from "@/app/(app)/mine/actions";
 
 const AR = { fontFamily: "var(--font-arabic)" } as const;
 
@@ -39,6 +40,9 @@ export default async function DishPage({
   const eaters = Number.isInteger(wanted) && wanted > 0 && wanted <= 20 ? wanted : undefined;
   const dish = await getDish(slug);
   if (!dish) notFound();
+  const mineMeals = me.ownMenu
+    ? (await db.select({ meal: myMenu.meal }).from(myMenu).where(and(eq(myMenu.personId, me.id), eq(myMenu.dishId, dish.id)))).map((r) => r.meal)
+    : [];
   const L = me.lang;
   const isCook = me.role === "cook";
   const showMacros = !me.isChild && !me.simpleUi && !isCook;
@@ -147,6 +151,25 @@ export default async function DishPage({
             const on = (dish.menuMeals ?? []).includes(m);
             return (
               <form key={m} action={setMenuMeal}>
+                <input type="hidden" name="id" value={dish.id} />
+                <input type="hidden" name="meal" value={m} />
+                <input type="hidden" name="on" value={on ? "0" : "1"} />
+                <button className={clsx("chip py-1.5 px-3 text-sm border", on ? "bg-accent text-accent-ink border-accent" : "bg-card text-muted border-line")}>
+                  {t(L, m)}
+                </button>
+              </form>
+            );
+          })}
+        </section>
+      )}
+      {me.ownMenu && (
+        // Same idea for my own menu: one chip per meal, lit when the dish is on it.
+        <section className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-bold text-muted">{t(L, "myMenuFor")}</span>
+          {(dish.meals?.length ? dish.meals : [dish.meal]).map((m) => {
+            const on = mineMeals.includes(m);
+            return (
+              <form key={m} action={setMine}>
                 <input type="hidden" name="id" value={dish.id} />
                 <input type="hidden" name="meal" value={m} />
                 <input type="hidden" name="on" value={on ? "0" : "1"} />

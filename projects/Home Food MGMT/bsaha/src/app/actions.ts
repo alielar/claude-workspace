@@ -80,7 +80,7 @@ async function requireOwner() {
   return session;
 }
 
-const BOOL_FIELDS = ["isAdmin", "isAway", "isChild", "simpleUi"] as const;
+const BOOL_FIELDS = ["isAdmin", "isAway", "isChild", "simpleUi", "ownMenu"] as const;
 type BoolField = (typeof BOOL_FIELDS)[number];
 
 export async function togglePersonFlag(formData: FormData) {

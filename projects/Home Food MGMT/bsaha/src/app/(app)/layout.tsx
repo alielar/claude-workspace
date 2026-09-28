@@ -18,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // The cook plans the week and shops from it; the family votes on tomorrow. Admins reach the plan
     // from Today and their setup tools (Library, People) from Me, so the bar never holds more than five tabs.
     if (me.role === "cook") tabs.push({ href: "/week", label: t(me.lang, "week") }, { href: "/grocery", label: t(me.lang, "grocery") });
+    else if (me.ownMenu) tabs.splice(1, 0, { href: "/tomorrow", label: t(me.lang, "tomorrow") }, { href: "/mine", label: t(me.lang, "myMenu") });
     else tabs.push({ href: "/tomorrow", label: t(me.lang, "tomorrow") });
   }
   tabs.push({ href: "/me", label: t(me.lang, "me") });

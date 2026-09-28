@@ -43,6 +43,7 @@ export default async function People() {
                 <>
                   <Toggle id={p.id} field="isChild" value={p.isChild} label={t(L, "childView")} />
                   <Toggle id={p.id} field="simpleUi" value={p.simpleUi} label={t(L, "simpleScreen")} />
+                  <Toggle id={p.id} field="ownMenu" value={p.ownMenu} label={t(L, "ownMenu")} />
                 </>
               )}
             </div>

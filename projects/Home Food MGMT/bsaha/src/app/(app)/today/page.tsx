@@ -6,6 +6,8 @@ import { dishName } from "@/lib/dishes";
 import { listPeople } from "@/lib/people";
 import { DishImage } from "@/components/DishImage";
 import { t } from "@/lib/i18n/dict";
+import { getMyOptions, ownMenuPeople, type MyOption } from "@/lib/mine";
+import { MEALS, type Person } from "@/db/schema";
 import type { Dish, Lang } from "@/db/schema";
 
 function DishRow({ dish, lang, note, people, dim, big }: { dish: Dish; lang: Lang; note?: string; people?: number; dim?: boolean; big?: boolean }) {
@@ -36,6 +38,22 @@ export default async function Today() {
   const isCook = me.role === "cook";
   const canPlan = isCook || me.isAdmin;
   const nameOf = new Map(everyone.map((p) => [p.id, p.name]));
+  // Options of the people who eat from a menu of their own: theirs on their screen, all of them on the cook's.
+  const myOptions = me.ownMenu ? await getMyOptions(day, me.id) : [];
+  const others: { person: Person; options: MyOption[] }[] = isCook
+    ? await Promise.all((await ownMenuPeople()).map(async (person) => ({ person, options: await getMyOptions(day, person.id) })))
+    : [];
+  const optionRows = (options: MyOption[]) => MEALS.map((meal) => {
+    const list = options.filter((o) => o.meal === meal);
+    return (
+      <div key={meal} className="mt-4">
+        <h3 className="text-sm font-bold text-muted uppercase tracking-wide">{t(L, meal)}</h3>
+        {list.length === 0 ? <p className="mt-1.5 text-sm text-muted">{t(L, "noOptionsYet")}</p> : (
+          <ul className="mt-1.5 grid gap-2 md:grid-cols-3">{list.map(({ dish }) => <li key={dish.id}><DishRow dish={dish} lang={L} people={1} /></li>)}</ul>
+        )}
+      </div>
+    );
+  });
 
   const breakfastPicks = picks.filter((p) => p.meal === "breakfast");
   const eatersFor = (meal: string) => Math.max(3, picks.filter((p) => p.meal === meal).length);
@@ -46,7 +64,18 @@ export default async function Today() {
         {t(L, "hello")} {me.name}
       </h1>
 
-      <section className="mt-6">
+      {me.ownMenu && (
+        <section className="mt-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-extrabold">{t(L, "myOptions")}</h2>
+            <Link href="/tomorrow" className="text-accent font-semibold shrink-0">{t(L, "chooseNow")}</Link>
+          </div>
+          <p className="mt-1 text-sm text-muted">{t(L, "cookPicksOne")}</p>
+          {optionRows(myOptions)}
+        </section>
+      )}
+
+      {!me.ownMenu && <section className="mt-6">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-lg font-extrabold">{isCook ? t(L, "tomorrowOrders") : t(L, "tomorrowChoose")}</h2>
           {me.role !== "grocery" && !isCook && (
@@ -105,7 +134,15 @@ export default async function Today() {
             </ul>
           </div>
         )}
-      </section>
+      </section>}
+
+      {others.filter((o) => o.options.length > 0).map(({ person, options }) => (
+        <section key={person.id} className="mt-8">
+          <h2 className="text-lg font-extrabold">{person.name}</h2>
+          <p className="mt-1 text-sm font-bold text-accent">{t(L, "cookPicksOne")}</p>
+          {optionRows(options)}
+        </section>
+      ))}
 
       {canPlan && (
         <section className="mt-8 grid gap-2">

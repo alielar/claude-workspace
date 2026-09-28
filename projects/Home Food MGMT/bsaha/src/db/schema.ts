@@ -27,6 +27,11 @@ export const people = sqliteTable("people", {
   sortOrder: integer("sort_order").notNull().default(0),
   /** JSON string[] of DISLIKE_TAGS. Filters this person's views only. */
   dislikes: text("dislikes", { mode: "json" }).$type<string[]>().notNull().default([]),
+  /**
+   * Eats from a menu of their own (Ali). Picks up to three options per meal for tomorrow from
+   * it; the cook cooks whichever of the three suits what is in the kitchen.
+   */
+  ownMenu: integer("own_menu", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull().default(""),
 });
 
@@ -202,3 +207,24 @@ export const picks = sqliteTable("picks", {
   createdAt: text("created_at").notNull().default(""),
 });
 export type PickRow = typeof picks.$inferSelect;
+
+/** One person's own menu: the dishes they pick from, per meal. Independent of the family menu. */
+export const myMenu = sqliteTable("my_menu", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  personId: integer("person_id").notNull(),
+  dishId: integer("dish_id").notNull(),
+  meal: text("meal", { enum: MEALS }).notNull(),
+  createdAt: text("created_at").notNull().default(""),
+});
+export type MyMenuRow = typeof myMenu.$inferSelect;
+
+/** One person's options for one meal of one day, up to MY_PICKS_PER_MEAL, taken from their own menu. */
+export const myPicks = sqliteTable("my_picks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  day: text("day").notNull(),
+  personId: integer("person_id").notNull(),
+  meal: text("meal", { enum: MEALS }).notNull(),
+  dishId: integer("dish_id").notNull(),
+  createdAt: text("created_at").notNull().default(""),
+});
+export type MyPickRow = typeof myPicks.$inferSelect;

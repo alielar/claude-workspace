@@ -10,6 +10,23 @@ import { seedDishes } from "./seedDishes";
 type Seed = typeof people.$inferInsert;
 
 const DDL = [
+  `CREATE TABLE IF NOT EXISTS my_menu (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    person_id INTEGER NOT NULL,
+    dish_id INTEGER NOT NULL,
+    meal TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT '',
+    UNIQUE(person_id, dish_id, meal)
+  )`,
+  `CREATE TABLE IF NOT EXISTS my_picks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    day TEXT NOT NULL,
+    person_id INTEGER NOT NULL,
+    meal TEXT NOT NULL,
+    dish_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT '',
+    UNIQUE(day, person_id, meal, dish_id)
+  )`,
   `CREATE TABLE IF NOT EXISTS people (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -116,6 +133,7 @@ const ONE_OFFS: { key: string; run: () => Promise<void> }[] = [
 
 /** Columns added after a table shipped. "duplicate column" is swallowed. */
 const LATE_COLUMNS = [
+  `ALTER TABLE people ADD COLUMN own_menu INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE dishes ADD COLUMN on_menu INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE dishes ADD COLUMN removed_at TEXT`,
   `ALTER TABLE dishes ADD COLUMN removed_by INTEGER`,

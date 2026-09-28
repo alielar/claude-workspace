@@ -10,7 +10,7 @@ export function Toggle({
   disabled,
 }: {
   id: number;
-  field: "isAdmin" | "isAway" | "isChild" | "simpleUi";
+  field: "isAdmin" | "isAway" | "isChild" | "simpleUi" | "ownMenu";
   value: boolean;
   label: string;
   disabled?: boolean;

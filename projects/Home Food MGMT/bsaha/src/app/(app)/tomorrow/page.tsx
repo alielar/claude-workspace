@@ -5,10 +5,12 @@ import { toSlim } from "@/lib/slim";
 import { splitByDislikes } from "@/lib/dishes";
 import { t } from "@/lib/i18n/dict";
 import { MealChooser } from "@/components/MealChooser";
+import { MineTomorrow } from "./Mine";
 
 export default async function TomorrowPage() {
   const me = (await currentPerson())!;
   if (me.role === "grocery") redirect("/today");
+  if (me.ownMenu) return <MineTomorrow me={me} />;
   const L = me.lang;
   const day = tomorrowKey();
   const [planned, breakfasts, mine] = await Promise.all([getPool(day), breakfastMenu(), getMyPicks(day, me.id)]);
