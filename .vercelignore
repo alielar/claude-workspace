@@ -1,0 +1,16 @@
+# The Vercel project ali-hub is linked here (Root Directory: projects/ali-hub), so a deploy run
+# from this folder would otherwise upload the whole workspace: Bsaha's photos, the Wati lead
+# folders, everything. Upload only A L I, and not its local build cache, logs or secrets.
+/*
+!/projects
+/projects/*
+!/projects/ali-hub
+/projects/ali-hub/node_modules
+/projects/ali-hub/.next
+/projects/ali-hub/fix-worker/tmp
+/projects/ali-hub/fix-worker/logs
+/projects/ali-hub/fix-worker/.env
+/projects/ali-hub/.env*
+!/projects/ali-hub/.env.example
+**/*.log
+**/.DS_Store
