@@ -1,7 +1,7 @@
 /**
  * Navigation · single source of truth for the tab bar (phone) and sidebar (desktop).
  *
- * Today · To-do · News · Train · ALAI · Settings. Keep this list short on purpose —
+ * Today · To-do · News · Train · Health · ALAI · Settings. Keep this list short on purpose —
  * if something needs a second thought about where it lives, the nav is wrong.
  *
  * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
@@ -12,17 +12,19 @@
 export type NavItem = {
   href: string;
   label: string;
-  icon: "today" | "news" | "settings" | "train" | "todo" | "alai";
+  icon: "today" | "news" | "settings" | "train" | "todo" | "alai" | "health";
   match?: string[]; // extra route prefixes that mark this item active
 };
 
-// Order (Ali 2026-09-27): Today · To-do · News · Train · ALAI · Settings. Settings stays in the bar,
-// last ("keep it on the bottom"); on the desktop rail it sits alone at the foot.
+// Order (Ali 2026-09-27, Health added 2026-09-28 "just above ALAI"): Today · To-do · News · Train ·
+// Health · ALAI · Settings. Settings stays in the bar, last ("keep it on the bottom"); on the desktop
+// rail it sits alone at the foot.
 export const NAV: NavItem[] = [
   { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/breathe", "/books"] },
   { href: "/todo",     label: "To-do",    icon: "todo",     match: ["/todo", "/vault", "/birthdays"] },
   { href: "/news",     label: "News",     icon: "news",     match: ["/news", "/podcast"] },
   { href: "/train",    label: "Train",    icon: "train" },
+  { href: "/health",   label: "Health",   icon: "health" },
   { href: "/alai",     label: "ALAI",     icon: "alai",     match: ["/alai", "/fix"] },
   { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
 ];

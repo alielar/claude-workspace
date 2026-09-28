@@ -5,6 +5,8 @@
  *   hero: Kettlebell 30 (the one workout since 2026-09-10), one big Start
  *   weekly bests (rounds), number to beat
  *   recent sessions
+ *   Runs · Strength (Speediance) · Other · every Apple Watch workout, sorted by kind
+ *   (2026-09-28, from /api/health/summary); a run opens /train/run/<id>.
  * Everything renders from the phone's copy first; works offline.
  */
 
@@ -13,6 +15,8 @@ import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrai
 import { fmtClock, repsLabel, workStats, weeklyPaces, paceToBeat, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { useClientValue } from "@/lib/useClientValue";
+import { useHealthSummary } from "@/lib/health/useHealth";
+import { fmtDay, fmtDur, fmtKm, fmtPace, kindLabel, paceOf, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
 
 function describe(w: TrainWorkout): string {
   if (w.format === "amrap") return `AMRAP ${w.amrapMinutes} min · ${w.exercises.length} moves per round`;
@@ -41,7 +45,41 @@ function SessionLine({ s, workouts }: { s: TrainSession; workouts: TrainWorkout[
   );
 }
 
+/** One Watch workout line · a run shows km · time · pace, a strength session time · kcal · bpm. */
+function WatchLine({ w, today }: { w: WorkoutRow; today: string }) {
+  const kind = workoutKind(w.type);
+  const right = kind === "run"
+    ? `${fmtKm(w.distanceKm)} · ${fmtDur(w.durationSec)} · ${fmtPace(paceOf(w))}`
+    : `${fmtDur(w.durationSec)}${w.activeKcal !== null ? ` · ${w.activeKcal} kcal` : ""}${w.hrAvg !== null ? ` · ${w.hrAvg} bpm` : ""}`;
+  return (
+    <Link href={`/train/run/${encodeURIComponent(w.hkId)}`} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, minHeight: 52, alignItems: "center", padding: "6px 0", borderBottom: "1px solid var(--line)", textDecoration: "none", color: "inherit" }}>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>{kindLabel(w.type)}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{fmtDay(w.date, today)}{w.source && /speediance/i.test(w.source) ? " · Speediance" : ""}</span>
+      </span>
+      <span className="tabular-nums" style={{ fontSize: 15, color: "var(--ink-2)", textAlign: "right", whiteSpace: "nowrap" }}>{right} <span style={{ color: "var(--ink-4)" }}>›</span></span>
+    </Link>
+  );
+}
+
+function WatchCard({ title, tail, rows, today, empty }: { title: string; tail?: string; rows: WorkoutRow[]; today: string; empty: string }) {
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">{title}</span>{tail && <span className="tail">{tail}</span>}</div>
+      <div style={{ padding: "0 14px" }}>
+        {rows.length === 0 && <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>{empty}</div>}
+        {rows.slice(0, 6).map((w) => <WatchLine key={w.hkId} w={w} today={today} />)}
+      </div>
+    </section>
+  );
+}
+
 export default function TrainPage() {
+  const { data: health } = useHealthSummary();
+  const watch = health?.workouts ?? [];
+  const runs = watch.filter((w) => workoutKind(w.type) === "run");
+  const strength = watch.filter((w) => workoutKind(w.type) === "strength");
+  const otherWatch = watch.filter((w) => workoutKind(w.type) === "other");
   const { workouts, loading: wLoading } = useWorkouts();
   const { data: ov, loading: oLoading } = useOverview();
   const active = useClientValue(readActiveSession, null);
@@ -58,6 +96,7 @@ export default function TrainPage() {
   // Work-only pace (rest excluded) · the comparison that stays honest now that rounds have rest between them.
   const paces = ov ? weeklyPaces(ov.sessions, today) : [];
   const pace = paceToBeat(paces, today);
+  const wk = weekTotals(runs, today);
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -184,6 +223,11 @@ export default function TrainPage() {
           {ov?.sessions.slice(0, 6).map((s) => <SessionLine key={s.clientId} s={s} workouts={workouts} />)}
         </div>
       </section>
+
+      {/* From the Watch */}
+      <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : undefined} rows={runs} today={today} empty="No runs from the Watch yet." />
+      <WatchCard title="Strength" tail="Speediance and the Watch" rows={strength} today={today} empty="No strength sessions from the Watch yet." />
+      {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
 
     </div>
   );

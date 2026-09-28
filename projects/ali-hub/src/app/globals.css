@@ -100,6 +100,11 @@
   /* Chrome: sidebar, tab bar, drawers */
   --bg-chrome: #0F1015;
   --accent-soft: #232041;
+  /* sleep stages · one hue, deep → light (depth ramp), awake in gray · every segment is labelled */
+  --stage-deep:  #5B4BD6;
+  --stage-core:  #8B7CF0;
+  --stage-rem:   #BDB3F7;
+  --stage-awake: #5C5F6E;
   --on-accent: #FFFFFF;
   color-scheme: dark;
 
@@ -348,7 +353,7 @@ html, body {
   align-items: center;
   gap: 3px;
   padding: 0;
-  min-width: 64px;
+  min-width: 48px; /* seven tabs on a 390 px phone (Health added 2026-09-28) */
   height: var(--tabbar-h);
   justify-content: center;
   background: transparent;
@@ -886,6 +891,10 @@ button, a, label, input, select, textarea, [role="button"] { touch-action: manip
   --on-accent: #FFFFFF;
 
   --violet: #5B4BD6;
+  --stage-deep:  #3B2FA8;
+  --stage-core:  #5B4BD6;
+  --stage-rem:   #A79CF0;
+  --stage-awake: #9A9DAB;
   --cyan:   #2E8A82;
   --grad:   var(--violet);
   --grad-soft: var(--accent-soft);
@@ -937,6 +946,10 @@ button, a, label, input, select, textarea, [role="button"] { touch-action: manip
   --on-accent: #1A1206;
 
   --violet: #E0A35C;
+  --stage-deep:  #B8742A;
+  --stage-core:  #E0A35C;
+  --stage-rem:   #F0D2A6;
+  --stage-awake: #6B5F4C;
   --cyan:   #C9A06A;
   --grad:   var(--violet);
   --grad-soft: var(--accent-soft);
@@ -987,6 +1000,10 @@ button, a, label, input, select, textarea, [role="button"] { touch-action: manip
     --on-accent: #FFFFFF;
 
     --violet: #5B4BD6;
+    --stage-deep:  #3B2FA8;
+    --stage-core:  #5B4BD6;
+    --stage-rem:   #A79CF0;
+    --stage-awake: #9A9DAB;
     --cyan:   #2E8A82;
     --grad:   var(--violet);
     --grad-soft: var(--accent-soft);
@@ -1041,6 +1058,10 @@ button, a, label, input, select, textarea, [role="button"] { touch-action: manip
   --on-accent: #FFFFFF;
 
   --violet: #5B4BD6;
+  --stage-deep:  #3B2FA8;
+  --stage-core:  #5B4BD6;
+  --stage-rem:   #A79CF0;
+  --stage-awake: #9A9DAB;
   --cyan:   #2E8A82;
   --grad:   var(--violet);
   --grad-soft: var(--accent-soft);
