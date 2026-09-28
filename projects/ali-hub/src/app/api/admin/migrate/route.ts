@@ -13,6 +13,7 @@ import { HEALTH_DDL } from "@/lib/health/server";
 import { VAULT_DDL } from "@/lib/vault/server";
 import { BIRTHDAY_DDL } from "@/lib/birthdays/server";
 import { FIX_DDL } from "@/lib/fix/server";
+import { MIND_DDL } from "@/lib/mind/server";
 import { DEDUPE_ROUTINE_ROWS } from "@/app/api/checklist/route";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -435,6 +436,8 @@ export async function POST() {
     // ── Birthdays & important dates (2026-09-19) · same DDL as src/lib/birthdays/server.ts
     ...BIRTHDAY_DDL,
     ...FIX_DDL,
+    // ── Mental Training (2026-09-28) · same DDL as src/lib/mind/server.ts
+    ...MIND_DDL,
   ];
 
   const results: string[] = [];

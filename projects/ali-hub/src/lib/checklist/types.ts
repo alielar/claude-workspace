@@ -9,7 +9,7 @@ export type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
  */
 export type ItemKind = "routine" | "habit" | "manual";
 
-export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs" | "gym-kb";
+export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs" | "gym-kb" | "mind";
 
 export type ChecklistItem = {
   id: number;
@@ -92,6 +92,10 @@ export const ROUTINE_SEED: {
   { routineKey: "gym-kb",   title: "Kettlebell",              emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 30 · 11 moves", sortOrder: -45, weekdays: ["sat"] },
   { routineKey: "breathe", title: "Wim Hof breathing",   emoji: "🫁", timeOfDay: "morning", kind: "routine", color: "cyan",   notes: `30 breaths · ${BREATHING_VIDEO_URL}`, sortOrder: -40 },
   { routineKey: "supp-am", title: "Morning supplements", emoji: "💊", timeOfDay: "morning", kind: "routine", color: "green",  notes: "Zinc · Omega-3 · Creatine", sortOrder: -30 },
+  // Mental Training (Ali's ALAI spec 2026-09-27, built 2026-09-28): 4 a week, weekdays by default,
+  // ~20 min · Train → Mind. The days are a seed · Ali edits them on Today → Edit; the 05:00
+  // pre-write of the brief reads this row's weekdays.
+  { routineKey: "mind",    title: "Mental training",     emoji: "", timeOfDay: "afternoon", kind: "routine", color: "violet", notes: "Callback 2 min · read the brief · speak 2 min", sortOrder: -25, weekdays: ["mon", "tue", "thu", "fri"] },
   { routineKey: "supp-pm", title: "Magnesium",           emoji: "🌙", timeOfDay: "evening", kind: "routine", color: "violet", notes: "Night supplement", sortOrder: -20 },
   { routineKey: "read",    title: "Read before sleep",   emoji: "📚", timeOfDay: "evening", kind: "habit",   color: "pink",   notes: "A physical book, even ten pages", sortOrder: -10 },
 ];

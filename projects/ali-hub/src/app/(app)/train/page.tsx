@@ -1,13 +1,16 @@
 "use client";
 
 /**
- * /train · the Train tab.
+ * /train · the Train tab · two halves, Body and Mind (Ali 2026-09-28), a switch under the title,
+ * remembered on the phone (`cc-train-half`); `?mind=1` (Today's "Mental training" row) opens Mind.
+ * BODY:
  *   hero: Kettlebell 30 (the one workout since 2026-09-10), one big Start
  *   weekly bests (rounds), number to beat
  *   recent sessions
  *   Runs · Strength (Speediance) · Other · every Apple Watch workout, sorted by kind
  *   (2026-09-28, from /api/health/summary); a run opens /train/run/<id>.
- * Everything renders from the phone's copy first; works offline.
+ * MIND: Mental Training · src/components/mind/MindPane.tsx.
+ * Everything renders from the phone's copy first; works offline (Mind needs a connection to grade).
  */
 
 import Link from "next/link";
@@ -15,7 +18,9 @@ import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrai
 import { fmtClock, repsLabel, workStats, weeklyPaces, paceToBeat, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { useClientValue } from "@/lib/useClientValue";
+import { useEffect, useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
+import { MindPane } from "@/components/mind/MindPane";
 import { fmtDay, fmtDur, fmtKm, fmtPace, kindLabel, paceOf, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
 
 function describe(w: TrainWorkout): string {
@@ -74,7 +79,20 @@ function WatchCard({ title, tail, rows, today, empty }: { title: string; tail?: 
   );
 }
 
+type Half = "body" | "mind";
+
 export default function TrainPage() {
+  const [half, setHalfState] = useState<Half>("body");
+  useEffect(() => {
+    let h: Half | null = null;
+    try {
+      if (new URLSearchParams(window.location.search).get("mind") === "1") h = "mind";
+      else if (localStorage.getItem("cc-train-half") === "mind") h = "mind";
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the URL and localStorage after mount
+    if (h) setHalfState(h);
+  }, []);
+  const setHalf = (h: Half) => { setHalfState(h); try { localStorage.setItem("cc-train-half", h); } catch { /* ignore */ } };
   const { data: health } = useHealthSummary();
   const watch = health?.workouts ?? [];
   const runs = watch.filter((w) => workoutKind(w.type) === "run");
@@ -104,7 +122,7 @@ export default function TrainPage() {
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Train</h1>
           <div className="sub">
-            {ov ? `${ov.thisWeekSessions} of ${target} this week` : `${target} a week`} · {sched ? planned : "any days"}
+            {half === "mind" ? "Mental training · a callback, then a new topic · 4 a week" : <>{ov ? `${ov.thisWeekSessions} of ${target} this week` : `${target} a week`} · {sched ? planned : "any days"}</>}
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -116,6 +134,18 @@ export default function TrainPage() {
         </div>
       </div>
 
+      <div role="tablist" aria-label="Train" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: 3, borderRadius: 12, background: "var(--fill-1)" }}>
+        {(["body", "mind"] as Half[]).map((h) => (
+          <button key={h} role="tab" aria-selected={half === h} onClick={() => setHalf(h)}
+            style={{ minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, background: half === h ? "var(--bg-card)" : "transparent", color: half === h ? "var(--ink)" : "var(--ink-3)", boxShadow: half === h ? "0 1px 2px rgba(0,0,0,.18)" : "none" }}>
+            {h === "body" ? "Body" : "Mind"}
+          </button>
+        ))}
+      </div>
+
+      {half === "mind" && <MindPane />}
+
+      {half === "body" && <>
       {/* Week progress: 4 dots */}
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         {Array.from({ length: target }).map((_, i) => (
@@ -228,6 +258,7 @@ export default function TrainPage() {
       <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : undefined} rows={runs} today={today} empty="No runs from the Watch yet." />
       <WatchCard title="Strength" tail="Speediance and the Watch" rows={strength} today={today} empty="No strength sessions from the Watch yet." />
       {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
+      </>}
 
     </div>
   );

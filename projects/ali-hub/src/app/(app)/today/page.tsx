@@ -156,6 +156,7 @@ function routineAction(item: ChecklistItem): { label: string; href: string } | n
   if (item.routineKey === "breathe") return { label: "Start", href: "/breathe" };
   if (item.routineKey === "read") return { label: "Books", href: "/books" };
   if (item.routineKey === "gym-kb") return { label: "Train", href: "/train/kb1" };
+  if (item.routineKey === "mind") return { label: "Start", href: "/train?mind=1" };
   return null;
 }
 

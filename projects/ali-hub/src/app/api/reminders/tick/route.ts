@@ -1,6 +1,7 @@
 import { NextResponse, after, type NextRequest } from "next/server";
 import { ensureTodaysPodcast, todaysEpisode } from "@/lib/podcast/generate";
 import { pollHighlights } from "@/lib/news/highlights";
+import { prewriteIfSessionDay } from "@/lib/mind/server";
 import { db } from "@/db";
 import { birthdays, todos, userSettings } from "@/db/schema";
 import { and, eq, inArray, isNull, lte } from "drizzle-orm";
@@ -61,6 +62,8 @@ export async function GET(req: NextRequest) {
   // Football highlights: the channel feeds only hold the last 15 uploads, so every
   // tick (5 min, all day · matches end near midnight) stores what is new.
   after(async () => { try { await pollHighlights(); } catch { /* next tick */ } });
+  // Mental Training: from 05:00 on a session day, write today's brief once so it is ready when Ali opens Train → Mind.
+  if (hm >= "05:00") after(async () => { try { await prewriteIfSessionDay(userId); } catch { /* next tick */ } });
 
   if (hm >= "23:00" || hm < "08:00") return NextResponse.json({ quiet: true, hm });
   const today = checklistToday(now);
