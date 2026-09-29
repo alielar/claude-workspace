@@ -5,7 +5,7 @@
 import { recentContacts, getThread, getContact, FR } from './wati.mjs';
 import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed } from './db.mjs';
 import { pushAll } from './push.mjs';
-import { requestSuggestion, startSuggesting } from './suggest-engine.mjs';
+import { startSuggesting } from './suggest-engine.mjs';
 
 export const POLL_MS = 45_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -42,8 +42,7 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   const isNew = !!lastIn && (!before || (before.last_inbound_at || '') < lastIn.at);
   if (isNew && notify && before && !before.muted) {
     await pushAll({ title: name || waId, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
-    log('new message from', name || waId);
-    if (pending) requestSuggestion(waId, 'lead'); // Claude drafts ~90 s after the last bubble
+    log('new message from', name || waId); // no automatic draft: Ali picks the cap in the app first (2026-09-29)
   }
   return { isNew, pending };
 }
@@ -75,7 +74,7 @@ async function tick() {
 
 async function pushSuggestions() {
   for (const s of unpushedSuggestions()) {
-    await pushAll({ title: `Suggestions prêtes · ${s.name || s.wa_id}`, body: 'Touchez pour choisir une réponse', tag: `sugg-${s.wa_id}`, url: `/t/${s.wa_id}` });
+    await pushAll({ title: `Brouillon prêt · ${s.name || s.wa_id}`, body: 'Touchez pour le relire et l’envoyer', tag: `sugg-${s.wa_id}`, url: `/t/${s.wa_id}` });
     markSuggestionPushed(s.id);
   }
 }

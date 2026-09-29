@@ -69,7 +69,23 @@ button.busy::before { content: ''; display: inline-block; width: 10px; height: 1
 .sending::before { content: ''; display: inline-block; width: 10px; height: 10px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; margin-right: 8px; vertical-align: -1px; animation: spin 1s linear infinite; }
 .sending.failed { border-color: var(--danger); color: var(--danger); } .sending.failed::before { display: none; }
 
-/* prompt box under the suggestion + what the app learned (2026-09-27) */
-.refine textarea { min-height: 64px; }
+/* the cap panel (2026-09-29): where the reply is heading, picked before Claude drafts */
+.cap p.muted { margin: 4px 0 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.chip { font-size: 13px; padding: 7px 11px; min-height: 36px; border-radius: 999px; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.chips.tones .chip { font-size: 12px; min-height: 32px; padding: 5px 10px; }
+.cap textarea { min-height: 56px; }
 .consigne { color: var(--accent); margin: -4px 0 8px; }
 .learn { margin: 2px 0 12px; }
+
+/* France TM flags (2026-09-29) */
+.tmlink { font-size: 13px; white-space: nowrap; }
+.pill.warn { background: var(--warn); color: #fff; }
+.pill.bad { background: var(--danger); color: #fff; margin: 0; } .pill.good { background: var(--accent); color: #fff; margin: 0; }
+.flag-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.flag-who { font-size: 13px; color: var(--muted); }
+.flag-title { font-weight: 600; margin: 2px 0 6px; }
+.quote { color: var(--muted); font-style: italic; margin-top: 6px; white-space: pre-wrap; }
+.flag .acts { display: flex; gap: 8px; margin-top: 8px; }
+.tmthread .thread { margin: 10px 0 0; }

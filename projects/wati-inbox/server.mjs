@@ -11,11 +11,13 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
-import { requestSuggestion, suggestStatus, autoEnabled, setAuto } from './suggest-engine.mjs';
+import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
+import { OBJECTIVES, DOWNSELL_LEVELS, ACOMPTE_LEVELS, TONES } from './directions.mjs';
+import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -80,12 +82,19 @@ async function api(req, res, path) {
 
   if (path === '/api/inbox') {
     const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return !!s && (!t.last_inbound_at || s.created_at >= t.last_inbound_at); };
-    return json(res, 200, { suggestAuto: autoEnabled(), threads: inbox().map((t) => ({ ...t, windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24, hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null, suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null })) });
+    // Only conversations whose 24h window is open (2026-09-29): a closed one can still be opened by number.
+    const threads = inbox().filter((t) => !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24)
+      .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
+    return json(res, 200, { threads, tm: tmFlagCounts() });
   }
-  if (path === '/api/settings') {
-    if (req.method === 'POST') { const b = await body(req); if ('suggestAuto' in b) setAuto(!!b.suggestAuto); }
-    return json(res, 200, { suggestAuto: autoEnabled() });
-  }
+  if (path === '/api/directions') return json(res, 200, { objectives: OBJECTIVES.map(({ id, label, levels }) => ({ id, label, levels: levels || null })), downsell: DOWNSELL_LEVELS.map(({ id, label }) => ({ id, label })), acompte: ACOMPTE_LEVELS.map(({ id, label }) => ({ id, label })), tones: TONES.map(({ id, label }) => ({ id, label })) });
+  // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).
+  if (path === '/api/tm') return json(res, 200, { flags: tmFlags(120), status: tmStatus() });
+  if (path === '/api/tm/review' && req.method === 'POST') { tmReview().catch(() => {}); return json(res, 200, { ok: true }); }
+  const tmf = /^\/api\/tm\/flag\/(\d+)$/.exec(path);
+  if (tmf && req.method === 'POST') { const b = await body(req); tmFlagSeen(Number(tmf[1]), b.seen !== false); return json(res, 200, { ok: true }); }
+  const tmt = /^\/api\/tm\/thread\/(\d{8,15})$/.exec(path);
+  if (tmt) return json(res, 200, { messages: tmThread(tmt[1], 60) });
   if (path === '/api/push') {
     if (req.method === 'GET') return json(res, 200, { publicKey: process.env.VAPID_PUBLIC_KEY || null, endpoints: subscriptions().map((s) => s.endpoint) });
     if (req.method === 'POST') { const b = await body(req); const s = b.subscription || b; if (!s?.endpoint || !s.keys?.p256dh || !s.keys?.auth) return json(res, 400, { error: 'bad subscription' }); addSubscription(s, (req.headers['user-agent'] || '').slice(0, 200)); return json(res, 200, { ok: true }); }
@@ -135,7 +144,9 @@ async function api(req, res, path) {
   if (action === 'suggest') {
     if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' });
     const b = req.method === 'POST' ? await body(req) : {};
-    wantSuggestion(waId); requestSuggestion(waId, 'ali', String(b.instruction || '').trim()); // Ali's own words → a redraft that follows them
+    const direction = { objective: String(b.objective || ''), level: String(b.level || ''), tone: String(b.tone || ''), instruction: String(b.instruction || '').trim() };
+    if (!direction.objective && !direction.instruction) return json(res, 400, { error: 'Choisissez un cap ou écrivez une consigne' });
+    wantSuggestion(waId); requestSuggestion(waId, direction); // Ali picked where the reply goes → Claude drafts along it
     return json(res, 200, { ok: true });
   }
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
@@ -241,4 +252,5 @@ createHttp((req, res) => {
 server.listen(PORT, () => {
   console.log(`Wati Inbox on https://localhost:${PORT}  ·  https://${TS_HOST}:${PORT}`);
   startPolling();
+  startTmMonitor();
 });

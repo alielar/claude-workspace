@@ -60,7 +60,7 @@ async function learn(waId, { bubbles, meta, at }) {
   if (asIs) {
     const w = String(opt.why || '').replace(/\s+/g, ' ');
     const why = w.length > 220 ? w.slice(0, 220).replace(/\s+\S*$/, '') + '…' : w;
-    appendCase(day, `- ${hhmm} · ${who} · **validé tel quel**${sugg.instruction ? ` (après consigne « ${sugg.instruction.replace(/\s+/g, ' ')} »)` : ''} — ${bubbles.map((b) => `« ${b} »`).join(' / ')}${why ? `\n  Règle confirmée : ${why}` : ''}\n`);
+    appendCase(day, `- ${hhmm} · ${who} · **validé tel quel**${sugg.instruction ? ` (${sugg.instruction.replace(/\s+/g, ' ')})` : ''} — ${bubbles.map((b) => `« ${b} »`).join(' / ')}${why ? `\n  Règle confirmée : ${why}` : ''}\n`);
     insertLesson({ wa_id: waId, kind: 'confirmed', suggestion_id: sugg.id, batch: meta.batch, sent: bubbles, title: 'validé tel quel' });
     status.set(waId, { state: 'done', at: new Date().toISOString(), kind: 'confirmed' });
     log(who, 'sent as drafted — confirmed');

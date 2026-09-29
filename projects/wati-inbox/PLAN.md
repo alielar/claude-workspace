@@ -74,3 +74,13 @@ A small web app that runs **on Ali's Mac** (no Vercel, no Turso, no external pro
 - 🟩 `learn-engine.mjs`: after every send from the app, sent-as-drafted → "validé tel quel" line (no Claude run);
   edited or free text → one short Sonnet run → lesson block / "retouche" line in `04-CAS-APPRIS.md` under
   `## <date> — Appris dans l'app`. `lessons` table; "Appris …" line in the thread. Nightly review told not to duplicate.
+
+## 2026-09-29 — Ali steers first, open chats only, France TM bot monitor
+- 🟩 No automatic draft any more. The thread shows a cap panel (`directions.mjs`: 17 objectives from the
+  playbook ladder, downsell levels 90h/96h/heures/repli, acompte 196/96, tone, free consigne); "Rédiger la
+  réponse" sends it to `POST /api/thread/:id/suggest`, Claude drafts along that line. The old
+  "Demander une suggestion" button, the "Suggestions auto" switch and the consigne box are gone.
+- 🟩 Inbox: only threads whose 24h window is open (pending first, then answered). Pasted numbers still open anything.
+- 🟩 `tm-monitor.mjs`: every 2 h, webhook events of +33671283778 (both sides) → `tm_messages` → one Sonnet
+  review → `tm_flags` (erreur / amelioration, number, title, detail, quote). Screen `/tm` with the flags,
+  the conversation, "Vu" and "Relire maintenant". Header link with the unseen count.

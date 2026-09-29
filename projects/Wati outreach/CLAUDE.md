@@ -176,25 +176,34 @@ large share of his weekly credits.
 `../wati-inbox` runs on the Mac (launchd job `com.ali.wati-inbox`, reads the France Sales threads
 every 45 s). Ali gets a push for every lead message, opens the thread in the app on his phone,
 and replies from there — free text while the 24h window is open, French templates when it is
-closed. Reply suggestions appear in the app **without any Claude Code session open**: the app
-itself runs `claude -p --model claude-sonnet-5` headless in this folder (`wati-inbox/suggest-engine.mjs`,
-prompt in `wati-inbox/suggest-prompt.md`), so this CLAUDE.md and the playbook apply. One draft
-per lead about 90 s after their last bubble ("Suggestions auto" switch in the app), or on demand
-when Ali taps "Demander une suggestion". Every draft is also saved to `data/suggestions/<date>.md`
-for the evening review.
+closed. The inbox shows only conversations whose 24h window is open. Drafts appear in the app
+**without any Claude Code session open**: the app itself runs `claude -p --model claude-sonnet-5`
+headless in this folder (`wati-inbox/suggest-engine.mjs`, prompt in `wati-inbox/suggest-prompt.md`),
+so this CLAUDE.md and the playbook apply. **Nothing is drafted automatically** (since 2026-09-29):
+Ali reads the thread, picks the cap on the phone (objective from the ladder — isoler, motivation,
+étaler, budget, downsell → 90h/96h/heures/repli, administration délai ou format, bonne nouvelle,
+démarrage, acompte 196/96, finaliser, info, relance, basse pression, déjà client, clôture — plus a
+tone and a free consigne; the list and the guidance per cap are in `wati-inbox/directions.mjs`),
+taps "Rédiger", and Claude drafts along that line. Every draft is saved to
+`data/suggestions/<date>.md` with the cap for the evening review.
 
 - **In this chat**, a draft you give Ali can also be posted to his phone:
   `node suggest.mjs <waId> '[{"bubbles":["…","…"],"why":"…"}]'` — do it when Ali asks for it on
   the phone, or on `c`/`C` (one call per lead). **One set of bubbles per suggestion, never two
   options** (Ali's rule, 2026-09-27) — in the app and here. `node compare-sent.mjs <waId>` shows a
   suggestion next to what Ali actually sent.
-- **The app learns by itself** (since 2026-09-27): under each suggestion Ali has a box where he
-  types what is wrong ("plus court", "propose l'acompte") and Claude redrafts with his words. After
-  every send from the app, the app compares the draft, his consigne and what he really sent, and
+- **The app learns by itself** (since 2026-09-27): after every send from the app, the app
+  compares the draft, the cap Ali chose (and his consigne) and what he really sent, and
   writes the result at the end of `playbook/04-CAS-APPRIS.md` under `## <date> — Appris dans l'app`
   (one line "validé tel quel" = rule confirmed, one line "retouche" = small change, a titled block
   = a lesson). Every next draft reads those blocks first. Engine: `../wati-inbox/learn-engine.mjs`,
   prompt `learn-prompt.md`, log `../wati-inbox/logs/suggest.log` (tag `learn`).
+- **France TM bot monitor** (since 2026-09-29): `../wati-inbox/tm-monitor.mjs` reads the webhook
+  events of the telemarketing number every 2 h (both sides of each conversation, stored in the
+  app's `tm_messages` table), and one Sonnet run flags what the booking bot got wrong ("erreur")
+  or could do better ("amelioration"). The flags are on the "France TM" screen of the app (number,
+  what happened, the quoted message). Prompt: `../wati-inbox/tm-review-prompt.md`. Terminal:
+  `node --env-file=.env tm-monitor.mjs` from `../wati-inbox`.
 - Server log: `../wati-inbox/logs/server.log`; every headless run: `../wati-inbox/logs/suggest.log`.
 - The Mac must stay awake (lid open, screen may lock) and Tailscale on for the phone on 4G.
 

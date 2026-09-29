@@ -9,11 +9,13 @@ in `../Wati outreach`. Details and setup in `README.md`; history and decisions i
 ## Where it runs
 On the Mac only, as the launchd job `com.ali.wati-inbox` (one Node process, `server.mjs`, port
 8443, SQLite in `data/inbox.sqlite`). The phone reaches it through Tailscale at
-`https://alis-macbook-pro.tail7ec20e.ts.net:8443`. Suggestions are made by `suggest-engine.mjs`
-(one set of bubbles per draft; Ali's consigne from the app box goes into the prompt), lessons by
-`learn-engine.mjs` after every send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`);
-both run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a time;
-no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
+`https://alis-macbook-pro.tail7ec20e.ts.net:8443`. Drafts are made by `suggest-engine.mjs` only
+when Ali picks a cap in the app (`directions.mjs`: objective, downsell level, tone, consigne —
+never automatically), one set of bubbles per draft; lessons by `learn-engine.mjs` after every
+send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
+reviewed every 2 h by `tm-monitor.mjs` (webhook events → `tm_messages` → flags in `tm_flags`).
+All three run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a
+time; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
 
 ## How to deploy
 There is no deploy. After a code change:
@@ -26,7 +28,8 @@ Then commit and push. Test a draft from the terminal with
 ## What is forbidden
 - Never call `sendText` / `sendTemplate` from a script or a test: the app sends only when Ali taps
   in it. Ali's own number `34695064884` is the test thread.
-- Never change the suggestion prompt's rules without reading `../Wati outreach/CLAUDE.md`; the
-  playbook there is the source of truth.
+- Never change the suggestion prompt's rules or the cap guidance in `directions.mjs` without
+  reading `../Wati outreach/CLAUDE.md` and `playbook/00-QUICK.md`; the playbook is the source of truth.
+- The inbox lists only open 24h windows; do not bring closed conversations back (Ali, 2026-09-29).
 - Headless runs load user, project and local settings (global file cleaned on 2026-09-27).
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.

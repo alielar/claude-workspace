@@ -80,7 +80,7 @@ let inboxFilter = '';
 const suggPill = (t) => t.suggesting === 'drafting' || t.suggesting === 'queued' ? '<span class="pill work">Claude rédige…</span>' : t.suggested ? '<span class="pill ready">brouillon prêt</span>' : '';
 let inboxCache = null;
 async function renderInbox({ fromCache = false } = {}) {
-  const { threads, suggestAuto } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
+  const { threads, tm } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
   const q = inboxFilter.trim().toLowerCase();
   const shown = q ? threads.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : threads;
   const pending = shown.filter((t) => t.pending && !t.muted), done = shown.filter((t) => !t.pending || t.muted);
@@ -88,18 +88,22 @@ async function renderInbox({ fromCache = false } = {}) {
   const row = (t) => `<a class="card lead-row" data-nav href="/t/${t.wa_id}">${t.pending && !t.muted ? '<span class="dot"></span>' : ''}<div class="who"><div class="name">${esc(t.name || t.wa_id)}${t.country === 'Switzerland' ? '<span class="pill">CHF</span>' : ''}${t.muted ? '<span class="pill">silencieux</span>' : ''}${suggPill(t)} <span class="muted small">${t.last_inbound_at ? ago(t.last_inbound_at) : ''}</span></div><div class="txt">${esc(t.last_text)}</div></div>${t.hoursSinceLead != null ? windowBadge(t.windowOpen, t.hoursSinceLead) : ''}</a>`;
   const digits = q.replace(/\D/g, '');
   const direct = /^\d{8,15}$/.test(digits) && !threads.some((t) => t.wa_id === digits) ? `<a class="card lead-row" data-nav href="/t/${digits}"><div class="who"><div class="name">Ouvrir la conversation +${digits}</div><div class="txt">Nouveau numéro — template si la fenêtre est fermée, message libre sinon</div></div></a>` : '';
-  app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><button id="rf" class="small">↻</button></header>
+  app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><a data-nav href="/tm" class="tmlink">France TM${tm?.unseen ? ` <span class="pill warn">${tm.unseen}</span>` : ''}</a><button id="rf" class="small">↻</button></header>
     <input class="search" id="q" placeholder="Nom, ou numéro collé (ex. +33 6 12 34 56 78)" value="${esc(inboxFilter)}" inputmode="search">${direct}
-    <div class="row" style="margin:0 0 12px">${await pushButton()}<button id="auto" class="small ${suggestAuto ? 'on' : ''}">Suggestions auto : ${suggestAuto ? 'ON' : 'OFF'}</button><span class="muted small">${threads.length ? '' : 'Aucune conversation encore — le Mac lit Wati toutes les 45 s.'}</span></div>
+    <div class="row" style="margin:0 0 12px">${await pushButton()}<span class="muted small">${threads.length ? 'Fenêtres ouvertes seulement — un numéro collé ouvre n’importe quelle conversation.' : 'Aucune fenêtre ouverte — le Mac lit Wati toutes les 45 s.'}</span></div>
     ${pending.length ? `<p class="muted small">En attente de réponse (${pending.length})</p>${pending.map(row).join('')}` : '<p class="muted center">Aucun lead en attente.</p>'}
-    ${done.length ? `<p class="muted small" style="margin-top:18px">Récents</p>${done.map(row).join('')}` : ''}`;
+    ${done.length ? `<p class="muted small" style="margin-top:18px">Répondu, fenêtre encore ouverte (${done.length})</p>${done.map(row).join('')}` : ''}`;
   $('#rf').onclick = route; bindPush();
-  $('#auto').onclick = async () => { $('#auto').disabled = true; try { await api('/api/settings', { method: 'POST', body: { suggestAuto: !suggestAuto } }); toast(suggestAuto ? 'Claude ne rédige plus que sur demande' : 'Claude rédige pour chaque lead qui écrit'); } catch (e) { toast(e.message); } route(); };
   $('#q').oninput = (e) => { inboxFilter = e.target.value; const pos = e.target.selectionStart; renderInbox({ fromCache: true }).then(() => { const i = $('#q'); i.focus(); i.setSelectionRange(pos, pos); }); };
 }
 
 // ── thread ───────────────────────────────────────────────────────────────────
-let composer = '', composerFrom = null, instruction = '', lastThreadKey = '', threadBusy = false, openedWaId = '';
+let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '';
+// The cap Ali picks before Claude drafts (objective, downsell/acompte level, tone, free consigne). Kept across redraws.
+let dir = { objective: '', level: '', tone: 'standard', instruction: '' };
+let dirs = null;
+const loadDirs = async () => (dirs ||= await api('/api/directions'));
+const chip = (name, o, cur) => `<button type="button" class="chip ${o.id === cur ? 'sel' : ''}" data-${name}="${o.id}">${esc(o.label)}</button>`;
 async function sendBubbles(waId, bubbles, meta = {}) {
   if (!bubbles.length) return false;
   const r = await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, ...meta } });
@@ -146,22 +150,30 @@ async function renderThread(waId, { quiet = false } = {}) {
   const opts = d.suggestion?.options || [];
   const sendLock = !!sending && !sending.error; // bubbles still going out: no second send meanwhile
   // Suggestion button: idle → ask; queued/drafting → progress; error → retry with the reason.
-  const askLabel = threadBusy ? (st.state === 'drafting' ? (st.instruction ? 'Claude refait avec votre consigne… (≈ 1 min)' : 'Claude rédige… (≈ 1 min)') : 'Claude va rédiger…') : (opts.length ? 'Nouvelle suggestion' : 'Demander une suggestion');
-  const askBtn = `<button id="ask" class="small ${threadBusy ? 'busy' : ''}" ${threadBusy ? 'disabled' : ''}>${askLabel}</button>${st?.state === 'error' ? `<span class="err small">Échec : ${esc(st.error)} — réessayez</span>` : ''}`;
+  const D = d.windowOpen ? await loadDirs() : null;
+  const objective = D?.objectives.find((o) => o.id === dir.objective) || null;
+  const levelList = objective?.levels === true ? D.downsell : objective?.levels === 'acompte' ? D.acompte : null;
+  // Where the reply is heading: Ali picks, then Claude drafts along that line. No draft happens by itself.
+  const panel = d.windowOpen ? `<div class="card cap ${threadBusy ? 'busy' : ''}">
+      <p class="muted small">Où va la réponse ?</p>
+      <div class="chips">${D.objectives.map((o) => chip('obj', o, dir.objective)).join('')}</div>
+      ${levelList ? `<p class="muted small">${objective.levels === true ? 'Jusqu’où ?' : 'Quel acompte ?'}</p><div class="chips">${levelList.map((o) => chip('lvl', o, dir.level)).join('')}</div>` : ''}
+      <div class="chips tones">${D.tones.map((o) => chip('tone', o, dir.tone)).join('')}</div>
+      <textarea id="ins" placeholder="Précision pour Claude (facultatif) : un chiffre à mentionner, ce qu’il a dit à l’appel, ce qu’il faut éviter…" ${threadBusy ? 'disabled' : ''}>${esc(dir.instruction)}</textarea>
+      <div class="row"><button id="go" class="primary ${threadBusy ? 'busy' : ''}" ${threadBusy ? 'disabled' : ''}>${threadBusy ? (st.state === 'drafting' ? 'Claude rédige… (≈ 1 min)' : 'Claude va rédiger…') : (opts.length ? 'Refaire avec ce cap' : 'Rédiger la réponse')}</button>${st?.state === 'error' ? `<span class="err small">Échec : ${esc(st.error)} — réessayez</span>` : `<span class="muted small">${threadBusy ? esc(st.direction || '') : 'Claude lit la conversation et le playbook'}</span>`}</div>
+    </div>` : '';
   // What the app learned from the last send on this thread (confirmed = sent as drafted; lesson = logged in 04-CAS-APPRIS).
   const learnLine = d.learning && (d.learning.state === 'waiting' || d.learning.state === 'learning')
     ? '<p class="muted small learn">Claude note ce que vous avez envoyé…</p>'
     : d.learning?.state === 'error' ? `<p class="err small">Leçon non notée : ${esc(d.learning.error)}</p>`
     : d.lastLesson && (!d.suggestion || d.lastLesson.at >= d.suggestion.created_at) ? `<p class="muted small learn">Appris ${ago(d.lastLesson.at)} : ${d.lastLesson.kind === 'confirmed' ? 'brouillon validé tel quel' : d.lastLesson.kind === 'lesson' ? `leçon notée — ${esc(d.lastLesson.title || '')}` : d.lastLesson.kind === 'minor' ? 'retouche notée' : 'rien à retenir'}</p>` : '';
-  // One set of bubbles per suggestion. Under it, Ali can say what is wrong and get a redraft that follows his words.
-  const refine = `<div class="card refine"><textarea id="ins" placeholder="${opts.length ? 'Pas la bonne réponse ? Dites à Claude quoi changer (ex. plus court, propose l’acompte, sans question, plus ferme)' : 'Une consigne pour Claude avant qu’il rédige (facultatif)'}" ${threadBusy ? 'disabled' : ''}>${esc(instruction)}</textarea><div class="row"><button id="redo" class="primary small" ${threadBusy ? 'disabled' : ''}>${opts.length ? 'Refaire avec cette consigne' : 'Rédiger avec cette consigne'}</button><span class="muted small">Claude relit la conversation, ≈ 1 min</span></div></div>`;
   const sugg = (opts.length
-    ? `<p class="muted small">Suggestion de Claude · ${ago(d.suggestion.created_at)}${d.suggestion.instruction ? ' · refaite sur votre consigne' : d.suggestion.source === 'ali' ? ' · sur demande' : d.suggestion.source === 'chat' ? ' · depuis le chat' : ''}</p>`
-      + (d.suggestion.instruction ? `<p class="consigne small">Consigne : ${esc(d.suggestion.instruction)}</p>` : '')
+    ? `<p class="muted small">Brouillon de Claude · ${ago(d.suggestion.created_at)}${d.suggestion.source === 'chat' ? ' · depuis le chat' : ''}</p>`
+      + (d.suggestion.instruction ? `<p class="consigne small">${esc(d.suggestion.instruction)}</p>` : '')
       + (d.suggestion.note ? `<p class="note small">À savoir : ${esc(d.suggestion.note)}</p>` : '')
       + opts.map((o, i) => `<div class="card opt" data-i="${i}">${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`).join('')
-    : (threadBusy ? '<p class="muted small">Claude lit la conversation et le playbook, la suggestion arrive ici dans environ une minute — une notification vous préviendra.</p>' : '<p class="muted small">Pas de suggestion pour ce message. Touchez « Demander une suggestion » : Claude la rédige sur le Mac en une minute environ.</p>'))
-    + refine + learnLine;
+    : (threadBusy ? '<p class="muted small">Claude lit la conversation et le playbook, le brouillon arrive ici dans environ une minute — une notification vous préviendra.</p>' : ''))
+    + learnLine;
   const tplBox = `<input id="tplq" placeholder="Filtrer les templates (ex. followup, noshow)"><select id="tpl" style="margin-top:8px"><option value="">Chargement des templates français…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Envoyer le template</button><span id="stt"></span></div>`;
   const sendBox = sending
     ? `<div class="card sending ${sending.error ? 'failed' : ''}">${sending.error ? esc(sending.error) : `Envoi ${sending.sent}/${sending.total} — les bulles partent une par une, 5 à 10 s entre chaque`}</div>`
@@ -172,14 +184,24 @@ async function renderThread(waId, { quiet = false } = {}) {
   app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}</header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}
     <div class="thread">${msgs}</div>
-    <div class="row" style="margin:6px 0 10px">${askBtn}</div>${sendBox}${sugg}${compose}
+    ${panel}${sendBox}${sugg}${compose}
     <div class="row"><button id="hd" class="small" ${t.pending ? '' : 'disabled'}>Marquer comme traité</button><button id="mute" class="small">${t.muted ? 'Réactiver les notifications' : 'Ne plus notifier ce lead'}</button><button id="rf" class="small">↻</button></div>`;
   // A redraw of the same conversation keeps the scroll; a fresh open lands on the newest message.
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
-  const askClaude = async (btn, ins) => { btn.disabled = true; btn.textContent = 'Demande envoyée…'; try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body: { instruction: ins } }); if (ins) instruction = ''; toast(ins ? 'Claude refait la réponse avec votre consigne — environ une minute' : 'Claude rédige — environ une minute'); lastThreadKey = ''; route(); } catch (e) { toast(e.message); btn.disabled = false; } };
-  $('#ask').onclick = () => askClaude($('#ask'), '');
-  $('#ins').oninput = (e) => { instruction = e.target.value; };
-  $('#redo').onclick = () => { const ins = $('#ins').value.trim(); if (!ins) { $('#ins').focus(); toast('Écrivez d’abord ce que Claude doit changer'); return; } askClaude($('#redo'), ins); };
+  if (d.windowOpen) {
+    const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
+    document.querySelectorAll('[data-obj]').forEach((b) => b.onclick = () => { dir.objective = dir.objective === b.dataset.obj ? '' : b.dataset.obj; dir.level = ''; redraw(); });
+    document.querySelectorAll('[data-lvl]').forEach((b) => b.onclick = () => { dir.level = dir.level === b.dataset.lvl ? '' : b.dataset.lvl; redraw(); });
+    document.querySelectorAll('[data-tone]').forEach((b) => b.onclick = () => { dir.tone = b.dataset.tone; redraw(); });
+    $('#ins').oninput = (e) => { dir.instruction = e.target.value; };
+    $('#go').onclick = async () => {
+      if (!dir.objective && !dir.instruction.trim()) { toast('Choisissez un cap, ou écrivez une consigne'); return; }
+      if (objective?.levels && !dir.level) { toast(objective.levels === true ? 'Jusqu’où on descend ?' : 'Quel acompte ?'); return; }
+      $('#go').disabled = true; $('#go').textContent = 'Demande envoyée…';
+      try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body: { ...dir, instruction: dir.instruction.trim() } }); toast('Claude rédige — environ une minute'); lastThreadKey = ''; route(); }
+      catch (e) { toast(e.message); $('#go').disabled = false; }
+    };
+  }
   document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { const i = Number(b.dataset.use); composer = opts[i].bubbles.join('\n\n'); composerFrom = { suggestionId: d.suggestion.id, option: i }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } });
   document.querySelectorAll('[data-send]').forEach((b) => armed(b, 'Envoyer telle quelle', async () => { const i = Number(b.dataset.send); b.disabled = true; try { await sendBubbles(waId, opts[i].bubbles, { suggestionId: d.suggestion.id, option: i, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => { const [i, j] = b.dataset.copy.split(':').map(Number); copyText(opts[i].bubbles[j], b); });
@@ -219,12 +241,39 @@ async function renderThread(waId, { quiet = false } = {}) {
   }
 }
 
+// ── France TM: what Claude flagged on the booking bot ─────────────────────────
+let tmOpen = new Set();
+async function renderTm() {
+  const { flags, status } = await api('/api/tm');
+  const fresh = flags.filter((f) => !f.seen), old = flags.filter((f) => f.seen);
+  const card = (f) => `<div class="card flag ${f.kind}" data-id="${f.id}"><div class="flag-head"><span class="pill ${f.kind === 'erreur' ? 'bad' : 'good'}">${f.kind === 'erreur' ? 'Erreur' : 'Amélioration'}</span><span class="muted small">${ago(f.at)}</span></div>
+    <div class="flag-who">+${f.wa_id}${f.name ? ` · ${esc(f.name)}` : ''}</div>
+    <div class="flag-title">${esc(f.title)}</div>
+    ${f.detail ? `<div class="small">${esc(f.detail)}</div>` : ''}${f.quote ? `<div class="quote small">« ${esc(f.quote)} »</div>` : ''}
+    <div class="acts"><button class="small" data-thread="${f.wa_id}">${tmOpen.has(f.wa_id) ? 'Masquer la conversation' : 'Voir la conversation'}</button><button class="small" data-seen="${f.id}" data-v="${f.seen ? 0 : 1}">${f.seen ? 'Remettre à traiter' : 'Vu'}</button></div>
+    <div class="tmthread" id="tmt-${f.wa_id}-${f.id}"></div></div>`;
+  const running = status.state === 'running';
+  app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>France TM <span class="muted small">bot de réservation</span></h1><button id="rv" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Relecture…' : 'Relire maintenant'}</button></header>
+    <p class="muted small">Claude relit toutes les 2 h les conversations du numéro télémarketing (+33671283778) et signale ce que le bot fait mal ou pourrait faire mieux.${status.last ? ` Dernière relecture ${ago(status.last.at)} : ${status.last.threads} conversation(s), ${status.last.flags} signalement(s).` : ''}${status.error ? ` <span class="err">Dernière erreur : ${esc(status.error)}</span>` : ''}</p>
+    ${fresh.length ? fresh.map(card).join('') : '<p class="muted center">Rien à traiter.</p>'}
+    ${old.length ? `<details class="card"><summary>Déjà vus (${old.length})</summary>${old.map(card).join('')}</details>` : ''}`;
+  $('#rv').onclick = async () => { $('#rv').disabled = true; try { await api('/api/tm/review', { method: 'POST' }); toast('Relecture lancée — 1 à 2 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 1500); };
+  document.querySelectorAll('[data-seen]').forEach((b) => b.onclick = async () => { await api(`/api/tm/flag/${b.dataset.seen}`, { method: 'POST', body: { seen: b.dataset.v === '1' } }); route(); });
+  document.querySelectorAll('[data-thread]').forEach((b) => b.onclick = async () => {
+    const wa = b.dataset.thread, box = b.closest('.flag').querySelector('.tmthread');
+    if (tmOpen.has(wa) && box.innerHTML) { tmOpen.delete(wa); box.innerHTML = ''; b.textContent = 'Voir la conversation'; return; }
+    tmOpen.add(wa); b.textContent = 'Masquer la conversation';
+    const { messages } = await api(`/api/tm/thread/${wa}`);
+    box.innerHTML = `<div class="thread">${messages.map((m) => `<div class="msg ${m.who === 'BOT' ? 'US' : 'LEAD'}">${esc(m.text)}<time>${fmtDay(m.at)} ${fmtTime(m.at)}${m.who === 'BOT' ? ' · bot' : ''}</time></div>`).join('')}</div>`;
+  });
+}
+
 // ── router ───────────────────────────────────────────────────────────────────
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
-  if (!m) { composer = ''; composerFrom = null; instruction = ''; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
+  if (!m) { composer = ''; composerFrom = null; dir = { objective: '', level: '', tone: 'standard', instruction: '' }; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
   document.body.classList.add('busy');
-  try { m ? await renderThread(m[1]) : await renderInbox(); if (!m) window.scrollTo(0, 0); }
+  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : await renderInbox(); if (!m) window.scrollTo(0, 0); }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a></header><p class="err">${esc(e.message)}</p>`; }
   finally { document.body.classList.remove('busy'); }
 }
@@ -234,4 +283,5 @@ route();
 let ticks = 0;
 setInterval(() => { if (document.visibilityState !== 'visible') return; ticks++; const m = /^\/t\/(\d+)/.exec(location.pathname); if (m && (threadBusy || ticks % 4 === 0)) renderThread(m[1], { quiet: true }).catch(() => {}); }, 8_000);
 setInterval(() => { if (document.visibilityState === 'visible' && location.pathname === '/') route(); }, 60_000);
+setInterval(() => { if (document.visibilityState === 'visible' && location.pathname === '/tm' && !typing()) route(); }, 45_000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { const m = /^\/t\/(\d+)/.exec(location.pathname); m ? renderThread(m[1], { quiet: true }).catch(() => {}) : route(); } });

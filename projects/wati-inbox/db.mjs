@@ -76,6 +76,30 @@ db.exec(`CREATE TABLE IF NOT EXISTS lessons (
   text TEXT
 )`);
 
+// Telemarketing number (+33671283778): both sides of each conversation, read from the webhook
+// (the API cannot read that channel), and the flags Claude raises on the booking bot (2026-09-29).
+db.exec(`CREATE TABLE IF NOT EXISTS tm_messages (
+  id TEXT PRIMARY KEY,
+  wa_id TEXT NOT NULL,
+  at TEXT NOT NULL,
+  who TEXT NOT NULL,
+  text TEXT,
+  type TEXT,
+  name TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_tm_thread ON tm_messages(wa_id, at);
+CREATE TABLE IF NOT EXISTS tm_flags (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wa_id TEXT NOT NULL,
+  at TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  title TEXT NOT NULL,
+  detail TEXT,
+  quote TEXT,
+  name TEXT,
+  seen INTEGER NOT NULL DEFAULT 0
+)`);
+
 export const getState = (k) => db.prepare('SELECT value FROM state WHERE key = ?').get(k)?.value ?? null;
 export const setState = (k, v) => db.prepare('INSERT INTO state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(k, String(v));
 
@@ -123,3 +147,12 @@ export const sentTemplates = (waId) => db.prepare("SELECT at, payload FROM sends
 export const subscriptions = () => db.prepare('SELECT * FROM push_subscriptions').all();
 export const addSubscription = (s, ua) => db.prepare('INSERT OR REPLACE INTO push_subscriptions (endpoint, p256dh, auth, user_agent, created_at) VALUES (?, ?, ?, ?, ?)').run(s.endpoint, s.keys.p256dh, s.keys.auth, ua, new Date().toISOString());
 export const removeSubscription = (endpoint) => db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(endpoint);
+
+// ── telemarketing bot monitor ─────────────────────────────────────────────────
+export const upsertTmMessages = (rows) => { const ins = db.prepare('INSERT OR IGNORE INTO tm_messages (id, wa_id, at, who, text, type, name) VALUES (?, ?, ?, ?, ?, ?, ?)'); let n = 0; for (const m of rows) n += ins.run(m.id, m.wa_id, m.at, m.who, m.text, m.type, m.name ?? null).changes; return n; };
+export const tmThread = (waId, limit = 40) => db.prepare('SELECT * FROM tm_messages WHERE wa_id = ? ORDER BY at DESC LIMIT ?').all(waId, limit).reverse();
+export const tmThreadsSince = (iso) => db.prepare('SELECT wa_id, MAX(at) last_at, MAX(name) name, count(*) n FROM tm_messages WHERE at > ? GROUP BY wa_id ORDER BY last_at DESC').all(iso);
+export const insertTmFlag = (f) => Number(db.prepare('INSERT INTO tm_flags (wa_id, at, kind, title, detail, quote, name) VALUES (?, ?, ?, ?, ?, ?, ?)').run(f.wa_id, new Date().toISOString(), f.kind, f.title, f.detail ?? null, f.quote ?? null, f.name ?? null).lastInsertRowid);
+export const tmFlags = (limit = 80) => db.prepare('SELECT * FROM tm_flags ORDER BY seen ASC, id DESC LIMIT ?').all(limit);
+export const tmFlagSeen = (id, seen) => db.prepare('UPDATE tm_flags SET seen = ? WHERE id = ?').run(seen ? 1 : 0, id);
+export const tmFlagCounts = () => db.prepare('SELECT count(*) total, COALESCE(sum(seen = 0), 0) unseen FROM tm_flags').get();
