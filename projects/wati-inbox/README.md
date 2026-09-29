@@ -32,8 +32,9 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
   consignes, what he sent) whose JSON answer becomes a titled lesson block, a one-line
   "retouche", or nothing. All under `## <date> — Appris dans l'app`; every draft reads that tail
   first. `lessons` table keeps what was learned. Cap `LEARN_MAX_PER_DAY` runs (default 40).
-- `tm-monitor.mjs` + `tm-review-prompt.md` — the France TM bot monitor (2026-09-29). Every 2 h
-  (`TM_REVIEW_EVERY_MS`) it pulls the webhook events of the telemarketing number (+33671283778,
+- `tm-monitor.mjs` + `tm-review-prompt.md` — the France TM bot monitor (2026-09-29). Up to 3 times a day, between 9h and 21h Madrid, only when at least 3 conversations moved
+  (`TM_REVIEW_MAX_PER_DAY`, `TM_REVIEW_FROM_H`/`TO_H`, `TM_REVIEW_MIN_THREADS`, checked every
+  `TM_REVIEW_EVERY_MS` = 4 h; "Review now" in the app always runs) it pulls the webhook events of the telemarketing number (+33671283778,
   both sides: the lead's messages and the bot's, phone decoded from the WhatsApp message id),
   stores them in `tm_messages`, and asks Claude (one Sonnet run, up to `TM_REVIEW_MAX_THREADS`
   = 25 conversations) to flag what the booking bot got wrong ("erreur") or could do better
@@ -94,7 +95,7 @@ refuses a second send for that lead until the queue is done.
 - Draft one lead from the terminal: `node --env-file=.env suggest-engine.mjs 33612345678 downsell "consigne"`
 - Review the TM bot now: `node --env-file=.env tm-monitor.mjs`
 - Password: `APP_PASSWORD` in `.env` (change it, then restart).
-- `.env` knobs: `SUGGEST_MODEL` (claude-sonnet-5), `LEARN_MAX_PER_DAY` (40), `LEARN_QUIET_MS` (45000), `TM_REVIEW_EVERY_MS` (7200000), `TM_REVIEW_MAX_THREADS` (25), `WATI_HOOK_URL`, `WATI_HOOK_KEY` (defaults to the secret file in Wati outreach).
+- `.env` knobs: `SUGGEST_MODEL` (claude-sonnet-5), `LEARN_MAX_PER_DAY` (40), `LEARN_QUIET_MS` (45000), `TM_REVIEW_EVERY_MS` (14400000), `TM_REVIEW_MAX_PER_DAY` (3), `TM_REVIEW_MIN_THREADS` (3), `TM_REVIEW_FROM_H`/`TM_REVIEW_TO_H` (9/21), `TM_REVIEW_MAX_THREADS` (25), `WATI_HOOK_URL`, `WATI_HOOK_KEY` (defaults to the secret file in Wati outreach).
 - Local certificate (localhost / .local, every ~2 years): `sh certs/make-certs.sh` + restart.
 - Tailscale certificate: `grep tailscale logs/server.log` shows the last attempt.
 - Headless runs skip `~/.claude/settings.json` (`--setting-sources project,local`) because a

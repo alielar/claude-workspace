@@ -254,7 +254,7 @@ async function renderTm() {
     <div class="tmthread" id="tmt-${f.wa_id}-${f.id}"></div></div>`;
   const running = status.state === 'running';
   app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>France TM <span class="muted small">booking bot</span></h1><button id="rv" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Reviewing…' : 'Review now'}</button></header>
-    <p class="muted small">Every 2 h Claude reads the telemarketing conversations (+33671283778) and flags what the bot got wrong or could do better.${status.last ? ` Last review ${ago(status.last.at)}: ${status.last.threads} conversation(s), ${status.last.flags} flag(s).` : ''}${status.error ? ` <span class="err">Last error: ${esc(status.error)}</span>` : ''}</p>
+    <p class="muted small">Up to 3 times a day (9h–21h), Claude reads the telemarketing conversations (+33671283778) and flags what the bot got wrong or could do better.${status.last ? ` Last review ${ago(status.last.at)}: ${status.last.threads} conversation(s), ${status.last.flags} flag(s)${status.last.maxPerDay ? ` · ${status.last.runsToday}/${status.last.maxPerDay} reviews today` : ''}.` : ''}${status.skipped ? ` Skipped: ${esc(status.skipped)}.` : ''}${status.error ? ` <span class="err">Last error: ${esc(status.error)}</span>` : ''}</p>
     ${fresh.length ? fresh.map(card).join('') : '<p class="muted center">Nothing to review.</p>'}
     ${old.length ? `<details class="card"><summary>Seen (${old.length})</summary>${old.map(card).join('')}</details>` : ''}`;
   $('#rv').onclick = async () => { $('#rv').disabled = true; try { await api('/api/tm/review', { method: 'POST' }); toast('Review started — 1 to 2 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 1500); };

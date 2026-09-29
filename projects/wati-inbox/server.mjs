@@ -90,7 +90,7 @@ async function api(req, res, path) {
   if (path === '/api/directions') return json(res, 200, { objectives: OBJECTIVES.map(({ id, label, levels }) => ({ id, label, levels: levels || null })), downsell: DOWNSELL_LEVELS.map(({ id, label }) => ({ id, label })), acompte: ACOMPTE_LEVELS.map(({ id, label }) => ({ id, label })), tones: TONES.map(({ id, label }) => ({ id, label })) });
   // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).
   if (path === '/api/tm') return json(res, 200, { flags: tmFlags(120), status: tmStatus() });
-  if (path === '/api/tm/review' && req.method === 'POST') { tmReview().catch(() => {}); return json(res, 200, { ok: true }); }
+  if (path === '/api/tm/review' && req.method === 'POST') { tmReview('ali').catch(() => {}); return json(res, 200, { ok: true }); }
   const tmf = /^\/api\/tm\/flag\/(\d+)$/.exec(path);
   if (tmf && req.method === 'POST') { const b = await body(req); tmFlagSeen(Number(tmf[1]), b.seen !== false); return json(res, 200, { ok: true }); }
   const tmt = /^\/api\/tm\/thread\/(\d{8,15})$/.exec(path);

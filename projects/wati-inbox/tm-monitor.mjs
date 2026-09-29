@@ -8,7 +8,11 @@
 //      for the whole batch) to flag what the bot got wrong ("erreur") or could do better
 //      ("amelioration");
 //   3. stores the flags in tm_flags — the app shows them on the "France TM" screen.
-// Nothing is sent, nothing is written outside the database. Cost: ~12 short Sonnet runs a day.
+// Nothing is sent, nothing is written outside the database.
+// Cap (Ali, 2026-09-29, to spare his subscription): automatic reviews only between TM_REVIEW_FROM_H
+// and TM_REVIEW_TO_H Madrid time (default 9–21), at most TM_REVIEW_MAX_PER_DAY a day (default 3),
+// and only when at least TM_REVIEW_MIN_THREADS conversations moved (default 3). "Review now" in the
+// app always runs (it is Ali asking) but counts toward the day.
 //
 //   node --env-file=.env tm-monitor.mjs          one review now, from the terminal
 
@@ -19,8 +23,13 @@ import { runClaude, OUTREACH, madrid } from './suggest-engine.mjs';
 
 const HOOK = process.env.WATI_HOOK_URL || 'https://ali-hub.vercel.app/api/wati';
 const TM = '33671283778';
-const EVERY_MS = Number(process.env.TM_REVIEW_EVERY_MS || 2 * 3600e3);
+const EVERY_MS = Number(process.env.TM_REVIEW_EVERY_MS || 4 * 3600e3);
 const MAX_THREADS = Number(process.env.TM_REVIEW_MAX_THREADS || 25);
+const MAX_PER_DAY = Number(process.env.TM_REVIEW_MAX_PER_DAY || 3);
+const MIN_THREADS = Number(process.env.TM_REVIEW_MIN_THREADS || 3);
+const FROM_H = Number(process.env.TM_REVIEW_FROM_H || 9), TO_H = Number(process.env.TM_REVIEW_TO_H || 21);
+const today = () => madrid().slice(0, 10);
+const runsToday = () => Number(getState(`tm_runs_${today()}`) || 0);
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), 'tm:', ...a);
 const status = { state: 'idle', at: null, error: null, last: null };
 export const tmStatus = () => status;
@@ -73,15 +82,20 @@ const SCHEMA = {
   required: ['flags', 'summary'],
 };
 
-export async function review() {
+export async function review(reason = 'auto') {
   if (status.state === 'running') return null;
-  status.state = 'running'; status.at = new Date().toISOString(); status.error = null;
+  const hour = Number(madrid().slice(11, 13));
+  if (reason === 'auto' && (hour < FROM_H || hour >= TO_H)) { log(`skipped (outside ${FROM_H}h–${TO_H}h)`); return null; }
+  if (reason === 'auto' && runsToday() >= MAX_PER_DAY) { log(`skipped (cap of ${MAX_PER_DAY} reviews today reached)`); status.skipped = `daily cap (${MAX_PER_DAY}) reached`; return null; }
+  status.state = 'running'; status.at = new Date().toISOString(); status.error = null; status.skipped = null;
   try {
     const pulled = await pullEvents();
     const since = getState('tm_reviewed_until') || new Date(Date.now() - 864e5).toISOString();
-    const threads = tmThreadsSince(since).slice(0, MAX_THREADS);
-    log(`${pulled.n} new message(s) from ${pulled.events} event(s); ${threads.length} conversation(s) moved since ${since.slice(0, 16)}`);
-    if (!threads.length) { status.state = 'idle'; status.last = { at: new Date().toISOString(), threads: 0, flags: 0 }; setState('tm_reviewed_until', new Date().toISOString()); return { threads: 0, flags: 0 }; }
+    const moved = tmThreadsSince(since);
+    const threads = moved.slice(0, MAX_THREADS);
+    log(`${pulled.n} new message(s) from ${pulled.events} event(s); ${moved.length} conversation(s) moved since ${since.slice(0, 16)} (${reason}, run ${runsToday() + 1}/${MAX_PER_DAY} today)`);
+    if (!threads.length || (reason === 'auto' && threads.length < MIN_THREADS)) { status.state = 'idle'; status.skipped = threads.length ? `only ${threads.length} conversation(s) moved, waiting for ${MIN_THREADS}` : null; if (!threads.length) setState('tm_reviewed_until', new Date().toISOString()); log(threads.length ? `skipped (${threads.length} < ${MIN_THREADS} conversations)` : 'nothing moved'); return { threads: threads.length, flags: 0, skipped: true }; }
+    setState(`tm_runs_${today()}`, runsToday() + 1);
     const transcripts = threads.map((t) => {
       const msgs = tmThread(t.wa_id, 40);
       const name = msgs.find((m) => m.name)?.name || t.name || '';
@@ -99,7 +113,7 @@ export async function review() {
       n++;
     }
     setState('tm_reviewed_until', new Date().toISOString());
-    status.state = 'idle'; status.last = { at: new Date().toISOString(), threads: threads.length, flags: n, summary: String(out.summary || '').slice(0, 300) };
+    status.state = 'idle'; status.last = { at: new Date().toISOString(), threads: threads.length, flags: n, summary: String(out.summary || '').slice(0, 300), runsToday: runsToday(), maxPerDay: MAX_PER_DAY };
     log(`review done — ${threads.length} conversation(s), ${n} flag(s), ${Math.round(out.ms / 1000)} s`);
     return status.last;
   } catch (e) {
@@ -109,13 +123,13 @@ export async function review() {
 }
 
 export function startTmMonitor() {
-  const tick = () => review().catch(() => {});
-  setTimeout(tick, 60_000);           // first pass a minute after start
+  const tick = () => review('auto').catch(() => {});
+  setTimeout(tick, 60_000);           // first pass a minute after start (subject to the cap)
   setInterval(tick, EVERY_MS);
-  log(`monitor ready — every ${Math.round(EVERY_MS / 60000)} min, up to ${MAX_THREADS} conversations per review`);
+  log(`monitor ready — every ${Math.round(EVERY_MS / 60000)} min between ${FROM_H}h and ${TO_H}h, max ${MAX_PER_DAY}/day, ≥ ${MIN_THREADS} conversations, up to ${MAX_THREADS} per review`);
 }
 
 if (process.argv[1] && process.argv[1].endsWith('tm-monitor.mjs')) {
   mkdirSync('logs', { recursive: true });
-  review().then((r) => { console.log(JSON.stringify(r, null, 2)); process.exit(0); }).catch((e) => { console.error('Error:', e.message); process.exit(1); });
+  review('ali').then((r) => { console.log(JSON.stringify(r, null, 2)); process.exit(0); }).catch((e) => { console.error('Error:', e.message); process.exit(1); });
 }

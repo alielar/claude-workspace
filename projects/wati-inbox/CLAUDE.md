@@ -13,7 +13,7 @@ On the Mac only, as the launchd job `com.ali.wati-inbox` (one Node process, `ser
 when Ali picks a cap in the app (`directions.mjs`: objective, downsell level, tone, consigne —
 never automatically), one set of bubbles per draft; lessons by `learn-engine.mjs` after every
 send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
-reviewed every 2 h by `tm-monitor.mjs` (webhook events → `tm_messages` → flags in `tm_flags`).
+reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`).
 All three run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a
 time; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
 
