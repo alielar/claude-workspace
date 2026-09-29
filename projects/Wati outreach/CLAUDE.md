@@ -180,12 +180,13 @@ closed. The inbox shows only conversations whose 24h window is open. Drafts appe
 **without any Claude Code session open**: the app itself runs `claude -p --model claude-sonnet-5`
 headless in this folder (`wati-inbox/suggest-engine.mjs`, prompt in `wati-inbox/suggest-prompt.md`),
 so this CLAUDE.md and the playbook apply. **Nothing is drafted automatically** (since 2026-09-29):
-Ali reads the thread, picks the cap on the phone (objective from the ladder — isoler, motivation,
-étaler, budget, downsell → 90h/96h/heures/repli, administration délai ou format, bonne nouvelle,
-démarrage, acompte 196/96, finaliser, info, relance, basse pression, déjà client, clôture — plus a
-tone and a free consigne; the list and the guidance per cap are in `wati-inbox/directions.mjs`),
-taps "Rédiger", and Claude drafts along that line. Every draft is saved to
-`data/suggestions/<date>.md` with the cap for the evening review.
+Ali reads the thread, ticks the moves on the phone (combinable: administration in two steps —
+"je vérifie" now, "bonne nouvelle" 5-10 min later, sent by the Mac —, downsell → 90h/96h/48h/24h/
+moins d'heures computed from the initial offer he typed for that lead (format, level, h/sem,
+months), prolonger le délai → until when, acompte 196/96, paiement, démarrage plus tard, relance,
+basse pression, clôture, plus a free consigne; labels and guidance per move are in
+`wati-inbox/directions.mjs`), taps "Rédiger", and Claude drafts along that line. Every draft is
+saved to `data/suggestions/<date>.md` with the moves for the evening review.
 
 - **In this chat**, a draft you give Ali can also be posted to his phone:
   `node suggest.mjs <waId> '[{"bubbles":["…","…"],"why":"…"}]'` — do it when Ali asks for it on

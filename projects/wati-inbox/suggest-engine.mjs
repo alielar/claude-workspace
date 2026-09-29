@@ -14,8 +14,8 @@
 import { spawn } from 'node:child_process';
 import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
-import { db, getThread, latestSuggestion, insertSuggestion } from './db.mjs';
-import { describeDirection } from './directions.mjs';
+import { db, getThread, latestSuggestion, insertSuggestion, getOffer } from './db.mjs';
+import { describeDirection, describeOffer } from './directions.mjs';
 
 export const OUTREACH = resolve(process.env.OUTREACH_DIR || '../Wati outreach');
 const NODE_DIR = dirname(process.execPath);
@@ -29,10 +29,11 @@ const SCHEMA = {
   type: 'object',
   properties: {
     bubbles: { type: 'array', items: { type: 'string' } },
+    later: { type: 'array', items: { type: 'string' } },
     why: { type: 'string' },
     note: { type: 'string' },
   },
-  required: ['bubbles', 'why', 'note'],
+  required: ['bubbles', 'later', 'why', 'note'],
 };
 
 const queue = new Map();   // waId → { direction }
@@ -41,7 +42,7 @@ export const suggestStatus = (waId) => status.get(waId) || null;
 
 // Ali picked the cap in the app → draft now (a second tap while queued replaces the cap).
 export function requestSuggestion(waId, direction = {}) {
-  const d = describeDirection(direction);
+  const d = describeDirection(direction, getOffer(waId));
   queue.set(waId, { direction, text: d.text });
   status.set(waId, { state: 'queued', at: new Date().toISOString(), direction: d.text });
   return true;
@@ -69,15 +70,17 @@ export function startSuggesting() {
 export async function draft(waId, direction = {}) {
   const t = getThread(waId);
   if (!t) throw new Error('conversation inconnue');
-  const d = describeDirection(direction);
+  const offer = getOffer(waId);
+  const d = describeDirection(direction, offer);
   const instruction = d.text;
   status.set(waId, { state: 'drafting', at: new Date().toISOString(), direction: instruction });
   log('drafting for', t.name || waId, instruction ? `— ${instruction}` : '(sans cap)');
   // The draft Ali is replacing, if one is on screen: Claude must see what he did not send.
   const prev = latestSuggestion(waId);
   const prevFresh = prev && (!t.last_inbound_at || prev.created_at >= t.last_inbound_at) ? prev : null;
-  let extra = '\n## Le cap choisi par Ali — prioritaire sur la carte\n';
-  extra += d.block || '- Ali n’a rien précisé : choisis toi-même la situation de la carte.\n';
+  let extra = `\n## Offre initiale (ce qui a été proposé à l'appel, saisi par Ali)\n${offer?.format ? describeOffer(offer) : 'non renseignée — ne suppose rien, laisse un [CROCHET] si un chiffre d’origine manque'}\n`;
+  extra += '\n## Ce qu’Ali a choisi — prioritaire sur la carte\n';
+  extra += d.block || '- Ali n’a coché aucun move : réponds simplement et précisément à ce que le lead a écrit, selon la carte.\n';
   if (prevFresh) {
     const o = JSON.parse(prevFresh.options)[0] || { bubbles: [] };
     extra += `\nAli avait déjà une proposition sous les yeux${prevFresh.instruction ? ` (${prevFresh.instruction})` : ''} et ne l'a pas envoyée :\n${o.bubbles.map((b) => `> ${b}`).join('\n')}\nNe la recopie pas ; rédige selon le nouveau cap et dis dans \`why\` ce qui change.\n`;
@@ -89,7 +92,8 @@ export async function draft(waId, direction = {}) {
   const raw = Array.isArray(out.bubbles) ? out.bubbles : (Array.isArray(out.options) ? out.options[0]?.bubbles : []);
   const bubbles = (raw || []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
   if (!bubbles.length) throw new Error('Claude n’a proposé aucune bulle');
-  const options = [{ bubbles, why: String(out.why || out.options?.[0]?.why || '').trim() }];
+  const later = d.twoStep ? (Array.isArray(out.later) ? out.later : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4) : [];
+  const options = [{ bubbles, later, why: String(out.why || out.options?.[0]?.why || '').trim() }];
   const note = String(out.note || '').trim();
   const id = insertSuggestion(waId, options, note, 'ali', { instruction: instruction || null, parentId: prevFresh?.id ?? null });
   db.prepare('UPDATE threads SET wanted = 0 WHERE wa_id = ?').run(waId);
@@ -111,6 +115,7 @@ function saveDraftBlock(t, options, note, instruction) {
   if (instruction) s += `${instruction.replace(/\s+/g, ' ')}\n`;
   for (const o of options) {
     for (const b of o.bubbles) s += '```\n' + b + '\n```\n';
+    if (o.later?.length) { s += 'Dans 5-10 min :\n'; for (const b of o.later) s += '```\n' + b + '\n```\n'; }
     if (o.why) s += `Règles appliquées : ${o.why.replace(/\s+/g, ' ')}\n`;
   }
   if (note) s += `Note : ${note.replace(/\s+/g, ' ')}\n`;
@@ -163,5 +168,5 @@ if (process.argv[1] && process.argv[1].endsWith('suggest-engine.mjs')) {
   const waId = (process.argv[2] || '').replace(/\D/g, '');
   if (!/^\d{8,15}$/.test(waId)) { console.error('Usage: node --env-file=.env suggest-engine.mjs <waId> [objective] ["consigne"]'); process.exit(1); }
   mkdirSync('logs', { recursive: true });
-  draft(waId, { objective: process.argv[3] || '', instruction: process.argv[4] || '' }).then((r) => { console.log(JSON.stringify(r, null, 2)); process.exit(0); }).catch((e) => { console.error('Error:', e.message); process.exit(1); });
+  draft(waId, { moves: process.argv[3] || '', instruction: process.argv[4] || '' }).then((r) => { console.log(JSON.stringify(r, null, 2)); process.exit(0); }).catch((e) => { console.error('Error:', e.message); process.exit(1); });
 }

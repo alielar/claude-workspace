@@ -84,3 +84,13 @@ A small web app that runs **on Ali's Mac** (no Vercel, no Turso, no external pro
 - 🟩 `tm-monitor.mjs`: every 2 h, webhook events of +33671283778 (both sides) → `tm_messages` → one Sonnet
   review → `tm_flags` (erreur / amelioration, number, title, detail, quote). Screen `/tm` with the flags,
   the conversation, "Vu" and "Relire maintenant". Header link with the unseen count.
+
+## 2026-09-29 (evening) — moves instead of a cap, initial offer, administration two-step
+- 🟩 `directions.mjs` rebuilt from the count of Ali's moves in his 1 882 messages: 9 combinable moves (admin 2 temps,
+  downsell, délai, acompte, paiement, démarrage, relance, basse pression, clôture); rare ones (question ouverte,
+  budget, tones) dropped. Multi-select in the app, sub-choices (downsell target, acompte amount, deadline text).
+- 🟩 Initial offer per lead (`threads.offer`: format, level, h/sem, months; `POST /api/thread/:id/offer`), shown and
+  editable on the thread, injected in every prompt; `downsellFrom` computes the target (level one jump lower, same
+  h/sem, months recomputed, price + 10x monthly vs original).
+- 🟩 Administration two-step: the draft has `bubbles` (now) and `later` (5-10 min); the second card can be scheduled
+  (`POST send` with `delayMs`, max 20 min, cancel endpoint, countdown on the thread) — the Mac sends it.

@@ -51,7 +51,8 @@ async function learn(waId, { bubbles, meta, at }) {
   const t = getThread(waId);
   if (!t) return;
   const sugg = meta.suggestionId ? getSuggestion(meta.suggestionId) : null;
-  const opt = sugg ? (JSON.parse(sugg.options)[meta.option ?? 0] || JSON.parse(sugg.options)[0]) : null;
+  const o0 = sugg ? (JSON.parse(sugg.options)[meta.option ?? 0] || JSON.parse(sugg.options)[0]) : null;
+  const opt = o0 && meta.part === 'later' ? { bubbles: o0.later || [], why: o0.why } : o0; // the "dans 5-10 min" block is judged against its own draft
   const asIs = !!opt && opt.bubbles.length === bubbles.length && opt.bubbles.every((b, i) => norm(b) === norm(bubbles[i]));
   const day = madrid().slice(0, 10);
   const hhmm = madrid().slice(11, 16);
@@ -74,11 +75,13 @@ async function learn(waId, { bubbles, meta, at }) {
   // The chain of drafts Ali refused, oldest first, each with the instruction that replaced it.
   const chain = [];
   for (let s = sugg, guard = 0; s && guard < 5; guard++, s = s.parent_id ? getSuggestion(s.parent_id) : null) chain.unshift(s);
+  if (meta.part === 'later' && chain.length) chain.splice(0, chain.length - 1); // only the draft this block came from
   const history = messagesBefore(waId, at, 10).map((m) => `[${madrid(new Date(m.at)).slice(5, 16)}] ${m.who === 'US' ? 'ALI' : 'LEAD'} : ${String(m.text || '').replace(/\s+/g, ' ')}${m.tpl ? ' (template)' : ''}`).join('\n');
   let drafts = '';
   if (chain.length) {
     drafts = chain.map((s, i) => {
-      const o = JSON.parse(s.options)[0] || { bubbles: [] };
+      const o0 = JSON.parse(s.options)[0] || { bubbles: [] };
+      const o = meta.part === 'later' ? { bubbles: o0.later || [], why: o0.why } : o0;
       return `${chain.length > 1 ? `Proposition ${i + 1}${i === chain.length - 1 ? ' (la dernière affichée)' : ''}` : 'Proposition'}${s.instruction ? ` — refaite sur consigne d'Ali : « ${s.instruction} »` : ''} :\n${o.bubbles.map((b) => `> ${b}`).join('\n')}${o.why ? `\n(raisonnement : ${o.why.replace(/\s+/g, ' ')})` : ''}`;
     }).join('\n\n');
   } else drafts = '(aucune proposition affichée — Ali a écrit lui-même, sans brouillon)';

@@ -11,12 +11,12 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread, setOffer, getOffer } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
-import { OBJECTIVES, DOWNSELL_LEVELS, ACOMPTE_LEVELS, TONES } from './directions.mjs';
+import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
@@ -52,6 +52,24 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // (5 s + 20 ms per character, capped) — about the time it takes to type it. The queue lives
 // here so the phone can lock or lose the network and the bubbles still go out.
 const sending = new Map(); // wa_id → { sent, total, error }
+// The "dans 5-10 min" block of an administration two-step: the Mac sends it later, the phone can lock.
+const scheduled = new Map(); // wa_id → { bubbles, meta, at, timer }
+function scheduleSend(waId, bubbles, meta, delayMs) {
+  cancelScheduled(waId);
+  const at = new Date(Date.now() + delayMs).toISOString();
+  const timer = setTimeout(async () => {
+    scheduled.delete(waId);
+    const t = storedThread(waId);
+    if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, 'fenêtre fermée au moment de l’envoi différé'); return; }
+    try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
+    catch (e) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, e.message); sending.set(waId, { sent: 0, total: bubbles.length, error: `Envoi différé raté : ${e.message}` }); setTimeout(() => sending.delete(waId), 90_000); return; }
+    saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+    if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
+    else sendRest(waId, t, bubbles, meta);
+  }, delayMs);
+  scheduled.set(waId, { bubbles, meta, at, timer });
+}
+function cancelScheduled(waId) { const p = scheduled.get(waId); if (p) { clearTimeout(p.timer); scheduled.delete(waId); return true; } return false; }
 const typingGap = (text) => 5000 + Math.min(5000, text.length * 20);
 function sendRest(waId, t, bubbles, meta) {
   const state = { sent: 1, total: bubbles.length, error: null };
@@ -87,7 +105,7 @@ async function api(req, res, path) {
       .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
     return json(res, 200, { threads, tm: tmFlagCounts() });
   }
-  if (path === '/api/directions') return json(res, 200, { objectives: OBJECTIVES.map(({ id, label, levels }) => ({ id, label, levels: levels || null })), downsell: DOWNSELL_LEVELS.map(({ id, label }) => ({ id, label })), acompte: ACOMPTE_LEVELS.map(({ id, label }) => ({ id, label })), tones: TONES.map(({ id, label }) => ({ id, label })) });
+  if (path === '/api/directions') return json(res, 200, { moves: MOVES.map(({ id, label, sub, input }) => ({ id, label, sub: sub || null, input: input || null })), downsell: DOWNSELL.map((id) => ({ id, label: DOWNSELL_LABELS[id] })), acompte: ACOMPTE, formats: Object.entries(FORMATS).map(([id, f]) => ({ id, label: f.label })), levels: LEVELS });
   // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).
   if (path === '/api/tm') return json(res, 200, { flags: tmFlags(120), status: tmStatus() });
   if (path === '/api/tm/review' && req.method === 'POST') { tmReview('ali').catch(() => {}); return json(res, 200, { ok: true }); }
@@ -102,7 +120,7 @@ async function api(req, res, path) {
   }
   if (path === '/api/templates') return json(res, 200, { templates: await frenchTemplates() });
 
-  const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute))?$/.exec(path);
+  const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute|offer|cancel))?$/.exec(path);
   if (!m) return json(res, 404, { error: 'not found' });
   const waId = m[1], action = m[2];
 
@@ -136,6 +154,9 @@ async function api(req, res, path) {
       suggesting: suggestStatus(waId),
       learning: learnStatus(waId),
       lastLesson: latestLesson(waId) || null,
+      offer: getOffer(waId),
+      offerText: describeOffer(getOffer(waId)),
+      scheduled: scheduled.has(waId) ? { at: scheduled.get(waId).at, bubbles: scheduled.get(waId).bubbles } : null,
       stale,
       sending: sending.get(waId) || null,
     });
@@ -144,11 +165,19 @@ async function api(req, res, path) {
   if (action === 'suggest') {
     if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' });
     const b = req.method === 'POST' ? await body(req) : {};
-    const direction = { objective: String(b.objective || ''), level: String(b.level || ''), tone: String(b.tone || ''), instruction: String(b.instruction || '').trim() };
-    if (!direction.objective && !direction.instruction) return json(res, 400, { error: 'Choisissez un cap ou écrivez une consigne' });
+    const direction = { moves: Array.isArray(b.moves) ? b.moves.map(String) : [], level: String(b.level || ''), level2: String(b.level2 || ''), until: String(b.until || '').trim(), instruction: String(b.instruction || '').trim() };
+    if (!direction.moves.length && !direction.instruction) return json(res, 400, { error: 'Cochez au moins un move, ou écrivez une consigne' });
     wantSuggestion(waId); requestSuggestion(waId, direction); // Ali picked where the reply goes → Claude drafts along it
     return json(res, 200, { ok: true });
   }
+  if (action === 'offer' && req.method === 'POST') {
+    const b = await body(req);
+    const offer = b.format && FORMATS[b.format] ? { format: b.format, level: LEVELS.includes(b.level) ? b.level : '', hpw: Math.min(7, Math.max(0, Number(b.hpw) || 0)) || null, months: Number(b.months) || null } : null;
+    if (offer && !offer.months) offer.months = monthsFor(FORMATS[offer.format].hours, offer.hpw);
+    setOffer(waId, offer);
+    return json(res, 200, { ok: true, offer, offerText: describeOffer(offer) });
+  }
+  if (action === 'cancel' && req.method === 'POST') return json(res, 200, { ok: true, cancelled: cancelScheduled(waId) });
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
   if (action === 'handled') { const t = storedThread(waId); if (t) saveThread({ ...t, pending: 0 }); return json(res, 200, { ok: true }); }
   if (action === 'send' && req.method === 'POST') {
@@ -163,9 +192,13 @@ async function api(req, res, path) {
     const shown = latestSuggestion(waId);
     const freshShown = shown && (!t.last_inbound_at || shown.created_at >= t.last_inbound_at) ? shown : null;
     const ref = b.suggestionId && (!freshShown || freshShown.id === b.suggestionId) ? b.suggestionId : freshShown?.id ?? null;
-    const opt = ref ? (JSON.parse((ref === freshShown?.id ? freshShown : latestSuggestion(waId)).options)[b.option ?? 0] || null) : null;
+    const part = b.part === 'later' ? 'later' : 'now';
+    const opt0 = ref ? (JSON.parse((ref === freshShown?.id ? freshShown : latestSuggestion(waId)).options)[b.option ?? 0] || null) : null;
+    const opt = opt0 && part === 'later' ? { bubbles: opt0.later || [] } : opt0;
     const same = !!opt && opt.bubbles.length === bubbles.length && opt.bubbles.every((x, i) => x.trim() === bubbles[i]);
-    const meta = ref ? { suggestionId: ref, option: b.option ?? 0, edited: !same, fromSuggestion: !!b.suggestionId, batch: String(Date.now()) } : { batch: String(Date.now()) };
+    const meta = ref ? { suggestionId: ref, option: b.option ?? 0, part, edited: !same, fromSuggestion: !!b.suggestionId, batch: String(Date.now()) } : { batch: String(Date.now()) };
+    const delayMs = Math.min(20 * 60_000, Math.max(0, Number(b.delayMs) || 0));
+    if (delayMs) { scheduleSend(waId, bubbles, meta, delayMs); return json(res, 200, { ok: true, scheduled: new Date(Date.now() + delayMs).toISOString() }); }
     // First bubble right away, so a refusal (window closed, Wati down) comes back to the screen.
     try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
     catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }

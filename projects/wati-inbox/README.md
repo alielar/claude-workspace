@@ -16,15 +16,20 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
   timestamp does not move on messages), older ones every 5 min, and checks contacts page 1
   for brand-new leads; pushes a notification for every new lead message.
 - `suggest-engine.mjs` + `suggest-prompt.md` + `directions.mjs` — the drafts. **Nothing is drafted
-  by itself** (since 2026-09-29): Ali opens the thread, picks the cap (objective such as "Isoler le
-  blocage", "Downsell → 90h / 990 € avec garantie", "Prolonger le délai via l'administration",
-  "Acompte → 196 €"…, a tone, an optional free consigne) and taps "Rédiger la réponse". The app
-  then runs `claude -p --model claude-sonnet-5` in `../Wati outreach` (its CLAUDE.md, `lead.mjs`,
-  the playbook) with the cap's guidance in the prompt, parses the structured answer (**one** set
-  of 2–3 bubbles + why + a note), stores it with the cap as `instruction` (and `parent_id` if a
-  draft was already on screen), pushes "Brouillon prêt", and appends the draft to
-  `../Wati outreach/data/suggestions/<date>.md`. One run at a time, 6-minute timeout. The labels
-  and the guidance per cap live in `directions.mjs`; keep them in step with the playbook ladder.
+  by itself** (since 2026-09-29): Ali opens the thread, ticks the **moves** the reply must make
+  (combinable: Administration (2 temps), Downsell → 90h/96h/48h/24h/moins d'heures, Prolonger le
+  délai → until when, Acompte → 196/96, Paiement, Démarrage plus tard, Relance, Basse pression,
+  Clôture — chosen from the count of his own moves in 1 882 messages), adds a free consigne if
+  needed, and taps "Rédiger la réponse". The **initial offer** (format, target level, hours/week,
+  months — typed once per lead in the "Offre initiale" box, stored in `threads.offer`) goes into
+  every prompt, and every downsell is computed from it (`downsellFrom`: same hours/week, level one
+  jump lower, months recomputed, price and 10x monthly against the original). The app runs
+  `claude -p --model claude-sonnet-5` in `../Wati outreach` (its CLAUDE.md, `lead.mjs`, the
+  playbook), parses the structured answer (`bubbles` = the block to send now, `later` = the
+  "bonne nouvelle" block of an administration two-step, why, note), stores it with the moves as
+  `instruction` (and `parent_id` if a draft was already on screen), pushes "Brouillon prêt", and
+  appends the draft to `../Wati outreach/data/suggestions/<date>.md`. One run at a time, 6-minute
+  timeout. Labels and guidance per move live in `directions.mjs`; keep them in step with the playbook.
 - `learn-engine.mjs` + `learn-prompt.md` — the learning loop. After every send from the app (once
   the last bubble is out, 45 s of quiet so two batches merge): sent exactly as drafted → one line
   "validé tel quel" appended to `../Wati outreach/playbook/04-CAS-APPRIS.md`, no Claude run;
@@ -49,13 +54,17 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
 ## The phone screen
 Inbox: **only conversations whose 24h window is open** — leads waiting first, then the ones
 already answered; a pasted number still opens any conversation (template if closed). "France TM"
-link in the header with the count of new flags. Thread: the conversation, the window badge, then
-the **cap panel** ("Où va la réponse ?": objective chips, the downsell or acompte level when
-relevant, tone, a free consigne, **Rédiger la réponse**), then the draft card (one set of bubbles)
-— each bubble has **Copier**, the card has **Envoyer telle quelle** (two taps), **Modifier avant
-envoi** (fills the composer) and **Tout copier**. "Pourquoi" is folded under it; "À savoir" above
-carries what Claude wants Ali to check; the cap that produced the draft is shown above it. The
-panel stays under the draft to redo it with another cap. After a send, a line says what the app
+link in the header with the count of new flags. Thread: the conversation, the window badge, the
+**Offre initiale** line (Renseigner / Modifier: format, level, h/sem, months), then the **moves
+panel** ("Que fait la réponse ?": tick several, the downsell target or the acompte or the deadline
+appear when relevant, a free consigne, **Rédiger la réponse**; nothing ticked = a plain answer to
+the lead's message), then the draft: a "Maintenant" card (one set of bubbles) — each bubble has
+**Copier**, the card has **Envoyer telle quelle** (two taps), **Modifier avant envoi** and **Tout
+copier** — and, for an administration two-step, a "Dans 5-10 min" card with **Programmer dans 7
+min** (the Mac sends it by itself, a line shows the countdown with **Annuler**), **Envoyer
+maintenant** and **Modifier**. "Pourquoi" is folded under the card; "À savoir" above carries what
+Claude wants Ali to check; the moves that produced the draft are shown above it. The panel stays
+under the draft to redo it. After a send, a line says what the app
 learned ("brouillon validé tel quel", "leçon notée — …"). France TM screen: one card per flag
 (Erreur / Amélioration, number, what happened, the quoted message), **Voir la conversation**,
 **Vu**, and **Relire maintenant**.

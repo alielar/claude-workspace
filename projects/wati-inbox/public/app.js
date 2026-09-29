@@ -99,11 +99,13 @@ async function renderInbox({ fromCache = false } = {}) {
 
 // ── thread ───────────────────────────────────────────────────────────────────
 let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '';
-// The cap Ali picks before Claude drafts (objective, downsell/acompte level, tone, free consigne). Kept across redraws.
-let dir = { objective: '', level: '', tone: 'standard', instruction: '' };
-let dirs = null;
+// What Ali picks before Claude drafts: moves (multi-select), the downsell / acompte level, the deadline, a free consigne. Kept across redraws.
+const emptyDir = () => ({ moves: [], level: '', level2: '', until: '', instruction: '' });
+let dir = emptyDir();
+let dirs = null, offerOpen = false, offerDraft = null;
 const loadDirs = async () => (dirs ||= await api('/api/directions'));
-const chip = (name, o, cur) => `<button type="button" class="chip ${o.id === cur ? 'sel' : ''}" data-${name}="${o.id}">${esc(o.label)}</button>`;
+const chip = (name, id, label, on) => `<button type="button" class="chip ${on ? 'sel' : ''}" data-${name}="${esc(id)}">${esc(label)}</button>`;
+const fmtLeft = (iso) => { const s = Math.max(0, Math.round((new Date(iso) - Date.now()) / 1000)); return s >= 60 ? `${Math.ceil(s / 60)} min` : `${s} s`; };
 async function sendBubbles(waId, bubbles, meta = {}) {
   if (!bubbles.length) return false;
   const r = await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, ...meta } });
@@ -137,10 +139,10 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}`;
   // Something is still moving (Wati being re-read, bubbles going out): look again in a few seconds.
   clearTimeout(threadTimer);
-  if (d.stale || (sending && !sending.error)) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), 3000);
+  if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
   if (quiet && key === lastThreadKey) return; // background refresh: nothing changed, keep the screen as is
   lastThreadKey = key;
   const sameScreen = openedWaId === waId, y = window.scrollY;
@@ -151,17 +153,28 @@ async function renderThread(waId, { quiet = false } = {}) {
   const sendLock = !!sending && !sending.error; // bubbles still going out: no second send meanwhile
   // Suggestion button: idle → ask; queued/drafting → progress; error → retry with the reason.
   const D = d.windowOpen ? await loadDirs() : null;
-  const objective = D?.objectives.find((o) => o.id === dir.objective) || null;
-  const levelList = objective?.levels === true ? D.downsell : objective?.levels === 'acompte' ? D.acompte : null;
-  // Where the reply is heading: Ali picks, then Claude drafts along that line. No draft happens by itself.
-  const panel = d.windowOpen ? `<div class="card cap ${threadBusy ? 'busy' : ''}">
-      <p class="muted small">Où va la réponse ?</p>
-      <div class="chips">${D.objectives.map((o) => chip('obj', o, dir.objective)).join('')}</div>
-      ${levelList ? `<p class="muted small">${objective.levels === true ? 'Jusqu’où ?' : 'Quel acompte ?'}</p><div class="chips">${levelList.map((o) => chip('lvl', o, dir.level)).join('')}</div>` : ''}
-      <div class="chips tones">${D.tones.map((o) => chip('tone', o, dir.tone)).join('')}</div>
-      <textarea id="ins" placeholder="Précision pour Claude (facultatif) : un chiffre à mentionner, ce qu’il a dit à l’appel, ce qu’il faut éviter…" ${threadBusy ? 'disabled' : ''}>${esc(dir.instruction)}</textarea>
-      <div class="row"><button id="go" class="primary ${threadBusy ? 'busy' : ''}" ${threadBusy ? 'disabled' : ''}>${threadBusy ? (st.state === 'drafting' ? 'Claude rédige… (≈ 1 min)' : 'Claude va rédiger…') : (opts.length ? 'Refaire avec ce cap' : 'Rédiger la réponse')}</button>${st?.state === 'error' ? `<span class="err small">Échec : ${esc(st.error)} — réessayez</span>` : `<span class="muted small">${threadBusy ? esc(st.direction || '') : 'Claude lit la conversation et le playbook'}</span>`}</div>
+  const has = (id) => dir.moves.includes(id);
+  // The initial offer (from the call), typed once per lead: every downsell is computed from it.
+  const od = offerDraft || d.offer || { format: '', level: '', hpw: '', months: '' };
+  const offerBox = d.windowOpen ? `<div class="card offer">
+      <div class="row" style="margin:0"><span class="small"><b>Offre initiale</b> : ${d.offerText ? esc(d.offerText) : '<span class="warn">non renseignée</span>'}</span><button class="small" id="offerbtn">${offerOpen ? 'Fermer' : (d.offer ? 'Modifier' : 'Renseigner')}</button></div>
+      ${offerOpen ? `<div class="chips" style="margin-top:8px">${D.formats.map((f) => chip('fmt', f.id, f.label, od.format === f.id)).join('')}</div>
+      <div class="chips">${D.levels.map((l) => chip('lvlobj', l, `→ ${l}`, od.level === l)).join('')}</div>
+      <div class="chips">${[2, 3, 4, 5, 6, 7].map((h) => chip('hpw', String(h), `${h}h/sem`, Number(od.hpw) === h)).join('')}</div>
+      <div class="row"><input id="months" type="number" inputmode="numeric" placeholder="mois (auto)" value="${esc(od.months || '')}" style="max-width:130px"><button class="primary small" id="offersave">Enregistrer</button>${od.format ? `<button class="small" id="offerclear">Effacer</button>` : ''}</div>` : ''}
     </div>` : '';
+  // Moves are combinable: Ali ticks what the reply must do, Claude writes it. No draft happens by itself.
+  const panel = d.windowOpen ? `<div class="card cap ${threadBusy ? 'busy' : ''}">
+      <p class="muted small">Que fait la réponse ? (plusieurs possibles)</p>
+      <div class="chips">${D.moves.map((m) => chip('mv', m.id, m.label, has(m.id))).join('')}</div>
+      ${has('downsell') ? `<p class="muted small">Downsell vers</p><div class="chips">${D.downsell.map((o) => chip('lvl', o.id, o.label, dir.level === o.id)).join('')}</div>` : ''}
+      ${has('acompte') ? `<p class="muted small">Acompte</p><div class="chips">${D.acompte.map((a) => chip('lvl2', a, `${a} €`, dir.level2 === a)).join('')}</div>` : ''}
+      ${has('delai') ? `<input id="until" placeholder="Jusqu’à quand ? (ex. demain 12h)" value="${esc(dir.until)}" style="margin-bottom:8px">` : ''}
+      <textarea id="ins" placeholder="Précision pour Claude (facultatif) : ce qu’il a dit à l’appel, un chiffre, ce qu’il faut éviter…" ${threadBusy ? 'disabled' : ''}>${esc(dir.instruction)}</textarea>
+      <div class="row"><button id="go" class="primary ${threadBusy ? 'busy' : ''}" ${threadBusy ? 'disabled' : ''}>${threadBusy ? (st.state === 'drafting' ? 'Claude rédige… (≈ 1 min)' : 'Claude va rédiger…') : (opts.length ? 'Refaire' : 'Rédiger la réponse')}</button>${st?.state === 'error' ? `<span class="err small">Échec : ${esc(st.error)} — réessayez</span>` : `<span class="muted small">${threadBusy ? esc(st.direction || '') : (dir.moves.length ? '' : 'Rien coché = réponse simple à son message')}</span>`}</div>
+    </div>` : '';
+  // The second block of an administration two-step, already handed to the Mac.
+  const schedBox = d.scheduled ? `<div class="card sending">Second temps programmé : part dans ${fmtLeft(d.scheduled.at)} — « ${esc(d.scheduled.bubbles[0].slice(0, 80))}… » <button class="small" id="cancelsched">Annuler</button></div>` : '';
   // What the app learned from the last send on this thread (confirmed = sent as drafted; lesson = logged in 04-CAS-APPRIS).
   const learnLine = d.learning && (d.learning.state === 'waiting' || d.learning.state === 'learning')
     ? '<p class="muted small learn">Claude note ce que vous avez envoyé…</p>'
@@ -171,7 +184,8 @@ async function renderThread(waId, { quiet = false } = {}) {
     ? `<p class="muted small">Brouillon de Claude · ${ago(d.suggestion.created_at)}${d.suggestion.source === 'chat' ? ' · depuis le chat' : ''}</p>`
       + (d.suggestion.instruction ? `<p class="consigne small">${esc(d.suggestion.instruction)}</p>` : '')
       + (d.suggestion.note ? `<p class="note small">À savoir : ${esc(d.suggestion.note)}</p>` : '')
-      + opts.map((o, i) => `<div class="card opt" data-i="${i}">${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`).join('')
+      + opts.map((o, i) => `<div class="card opt" data-i="${i}">${o.later?.length ? '<div class="opt-head">Maintenant</div>' : ''}${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${i}:${j}">Copier</button></div>`).join('')}${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}<div class="acts">${d.windowOpen ? `<button class="primary small" data-send="${i}" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" data-use="${i}">Modifier avant envoi</button>` : ''}<button class="small" data-copyall="${i}">Tout copier</button></div></div>`
+        + (o.later?.length ? `<div class="card opt later" data-i="${i}"><div class="opt-head">Dans 5-10 min <span class="muted">· la « bonne nouvelle » de l’administration</span></div>${o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copyl="${i}:${j}">Copier</button></div>`).join('')}<div class="acts">${d.windowOpen ? `<button class="primary small" data-sendlater="${i}" ${d.scheduled ? 'disabled' : ''}>Programmer dans 7 min</button><button class="small" data-sendlaternow="${i}" ${sendLock ? 'disabled' : ''}>Envoyer maintenant</button><button class="small" data-uselater="${i}">Modifier</button>` : ''}<button class="small" data-copyalll="${i}">Tout copier</button></div></div>` : '')).join('')
     : (threadBusy ? '<p class="muted small">Claude lit la conversation et le playbook, le brouillon arrive ici dans environ une minute — une notification vous préviendra.</p>' : ''))
     + learnLine;
   const tplBox = `<input id="tplq" placeholder="Filtrer les templates (ex. followup, noshow)"><select id="tpl" style="margin-top:8px"><option value="">Chargement des templates français…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Envoyer le template</button><span id="stt"></span></div>`;
@@ -184,23 +198,38 @@ async function renderThread(waId, { quiet = false } = {}) {
   app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}</header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}
     <div class="thread">${msgs}</div>
-    ${panel}${sendBox}${sugg}${compose}
+    ${offerBox}${panel}${sendBox}${schedBox}${sugg}${compose}
     <div class="row"><button id="hd" class="small" ${t.pending ? '' : 'disabled'}>Marquer comme traité</button><button id="mute" class="small">${t.muted ? 'Réactiver les notifications' : 'Ne plus notifier ce lead'}</button><button id="rf" class="small">↻</button></div>`;
   // A redraw of the same conversation keeps the scroll; a fresh open lands on the newest message.
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
   if (d.windowOpen) {
     const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
-    document.querySelectorAll('[data-obj]').forEach((b) => b.onclick = () => { dir.objective = dir.objective === b.dataset.obj ? '' : b.dataset.obj; dir.level = ''; redraw(); });
+    document.querySelectorAll('[data-mv]').forEach((b) => b.onclick = () => { const id = b.dataset.mv; dir.moves = has(id) ? dir.moves.filter((x) => x !== id) : [...dir.moves, id]; redraw(); });
     document.querySelectorAll('[data-lvl]').forEach((b) => b.onclick = () => { dir.level = dir.level === b.dataset.lvl ? '' : b.dataset.lvl; redraw(); });
-    document.querySelectorAll('[data-tone]').forEach((b) => b.onclick = () => { dir.tone = b.dataset.tone; redraw(); });
+    document.querySelectorAll('[data-lvl2]').forEach((b) => b.onclick = () => { dir.level2 = dir.level2 === b.dataset.lvl2 ? '' : b.dataset.lvl2; redraw(); });
+    if ($('#until')) $('#until').oninput = (e) => { dir.until = e.target.value; };
     $('#ins').oninput = (e) => { dir.instruction = e.target.value; };
     $('#go').onclick = async () => {
-      if (!dir.objective && !dir.instruction.trim()) { toast('Choisissez un cap, ou écrivez une consigne'); return; }
-      if (objective?.levels && !dir.level) { toast(objective.levels === true ? 'Jusqu’où on descend ?' : 'Quel acompte ?'); return; }
+      if (!dir.moves.length && !dir.instruction.trim()) { toast('Cochez un move, ou écrivez une consigne'); return; }
+      if (has('downsell') && !dir.level) { toast('Downsell vers quoi ?'); return; }
       $('#go').disabled = true; $('#go').textContent = 'Demande envoyée…';
       try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body: { ...dir, instruction: dir.instruction.trim() } }); toast('Claude rédige — environ une minute'); lastThreadKey = ''; route(); }
       catch (e) { toast(e.message); $('#go').disabled = false; }
     };
+    // initial offer
+    $('#offerbtn').onclick = () => { offerOpen = !offerOpen; offerDraft = offerOpen ? { ...(d.offer || { format: '', level: '', hpw: '', months: '' }) } : null; redraw(); };
+    document.querySelectorAll('[data-fmt]').forEach((b) => b.onclick = () => { offerDraft.format = b.dataset.fmt; offerDraft.months = ''; redraw(); });
+    document.querySelectorAll('[data-lvlobj]').forEach((b) => b.onclick = () => { offerDraft.level = offerDraft.level === b.dataset.lvlobj ? '' : b.dataset.lvlobj; redraw(); });
+    document.querySelectorAll('[data-hpw]').forEach((b) => b.onclick = () => { offerDraft.hpw = Number(b.dataset.hpw); offerDraft.months = ''; redraw(); });
+    if ($('#offersave')) $('#offersave').onclick = async () => { if (!offerDraft.format) { toast('Choisissez le format'); return; } offerDraft.months = $('#months').value; try { await api(`/api/thread/${waId}/offer`, { method: 'POST', body: offerDraft }); offerOpen = false; offerDraft = null; toast('Offre enregistrée'); redraw(); } catch (e) { toast(e.message); } };
+    if ($('#offerclear')) $('#offerclear').onclick = async () => { await api(`/api/thread/${waId}/offer`, { method: 'POST', body: {} }); offerOpen = false; offerDraft = null; redraw(); };
+    if ($('#cancelsched')) $('#cancelsched').onclick = async () => { await api(`/api/thread/${waId}/cancel`, { method: 'POST' }); toast('Second temps annulé'); redraw(); };
+    // the second block
+    document.querySelectorAll('[data-sendlater]').forEach((b) => armed(b, 'Programmer dans 7 min', async () => { const i = Number(b.dataset.sendlater); b.disabled = true; try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles: opts[i].later, suggestionId: d.suggestion.id, option: i, part: 'later', delayMs: 7 * 60_000 } }); toast('Le Mac l’enverra dans 7 min'); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
+    document.querySelectorAll('[data-sendlaternow]').forEach((b) => armed(b, 'Envoyer maintenant', async () => { const i = Number(b.dataset.sendlaternow); b.disabled = true; try { await sendBubbles(waId, opts[i].later, { suggestionId: d.suggestion.id, option: i, part: 'later', edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
+    document.querySelectorAll('[data-uselater]').forEach((b) => b.onclick = () => { const i = Number(b.dataset.uselater); composer = opts[i].later.join('\n\n'); composerFrom = { suggestionId: d.suggestion.id, option: i, part: 'later' }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } });
+    document.querySelectorAll('[data-copyl]').forEach((b) => b.onclick = () => { const [i, j] = b.dataset.copyl.split(':').map(Number); copyText(opts[i].later[j], b); });
+    document.querySelectorAll('[data-copyalll]').forEach((b) => b.onclick = () => copyText(opts[Number(b.dataset.copyalll)].later.join('\n\n'), b));
   }
   document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { const i = Number(b.dataset.use); composer = opts[i].bubbles.join('\n\n'); composerFrom = { suggestionId: d.suggestion.id, option: i }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } });
   document.querySelectorAll('[data-send]').forEach((b) => armed(b, 'Envoyer telle quelle', async () => { const i = Number(b.dataset.send); b.disabled = true; try { await sendBubbles(waId, opts[i].bubbles, { suggestionId: d.suggestion.id, option: i, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
@@ -211,7 +240,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   $('#mute').onclick = async () => { await api(`/api/thread/${waId}/mute`, { method: 'POST', body: { muted: !t.muted } }); lastThreadKey = ''; route(); };
   if (d.windowOpen) {
     document.querySelectorAll('[data-emoji]').forEach((b) => b.onclick = () => { const ta = $('#tx'); const a = ta.selectionStart ?? ta.value.length, z = ta.selectionEnd ?? a; ta.value = ta.value.slice(0, a) + b.dataset.emoji + ta.value.slice(z); ta.selectionStart = ta.selectionEnd = a + b.dataset.emoji.length; ta.focus(); ta.dispatchEvent(new Event('input')); });
-    $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim() || sendLock; if (composerFrom) composerFrom.edited = composer !== opts[composerFrom.option]?.bubbles.join('\n\n'); };
+    $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim() || sendLock; if (composerFrom) composerFrom.edited = composer !== (composerFrom.part === 'later' ? opts[composerFrom.option]?.later : opts[composerFrom.option]?.bubbles)?.join('\n\n'); };
     $('#clr').onclick = () => { composer = ''; composerFrom = null; $('#tx').value = ''; $('#send').disabled = true; };
     armed($('#send'), 'Envoyer', async () => {
       const bubbles = $('#tx').value.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
@@ -271,7 +300,7 @@ async function renderTm() {
 // ── router ───────────────────────────────────────────────────────────────────
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
-  if (!m) { composer = ''; composerFrom = null; dir = { objective: '', level: '', tone: 'standard', instruction: '' }; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
+  if (!m) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; openedWaId = ''; clearTimeout(threadTimer); }
   document.body.classList.add('busy');
   try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : await renderInbox(); if (!m) window.scrollTo(0, 0); }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a></header><p class="err">${esc(e.message)}</p>`; }

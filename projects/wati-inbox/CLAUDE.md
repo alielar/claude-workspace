@@ -10,8 +10,10 @@ in `../Wati outreach`. Details and setup in `README.md`; history and decisions i
 On the Mac only, as the launchd job `com.ali.wati-inbox` (one Node process, `server.mjs`, port
 8443, SQLite in `data/inbox.sqlite`). The phone reaches it through Tailscale at
 `https://alis-macbook-pro.tail7ec20e.ts.net:8443`. Drafts are made by `suggest-engine.mjs` only
-when Ali picks a cap in the app (`directions.mjs`: objective, downsell level, tone, consigne —
-never automatically), one set of bubbles per draft; lessons by `learn-engine.mjs` after every
+when Ali ticks the moves in the app (`directions.mjs`: administration two-step, downsell from the
+stored initial offer, délai, acompte, paiement, démarrage, relance, basse pression, clôture, plus a
+consigne — never automatically), one set of bubbles per draft plus a `later` block for the
+administration two-step that the Mac can send 7 min later; lessons by `learn-engine.mjs` after every
 send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
 reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`).
 All three run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a

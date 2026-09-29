@@ -54,7 +54,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT);
 `);
 
-for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL DEFAULT 0', 'stage TEXT', 'meeting TEXT', 'country TEXT', 'email TEXT', 'contact_at TEXT']) {
+for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL DEFAULT 0', 'stage TEXT', 'meeting TEXT', 'country TEXT', 'email TEXT', 'contact_at TEXT', 'offer TEXT']) { // offer = JSON {format, level, hpw, months} typed by Ali (2026-09-29)
   try { db.exec(`ALTER TABLE threads ADD COLUMN ${col}`); } catch {}
 }
 // note = what Ali should know before sending; source = auto | ali (app button) | chat (Claude Code session)
@@ -124,6 +124,8 @@ export const activeThreads = (days) => db.prepare(`SELECT * FROM threads WHERE C
 export const inbox = () => db.prepare(`SELECT * FROM threads WHERE last_inbound_at IS NOT NULL OR last_outbound_at IS NOT NULL
   ORDER BY pending DESC, MAX(COALESCE(last_inbound_at, ''), COALESCE(last_outbound_at, '')) DESC LIMIT 60`).all();
 
+export const setOffer = (waId, offer) => db.prepare('UPDATE threads SET offer = ? WHERE wa_id = ?').run(offer ? JSON.stringify(offer) : null, waId);
+export const getOffer = (waId) => { try { const r = db.prepare('SELECT offer FROM threads WHERE wa_id = ?').get(waId); return r?.offer ? JSON.parse(r.offer) : null; } catch { return null; } };
 export const setMuted = (waId, muted) => db.prepare('UPDATE threads SET muted = ? WHERE wa_id = ?').run(muted ? 1 : 0, waId);
 export const saveContact = (waId, c) => db.prepare('UPDATE threads SET name = COALESCE(NULLIF(?, \'\'), name), stage = ?, meeting = ?, country = ?, email = ?, contact_at = ? WHERE wa_id = ?').run(c.name, c.stage, c.meeting, c.country, c.email, new Date().toISOString(), waId);
 export const wantSuggestion = (waId) => db.prepare('UPDATE threads SET wanted = 1 WHERE wa_id = ?').run(waId);

@@ -76,6 +76,9 @@ button.busy::before { content: ''; display: inline-block; width: 10px; height: 1
 .chip.sel { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 .chips.tones .chip { font-size: 12px; min-height: 32px; padding: 5px 10px; }
 .cap textarea { min-height: 56px; }
+.offer .row { flex-wrap: wrap; } .offer .row span { flex: 1; min-width: 0; }
+.warn { color: var(--warn); }
+.opt.later { border-color: var(--accent); }
 .consigne { color: var(--accent); margin: -4px 0 8px; }
 .learn { margin: 2px 0 12px; }
 
