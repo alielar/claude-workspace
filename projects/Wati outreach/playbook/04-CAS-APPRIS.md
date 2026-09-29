@@ -541,3 +541,14 @@ Neuf leads comparés : Cedric, Kamila, Ouassila, Ariane, Elorri, Tournier, Enkam
 **Comment appliquer :** pas une leçon de rédaction, un signal de vigilance — cf. section digest.
 
 **Résultat global :** 2 règles confirmées à intégrer dans `00-QUICK.md` (points 1 et 2), 1 point à trancher avec Ali (point 3, phrasing des extensions), 1 point de vigilance sans réponse envoyée (point 4, Elorri). Bonne nouvelle du jour : Enkamgalan a réglé son problème de paiement (carte refusée en 10 fois → 4 fois refusé aussi → paiement manuel via l'administration) et a fini par s'inscrire le soir même, avec la mécanique administration + « on trouve toujours une solution » appliquée quasi mot pour mot aux brouillons proposés.
+
+## 2026-09-29 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+### 22:12 · Boris — Accusé de réception sans friction nommée : pas de réassurance non demandée sur la place
+**Situation :** Boris sort du meeting du jour, dit qu'il relira l'email demain tranquillement — aucune friction nommée (ni prix, ni timing, ni inquiétude sur la place)
+**Ce qui était proposé :** Pas de souci Boris, prenez le temps de tout relire tranquillement demain / Votre place reste de côté, n'hésitez pas si une question se pose en la relisant 👍
+**Ce qu'Ali a envoyé :** n/a — pas d'envoi de message, réponse JSON uniquement
+**Pourquoi :** Ali a supprimé « Votre place reste de côté » : Boris n'a exprimé aucune inquiétude sur sa place, donc la rassurer était une réassurance gonflée non demandée — contraire à la règle maison « jamais de réassurance gonflée » (CLAUDE.md, house style) et au principe basse pression du 00-QUICK.md (ne traiter que la friction réellement exprimée). Il a aussi retiré le prénom « Boris » en milieu de bulle 1 (prénom non systématique, style maison) et raccourci « en la relisant » — retouches mineures secondaires à la leçon principale.
+**Comment appliquer :** Pour un accusé de réception basse pression sans friction nommée, ne pas ajouter de réassurance sur un point que le lead n'a pas soulevé (place, paiement, etc.) — se limiter à accuser réception et rester disponible pour une question.
