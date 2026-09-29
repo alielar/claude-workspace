@@ -246,18 +246,18 @@ let tmOpen = new Set();
 async function renderTm() {
   const { flags, status } = await api('/api/tm');
   const fresh = flags.filter((f) => !f.seen), old = flags.filter((f) => f.seen);
-  const card = (f) => `<div class="card flag ${f.kind}" data-id="${f.id}"><div class="flag-head"><span class="pill ${f.kind === 'erreur' ? 'bad' : 'good'}">${f.kind === 'erreur' ? 'Erreur' : 'Amélioration'}</span><span class="muted small">${ago(f.at)}</span></div>
+  const card = (f) => `<div class="card flag ${f.kind}" data-id="${f.id}"><div class="flag-head"><span class="pill ${f.kind === 'erreur' ? 'bad' : 'good'}">${f.kind === 'erreur' ? 'Error' : 'Improvement'}</span><span class="muted small">${ago(f.at)}</span></div>
     <div class="flag-who">+${f.wa_id}${f.name ? ` · ${esc(f.name)}` : ''}</div>
     <div class="flag-title">${esc(f.title)}</div>
     ${f.detail ? `<div class="small">${esc(f.detail)}</div>` : ''}${f.quote ? `<div class="quote small">« ${esc(f.quote)} »</div>` : ''}
-    <div class="acts"><button class="small" data-thread="${f.wa_id}">${tmOpen.has(f.wa_id) ? 'Masquer la conversation' : 'Voir la conversation'}</button><button class="small" data-seen="${f.id}" data-v="${f.seen ? 0 : 1}">${f.seen ? 'Remettre à traiter' : 'Vu'}</button></div>
+    <div class="acts"><button class="small" data-thread="${f.wa_id}">${tmOpen.has(f.wa_id) ? 'Hide conversation' : 'Show conversation'}</button><button class="small" data-seen="${f.id}" data-v="${f.seen ? 0 : 1}">${f.seen ? 'Reopen' : 'Seen'}</button></div>
     <div class="tmthread" id="tmt-${f.wa_id}-${f.id}"></div></div>`;
   const running = status.state === 'running';
-  app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>France TM <span class="muted small">bot de réservation</span></h1><button id="rv" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Relecture…' : 'Relire maintenant'}</button></header>
-    <p class="muted small">Claude relit toutes les 2 h les conversations du numéro télémarketing (+33671283778) et signale ce que le bot fait mal ou pourrait faire mieux.${status.last ? ` Dernière relecture ${ago(status.last.at)} : ${status.last.threads} conversation(s), ${status.last.flags} signalement(s).` : ''}${status.error ? ` <span class="err">Dernière erreur : ${esc(status.error)}</span>` : ''}</p>
-    ${fresh.length ? fresh.map(card).join('') : '<p class="muted center">Rien à traiter.</p>'}
-    ${old.length ? `<details class="card"><summary>Déjà vus (${old.length})</summary>${old.map(card).join('')}</details>` : ''}`;
-  $('#rv').onclick = async () => { $('#rv').disabled = true; try { await api('/api/tm/review', { method: 'POST' }); toast('Relecture lancée — 1 à 2 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 1500); };
+  app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>France TM <span class="muted small">booking bot</span></h1><button id="rv" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Reviewing…' : 'Review now'}</button></header>
+    <p class="muted small">Every 2 h Claude reads the telemarketing conversations (+33671283778) and flags what the bot got wrong or could do better.${status.last ? ` Last review ${ago(status.last.at)}: ${status.last.threads} conversation(s), ${status.last.flags} flag(s).` : ''}${status.error ? ` <span class="err">Last error: ${esc(status.error)}</span>` : ''}</p>
+    ${fresh.length ? fresh.map(card).join('') : '<p class="muted center">Nothing to review.</p>'}
+    ${old.length ? `<details class="card"><summary>Seen (${old.length})</summary>${old.map(card).join('')}</details>` : ''}`;
+  $('#rv').onclick = async () => { $('#rv').disabled = true; try { await api('/api/tm/review', { method: 'POST' }); toast('Review started — 1 to 2 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 1500); };
   document.querySelectorAll('[data-seen]').forEach((b) => b.onclick = async () => { await api(`/api/tm/flag/${b.dataset.seen}`, { method: 'POST', body: { seen: b.dataset.v === '1' } }); route(); });
   document.querySelectorAll('[data-thread]').forEach((b) => b.onclick = async () => {
     const wa = b.dataset.thread, box = b.closest('.flag').querySelector('.tmthread');
