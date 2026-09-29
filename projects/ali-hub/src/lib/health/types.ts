@@ -287,11 +287,34 @@ export function computeSplits(curve: [number, number][], route: RoutePoint[], hr
   return splits;
 }
 
+/** Cumulative distance from HAE's per-interval distance samples alone (Apple's own count) · [] when there are none. */
+function sampleCurve(distSamples: unknown): [number, number][] {
+  return Array.isArray(distSamples) && distSamples.length ? distanceCurve([], distSamples) : [];
+}
+
+/**
+ * The distance curve the splits are cut from. Apple's distance (the number on the Watch) is the
+ * truth: it fuses GPS with the pedometer, while the raw GPS path alone can come up short (Ali's
+ * run of 2026-09-28: path 4.02 km, Watch 5.44 km). So: HAE's per-minute distance samples first;
+ * else the route, stretched to the workout's distance when the two disagree by more than 5 %.
+ */
+function splitCurve(route: RoutePoint[], distSamples: unknown, distanceKm: number | null): [number, number][] {
+  const fromSamples = sampleCurve(distSamples);
+  const sampleTotal = fromSamples.length ? fromSamples[fromSamples.length - 1][1] : 0;
+  if (sampleTotal > 100) return fromSamples;
+  const curve = distanceCurve(route, undefined);
+  if (curve.length < 2 || distanceKm === null) return curve;
+  const total = curve[curve.length - 1][1], target = distanceKm * 1000;
+  if (total <= 0 || Math.abs(total - target) / target <= 0.05) return curve;
+  const k = target / total;
+  return curve.map(([t, d]) => [t, d * k]);
+}
+
 /** The heavy arrays of one workout, compacted · null when the record carries none. */
-function parseWorkoutSeries(w: Record<string, unknown>): WorkoutSeries | null {
+function parseWorkoutSeries(w: Record<string, unknown>, distanceKm: number | null): WorkoutSeries | null {
   const route = parseRoute(w.route);
   const hr = parseHrSeries(w.heartRateData);
-  const splits = computeSplits(distanceCurve(route, w.walkingAndRunningDistance), route, hr);
+  const splits = computeSplits(splitCurve(route, w.walkingAndRunningDistance, distanceKm), route, hr);
   if (!route.length && !hr.length && !splits.length) return null;
   return { route, hr, splits };
 }
@@ -328,10 +351,11 @@ function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
   const elev = (w.elevation ?? {}) as Record<string, unknown>; // Version 1 {ascent, descent} · Version 2 elevationUp {qty}
   const raw: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(w)) if (!HEAVY_KEYS.has(k)) raw[k] = v;
+  const distanceKm = toKm(w.distance);
   return {
     hkId, date: madridDate(startMs), type, startMs, endMs,
     durationSec: durationSec === null ? null : Math.round(durationSec),
-    distanceKm: toKm(w.distance),
+    distanceKm,
     activeKcal: toKcal(w.activeEnergyBurned ?? w.activeEnergy),
     totalKcal: toKcal(w.totalEnergy ?? w.totalEnergyBurned),
     hrAvg: rnd(hrAvg), hrMin: rnd(hrMin), hrMax: rnd(hrMax),
@@ -340,7 +364,7 @@ function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
     intensityMet: rnd(num(w.intensity), 1),
     source: typeof w.source === "string" ? w.source : typeof w.device === "string" ? w.device : null,
     raw,
-    series: parseWorkoutSeries(w),
+    series: parseWorkoutSeries(w, distanceKm),
   };
 }
 

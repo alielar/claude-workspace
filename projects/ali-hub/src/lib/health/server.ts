@@ -138,7 +138,12 @@ export async function rawPosts(limit = 12): Promise<Array<{ receivedAt: number; 
       const j = JSON.parse(r.body) as { data?: { metrics?: Array<{ name?: string; data?: unknown[] }>; workouts?: Array<{ name?: string }> } };
       for (const m of j.data?.metrics ?? []) if (m?.name) metrics[m.name] = Array.isArray(m.data) ? m.data.length : 0;
       for (const w of j.data?.workouts ?? []) if (w?.name) workouts.push(w.name);
-    } catch { /* truncated body */ }
+    } catch {
+      // Body capped at 200 KB (a run with its route is ~1 MB) · fall back to the ingest summary "sleep n · workouts n · metrics n".
+      const sl = /sleep (\d+)/.exec(r.summary), wo = /workouts (\d+)/.exec(r.summary);
+      if (sl && Number(sl[1]) > 0) metrics.sleep_analysis = Number(sl[1]);
+      for (let i = 0; i < Number(wo?.[1] ?? 0); i++) workouts.push("workout");
+    }
     return { receivedAt: r.received_at, automation: r.automation, summary: r.summary, bytes: r.bytes, metrics, workouts };
   });
 }
@@ -185,8 +190,9 @@ export async function healthStatus(userId: string): Promise<HealthStatus> {
   const [s] = await db.select().from(healthSleep).where(eq(healthSleep.userId, userId)).orderBy(desc(healthSleep.date)).limit(1);
   const [w] = await db.select().from(healthWorkouts).where(eq(healthWorkouts.userId, userId)).orderBy(desc(healthWorkouts.startMs)).limit(1);
   const [m] = await db.select().from(healthMetrics).where(and(eq(healthMetrics.userId, userId))).orderBy(desc(healthMetrics.updatedAt)).limit(1);
-  const [cnt] = await db.select({ nights: sql<number>`(SELECT COUNT(*) FROM health_sleep WHERE user_id = ${userId})`, workouts: sql<number>`(SELECT COUNT(*) FROM health_workouts WHERE user_id = ${userId})` }).from(healthSleep).limit(1)
-    .catch(() => [{ nights: 0, workouts: 0 }]);
+  // One scalar row · selecting FROM health_sleep returned nothing while there was no night, so both counts read 0.
+  const cnt = await db.get<{ nights: number; workouts: number }>(sql`SELECT (SELECT COUNT(*) FROM health_sleep WHERE user_id = ${userId}) AS nights, (SELECT COUNT(*) FROM health_workouts WHERE user_id = ${userId}) AS workouts`)
+    .catch(() => ({ nights: 0, workouts: 0 }));
   const raw = await db.all<{ received_at: number; automation: string | null; summary: string }>(sql`SELECT received_at, automation, summary FROM health_raw ORDER BY id DESC LIMIT 1`).catch(() => []);
   const pipe = await pipeStatus();
   return {
