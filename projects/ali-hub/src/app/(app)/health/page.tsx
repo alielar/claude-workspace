@@ -21,10 +21,11 @@ import { useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import {
   METRIC_GROUPS, METRIC_INFO, RANGE_DAYS, STAGES, avg, deltaLine, fmtDay, fmtDelta, fmtMetric, fmtMin, fmtTime,
-  metricKey, metricValue, nightVerdict, typicalRange, vitalState, vitalsRead, type HealthSummary, type MetricInfo, type NightRow, type VitalState,
+  metricKey, metricValue, nightVerdict, pipeNote, typicalRange, vitalState, vitalsRead, type HealthSummary, type MetricInfo, type NightRow, type VitalState,
 } from "@/lib/health/client";
 import { Bars, Line, RangeBar, Spark, StageBar } from "@/components/health/charts";
 import { checklistToday } from "@/lib/checklist/day";
+import { useClientValue } from "@/lib/useClientValue";
 
 function scoreTone(s: number | null): string {
   return s === null ? "var(--ink-3)" : s >= 75 ? "var(--pos)" : s >= 55 ? "var(--warn)" : "var(--neg)";
@@ -224,6 +225,9 @@ export default function HealthPage() {
   const unknown = data ? Object.keys(data.metrics).filter((k) => !metricKey(k) && k !== "sleep_analysis") : [];
   const vitals = vitalRows(known, nights);
   const empty = !loading && data && nights.length === 0 && knownKeys.length === 0 && unknown.length === 0;
+  // Why sleep is missing, from what HAE really posted · shown while there is no night at all.
+  const now = useClientValue(() => Date.now(), 0);
+  const note = data && nights.length === 0 && now ? pipeNote(data.pipe, "sleep", now) : null;
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -234,7 +238,8 @@ export default function HealthPage() {
         </div>
       </div>
 
-      {empty && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>Nothing from the Watch yet. Tonight&apos;s sleep lands in the morning.</div>}
+      {note && <div style={{ fontSize: 15, color: "var(--warn)", padding: "0 2px", lineHeight: 1.45 }}>{note}</div>}
+      {empty && !note && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>Nothing from the Watch yet. Tonight&apos;s sleep lands in the morning.</div>}
       {!data && loading && <div className="cc-skeleton" style={{ height: 180 }} />}
 
       {vitals.length > 0 && <Vitals rows={vitals} today={today} />}

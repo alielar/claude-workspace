@@ -23,7 +23,7 @@ import { useClientValue } from "@/lib/useClientValue";
 import { useEffect, useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import { MindPane } from "@/components/mind/MindPane";
-import { fmtDay, fmtDur, fmtKm, fmtPace, isoWeekOf, kindLabel, paceOf, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
+import { fmtDay, fmtDur, fmtKm, fmtPace, isoWeekOf, kindLabel, paceOf, pipeNote, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
 import { Bars } from "@/components/health/charts";
 
 function describe(w: TrainWorkout): string {
@@ -71,13 +71,13 @@ function WatchLine({ w, today, note }: { w: WorkoutRow; today: string; note?: st
   );
 }
 
-function WatchCard({ title, tail, rows, today, empty, limit = 8, noteFor, children }: { title: string; tail?: string; rows: WorkoutRow[]; today: string; empty: string; limit?: number; noteFor?: (w: WorkoutRow) => string | undefined; children?: React.ReactNode }) {
+function WatchCard({ title, tail, rows, today, empty, warn, limit = 8, noteFor, children }: { title: string; tail?: string; rows: WorkoutRow[]; today: string; empty: string; warn?: boolean; limit?: number; noteFor?: (w: WorkoutRow) => string | undefined; children?: React.ReactNode }) {
   return (
     <section className="cc-card">
       <div className="cc-card-head"><span className="title">{title}</span>{tail && <span className="tail">{tail}</span>}</div>
       {children && <div className="cc-card-body" style={{ paddingBottom: 6 }}>{children}</div>}
       <div style={{ padding: "0 14px" }}>
-        {rows.length === 0 && <div style={{ padding: "14px 0", fontSize: 15, color: "var(--ink-3)" }}>{empty}</div>}
+        {rows.length === 0 && <div style={{ padding: "14px 0", fontSize: 15, color: warn ? "var(--warn)" : "var(--ink-3)", lineHeight: 1.45 }}>{empty}</div>}
         {rows.slice(0, limit).map((w) => <WatchLine key={w.hkId} w={w} today={today} note={noteFor?.(w)} />)}
       </div>
     </section>
@@ -120,6 +120,9 @@ export default function TrainPage() {
   const runs = watch.filter((w) => workoutKind(w.type) === "run");
   const strength = watch.filter((w) => workoutKind(w.type) === "strength");
   const otherWatch = watch.filter((w) => workoutKind(w.type) === "other");
+  // Why the Watch lists are empty, from what HAE really posted (null once workouts flow).
+  const nowMs = useClientValue(() => Date.now(), 0);
+  const watchNote = health && watch.length === 0 && nowMs ? pipeNote(health.pipe, "workouts", nowMs) : null;
   const { workouts, loading: wLoading } = useWorkouts();
   const { data: ov, loading: oLoading } = useOverview();
   const active = useClientValue(readActiveSession, null);
@@ -177,7 +180,7 @@ export default function TrainPage() {
       </div>
 
       {part === "runs" && <>
-        <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : "nothing this week yet"} rows={runs} today={today} empty="No runs from the Watch yet. Start an Outdoor Run on the Watch and it lands here after the run.">
+        <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : "nothing this week yet"} rows={runs} today={today} empty={watchNote ?? "No runs from the Watch yet. Start an Outdoor Run on the Watch and it lands here after the run."} warn={!!watchNote}>
           {runs.length > 0 && <Bars values={runWeeks.km} labels={runWeeks.labels} height={64} fmt={(v, i) => `${v} km · ${runWeeks.count[i]} run${runWeeks.count[i] === 1 ? "" : "s"}`} />}
         </WatchCard>
         {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
@@ -186,7 +189,7 @@ export default function TrainPage() {
       {part === "strength" && (
         <WatchCard title="Strength" tail={strengthWk ? `this week ${strengthWk} session${strengthWk === 1 ? "" : "s"}` : "Speediance and the Watch"} rows={strength} today={today}
           noteFor={(w) => (kbDays.has(w.date) ? "Kettlebell 30" : undefined)}
-          empty="No strength sessions from the Watch yet. Log a Speediance session as Traditional Strength Training on the Watch." />
+          empty={watchNote ?? "No strength sessions from the Watch yet. Log a Speediance session as Traditional Strength Training on the Watch."} warn={!!watchNote} />
       )}
 
       {part === "kettlebell" && <>

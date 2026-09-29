@@ -5,7 +5,40 @@
  */
 
 import type { NightRow, WorkoutRow, MetricPoint } from "./summary";
+import type { PipeStatus } from "./server";
 export type { HealthSummary, NightRow, WorkoutRow, WorkoutDetail, MetricPoint } from "./summary";
+export type { PipeStatus } from "./server";
+
+/** HAE metric name → plain words · "resting_heart_rate" → "resting heart rate". */
+export function metricWords(name: string): string {
+  if (name === "heart_rate_variability") return "HRV";
+  if (name === "sleep_analysis") return "sleep";
+  return name.replace(/_/g, " ");
+}
+
+/**
+ * Why a screen is empty, in one line, or null when the pipe is fine · read from what Health
+ * Auto Export has really posted. `want` = the data the screen is waiting for. Facts first
+ * (what arrived), then the one thing to tap in HAE.
+ */
+export function pipeNote(pipe: PipeStatus | undefined, want: "sleep" | "workouts", now: number): string | null {
+  if (!pipe) return null;
+  if (pipe.posts === 0) return "Nothing has reached A L I from the Watch yet. Settings → Apple Watch has the setup.";
+  const sent = pipe.carried.filter((m) => m !== "sleep_analysis").map(metricWords);
+  const sentLine = sent.length ? `It sends only ${sent.join(", ")}.` : "It sends no metrics at all.";
+  if (want === "sleep" && !pipe.sleepSeen) {
+    const auto = pipe.automations[0] ?? "the automation";
+    return `Health Auto Export is posting, but without sleep. ${sentLine} In HAE: Automations → ${auto} → Select Health Metrics → Select all → Save, then Manual Export.`;
+  }
+  if (want === "workouts" && !pipe.workoutsSeen) {
+    return `No workouts have reached A L I: the posting automation carries health metrics only. In HAE: Automations → + → REST API · name ALI workouts · same URL and key · Data Type: Workouts · Date Range: Previous 7 Days · Save, then Manual Export.`;
+  }
+  if (pipe.lastAt !== null && now - pipe.lastAt > 20 * 3600_000) {
+    const d = new Date(pipe.lastAt);
+    return `Last post ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}. Open Health Auto Export or tap its widget to sync now.`;
+  }
+  return null;
+}
 export { fmtPace } from "./types";
 
 export type WorkoutKind = "run" | "strength" | "other";

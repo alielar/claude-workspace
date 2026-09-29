@@ -143,7 +143,35 @@ export async function rawPosts(limit = 12): Promise<Array<{ receivedAt: number; 
   });
 }
 
+/**
+ * What the pipe has really carried, read from the last raw posts · the one honest answer to
+ * "why is there no sleep / no run": HAE's automations post only what they were told to.
+ * A REST automation has ONE Data Type (Health Metrics or Workouts), so sleep needs the
+ * sleep_analysis metric selected and workouts need a second automation.
+ */
+export type PipeStatus = {
+  posts: number;                // raw posts kept (max 30)
+  lastAt: number | null;        // ms of the newest post
+  automations: string[];        // names seen (HAE's automation-name header)
+  carried: string[];            // metric names seen across the kept posts
+  sleepSeen: boolean;           // any post carried sleep_analysis
+  workoutsSeen: boolean;        // any post carried a workout
+};
+
+export async function pipeStatus(): Promise<PipeStatus> {
+  const posts = await rawPosts(30);
+  const carried = new Set<string>(), automations = new Set<string>();
+  let sleepSeen = false, workoutsSeen = false;
+  for (const p of posts) {
+    if (p.automation) automations.add(p.automation);
+    for (const m of Object.keys(p.metrics)) { carried.add(m); if (m === "sleep_analysis") sleepSeen = true; }
+    if (p.workouts.length) workoutsSeen = true;
+  }
+  return { posts: posts.length, lastAt: posts[0]?.receivedAt ?? null, automations: [...automations], carried: [...carried].sort(), sleepSeen, workoutsSeen };
+}
+
 export type HealthStatus = {
+  pipe: PipeStatus;
   lastSleep: { date: string; totalMin: number | null; score: number | null; receivedAt: number } | null;
   lastWorkout: { date: string; type: string; receivedAt: number } | null;
   lastMetric: { date: string; metric: string; receivedAt: number } | null;
@@ -160,7 +188,9 @@ export async function healthStatus(userId: string): Promise<HealthStatus> {
   const [cnt] = await db.select({ nights: sql<number>`(SELECT COUNT(*) FROM health_sleep WHERE user_id = ${userId})`, workouts: sql<number>`(SELECT COUNT(*) FROM health_workouts WHERE user_id = ${userId})` }).from(healthSleep).limit(1)
     .catch(() => [{ nights: 0, workouts: 0 }]);
   const raw = await db.all<{ received_at: number; automation: string | null; summary: string }>(sql`SELECT received_at, automation, summary FROM health_raw ORDER BY id DESC LIMIT 1`).catch(() => []);
+  const pipe = await pipeStatus();
   return {
+    pipe,
     lastSleep: s ? { date: s.date, totalMin: s.totalMin, score: s.score, receivedAt: s.updatedAt } : null,
     lastWorkout: w ? { date: w.date, type: w.type, receivedAt: w.updatedAt } : null,
     lastMetric: m ? { date: m.date, metric: m.metric, receivedAt: m.updatedAt } : null,

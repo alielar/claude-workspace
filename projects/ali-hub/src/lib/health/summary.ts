@@ -8,7 +8,7 @@
 import { db } from "@/db";
 import { healthMetrics, healthSleep, healthWorkouts, healthWorkoutSeries } from "@/db/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
-import { ensureHealthTables } from "./server";
+import { ensureHealthTables, pipeStatus, type PipeStatus } from "./server";
 import type { HrPoint, RoutePoint, Split } from "./types";
 
 export type NightRow = {
@@ -26,6 +26,7 @@ export type HealthSummary = {
   nights: NightRow[];                       // newest first, 30
   metrics: Record<string, { units: string | null; points: MetricPoint[] }>; // points oldest first, 30 days
   workouts: WorkoutRow[];                   // newest first, 60
+  pipe: PipeStatus;                         // what Health Auto Export has really posted
   generatedAt: number;
 };
 export type WorkoutDetail = WorkoutRow & { route: RoutePoint[]; hr: HrPoint[]; splits: Split[] };
@@ -37,7 +38,7 @@ function ymdDaysAgo(days: number): string {
 export async function healthSummary(userId: string): Promise<HealthSummary> {
   await ensureHealthTables();
   const since = ymdDaysAgo(31);
-  const [nights, metricRows, workouts, withRoute] = await Promise.all([
+  const [nights, metricRows, workouts, withRoute, pipe] = await Promise.all([
     db.select().from(healthSleep).where(eq(healthSleep.userId, userId)).orderBy(desc(healthSleep.date)).limit(30),
     db.select().from(healthMetrics).where(and(eq(healthMetrics.userId, userId), gte(healthMetrics.date, since))).orderBy(healthMetrics.date),
     db.select({
@@ -46,6 +47,7 @@ export async function healthSummary(userId: string): Promise<HealthSummary> {
       hrAvg: healthWorkouts.hrAvg, hrMin: healthWorkouts.hrMin, hrMax: healthWorkouts.hrMax, steps: healthWorkouts.steps, elevationM: healthWorkouts.elevationM, source: healthWorkouts.source,
     }).from(healthWorkouts).where(eq(healthWorkouts.userId, userId)).orderBy(desc(healthWorkouts.startMs)).limit(60),
     db.select({ hkId: healthWorkoutSeries.hkId }).from(healthWorkoutSeries).where(eq(healthWorkoutSeries.userId, userId)),
+    pipeStatus(),
   ]);
   const routed = new Set(withRoute.map((r) => r.hkId));
   const metrics: HealthSummary["metrics"] = {};
@@ -59,6 +61,7 @@ export async function healthSummary(userId: string): Promise<HealthSummary> {
     })),
     metrics,
     workouts: workouts.map((w) => ({ ...w, hasRoute: routed.has(w.hkId) })),
+    pipe,
     generatedAt: Date.now(),
   };
 }

@@ -310,7 +310,8 @@ function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
   const type = String(w.name ?? w.workoutActivityType ?? "Workout");
   const hkId = typeof w.id === "string" && w.id ? w.id : `${type}|${startMs}`;
   const hr = (w.heartRate ?? {}) as Record<string, unknown>;
-  let hrAvg = num(hr.avg ?? hr.Avg), hrMin = num(hr.min ?? hr.Min), hrMax = num(hr.max ?? hr.Max);
+  // Export Version 2 also carries avgHeartRate / minHeartRate / maxHeartRate as {qty, units}.
+  let hrAvg = num(hr.avg ?? hr.Avg ?? w.avgHeartRate), hrMin = num(hr.min ?? hr.Min ?? w.minHeartRate), hrMax = num(hr.max ?? hr.Max ?? w.maxHeartRate);
   // Some payloads carry only a per-minute series (`heartRateData`) · derive the three numbers.
   const series = Array.isArray(w.heartRateData) ? (w.heartRateData as Record<string, unknown>[]) : null;
   if (hrAvg === null && series && series.length) {
@@ -324,7 +325,7 @@ function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
     }
   }
   const durationSec = num(w.duration) ?? (endMs !== null ? Math.round((endMs - startMs) / 1000) : null);
-  const elev = (w.elevation ?? {}) as Record<string, unknown>;
+  const elev = (w.elevation ?? {}) as Record<string, unknown>; // Version 1 {ascent, descent} · Version 2 elevationUp {qty}
   const raw: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(w)) if (!HEAVY_KEYS.has(k)) raw[k] = v;
   return {
@@ -335,7 +336,7 @@ function parseWorkout(w: Record<string, unknown>): WatchWorkout | null {
     totalKcal: toKcal(w.totalEnergy ?? w.totalEnergyBurned),
     hrAvg: rnd(hrAvg), hrMin: rnd(hrMin), hrMax: rnd(hrMax),
     steps: rnd(num(w.stepCount)),
-    elevationM: rnd(num(elev.ascent)),
+    elevationM: rnd(num(elev.ascent ?? w.elevationUp)),
     intensityMet: rnd(num(w.intensity), 1),
     source: typeof w.source === "string" ? w.source : typeof w.device === "string" ? w.device : null,
     raw,

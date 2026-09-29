@@ -17,6 +17,7 @@ import { useWorkouts } from "@/lib/train/useTrain";
 import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 import { parseMorningPlan, computeMorning, type MorningPlan } from "@/lib/morning/plan";
+import { metricWords, pipeNote, type PipeStatus } from "@/lib/health/client";
 
 type UserSettings = {
   timezone: string;
@@ -90,6 +91,7 @@ function Segmented<T extends string>({ value, options, onChange }: {
 
 
 type HealthStatus = {
+  pipe?: PipeStatus;
   lastSleep: { date: string; totalMin: number | null; score: number | null; receivedAt: number } | null;
   lastWorkout: { date: string; type: string; receivedAt: number } | null;
   lastPost: { receivedAt: number; automation: string | null; summary: string } | null;
@@ -101,10 +103,10 @@ type HealthStatus = {
 const HAE_STEPS = [
   "App Store → Health Auto Export (JSON+CSV) → install, allow Health access (Sleep, Workouts, Heart Rate, Resting Heart Rate, HRV, Respiratory Rate, Blood Oxygen).",
   "Inside the app: Premium → yearly plan (7-day trial). Only Premium runs automations in the background.",
-  "Automations → + → REST API · name “ALI sleep” · URL below · Add header: key x-app-key, value = the key below · JSON · Summarize on · group by day · date range Previous 7 days · metrics: Select all (Sleep Analysis included) · every 1 hour · Save.",
-  "Automations → + → REST API · name “ALI workouts” · same URL and header · metrics none, Workouts on · date range Previous 7 days · every 1 hour · Save.",
-  "Tap Run on each automation once, then come back here: the two lines above should show today’s stamp.",
-  "iPhone Settings → Apps → Health Auto Export → Background App Refresh on. Add its “Automations” widget to a home screen: one tap = sync now.",
+  "Automations → + → REST API · name “ALI sleep” · URL below · HTTP Headers: x-app-key = the key below · Data Type: Health Metrics · Select Health Metrics: Select all · Export Format JSON · Summarize Data on · Date Range: Previous 7 Days · Sync Cadence: every 1 hour · Save.",
+  "Automations → + → REST API · name “ALI workouts” · same URL and header · Data Type: Workouts · Include Route Data on · Date Range: Previous 7 Days · every 1 hour · Save. One automation carries ONE data type, so sleep and workouts need two.",
+  "Open each automation → Manual Export once, then come back here: “Last posts carried” below must name sleep and a workout.",
+  "iPhone Settings → Apps → Health Auto Export → Background App Refresh on. Add its “Automations” widget to a home screen: one tap = sync now. A locked phone or Low Power Mode blocks the hourly run.",
 ];
 
 function AppleWatchCard() {
@@ -132,7 +134,11 @@ function AppleWatchCard() {
           <span>Sleep · {data ? (data.lastSleep ? `night of ${data.lastSleep.date}${fmtMin(data.lastSleep.totalMin)} · received ${stamp(data.lastSleep.receivedAt)}` : "nothing yet") : "—"}</span>
           <span>Workouts · {data ? (data.lastWorkout ? `${data.lastWorkout.type} on ${data.lastWorkout.date} · received ${stamp(data.lastWorkout.receivedAt)}` : "nothing yet") : "—"}</span>
           <span>Last post · {data ? (data.lastPost ? `${stamp(data.lastPost.receivedAt)}${data.lastPost.automation ? ` · ${data.lastPost.automation}` : ""} · ${data.lastPost.summary}` : "nothing yet") : "—"}</span>
+          {data?.pipe && data.pipe.posts > 0 && (
+            <span>Last posts carried · {[...data.pipe.carried.map(metricWords), ...(data.pipe.workoutsSeen ? ["workouts"] : [])].join(", ") || "nothing"}{!data.pipe.sleepSeen ? " · no sleep" : ""}{!data.pipe.workoutsSeen ? " · no workouts" : ""}</span>
+          )}
         </div>
+        {data?.pipe && now > 0 && (() => { const n = pipeNote(data.pipe, "sleep", now) ?? pipeNote(data.pipe, "workouts", now); return n ? <div style={{ fontSize: 14, color: "var(--warn)", lineHeight: 1.45 }}>{n}</div> : null; })()}
         {data?.setup && (
           <div style={{ display: "grid", gap: 6 }}>
             {(["url", "key"] as const).map((what) => {
