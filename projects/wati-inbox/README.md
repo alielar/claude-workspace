@@ -66,6 +66,17 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
   edit), locked until the pause is confirmed; a send from that card is refused otherwise. Alerts close
   when the lead replies, when the step time passes, or when the template lands anyway (then Ali is told).
   `SALES_HUB_URL` in `.env` adds a link. Dry run: `node --env-file=.env tbc-watch.mjs`.
+- `consolidate-engine.mjs` + `consolidate-prompt.md` — the learned cases, consolidated (2026-09-30). The raw
+  journal `../Wati outreach/playbook/04-CAS-APPRIS.md` grows every day and repeats itself; drafts used to read
+  only its last 200 lines. Now, every evening at `CONSOLIDATE_AT` (22:15 Madrid, after the nightly review) when
+  the journal moved, one Sonnet run rebuilds `playbook/06-REGLES-APPRISES.md`: every rule exactly once, grouped
+  by fixed themes (style · diagnostic and ladder · verbatim scripts · administration and deadlines · deposit and
+  payment · start dates · low pressure and closing · special cases · to settle with Ali · technical vigilance),
+  the latest decision wins, validated scripts copied word for word, 150–250 lines. A marker
+  `<!-- consolidé jusqu'ici · <date> -->` is appended to the journal; every draft reads 06 in full and gets the
+  journal tail after the marker injected in its prompt, so nothing learned today is missed. The result is
+  validated (size, sections) before the file is replaced; a summary lands in `data/nightly/<date>.md`.
+  Terminal: `node --env-file=.env consolidate-engine.mjs [--force]`.
 - `db.mjs` — `data/inbox.sqlite` (threads, messages, suggestions, lessons, tm_messages, tm_flags,
   tbc_alerts, push subscriptions, sends, state).
 - `wati.mjs` — the Wati calls (ported from `lead.mjs`, `send.mjs`, `check-templates.mjs`).

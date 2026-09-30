@@ -66,7 +66,8 @@ the full pending scan.
   administration, buying-intent handling, the deadline-day follow-up rhythm, do-not-contact
   handling. Applies to nearly every message, not just edge cases — check it whenever tone,
   timing, or a deadline/extension is in play, same tier as the quick card.
-- `playbook/04-CAS-APPRIS.md` — cases Ali logged. **Overrides the card** where they differ.
+- `playbook/06-REGLES-APPRISES.md` — **every learned case, consolidated** (one rule per line, latest decision first, scripts verbatim). Rebuilt every evening at 22:15 by the Inbox app from the raw journal. Read it in full before a draft; it **overrides the card** where they differ.
+- `playbook/04-CAS-APPRIS.md` — the raw journal Ali and the app append to. Only what follows its last `<!-- consolidé jusqu'ici -->` marker is new; the rest is already in 06. Never edit 06 by hand: log cases here.
 - `playbook/02-PLAYBOOK-closing-france.md` — the full logic. Unusual cases only.
 - `playbook/01-NUMBERS-PRODUCT-france.md` — full catalogue, prices, guarantee conditions,
   payment/instalment rules, discount tiers, downsell ladder, product facts. Single source of

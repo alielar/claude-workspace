@@ -19,6 +19,7 @@ import { learnFromSend, learnStatus } from './learn-engine.mjs';
 import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
+import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts } from './db.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
@@ -320,4 +321,5 @@ server.listen(PORT, () => {
   console.log(`Wati Inbox on https://localhost:${PORT}  ·  https://${TS_HOST}:${PORT}`);
   startPolling();
   startTmMonitor();
+  startConsolidating();
 });

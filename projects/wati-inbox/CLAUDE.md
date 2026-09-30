@@ -26,6 +26,11 @@ unanswered — the only case Ali wants flagged; enrolled leads and "solution pro
 the templates (`fit`); if it does not fit, a push + a card in the thread: 1. pause it in the Sales
 Hub (Ali confirms, the app never claims it), 2. the manual follow-up, unlocked only after that confirmation.
 Rows in `tbc_alerts`; `SALES_HUB_URL` in `.env` adds a link. Terminal dry run: `node --env-file=.env tbc-watch.mjs`.
+The learned cases are consolidated by `consolidate-engine.mjs` (2026-09-30): every evening at `CONSOLIDATE_AT` (22:15
+Madrid), when the raw journal `../Wati outreach/playbook/04-CAS-APPRIS.md` moved, one Sonnet run rebuilds
+`../Wati outreach/playbook/06-REGLES-APPRISES.md` (every rule once, latest decision wins, scripts verbatim, 150–250
+lines) and appends a `<!-- consolidé jusqu'ici · … -->` marker to the journal. Every draft reads 06 in full plus the
+journal tail after that marker (injected in the prompt). Terminal: `node --env-file=.env consolidate-engine.mjs [--force]`.
 All three run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a
 time; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
 
@@ -45,5 +50,6 @@ Then commit and push. Test a draft from the terminal with
   reading `../Wati outreach/CLAUDE.md` and `playbook/00-QUICK.md`; the playbook is the source of truth.
 - The inbox lists only open 24h windows; do not bring closed conversations back (Ali, 2026-09-29).
 - The app cannot pause the Sales Hub automation and must never say a step is paused unless Ali tapped the confirmation; a template that lands after his confirmation is reported back to him.
+- Never edit `06-REGLES-APPRISES.md` by hand (rebuilt nightly); new cases go into `04-CAS-APPRIS.md`.
 - Headless runs load user, project and local settings (global file cleaned on 2026-09-27).
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.

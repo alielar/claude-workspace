@@ -20,6 +20,17 @@ import { db, getThread, latestSuggestion, insertSuggestion, getOffer, autoSugges
 import { describeDirection, describeOffer, currencyFor, MOVES } from './directions.mjs';
 
 export const OUTREACH = resolve(process.env.OUTREACH_DIR || '../Wati outreach');
+export const JOURNAL = join(OUTREACH, 'playbook', '04-CAS-APPRIS.md');      // raw learned cases, appended by the app and the reviews
+export const RULES = join(OUTREACH, 'playbook', '06-REGLES-APPRISES.md');    // consolidated rules, rebuilt every evening (consolidate-engine.mjs)
+// What was appended to the journal after the last consolidation marker: injected into every draft prompt.
+export function unconsolidatedTail() {
+  if (!existsSync(JOURNAL)) return '';
+  const s = readFileSync(JOURNAL, 'utf8');
+  const i = s.lastIndexOf("<!-- consolidé jusqu'ici");
+  if (i < 0) return '';
+  const nl = s.indexOf('\n', i);
+  return nl < 0 ? '' : s.slice(nl + 1).trim();
+}
 const NODE_DIR = dirname(process.execPath);
 const CLAUDE = process.env.CLAUDE_BIN || join(NODE_DIR, 'claude');
 export const MODEL = process.env.SUGGEST_MODEL || 'claude-sonnet-5';
@@ -124,6 +135,8 @@ export async function draft(waId, direction = {}) {
     extra += `\nAli avait déjà une proposition sous les yeux${prevFresh.instruction ? ` (${prevFresh.instruction})` : ''} et ne l'a pas envoyée :\n${o.bubbles.map((b) => `> ${b}`).join('\n')}\nNe la recopie pas ; rédige selon le nouveau cap et dis dans \`why\` ce qui change.\n`;
   }
   extra += 'Le cap dit OÙ on va ; la carte et les cas appris disent COMMENT on l’écrit. Si le cap contredit une règle dure (chiffre inventé, remise gratuite, deux messages de pression le même jour), suis le cap mais signale-le dans `note`.\n';
+  const fresh = unconsolidatedTail();
+  if (fresh) extra += `\n## Appris depuis la dernière consolidation (prime sur 06-REGLES-APPRISES.md, applique en priorité)\n${fresh.length > 7000 ? '…\n' + fresh.slice(-7000) : fresh}\n`;
   const prompt = readFileSync(new URL('./suggest-prompt.md', import.meta.url), 'utf8')
     .replaceAll('{{waId}}', waId).replaceAll('{{name}}', t.name || 'prénom inconnu').replaceAll('{{now}}', madrid()).replaceAll('{{node}}', process.execPath).replaceAll('{{extra}}', extra);
   const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 30 });
