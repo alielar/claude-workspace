@@ -552,3 +552,32 @@ Neuf leads comparés : Cedric, Kamila, Ouassila, Ariane, Elorri, Tournier, Enkam
 **Ce qu'Ali a envoyé :** n/a — pas d'envoi de message, réponse JSON uniquement
 **Pourquoi :** Ali a supprimé « Votre place reste de côté » : Boris n'a exprimé aucune inquiétude sur sa place, donc la rassurer était une réassurance gonflée non demandée — contraire à la règle maison « jamais de réassurance gonflée » (CLAUDE.md, house style) et au principe basse pression du 00-QUICK.md (ne traiter que la friction réellement exprimée). Il a aussi retiré le prénom « Boris » en milieu de bulle 1 (prénom non systématique, style maison) et raccourci « en la relisant » — retouches mineures secondaires à la leçon principale.
 **Comment appliquer :** Pour un accusé de réception basse pression sans friction nommée, ne pas ajouter de réassurance sur un point que le lead n'a pas soulevé (place, paiement, etc.) — se limiter à accuser réception et rester disponible pour une question.
+
+## 2026-09-30 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+### 14:28 · Boris — Étape 1 du mécanisme administration : fusionner accusé + mécanisme en une bulle, registre personnel ("je vais voir ce que je peux faire pour vous") plutôt que neutre ("je vérifie avec l'administration")
+**Situation :** Boris, deadline 20h le jour même, a envoyé un audio illisible 12 min après le rappel de clôture — pas de contenu exploitable, juste un signal d'hésitation
+**Ce qui était proposé :** Bonjour Boris, j'ai bien reçu votre message / Dans certains cas précis on peut prolonger un peu le délai, je vérifie ça avec l'administration / Je reviens vers vous très vite
+**Ce qu'Ali a envoyé :** n/a — cette réponse n'envoie rien, elle documente l'écart pour l'app
+**Pourquoi :** Ali supprime la bulle d'accusé de réception séparée et la fond dans la bulle du mécanisme, et remplace la formule neutre "je vérifie avec l'administration" par un registre plus personnel et engagé ("je vais voir... ce que je peux faire pour vous... dans ce cas là en particulier"). Recoupe le cas Tournier (04-CAS-APPRIS, §3) où la même question était restée "à confirmer" : Ali y avait aussi préféré "j'ai pu vous prolonger" à "l'administration a prolongé" — ici même préférence pour un registre personnel plutôt qu'administratif neutre, mais sur l'étape 1 plutôt que l'étape 2.
+**Comment appliquer :** Pour l'étape 1 du mécanisme administration, écrire une seule bulle qui mêle accusé de réception implicite et annonce du mécanisme, au registre personnel plutôt que neutre, suivie de "Je reviens vers vous très vite" sans question.
+### 14:40 · Boris — Prolongation de délai : reprendre l'heure exacte de la consigne d'Ali, ne pas supposer qu'elle reste identique au moment de l'envoi
+**Situation :** Boris avait reçu l'étape 1 (« je vais voir avec l'administration ») et répondu « Très bien » ; il fallait livrer la « bonne nouvelle » : délai prolongé jusqu'à samedi, place gardée.
+**Ce qui était proposé :** Bonne nouvelle Boris, confirmation de l'administration / Ils ont prolongé votre délai jusqu'à samedi 20h et gardé votre place, le temps de vérifier l'autre option et d'honorer votre engagement avec l'autre organisme / Je reviens vers vous samedi, ça vous convient ? — consigne d'Ali : « extend his deadline to Saturday 8 PM » (= 20h)
+**Ce qu'Ali a envoyé :** Bonne nouvelle Boris, confirmation de l'administration / Ils ont prolongé votre délai jusqu'à samedi 21h et gardé votre place, le temps de vérifier l'autre option et d'honorer votre engagement avec l'autre organisme / Je reviens vers vous samedi, ça vous convient ?
+**Pourquoi :** Seul écart : l'heure de prolongation, 20h dans la consigne dictée d'Ali, 21h dans le message réellement envoyé — tout le reste (structure trois bulles, mécanisme administration, absence de garantie chiffrée, question de clôture) est identique. Raison à confirmer avec Ali : possible ajustement volontaire (éviter de recaler la nouvelle échéance sur la même heure que la clôture du jour même, 20h, pour que la prolongation ne sonne pas comme un simple copier-coller), ou simple flottement entre la consigne dictée à l'oral et le chiffre finalement tapé.
+**Comment appliquer :** Pour une prolongation de délai, reprendre l'heure donnée dans la consigne d'Ali au mot près plutôt que de la considérer comme acquise jusqu'à l'envoi ; si un prochain cas montre à nouveau un décalage entre l'heure dictée et l'heure envoyée, le signaler comme un pattern plutôt qu'un cas isolé.
+
+## 2026-09-30 — Retour d'Ali sur la revue des conversations du 29/09 (tranché)
+
+Règles permanentes, intégrées dans `00-QUICK.md` (bloc « Revue du 29/09 »), `05-PRINCIPES` §1, `01-NUMBERS` et le prompt de l'app.
+
+- **Style :** concis, naturel, jamais de point-virgule. Prénom au plus une fois, en ouverture — jamais répété au fil d'un échange (confirme la leçon Boris du 29/09). Aucun détail non demandé (heures/semaine, durée, date de rentrée) si ça ne répond pas à la question du lead.
+- **Date de démarrage :** ne jamais la donner spontanément. Si le lead demande : c'est flexible, il choisit après l'inscription ; au besoin une demande interne au support étudiant permet de démarrer hors dates officielles. Les « rentrées 28 sept., 26 oct., 23 nov. » sont retirées de la carte et de l'app.
+- **Créneaux :** « vous choisissez vos créneaux », une leçon se déplace jusqu'à 1h avant. Jamais « les mêmes créneaux pour le mois » (bulle à Liliane du 29/09).
+- **Garantie :** « avec la garantie B2 », pas « jusqu'au B2 ».
+- **Devise :** mêmes chiffres partout, € France/Belgique, CHF Suisse. Vérifier le pays avant tout montant (cas Kamila : euros envoyés à une Suissesse). Jamais de message de correction dédié : continuer dans la bonne devise, signaler l'écart à Ali.
+- **Downsell :** le format plus léger est celui qui correspond au lead, jamais une promo ni un ton « on pousse la vente ». Quand le blocage (prix, financement) et le palier suivant sont clairs, proposer le palier — ne pas redemander une objection déjà établie (cf. veille du 29/09, règles 1 et 2, désormais dans la carte).
+- **Produit :** le **24h à 294** existe, tous marchés (294 € FR/BE, 294 CHF CH), sans garantie, dernier palier de repli après 36h/434. Ajouté au catalogue et à l'app (« Downsell → 24h »). Le cas Lionel n'est pas à retrouver (Ali, 30/09).

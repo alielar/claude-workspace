@@ -127,9 +127,10 @@ Keep it compact. Ali is usually on his phone between calls.
 - **Never invent** a price, discount, deadline, promotion, guarantee, start date or
   financing rule. If it is not in the playbook, the transcripts, or what Ali just told
   you, ask him. One short question beats an invented number.
-- The small fallback formats (60h/737 €, 40h/583 €, 36h/434 €, 32h/399 €, 20h/240 €) are
-  the **last** rung and their prices date from early 2026 — confirm with Ali before
-  quoting one.
+- The small fallback formats are the **last** rung. Confirmed by Ali on 2026-09-30: 48h/583,
+  36h/434 and **24h/294** (all markets, € in France/Belgium, CHF in Switzerland, same figures).
+  The older ones (60h/737 €, 40h, 32h, 20h) date from early 2026 — confirm with Ali before
+  quoting one. Swiss leads: same numbers in CHF, never €.
 - Free concessions (deadline extension, later start date, holding the place) always come
   before any concession that costs money.
 - A discount is never given for asking. It only exists as a mechanism: proof of CPF

@@ -14,6 +14,7 @@ n'existe pas. Ne jamais arrondir, ne jamais recalculer.
 | 60h groupe | Aucune | 737 € | — |
 | 48h groupe | Aucune | 583 € | — |
 | 36h groupe | Aucune | 434 € | — |
+| 24h groupe (validé par Ali le 30/09/2026, tous marchés) | Aucune | 294 € | — |
 | 60h 1:1 | Aucune | 996 € | — |
 | 48h 1:1 | Aucune | 863 € | — |
 | 36h 1:1 | Aucune | 699 € | — |
@@ -27,6 +28,15 @@ Pas de garantie en dessous de B1. Pas de garantie A1/A2. Jamais une offre à 2 s
 proposée à un B2 (le C2 n'existe pas comme offre).
 
 10x — exemples : 180h ≈ 180 €/mois · 90h ≈ 99 €/mois.
+
+**Devise par marché (Ali, 30/09/2026) :** mêmes chiffres partout — en € pour la France et la
+Belgique, en CHF pour la Suisse (180h = 1 800 CHF, 90h = 990 CHF, 24h = 294 CHF…). Vérifier le pays
+du lead avant tout montant. Une devise fausse dans un message passé ne se corrige pas par un message
+dédié : on continue dans la bonne devise et on le signale à Ali.
+
+**Date de démarrage (Ali, 30/09/2026) :** ne jamais donner une date de rentrée spontanément. Si le
+lead demande : c'est flexible, il choisit sa date après l'inscription ; en cas de besoin, une demande
+interne au support étudiant permet de démarrer en dehors des dates officielles.
 
 ## Politique d'offre & downsell
 
@@ -52,8 +62,10 @@ produit au même prix, pas en baissant le prix.
      vers un cours garanti)
    - Depuis 270h → 180h d'abord, puis seulement 90h
 3. Toujours trop → rare, uniquement sur appel, validé par Andrin : les petits packs
-   speaking sans garantie — 60h/737 € · 48h/583 € · 36h/434 €. Exception, pas une
-   marche standard de l'échelle.
+   speaking sans garantie — 60h/737 € · 48h/583 € · 36h/434 € · 24h/294 € (dernier
+   palier, disponible depuis le 30/09/2026). Exception, pas une marche standard de
+   l'échelle. Dès que le prix ou le financement est nommé comme blocage, passer au palier
+   suivant sans redemander ce qu'on sait déjà.
 4. Toujours trop → renvoyer au closing / mécanique WhatsApp, noter dans le CRM. Ne
    jamais inventer un produit plus petit.
 

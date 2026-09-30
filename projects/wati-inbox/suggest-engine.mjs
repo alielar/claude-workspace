@@ -15,7 +15,7 @@ import { spawn } from 'node:child_process';
 import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { db, getThread, latestSuggestion, insertSuggestion, getOffer } from './db.mjs';
-import { describeDirection, describeOffer } from './directions.mjs';
+import { describeDirection, describeOffer, currencyFor } from './directions.mjs';
 
 export const OUTREACH = resolve(process.env.OUTREACH_DIR || '../Wati outreach');
 const NODE_DIR = dirname(process.execPath);
@@ -42,7 +42,7 @@ export const suggestStatus = (waId) => status.get(waId) || null;
 
 // Ali picked the cap in the app → draft now (a second tap while queued replaces the cap).
 export function requestSuggestion(waId, direction = {}) {
-  const d = describeDirection(direction, getOffer(waId));
+  const d = describeDirection(direction, getOffer(waId), currencyFor(getThread(waId)?.country));
   queue.set(waId, { direction, text: d.text });
   status.set(waId, { state: 'queued', at: new Date().toISOString(), direction: d.text });
   return true;
@@ -71,14 +71,15 @@ export async function draft(waId, direction = {}) {
   const t = getThread(waId);
   if (!t) throw new Error('conversation inconnue');
   const offer = getOffer(waId);
-  const d = describeDirection(direction, offer);
+  const cur = currencyFor(t.country); // € for France/Belgium, CHF for Switzerland (same figures)
+  const d = describeDirection(direction, offer, cur);
   const instruction = d.text;
   status.set(waId, { state: 'drafting', at: new Date().toISOString(), direction: instruction });
   log('drafting for', t.name || waId, instruction ? `— ${instruction}` : '(sans cap)');
   // The draft Ali is replacing, if one is on screen: Claude must see what he did not send.
   const prev = latestSuggestion(waId);
   const prevFresh = prev && (!t.last_inbound_at || prev.created_at >= t.last_inbound_at) ? prev : null;
-  let extra = `\n## Offre initiale (ce qui a été proposé à l'appel, saisi par Ali)\n${offer?.format ? describeOffer(offer) : 'non renseignée — ne suppose rien, laisse un [CROCHET] si un chiffre d’origine manque'}\n`;
+  let extra = `\n## Offre initiale (ce qui a été proposé à l'appel, saisi par Ali)\n${offer?.format ? describeOffer(offer, cur) : 'non renseignée — ne suppose rien, laisse un [CROCHET] si un chiffre d’origine manque'}\nDevise du lead : ${cur} (pays CRM : ${t.country || 'inconnu'}).\n`;
   extra += '\n## Ce qu’Ali a choisi — prioritaire sur la carte\n';
   extra += d.block || '- Ali n’a coché aucun move : réponds simplement et précisément à ce que le lead a écrit, selon la carte.\n';
   if (prevFresh) {

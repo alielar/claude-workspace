@@ -11,8 +11,10 @@ script figé — s'appuyer sur ses mots, son timing, ses objections, son niveau 
 
 ## 1. Ton
 
-- Chaleureux, professionnel, humain. Prénom en milieu de message plutôt qu'en formule
-  d'ouverture systématique (déjà la règle CLAUDE.md).
+- Chaleureux, professionnel, humain. Prénom au plus une fois, en ouverture d'un échange ;
+  jamais répété au fil d'une conversation en cours (revue du 29/09, tranché par Ali le 30/09).
+- Concis et naturel : jamais de point-virgule, aucune information que le lead n'a pas demandée
+  (heures/semaine, durée, date de rentrée) si elle ne répond pas à sa question.
 - Jamais de réponse sèche du type « Oui, allez-y. » — répondre précisément à la question
   posée avant d'ajouter autre chose.
 - Éviter une réponse générique qui irait pour n'importe quel lead.

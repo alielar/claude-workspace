@@ -16,7 +16,7 @@ import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getCo
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
-import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer } from './directions.mjs';
+import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
@@ -155,7 +155,8 @@ async function api(req, res, path) {
       learning: learnStatus(waId),
       lastLesson: latestLesson(waId) || null,
       offer: getOffer(waId),
-      offerText: describeOffer(getOffer(waId)),
+      offerText: describeOffer(getOffer(waId), currencyFor(t.country)),
+      currency: currencyFor(t.country),
       scheduled: scheduled.has(waId) ? { at: scheduled.get(waId).at, bubbles: scheduled.get(waId).bubbles } : null,
       stale,
       sending: sending.get(waId) || null,
@@ -175,7 +176,7 @@ async function api(req, res, path) {
     const offer = b.format && FORMATS[b.format] ? { format: b.format, level: LEVELS.includes(b.level) ? b.level : '', hpw: Math.min(7, Math.max(0, Number(b.hpw) || 0)) || null, months: Number(b.months) || null } : null;
     if (offer && !offer.months) offer.months = monthsFor(FORMATS[offer.format].hours, offer.hpw);
     setOffer(waId, offer);
-    return json(res, 200, { ok: true, offer, offerText: describeOffer(offer) });
+    return json(res, 200, { ok: true, offer, offerText: describeOffer(offer, currencyFor(storedThread(waId)?.country)) });
   }
   if (action === 'cancel' && req.method === 'POST') return json(res, 200, { ok: true, cancelled: cancelScheduled(waId) });
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }

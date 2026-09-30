@@ -17,13 +17,17 @@ Tout ce qu'il faut pour répondre à 90 % des cas. Le détail est dans `02-PLAYB
 1. **Étaler** : 10 fois sans frais via Alma → 180 €/mois (1 800 €) ou 99 €/mois (990 €)
 2. **Isoler** : « Indépendamment du prix, seriez-vous intéressé(e) et motivé(e) à suivre les leçons ? »
 3. **Budget** : « Quel budget pouvez-vous investir ? » (+ « total ou mensuel ? »)
-4. **Format plus petit** : 1 800 € → 990 €, cadré comme un **changement d'objectif**, jamais une remise
+4. **Format plus petit** : 1 800 € → 990 €, présenté comme le format qui **lui** correspond (changement
+   d'objectif), jamais une remise ni une promo. **Dès que le lead nomme le prix ou le financement** (même en
+   réponse à la question de diagnostic), sauter les marches 2 et 3 et proposer directement ce palier (veille du 29/09)
 5. **Moins d'heures/semaine** (minimum 2h, le total d'heures ne bouge pas, la durée s'allonge)
 6. **Prolonger la deadline** (gratuit — toujours avant de lâcher un euro)
 7. **Démarrage plus tard** + la sanction : liste d'attente 10-12 mois, sans garantie
 8. **Acompte 196 €**, puis 96 € en seconde concession — **jamais l'inverse**
-9. **Formats de repli** (dernier cran, confirmer le prix avec Ali) : 60h/737 €, 40h/583 €, 36h/434 €, 32h/399 €, 20h/240 €
-10. **Sortie propre**, porte ouverte
+9. **Formats de repli** (dernier cran) : 48h/583 €, 36h/434 €, **24h/294 €** (validé par Ali le 30/09, tous marchés) ;
+   les autres anciens paliers (60h/737 €, 40h, 32h, 20h) datent de début 2026, confirmer avec Ali avant de les citer
+10. **Sortie propre**, porte ouverte — seulement une fois les paliers chiffrés épuisés : un deuxième refus sur le même
+    blocage appelle le palier suivant, pas la clôture (veille du 29/09)
 
 ## Le schéma du non qui ne casse rien
 
@@ -57,7 +61,8 @@ réactivé le lien »). Jamais de réassurance gonflée (« vraiment », « c'es
 
 Un blocage à la fois · **un seul message de pression par jour** · la concession se mérite (on annonce
 qu'on vérifie, on laisse passer un vrai moment, on revient avec « Bonne nouvelle ») · toute concession
-est **datée et bornée** · on tient une place, jamais un prix · deux refus clairs = sortie propre.
+est **datée et bornée** · on tient une place, jamais un prix · deux refus clairs = sortie propre, **sauf s'il reste
+un palier chiffré non proposé** (on le propose d'abord).
 
 Même quand c'est **le lead** qui demande le format plus court : jamais « bien sûr, on peut ». D'abord
 « dans certains cas précis on peut proposer un format plus court, je vérifie avec l'administration »,
@@ -83,11 +88,23 @@ inutile** : on ne demande pas « je mets à jour ? », on envoie « L'administra
 jour votre invitation, voici le lien : … » puis « Dites-moi quand c'est fait pour que je vous envoie
 la suite » · vérifier qu'un lien modifié affiche bien le nouveau format avant de l'envoyer.
 
+**Revue du 29/09 (tranchée par Ali le 30/09, prime sur le reste) :** concis et naturel, **jamais de point-virgule** ·
+**prénom au plus une fois**, en ouverture, jamais répété au fil d'un échange · **rien de non demandé** : pas d'heures/semaine,
+pas de durée, pas de date de rentrée si ça ne répond pas à la question · **date de démarrage** : ne jamais la donner
+spontanément ; si on la demande, c'est flexible, on la choisit après l'inscription, et une demande interne au support
+étudiant permet un démarrage hors dates officielles · **créneaux** : « vous choisissez vos créneaux », une leçon se
+déplace jusqu'à 1h avant — jamais « les mêmes créneaux pour le mois » · dire « **avec la garantie B2** », pas « jusqu'au B2 » ·
+**devise du marché** : € France/Belgique, **CHF Suisse, mêmes chiffres** — vérifier le pays avant tout montant, jamais de
+message de correction pour une devise fausse (on continue juste et on signale à Ali) · le format plus léger est
+**celui qui lui correspond**, jamais une promo · **quand le blocage et le palier suivant sont clairs, on propose, on ne
+redemande pas**.
+
 ## Chiffres actuels (sept. 2026)
 
-1 800 € / 180h jusqu'au B2 · 990 € / 90-96h · 4 fois = 450 €/mois · 10 fois = 180 €/mois · acompte 196 € puis 96 € ·
+1 800 € / 180h avec la garantie B2 · 990 € / 90-96h · 4 fois = 450 €/mois · 10 fois = 180 €/mois · acompte 196 € puis 96 € ·
 rétractation 14 j **à partir du premier cours** — retenue = **196 € d'onboarding + les cours déjà organisés du mois 1** (toujours les deux) ·
-rentrées 28 sept., 26 oct., 23 nov. · liste d'attente 10-12 mois · support étudiant +39 375 585 8639.
+démarrage flexible, choisi après l'inscription (aucune date citée spontanément) · liste d'attente 10-12 mois · support étudiant +39 375 585 8639.
+Suisse : mêmes montants en CHF.
 
 CPF : pas un moyen de paiement (société suisse) → **20 % d'heures en plus**, proportionnel au format
 (**36h** sur le 180h, **18h** sur le 90h), sur capture d'écran des fonds, seulement si le solde couvrait
