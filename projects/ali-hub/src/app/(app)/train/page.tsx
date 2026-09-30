@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrain";
 import { fmtClock, repsLabel, workStats, weeklyPaces, paceToBeat, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
-import { useClientValue } from "@/lib/useClientValue";
+import { useClientValue, useNow } from "@/lib/useClientValue";
 import { useEffect, useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import { MindPane } from "@/components/mind/MindPane";
@@ -121,7 +121,7 @@ export default function TrainPage() {
   const strength = watch.filter((w) => workoutKind(w.type) === "strength");
   const otherWatch = watch.filter((w) => workoutKind(w.type) === "other");
   // Why the Watch lists are empty, from what HAE really posted (null once workouts flow).
-  const nowMs = useClientValue(() => Date.now(), 0);
+  const nowMs = useNow();
   const watchNote = health && watch.length === 0 && nowMs ? pipeNote(health.pipe, "workouts", nowMs) : null;
   const { workouts, loading: wLoading } = useWorkouts();
   const { data: ov, loading: oLoading } = useOverview();

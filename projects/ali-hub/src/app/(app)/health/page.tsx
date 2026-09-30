@@ -25,7 +25,7 @@ import {
 } from "@/lib/health/client";
 import { Bars, Line, RangeBar, Spark, StageBar } from "@/components/health/charts";
 import { checklistToday } from "@/lib/checklist/day";
-import { useClientValue } from "@/lib/useClientValue";
+import { useNow } from "@/lib/useClientValue";
 
 function scoreTone(s: number | null): string {
   return s === null ? "var(--ink-3)" : s >= 75 ? "var(--pos)" : s >= 55 ? "var(--warn)" : "var(--neg)";
@@ -226,7 +226,7 @@ export default function HealthPage() {
   const vitals = vitalRows(known, nights);
   const empty = !loading && data && nights.length === 0 && knownKeys.length === 0 && unknown.length === 0;
   // Why sleep is missing, from what HAE really posted · shown while there is no night at all.
-  const now = useClientValue(() => Date.now(), 0);
+  const now = useNow();
   const note = data && nights.length === 0 && now ? pipeNote(data.pipe, "sleep", now) : null;
 
   return (

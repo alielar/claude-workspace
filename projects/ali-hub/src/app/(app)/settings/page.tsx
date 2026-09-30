@@ -8,7 +8,7 @@
 import React, { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
-import { useClientValue } from "@/lib/useClientValue";
+import { useClientValue, useNow } from "@/lib/useClientValue";
 import { useCached, fetchJson, isOnline } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { VIDEO_CATEGORIES, allChannels, defaultEnabledIds, isBuiltIn, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
@@ -113,7 +113,7 @@ function AppleWatchCard() {
   const { data } = useCached<HealthStatus>("health-status", () => fetchJson<HealthStatus>("/api/health/ingest"));
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<"url" | "key" | null>(null);
-  const now = useClientValue(() => Date.now(), 0);
+  const now = useNow();
   const copy = async (what: "url" | "key", text: string) => {
     try { await navigator.clipboard.writeText(text); setCopied(what); setTimeout(() => setCopied(null), 1500); } catch { /* show it, user copies by hand */ }
   };
