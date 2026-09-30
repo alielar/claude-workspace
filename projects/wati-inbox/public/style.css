@@ -117,3 +117,8 @@ details.fold[open] > summary { margin-bottom: 10px; }
 .msg.tpl { opacity: .8; }
 .offer { margin-bottom: 8px; }
 header a[data-nav] { font-size: 22px; padding: 0 6px; }
+
+/* editing a draft: one field per bubble (2026-09-30) */
+.eb { display: flex; gap: 6px; align-items: flex-start; margin: 4px 0; }
+.eb textarea { min-height: 44px; resize: none; overflow: hidden; background: var(--us); }
+.eb button { min-width: 40px; padding: 8px; }

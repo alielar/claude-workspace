@@ -110,7 +110,7 @@ async function renderInbox({ fromCache = false } = {}) {
 }
 
 // ── thread ───────────────────────────────────────────────────────────────────
-let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '', tbcTemplateAlert = null, laterEdit = null, steerOpen = false;
+let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '', tbcTemplateAlert = null, laterEdit = null, draftEdit = null, steerOpen = false; // draftEdit / laterEdit = arrays of bubbles being edited in place, one field each
 const emptyDir = () => ({ moves: [], level: '', level2: '', until: '', instruction: '' });
 let dir = emptyDir(), offerOpen = false, offerDraft = null, threadTimer = null, dirs = null;
 const loadDirs = async () => (dirs ||= await api('/api/directions'));
@@ -188,18 +188,19 @@ async function renderThread(waId, { quiet = false } = {}) {
       <div class="row"><button class="primary" id="needsgo">Rédiger</button>${sug.why ? `<span class="muted small">${esc(sug.why)}</span>` : ''}</div></div>`;
   else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude : rien à répondre — ${esc(sug.why || '')}</span> <button class="small" id="anyway">Rédiger quand même</button></div>`;
   else if (o && o.bubbles?.length) {
-    const laterText = laterEdit ?? (o.later || []).join('\n\n');
+    // Editing = one field per bubble; each field is still its own WhatsApp message when sent.
+    const fields = (arr, tag) => arr.map((b, j) => `<div class="eb"><textarea data-${tag}="${j}" rows="2">${esc(b)}</textarea><button class="small" data-${tag}del="${j}" title="Supprimer cette bulle">×</button></div>`).join('') + `<button class="small" data-${tag}add>+ bulle</button>`;
     claude = `<div class="card opt">
         <div class="opt-head">${o.later?.length ? 'Maintenant' : 'Brouillon'} <span class="muted">· ${sug.source === 'auto' ? 'Claude a choisi' : 'sur votre cap'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}</span></div>
         ${sug.note ? `<p class="note small">${esc(sug.note)}</p>` : ''}
-        ${o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${j}">Copier</button></div>`).join('')}
-        <div class="acts">${d.windowOpen ? `<button class="primary small" data-send="0" ${sendLock ? 'disabled' : ''}>Envoyer</button><button class="small" data-use="0">Modifier</button>` : ''}<button class="small" data-copyall="0">Tout copier</button></div>
+        ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${j}">Copier</button></div>`).join('') : fields(draftEdit, 'eb')}
+        <div class="acts">${d.windowOpen ? `<button class="primary small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Envoyer' : 'Envoyer ces bulles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Modifier' : 'Annuler'}</button>` : ''}<button class="small" data-copyall="0">Tout copier</button></div>
         ${o.why ? `<details><summary>Pourquoi</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
         <div class="opt-head">Dans 5-10 min <span class="muted">· la bonne nouvelle de l’administration</span></div>
-        ${laterEdit == null ? o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copyl="${j}">Copier</button></div>`).join('') : `<textarea id="laterta">${esc(laterText)}</textarea>`}
-        <div class="acts">${d.windowOpen ? `<button class="primary small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Programmer dans 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Envoyer maintenant</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Modifier' : 'Garder tel quel'}</button><button class="small" data-copyalll="0">Tout copier</button></div>
+        ${laterEdit == null ? o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copyl="${j}">Copier</button></div>`).join('') : fields(laterEdit, 'lb')}
+        <div class="acts">${d.windowOpen ? `<button class="primary small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Programmer dans 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Envoyer maintenant</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Modifier' : 'Annuler'}</button><button class="small" data-copyalll="0">Tout copier</button></div>
       </div>` : '');
   }
   const learnLine = d.learning && (d.learning.state === 'waiting' || d.learning.state === 'learning') ? '<p class="muted small learn">Claude note ce que vous avez envoyé…</p>'
@@ -232,7 +233,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
   const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
-  const askClaude = async (body) => { try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body }); toast('Claude rédige, environ une minute'); steerOpen = false; laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); } };
+  const askClaude = async (body) => { try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body }); toast('Claude rédige, environ une minute'); steerOpen = false; laterEdit = null; draftEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); } };
   // Sales Hub card
   if (al) {
     const tbcAct = async (action) => { try { await api(`/api/thread/${waId}/tbc`, { method: 'POST', body: { id: al.id, action } }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); } };
@@ -248,14 +249,24 @@ async function renderThread(waId, { quiet = false } = {}) {
   if ($('#anyway')) $('#anyway').onclick = () => askClaude({ moves: [], instruction: 'Réponds quand même, brièvement' });
   if ($('#needsgo')) $('#needsgo').onclick = async () => { const txt = $('#needs').value.trim(); if (!txt && !offerDraft) { toast('Écrivez la précision demandée'); return; } try { if (offerDraft?.format) await saveOffer(waId); } catch (e) { toast(e.message); return; } askClaude({ moves: [], instruction: txt }); };
   if ($('#needs')) $('#needs').oninput = (e) => { dir.instruction = e.target.value; };
+  // one field per bubble while editing: read them back in order, drop the empty ones
+  const readFields = (tag) => [...document.querySelectorAll(`textarea[data-${tag}]`)].map((ta) => ta.value.trim()).filter(Boolean);
+  const bindFields = (tag, get, set) => {
+    document.querySelectorAll(`textarea[data-${tag}]`).forEach((ta) => { ta.oninput = () => { get()[Number(ta.dataset[tag])] = ta.value; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }; ta.style.height = ta.scrollHeight + 'px'; });
+    document.querySelectorAll(`[data-${tag}del]`).forEach((b) => b.onclick = () => { const arr = get(); arr.splice(Number(b.dataset[`${tag}del`]), 1); set(arr.length ? arr : ['']); redraw(); });
+    const add = $(`[data-${tag}add]`); if (add) add.onclick = () => { set([...get(), '']); redraw(); };
+  };
+  const draftBubbles = () => draftEdit == null ? o.bubbles : readFields('eb');
+  const sameAsDraft = (arr) => arr.length === o.bubbles.length && arr.every((x, i) => x === o.bubbles[i].trim());
   document.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => copyText(o.bubbles[Number(b.dataset.copy)], b));
-  document.querySelectorAll('[data-copyall]').forEach((b) => b.onclick = () => copyText(o.bubbles.join('\n\n'), b));
-  document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => fillComposer(o.bubbles.join('\n\n'), { suggestionId: sug.id, option: 0 }));
-  document.querySelectorAll('[data-send]').forEach((b) => armed(b, 'Envoyer', async () => { b.disabled = true; try { await sendBubbles(waId, o.bubbles, { suggestionId: sug.id, option: 0, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
-  // the second block: editable in place, then scheduled or sent with the edited text
-  const laterBubbles = () => laterEdit == null ? o.later : splitBubbles($('#laterta')?.value ?? laterEdit);
-  if ($('#laterEdit')) $('#laterEdit').onclick = () => { if (laterEdit == null) laterEdit = o.later.join('\n\n'); else laterEdit = null; redraw(); };
-  if ($('#laterta')) $('#laterta').oninput = (e) => { laterEdit = e.target.value; };
+  document.querySelectorAll('[data-copyall]').forEach((b) => b.onclick = () => copyText(draftBubbles().join('\n\n'), b));
+  document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { draftEdit = draftEdit == null ? o.bubbles.slice() : null; redraw(); });
+  bindFields('eb', () => draftEdit, (v) => { draftEdit = v; });
+  document.querySelectorAll('[data-send]').forEach((b) => armed(b, draftEdit == null ? 'Envoyer' : 'Envoyer ces bulles', async () => { const bubbles = draftBubbles(); if (!bubbles.length) { toast('Aucune bulle'); return; } b.disabled = true; try { await sendBubbles(waId, bubbles, { suggestionId: sug.id, option: 0, edited: !sameAsDraft(bubbles) }); draftEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
+  // the second block: same editing, then scheduled or sent with the edited bubbles
+  const laterBubbles = () => laterEdit == null ? o.later : readFields('lb');
+  if ($('#laterEdit')) $('#laterEdit').onclick = () => { laterEdit = laterEdit == null ? o.later.slice() : null; redraw(); };
+  bindFields('lb', () => laterEdit, (v) => { laterEdit = v; });
   document.querySelectorAll('[data-copyl]').forEach((b) => b.onclick = () => copyText(o.later[Number(b.dataset.copyl)], b));
   document.querySelectorAll('[data-copyalll]').forEach((b) => b.onclick = () => copyText(laterBubbles().join('\n\n'), b));
   document.querySelectorAll('[data-sendlater]').forEach((b) => armed(b, 'Programmer dans 7 min', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second temps vide'); return; } b.disabled = true; try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, suggestionId: sug.id, option: 0, part: 'later', delayMs: 7 * 60_000 } }); toast('Le Mac l’enverra dans 7 min'); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
@@ -357,7 +368,7 @@ async function renderTm() {
 // ── router ───────────────────────────────────────────────────────────────────
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
-  if (!m || m[1] !== openedWaId) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; laterEdit = null; steerOpen = false; tbcTemplateAlert = null; clearTimeout(threadTimer); if (!m) openedWaId = ''; }
+  if (!m || m[1] !== openedWaId) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; laterEdit = null; draftEdit = null; steerOpen = false; tbcTemplateAlert = null; clearTimeout(threadTimer); if (!m) openedWaId = ''; }
   document.body.classList.add('busy');
   try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : await renderInbox(); if (!m) window.scrollTo(0, 0); }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹</a></header><p class="err">${esc(e.message)}</p>`; }
