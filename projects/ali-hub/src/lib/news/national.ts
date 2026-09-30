@@ -183,10 +183,24 @@ type EspnEvent = {
 
 const ymdToEspn = (ymd: string) => ymd.replace(/-/g, "");
 
-/** Every men's international match on one day (Europe/Madrid YYYY-MM-DD), finished or not. */
+/**
+ * Every men's international match on one day (Europe/Madrid YYYY-MM-DD), finished or not.
+ * ESPN first (it carries the AFCON qualifiers · two hosts, the first refused Vercel's servers
+ * with a 403 on 2026-09-30 while answering the Mac), then FIFA's own match calendar (reachable
+ * from Vercel, national teams flagged, but no CAF qualifiers).
+ */
 export async function fetchFixtures(ymd: string): Promise<Fixture[]> {
-  const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${ymdToEspn(ymd)}&limit=1000`, { headers: UA, signal: AbortSignal.timeout(15000) });
-  if (!res.ok) throw new Error(`espn ${res.status}`);
+  const errors: string[] = [];
+  for (const host of ["site.api.espn.com", "site.web.api.espn.com"]) {
+    try { return await fetchEspn(host, ymd); } catch (e) { errors.push(`${host.split(".")[0]} ${String((e as Error)?.message ?? e).slice(0, 30)}`); }
+  }
+  try { return await fetchFifaCalendar(ymd); } catch (e) { errors.push(`fifa ${String((e as Error)?.message ?? e).slice(0, 30)}`); }
+  throw new Error(errors.join(" · "));
+}
+
+async function fetchEspn(host: string, ymd: string): Promise<Fixture[]> {
+  const res = await fetch(`https://${host}/apis/site/v2/sports/soccer/all/scoreboard?dates=${ymdToEspn(ymd)}&limit=1000`, { headers: { ...UA, accept: "application/json, text/plain, */*", referer: "https://www.espn.com/" }, signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`${res.status}`);
   const data = (await res.json()) as { events?: EspnEvent[] };
   const out: Fixture[] = [];
   for (const e of data.events ?? []) {
@@ -205,6 +219,46 @@ export async function fetchFixtures(ymd: string): Promise<Fixture[]> {
       context: stage ? `${competition} · ${stage}` : competition,
       finished: c?.status?.type?.state === "post" || c?.status?.type?.completed === true,
     });
+  }
+  return out;
+}
+
+type FifaName = { Locale?: string; Description?: string }[];
+type FifaMatch = { IdMatch?: string; Date?: string; MatchStatus?: number; CompetitionName?: FifaName; StageName?: FifaName; GroupName?: FifaName; Home?: { TeamType?: number; Gender?: number; TeamName?: FifaName }; Away?: { TeamType?: number; TeamName?: FifaName } };
+const fifaText = (n: FifaName | undefined) => n?.[0]?.Description?.trim() ?? "";
+/** FIFA's competition names → the short labels used on the card. */
+function fifaCompetition(name: string): string | null {
+  const n = name.replace(/™/g, "").trim();
+  if (/women|u-?1[0-9]|u-?2[0-3]|futsal|beach|olympic|youth|esports|club/i.test(n)) return null;
+  if (/nations league/i.test(n)) return "Nations League";
+  if (/^friendl/i.test(n)) return "Friendly";
+  if (/world cup.*qualif/i.test(n)) return "World Cup qualifier";
+  if (/world cup/i.test(n)) return "World Cup";
+  if (/africa cup of nations.*qualif|afcon.*qualif/i.test(n)) return "AFCON qualifier";
+  if (/africa cup of nations|afcon/i.test(n)) return "AFCON";
+  if (/euro.*qualif/i.test(n)) return "Euro qualifier";
+  if (/uefa euro/i.test(n)) return "Euro";
+  if (/copa am/i.test(n)) return "Copa América";
+  if (/gold cup/i.test(n)) return "Gold Cup";
+  if (/asian cup/i.test(n)) return "Asian Cup";
+  if (/gulf cup/i.test(n)) return "Gulf Cup";
+  if (/arab cup/i.test(n)) return "Arab Cup";
+  if (/asean cup/i.test(n)) return "ASEAN Cup";
+  return n.replace(/^FIFA /, "") || null;
+}
+async function fetchFifaCalendar(ymd: string): Promise<Fixture[]> {
+  const res = await fetch(`https://api.fifa.com/api/v3/calendar/matches?from=${ymd}T00:00:00Z&to=${ymd}T23:59:59Z&count=500&language=en`, { headers: UA, signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`${res.status}`);
+  const data = (await res.json()) as { Results?: FifaMatch[] };
+  const out: Fixture[] = [];
+  for (const m of data.Results ?? []) {
+    if (m.Home?.TeamType !== 1 || m.Away?.TeamType !== 1 || (m.Home?.Gender !== undefined && m.Home.Gender !== 1)) continue;
+    const competition = fifaCompetition(fifaText(m.CompetitionName));
+    const home = fifaText(m.Home?.TeamName), away = fifaText(m.Away?.TeamName);
+    if (!competition || !home || !away || !m.IdMatch || !m.Date) continue;
+    const group = fifaText(m.GroupName), stage = fifaText(m.StageName);
+    const detail = [stage, group].filter((x) => x && !/^(friendlies|regular season)/i.test(x)).join(", ");
+    out.push({ espnId: `fifa-${m.IdMatch}`, home, away, kickoff: Date.parse(m.Date), competition, context: detail ? `${competition} · ${detail}` : competition, finished: m.MatchStatus === 0 });
   }
   return out;
 }
