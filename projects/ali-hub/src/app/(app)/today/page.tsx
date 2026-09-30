@@ -77,7 +77,7 @@ function HighlightSuggestion() {
   );
 }
 
-// ─── Birthday reminder (Docs → Birthdays keeps the rest) ─────────────────────
+// ─── Birthday reminder (Knowledge → Birthdays keeps the rest) ─────────────────────
 // Quiet nudge, near the top since it's usually actionable (get a gift, say
 // happy birthday) — unlike the passive highlight at the bottom. Disappears once
 // the nearest one is outside its own reminder window (2026-09-19).
@@ -279,7 +279,7 @@ function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
       <button type="button" onClick={() => onOpen(t)} style={{ background: "transparent", border: "none", padding: 0, font: "inherit", textAlign: "left", color: "inherit", minWidth: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 16, lineHeight: 1.3 }}><Linkify text={t.title} /></span>
         <span style={{ display: "block", fontSize: 14, color: late ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Doc" : ""}
+          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Knowledge" : ""}
         </span>
       </button>
       {actions && (

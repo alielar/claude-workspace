@@ -10,10 +10,12 @@
  *     everything else folded by default, a fold's state is remembered),
  *     one-line quick add with natural-language dates, detail sheet, one-tap defer. Delete lives in
  *     the sheet (swipe-to-delete on rows was retired for the page slide).
- *   Docs · things to KEEP, not do (spec §7c item 7): notes and running lists.
- *     No checkboxes, no buckets, no nagging. Type a name → straight into the editor. Pin the ones
- *     you reach for; search finds the rest (titles and content). A list can carry one optional
- *     reminder (date + time) · then it behaves like a reminder: Today card, badge, notifications.
+ *   Knowledge (was "Docs" until 2026-09-30) · things to KEEP, not do (spec §7c item 7): lists,
+ *     checklists, documents, links (a title + an address, the source read from it: Instagram reel,
+ *     YouTube, X…), plus Passwords and Birthdays on their own pages. No buckets, no nagging. Type a
+ *     name → the editor; paste an address → a link entry. Pin the ones you reach for; search finds
+ *     the rest (titles and content). An entry can carry one optional reminder (date + time) · then
+ *     it behaves like a reminder: Today card, badge, notifications.
  *
  * Works offline; the home-screen badge shows what's due today.
  */
@@ -30,11 +32,11 @@ import { checklistToday, dayPart } from "@/lib/checklist/day";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import {
   addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, parseQuickAdd, sortTodos,
-  docFormat, taskFormat, parseSubtasks, parseSections,
+  docFormat, taskFormat, parseSubtasks, linkOf, linkSource, isUrlText,
   type Area, type Bucket, type Priority, type Todo,
 } from "@/lib/todo/types";
 
-const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Docs" }];
+const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Knowledge" }];
 
 // Fold defaults (Ali 2026-09-27): Today and Someday open, every other section closed. Overdue is
 // never folded (late work must not hide). A section tapped open or closed stays that way across
@@ -169,15 +171,16 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater }
   );
 }
 
-// ─── List row (Lists segment · kept things, no checkbox) ──────────────────────
+// ─── Knowledge row (kept things, no checkbox) ─────────────────────────────────
 
 function ListRow({ t, onOpen }: { t: Todo; onOpen: () => void }) {
   const preview = firstLine(t.notes);
   const fmt = docFormat(t);
+  const url = fmt === "link" ? linkOf(t) : null;
   const shape = (() => {
     if (fmt === "checklist") { const s = parseSubtasks(t.notes); return s.length ? `${s.length} open` : null; }
-    if (fmt === "sections" || fmt === "accordion") { const n = parseSections(t.notes).filter((s) => s.title !== null).length; return n ? `${n} section${n === 1 ? "" : "s"}` : preview; }
     if (fmt === "list") { const n = (t.notes?.match(/^- /gm) ?? []).length; return n ? `${n} item${n === 1 ? "" : "s"}` : null; }
+    if (fmt === "link") return url ? linkSource(url) : "link";
     return preview;
   })();
   const sub = [
@@ -186,6 +189,23 @@ function ListRow({ t, onOpen }: { t: Todo; onOpen: () => void }) {
     shape,
     fmtAgo(t.updatedAt),
   ].filter(Boolean).join(" · ");
+
+  // A link entry: the row itself opens the address (that is the point of keeping it), Edit opens the sheet.
+  if (url) return (
+    <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
+      <div className="todo-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", background: "var(--bg-card)" }}>
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 10, alignItems: "center", minHeight: 58, padding: "8px 4px 8px 16px", textDecoration: "none", color: "inherit", minWidth: 0 }}>
+          <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, background: "var(--accent-soft)", color: "var(--violet)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>↗</span>
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</span>
+          </span>
+        </a>
+        <button onClick={onOpen} className="cc-btn cc-btn-ghost" aria-label="Edit" style={{ minHeight: 40, padding: "0 10px", fontSize: 13.5, borderRadius: 10, marginRight: 8 }}>Edit</button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
@@ -247,7 +267,7 @@ export default function TodoPage() {
 
   const parsed = useMemo(() => (!isLists && !literal && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists, literal]);
 
-  // ── The slide between Personal · Work · Docs (phone) ──
+  // ── The slide between Personal · Work · Knowledge (phone) ──
   // The page follows the finger (Ali 2026-09-27: "it needs to feel like a real swipe"): the
   // current pane moves with dx, the next pane rides alongside, clipped to the current height.
   // Release past a third of the width (or a flick) → both glide the rest of the way, then the
@@ -314,13 +334,16 @@ export default function TodoPage() {
   }, []);
 
   // "+" opens the full sheet so every detail is set at creation. For tasks the typed
-  // line is already parsed in ("fri 9am !!"); for lists the line is the name.
+  // line is already parsed in ("fri 9am !!"); for Knowledge the line is the name, or,
+  // when it is an address, the link of a new Link entry (the sheet asks for the name).
   const submit = () => {
     const ts = Date.now();
+    const pastedLink = isLists && isUrlText(text);
     setDraft({
       clientId: newTodoId(),
-      title: isLists || literal ? text.trim() : parsed?.title || text.trim(),
-      area, notes: null, project: null,
+      title: pastedLink ? "" : isLists || literal ? text.trim() : parsed?.title || text.trim(),
+      area, notes: pastedLink ? text.trim() : null, project: null,
+      ...(pastedLink ? { format: "link" as const } : {}),
       dueDate: isLists ? null : parsed?.dueDate ?? null,
       dueTime: isLists ? null : parsed?.dueTime ?? null,
       evening: !isLists && (parsed?.evening ?? false),
@@ -339,7 +362,7 @@ export default function TodoPage() {
     const openTasks = inArea.filter((t) => !t.doneAt);
     const doneToday = inArea.filter((t) => t.doneAt !== null).sort((x, y) => (y.doneAt ?? 0) - (x.doneAt ?? 0));
     const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
-    // Lists · pinned first, then most recently touched; search covers names and content.
+    // Knowledge · pinned first, then most recently touched; search covers names and content.
     const lists = a !== "list" ? [] : inArea
       .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q))
       .sort((x, y) => (y.priority > 0 ? 1 : 0) - (x.priority > 0 ? 1 : 0) || y.updatedAt - x.updatedAt);
@@ -357,7 +380,7 @@ export default function TodoPage() {
   ].filter(Boolean) : [];
   const readSomething = !!parsed && parsed.tokens.length > 0;
 
-  // Personal · Work · Docs · once at the top (phone, narrow laptop) and once fixed on the left (wide laptop, CSS decides).
+  // Personal · Work · Knowledge · once at the top (phone, narrow laptop) and once fixed on the left (wide laptop, CSS decides).
   const segments = (vertical: boolean) => (
     <div role="tablist" aria-label="List" className={vertical ? "todo-seg todo-seg-side" : "todo-seg todo-seg-top"}
       style={{ display: vertical ? undefined : "grid", gridTemplateColumns: vertical ? "1fr" : `repeat(${SEGMENTS.length}, 1fr)`, gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
@@ -381,7 +404,7 @@ export default function TodoPage() {
     const { inArea, openTasks, doneToday, groups, lists } = forArea(a);
     if (a === "list") return (
       <>
-        {/* Passwords · a doc type of its own: end-to-end encrypted, its own page (2026-09-12) */}
+        {/* Passwords · an entry type of its own: end-to-end encrypted, its own page (2026-09-12) */}
         <Link href="/vault" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
           <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
@@ -402,14 +425,14 @@ export default function TodoPage() {
           </div>
         </Link>
         {inArea.length > 3 && (
-          <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
+          <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
         )}
 
         {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 48 }} />)}</div></div>}
 
         {data && lists.length === 0 && (
           <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-            {q ? `Nothing matches “${query}”.` : "No docs yet."}
+            {q ? `Nothing matches “${query}”.` : "Nothing kept yet."}
           </div></div>
         )}
 
@@ -480,14 +503,14 @@ export default function TodoPage() {
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
           <div className="sub">
             {loading && !data ? "…"
-              : isLists ? `${cur.inArea.length} doc${cur.inArea.length === 1 ? "" : "s"} kept`
+              : isLists ? `${cur.inArea.length} ${cur.inArea.length === 1 ? "entry" : "entries"} kept`
               : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${cur.openTasks.length ? ` · ${cur.openTasks.length} open` : ""}`}
             {stale ? " · saved copy" : ""}
           </div>
         </div>
       </div>
 
-      {/* Personal · Work · Docs · slide left/right on the phone; fixed on the left on a wide laptop */}
+      {/* Personal · Work · Knowledge · slide left/right on the phone; fixed on the left on a wide laptop */}
       {segments(false)}
       {segments(true)}
 
@@ -519,7 +542,7 @@ export default function TodoPage() {
                   <span style={{ minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
                     <span style={{ display: "block", fontSize: 13.5, color: "var(--ink-3)", marginTop: 1 }}>
-                      {(t.area ?? "personal") === "list" ? "doc" : t.area === "work" ? "work" : "personal"} · wakes {new Date(`${t.wakeDate}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      {(t.area ?? "personal") === "list" ? "knowledge" : t.area === "work" ? "work" : "personal"} · wakes {new Date(`${t.wakeDate}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                     </span>
                   </span>
                   <span style={{ fontSize: 13, color: "var(--ink-4)" }}>›</span>
@@ -551,7 +574,7 @@ export default function TodoPage() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
-              placeholder={isLists ? "New doc…" : area === "work" ? "Add a work task…" : "Add a task…"}
+              placeholder={isLists ? "New entry or paste a link…" : area === "work" ? "Add a work task…" : "Add a task…"}
               enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
             <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
           </div>

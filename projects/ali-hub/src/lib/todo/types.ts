@@ -46,16 +46,17 @@ export type Todo = {
 
 export type TodosData = { todos: Todo[] };
 
-// ─── Notes formats (2026-09-12) ───────────────────────────────────────────────
+// ─── Notes formats (2026-09-12 · Knowledge 2026-09-30) ────────────────────────
 //
 // One stored text (`notes`), several ways to show it. Tasks: "doc" (free text) or
-// "checklist" (subtasks, ticked one by one). Docs add "list" (plain items),
-// "sections" (headings you open and close, several at once) and "accordion"
-// (headings, one open at a time). Sections come from `# Heading` lines, list
-// items from `- ` lines and subtasks from `- [ ] ` / `- [x] ` lines · so any
+// "checklist" (subtasks, ticked one by one). Knowledge entries add "list" (plain items)
+// and "link" (a title plus ONE url in `notes` · the source is read from the address).
+// List items come from `- ` lines and subtasks from `- [ ] ` / `- [x] ` lines · so any
 // format can be switched to any other without losing the words.
+// Sections and Accordion (# headings that fold) were removed 2026-09-30 (Ali): a stored
+// "sections" / "accordion" reads as Document, nothing is lost.
 
-export const FORMATS = ["doc", "checklist", "list", "sections", "accordion"] as const;
+export const FORMATS = ["doc", "checklist", "list", "link"] as const;
 export type Format = (typeof FORMATS)[number];
 // Subtasks first · the primary shape of a task's details (Ali 2026-09-27); Notes is the alternative.
 export const TASK_FORMATS: { key: Format; label: string }[] = [{ key: "checklist", label: "Subtasks" }, { key: "doc", label: "Notes" }];
@@ -63,9 +64,44 @@ export const DOC_FORMATS: { key: Format; label: string; hint: string }[] = [
   { key: "list",      label: "List",      hint: "plain items, reorder by hand" },
   { key: "checklist", label: "Checklist", hint: "items you tick · a ticked one goes" },
   { key: "doc",       label: "Document",  hint: "free text with headings and lists" },
-  { key: "sections",  label: "Sections",  hint: "# headings fold · open several" },
-  { key: "accordion", label: "Accordion", hint: "# headings fold · one open at a time" },
+  { key: "link",      label: "Link",      hint: "a title and an address · reel, video, article" },
 ];
+
+// ─── Links (Knowledge · 2026-09-30) ───────────────────────────────────────────
+
+const URL_LINE = /^\s*(https?:\/\/\S+)\s*$/;
+/** The address of a link entry (notes = one url line), else null. */
+export function linkOf(t: Pick<Todo, "notes">): string | null {
+  return (t.notes ?? "").match(URL_LINE)?.[1] ?? null;
+}
+/** True when the whole text is one address · what turns a typed line into a link entry. */
+export const isUrlText = (s: string) => URL_LINE.test(s.trim());
+
+/** "Instagram · reel" / "YouTube · short" / "X" / "medium.com" · the small source label. */
+export function linkSource(url: string): string {
+  let host = "", path = "";
+  try { const u = new URL(url); host = u.hostname.replace(/^(www|m|mobile)\./, "").toLowerCase(); path = u.pathname.toLowerCase(); } catch { return "link"; }
+  const is = (...d: string[]) => d.some((x) => host === x || host.endsWith(`.${x}`));
+  if (is("instagram.com")) return path.startsWith("/reel") ? "Instagram · reel" : path.startsWith("/p/") ? "Instagram · post" : "Instagram";
+  if (is("youtube.com", "youtu.be")) return path.startsWith("/shorts") ? "YouTube · short" : "YouTube";
+  if (is("x.com", "twitter.com")) return "X";
+  if (is("tiktok.com")) return "TikTok";
+  if (is("linkedin.com")) return "LinkedIn";
+  if (is("threads.net", "threads.com")) return "Threads";
+  if (is("facebook.com", "fb.watch")) return "Facebook";
+  if (is("reddit.com")) return "Reddit";
+  if (is("github.com")) return "GitHub";
+  if (is("medium.com")) return "Medium";
+  if (is("substack.com")) return "Substack";
+  if (is("notion.so", "notion.site")) return "Notion";
+  if (is("docs.google.com")) return "Google Docs";
+  if (is("drive.google.com")) return "Google Drive";
+  if (is("open.spotify.com")) return "Spotify";
+  if (is("podcasts.apple.com")) return "Apple Podcasts";
+  if (is("wikipedia.org")) return "Wikipedia";
+  if (is("amazon.com", "amazon.es", "amazon.fr", "amazon.co.uk", "amazon.de")) return "Amazon";
+  return host || "link";
+}
 
 /** The task's notes format: the saved choice, else Subtasks when every line is a checkbox. */
 export function taskFormat(t: Pick<Todo, "format" | "notes">): "doc" | "checklist" {
@@ -76,9 +112,11 @@ export function taskFormat(t: Pick<Todo, "format" | "notes">): "doc" | "checklis
   return lines.length === 0 || lines.every((l) => /^\s*- \[[ xX]\] /.test(l)) ? "checklist" : "doc";
 }
 
-/** The doc's format: the saved choice, else List when every line is an item, else Document. */
+/** The entry's format: the saved choice, else Link for one address, List when every line is an item, else Document. */
 export function docFormat(t: Pick<Todo, "format" | "notes">): Format {
-  if (t.format) return t.format;
+  if (t.format && (FORMATS as readonly string[]).includes(t.format)) return t.format;
+  if (t.format) return "doc"; // an old "sections" / "accordion" entry reads as a Document
+  if (linkOf(t)) return "link";
   const lines = (t.notes ?? "").split("\n").filter((l) => l.trim());
   if (lines.length === 0) return "list";
   if (lines.every((l) => /^\s*- \[[ xX]\] /.test(l))) return "checklist";
@@ -102,21 +140,6 @@ export function serializeSubtasks(items: SubTask[]): string | null {
   return items.length ? items.map((s) => `- [${s.done ? "x" : " "}] ${s.text.trim()}`).join("\n") : null;
 }
 
-export type DocSection = { title: string | null; body: string };
-
-/** Split notes at `# Heading` lines (levels 1–3). Text before the first heading is an untitled intro. */
-export function parseSections(notes: string | null | undefined): DocSection[] {
-  const out: DocSection[] = [];
-  let cur: DocSection | null = null;
-  for (const raw of (notes ?? "").split("\n")) {
-    const m = raw.match(/^#{1,3} (.*)$/);
-    if (m) { if (cur) out.push(cur); cur = { title: m[1].trim(), body: "" }; continue; }
-    if (!cur) cur = { title: null, body: "" };
-    cur.body += (cur.body ? "\n" : "") + raw;
-  }
-  if (cur) out.push(cur);
-  return out.map((s) => ({ ...s, body: s.body.replace(/^\n+|\n+$/g, "") })).filter((s) => s.title !== null || s.body.trim());
-}
 
 export function newTodoId(): string {
   try { return crypto.randomUUID(); } catch { return `${Date.now()}-${Math.random().toString(36).slice(2)}`; }

@@ -6,7 +6,7 @@
  * open the edit screen, not send me to the To-do page").
  *
  *   Sheet      · the task detail sheet (title, list, priority, when, reminder, notes/subtasks)
- *   ListSheet  · the doc sheet (five display shapes, ordering kept on purpose)
+ *   ListSheet  · the Knowledge sheet (List · Checklist · Document · Link)
  *   SheetFrame · bottom sheet that always sits inside the keyboard-free viewport
  *   NotesEditor· auto-growing notes textarea that follows the caret
  *
@@ -15,9 +15,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Linkify, LinkChips } from "@/components/Linkify";
-import { SubtaskEditor, SectionsView, GrowInput, withDraftSubtask } from "./notes";
+import { SubtaskEditor, GrowInput, withDraftSubtask } from "./notes";
 import {
-  addDays, AREAS, fmtDue, nextMonday, nextWeekend, docFormat, taskFormat, DOC_FORMATS, TASK_FORMATS,
+  addDays, AREAS, fmtDue, nextMonday, nextWeekend, docFormat, taskFormat, linkOf, linkSource, DOC_FORMATS, TASK_FORMATS,
   type Format, type Priority, type Todo,
 } from "@/lib/todo/types";
 
@@ -416,22 +416,25 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
   const set = (p: Partial<Todo>) => setD((x) => ({ ...x, ...p }));
   const close = () => {
     const cur = { ...dRef.current, notes: withDraftSubtask(dRef.current.notes ?? null, draftRef.current) };
-    if (cur.title.trim()) onSave({ ...cur, title: cur.title.trim() });
+    // A link pasted without a name is still worth keeping · the source becomes the name.
+    const title = cur.title.trim() || (docFormat(cur) === "link" && linkOf(cur) ? linkSource(linkOf(cur)!) : "");
+    if (title) onSave({ ...cur, title });
     onClose();
   };
   const [remind, setRemind] = useState(!!t.dueDate);
 
-  // Five shapes for the same stored text (Ali 2026-09-12): List, Checklist, Document,
-  // Sections, Accordion. Saved on the doc (`format`); older docs are detected from the text.
+  // Four shapes for the same stored text (Ali 2026-09-12, Link added 2026-09-30): List, Checklist,
+  // Document, Link. Saved on the entry (`format`); older entries are detected from the text.
   const mode: Format = docFormat(d);
-  const [editingDoc, setEditingDoc] = useState(isNew); // Sections / Accordion: read view by default, Edit to write
   const items = (d.notes ?? "").split("\n").map((l) => l.replace(/^- (\[[ xX]\] )?/, "")).filter((l) => l.trim());
   const writeItems = (list: string[]) => set({ notes: list.length ? list.map((i) => `- ${i.trim()}`).join("\n") : null });
   const setFormat = (f: Format) => {
     if (f === "list") set({ format: f, notes: (d.notes ?? "").split("\n").map((l) => l.replace(/^- (\[[ xX]\] )?/, "").replace(/^\d+\. /, "")).filter((l) => l.trim()).map((l) => `- ${l.trim()}`).join("\n") || null });
+    else if (f === "link") set({ format: f, notes: linkOf(d) ?? ((d.notes ?? "").match(/https?:\/\/\S+/)?.[0] ?? null) });
     else set({ format: f });
-    if (f === "sections" || f === "accordion") setEditingDoc(!(d.notes ?? "").trim());
   };
+  const url = mode === "link" ? (d.notes ?? "").trim() : "";
+  const urlOk = /^https?:\/\/\S+$/.test(url);
 
   const [newItem, setNewItem] = useState("");
   const [editIdx, setEditIdx] = useState<number | null>(null);
@@ -458,7 +461,7 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
   };
 
   return (
-    <SheetFrame label="Edit doc" onClose={close} fill>
+    <SheetFrame label="Edit entry" onClose={close} fill>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
           <div style={{ minWidth: 0 }}><TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="Name" /></div>
           <select className="cc-input" value={mode} onChange={(e) => setFormat(e.target.value as Format)} aria-label="How this doc displays"
@@ -482,20 +485,23 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
             </div>
           </div>
         )}
-        <div style={{ flex: 1, minHeight: 0, overflowY: mode === "doc" || (editingDoc && (mode === "sections" || mode === "accordion")) ? "hidden" : "auto", display: "flex", flexDirection: "column", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: mode === "doc" ? "hidden" : "auto", display: "flex", flexDirection: "column", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
         {mode === "doc" ? (
           <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="" fill />
         ) : mode === "checklist" ? (
           <SubtaskEditor notes={d.notes ?? null} onChange={(v) => set({ notes: v })} placeholder="Add an item" autoFocus={isNew} ordered draftRef={draftRef} />
-        ) : mode === "sections" || mode === "accordion" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>{editingDoc ? "Start each section with a # heading (the H button)." : DOC_FORMATS.find((f) => f.key === mode)?.hint}</span>
-              <button type="button" onClick={() => setEditingDoc((v) => !v)} className="cc-btn cc-btn-ghost" style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>{editingDoc ? "Read" : "Edit"}</button>
-            </div>
-            {editingDoc
-              ? <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="# First section" fill />
-              : <SectionsView notes={d.notes ?? ""} single={mode === "accordion"} />}
+        ) : mode === "link" ? (
+          // A link entry: the title says what it is, the address opens it (Ali 2026-09-29: "the point is browsing").
+          <div style={{ display: "grid", gap: 10, alignContent: "start" }}>
+            <input className="cc-input" type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={url} autoFocus={isNew && !url}
+              onChange={(e) => set({ notes: e.target.value.trim() || null })} placeholder="https://…" aria-label="Address" style={{ fontSize: 16, minHeight: 46, borderRadius: 12 }} />
+            {urlOk ? (
+              <a href={url} target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ minHeight: 48, borderRadius: 12, fontSize: 16, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0 14px" }}>
+                <span>Open · {linkSource(url)}</span><span aria-hidden>↗</span>
+              </a>
+            ) : (
+              <span style={{ fontSize: 14, color: "var(--ink-4)" }}>Paste the address · reel, video, article, anything</span>
+            )}
           </div>
         ) : (
           <div style={{ display: "grid", gap: 2 }}>
@@ -548,7 +554,7 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
           <button className="cc-btn cc-btn-primary" onClick={close} style={{ minHeight: 50, borderRadius: 14, fontSize: 17 }}>{isNew ? "Keep it" : "Done"}</button>
-          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this doc?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, borderRadius: 14, padding: "0 16px", color: "var(--neg)", fontSize: 15 }}>{isNew ? "Discard" : "Delete"}</button>
+          <button className="cc-btn cc-btn-ghost" onClick={() => { if (isNew || confirm("Delete this entry?")) { onDelete(); onClose(); } }} style={{ minHeight: 50, borderRadius: 14, padding: "0 16px", color: "var(--neg)", fontSize: 15 }}>{isNew ? "Discard" : "Delete"}</button>
         </div>
     </SheetFrame>
   );

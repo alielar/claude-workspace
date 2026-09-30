@@ -171,7 +171,7 @@ export const todos = sqliteTable("todos", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 });
 
-// ─── Birthdays & important dates (reached from To-do → Docs → Birthdays) ──────
+// ─── Birthdays & important dates (reached from To-do → Knowledge → Birthdays) ──
 
 /**
  * One row per person. `clientId` makes offline replays idempotent, same scheme as

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /birthdays · names and dates worth remembering, reached from To-do → Docs → Birthdays
+ * /birthdays · names and dates worth remembering, reached from To-do → Knowledge → Birthdays
  * (same pattern as the password vault). Name + a yearly date; a push goes out once,
  * `remindDaysBefore` days ahead of each occurrence (default 3, editable per person) ·
  * see /api/reminders/tick. Today shows the nearest one inside its window.
@@ -99,7 +99,7 @@ export default function BirthdaysPage() {
 
   return (
     <div style={{ display: "grid", gap: 18, maxWidth: 560 }}>
-      <Link href="/todo" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>‹ Docs</Link>
+      <Link href="/todo" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>‹ Knowledge</Link>
 
       <div className="cc-pagetitle" style={{ marginBottom: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
         <div>

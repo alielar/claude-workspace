@@ -1,6 +1,6 @@
 /**
- * Birthdays & important dates — a Docs entry of its own (spec: reached from
- * To-do → Docs → Birthdays, like the password vault). Name + a yearly date; a
+ * Birthdays & important dates — a Knowledge entry of its own (spec: reached from
+ * To-do → Knowledge → Birthdays, like the password vault). Name + a yearly date; a
  * push goes out once, `remindDaysBefore` days ahead of each occurrence (default 3,
  * editable per person), and Today shows the nearest one inside its window until
  * it passes.

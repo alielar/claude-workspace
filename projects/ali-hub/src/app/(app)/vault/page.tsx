@@ -2,7 +2,7 @@
 
 /**
  * /vault · passwords, API keys, recovery codes, secure notes (2026-09-12).
- * Reached from To-do → Docs → Passwords.
+ * Reached from To-do → Knowledge → Passwords.
  *
  * Two doors, both must be open:
  *   1. the app's Google sign-in (cookie) · the server refuses everything else;
@@ -446,7 +446,7 @@ export default function VaultPage() {
       {action}
     </div>
   );
-  const back = <Link href="/todo" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>‹ Docs</Link>;
+  const back = <Link href="/todo" style={{ fontSize: 14, color: "var(--ink-3)", textDecoration: "none" }}>‹ Knowledge</Link>;
 
   if (phase === "loading") return <div style={{ display: "grid", gap: 18, maxWidth: 560 }}>{head("…", back)}<div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div></div>;
 

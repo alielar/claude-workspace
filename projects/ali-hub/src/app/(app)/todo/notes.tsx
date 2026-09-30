@@ -6,14 +6,13 @@
  *   SubtaskList    · a task's notes as subtasks, ticked inline with the same pop, ring, strike
  *                    and chime as a normal to-do. Three shown, "+N more" opens the rest.
  *   SubtaskEditor  · the same items inside a sheet: add, edit, tick, reorder, remove, reset.
- *   SectionsView   · a doc split at "# Heading" lines: Sections (several open) or Accordion (one).
  * Nothing here is hover-only · every control is a tap target.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { Linkify } from "@/components/Linkify";
 import { playDoneSound } from "@/lib/todo/celebrate";
-import { parseSections, parseSubtasks, serializeSubtasks, type SubTask } from "@/lib/todo/types";
+import { parseSubtasks, serializeSubtasks, type SubTask } from "@/lib/todo/types";
 
 /** Notes as shown in previews: list markers become glyphs, heading marks go. */
 export function prettyNotes(notes: string): string {
@@ -238,38 +237,6 @@ function SubtaskEditRow({ s, ordered, onTick, onText, onEnter, onRemove, onMove,
           <button type="button" onClick={onRemove} aria-label="Remove item" style={{ width: 34, height: 40, background: "transparent", border: "none", color: "var(--ink-3)", fontSize: 15, cursor: "pointer" }}>✕</button>
         </span>
       )}
-    </div>
-  );
-}
-
-/** A doc split at "# Heading" lines. `single` = accordion (one open at a time). */
-export function SectionsView({ notes, single }: { notes: string; single: boolean }) {
-  const sections = parseSections(notes);
-  const [open, setOpen] = useState<Record<number, boolean>>(() => (single ? {} : {}));
-  const toggle = (i: number) => setOpen((o) => (single ? { [i]: !o[i] } : { ...o, [i]: !o[i] }));
-  if (sections.length === 0) return <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "10px 2px" }}>Nothing here yet · tap Edit and start a section with a # heading.</div>;
-  return (
-    <div style={{ display: "grid" }}>
-      {sections.map((s, i) => {
-        if (s.title === null) {
-          return <div key={i} style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", padding: "6px 2px 12px" }}><Linkify text={prettyNotes(s.body)} /></div>;
-        }
-        const on = !!open[i];
-        return (
-          <div key={i} style={{ borderBottom: "1px solid var(--line)" }}>
-            <button type="button" onClick={() => toggle(i)} aria-expanded={on}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, width: "100%", minHeight: 50, padding: "8px 2px", background: "transparent", border: "none", textAlign: "left", color: "var(--ink)", font: "inherit", fontSize: 16, fontWeight: 600, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-              <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{s.title}</span>
-              <span aria-hidden style={{ color: "var(--ink-4)", fontSize: 13, transform: on ? "rotate(180deg)" : "none", transition: "transform .15s" }}>▾</span>
-            </button>
-            {on && (
-              <div style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", padding: "0 2px 14px" }}>
-                {s.body.trim() ? <Linkify text={prettyNotes(s.body)} /> : <span style={{ color: "var(--ink-4)" }}>Empty section</span>}
-              </div>
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 }
