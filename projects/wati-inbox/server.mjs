@@ -18,7 +18,7 @@ import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
 import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
-import { tbcState, tbcWatchStatus, SALES_HUB_URL } from './tbc-watch.mjs';
+import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts } from './db.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
@@ -99,6 +99,7 @@ function tbcInfo(waId) {
     next: st?.next ? { n: st.next.n, tpl: st.next.tpl, firesAt: st.next.firesAt, text: st.next.text, skipped: false } : null,
     leadWaiting: !!st?.leadWaiting,
     alert: a ? { ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] } : null,
+    closedTemplate: CLOSED_TEMPLATE,
     salesHub: SALES_HUB_URL,
   };
 }
@@ -258,6 +259,8 @@ async function api(req, res, path) {
     logSend(waId, 'template', { template: tpl.name, params, status }, !failed, failed ? status : null);
     refreshThread(waId, t?.name, { notify: false }).catch(() => {});
     if (failed) return json(res, 502, { error: `Meta a refusé le template ${tpl.name} — voir le détail dans la conversation` });
+    const alert = b.alertId ? tbcAlertById(Number(b.alertId)) : null; // follow-up sent as a template from a Sales Hub card
+    if (alert && alert.wa_id === waId && alert.state === 'paused') setTbcAlertState(alert.id, 'sent');
     saveThread({ ...(t || { wa_id: waId, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${tpl.name}]` });
     return json(res, 200, { ok: true, status });
   }

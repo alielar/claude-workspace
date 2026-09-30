@@ -44,6 +44,8 @@ const FIT_LEAD_MIN = Number(process.env.TBC_FIT_LEAD_MIN || 240);           // j
 const FIT_MAX_PER_DAY = Number(process.env.TBC_FIT_MAX_PER_DAY || 20);
 const FROM_H = Number(process.env.TBC_FROM_H || 8), TO_H = Number(process.env.TBC_TO_H || 22); // no pushes at night
 export const SALES_HUB_URL = process.env.SALES_HUB_URL || '';
+// The manual follow-up when the 24h window is closed: the approved template that asks for the answer again.
+export const CLOSED_TEMPLATE = { name: 'tbc_reminder_3_replied_v2_fr', text: 'Vous auriez un retour rapide à me faire ?' };
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), 'tbc:', ...a);
 const status = { state: 'idle', at: null, last: null, error: null };
 export const tbcWatchStatus = () => status;
@@ -131,7 +133,8 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
       let verdict;
       try { verdict = await judge(st, s, question); }
       catch (e) { log(t.wa_id, 'judge error:', e.message); continue; }
-      const a = { wa_id: t.wa_id, name: st.name, step: s.n, day0: st.day0, kind: 'fit', state: verdict.fits ? 'ok' : 'open', fires_at: s.firesAt, tpl: s.tpl, tpl_text: s.text, question, question_at: st.lastHuman.at, why: verdict.why, bubbles: verdict.fits ? null : verdict.bubbles, window_open: st.windowOpen };
+      // Window closed: no free text can leave — the card offers the approved template instead (CLOSED_TEMPLATE), not Claude's bubbles.
+      const a = { wa_id: t.wa_id, name: st.name, step: s.n, day0: st.day0, kind: 'fit', state: verdict.fits ? 'ok' : 'open', fires_at: s.firesAt, tpl: s.tpl, tpl_text: s.text, question, question_at: st.lastHuman.at, why: verdict.why, bubbles: verdict.fits || !st.windowOpen ? null : verdict.bubbles, window_open: st.windowOpen };
       try { insertTbcAlert(a); } catch (e) { log(t.wa_id, 'insert:', e.message); continue; }
       const timing = tbcAlert(t.wa_id, st.day0, s.n, 'timing'); // one card per step: the judged one replaces the plain timing warning
       if (timing && timing.state === 'open') setTbcAlertState(timing.id, 'expired');

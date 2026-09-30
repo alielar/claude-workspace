@@ -99,7 +99,7 @@ async function renderInbox({ fromCache = false } = {}) {
 }
 
 // ── thread ───────────────────────────────────────────────────────────────────
-let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '';
+let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '', tbcTemplateAlert = null; // tbcTemplateAlert = alert id when the template picker was armed from a Sales Hub card
 // What Ali picks before Claude drafts: moves (multi-select), the downsell / acompte level, the deadline, a free consigne. Kept across redraws.
 const emptyDir = () => ({ moves: [], level: '', level2: '', until: '', instruction: '' });
 let dir = emptyDir();
@@ -183,9 +183,10 @@ async function renderThread(waId, { quiet = false } = {}) {
       <p class="small">${esc(al.why || '')}</p>
       ${al.tpl_text ? `<p class="muted small quote">« ${esc(al.tpl_text.replace('{name}', (t.name || '').split(' ')[0] || 'X').replace('{owner}', 'Ali'))} »</p>` : ''}
       <div class="row"><b class="small">1.</b> ${al.state === 'paused' ? '<span class="ok small">En pause dans le Sales Hub (confirmé par vous)</span>' : `<button class="primary small" id="tbcpaused">J’ai mis en pause dans le Sales Hub</button>`}${hubLink}<button class="small" id="tbcignore">${al.state === 'paused' ? 'Fermer' : 'Laisser partir'}</button></div>
-      ${al.kind === 'fit' && al.bubbles?.length ? `<div class="row" style="margin-bottom:4px"><b class="small">2.</b> <span class="small">Relance manuelle${al.state === 'paused' ? '' : ' — <span class="warn">bloquée tant que la pause n’est pas confirmée</span>'}</span></div>
+      ${al.kind === 'fit' && !al.window_open ? `<div class="row" style="margin-bottom:4px"><b class="small">2.</b> <span class="small">Fenêtre de 24h fermée — template à envoyer : <b>${esc(tb.closedTemplate?.name || '')}</b> « ${esc(tb.closedTemplate?.text || '')} »${al.state === 'paused' ? '' : ' — <span class="warn">bloqué tant que la pause n’est pas confirmée</span>'}</span></div>${al.state === 'paused' ? `<div class="acts"><button class="primary small" id="tbctpl">Préparer ce template</button></div>` : ''}` : ''}
+      ${al.kind === 'fit' && al.window_open && al.bubbles?.length ? `<div class="row" style="margin-bottom:4px"><b class="small">2.</b> <span class="small">Relance manuelle${al.state === 'paused' ? '' : ' — <span class="warn">bloquée tant que la pause n’est pas confirmée</span>'}</span></div>
       <div class="opt ${al.state === 'paused' ? '' : 'locked'}">${al.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span>${al.state === 'paused' ? `<button class="small" data-tbccopy="${j}">Copier</button>` : ''}</div>`).join('')}
-      ${al.state === 'paused' && d.windowOpen ? `<div class="acts"><button class="primary small" id="tbcsend" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" id="tbcuse">Modifier avant envoi</button></div>` : al.state === 'paused' && !d.windowOpen ? '<p class="warn small">Fenêtre de 24h fermée : passez par le sélecteur de templates ci-dessous.</p>' : ''}</div>` : ''}
+      ${al.state === 'paused' && d.windowOpen ? `<div class="acts"><button class="primary small" id="tbcsend" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" id="tbcuse">Modifier avant envoi</button></div>` : ''}</div>` : ''}
     </div>` : '';
   // The second block of an administration two-step, already handed to the Mac.
   const schedBox = d.scheduled ? `<div class="card sending">Second temps programmé : part dans ${fmtLeft(d.scheduled.at)} — « ${esc(d.scheduled.bubbles[0].slice(0, 80))}… » <button class="small" id="cancelsched">Annuler</button></div>` : '';
@@ -255,6 +256,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     if ($('#tbcignore')) $('#tbcignore').onclick = () => tbcAct('ignore');
     document.querySelectorAll('[data-tbccopy]').forEach((b) => b.onclick = () => copyText(al.bubbles[Number(b.dataset.tbccopy)], b));
     if ($('#tbcsend')) armed($('#tbcsend'), 'Envoyer telle quelle', async () => { $('#tbcsend').disabled = true; try { await sendBubbles(waId, al.bubbles, { alertId: al.id, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); $('#tbcsend').disabled = false; } });
+    if ($('#tbctpl')) $('#tbctpl').onclick = () => { const sel = $('#tpl'); if (!sel) return; tbcTemplateAlert = al.id; const det = sel.closest('details'); if (det) det.open = true; sel.value = tb.closedTemplate.name; sel.dispatchEvent(new Event('change')); sel.scrollIntoView({ block: 'center' }); toast('Template prêt — vérifiez puis Envoyer le template'); };
     if ($('#tbcuse')) $('#tbcuse').onclick = () => { composer = al.bubbles.join('\n\n'); composerFrom = { alertId: al.id }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } };
   }
   $('#rf').onclick = async () => { await api(`/api/thread/${waId}/refresh`, { method: 'POST' }); lastThreadKey = ''; route(); };
@@ -286,7 +288,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     armed($('#sendt'), 'Envoyer le template', async () => {
       const params = Object.fromEntries([...document.querySelectorAll('#tplp input')].map((i) => [i.dataset.p, i.value]));
       $('#sendt').disabled = true; $('#stt').textContent = 'Envoi… (vérification Meta, ~5 s)';
-      try { await api(`/api/thread/${waId}/template`, { method: 'POST', body: { template: sel.value, params } }); toast('Template envoyé'); lastThreadKey = ''; route(); }
+      try { await api(`/api/thread/${waId}/template`, { method: 'POST', body: { template: sel.value, params, alertId: tbcTemplateAlert } }); tbcTemplateAlert = null; toast('Template envoyé'); lastThreadKey = ''; route(); }
       catch (e) { $('#stt').innerHTML = `<span class="err">${esc(e.message)}</span>`; $('#sendt').disabled = false; }
     });
   }
