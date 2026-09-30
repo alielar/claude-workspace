@@ -59,7 +59,7 @@ for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL 
 }
 // note = what Ali should know before sending; source = auto | ali (app button) | chat (Claude Code session)
 // instruction = what Ali typed to get this draft instead of the previous one (parent_id)
-for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER']) {
+for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER', 'kind TEXT', 'moves TEXT', 'needs TEXT']) { // kind = draft | needs | skip (2026-09-30)
   try { db.exec(`ALTER TABLE suggestions ADD COLUMN ${col}`); } catch {}
 }
 try { db.exec('ALTER TABLE messages ADD COLUMN tpl_name TEXT'); } catch {} // name of the automated template (2026-09-30)
@@ -169,7 +169,7 @@ export const setMuted = (waId, muted) => db.prepare('UPDATE threads SET muted = 
 export const saveContact = (waId, c) => db.prepare('UPDATE threads SET name = COALESCE(NULLIF(?, \'\'), name), stage = ?, meeting = ?, country = ?, email = ?, contact_at = ? WHERE wa_id = ?').run(c.name, c.stage, c.meeting, c.country, c.email, new Date().toISOString(), waId);
 export const wantSuggestion = (waId) => db.prepare('UPDATE threads SET wanted = 1 WHERE wa_id = ?').run(waId);
 export const latestSuggestion = (waId) => db.prepare('SELECT * FROM suggestions WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);
-export const insertSuggestion = (waId, options, note, source, { instruction = null, parentId = null } = {}) => Number(db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source, instruction, parent_id) VALUES (?, ?, ?, 0, ?, ?, ?, ?)').run(waId, new Date().toISOString(), JSON.stringify(options), note || null, source, instruction, parentId).lastInsertRowid);
+export const insertSuggestion = (waId, options, note, source, { instruction = null, parentId = null, kind = 'draft', moves = null, needs = null } = {}) => Number(db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source, instruction, parent_id, kind, moves, needs) VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)').run(waId, new Date().toISOString(), JSON.stringify(options), note || null, source, instruction, parentId, kind, moves ? JSON.stringify(moves) : null, needs).lastInsertRowid);
 export const getSuggestion = (id) => db.prepare('SELECT * FROM suggestions WHERE id = ?').get(id);
 export const insertLesson = (l) => Number(db.prepare('INSERT INTO lessons (wa_id, at, kind, suggestion_id, batch, sent, title, text) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(l.wa_id, new Date().toISOString(), l.kind, l.suggestion_id ?? null, l.batch ?? null, JSON.stringify(l.sent), l.title ?? null, l.text ?? null).lastInsertRowid);
 export const latestLesson = (waId) => db.prepare('SELECT id, at, kind, title FROM lessons WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);

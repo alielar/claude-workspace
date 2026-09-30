@@ -3,9 +3,11 @@
 // No API key, no interactive session, no remote control: the subscription pays,
 // and nothing runs while there is nothing to draft.
 //
-//   Since 2026-09-29 nothing is drafted until Ali picks the cap in the app (objective, downsell level,
-//   tone, free consigne — see directions.mjs): no automatic draft when a lead writes. Ali reads the
-//   thread, chooses where the reply is heading, taps "Rédiger", and Claude drafts along that line.
+//   Since 2026-09-30 (Ali's rule, reversing 09-29): a draft starts BY ITSELF AUTO_DELAY_MS after a lead's
+//   last bubble. Claude picks the moves (directions.mjs) from the conversation; when one piece of context is
+//   missing (the initial offer for a downsell, what was said on the call…) it does not draft but asks Ali
+//   (kind = needs); when the message needs no answer it says so (kind = skip). Ali can still steer with the
+//   moves panel and a consigne, and every send is learned from.
 //
 // One suggestion = ONE set of bubbles (2026-09-27, Ali's rule). Never two options.
 //
@@ -14,13 +16,16 @@
 import { spawn } from 'node:child_process';
 import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
-import { db, getThread, latestSuggestion, insertSuggestion, getOffer } from './db.mjs';
-import { describeDirection, describeOffer, currencyFor } from './directions.mjs';
+import { db, getThread, latestSuggestion, insertSuggestion, getOffer, autoSuggestionsSince } from './db.mjs';
+import { describeDirection, describeOffer, currencyFor, MOVES } from './directions.mjs';
 
 export const OUTREACH = resolve(process.env.OUTREACH_DIR || '../Wati outreach');
 const NODE_DIR = dirname(process.execPath);
 const CLAUDE = process.env.CLAUDE_BIN || join(NODE_DIR, 'claude');
 export const MODEL = process.env.SUGGEST_MODEL || 'claude-sonnet-5';
+export const AUTO_DELAY_MS = Number(process.env.AUTO_DELAY_MS || 60_000); // quiet time after the lead's last bubble before Claude drafts
+export const AUTO_MAX_PER_DAY = Number(process.env.SUGGEST_MAX_PER_DAY || 60);
+const TEST_NUMBER = '34695064884'; // Ali's own number: never drafted by itself
 const TIMEOUT_MS = 6 * 60_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), 'suggest:', ...a);
 export const madrid = (d = new Date()) => d.toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }); // "2026-09-27 14:35:50"
@@ -32,19 +37,43 @@ const SCHEMA = {
     later: { type: 'array', items: { type: 'string' } },
     why: { type: 'string' },
     note: { type: 'string' },
+    moves: { type: 'array', items: { type: 'string' } },
+    needs: { type: 'string' },
+    skip: { type: 'boolean' },
   },
-  required: ['bubbles', 'later', 'why', 'note'],
+  required: ['bubbles', 'later', 'why', 'note', 'moves', 'needs', 'skip'],
 };
 
 const queue = new Map();   // waId → { direction }
 const status = new Map();  // waId → { state: queued | drafting | done | error, at, direction, error? }
 export const suggestStatus = (waId) => status.get(waId) || null;
 
-// Ali picked the cap in the app → draft now (a second tap while queued replaces the cap).
+// Ali picked the cap in the app → draft now (a second tap while queued replaces the cap). No moves and no
+// consigne = auto: Claude chooses.
 export function requestSuggestion(waId, direction = {}) {
   const d = describeDirection(direction, getOffer(waId), currencyFor(getThread(waId)?.country));
-  queue.set(waId, { direction, text: d.text });
-  status.set(waId, { state: 'queued', at: new Date().toISOString(), direction: d.text });
+  queue.set(waId, { direction, text: d.text || (direction.auto ? 'auto' : '') });
+  status.set(waId, { state: 'queued', at: new Date().toISOString(), direction: d.text || 'Claude choisit' });
+  return true;
+}
+
+// A lead wrote: wait for the quiet time (more bubbles may follow), then draft by itself.
+const autoTimers = new Map();
+export function scheduleAutoDraft(waId) {
+  if (waId === TEST_NUMBER) return false;
+  const t = getThread(waId);
+  if (!t || t.muted) return false;
+  clearTimeout(autoTimers.get(waId));
+  autoTimers.set(waId, setTimeout(() => {
+    autoTimers.delete(waId);
+    const th = getThread(waId);
+    if (!th?.last_inbound_at || Date.now() - Date.parse(th.last_inbound_at) > 24 * 3600e3) return; // window closed meanwhile
+    if (th.last_outbound_at && th.last_outbound_at > th.last_inbound_at) return; // Ali already answered
+    const since = new Date(); since.setHours(0, 0, 0, 0);
+    if (autoSuggestionsSince(since.toISOString()) >= AUTO_MAX_PER_DAY) { log('auto cap reached today'); return; }
+    if (running === waId || queue.has(waId)) return;
+    requestSuggestion(waId, { auto: true });
+  }, AUTO_DELAY_MS));
   return true;
 }
 
@@ -64,7 +93,7 @@ async function pump() {
 export function startSuggesting() {
   mkdirSync('logs', { recursive: true });
   setInterval(() => pump().catch((e) => log('pump error:', e.message)), 3_000);
-  log(`ready — model ${MODEL}, drafts only on Ali's cap`);
+  log(`ready — model ${MODEL}, auto draft ${Math.round(AUTO_DELAY_MS / 1000)} s after a lead's last bubble (max ${AUTO_MAX_PER_DAY}/day), Ali can steer`);
 }
 
 export async function draft(waId, direction = {}) {
@@ -73,15 +102,23 @@ export async function draft(waId, direction = {}) {
   const offer = getOffer(waId);
   const cur = currencyFor(t.country); // € for France/Belgium, CHF for Switzerland (same figures)
   const d = describeDirection(direction, offer, cur);
+  const auto = !d.moves.length && !String(direction.instruction || '').trim();
   const instruction = d.text;
-  status.set(waId, { state: 'drafting', at: new Date().toISOString(), direction: instruction });
+  status.set(waId, { state: 'drafting', at: new Date().toISOString(), direction: instruction || 'Claude choisit' });
   log('drafting for', t.name || waId, instruction ? `— ${instruction}` : '(sans cap)');
   // The draft Ali is replacing, if one is on screen: Claude must see what he did not send.
   const prev = latestSuggestion(waId);
   const prevFresh = prev && (!t.last_inbound_at || prev.created_at >= t.last_inbound_at) ? prev : null;
   let extra = `\n## Offre initiale (ce qui a été proposé à l'appel, saisi par Ali)\n${offer?.format ? describeOffer(offer, cur) : 'non renseignée — ne suppose rien, laisse un [CROCHET] si un chiffre d’origine manque'}\nDevise du lead : ${cur} (pays CRM : ${t.country || 'inconnu'}).\n`;
-  extra += '\n## Ce qu’Ali a choisi — prioritaire sur la carte\n';
-  extra += d.block || '- Ali n’a coché aucun move : réponds simplement et précisément à ce que le lead a écrit, selon la carte.\n';
+  if (auto) {
+    extra += '\n## Personne n’a choisi de cap : c’est toi qui décides\n';
+    extra += 'Lis la conversation et choisis toi-même le ou les moves qui s’imposent (ids possibles ci-dessous, mets-les dans `moves`), puis rédige. Si le message du lead n’appelle aucune réponse (remerciement final après une clôture, simple accusé de réception d’un message automatique, message vide ou hors sujet), réponds `skip: true` avec la raison dans `why` et aucune bulle. Si un élément de contexte INDISPENSABLE manque — l’offre initiale (format, niveau visé, heures/semaine) pour un downsell ou un acompte, ce qui a été dit à l’appel, un chiffre qu’Ali seul connaît — ne rédige pas : mets dans `needs` UNE question courte et précise pour Ali (ex. « Quelle offre a été faite à l’appel : format, niveau visé, h/semaine ? »), aucune bulle. Sinon rédige directement.\n';
+    extra += 'Moves possibles :\n' + MOVES.map((m) => `- \`${m.id}\` — ${m.label} : ${m.hint.slice(0, 220)}…`).join('\n') + '\n';
+    extra += 'Règles de choix : friction crédible sur le prix ou le financement et offre initiale connue → `downsell` (un cran sous l’offre) ; le lead demande du temps ou a fixé sa prochaine étape → `doux` ; le lead demande une extension, un délai, un format ou une exception → `admin` (deux temps) avec le move concerné ; problème de paiement → `paiement` ; question de calendrier → `demarrage` ; deuxième refus net ou demande d’être laissé tranquille → `cloture` ; simple question du lead → aucun move, réponds précisément.\n';
+  } else {
+    extra += '\n## Ce qu’Ali a choisi — prioritaire sur la carte\n';
+    extra += d.block;
+  }
   if (prevFresh) {
     const o = JSON.parse(prevFresh.options)[0] || { bubbles: [] };
     extra += `\nAli avait déjà une proposition sous les yeux${prevFresh.instruction ? ` (${prevFresh.instruction})` : ''} et ne l'a pas envoyée :\n${o.bubbles.map((b) => `> ${b}`).join('\n')}\nNe la recopie pas ; rédige selon le nouveau cap et dis dans \`why\` ce qui change.\n`;
@@ -92,14 +129,31 @@ export async function draft(waId, direction = {}) {
   const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 30 });
   const raw = Array.isArray(out.bubbles) ? out.bubbles : (Array.isArray(out.options) ? out.options[0]?.bubbles : []);
   const bubbles = (raw || []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
-  if (!bubbles.length) throw new Error('Claude n’a proposé aucune bulle');
-  const later = d.twoStep ? (Array.isArray(out.later) ? out.later : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4) : [];
-  const options = [{ bubbles, later, why: String(out.why || out.options?.[0]?.why || '').trim() }];
+  const chosen = auto ? (Array.isArray(out.moves) ? out.moves.map(String).filter((m) => MOVES.some((x) => x.id === m)) : []) : d.moves;
+  const needs = auto ? String(out.needs || '').trim() : '';
+  const skip = auto && !!out.skip && !bubbles.length;
+  const why = String(out.why || out.options?.[0]?.why || '').trim();
   const note = String(out.note || '').trim();
-  const id = insertSuggestion(waId, options, note, 'ali', { instruction: instruction || null, parentId: prevFresh?.id ?? null });
+  const source = direction.auto ? 'auto' : 'ali';
+  const label = auto ? (chosen.length ? `Claude : ${chosen.map((m) => MOVES.find((x) => x.id === m).label).join(' · ')}` : '') : instruction;
+  if (auto && (needs || skip) && !bubbles.length) {
+    // Not a draft: Claude asks Ali for one thing (needs) or says the message calls for no reply (skip).
+    const kind = needs ? 'needs' : 'skip';
+    const id = insertSuggestion(waId, [{ bubbles: [], later: [], why }], note, source, { instruction: label || null, parentId: prevFresh?.id ?? null, kind, moves: chosen, needs: needs || null });
+    db.prepare('UPDATE threads SET wanted = 0 WHERE wa_id = ?').run(waId);
+    status.set(waId, { state: 'done', at: new Date().toISOString(), direction: label });
+    try { saveDraftBlock(t, [{ bubbles: [], later: [], why: `${kind === 'needs' ? 'Claude demande : ' + needs : 'Pas de réponse nécessaire'} — ${why}` }], note, label); } catch {}
+    log(`${kind} for ${t.name || waId}: ${(needs || why).slice(0, 100)}`);
+    return { id, kind, needs, why };
+  }
+  if (!bubbles.length) throw new Error('Claude n’a proposé aucune bulle');
+  const twoStep = d.twoStep || (auto && chosen.includes('admin'));
+  const later = twoStep ? (Array.isArray(out.later) ? out.later : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4) : [];
+  const options = [{ bubbles, later, why }];
+  const id = insertSuggestion(waId, options, note, source, { instruction: label || null, parentId: prevFresh?.id ?? null, kind: 'draft', moves: chosen });
   db.prepare('UPDATE threads SET wanted = 0 WHERE wa_id = ?').run(waId);
-  status.set(waId, { state: 'done', at: new Date().toISOString(), direction: instruction });
-  try { saveDraftBlock(t, options, note, instruction); } catch (e) { log('draft file error:', e.message); }
+  status.set(waId, { state: 'done', at: new Date().toISOString(), direction: label });
+  try { saveDraftBlock(t, options, note, label); } catch (e) { log('draft file error:', e.message); }
   log(`saved suggestion #${id} for ${t.name || waId} — ${bubbles.length} bulle(s), ${Math.round(out.ms / 1000)} s`);
   return { id, options, note };
 }
@@ -112,7 +166,7 @@ function saveDraftBlock(t, options, note, instruction) {
   const file = join(dir, `${now.slice(0, 10)}.md`);
   if (!existsSync(file)) appendFileSync(file, `# Brouillons proposés — ${now.slice(0, 10)}\n\nFormat : un bloc par lead — heure, prénom, numéro, contexte en une ligne, bulles telles que proposées, règles appliquées. La veille du soir (scripts/nightly-review-prompt.md) compare ces blocs à ce qu'Ali a réellement envoyé.\n`);
   const ctx = String(t.last_text || '').replace(/\s+/g, ' ').slice(0, 160);
-  let s = `\n## ${now.slice(11, 16)} · ${t.name || '?'} · +${t.wa_id} (app, sur le cap d’Ali)\nContexte : dernier message du lead — « ${ctx} »\n`;
+  let s = `\n## ${now.slice(11, 16)} · ${t.name || '?'} · +${t.wa_id} (app${instruction && instruction.startsWith('Claude :') ? ', cap choisi par Claude' : ', sur le cap d’Ali'})\nContexte : dernier message du lead — « ${ctx} »\n`;
   if (instruction) s += `${instruction.replace(/\s+/g, ' ')}\n`;
   for (const o of options) {
     for (const b of o.bubbles) s += '```\n' + b + '\n```\n';

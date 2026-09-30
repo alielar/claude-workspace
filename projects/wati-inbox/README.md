@@ -15,8 +15,12 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
 - `poll.mjs` — every 45 s reads the threads active in the last 24 h directly (Wati's contact
   timestamp does not move on messages), older ones every 5 min, and checks contacts page 1
   for brand-new leads; pushes a notification for every new lead message.
-- `suggest-engine.mjs` + `suggest-prompt.md` + `directions.mjs` — the drafts. **Nothing is drafted
-  by itself** (since 2026-09-29): Ali opens the thread, ticks the **moves** the reply must make
+- `suggest-engine.mjs` + `suggest-prompt.md` + `directions.mjs` — the drafts. **Since 2026-09-30 a
+  draft starts by itself** 60 s after a lead's last bubble (`AUTO_DELAY_MS`, cap `SUGGEST_MAX_PER_DAY`
+  = 60, never for Ali's own number): Claude picks the moves itself, or asks Ali for the one thing it
+  needs before drafting (`kind = needs`, a question card with the offer box when the offer is what is
+  missing), or says the message needs no reply (`kind = skip`, no push). Ali can still steer from the
+  folded "Refaire le brouillon" panel: he ticks the **moves** the reply must make
   (combinable: Administration (2 temps), Downsell → 90h/96h/48h/24h/moins d'heures, Prolonger le
   délai → until when, Acompte → 196/96, Paiement, Démarrage plus tard, Relance, Basse pression,
   Clôture — chosen from the count of his own moves in 1 882 messages), adds a free consigne if
@@ -69,6 +73,8 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
 - `../Wati outreach/suggest.mjs` — posts a draft written in a Claude Code chat to the phone.
 
 ## The phone screen
+
+Since 2026-09-30 the screen shows one thing at a time: the conversation, the Sales Hub card when a step must be paused, Claude's state (drafting · a question for Ali · nothing to answer · the draft with Copier / Envoyer / Modifier and the editable "Dans 5-10 min" block), the composer, then two folded panels (Refaire le brouillon: offer, moves, consigne · Envoyer un template). Theme (auto / clair / sombre) and notifications at the bottom of the inbox. Older description below.
 Inbox: **only conversations whose 24h window is open** — leads waiting first, then the ones
 already answered; a pasted number still opens any conversation (template if closed). "France TM"
 link in the header with the count of new flags. Thread: the conversation, the window badge, the

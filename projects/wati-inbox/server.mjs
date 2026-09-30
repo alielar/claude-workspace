@@ -115,7 +115,7 @@ async function api(req, res, path) {
   if (!authed(req)) return json(res, 401, { error: 'login' });
 
   if (path === '/api/inbox') {
-    const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return !!s && (!t.last_inbound_at || s.created_at >= t.last_inbound_at); };
+    const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return !!s && (!t.last_inbound_at || s.created_at >= t.last_inbound_at) ? (s.kind === 'needs' ? 'needs' : s.kind === 'skip' ? false : true) : false; };
     // Only conversations whose 24h window is open (2026-09-29): a closed one can still be opened by number.
     const threads = inbox().filter((t) => !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24)
       .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
@@ -166,7 +166,7 @@ async function api(req, res, path) {
       windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24,
       hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null,
       templatesSent: sentTemplates(waId).map((s) => ({ at: s.at, name: JSON.parse(s.payload).template })),
-      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '' } : null,
+      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '', kind: sugg.kind || 'draft', needs: sugg.needs || '', moves: sugg.moves ? JSON.parse(sugg.moves) : [] } : null,
       suggesting: suggestStatus(waId),
       learning: learnStatus(waId),
       lastLesson: latestLesson(waId) || null,
@@ -184,8 +184,8 @@ async function api(req, res, path) {
     if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' });
     const b = req.method === 'POST' ? await body(req) : {};
     const direction = { moves: Array.isArray(b.moves) ? b.moves.map(String) : [], level: String(b.level || ''), level2: String(b.level2 || ''), until: String(b.until || '').trim(), instruction: String(b.instruction || '').trim() };
-    if (!direction.moves.length && !direction.instruction) return json(res, 400, { error: 'Cochez au moins un move, ou écrivez une consigne' });
-    wantSuggestion(waId); requestSuggestion(waId, direction); // Ali picked where the reply goes → Claude drafts along it
+    if (!direction.moves.length && !direction.instruction) direction.auto = true; // nothing chosen: Claude picks the moves
+    wantSuggestion(waId); requestSuggestion(waId, direction);
     return json(res, 200, { ok: true });
   }
   if (action === 'offer' && req.method === 'POST') {

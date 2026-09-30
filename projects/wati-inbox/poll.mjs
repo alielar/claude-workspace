@@ -5,7 +5,7 @@
 import { recentContacts, getThread, getContact, FR } from './wati.mjs';
 import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed } from './db.mjs';
 import { pushAll } from './push.mjs';
-import { startSuggesting } from './suggest-engine.mjs';
+import { startSuggesting, scheduleAutoDraft } from './suggest-engine.mjs';
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
 import { closeTbcAlerts } from './db.mjs';
 
@@ -45,7 +45,8 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   if (isNew && before) closeTbcAlerts(waId, 'replied'); // the lead answered: the Sales Hub warning is over
   if (isNew && notify && before && !before.muted) {
     await pushAll({ title: name || waId, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
-    log('new message from', name || waId); // no automatic draft: Ali picks the cap in the app first (2026-09-29)
+    log('new message from', name || waId);
+    if (pending) scheduleAutoDraft(waId); // Claude drafts by itself after the quiet time (2026-09-30)
   }
   return { isNew, pending };
 }
@@ -77,7 +78,9 @@ async function tick() {
 
 async function pushSuggestions() {
   for (const s of unpushedSuggestions()) {
-    await pushAll({ title: `Brouillon prêt · ${s.name || s.wa_id}`, body: 'Touchez pour le relire et l’envoyer', tag: `sugg-${s.wa_id}`, url: `/t/${s.wa_id}` });
+    const kind = s.kind || 'draft';
+    if (kind === 'skip') { markSuggestionPushed(s.id); continue; } // nothing to answer: no push
+    await pushAll({ title: kind === 'needs' ? `Claude a une question · ${s.name || s.wa_id}` : `Brouillon prêt · ${s.name || s.wa_id}`, body: kind === 'needs' ? (s.needs || '').slice(0, 160) : 'Touchez pour le relire et l’envoyer', tag: `sugg-${s.wa_id}`, url: `/t/${s.wa_id}` });
     markSuggestionPushed(s.id);
   }
 }

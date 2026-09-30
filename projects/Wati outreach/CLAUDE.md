@@ -182,13 +182,14 @@ and replies from there — free text while the 24h window is open, French templa
 closed. The inbox shows only conversations whose 24h window is open. Drafts appear in the app
 **without any Claude Code session open**: the app itself runs `claude -p --model claude-sonnet-5`
 headless in this folder (`wati-inbox/suggest-engine.mjs`, prompt in `wati-inbox/suggest-prompt.md`),
-so this CLAUDE.md and the playbook apply. **Nothing is drafted automatically** (since 2026-09-29):
-Ali reads the thread, ticks the moves on the phone (combinable: administration in two steps —
-"je vérifie" now, "bonne nouvelle" 5-10 min later, sent by the Mac —, downsell → 90h/96h/48h/24h/
-moins d'heures computed from the initial offer he typed for that lead (format, level, h/sem,
-months), prolonger le délai → until when, acompte 196/96, paiement, démarrage plus tard, relance,
-basse pression, clôture, plus a free consigne; labels and guidance per move are in
-`wati-inbox/directions.mjs`), taps "Rédiger", and Claude drafts along that line. Every draft is
+so this CLAUDE.md and the playbook apply. **Since 2026-09-30 a draft starts by itself** 60 s after
+a lead's last bubble: Claude picks the moves (combinable: administration in two steps — "je vérifie"
+now, "bonne nouvelle" 5-10 min later, sent by the Mac —, downsell → 90h/96h/48h/24h/moins d'heures
+computed from the initial offer typed for that lead (format, level, h/sem, months), prolonger le
+délai, acompte 196/96, paiement, démarrage plus tard, relance, basse pression, clôture; labels and
+guidance per move in `wati-inbox/directions.mjs`). When one piece of context is missing (the offer
+before a downsell, what was said on the call) Claude asks Ali instead of drafting; Ali answers in the
+app and the draft follows. Ali can also steer any draft with the moves and a consigne. Every draft is
 saved to `data/suggestions/<date>.md` with the moves for the evening review.
 
 - **In this chat**, a draft you give Ali can also be posted to his phone:

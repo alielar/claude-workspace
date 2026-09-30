@@ -9,11 +9,14 @@ in `../Wati outreach`. Details and setup in `README.md`; history and decisions i
 ## Where it runs
 On the Mac only, as the launchd job `com.ali.wati-inbox` (one Node process, `server.mjs`, port
 8443, SQLite in `data/inbox.sqlite`). The phone reaches it through Tailscale at
-`https://alis-macbook-pro.tail7ec20e.ts.net:8443`. Drafts are made by `suggest-engine.mjs` only
-when Ali ticks the moves in the app (`directions.mjs`: administration two-step, downsell from the
-stored initial offer, délai, acompte, paiement, démarrage, relance, basse pression, clôture, plus a
-consigne — never automatically), one set of bubbles per draft plus a `later` block for the
-administration two-step that the Mac can send 7 min later; lessons by `learn-engine.mjs` after every
+`https://alis-macbook-pro.tail7ec20e.ts.net:8443`. Since 2026-09-30 a draft starts **by itself**
+`AUTO_DELAY_MS` (60 s) after a lead's last bubble (`suggest-engine.mjs`, `scheduleAutoDraft`): Claude
+picks the moves from `directions.mjs` (administration two-step, downsell from the stored initial offer,
+délai, acompte, paiement, démarrage, relance, basse pression, clôture), or asks Ali for the one thing
+it needs (`kind = needs`, e.g. the initial offer before a downsell), or says the message needs no reply
+(`kind = skip`). Ali can still steer (folded "Refaire le brouillon" panel: offer, moves, consigne); one
+set of bubbles per draft plus a `later` block for the administration two-step, editable in the app
+before the Mac sends it 7 min later (bubbles spaced 5-10 s like any send); lessons by `learn-engine.mjs` after every
 send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
 reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`);
 the Sales Hub "to be converted" sequence is watched by `tbc-watch.mjs` (2026-09-30): it knows the fixed schedule
@@ -37,6 +40,7 @@ Then commit and push. Test a draft from the terminal with
 ## What is forbidden
 - Never call `sendText` / `sendTemplate` from a script or a test: the app sends only when Ali taps
   in it. Ali's own number `34695064884` is the test thread.
+- Ali's own number `34695064884` is never drafted by itself. `SUGGEST_MAX_PER_DAY` (60) caps automatic drafts.
 - Never change the suggestion prompt's rules or the cap guidance in `directions.mjs` without
   reading `../Wati outreach/CLAUDE.md` and `playbook/00-QUICK.md`; the playbook is the source of truth.
 - The inbox lists only open 24h windows; do not bring closed conversations back (Ali, 2026-09-29).
