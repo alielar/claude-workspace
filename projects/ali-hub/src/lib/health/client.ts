@@ -144,6 +144,8 @@ export type MetricInfo = {
   vital?: boolean;
   /** Decimals when written. */
   dp?: number;
+  /** The typical adult range from the usual medical references, or a note when none applies · the "am I safe" line. */
+  safe?: { lo: number; hi: number; text?: string } | { text: string };
 };
 
 /**
@@ -152,15 +154,15 @@ export type MetricInfo = {
  */
 export const METRIC_INFO: Record<string, MetricInfo> = {
   // Overnight · what Apple's Vitals checks while you sleep
-  resting_heart_rate:      { group: "overnight", vital: true, label: "Resting heart rate", short: "Resting HR", unit: "bpm", better: "lower",  field: "qty", floor: 3, meaning: "Lower is fitter. A jump of 5 or more over your usual often means strain, a bad night or an illness on its way." },
-  heart_rate_variability:  { group: "overnight", vital: true, label: "Heart rate variability", short: "HRV", unit: "ms", better: "higher", field: "qty", floor: 8, meaning: "Higher means more recovered. Only your own range is a fair comparison, not other people's numbers." },
-  respiratory_rate:        { group: "overnight", vital: true, label: "Breathing rate", unit: "/min", better: "steady", field: "qty", floor: 1, dp: 1, meaning: "Breaths per minute in sleep. Steady is good. A rise of 1 to 2 above your usual can show up a day before you feel ill." },
-  apple_sleeping_wrist_temperature: { group: "overnight", vital: true, label: "Wrist temperature", short: "Wrist temp", unit: "°C", better: "steady", field: "qty", floor: 0.3, dp: 1, meaning: "Skin temperature in sleep. Only the change matters: +0.5 °C or more over your usual points to illness, a hard day or alcohol." },
-  blood_oxygen_saturation: { group: "overnight", vital: true, label: "Blood oxygen", unit: "%", better: "steady", field: "qty", floor: 1.5, dp: 1, meaning: "95 to 100 % is normal. Repeated dips under 90 % during sleep are worth a doctor's look." },
+  resting_heart_rate:      { group: "overnight", vital: true, label: "Resting heart rate", short: "Resting HR", unit: "bpm", better: "lower",  field: "qty", floor: 3, safe: { lo: 60, hi: 100, text: "Typical adult 60 to 100 · trained people sit lower" }, meaning: "Lower is fitter. A jump of 5 or more over your usual often means strain, a bad night or an illness on its way." },
+  heart_rate_variability:  { group: "overnight", vital: true, label: "Heart rate variability", short: "HRV", unit: "ms", better: "higher", field: "qty", floor: 8, safe: { text: "No adult standard · only your own trend counts" }, meaning: "Higher means more recovered. Only your own range is a fair comparison, not other people's numbers." },
+  respiratory_rate:        { group: "overnight", vital: true, label: "Breathing rate", unit: "/min", better: "steady", field: "qty", floor: 1, dp: 1, safe: { lo: 12, hi: 20, text: "Typical adult 12 to 20 a minute" }, meaning: "Breaths per minute in sleep. Steady is good. A rise of 1 to 2 above your usual can show up a day before you feel ill." },
+  apple_sleeping_wrist_temperature: { group: "overnight", vital: true, label: "Wrist temperature", short: "Wrist temp", unit: "°C", better: "steady", field: "qty", floor: 0.3, dp: 1, safe: { text: "No fixed range · only the change from your usual" }, meaning: "Skin temperature in sleep. Only the change matters: +0.5 °C or more over your usual points to illness, a hard day or alcohol." },
+  blood_oxygen_saturation: { group: "overnight", vital: true, label: "Blood oxygen", unit: "%", better: "steady", field: "qty", floor: 1.5, dp: 1, safe: { lo: 95, hi: 100, text: "Typical adult 95 to 100 %" }, meaning: "95 to 100 % is normal. Repeated dips under 90 % during sleep are worth a doctor's look." },
   // Heart
   heart_rate:              { group: "heart", label: "Heart rate range", unit: "bpm", better: "steady", field: "avg", floor: 5, meaning: "Your day's range: the low end tracks rest, the high end your hardest effort." },
   walking_heart_rate_average: { group: "heart", label: "Walking heart rate", unit: "bpm", better: "lower", field: "qty", floor: 4, meaning: "Heart rate on ordinary walks. Falls as fitness builds." },
-  cardio_recovery:         { group: "heart", label: "Cardio recovery", unit: "bpm", better: "higher", field: "qty", floor: 4, meaning: "How far the heart rate drops one minute after a workout ends. Above 25 is good, above 40 very fit; it rises with training." },
+  cardio_recovery:         { group: "heart", label: "Cardio recovery", unit: "bpm", better: "higher", field: "qty", floor: 4, safe: { lo: 25, hi: 80, text: "Above 25 is good, above 40 very fit" }, meaning: "How far the heart rate drops one minute after a workout ends. Above 25 is good, above 40 very fit; it rises with training." },
   // Activity · the rings, as numbers
   step_count:              { group: "activity", label: "Steps", unit: "", better: "higher", field: "sum", floor: 1500, meaning: "Daily steps. 7,000 to 10,000 covers most of the benefit; the trend beats any single day." },
   active_energy:           { group: "activity", label: "Active energy", short: "Active", unit: "kcal", better: "higher", field: "sum", floor: 100, meaning: "Calories burned by moving, on top of what the body burns at rest." },
@@ -266,4 +268,70 @@ export function deltaLine(points: MetricPoint[], info: MetricInfo, units?: strin
 export function fmtDelta(d: number, dp?: number): string {
   const s = dp !== undefined ? d.toFixed(dp) : Math.abs(d) >= 10 ? Math.round(d).toString() : d.toFixed(1);
   return d > 0 ? `+${s}` : s;
+}
+
+// ── The day's read · three signals, one headline (rule-based, no AI) ──────────
+
+export type SignalState = "good" | "ok" | "off" | "wait";
+export type Signal = { key: "recovery" | "sleep" | "movement"; label: string; state: SignalState; text: string };
+export type DayRead = { headline: string; line: string; signals: Signal[] };
+
+export function signalColor(s: SignalState): string {
+  return s === "good" ? "var(--pos)" : s === "ok" ? "var(--warn)" : s === "off" ? "var(--neg)" : "var(--fill-3)";
+}
+
+/** Recovery = the night's checks against your own ranges. */
+export function recoverySignal(rows: { label: string; state: VitalState | null; n: number }[]): Signal {
+  const known = rows.filter((r) => r.state !== null);
+  if (!known.length) {
+    const n = rows.length ? Math.min(...rows.map((r) => r.n)) : 0;
+    return { key: "recovery", label: "Recovery", state: "wait", text: rows.length ? `day ${n} of ${RANGE_DAYS}` : "no night checks yet" };
+  }
+  const off = known.filter((r) => r.state !== "typical");
+  if (!off.length) return { key: "recovery", label: "Recovery", state: "good", text: `${known.length} checks in your range` };
+  if (off.length === 1) return { key: "recovery", label: "Recovery", state: "ok", text: `${off[0].label} ${off[0].state}` };
+  return { key: "recovery", label: "Recovery", state: "off", text: `${off.length} checks outside your range` };
+}
+
+/** Sleep = last night's score, if last night is recent. */
+export function sleepSignal(n: NightRow | null, today: string): Signal {
+  if (!n || n.score === null) return { key: "sleep", label: "Sleep", state: "wait", text: "no night yet" };
+  const y = new Date(today + "T12:00:00"); y.setDate(y.getDate() - 1);
+  const recent = n.date === today || n.date === y.toISOString().slice(0, 10);
+  if (!recent) return { key: "sleep", label: "Sleep", state: "wait", text: `last night ${fmtDay(n.date, today).toLowerCase()}` };
+  const state: SignalState = n.score >= 75 ? "good" : n.score >= 55 ? "ok" : "off";
+  return { key: "sleep", label: "Sleep", state, text: `${fmtMin(n.totalMin)} · score ${n.score}` };
+}
+
+/** Movement = the last 7 full days: exercise minutes against the 150-a-week baseline, steps against 7,000 a day. */
+export function movementSignal(exercise7: number[], steps7: number[]): Signal {
+  if (!exercise7.length && !steps7.length) return { key: "movement", label: "Movement", state: "wait", text: "no days yet" };
+  const ex = exercise7.reduce((a, b) => a + b, 0);
+  const st = avg(steps7);
+  const state: SignalState = ex >= 150 || (st !== null && st >= 7000) ? "good" : ex >= 75 || (st !== null && st >= 4000) ? "ok" : "off";
+  const text = exercise7.length ? `${Math.round(ex)} exercise min in 7 days` : `${Math.round(st ?? 0).toLocaleString("en-GB")} steps a day`;
+  return { key: "movement", label: "Movement", state, text };
+}
+
+/** The headline over the three signals · the same signals read the same every day. */
+export function dayRead(recovery: Signal, sleep: Signal, movement: Signal, offLabel?: string): DayRead {
+  const signals = [recovery, sleep, movement];
+  const r = recovery.state, s = sleep.state, m = movement.state;
+  if (r === "wait" && s === "wait") return { headline: "Learning your normal", line: "Your ranges appear after 7 nights. Until then the Watch is just listening.", signals };
+  if (r === "off") return { headline: "Ease off today", line: "Several night checks sit outside your usual range. Move gently, sleep early, and let tomorrow's numbers decide.", signals };
+  if (s === "off" && r === "good") return { headline: "Short night, body fine", line: "The night was short but every check is in your range. Keep the day light and go to bed early.", signals };
+  if (s === "off") return { headline: "Running on little", line: "A poor night and one check off. No hard training today.", signals };
+  if (r === "ok") return { headline: "Mostly fine", line: `${offLabel ?? "One check"} is off for you. One outlier is usually noise · watch it tomorrow.`, signals };
+  if (s === "ok") return { headline: "Fair shape", line: "Body checks in range, the night was fair. A normal day is fine.", signals };
+  if (m === "off") return { headline: "Rested, under-moved", line: "Night and body are fine. The week is short on movement · a walk fixes that.", signals };
+  if (m === "ok") return { headline: "All clear", line: "Everything in your range and a solid night. A bit more movement would round the week out.", signals };
+  if (r === "wait") return { headline: "Good night", line: "A solid night. Recovery ranges still need a few more nights.", signals };
+  return { headline: "All clear", line: "Everything in your usual range, a solid night, moving well. Green light for whatever the day holds.", signals };
+}
+
+/** Nights in a row (newest first) at or over `minMin` minutes, counted from the latest night. */
+export function sleepStreak(nights: NightRow[], minMin = 420): number {
+  let n = 0;
+  for (const x of nights) { if (x.totalMin !== null && x.totalMin >= minMin) n++; else break; }
+  return n;
 }

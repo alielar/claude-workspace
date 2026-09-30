@@ -25,6 +25,20 @@ import { useHealthSummary } from "@/lib/health/useHealth";
 import { MindPane } from "@/components/mind/MindPane";
 import { fmtDay, fmtDur, fmtKm, fmtPace, isoWeekOf, kindLabel, paceOf, pipeNote, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
 import { Bars } from "@/components/health/charts";
+import { CountUp, Reveal, useDrawn } from "@/components/health/checkup";
+
+/** YYYY-MM-DD shifted by n days. */
+function shiftDay(date: string, n: number): string { const d = new Date(date + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
+/** One plain line on the running week against the week before · fixed rules. */
+function runsRead(wk: { km: number; runs: number }, lastKm: number, best8: number): string {
+  if (!wk.runs && !lastKm) return "No runs in the last two weeks.";
+  if (!wk.runs) return `Nothing yet this week · last week ${lastKm} km.`;
+  if (wk.km >= best8 && wk.km > 0) return "Your biggest week in two months.";
+  const d = Math.round((wk.km - lastKm) * 10) / 10;
+  if (Math.abs(d) < 0.5) return "Same distance as last week.";
+  return d > 0 ? `${d} km more than last week.` : `${Math.abs(d)} km less than last week.`;
+}
 
 function describe(w: TrainWorkout): string {
   if (w.format === "amrap") return `AMRAP ${w.amrapMinutes} min · ${w.exercises.length} moves per round`;
@@ -144,6 +158,12 @@ export default function TrainPage() {
   const strengthWk = strength.filter((w) => isoWeekOf(w.date) === thisWeek).length;
   const kbDays = new Set((ov?.sessions ?? []).filter((s) => s.finishedAt !== null).map((s) => s.date));
   const runWeeks = weekKm(runs, today);
+  const lastWeek = isoWeekOf(shiftDay(today, -7));
+  const lastKm = Math.round(runs.filter((r) => isoWeekOf(r.date) === lastWeek).reduce((s, r) => s + (r.distanceKm ?? 0), 0) * 10) / 10;
+  const best8 = Math.max(0, ...runWeeks.km);
+  const lastStrengthWk = strength.filter((w) => isoWeekOf(w.date) === lastWeek).length;
+  const strengthMinWk = strength.filter((w) => isoWeekOf(w.date) === thisWeek).reduce((s, w) => s + (w.durationSec ?? 0), 0) / 60;
+  const drawn = useDrawn();
   const bodySub = ov
     ? `This week · ${wk.runs} run${wk.runs === 1 ? "" : "s"}${wk.runs ? ` ${wk.km} km` : ""} · ${strengthWk} strength · ${ov.thisWeekSessions} of ${target} kettlebell`
     : "This week · —";
@@ -157,47 +177,87 @@ export default function TrainPage() {
         </div>
       </div>
 
-      <div role="tablist" aria-label="Train" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: 3, borderRadius: 12, background: "var(--fill-1)" }}>
+      <div role="tablist" aria-label="Train" style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", padding: 3, borderRadius: 12, background: "var(--fill-1)" }}>
+        <span aria-hidden style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: "calc(50% - 3px)", borderRadius: 9, background: "var(--bg-card)", boxShadow: "0 1px 2px rgba(0,0,0,.18)", transform: half === "mind" ? "translateX(100%)" : "none", transition: "transform var(--t-3) var(--easeOut)" }} />
         {(["body", "mind"] as Half[]).map((h) => (
           <button key={h} role="tab" aria-selected={half === h} onClick={() => setHalf(h)}
-            style={{ minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, background: half === h ? "var(--bg-card)" : "transparent", color: half === h ? "var(--ink)" : "var(--ink-3)", boxShadow: half === h ? "0 1px 2px rgba(0,0,0,.18)" : "none" }}>
+            style={{ position: "relative", minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, background: "transparent", color: half === h ? "var(--ink)" : "var(--ink-3)", transition: "color var(--t-2) var(--easeOut)" }}>
             {h === "body" ? "Body" : "Mind"}
           </button>
         ))}
       </div>
 
-      {half === "mind" && <MindPane />}
+      {half === "mind" && <Reveal key="mind" i={0}><MindPane /></Reveal>}
 
       {half === "body" && <>
       {/* The three parts of Body */}
       <div role="tablist" aria-label="Body" style={{ display: "flex", gap: 8 }}>
         {PARTS.map((p) => (
           <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
-            style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
+            style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
             {p.label}
           </button>
         ))}
       </div>
 
-      {part === "runs" && <>
-        <WatchCard title="Runs" tail={wk.runs ? `this week ${wk.km} km · ${wk.runs} run${wk.runs === 1 ? "" : "s"} · ${fmtDur(wk.sec)}` : "nothing this week yet"} rows={runs} today={today} empty={watchNote ?? "No runs from the Watch yet. Start an Outdoor Run on the Watch and it lands here after the run."} warn={!!watchNote}>
-          {runs.length > 0 && <Bars values={runWeeks.km} labels={runWeeks.labels} height={64} fmt={(v, i) => `${v} km · ${runWeeks.count[i]} run${runWeeks.count[i] === 1 ? "" : "s"}`} />}
-        </WatchCard>
+      {part === "runs" && <Reveal key="runs" i={0}><div style={{ display: "grid", gap: 18 }}>
+        {runs.length > 0 && (
+          <section className="cc-card">
+            <div className="cc-card-head"><span className="title">This week</span><span className="tail">{runsRead(wk, lastKm, best8)}</span></div>
+            <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, alignItems: "end" }}>
+                <div style={{ display: "grid", gap: 2 }}>
+                  <span className="tabular-nums" style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1 }}><CountUp value={wk.km} fmt={(v) => v.toFixed(1)} /></span>
+                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>km</span>
+                </div>
+                <div style={{ display: "grid", gap: 2 }}>
+                  <span className="tabular-nums" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.2 }}><CountUp value={wk.runs} fmt={(v) => String(Math.round(v))} /></span>
+                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{wk.runs === 1 ? "run" : "runs"} · {fmtDur(wk.sec)}</span>
+                </div>
+                <div style={{ display: "grid", gap: 2 }}>
+                  <span className="tabular-nums" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.2 }}>{wk.km > 0.2 && wk.sec ? fmtPace(Math.round(wk.sec / wk.km)) : "—"}</span>
+                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>avg pace</span>
+                </div>
+              </div>
+              <Bars values={runWeeks.km} labels={runWeeks.labels} height={64} fmt={(v, i) => `${v} km · ${runWeeks.count[i]} run${runWeeks.count[i] === 1 ? "" : "s"}`} />
+            </div>
+          </section>
+        )}
+        <WatchCard title="Runs" tail={runs.length ? `${runs.length} on the Watch` : undefined} rows={runs} today={today} empty={watchNote ?? "No runs from the Watch yet. Start an Outdoor Run on the Watch and it lands here after the run."} warn={!!watchNote} />
         {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
-      </>}
+      </div></Reveal>}
 
-      {part === "strength" && (
-        <WatchCard title="Strength" tail={strengthWk ? `this week ${strengthWk} session${strengthWk === 1 ? "" : "s"}` : "Speediance and the Watch"} rows={strength} today={today}
+      {part === "strength" && <Reveal key="strength" i={0}><div style={{ display: "grid", gap: 18 }}>
+        {strength.length > 0 && (
+          <section className="cc-card">
+            <div className="cc-card-head"><span className="title">This week</span><span className="tail">{strengthWk >= 3 ? "three sessions · the week is done" : lastStrengthWk ? `last week ${lastStrengthWk}` : ""}</span></div>
+            <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 16, alignItems: "center" }}>
+                <div style={{ display: "grid", gap: 2 }}>
+                  <span className="tabular-nums" style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1 }}><CountUp value={strengthWk} fmt={(v) => String(Math.round(v))} /><span style={{ fontSize: 15, fontWeight: 400, color: "var(--ink-3)" }}> of 3</span></span>
+                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>sessions</span>
+                </div>
+                <div style={{ display: "grid", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {[0, 1, 2].map((i) => <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: drawn && i < strengthWk ? "var(--violet)" : "var(--fill-3)", transition: `background 360ms var(--easeOut) ${200 + i * 120}ms` }} />)}
+                  </div>
+                  <span className="tabular-nums" style={{ fontSize: 13, color: "var(--ink-3)" }}>{strengthMinWk ? `${Math.round(strengthMinWk)} min under load` : "Sunday push · Tuesday pull · Thursday legs"}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+        <WatchCard title="Strength" tail={strength.length ? "Speediance and the Watch" : undefined} rows={strength} today={today}
           noteFor={(w) => (kbDays.has(w.date) ? "Kettlebell 30" : undefined)}
           empty={watchNote ?? "No strength sessions from the Watch yet. Log a Speediance session as Traditional Strength Training on the Watch."} warn={!!watchNote} />
-      )}
+      </div></Reveal>}
 
-      {part === "kettlebell" && <>
+      {part === "kettlebell" && <Reveal key="kettlebell" i={0}><div style={{ display: "grid", gap: 18 }}>
       {/* Week progress: 4 dots · rest day · streak */}
       <div style={{ display: "grid", gap: 8 }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {Array.from({ length: target }).map((_, i) => (
-            <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: ov && i < ov.thisWeekSessions ? "var(--violet)" : "var(--fill-3)" }} />
+            <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: drawn && ov && i < ov.thisWeekSessions ? "var(--violet)" : "var(--fill-3)", transition: `background 360ms var(--easeOut) ${200 + i * 120}ms` }} />
           ))}
           {ov && ov.weekStreak > 0 && (
             <span className="cc-pill cc-pill-warn" style={{ fontSize: 13, padding: "3px 8px", whiteSpace: "nowrap" }} title="weeks in a row with every session done">{ov.weekStreak} wk</span>
@@ -223,7 +283,7 @@ export default function TrainPage() {
       <section className="cc-card" style={{ overflow: "hidden" }}>
         <div className="cc-card-head">
           <span className="title">{sched?.next ? `Up next · ${fmtScheduleDate(sched.next.date, today)}` : "Up next"}</span>
-          <span className="tail">{ov?.toBeat ? `to beat: ${ov.toBeat.rounds} rounds${pace ? ` · ${fmtClock(pace.avgRoundMs / 1000)} / round` : ""}` : "set the bar"}</span>
+          <span className="tail">{ov?.toBeat ? `beat ${ov.toBeat.rounds} rounds${pace ? ` · ${fmtClock(pace.avgRoundMs / 1000)}` : ""}` : "set the bar"}</span>
         </div>
         <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
           {loading || !next ? (
@@ -281,7 +341,7 @@ export default function TrainPage() {
               <div key={b.week} style={{ display: "grid", gridTemplateColumns: "90px 1fr auto", gap: 12, alignItems: "center", minHeight: 44, borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontSize: 15, color: i === 0 ? "var(--ink)" : "var(--ink-3)" }}>{b.label}</span>
                 <span className="cc-progress-track" style={{ height: 6 }}>
-                  <span className="cc-progress-fill" style={{ display: "block", width: `${(b.best / maxBest) * 100}%` }} />
+                  <span className="cc-progress-fill" style={{ display: "block", width: drawn ? `${(b.best / maxBest) * 100}%` : 0, transition: `width 700ms var(--easeOut) ${150 + i * 70}ms` }} />
                 </span>
                 <span className="tabular-nums" style={{ fontSize: 15, fontWeight: 600 }}>
                   {b.best}
@@ -303,7 +363,7 @@ export default function TrainPage() {
           {ov?.sessions.slice(0, 6).map((s) => <SessionLine key={s.clientId} s={s} workouts={workouts} />)}
         </div>
       </section>
-      </>}
+      </div></Reveal>}
       </>}
 
     </div>

@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Reveal } from "@/components/health/checkup";
 import { useMind } from "@/lib/mind/useMind";
 import { MAX_SPEAK_SEC, PREP, fmtSec, readSeconds, type MindPart, type MindSession, type MindTopic } from "@/lib/mind/types";
 import { readCache, writeCache } from "@/lib/local/store";
@@ -204,7 +205,7 @@ export function MindPane() {
       {!data.sttReady && <div style={{ fontSize: 14, color: "var(--warn)", padding: "0 2px" }}>Speech-to-text not connected · add DEEPGRAM_API_KEY on Vercel, then redeploy.</div>}
 
       {/* 1 · Callback */}
-      <section className="cc-card">
+      <Reveal i={0}><section className="cc-card">
         <div className="cc-card-head"><span className="title">1 · Callback</span><span className="tail">{data.done.callback ? "done" : cb ? `learned ${daysAgo(cb.learnedAt, today)}` : "none due"}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
           {data.done.callback ? (
@@ -222,10 +223,10 @@ export function MindPane() {
             <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{data.topics.length ? "No topic due today." : "The first callback comes the day after your first topic."}</div>
           )}
         </div>
-      </section>
+      </section></Reveal>
 
       {/* 2 · New topic */}
-      <section className="cc-card">
+      <Reveal i={1}><section className="cc-card">
         <div className="cc-card-head"><span className="title">2 · New topic</span><span className="tail">{data.done.new ? "done" : nt ? nt.domain : ""}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
           {data.done.new ? (
@@ -262,11 +263,11 @@ export function MindPane() {
             </>
           )}
         </div>
-      </section>
+      </section></Reveal>
 
       {/* Progress */}
       {data.weeks.length > 0 && (
-        <section className="cc-card">
+        <Reveal i={2}><section className="cc-card">
           <div className="cc-card-head"><span className="title">Week by week</span><span className="tail">lower fillers and pauses · higher scores</span></div>
           <div style={{ padding: "4px 14px 8px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 44px 52px 52px 52px 52px", gap: 6, fontSize: 12, color: "var(--ink-4)", padding: "6px 0", borderBottom: "1px solid var(--line)", textAlign: "right" }}>
@@ -279,12 +280,12 @@ export function MindPane() {
               </div>
             ))}
           </div>
-        </section>
+        </section></Reveal>
       )}
 
       {/* Topics */}
       {data.topics.length > 0 && (
-        <section className="cc-card">
+        <Reveal i={3}><section className="cc-card">
           <div className="cc-card-head"><span className="title">Topics</span><span className="tail">{data.topics.length} learned</span></div>
           <div style={{ padding: "0 14px" }}>
             {data.topics.map((t) => (
@@ -299,7 +300,7 @@ export function MindPane() {
               </div>
             ))}
           </div>
-        </section>
+        </section></Reveal>
       )}
     </div>
   );
