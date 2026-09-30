@@ -70,9 +70,14 @@ export const DOC_FORMATS: { key: Format; label: string; hint: string }[] = [
 // ─── Links (Knowledge · 2026-09-30) ───────────────────────────────────────────
 
 const URL_LINE = /^\s*(https?:\/\/\S+)\s*$/;
-/** The address of a link entry (notes = one url line), else null. */
+const URL_ANY = /https?:\/\/\S+/;
+/**
+ * The address a link entry opens = the FIRST address anywhere in its text, else null. The text
+ * itself is never reduced to that address: on 2026-09-30 switching an entry to Link threw away
+ * everything but one url (two of Ali's entries lost their content) · a shape never edits the words.
+ */
 export function linkOf(t: Pick<Todo, "notes">): string | null {
-  return (t.notes ?? "").match(URL_LINE)?.[1] ?? null;
+  return (t.notes ?? "").match(URL_ANY)?.[0] ?? null;
 }
 /** True when the whole text is one address · what turns a typed line into a link entry. */
 export const isUrlText = (s: string) => URL_LINE.test(s.trim());
@@ -116,7 +121,7 @@ export function taskFormat(t: Pick<Todo, "format" | "notes">): "doc" | "checklis
 export function docFormat(t: Pick<Todo, "format" | "notes">): Format {
   if (t.format && (FORMATS as readonly string[]).includes(t.format)) return t.format;
   if (t.format) return "doc"; // an old "sections" / "accordion" entry reads as a Document
-  if (linkOf(t)) return "link";
+  if (isUrlText(t.notes ?? "")) return "link";
   const lines = (t.notes ?? "").split("\n").filter((l) => l.trim());
   if (lines.length === 0) return "list";
   if (lines.every((l) => /^\s*- \[[ xX]\] /.test(l))) return "checklist";

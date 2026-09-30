@@ -430,11 +430,16 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
   const writeItems = (list: string[]) => set({ notes: list.length ? list.map((i) => `- ${i.trim()}`).join("\n") : null });
   const setFormat = (f: Format) => {
     if (f === "list") set({ format: f, notes: (d.notes ?? "").split("\n").map((l) => l.replace(/^- (\[[ xX]\] )?/, "").replace(/^\d+\. /, "")).filter((l) => l.trim()).map((l) => `- ${l.trim()}`).join("\n") || null });
-    else if (f === "link") set({ format: f, notes: linkOf(d) ?? ((d.notes ?? "").match(/https?:\/\/\S+/)?.[0] ?? null) });
-    else set({ format: f });
+    else set({ format: f }); // Link included: the shape changes, the words stay (2026-09-30)
   };
-  const url = mode === "link" ? (d.notes ?? "").trim() : "";
+  // Link mode: the address field edits the first address inside the text and leaves the rest alone.
+  const url = mode === "link" ? (linkOf(d) ?? "") : "";
   const urlOk = /^https?:\/\/\S+$/.test(url);
+  const setUrl = (v: string) => {
+    const next = v.trim(), cur = linkOf(d), notes = d.notes ?? "";
+    const out = cur ? notes.replace(cur, next) : next ? (notes.trim() ? `${next}\n${notes}` : next) : notes;
+    set({ notes: out.trim() || null });
+  };
 
   const [newItem, setNewItem] = useState("");
   const [editIdx, setEditIdx] = useState<number | null>(null);
@@ -494,13 +499,16 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
           // A link entry: the title says what it is, the address opens it (Ali 2026-09-29: "the point is browsing").
           <div style={{ display: "grid", gap: 10, alignContent: "start" }}>
             <input className="cc-input" type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={url} autoFocus={isNew && !url}
-              onChange={(e) => set({ notes: e.target.value.trim() || null })} placeholder="https://…" aria-label="Address" style={{ fontSize: 16, minHeight: 46, borderRadius: 12 }} />
+              onChange={(e) => setUrl(e.target.value)} placeholder="https://…" aria-label="Address" style={{ fontSize: 16, minHeight: 46, borderRadius: 12 }} />
             {urlOk ? (
               <a href={url} target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ minHeight: 48, borderRadius: 12, fontSize: 16, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0 14px" }}>
                 <span>Open · {linkSource(url)}</span><span aria-hidden>↗</span>
               </a>
             ) : (
               <span style={{ fontSize: 14, color: "var(--ink-4)" }}>Paste the address · reel, video, article, anything</span>
+            )}
+            {(d.notes ?? "").trim() !== url && (
+              <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
             )}
           </div>
         ) : (
