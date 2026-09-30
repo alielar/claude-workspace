@@ -131,14 +131,16 @@ export async function logRaw(automation: string | null, body: string, summary: s
 }
 
 /** The last raw posts, reduced to what each one carried (metric names + sample counts, workout types) · for checking the HAE automation set-up. */
-export async function rawPosts(limit = 12): Promise<Array<{ receivedAt: number; automation: string | null; summary: string; bytes: number; metrics: Record<string, number>; workouts: string[] }>> {
+export async function rawPosts(limit = 12): Promise<Array<{ receivedAt: number; automation: string | null; summary: string; bytes: number; metrics: Record<string, number>; workouts: string[]; sleep: unknown[] }>> {
   await ensureHealthTables();
   const rows = await db.all<{ received_at: number; automation: string | null; summary: string; bytes: number; body: string }>(sql`SELECT received_at, automation, summary, bytes, body FROM health_raw ORDER BY id DESC LIMIT ${limit}`).catch(() => []);
   return rows.map((r) => {
-    const metrics: Record<string, number> = {}; const workouts: string[] = [];
+    const metrics: Record<string, number> = {}; const workouts: string[] = []; const sleep: unknown[] = [];
     try {
       const j = JSON.parse(r.body) as { data?: { metrics?: Array<{ name?: string; data?: unknown[] }>; workouts?: Array<{ name?: string }> } };
       for (const m of j.data?.metrics ?? []) if (m?.name) metrics[m.name] = Array.isArray(m.data) ? m.data.length : 0;
+      // The sleep rows as sent (first 3) · the one place to see HAE's real sleep shape when the parser skips them.
+      for (const m of j.data?.metrics ?? []) if (m?.name === "sleep_analysis" && Array.isArray(m.data)) sleep.push(...m.data.slice(0, 3));
       for (const w of j.data?.workouts ?? []) if (w?.name) workouts.push(w.name);
     } catch {
       // Body capped at 200 KB (a run with its route is ~1 MB) · fall back to the ingest summary "sleep n · workouts n · metrics n".
@@ -146,7 +148,7 @@ export async function rawPosts(limit = 12): Promise<Array<{ receivedAt: number; 
       if (sl && Number(sl[1]) > 0) metrics.sleep_analysis = Number(sl[1]);
       for (let i = 0; i < Number(wo?.[1] ?? 0); i++) workouts.push("workout");
     }
-    return { receivedAt: r.received_at, automation: r.automation, summary: r.summary, bytes: r.bytes, metrics, workouts };
+    return { receivedAt: r.received_at, automation: r.automation, summary: r.summary, bytes: r.bytes, metrics, workouts, sleep };
   });
 }
 
