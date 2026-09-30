@@ -11,7 +11,7 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread, setOffer, getOffer } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread, setOffer, getOffer , setHandled } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
@@ -208,7 +208,7 @@ async function api(req, res, path) {
     return json(res, 200, { ok: true, tbc: tbcInfo(waId) });
   }
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
-  if (action === 'handled') { const t = storedThread(waId); if (t) saveThread({ ...t, pending: 0 }); return json(res, 200, { ok: true }); }
+  if (action === 'handled') { const t = storedThread(waId); if (t) setHandled(waId, t.last_inbound_at || new Date().toISOString()); return json(res, 200, { ok: true }); }
   if (action === 'send' && req.method === 'POST') {
     const b = await body(req);
     const bubbles = (b.bubbles || []).map((s) => String(s).trim()).filter(Boolean);

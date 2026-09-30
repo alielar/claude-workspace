@@ -29,7 +29,8 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   const lastHuman = [...msgs].reverse().find(human);
   // Waiting for a human reply — but a lead message older than 48 h is history (window
   // closed, template only), not something to answer now: old threads seed as handled.
-  const pending = !!lastIn && (!lastHuman || lastHuman.at < lastIn.at) && Date.now() - new Date(lastIn.at).getTime() < 48 * 3600e3;
+  // A tap on « Traité » covers every lead message up to that moment (handled_at): only a newer one reopens the thread.
+  const pending = !!lastIn && (!lastHuman || lastHuman.at < lastIn.at) && Date.now() - new Date(lastIn.at).getTime() < 48 * 3600e3 && !(before?.handled_at && before.handled_at >= lastIn.at);
   const last = msgs[msgs.length - 1];
   saveThread({
     wa_id: waId, name: name || before?.name || null,
