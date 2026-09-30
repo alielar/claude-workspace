@@ -31,8 +31,9 @@ Madrid), when the raw journal `../Wati outreach/playbook/04-CAS-APPRIS.md` moved
 `../Wati outreach/playbook/06-REGLES-APPRISES.md` (every rule once, latest decision wins, scripts verbatim, 150–250
 lines) and appends a `<!-- consolidé jusqu'ici · … -->` marker to the journal. Every draft reads 06 in full plus the
 journal tail after that marker (injected in the prompt). Terminal: `node --env-file=.env consolidate-engine.mjs [--force]`.
-All three run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a
-time; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
+All run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach` — drafts in their own lane with a
+self-contained prompt (thread, CRM card, quick card, consolidated rules and principles injected; no tool turns; target
+under a minute), the other runs queued behind each other in a background lane; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
 
 ## How to deploy
 There is no deploy. After a code change:

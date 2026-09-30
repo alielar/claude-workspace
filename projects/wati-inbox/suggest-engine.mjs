@@ -16,7 +16,7 @@
 import { spawn } from 'node:child_process';
 import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
-import { db, getThread, latestSuggestion, insertSuggestion, getOffer, autoSuggestionsSince } from './db.mjs';
+import { db, getThread, latestSuggestion, insertSuggestion, getOffer, autoSuggestionsSince, threadMessages, sentTemplates } from './db.mjs';
 import { describeDirection, describeOffer, currencyFor, MOVES } from './directions.mjs';
 
 export const OUTREACH = resolve(process.env.OUTREACH_DIR || '../Wati outreach');
@@ -137,19 +137,30 @@ export async function draft(waId, direction = {}) {
   extra += 'Le cap dit OÙ on va ; la carte et les cas appris disent COMMENT on l’écrit. Si le cap contredit une règle dure (chiffre inventé, remise gratuite, deux messages de pression le même jour), suis le cap mais signale-le dans `note`.\n';
   const fresh = unconsolidatedTail();
   if (fresh) extra += `\n## Appris depuis la dernière consolidation (prime sur 06-REGLES-APPRISES.md, applique en priorité)\n${fresh.length > 7000 ? '…\n' + fresh.slice(-7000) : fresh}\n`;
+  // Everything Claude needs goes into the prompt (2026-09-30, Ali: a draft in under two minutes): the thread from
+  // the database, the CRM card, the quick card, the consolidated rules and the principles. Zero tool turns normally.
+  const msgs = threadMessages(waId).slice(-40);
+  const transcript = msgs.map((m) => `[${madrid(new Date(m.at)).slice(5, 16)}] ${m.who === 'LEAD' ? 'LEAD' : m.tpl ? `AUTO${m.tpl_name ? ' ' + m.tpl_name : ''}` : 'ALI'} : ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 600)}`).join('\n') || '(aucun message lisible sur le numéro Sales — lead du numéro télémarketing ?)';
+  const windowOpen = !!t.last_inbound_at && Date.now() - Date.parse(t.last_inbound_at) < 24 * 3600e3;
+  const appTpls = sentTemplates(waId).map((s) => { try { return JSON.parse(s.payload).template; } catch { return null; } }).filter(Boolean);
+  const card = `Fiche CRM : étape ${t.stage || 'inconnue'}${t.meeting ? ` · entretien ${t.meeting}` : ''} · pays ${t.country || 'inconnu'} · devise ${cur}${t.email ? ` · ${t.email}` : ''}${appTpls.length ? ` · templates envoyés depuis l'app : ${appTpls.join(', ')}` : ''}\nFenêtre de 24h : ${windowOpen ? 'OUVERTE — message libre possible' : 'FERMÉE — seul un template peut partir'}${t.last_inbound_at ? ` (dernier message du lead ${madrid(new Date(t.last_inbound_at)).slice(0, 16)})` : ''}`;
+  const pb = (f) => { try { return readFileSync(join(OUTREACH, 'playbook', f), 'utf8'); } catch { return `(fichier ${f} introuvable)`; } };
   const prompt = readFileSync(new URL('./suggest-prompt.md', import.meta.url), 'utf8')
-    .replaceAll('{{waId}}', waId).replaceAll('{{name}}', t.name || 'prénom inconnu').replaceAll('{{now}}', madrid()).replaceAll('{{node}}', process.execPath).replaceAll('{{extra}}', extra);
-  const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 30 });
+    .replaceAll('{{waId}}', waId).replaceAll('{{name}}', t.name || 'prénom inconnu').replaceAll('{{now}}', madrid()).replaceAll('{{node}}', process.execPath)
+    .replaceAll('{{card}}', card).replaceAll('{{extra}}', extra).replaceAll('{{transcript}}', transcript)
+    .replaceAll('{{quick}}', pb('00-QUICK.md')).replaceAll('{{rules}}', pb('06-REGLES-APPRISES.md')).replaceAll('{{principes}}', pb('05-PRINCIPES-conversation.md'));
+  const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 6, tools: ['Read'], lane: 'draft', timeoutMs: 3 * 60_000 });
   const raw = Array.isArray(out.bubbles) ? out.bubbles : (Array.isArray(out.options) ? out.options[0]?.bubbles : []);
   const bubbles = (raw || []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
   const chosen = auto ? (Array.isArray(out.moves) ? out.moves.map(String).filter((m) => MOVES.some((x) => x.id === m)) : []) : d.moves;
-  const needs = auto ? String(out.needs || '').trim() : '';
-  const skip = auto && !!out.skip && !bubbles.length;
+  const needs = String(out.needs || '').trim();
+  const skip = !!out.skip && !bubbles.length;
   const why = String(out.why || out.options?.[0]?.why || '').trim();
   const note = String(out.note || '').trim();
   const source = direction.auto ? 'auto' : 'ali';
   const label = auto ? (chosen.length ? `Claude : ${chosen.map((m) => MOVES.find((x) => x.id === m).label).join(' · ')}` : '') : instruction;
-  if (auto && (needs || skip) && !bubbles.length) {
+  if (direction.dry) { log(`dry run for ${t.name || waId}: ${bubbles.length} bulle(s), ${Math.round(out.ms / 1000)} s`); return { dry: true, bubbles, later: out.later, why, note, needs, skip, moves: chosen, ms: out.ms }; }
+  if ((needs || skip) && !bubbles.length) {
     // Not a draft: Claude asks Ali for one thing (needs) or says the message calls for no reply (skip).
     const kind = needs ? 'needs' : 'skip';
     const id = insertSuggestion(waId, [{ bubbles: [], later: [], why }], note, source, { instruction: label || null, parentId: prevFresh?.id ?? null, kind, moves: chosen, needs: needs || null });
@@ -190,11 +201,13 @@ function saveDraftBlock(t, options, note, instruction) {
   appendFileSync(file, s);
 }
 
-// One headless Claude at a time on this Mac: drafts and lessons wait for each other.
-let chain = Promise.resolve();
+// Two lanes (2026-09-30): drafts run one at a time in their own lane so they never wait behind a learning,
+// Sales Hub or consolidation run; everything else queues in the background lane.
+const chains = { draft: Promise.resolve(), background: Promise.resolve() };
 export function runClaude(prompt, opts = {}) {
-  const r = chain.then(() => spawnClaude(prompt, opts), () => spawnClaude(prompt, opts));
-  chain = r.catch(() => {});
+  const lane = opts.lane === 'draft' ? 'draft' : 'background';
+  const r = chains[lane].then(() => spawnClaude(prompt, opts), () => spawnClaude(prompt, opts));
+  chains[lane] = r.catch(() => {});
   return r;
 }
 
@@ -236,5 +249,7 @@ if (process.argv[1] && process.argv[1].endsWith('suggest-engine.mjs')) {
   const waId = (process.argv[2] || '').replace(/\D/g, '');
   if (!/^\d{8,15}$/.test(waId)) { console.error('Usage: node --env-file=.env suggest-engine.mjs <waId> [objective] ["consigne"]'); process.exit(1); }
   mkdirSync('logs', { recursive: true });
-  draft(waId, { moves: process.argv[3] || '', instruction: process.argv[4] || '' }).then((r) => { console.log(JSON.stringify(r, null, 2)); process.exit(0); }).catch((e) => { console.error('Error:', e.message); process.exit(1); });
+  const dry = process.argv.includes('--dry'); // measure / inspect a draft without storing it or pushing the phone
+  const args = process.argv.slice(3).filter((a) => a !== '--dry');
+  draft(waId, { moves: args[0] || '', instruction: args[1] || '', dry }).then((r) => { console.log(JSON.stringify(r, null, 2)); process.exit(0); }).catch((e) => { console.error('Error:', e.message); process.exit(1); });
 }

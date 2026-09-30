@@ -77,6 +77,11 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
   journal tail after the marker injected in its prompt, so nothing learned today is missed. The result is
   validated (size, sections) before the file is replaced; a summary lands in `data/nightly/<date>.md`.
   Terminal: `node --env-file=.env consolidate-engine.mjs [--force]`.
+- **Speed** (2026-09-30, Ali: a draft in under two minutes): the draft prompt is self-contained — the thread
+  from the database, the CRM card, the quick card, the consolidated rules and the principles are injected, so
+  Claude writes in one pass without running `lead.mjs` or opening files (Read stays allowed for the rare
+  02/03 lookup, `maxTurns` 6, 3-min timeout). Drafts run in their own lane; learning, Sales Hub and
+  consolidation runs queue in a background lane and never delay a draft.
 - `db.mjs` — `data/inbox.sqlite` (threads, messages, suggestions, lessons, tm_messages, tm_flags,
   tbc_alerts, push subscriptions, sends, state).
 - `wati.mjs` — the Wati calls (ported from `lead.mjs`, `send.mjs`, `check-templates.mjs`).
