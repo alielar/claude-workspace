@@ -3,9 +3,9 @@
 // First run only records what exists (no notification storm).
 
 import { recentContacts, getThread, getContact, FR } from './wati.mjs';
-import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed } from './db.mjs';
+import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed, threadMessages } from './db.mjs';
 import { pushAll } from './push.mjs';
-import { startSuggesting, scheduleAutoDraft } from './suggest-engine.mjs';
+import { startSuggesting, scheduleAutoDraft, AUTO_DELAY_MS } from './suggest-engine.mjs';
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
 import { closeTbcAlerts } from './db.mjs';
 
@@ -44,11 +44,41 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   const isNew = !!lastIn && (!before || (before.last_inbound_at || '') < lastIn.at);
   if (isNew && before) closeTbcAlerts(waId, 'replied'); // the lead answered: the Sales Hub warning is over
   if (isNew && notify && before && !before.muted) {
-    await pushAll({ title: name || waId, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
     log('new message from', name || waId);
-    if (pending) scheduleAutoDraft(waId); // Claude drafts by itself after the quiet time (2026-09-30)
+    // One notification per lead message, and it arrives when the draft is ready (Ali, 2026-09-30): the
+    // push carries the lead's message and the reply is already on screen when he opens it. The message
+    // itself is pushed only when no draft will come (window closed, cap reached) or when it is late.
+    if (pending && scheduleAutoDraft(waId)) deferNotification(waId, name);
+    else await pushAll({ title: name || waId, body: waitingText(waId) || lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
   }
   return { isNew, pending };
+}
+
+// What the lead wrote since our last human reply — the body of every notification.
+export function waitingText(waId) {
+  const msgs = threadMessages(waId);
+  let i = msgs.length;
+  while (i > 0 && !(msgs[i - 1].who === 'US' && !msgs[i - 1].tpl)) i--; // automatic templates do not count as a reply
+  const since = msgs.slice(i).filter((m) => m.who === 'LEAD' && m.text);
+  const lead = since.length ? since : msgs.filter((m) => m.who === 'LEAD' && m.text).slice(-1);
+  return lead.map((m) => m.text.trim()).join(' · ').slice(0, 300);
+}
+
+// Lead messages whose notification waits for the draft: pushed as plain messages if no draft came in time.
+const deferred = new Map(); // wa_id → { name, timer }
+const LATE_MS = AUTO_DELAY_MS + 4 * 60_000; // quiet time + the draft's own timeout
+function deferNotification(waId, name) {
+  const prev = deferred.get(waId);
+  if (prev) clearTimeout(prev.timer);
+  const timer = setTimeout(async () => {
+    if (!deferred.has(waId)) return;
+    deferred.delete(waId);
+    const t = storedThread(waId);
+    if (!t?.pending) return; // answered or handled meanwhile
+    try { await pushAll({ title: t.name || name || waId, body: waitingText(waId) || t.last_text || '', tag: `wati-${waId}`, url: `/t/${waId}` }); log('late draft: plain notification for', t.name || waId); }
+    catch (e) { log('push error:', e.message); }
+  }, LATE_MS);
+  deferred.set(waId, { name, timer });
 }
 
 const HOT_H = 24, WARM_DAYS = 14, WARM_EVERY_MS = 5 * 60_000;
@@ -79,8 +109,13 @@ async function tick() {
 async function pushSuggestions() {
   for (const s of unpushedSuggestions()) {
     const kind = s.kind || 'draft';
-    if (kind === 'skip') { markSuggestionPushed(s.id); continue; } // nothing to answer: no push
-    await pushAll({ title: kind === 'needs' ? `Claude a une question · ${s.name || s.wa_id}` : `Brouillon prêt · ${s.name || s.wa_id}`, body: kind === 'needs' ? (s.needs || '').slice(0, 160) : 'Touchez pour le relire et l’envoyer', tag: `sugg-${s.wa_id}`, url: `/t/${s.wa_id}` });
+    const waiting = deferred.get(s.wa_id);
+    if (waiting) { clearTimeout(waiting.timer); deferred.delete(s.wa_id); }
+    // The notification is the lead's message; the title says what is waiting on screen.
+    const who = s.name || s.wa_id;
+    const title = kind === 'needs' ? `${who} · Claude a une question` : kind === 'skip' ? `${who} · pas de réponse à envoyer` : `${who} · réponse prête`;
+    const body = waitingText(s.wa_id) || (kind === 'needs' ? (s.needs || '').slice(0, 160) : '');
+    await pushAll({ title, body, tag: `wati-${s.wa_id}`, url: `/t/${s.wa_id}` });
     markSuggestionPushed(s.id);
   }
 }

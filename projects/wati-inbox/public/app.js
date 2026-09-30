@@ -225,11 +225,11 @@ async function renderThread(waId, { quiet = false } = {}) {
        <details class="card fold"><summary>Envoyer un template</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? 'Fenêtre de 24h fermée : seul un template peut partir.' : 'Aucune conversation sur le numéro Sales : un template peut partir.'}</p>${tplBox}</div>`;
 
-  app.innerHTML = `<header><a data-nav href="/">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="rf" class="small">↻</button></header>
+  app.innerHTML = `<header><a data-nav href="/">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Traité' : 'Traité ✓'}</button><button id="rf" class="small">↻</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
     ${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}
-    <div class="row foot"><button id="hd" class="small" ${t.pending ? '' : 'disabled'}>Traité</button><button id="mute" class="small">${t.muted ? 'Notifier à nouveau' : 'Ne plus notifier'}</button></div>`;
+    <div class="row foot"><button id="mute" class="small">${t.muted ? 'Notifier à nouveau' : 'Ne plus notifier'}</button></div>`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
   const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
