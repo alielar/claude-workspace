@@ -11,7 +11,7 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread, setOffer, getOffer , setHandled } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
@@ -116,7 +116,7 @@ async function api(req, res, path) {
   if (!authed(req)) return json(res, 401, { error: 'login' });
 
   if (path === '/api/inbox') {
-    const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return !!s && (!t.last_inbound_at || s.created_at >= t.last_inbound_at) ? (s.kind === 'needs' ? 'needs' : s.kind === 'skip' ? false : true) : false; };
+    const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return suggestionVisible(t, s, { laterScheduled: scheduled.has(t.wa_id) }) ? (s.kind === 'needs' ? 'needs' : s.kind === 'skip' ? false : true) : false; };
     // Only conversations whose 24h window is open (2026-09-29): a closed one can still be opened by number.
     const threads = inbox().filter((t) => !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24)
       .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
@@ -167,7 +167,7 @@ async function api(req, res, path) {
       windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24,
       hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null,
       templatesSent: sentTemplates(waId).map((s) => ({ at: s.at, name: JSON.parse(s.payload).template })),
-      suggestion: sugg && (!t.last_inbound_at || sugg.created_at >= t.last_inbound_at) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '', kind: sugg.kind || 'draft', needs: sugg.needs || '', moves: sugg.moves ? JSON.parse(sugg.moves) : [] } : null,
+      suggestion: suggestionVisible(t, sugg, { laterScheduled: scheduled.has(waId) }) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '', kind: sugg.kind || 'draft', needs: sugg.needs || '', moves: sugg.moves ? JSON.parse(sugg.moves) : [] } : null,
       suggesting: suggestStatus(waId),
       learning: learnStatus(waId),
       lastLesson: latestLesson(waId) || null,

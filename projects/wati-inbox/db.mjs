@@ -179,6 +179,21 @@ export const messagesBefore = (waId, iso, n) => db.prepare('SELECT at, who, text
 export const autoSuggestionsSince = (iso) => db.prepare("SELECT count(*) n FROM suggestions WHERE created_at >= ? AND source = 'auto'").get(iso).n;
 export const pendingRecent = (hours) => db.prepare('SELECT * FROM threads WHERE pending = 1 AND muted = 0 AND last_inbound_at > ?').all(new Date(Date.now() - hours * 3600e3).toISOString());
 export const unpushedSuggestions = () => db.prepare('SELECT s.*, t.name FROM suggestions s LEFT JOIN threads t ON t.wa_id = s.wa_id WHERE s.pushed = 0').all();
+// A draft is shown only while it is still useful (Ali, 2026-09-30): not after a newer lead message, not once Ali
+// replied after it (from the app or straight from Wati — automatic templates do not count) and not once he marked the
+// thread treated. Exception: a two-step draft whose second part is still to send stays until that part left.
+const humanReplyAfter = (waId, iso) => !!db.prepare("SELECT 1 FROM messages WHERE wa_id = ? AND who = 'US' AND tpl = 0 AND at > ? LIMIT 1").get(waId, iso)
+  || !!db.prepare("SELECT 1 FROM sends WHERE wa_id = ? AND kind = 'text' AND ok = 1 AND at > ? LIMIT 1").get(waId, iso);
+const laterSent = (id) => !!db.prepare(`SELECT 1 FROM sends WHERE kind = 'text' AND ok = 1 AND payload LIKE ? AND payload LIKE ? LIMIT 1`).get(`%"suggestionId":${id},%`, '%"part":"later"%');
+export function suggestionVisible(t, s, { laterScheduled = false } = {}) {
+  if (!s || !t) return false;
+  if (t.last_inbound_at && s.created_at < t.last_inbound_at) return false;
+  const answered = humanReplyAfter(t.wa_id, s.created_at) || (t.handled_at && t.handled_at > s.created_at);
+  if (!answered) return true;
+  if (s.kind && s.kind !== 'draft') return false;
+  let later = []; try { later = JSON.parse(s.options)[0]?.later || []; } catch {}
+  return later.length > 0 && !laterSent(s.id) && !laterScheduled;
+}
 export const markSuggestionPushed = (id) => db.prepare('UPDATE suggestions SET pushed = 1 WHERE id = ?').run(id);
 
 export const logSend = (waId, kind, payload, ok, error) =>

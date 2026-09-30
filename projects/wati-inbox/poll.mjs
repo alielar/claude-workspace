@@ -3,7 +3,7 @@
 // First run only records what exists (no notification storm).
 
 import { recentContacts, getThread, getContact, FR } from './wati.mjs';
-import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed, threadMessages } from './db.mjs';
+import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed, threadMessages, suggestionVisible } from './db.mjs';
 import { pushAll } from './push.mjs';
 import { startSuggesting, scheduleAutoDraft, AUTO_DELAY_MS } from './suggest-engine.mjs';
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
@@ -112,6 +112,8 @@ async function pushSuggestions() {
     const kind = s.kind || 'draft';
     const waiting = deferred.get(s.wa_id);
     if (waiting) { clearTimeout(waiting.timer); deferred.delete(s.wa_id); }
+    // Ali already answered (from the app or straight from Wati) while Claude was drafting: nothing to announce.
+    if (!suggestionVisible(storedThread(s.wa_id), s)) { markSuggestionPushed(s.id); continue; }
     // The notification is the lead's message; the title says what is waiting on screen.
     const who = s.name || s.wa_id;
     const title = kind === 'needs' ? `${who} · Claude a une question` : kind === 'skip' ? `${who} · pas de réponse à envoyer` : `${who} · réponse prête`;

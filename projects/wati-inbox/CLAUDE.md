@@ -18,7 +18,7 @@ it needs (`kind = needs`, e.g. the initial offer before a downsell), or says the
 set of bubbles per draft plus a `later` block for the administration two-step, editable in the app
 before the Mac sends it 7 min later (bubbles spaced 5-10 s like any send); **One notification per lead message** (2026-09-30): the phone is not pushed when the message arrives but when the draft is ready
 (`poll.mjs`, `deferNotification`); the push carries the lead's text, the reply is on screen when Ali opens it. If no draft came
-within 5 min (window closed, cap, error) the plain message is pushed. Every send marks the thread as treated; the Traité button sits in the header. Lessons by `learn-engine.mjs` after every
+within 5 min (window closed, cap, error) the plain message is pushed. Every send marks the thread as treated; the Traité button sits in the header. A draft disappears (list pill and thread box, no push) once Ali replied after it, from the app or from Wati, or tapped Traité — except the second part of a two-step draft still to send (`suggestionVisible` in `db.mjs`). Lessons by `learn-engine.mjs` after every
 send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
 reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`);
 the Sales Hub "to be converted" sequence is watched by `tbc-watch.mjs` (2026-09-30): it knows the fixed schedule
