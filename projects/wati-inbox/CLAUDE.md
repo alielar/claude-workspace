@@ -20,7 +20,7 @@ before the Mac sends it 7 min later (bubbles spaced 5-10 s like any send); **One
 (`poll.mjs`, `deferNotification`); the push carries the lead's text, the reply is on screen when Ali opens it. If no draft came
 within 5 min (window closed, cap, error) the plain message is pushed. Every send marks the thread as treated; the Traité button sits in the header. A draft disappears (list pill and thread box, no push) once Ali replied after it, from the app or from Wati, or tapped Traité — except the second part of a two-step draft still to send (`suggestionVisible` in `db.mjs`). Lessons by `learn-engine.mjs` after every
 send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
-reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`);
+reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`; « Pas une erreur » on a flag stores `verdict = not_issue` and the last 40 such cases are injected into every review prompt so they are not flagged again, 2026-10-01);
 the Sales Hub "to be converted" sequence is watched by `tbc-watch.mjs` (2026-09-30): it knows the fixed schedule
 (Day 0 20:20 … Day 7 17:30, counted from the preadmission template) and, from the recovery week on, asks Sonnet
 whether the next template still makes sense when Ali's diagnostic question (what really blocks you?) went

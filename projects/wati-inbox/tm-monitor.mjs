@@ -18,7 +18,7 @@
 
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { getState, setState, upsertTmMessages, tmThread, tmThreadsSince, insertTmFlag } from './db.mjs';
+import { getState, setState, upsertTmMessages, tmThread, tmThreadsSince, insertTmFlag , tmDismissed } from './db.mjs';
 import { runClaude, OUTREACH, madrid } from './suggest-engine.mjs';
 
 const HOOK = process.env.WATI_HOOK_URL || 'https://ali-hub.vercel.app/api/wati';
@@ -101,7 +101,10 @@ export async function review(reason = 'auto') {
       const name = msgs.find((m) => m.name)?.name || t.name || '';
       return `### +${t.wa_id}${name ? ` · ${name}` : ''}\n` + msgs.map((m) => `[${madrid(new Date(m.at)).slice(5, 16)}] ${m.who === 'BOT' ? 'BOT ' : 'LEAD'} : ${String(m.text || '').replace(/\s+/g, ' ')}${m.at > since ? '' : '  (avant)'}`).join('\n');
     }).join('\n\n');
-    const prompt = readFileSync(new URL('./tm-review-prompt.md', import.meta.url), 'utf8').replaceAll('{{now}}', madrid()).replaceAll('{{since}}', madrid(new Date(since))).replaceAll('{{transcripts}}', transcripts);
+    // Cases Ali marked « pas une erreur »: intended behaviour of the bot, never to be flagged again (nor anything alike).
+    const dismissed = tmDismissed(40).map((f) => `- [${f.kind}] ${f.title}${f.quote ? ` — « ${f.quote.replace(/\s+/g, ' ').slice(0, 160)} »` : ''}`).join('\n');
+    const prompt = readFileSync(new URL('./tm-review-prompt.md', import.meta.url), 'utf8').replaceAll('{{now}}', madrid()).replaceAll('{{since}}', madrid(new Date(since))).replaceAll('{{transcripts}}', transcripts)
+      .replaceAll('{{dismissed}}', dismissed || '(aucun pour le moment)');
     const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 4, tag: 'tm', timeoutMs: 5 * 60_000, tools: ['Read', 'Grep', 'Glob'] });
     const known = new Set(threads.map((t) => t.wa_id));
     let n = 0;

@@ -11,7 +11,7 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagVerdict, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
@@ -127,7 +127,13 @@ async function api(req, res, path) {
   if (path === '/api/tm') return json(res, 200, { flags: tmFlags(120), status: tmStatus() });
   if (path === '/api/tm/review' && req.method === 'POST') { tmReview('ali').catch(() => {}); return json(res, 200, { ok: true }); }
   const tmf = /^\/api\/tm\/flag\/(\d+)$/.exec(path);
-  if (tmf && req.method === 'POST') { const b = await body(req); tmFlagSeen(Number(tmf[1]), b.seen !== false); return json(res, 200, { ok: true }); }
+  if (tmf && req.method === 'POST') {
+    const b = await body(req);
+    // « Pas une erreur » : Ali says the bot behaved as intended; the next reviews read these cases and stop flagging them.
+    if ('notIssue' in b) tmFlagVerdict(Number(tmf[1]), b.notIssue ? 'not_issue' : null);
+    else tmFlagSeen(Number(tmf[1]), b.seen !== false);
+    return json(res, 200, { ok: true });
+  }
   const tmt = /^\/api\/tm\/thread\/(\d{8,15})$/.exec(path);
   if (tmt) return json(res, 200, { messages: tmThread(tmt[1], 60) });
   if (path === '/api/push') {

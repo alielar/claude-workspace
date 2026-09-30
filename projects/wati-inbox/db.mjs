@@ -211,5 +211,8 @@ export const tmThread = (waId, limit = 40) => db.prepare('SELECT * FROM tm_messa
 export const tmThreadsSince = (iso) => db.prepare('SELECT wa_id, MAX(at) last_at, MAX(name) name, count(*) n FROM tm_messages WHERE at > ? GROUP BY wa_id ORDER BY last_at DESC').all(iso);
 export const insertTmFlag = (f) => Number(db.prepare('INSERT INTO tm_flags (wa_id, at, kind, title, detail, quote, name) VALUES (?, ?, ?, ?, ?, ?, ?)').run(f.wa_id, new Date().toISOString(), f.kind, f.title, f.detail ?? null, f.quote ?? null, f.name ?? null).lastInsertRowid);
 export const tmFlags = (limit = 80) => db.prepare('SELECT * FROM tm_flags ORDER BY seen ASC, id DESC LIMIT ?').all(limit);
+try { db.exec('ALTER TABLE tm_flags ADD COLUMN verdict TEXT'); } catch {} // 'not_issue' = Ali says the bot behaved as intended (2026-10-01)
+export const tmFlagVerdict = (id, verdict) => db.prepare('UPDATE tm_flags SET verdict = ?, seen = ? WHERE id = ?').run(verdict, verdict ? 1 : 0, id);
+export const tmDismissed = (limit = 40) => db.prepare("SELECT kind, title, detail, quote FROM tm_flags WHERE verdict = 'not_issue' ORDER BY id DESC LIMIT ?").all(limit);
 export const tmFlagSeen = (id, seen) => db.prepare('UPDATE tm_flags SET seen = ? WHERE id = ?').run(seen ? 1 : 0, id);
-export const tmFlagCounts = () => db.prepare('SELECT count(*) total, COALESCE(sum(seen = 0), 0) unseen FROM tm_flags').get();
+export const tmFlagCounts = () => db.prepare('SELECT count(*) total, COALESCE(sum(seen = 0 AND verdict IS NULL), 0) unseen FROM tm_flags').get();
