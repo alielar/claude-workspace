@@ -21,6 +21,7 @@ export function useHighlights() {
       await sendOrQueue({ url: "/api/highlights/watch", method: "POST", body: { videoId, watched }, dedupeKey: `hl-watch:${videoId}` });
     } catch { /* replayed later */ }
   };
-  const unwatched = items.filter((h) => !h.watched);
+  // A pending national-team row (no video yet) is listed on News but never counted or suggested.
+  const unwatched = items.filter((h) => !h.watched && !h.pending);
   return { items, unwatched, markWatched };
 }

@@ -232,6 +232,7 @@ export async function POST() {
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )`,
     `ALTER TABLE highlights ADD COLUMN watched_at INTEGER`,
+    `CREATE TABLE IF NOT EXISTS football_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)`,
     `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

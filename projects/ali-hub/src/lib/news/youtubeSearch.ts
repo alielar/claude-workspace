@@ -77,7 +77,7 @@ type Rec = Record<string, unknown>;
 const str = (v: unknown): string | undefined => (typeof v === "string" && v ? v : undefined);
 
 // ─── Video search (highlights, 2026-09-14 night) ──────────────────────────────
-export type VideoHit = { videoId: string; title: string; channel: string; views: number; seconds: number };
+export type VideoHit = { videoId: string; title: string; channel: string; views: number; seconds: number; ageHours: number | null };
 
 /** "1,234,567 views" / "1.2M views" / "87K views" → number (0 when unreadable). */
 export function parseViews(t: string | undefined): number {
@@ -87,6 +87,16 @@ export function parseViews(t: string | undefined): number {
   const n = parseFloat(m[1]); const u = (m[2] ?? "").toUpperCase();
   return Math.round(n * (u === "B" ? 1e9 : u === "M" ? 1e6 : u === "K" ? 1e3 : 1));
 }
+/** "3 days ago" / "22 hours ago" / "Streamed 2 weeks ago" → hours (null when unreadable) · used to keep a
+ * national-team video to the match just played, not the same two sides at a tournament years ago. */
+export function parseAge(t: string | undefined): number | null {
+  if (!t) return null;
+  const m = t.match(/(\d+)\s*(minute|hour|day|week|month|year)s?\s+ago/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  const per: Record<string, number> = { minute: 1 / 60, hour: 1, day: 24, week: 168, month: 730, year: 8760 };
+  return n * (per[m[2].toLowerCase()] ?? 24);
+}
 const parseLen = (t: string | undefined): number => {
   if (!t) return 0;
   const parts = t.split(":").map(Number);
@@ -94,9 +104,13 @@ const parseLen = (t: string | undefined): number => {
   return parts.reduce((acc, x) => acc * 60 + x, 0);
 };
 
-/** Public video search (the "videos" filter of the results page) · no key, no cost. */
-export async function searchVideos(query: string): Promise<VideoHit[]> {
-  const params = new URLSearchParams({ search_query: query.slice(0, 120), sp: "EgIQAQ==", hl: "en" });
+/** YouTube's own filters: videos only · videos uploaded this week · this month. */
+const SP: Record<"any" | "week" | "month", string> = { any: "EgIQAQ==", week: "EgQIAxAB", month: "EgQIBBAB" };
+
+/** Public video search (the "videos" filter of the results page) · no key, no cost.
+ * `recent` narrows to this week / this month (national-team matches: only videos uploaded after the game). */
+export async function searchVideos(query: string, opts: { recent?: "week" | "month" } = {}): Promise<VideoHit[]> {
+  const params = new URLSearchParams({ search_query: query.slice(0, 120), sp: SP[opts.recent ?? "any"], hl: "en" });
   const res = await fetch(`https://www.youtube.com/results?${params}`, { headers: HEADERS, signal: AbortSignal.timeout(9000) });
   if (!res.ok) throw new Error(`youtube ${res.status}`);
   const html = await res.text();
@@ -115,7 +129,9 @@ export async function searchVideos(query: string): Promise<VideoHit[]> {
     const channel = str(owner?.text) ?? "";
     const views = parseViews(str((v.viewCountText as Rec | undefined)?.simpleText));
     const seconds = parseLen(str((v.lengthText as Rec | undefined)?.simpleText));
-    if (title) hits.push({ videoId: id, title, channel, views, seconds });
+    const pubRuns = (v.publishedTimeText as Rec | undefined)?.runs;
+    const ageHours = parseAge(str((v.publishedTimeText as Rec | undefined)?.simpleText) ?? (Array.isArray(pubRuns) ? pubRuns.map((r) => str((r as Rec).text) ?? "").join("") : undefined));
+    if (title) hits.push({ videoId: id, title, channel, views, seconds, ageHours });
   });
   return hits.slice(0, 20);
 }

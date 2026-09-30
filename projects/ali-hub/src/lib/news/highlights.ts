@@ -21,13 +21,21 @@
  * Feeds hold only the last 15 uploads and beIN posts 15+ a day, so pollHighlights()
  * runs from the reminders tick every 5 min and stores what it finds (video id
  * unique). Duplicates of the same match from two sources collapse on
- * (teams, competition, ±3 days). Rows older than 21 days are pruned.
+ * (teams, competition, ±3 days).
+ *
+ * National teams (2026-09-30): the FIFA top 10 + Morocco, see national.ts · same table,
+ * source "national" (video found) or "national-pending" (matchup only, video not up yet).
+ *
+ * Retention (Ali 2026-09-29): an UNWATCHED club highlight lives 3 days, unless one side is
+ * a TOP5_CLUBS club (UEFA club coefficient top 5 + Real Madrid always) · those and every
+ * national-team row stay until watched. Watched rows go after 21 days.
  */
 
 import { db } from "@/db";
 import { highlights } from "@/db/schema";
-import { desc, eq, lt, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, lt, notInArray, notLike, sql } from "drizzle-orm";
 import { searchVideos } from "@/lib/news/youtubeSearch";
+import { ensureMetaTable, isPendingId, pollNational } from "@/lib/news/national";
 
 export type Competition = "Champions League" | "La Liga" | "Premier League" | "Bundesliga" | "Serie A" | "Ligue 1";
 type League = "ESP" | "GER" | "ITA" | "FRA" | "ENG" | "OTHER";
@@ -36,11 +44,22 @@ export type Highlight = {
   videoId: string;
   home: string;
   away: string;
-  competition: Competition;
-  context: string;       // "Champions League · League phase, round 1" / "Serie A · Matchday 3"
-  publishedAt: number;   // ms
+  competition: string;   // a Competition for club games · "Nations League", "AFCON qualifier", "Friendly"… for national teams
+  context: string;       // "Champions League · League phase, round 1" / "Serie A · Matchday 3" / "Nations League · Group A2"
+  publishedAt: number;   // ms · kick-off for a national-team row
   watched?: boolean;     // Ali tapped it (stored server-side, so phone and laptop agree)
+  national?: boolean;    // a national-team match (national.ts)
+  pending?: boolean;     // matchup known, no public highlight found yet · shown without a play button
 };
+
+/**
+ * "Top 5" for the retention rule = the UEFA club coefficient (five-season ranking, read
+ * 2026-09-30: Bayern 129.5 · Arsenal 127 · Real Madrid 122.5 · PSG 121 · Inter 115), Real
+ * Madrid always in. Names as in TEAMS. Ali confirms or corrects the list.
+ */
+export const TOP5_CLUBS = ["Bayern Munich", "Arsenal", "Real Madrid", "PSG", "Inter Milan"];
+const CLUB_UNWATCHED_DAYS = 3;
+const WATCHED_KEEP_DAYS = 21;
 
 type Source = { id: string; channelId: string; kind: "bein" | "latin" };
 export const SOURCES: Source[] = [
@@ -371,7 +390,7 @@ export function mentionsTeam(title: string, teamName: string): boolean {
   return names.some((n) => t.includes(` ${n} `) || t.includes(` ${n}`) && n.length >= 5);
 }
 const BLOCKED_CHANNELS = /^(serie a|lega serie a)$/i;
-export async function pickPublicVideo(home: string, away: string, competition: Competition): Promise<string | null> {
+export async function pickPublicVideo(home: string, away: string, competition: string): Promise<string | null> {
   const hits = await searchVideos(`${home} ${away} highlights ${competition}`);
   const ok = hits.filter((h) =>
     !BLOCKED_CHANNELS.test(h.channel.trim()) &&
@@ -405,7 +424,6 @@ async function fetchFeed(channelId: string): Promise<FeedEntry[]> {
 const decodeXml = (s: string) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'");
 
 // ─── Poll + store ─────────────────────────────────────────────────────────────
-const KEEP_DAYS = 21;
 const TOP5: League[] = ["ESP", "GER", "ITA", "FRA", "ENG"];
 
 /** Seed set + every team seen in a stored Champions League highlight. */
@@ -435,6 +453,20 @@ async function ensureTable() {
       published_at INTEGER NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`));
   } catch { /* exists */ }
   try { await db.run(sql.raw(`ALTER TABLE highlights ADD COLUMN watched_at INTEGER`)); } catch { /* exists */ }
+  await ensureMetaTable();
+}
+
+/** The retention rule (see the header) · runs after every poll. */
+export async function pruneHighlights(): Promise<void> {
+  const now = Date.now();
+  try { await db.delete(highlights).where(and(isNotNull(highlights.watchedAt), lt(highlights.publishedAt, new Date(now - WATCHED_KEEP_DAYS * 86400_000)))); } catch { /* best effort */ }
+  try {
+    await db.delete(highlights).where(and(
+      isNull(highlights.watchedAt), notLike(highlights.source, "national%"),
+      lt(highlights.publishedAt, new Date(now - CLUB_UNWATCHED_DAYS * 86400_000)),
+      notInArray(highlights.home, TOP5_CLUBS), notInArray(highlights.away, TOP5_CLUBS),
+    ));
+  } catch { /* best effort */ }
 }
 
 export type Candidate = Highlight & { source: string; title: string };
@@ -498,19 +530,25 @@ export async function pollHighlights(opts: { search?: boolean } = {}): Promise<{
     const stale = await db.select({ id: highlights.id, home: highlights.home, away: highlights.away, competition: highlights.competition })
       .from(highlights).where(sql`source = 'seriea' AND watched_at IS NULL`).limit(budget - searches > 0 ? budget - searches : 0);
     for (const r of stale) {
-      const alt = await pickPublicVideo(r.home, r.away, r.competition as Competition).catch(() => undefined);
+      const alt = await pickPublicVideo(r.home, r.away, r.competition).catch(() => undefined);
       if (alt === undefined) continue; // network · try again next poll
       if (alt && !known.has(alt)) { await db.update(highlights).set({ videoId: alt, source: "seriea-search" }).where(eq(highlights.id, r.id)); known.add(alt); }
       else await db.update(highlights).set({ source: "seriea-nohit" }).where(eq(highlights.id, r.id));
     }
   } catch { /* best effort */ }
-  try { await db.delete(highlights).where(lt(highlights.publishedAt, new Date(Date.now() - KEEP_DAYS * 86400_000))); } catch { /* best effort */ }
+  // National teams: the FIFA top 10 + Morocco · throttles itself to once an hour, never from the inline poll.
+  if (budget > 0) { try { await pollNational(); } catch (e) { errors.push(`national: ${String((e as Error)?.message ?? e).slice(0, 60)}`); } }
+  await pruneHighlights();
   return { added, seen: candidates.length, errors };
 }
 
 export async function listHighlights(limit = 40): Promise<Highlight[]> {
   const rows = await db.select().from(highlights).orderBy(desc(highlights.publishedAt)).limit(limit);
-  return rows.map((r) => ({ videoId: r.videoId, home: r.home, away: r.away, competition: r.competition as Competition, context: r.context, publishedAt: r.publishedAt.getTime(), watched: r.watchedAt !== null }));
+  return rows.map((r) => ({
+    videoId: r.videoId, home: r.home, away: r.away, competition: r.competition, context: r.context, publishedAt: r.publishedAt.getTime(), watched: r.watchedAt !== null,
+    ...(r.source.startsWith("national") ? { national: true } : {}),
+    ...(isPendingId(r.videoId) ? { pending: true } : {}),
+  }));
 }
 
 /** Mark watched / unwatched · sends the desired final state, so outbox replays are safe. */

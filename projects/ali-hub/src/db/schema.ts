@@ -258,6 +258,13 @@ export const highlights = sqliteTable("highlights", {
   watchedAt: integer("watched_at", { mode: "timestamp_ms" }),   // set when Ali taps it (any device)
 });
 
+// Small key/value store beside the highlights: the cached FIFA ranking and the national-team scan stamp.
+export const footballMeta = sqliteTable("football_meta", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),                // JSON
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 // ─── Push subscriptions (reminders) ──────────────────────────────────────────
 
 export const pushSubscriptions = sqliteTable("push_subscriptions", {

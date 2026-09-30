@@ -418,6 +418,16 @@ function HighlightsCard() {
             <div key={h.videoId}>
               {newDay && <div style={{ padding: "10px 16px 2px", fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{dayLabel(h.publishedAt)}</div>}
               {/* Tap = watched (server-side, every device agrees) + opens YouTube. Watched rows dim and get a tick. */}
+              {h.pending ? (
+                // A national-team match with no public highlight yet (2026-09-30): matchup + context, no play button · the hourly scan fills it in.
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", borderBottom: "1px solid var(--line)", opacity: 0.7 }}>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
+                    <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context} · highlights not up yet</span>
+                  </span>
+                  <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, border: "1px dashed var(--line-strong)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-4)", fontSize: 13 }}>…</span>
+                </div>
+              ) : (
               <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => { if (!h.watched) markWatched(h.videoId); }}
                 style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)", opacity: h.watched ? 0.45 : 1 }}>
                 <span style={{ minWidth: 0 }}>
@@ -426,6 +436,7 @@ function HighlightsCard() {
                 </span>
                 <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: h.watched ? "transparent" : "var(--fill-2)", border: h.watched ? "1px solid var(--line-strong)" : "none", display: "flex", alignItems: "center", justifyContent: "center", color: h.watched ? "var(--ink-4)" : "var(--ink-2)", fontSize: 13, paddingLeft: h.watched ? 0 : 2 }}>{h.watched ? "✓" : "▶"}</span>
               </a>
+              )}
             </div>
           );
         })}
