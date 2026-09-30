@@ -26,7 +26,7 @@ Modèle à adapter au fil (2 bulles, la question dans la dernière) :
 - « J'aurais besoin d'un retour de votre part aujourd'hui, même rapide, pour savoir où vous en êtes »
 - « Qu'est-ce qui vous retient pour le moment ? » — ou, si Ali avait proposé un format ou une option précise : « Est-ce que ce format vous irait mieux ? »
 
-Style : vouvoiement, concis, naturel, pas de point final, pas de point-virgule, pas de prénom (la conversation est en cours), un seul emoji au plus et jamais ici, une seule question.
+Style : vouvoiement, concis, naturel, pas de point final, pas de point-virgule, jamais le prénom du lead (ni en ouverture), un seul emoji au plus et jamais ici, une seule question.
 
 Réponse : uniquement l'objet JSON demandé.
 - fits : true si le template peut partir tel quel, false s'il faut le mettre en pause.

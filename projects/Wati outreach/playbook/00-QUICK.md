@@ -77,7 +77,7 @@ le matin, pas tard le soir. Répondre vite aux audios et aux objections, ne rien
 ## Style (mesuré sur 231 conversations d'Ali)
 
 ~100 caractères par message · rafales de 2-3 bulles (empathie / offre / question), **la question dans
-la dernière** · vouvoiement · empathie **spécifique**, jamais un « je comprends » nu · 1 emoji max,
+la dernière** · vouvoiement · **pas de prénom** · empathie **spécifique**, jamais un « je comprends » nu · 1 emoji max,
 ~1 message sur 7, jamais sur l'argent ou un problème · tout lien suivi de « Est-ce qu'il fonctionne bien ? » ·
 jamais de reproche à un lead silencieux.
 
@@ -89,7 +89,7 @@ jour votre invitation, voici le lien : … » puis « Dites-moi quand c'est fait
 la suite » · vérifier qu'un lien modifié affiche bien le nouveau format avant de l'envoyer.
 
 **Revue du 29/09 (tranchée par Ali le 30/09, prime sur le reste) :** concis et naturel, **jamais de point-virgule** ·
-**prénom au plus une fois**, en ouverture, jamais répété au fil d'un échange · **rien de non demandé** : pas d'heures/semaine,
+**jamais le prénom du lead dans une bulle** (ni en ouverture, ni au milieu : ça sonne commercial — tranché par Ali le 30/09 au soir) · **rien de non demandé** : pas d'heures/semaine,
 pas de durée, pas de date de rentrée si ça ne répond pas à la question · **date de démarrage** : ne jamais la donner
 spontanément ; si on la demande, c'est flexible, on la choisit après l'inscription, et une demande interne au support
 étudiant permet un démarrage hors dates officielles · **créneaux** : « vous choisissez vos créneaux », une leçon se

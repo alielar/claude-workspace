@@ -118,7 +118,7 @@ Keep it compact. Ali is usually on his phone between calls.
 
 - Median message ≈ 100 characters. Two or three sentences.
 - Bursts of 2-4 bubbles sent together; **one question, in the last bubble**.
-- Vouvoiement, nearly always. First name mid-message, not as a greeting every time.
+- Vouvoiement, nearly always. **No first name in messages, ever** (Ali, 2026-09-30): not as a greeting, not mid-message. It sounds salesy.
 - Specific empathy ("avec la rentrée les dépenses s'accumulent vite"), never a bare
   "je comprends".
 - At most one emoji, roughly one message in seven. Never on money, contract or a problem.

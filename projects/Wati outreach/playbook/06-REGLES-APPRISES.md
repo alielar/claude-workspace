@@ -7,7 +7,7 @@ _Reconstruit le 2026-09-30 20:45:04 par l'app à partir de `04-CAS-APPRIS.md` (6
 - Pas de point final ni point-virgule dans les bulles, ton conversationnel WhatsApp ; "?" seulement quand c'est une vraie question (Andrin, tranché 30/09).
 - Jamais "bonne chance" (sous-entend l'échec) → "plein succès" / "belle réussite dans votre parcours" (Andrin 26/09).
 - Sur un imprévu pendant le cours, dire "nous" trouvons une solution, jamais un chiffre ("99 %"), jamais "le support" comme tiers étranger — script verbatim en section Scripts validés (Andrin 26/09).
-- Prénom au plus une fois par échange, en ouverture, jamais répété ensuite (tranché 30/09).
+- Jamais le prénom du lead dans une bulle — ni en ouverture, ni au milieu, ni en clôture : ça sonne commercial (tranché 30/09 soir, remplace « au plus une fois en ouverture »). Exception : la variable prénom d'un template Wati.
 - Aucun détail non demandé (heures/semaine, durée, date de rentrée, réassurance sur la place) si le lead n'a rien demandé sur ce point précis (tranché 30/09 ; confirmé ×2, dernier 29/09 — Boris : "votre place reste de côté" retiré faute de friction nommée sur la place).
 - Toujours relire le fil complet juste avant d'écrire : un lead peut envoyer plusieurs bulles coup sur coup, une lecture faite quelques minutes plus tôt peut être incomplète (17/09).
 - Lead qui a lui-même fixé la prochaine étape (heure de retour, modalité demandée) : accuser réception en une seule bulle, sans question de clôture — vaut même pour une promesse de retour vague sans échéance chiffrée (confirmé ×4, dernier 27/09).
