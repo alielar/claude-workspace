@@ -31,14 +31,16 @@ async function page(phone, n) {
   return null;
 }
 function clean(m) {
-  let text = m.text || '';
+  let text = m.text || m.finalText || ''; // finalText = automated template (broadcastMessage), kept since 2026-09-30
   if (!text && m.type === 'audio') {
     const t = (m.audioTranscriptionResultList || []).map((x) => x.text || x.transcription || '').filter(Boolean).join(' ');
     text = t ? `(vocal) ${t}` : '(message vocal)';
   }
   if (!text && m.type && m.type !== 'text') text = `(${m.type})`;
-  return { at: m.created || m.timestamp, who: m.owner ? 'US' : 'LEAD', text,
-           kind: m.type || 'text', op: m.operatorName || '', tpl: m.templateId ? 1 : 0 };
+  const bcast = m.eventType === 'broadcastMessage';
+  return { at: m.created || m.timestamp, who: m.owner || bcast ? 'US' : 'LEAD', text,
+           kind: m.type || (bcast ? 'template' : 'text'), op: m.operatorName || '', tpl: m.templateId || bcast ? 1 : 0,
+           tplName: bcast ? (/"([^"]+)"/.exec(m.eventDescription || '')?.[1] || '') : '' };
 }
 let done = 0, changed = 0;
 for (let i = 0; i < todo.length; i += 8) {

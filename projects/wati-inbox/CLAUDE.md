@@ -15,7 +15,13 @@ stored initial offer, délai, acompte, paiement, démarrage, relance, basse pres
 consigne — never automatically), one set of bubbles per draft plus a `later` block for the
 administration two-step that the Mac can send 7 min later; lessons by `learn-engine.mjs` after every
 send (written to `../Wati outreach/playbook/04-CAS-APPRIS.md`); the France TM booking bot is
-reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`).
+reviewed by `tm-monitor.mjs` (capped: 3 reviews a day, 9h–21h, only when ≥ 3 conversations moved) (webhook events → `tm_messages` → flags in `tm_flags`);
+the Sales Hub "to be converted" sequence is watched by `tbc-watch.mjs` (2026-09-30): it knows the fixed schedule
+(Day 0 20:20 … Day 7 17:30, counted from the preadmission template), warns Ali when a step will land right after
+his own reply (`timing`, no Claude) and, from the recovery week on, asks Sonnet whether the next template still
+makes sense after his unanswered question (`fit`); if not, a push + a card in the thread: 1. pause it in the Sales
+Hub (Ali confirms, the app never claims it), 2. the manual follow-up, unlocked only after that confirmation.
+Rows in `tbc_alerts`; `SALES_HUB_URL` in `.env` adds a link. Terminal dry run: `node --env-file=.env tbc-watch.mjs`.
 All three run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach`, one at a
 time; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
 
@@ -33,5 +39,6 @@ Then commit and push. Test a draft from the terminal with
 - Never change the suggestion prompt's rules or the cap guidance in `directions.mjs` without
   reading `../Wati outreach/CLAUDE.md` and `playbook/00-QUICK.md`; the playbook is the source of truth.
 - The inbox lists only open 24h windows; do not bring closed conversations back (Ali, 2026-09-29).
+- The app cannot pause the Sales Hub automation and must never say a step is paused unless Ali tapped the confirmation; a template that lands after his confirmation is reported back to him.
 - Headless runs load user, project and local settings (global file cleaned on 2026-09-27).
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.

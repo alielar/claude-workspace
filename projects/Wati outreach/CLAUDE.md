@@ -89,8 +89,10 @@ node --env-file=.env lead.mjs 33612345678     # or: lead.mjs Rahma
 ```
 
 Prints the CRM stage, the meeting, every campaign template we sent and when, the full
-conversation in Madrid time, webhook replies, who the ball is with, how long they have
-been silent, and whether the 24h window is open (open = free text, closed = template only).
+conversation in Madrid time — including the automated Sales Hub templates (`US (auto tbc_…)`,
+shown since 2026-09-30; before that they were invisible here) —, webhook replies, who the ball
+is with, how long they have been silent, and whether the 24h window is open (open = free text,
+closed = template only).
 
 Always run it when you have a number, even alongside a screenshot — the screenshot only
 shows part of the thread, and it will not show what we already sent them. **Check the

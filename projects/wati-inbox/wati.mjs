@@ -48,6 +48,7 @@ const normalise = (m) => {
     who: m.owner || m.eventType === 'broadcastMessage' ? 'US' : 'LEAD',
     text, kind: m.type || (tpl ? 'template' : 'text'), tpl, op: m.operatorName || '',
     status: m.statusString || '',
+    tplName: tpl ? (/"([^"]+)"/.exec(m.eventDescription || '')?.[1] || m.template?.elementName || null) : null, // e.g. tbc_reminder_2_v2_fr
   };
 };
 

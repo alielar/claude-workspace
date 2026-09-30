@@ -80,7 +80,7 @@ let inboxFilter = '';
 const suggPill = (t) => t.suggesting === 'drafting' || t.suggesting === 'queued' ? '<span class="pill work">Claude rédige…</span>' : t.suggested ? '<span class="pill ready">brouillon prêt</span>' : '';
 let inboxCache = null;
 async function renderInbox({ fromCache = false } = {}) {
-  const { threads, tm } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
+  const { threads, tm, tbc = [], salesHub = '' } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
   const q = inboxFilter.trim().toLowerCase();
   const shown = q ? threads.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : threads;
   const pending = shown.filter((t) => t.pending && !t.muted), done = shown.filter((t) => !t.pending || t.muted);
@@ -91,6 +91,7 @@ async function renderInbox({ fromCache = false } = {}) {
   app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><a data-nav href="/tm" class="tmlink">France TM${tm?.unseen ? ` <span class="pill warn">${tm.unseen}</span>` : ''}</a><button id="rf" class="small">↻</button></header>
     <input class="search" id="q" placeholder="Nom, ou numéro collé (ex. +33 6 12 34 56 78)" value="${esc(inboxFilter)}" inputmode="search">${direct}
     <div class="row" style="margin:0 0 12px">${await pushButton()}<span class="muted small">${threads.length ? 'Fenêtres ouvertes seulement — un numéro collé ouvre n’importe quelle conversation.' : 'Aucune fenêtre ouverte — le Mac lit Wati toutes les 45 s.'}</span></div>
+    ${tbc.length ? `<p class="muted small">Sales Hub — automatisation à traiter (${tbc.length})</p>${tbc.map((a) => `<a class="card lead-row tbc-row ${a.state}" data-nav href="/t/${a.wa_id}"><div class="who"><div class="name">${esc(a.name || a.wa_id)} <span class="pill ${a.state === 'paused' ? 'ready' : 'warn'}">${a.state === 'paused' ? 'en pause · relance à envoyer' : a.kind === 'fit' ? 'à mettre en pause' : 'template imminent'}</span></div><div class="txt">${esc(a.tpl)} part à ${fmtTime(a.fires_at)} — ${esc(a.why || '')}</div></div></a>`).join('')}${salesHub ? `<a class="small muted" href="${esc(salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a>` : ''}` : ''}
     ${pending.length ? `<p class="muted small">En attente de réponse (${pending.length})</p>${pending.map(row).join('')}` : '<p class="muted center">Aucun lead en attente.</p>'}
     ${done.length ? `<p class="muted small" style="margin-top:18px">Répondu, fenêtre encore ouverte (${done.length})</p>${done.map(row).join('')}` : ''}`;
   $('#rf').onclick = route; bindPush();
@@ -139,7 +140,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}`;
   // Something is still moving (Wati being re-read, bubbles going out): look again in a few seconds.
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
@@ -173,6 +174,19 @@ async function renderThread(waId, { quiet = false } = {}) {
       <textarea id="ins" placeholder="Précision pour Claude (facultatif) : ce qu’il a dit à l’appel, un chiffre, ce qu’il faut éviter…" ${threadBusy ? 'disabled' : ''}>${esc(dir.instruction)}</textarea>
       <div class="row"><button id="go" class="primary ${threadBusy ? 'busy' : ''}" ${threadBusy ? 'disabled' : ''}>${threadBusy ? (st.state === 'drafting' ? 'Claude rédige… (≈ 1 min)' : 'Claude va rédiger…') : (opts.length ? 'Refaire' : 'Rédiger la réponse')}</button>${st?.state === 'error' ? `<span class="err small">Échec : ${esc(st.error)} — réessayez</span>` : `<span class="muted small">${threadBusy ? esc(st.direction || '') : (dir.moves.length ? '' : 'Rien coché = réponse simple à son message')}</span>`}</div>
     </div>` : '';
+  // Sales Hub automation: the next step that will fire, and the alert card (pause there first, then the follow-up).
+  const tb = d.tbc || {}, al = tb.alert;
+  const hubLink = tb.salesHub ? `<a class="small" href="${esc(tb.salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a>` : '';
+  const nextLine = tb.next && !al ? `<div class="ctx tbc-next">Prochain automatique (Sales Hub) : <b>${esc(tb.next.tpl)}</b> à ${fmtTime(tb.next.firesAt)}${tb.leadWaiting ? ' — sauté tant que vous n’avez pas répondu' : ''}</div>` : '';
+  const tbcBox = al ? `<div class="card tbc ${al.state}">
+      <div class="opt-head">${al.kind === 'fit' ? 'Automatisation à mettre en pause' : 'Template imminent'} <span class="muted">· ${esc(al.tpl)} part à ${fmtTime(al.fires_at)} (${fmtLeft(al.fires_at)})</span></div>
+      <p class="small">${esc(al.why || '')}</p>
+      ${al.tpl_text ? `<p class="muted small quote">« ${esc(al.tpl_text.replace('{name}', (t.name || '').split(' ')[0] || 'X').replace('{owner}', 'Ali'))} »</p>` : ''}
+      <div class="row"><b class="small">1.</b> ${al.state === 'paused' ? '<span class="ok small">En pause dans le Sales Hub (confirmé par vous)</span>' : `<button class="primary small" id="tbcpaused">J’ai mis en pause dans le Sales Hub</button>`}${hubLink}<button class="small" id="tbcignore">${al.state === 'paused' ? 'Fermer' : 'Laisser partir'}</button></div>
+      ${al.kind === 'fit' && al.bubbles?.length ? `<div class="row" style="margin-bottom:4px"><b class="small">2.</b> <span class="small">Relance manuelle${al.state === 'paused' ? '' : ' — <span class="warn">bloquée tant que la pause n’est pas confirmée</span>'}</span></div>
+      <div class="opt ${al.state === 'paused' ? '' : 'locked'}">${al.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span>${al.state === 'paused' ? `<button class="small" data-tbccopy="${j}">Copier</button>` : ''}</div>`).join('')}
+      ${al.state === 'paused' && d.windowOpen ? `<div class="acts"><button class="primary small" id="tbcsend" ${sendLock ? 'disabled' : ''}>Envoyer telle quelle</button><button class="small" id="tbcuse">Modifier avant envoi</button></div>` : al.state === 'paused' && !d.windowOpen ? '<p class="warn small">Fenêtre de 24h fermée : passez par le sélecteur de templates ci-dessous.</p>' : ''}</div>` : ''}
+    </div>` : '';
   // The second block of an administration two-step, already handed to the Mac.
   const schedBox = d.scheduled ? `<div class="card sending">Second temps programmé : part dans ${fmtLeft(d.scheduled.at)} — « ${esc(d.scheduled.bubbles[0].slice(0, 80))}… » <button class="small" id="cancelsched">Annuler</button></div>` : '';
   // What the app learned from the last send on this thread (confirmed = sent as drafted; lesson = logged in 04-CAS-APPRIS).
@@ -196,9 +210,9 @@ async function renderThread(waId, { quiet = false } = {}) {
     ? `<div class="card"><p class="muted small">Une bulle par paragraphe (ligne vide entre deux bulles).</p><div class="emojis">${['😊','👍','😁','🙂','🙏','💪','✅','🚀','🎉','😉'].map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Votre réponse…">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Envoyer</button><button id="clr">Effacer</button><span id="st"></span></div></div><details class="card"><summary>Envoyer un template à la place</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? 'Fenêtre de 24h fermée — seul un template peut partir.' : 'Aucune conversation lisible pour ce numéro (jamais écrit sur le numéro Sales, ou lead TM) — un template peut partir.'}</p>${tplBox}</div>`;
   app.innerHTML = `<header><a data-nav href="/">‹ Inbox</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}</header>
-    ${ctx ? `<div class="ctx">${ctx}</div>` : ''}
+    ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
-    ${offerBox}${panel}${sendBox}${schedBox}${sugg}${compose}
+    ${tbcBox}${offerBox}${panel}${sendBox}${schedBox}${sugg}${compose}
     <div class="row"><button id="hd" class="small" ${t.pending ? '' : 'disabled'}>Marquer comme traité</button><button id="mute" class="small">${t.muted ? 'Réactiver les notifications' : 'Ne plus notifier ce lead'}</button><button id="rf" class="small">↻</button></div>`;
   // A redraw of the same conversation keeps the scroll; a fresh open lands on the newest message.
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
@@ -235,6 +249,14 @@ async function renderThread(waId, { quiet = false } = {}) {
   document.querySelectorAll('[data-send]').forEach((b) => armed(b, 'Envoyer telle quelle', async () => { const i = Number(b.dataset.send); b.disabled = true; try { await sendBubbles(waId, opts[i].bubbles, { suggestionId: d.suggestion.id, option: i, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => { const [i, j] = b.dataset.copy.split(':').map(Number); copyText(opts[i].bubbles[j], b); });
   document.querySelectorAll('[data-copyall]').forEach((b) => b.onclick = () => copyText(opts[Number(b.dataset.copyall)].bubbles.join('\n\n'), b));
+  if (al) {
+    const tbcAct = async (action) => { try { await api(`/api/thread/${waId}/tbc`, { method: 'POST', body: { id: al.id, action } }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); } };
+    if ($('#tbcpaused')) armed($('#tbcpaused'), 'J’ai mis en pause dans le Sales Hub', () => tbcAct('paused'));
+    if ($('#tbcignore')) $('#tbcignore').onclick = () => tbcAct('ignore');
+    document.querySelectorAll('[data-tbccopy]').forEach((b) => b.onclick = () => copyText(al.bubbles[Number(b.dataset.tbccopy)], b));
+    if ($('#tbcsend')) armed($('#tbcsend'), 'Envoyer telle quelle', async () => { $('#tbcsend').disabled = true; try { await sendBubbles(waId, al.bubbles, { alertId: al.id, edited: false }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); $('#tbcsend').disabled = false; } });
+    if ($('#tbcuse')) $('#tbcuse').onclick = () => { composer = al.bubbles.join('\n\n'); composerFrom = { alertId: al.id }; if ($('#tx')) { $('#tx').value = composer; $('#send').disabled = false; $('#tx').focus(); $('#tx').scrollIntoView({ block: 'center' }); } };
+  }
   $('#rf').onclick = async () => { await api(`/api/thread/${waId}/refresh`, { method: 'POST' }); lastThreadKey = ''; route(); };
   $('#hd').onclick = async () => { await api(`/api/thread/${waId}/handled`, { method: 'POST' }); lastThreadKey = ''; route(); };
   $('#mute').onclick = async () => { await api(`/api/thread/${waId}/mute`, { method: 'POST', body: { muted: !t.muted } }); lastThreadKey = ''; route(); };

@@ -18,6 +18,8 @@ import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
 import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
+import { tbcState, tbcWatchStatus, SALES_HUB_URL } from './tbc-watch.mjs';
+import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts } from './db.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -88,6 +90,19 @@ function sendRest(waId, t, bubbles, meta) {
   })();
 }
 
+// Where the lead stands in the Sales Hub sequence, plus the open alert if any.
+function tbcInfo(waId) {
+  let st = null; try { st = tbcState(waId); } catch {}
+  const a = openTbcAlert(waId);
+  return {
+    day0: st?.day0 || null,
+    next: st?.next ? { n: st.next.n, tpl: st.next.tpl, firesAt: st.next.firesAt, text: st.next.text, skipped: false } : null,
+    leadWaiting: !!st?.leadWaiting,
+    alert: a ? { ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] } : null,
+    salesHub: SALES_HUB_URL,
+  };
+}
+
 // ── API ──────────────────────────────────────────────────────────────────────
 async function api(req, res, path) {
   if (path === '/api/login' && req.method === 'POST') {
@@ -103,7 +118,7 @@ async function api(req, res, path) {
     // Only conversations whose 24h window is open (2026-09-29): a closed one can still be opened by number.
     const threads = inbox().filter((t) => !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24)
       .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
-    return json(res, 200, { threads, tm: tmFlagCounts() });
+    return json(res, 200, { threads, tm: tmFlagCounts(), tbc: openTbcAlerts().map((a) => ({ ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] })), salesHub: SALES_HUB_URL });
   }
   if (path === '/api/directions') return json(res, 200, { moves: MOVES.map(({ id, label, sub, input }) => ({ id, label, sub: sub || null, input: input || null })), downsell: DOWNSELL.map((id) => ({ id, label: DOWNSELL_LABELS[id] })), acompte: ACOMPTE, formats: Object.entries(FORMATS).map(([id, f]) => ({ id, label: f.label })), levels: LEVELS });
   // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).
@@ -120,7 +135,7 @@ async function api(req, res, path) {
   }
   if (path === '/api/templates') return json(res, 200, { templates: await frenchTemplates() });
 
-  const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute|offer|cancel))?$/.exec(path);
+  const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute|offer|cancel|tbc))?$/.exec(path);
   if (!m) return json(res, 404, { error: 'not found' });
   const waId = m[1], action = m[2];
 
@@ -158,6 +173,7 @@ async function api(req, res, path) {
       offerText: describeOffer(getOffer(waId), currencyFor(t.country)),
       currency: currencyFor(t.country),
       scheduled: scheduled.has(waId) ? { at: scheduled.get(waId).at, bubbles: scheduled.get(waId).bubbles } : null,
+      tbc: tbcInfo(waId),
       stale,
       sending: sending.get(waId) || null,
     });
@@ -179,6 +195,16 @@ async function api(req, res, path) {
     return json(res, 200, { ok: true, offer, offerText: describeOffer(offer, currencyFor(storedThread(waId)?.country)) });
   }
   if (action === 'cancel' && req.method === 'POST') return json(res, 200, { ok: true, cancelled: cancelScheduled(waId) });
+  // Sales Hub alert: Ali says he paused the step there (we only record his word), or tells us to let it go.
+  if (action === 'tbc' && req.method === 'POST') {
+    const b = await body(req);
+    const a = tbcAlertById(Number(b.id));
+    if (!a || a.wa_id !== waId) return json(res, 404, { error: 'Alerte inconnue' });
+    if (b.action === 'paused' && a.state === 'open') setTbcAlertState(a.id, 'paused');
+    else if (b.action === 'ignore' && (a.state === 'open' || a.state === 'paused')) setTbcAlertState(a.id, 'ignored');
+    else return json(res, 400, { error: 'Action impossible dans cet état' });
+    return json(res, 200, { ok: true, tbc: tbcInfo(waId) });
+  }
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
   if (action === 'handled') { const t = storedThread(waId); if (t) saveThread({ ...t, pending: 0 }); return json(res, 200, { ok: true }); }
   if (action === 'send' && req.method === 'POST') {
@@ -198,12 +224,16 @@ async function api(req, res, path) {
     const opt = opt0 && part === 'later' ? { bubbles: opt0.later || [] } : opt0;
     const same = !!opt && opt.bubbles.length === bubbles.length && opt.bubbles.every((x, i) => x.trim() === bubbles[i]);
     const meta = ref ? { suggestionId: ref, option: b.option ?? 0, part, edited: !same, fromSuggestion: !!b.suggestionId, batch: String(Date.now()) } : { batch: String(Date.now()) };
+    // A follow-up from a Sales Hub alert card only leaves once Ali confirmed the pause there.
+    const alert = b.alertId ? tbcAlertById(Number(b.alertId)) : null;
+    if (alert && alert.wa_id === waId) { if (alert.state !== 'paused') return json(res, 409, { error: 'Confirmez d’abord la pause dans le Sales Hub' }); meta.alertId = alert.id; }
     const delayMs = Math.min(20 * 60_000, Math.max(0, Number(b.delayMs) || 0));
     if (delayMs) { scheduleSend(waId, bubbles, meta, delayMs); return json(res, 200, { ok: true, scheduled: new Date(Date.now() + delayMs).toISOString() }); }
     // First bubble right away, so a refusal (window closed, Wati down) comes back to the screen.
     try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
     catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }
     saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+    if (meta.alertId) setTbcAlertState(meta.alertId, 'sent');
     if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
     else sendRest(waId, t, bubbles, meta); // the others follow in the background, one every 5–10 s; learning runs when the last one is out
     return json(res, 200, { ok: true, sent: 1, total: bubbles.length });

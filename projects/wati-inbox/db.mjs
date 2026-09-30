@@ -62,6 +62,31 @@ for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL 
 for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER']) {
   try { db.exec(`ALTER TABLE suggestions ADD COLUMN ${col}`); } catch {}
 }
+try { db.exec('ALTER TABLE messages ADD COLUMN tpl_name TEXT'); } catch {} // name of the automated template (2026-09-30)
+// Sales Hub automation alerts (2026-09-30): one row per (lead, step) when the next TBC template should be
+// paused by Ali in the Sales Hub — kind timing (he replied just before it) or fit (it contradicts his
+// unanswered question; Claude judged it). state: open → paused → sent | replied | fired | expired | ignored | ok
+db.exec(`CREATE TABLE IF NOT EXISTS tbc_alerts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wa_id TEXT NOT NULL,
+  name TEXT,
+  step INTEGER NOT NULL,
+  day0 TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  state TEXT NOT NULL DEFAULT 'open',
+  at TEXT NOT NULL,
+  fires_at TEXT NOT NULL,
+  tpl TEXT NOT NULL,
+  tpl_text TEXT,
+  question TEXT,
+  question_at TEXT,
+  why TEXT,
+  bubbles TEXT,
+  window_open INTEGER NOT NULL DEFAULT 1,
+  pushed INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_tbc_alert ON tbc_alerts(wa_id, day0, step, kind)`);
 // What the app learned from each send (2026-09-27): confirmed = sent as drafted, lesson = Ali changed
 // or wrote it himself and Claude logged why in 04-CAS-APPRIS.md, none = nothing worth keeping.
 db.exec(`CREATE TABLE IF NOT EXISTS lessons (
@@ -104,9 +129,23 @@ export const getState = (k) => db.prepare('SELECT value FROM state WHERE key = ?
 export const setState = (k, v) => db.prepare('INSERT INTO state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(k, String(v));
 
 export function upsertMessages(waId, msgs) {
-  const ins = db.prepare('INSERT OR REPLACE INTO messages (id, wa_id, at, who, text, kind, tpl) VALUES (?, ?, ?, ?, ?, ?, ?)');
-  for (const m of msgs) ins.run(m.id, waId, m.at, m.who, m.text, m.kind, m.tpl ? 1 : 0);
+  const ins = db.prepare('INSERT OR REPLACE INTO messages (id, wa_id, at, who, text, kind, tpl, tpl_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+  for (const m of msgs) ins.run(m.id, waId, m.at, m.who, m.text, m.kind, m.tpl ? 1 : 0, m.tplName ?? null);
 }
+
+// ── Sales Hub automation alerts ───────────────────────────────────────────────
+export const tbcAlert = (waId, day0, step, kind) => db.prepare('SELECT * FROM tbc_alerts WHERE wa_id = ? AND day0 = ? AND step = ? AND kind = ?').get(waId, day0, step, kind);
+export const tbcAlertById = (id) => db.prepare('SELECT * FROM tbc_alerts WHERE id = ?').get(id);
+export const insertTbcAlert = (a) => Number(db.prepare('INSERT INTO tbc_alerts (wa_id, name, step, day0, kind, state, at, fires_at, tpl, tpl_text, question, question_at, why, bubbles, window_open, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  .run(a.wa_id, a.name ?? null, a.step, a.day0, a.kind, a.state || 'open', new Date().toISOString(), a.fires_at, a.tpl, a.tpl_text ?? null, a.question ?? null, a.question_at ?? null, a.why ?? null, a.bubbles ? JSON.stringify(a.bubbles) : null, a.window_open ? 1 : 0, new Date().toISOString()).lastInsertRowid);
+export const setTbcAlertState = (id, state) => db.prepare('UPDATE tbc_alerts SET state = ?, updated_at = ? WHERE id = ?').run(state, new Date().toISOString(), id);
+export const closeTbcAlerts = (waId, state) => db.prepare("UPDATE tbc_alerts SET state = ?, updated_at = ? WHERE wa_id = ? AND state IN ('open', 'paused')").run(state, new Date().toISOString(), waId).changes;
+export const openTbcAlerts = () => db.prepare("SELECT * FROM tbc_alerts WHERE state IN ('open', 'paused') ORDER BY fires_at").all();
+export const openTbcAlert = (waId) => db.prepare("SELECT * FROM tbc_alerts WHERE wa_id = ? AND state IN ('open', 'paused') ORDER BY fires_at LIMIT 1").get(waId);
+export const unpushedTbcAlerts = () => db.prepare("SELECT * FROM tbc_alerts WHERE pushed = 0 AND state = 'open'").all();
+export const markTbcAlertPushed = (id) => db.prepare('UPDATE tbc_alerts SET pushed = 1 WHERE id = ?').run(id);
+export const tbcFitRunsSince = (iso) => db.prepare("SELECT count(*) n FROM tbc_alerts WHERE kind = 'fit' AND at >= ?").get(iso).n;
+export const tbcAlertCounts = () => db.prepare("SELECT count(*) open FROM tbc_alerts WHERE state = 'open'").get();
 
 export const threadMessages = (waId) => db.prepare('SELECT * FROM messages WHERE wa_id = ? ORDER BY at').all(waId);
 export const getThread = (waId) => db.prepare('SELECT * FROM threads WHERE wa_id = ?').get(waId);

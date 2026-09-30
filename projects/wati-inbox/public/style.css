@@ -92,3 +92,10 @@ button.busy::before { content: ''; display: inline-block; width: 10px; height: 1
 .quote { color: var(--muted); font-style: italic; margin-top: 6px; white-space: pre-wrap; }
 .flag .acts { display: flex; gap: 8px; margin-top: 8px; }
 .tmthread .thread { margin: 10px 0 0; }
+
+/* Sales Hub automation (2026-09-30) */
+.card.tbc { border-left: 4px solid var(--warn); }
+.card.tbc.paused { border-left-color: var(--ok, #16a34a); }
+.tbc-row.paused .pill { background: var(--ok, #16a34a); }
+.tbc-next { margin-bottom: 8px; }
+.opt.locked { opacity: .45; }

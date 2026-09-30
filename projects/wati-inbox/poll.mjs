@@ -6,6 +6,8 @@ import { recentContacts, getThread, getContact, FR } from './wati.mjs';
 import { getState, setState, getThread as storedThread, saveThread, upsertMessages, activeThreads, sentTexts, saveContact, unpushedSuggestions, markSuggestionPushed } from './db.mjs';
 import { pushAll } from './push.mjs';
 import { startSuggesting } from './suggest-engine.mjs';
+import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
+import { closeTbcAlerts } from './db.mjs';
 
 export const POLL_MS = 45_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -40,6 +42,7 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
     try { const c = await getContact(waId); if (c) saveContact(waId, c); } catch {}
   }
   const isNew = !!lastIn && (!before || (before.last_inbound_at || '') < lastIn.at);
+  if (isNew && before) closeTbcAlerts(waId, 'replied'); // the lead answered: the Sales Hub warning is over
   if (isNew && notify && before && !before.muted) {
     await pushAll({ title: name || waId, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
     log('new message from', name || waId); // no automatic draft: Ali picks the cap in the app first (2026-09-29)
@@ -81,8 +84,10 @@ async function pushSuggestions() {
 
 export function startPolling() {
   startSuggesting();
+  startTbcWatch();
   const loop = async () => {
     try { await tick(); } catch (e) { log('poll error:', e.message); }
+    tbcWatch().catch((e) => log('tbc error:', e.message)); // right after a read, so a reply closes its alert within a minute
     try { await pushSuggestions(); } catch (e) { log('suggestion push error:', e.message); }
     setTimeout(loop, POLL_MS);
   };

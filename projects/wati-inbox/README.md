@@ -45,8 +45,23 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
   = 25 conversations) to flag what the booking bot got wrong ("erreur") or could do better
   ("amelioration"). Flags land in `tm_flags` and on the "France TM" screen. Terminal:
   `node --env-file=.env tm-monitor.mjs`. Needs `../Wati outreach/.wati-webhook-secret`.
+- `tbc-watch.mjs` + `tbc-fit-prompt.md` — the Sales Hub automation watch (2026-09-30). The TBC sequence
+  (Day 0 20:20 preadmission · Day 1 14:00 / 17:00 / 19:00 reminders · Day 2 15:00 / 18:00 and Day 3 16:00
+  recovery · Day 6 14:30 / Day 7 17:30 reactivation, Madrid time, Day 0 = the day the preadmission template
+  landed) is sent by the Sales Hub, skips a "no reply" step while the lead wrote last, and fires as soon as
+  Ali wrote last. Every minute the app checks each lead inside the sequence: **timing** alert when Ali
+  replied less than `TBC_TIMING_BEFORE_MIN` (180) min before the next step and the lead is silent;
+  **fit** check (recovery steps only, up to `TBC_FIT_LEAD_MIN` = 240 min before the step, max
+  `TBC_FIT_MAX_PER_DAY` = 20 Sonnet runs) when Ali's last burst asks a question the lead has not answered:
+  Claude says whether the template still makes sense and, if not, drafts the manual follow-up (the line
+  Ali approved: "j'aurais besoin d'un retour aujourd'hui, même rapide, pour savoir où vous en êtes" +
+  the unanswered question). Alerts: push (8h–22h) + section on the inbox + card on the thread with two
+  steps — "J'ai mis en pause dans le Sales Hub" (Ali's word, never assumed) then the draft (copy / send /
+  edit), locked until the pause is confirmed; a send from that card is refused otherwise. Alerts close
+  when the lead replies, when the step time passes, or when the template lands anyway (then Ali is told).
+  `SALES_HUB_URL` in `.env` adds a link. Dry run: `node --env-file=.env tbc-watch.mjs`.
 - `db.mjs` — `data/inbox.sqlite` (threads, messages, suggestions, lessons, tm_messages, tm_flags,
-  push subscriptions, sends, state).
+  tbc_alerts, push subscriptions, sends, state).
 - `wati.mjs` — the Wati calls (ported from `lead.mjs`, `send.mjs`, `check-templates.mjs`).
 - `public/` — the app (plain HTML/JS), service worker, manifest, icon.
 - `../Wati outreach/suggest.mjs` — posts a draft written in a Claude Code chat to the phone.

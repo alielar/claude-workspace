@@ -55,13 +55,16 @@ for (let page = 1; page <= 6; page++) {
     const r = await fetch(`${BASE}/api/v1/getMessages/${phone}?pageSize=100&pageNumber=${page}`, { headers: H });
     if (r.ok) items = (await r.json()).messages?.items || [];
   } catch {}
-  msgs.push(...items.filter((m) => m.eventType === 'message' || m.eventType === 'broadcastMessage').map((m) => ({
-    at: m.created || m.timestamp,
-    who: m.owner ? 'US' : 'LEAD',
-    text: m.text || (m.type && m.type !== 'text' ? `(${m.type})` : ''),
-    op: m.operatorName || '',
-    tpl: !!m.templateId,
-  })));
+  // Automated templates (the Sales Hub sequence, campaigns) arrive as broadcastMessage items: no owner,
+  // the text in finalText, the template name in eventDescription. Before 2026-09-30 they were dropped here.
+  msgs.push(...items.filter((m) => m.eventType === 'message' || m.eventType === 'broadcastMessage').map((m) => {
+    const bcast = m.eventType === 'broadcastMessage';
+    const tplName = bcast ? (/"([^"]+)"/.exec(m.eventDescription || '')?.[1] || '') : '';
+    const audio = m.type === 'audio' ? (m.audioTranscriptionResultList || []).map((x) => x.text || x.transcription || '').filter(Boolean).join(' ') : '';
+    let text = m.text || m.finalText || (audio ? `(vocal) ${audio}` : '') || (m.type && m.type !== 'text' ? `(${m.type})` : '');
+    if (bcast && m.statusString === 'FAILED') text = `ÉCHEC template ${tplName} — ${m.failedDetail || 'raison inconnue'}`;
+    return { at: m.created || m.timestamp, who: m.owner || bcast ? 'US' : 'LEAD', text, op: m.operatorName || '', tpl: !!m.templateId || bcast, tplName };
+  }));
   if (items.length < 100) break;
 }
 // Empty entries are delivery/read receipts, not real messages.
@@ -123,7 +126,7 @@ if (!msgs.length) {
   if (shown.length < msgs.length) console.log(`  (showing the last ${shown.length}; add --full for all)`);
   console.log('');
   for (const m of shown) {
-    const who = m.who === 'LEAD' ? 'LEAD' : m.tpl ? 'US (auto)' : m.op === 'Admin Account' ? 'ALI ' : `${(m.op || 'US').slice(0, 14)}`;
+    const who = m.who === 'LEAD' ? 'LEAD' : m.tpl ? `US (auto${m.tplName ? ' ' + m.tplName : ''})` : m.op === 'Admin Account' ? 'ALI ' : /^API Token/i.test(m.op) ? 'ALI (app)' : `${(m.op || 'US').slice(0, 14)}`;
     console.log(`  [${fmt(m.at)}] ${who}: ${String(m.text).replace(/\n/g, '\n' + ' '.repeat(28))}`);
   }
 
