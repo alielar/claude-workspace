@@ -121,11 +121,11 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
   return { sleep: p.sleep.length, workouts: p.workouts.length, metrics: p.metrics.length, skipped: p.skipped.length };
 }
 
-/** Keep the last 30 raw posts (bodies capped at 200 KB) for debugging the payload shape. */
+/** Keep the last 30 raw posts (bodies capped at 1.5 MB · a sleep post with 12 metrics is ~800 KB) for debugging the payload shape. */
 export async function logRaw(automation: string | null, body: string, summary: string): Promise<void> {
   await ensureHealthTables();
   try {
-    await db.run(sql`INSERT INTO health_raw (automation, bytes, summary, body) VALUES (${automation}, ${body.length}, ${summary}, ${body.slice(0, 200_000)})`);
+    await db.run(sql`INSERT INTO health_raw (automation, bytes, summary, body) VALUES (${automation}, ${body.length}, ${summary}, ${body.slice(0, 1_500_000)})`);
     await db.run(sql`DELETE FROM health_raw WHERE id NOT IN (SELECT id FROM health_raw ORDER BY id DESC LIMIT 30)`);
   } catch { /* debugging aid only */ }
 }

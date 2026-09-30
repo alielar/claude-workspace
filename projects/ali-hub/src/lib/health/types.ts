@@ -405,7 +405,12 @@ export function parseHaePayload(body: unknown): Parsed {
     const rows = Array.isArray(m.data) ? (m.data as Record<string, unknown>[]) : [];
     if (!name) { out.skipped.push("metric without name"); continue; }
     if (name === "sleep_analysis") {
-      for (const r of rows) { const n = parseSleep(r, units); if (n) out.sleep.push(n); else out.skipped.push("sleep row"); }
+      for (const r of rows) {
+        const n = parseSleep(r, units);
+        if (n) out.sleep.push(n);
+        // Say WHY (the row as sent, trimmed) · "sleep row" alone told nothing on 2026-09-30.
+        else out.skipped.push(`sleep row ${JSON.stringify(r).slice(0, 300)}`);
+      }
       continue;
     }
     for (const r of rows) {
