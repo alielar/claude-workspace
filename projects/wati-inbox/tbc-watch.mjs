@@ -92,8 +92,11 @@ function lastBurst(st) {
 const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
 const inMin = (iso, now = Date.now()) => Math.round((Date.parse(iso) - now) / 60e3);
 
-// One pass over the active threads. dry = print only.
+// One pass over the active threads. dry = print only. Passes never overlap (a judgement takes ~1 min).
+let running = false;
 export async function watch({ dry = false, now = Date.now() } = {}) {
+  if (running) return [];
+  running = true;
   status.state = 'running'; status.at = new Date().toISOString();
   const out = [];
   try {
@@ -113,6 +116,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
       const s = st.next, mins = inMin(s.firesAt, now);
       const sinceReply = (now - Date.parse(st.lastHuman.at)) / 60e3;
       // timing: Ali wrote after the lead, less than TIMING_BEFORE_MIN before the step.
+      if (mins < 3) continue; // too late to warn about this step; the next pass looks at the following one
       if (mins <= TIMING_BEFORE_MIN && sinceReply <= TIMING_BEFORE_MIN && st.lastLead && !tbcAlert(t.wa_id, st.day0, s.n, 'timing') && !tbcAlert(t.wa_id, st.day0, s.n, 'fit')) {
         const a = { wa_id: t.wa_id, name: st.name, step: s.n, day0: st.day0, kind: 'timing', fires_at: s.firesAt, tpl: s.tpl, tpl_text: s.text, question: lastBurst(st).map((m) => m.text).join(' / ').slice(0, 300), question_at: st.lastHuman.at, why: `Vous avez répondu à ${fmtHM(st.lastHuman.at)} et le lead n’a pas encore réagi : « ${s.tpl} » part à ${fmtHM(s.firesAt)} par-dessus votre message.`, window_open: st.windowOpen };
         out.push(a);
@@ -120,7 +124,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
         continue;
       }
       // fit: recovery week, Ali's last burst asks something, the lead has not answered, the step is near.
-      if (s.phase !== 'recovery' || mins > FIT_LEAD_MIN || mins < -15) continue;
+      if (s.phase !== 'recovery' || mins > FIT_LEAD_MIN || mins < 10) continue; // a judgement takes about a minute
       if (tbcAlert(t.wa_id, st.day0, s.n, 'fit')) continue;
       const burst = lastBurst(st);
       if (!burst.some((m) => /\?/.test(m.text || ''))) continue;
@@ -132,7 +136,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
       try { verdict = await judge(st, s, question); }
       catch (e) { log(t.wa_id, 'judge error:', e.message); continue; }
       const a = { wa_id: t.wa_id, name: st.name, step: s.n, day0: st.day0, kind: 'fit', state: verdict.fits ? 'ok' : 'open', fires_at: s.firesAt, tpl: s.tpl, tpl_text: s.text, question, question_at: st.lastHuman.at, why: verdict.why, bubbles: verdict.fits ? null : verdict.bubbles, window_open: st.windowOpen };
-      insertTbcAlert(a);
+      try { insertTbcAlert(a); } catch (e) { log(t.wa_id, 'insert:', e.message); continue; }
       const timing = tbcAlert(t.wa_id, st.day0, s.n, 'timing'); // one card per step: the judged one replaces the plain timing warning
       if (timing && timing.state === 'open') setTbcAlertState(timing.id, 'expired');
       out.push(a);
@@ -147,6 +151,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
     }
     status.state = 'idle'; status.last = new Date().toISOString(); status.error = null;
   } catch (e) { status.state = 'idle'; status.error = e.message; log('watch error:', e.message); }
+  finally { running = false; }
   return out;
 }
 
