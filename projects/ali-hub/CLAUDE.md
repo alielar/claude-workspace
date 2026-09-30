@@ -208,6 +208,8 @@ Icons for new nav entries go in `src/components/Icon.tsx`. All API routes and ta
 
 **Copy** — no em dashes ANYWHERE, UI text or AI-written text (Ali 2026-09-29): use `·`, a comma or a period. Every AI text is passed through `noDash` in `src/lib/utils.ts` before it is stored (Mind briefs, hooks, key facts, grader notes; news summaries and deep dives; the podcast script) and the prompts say so too. No emojis in UI labels (the `emoji` field on older `ROUTINE_SEED` rows is legacy data; new rows leave it empty). **No filler** (Ali 2026-09-24): no sentence that explains what a control does or how the app behaves · a label, a state, a value. Warnings and one-line instructions (an install step, an ISBN hint) may stay.
 
+**Clock in a component** — `useNow()` in `src/lib/useClientValue.ts` (state set once after mount). Never `useClientValue(() => Date.now(), 0)`: `useSyncExternalStore` with a snapshot that changes on every call re-renders without end (React #185, the Health tab crashed on the phone 2026-09-30).
+
 **Data** — optimistic updates with rollback; writes through `sendOrQueue`; reads through `useCached`. Idempotent endpoints with unique constraints + silent catch on duplicates.
 
 **Performance** — no new dependency without a reason it can't be 30 lines of code. No client component that pulls a library into every route (`AppShell` must stay tiny). Check `next build` route sizes before shipping a phase.
