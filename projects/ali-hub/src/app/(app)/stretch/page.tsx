@@ -15,7 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, buildStretchPlan, isDefaultName, sessionForDate, sessionSeconds, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, SESSION_KEYS, buildStretchPlan, isDefaultName, sessionForDate, sessionSeconds,
+  readSessionPick, writeSessionPick, type SessionKey, type StretchPhase,
 } from "@/lib/routine/stretching";
 import { cues } from "@/lib/routine/cues";
 import { STRETCH_TRACKS, trackUrl } from "@/lib/routine/music";
@@ -55,9 +56,16 @@ async function completeStretchItem() {
 export default function StretchPage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
-  // Two sessions alternate day to day (2026-09-14) · picked automatically for today, no
-  // selector (Ali: "I tap Start and it runs whichever session is correct for today").
-  const [session] = useState(() => sessionForDate(checklistToday()));
+  // Three sessions in sequence day to day (2026-09-14, third one 2026-09-30) · today's is
+  // preselected; Ali can pick another on the morning (Ali 2026-09-29), the pick lasts the day.
+  const today = checklistToday();
+  const autoSession = sessionForDate(today);
+  const [session, setSessionState] = useState<SessionKey>(autoSession);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the day's pick after mount
+    const pick = readSessionPick(today); if (pick) setSessionState(pick);
+  }, [today]);
+  const pickSession = (k: SessionKey) => { setSessionState(k); writeSessionPick(today, k === autoSession ? null : k); };
   const SESSION = STRETCH_SESSIONS[session];
   const MOVES = SESSION.moves;
   const PLAN = useMemo(() => buildStretchPlan(MOVES), [MOVES]);
@@ -286,9 +294,28 @@ export default function StretchPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility</h1>
-            <div className="sub">Today: {SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
+            <div className="sub">{session === autoSession ? "Today" : "Picked"}: {SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
           </div>
         </div>
+
+        {/* Which session · today's in the sequence is preselected, any other is a pick for today only */}
+        <div role="tablist" aria-label="Session" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
+          {SESSION_KEYS.map((k) => {
+            const on = k === session;
+            return (
+              <button key={k} role="tab" aria-selected={on} onClick={() => pickSession(k)}
+                style={{ minHeight: 48, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 14.5, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "grid", gap: 1, alignContent: "center", WebkitTapHighlightColor: "transparent" }}>
+                <span>{STRETCH_SESSIONS[k].short}</span>
+                <span style={{ fontSize: 12, color: k === autoSession ? "var(--violet)" : "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{k === autoSession ? "today" : `session ${k}`}</span>
+              </button>
+            );
+          })}
+        </div>
+        {SESSION.reel && (
+          <a href={SESSION.reel.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, minHeight: 44, padding: "0 14px", borderRadius: 12, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--violet)", textDecoration: "none", fontSize: 15 }}>
+            <span>{SESSION.reel.label} · Instagram</span><span aria-hidden>↗</span>
+          </a>
+        )}
 
         <button
           className="cc-btn cc-btn-primary"

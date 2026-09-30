@@ -1,5 +1,7 @@
 /**
- * Morning mobility · TWO sessions of 10:00, alternating day to day (Ali, 2026-09-14).
+ * Morning mobility · THREE sessions of 10:00, in sequence day to day (Ali, 2026-09-14; the
+ * third, spine-oriented one from Omar Eissa's reel, 2026-09-29 · pick any of them on the
+ * morning, the sequence is only the default).
  * (Shown as "Mobility" everywhere since 2026-09-12; the route stays /stretch and the
  * checklist routineKey stays "stretch" so nothing installed on the phone breaks.)
  *
@@ -30,7 +32,7 @@ export const STRETCH_LEADIN_SECONDS = 5;
 export const STRETCH_REST_SECONDS = 10;
 
 export type StretchMove = { key: string; name: string; seconds: number; block: number };
-export type SessionKey = 1 | 2;
+export type SessionKey = 1 | 2 | 3;
 
 export const STRETCH_BLOCKS = [
   "Standing",
@@ -61,6 +63,17 @@ export const MOVE_TARGETS: Record<string, string> = {
   "cat-cow":      "spine flexion and extension",
   "cobra":        "spine extension, hip flexors, chest",
   "child":        "lower back, calm finish",
+  // Session 3 · spine (2026-09-30)
+  "side-bend":    "lateral spine, obliques, quadratus lumborum",
+  "back-ext":     "lumbar extension, standing · undoes the chair",
+  "roll-down":    "segmental flexion, one vertebra at a time · hamstrings",
+  "needle-l":     "thoracic rotation, rear shoulder · left",
+  "needle-r":     "thoracic rotation, rear shoulder · right",
+  "bird-dog":     "spine stability, glutes, deep core",
+  "open-book-l":  "thoracic rotation lying, chest · left",
+  "open-book-r":  "thoracic rotation lying, chest · right",
+  "supine-twist-l": "lumbar rotation, glutes, calm · left",
+  "supine-twist-r": "lumbar rotation, glutes, calm · right",
 };
 
 const M = (key: string, name: string, seconds: number, block: number): StretchMove => ({ key, name, seconds, block });
@@ -100,18 +113,60 @@ export const SESSION_2: StretchMove[] = [
   M("child",        "Child's Pose",                     35, 3),
 ];
 
-export const STRETCH_SESSIONS: Record<SessionKey, { key: SessionKey; name: string; focus: string; moves: StretchMove[] }> = {
-  1: { key: 1, name: "Session 1", focus: "hips and the back line", moves: SESSION_1 },
-  2: { key: 2, name: "Session 2", focus: "spine, shoulders, inner line", moves: SESSION_2 },
+/**
+ * Session 3 · spine (Ali 2026-09-29: "another version of the morning mobility routine, spine
+ * oriented", from Omar Eissa's reel "My morning mobility routine for a healthy spine"). The
+ * reel's caption names no moves and the video cannot be read from outside Instagram, so this
+ * is a standard spine sequence in the same shape as the other two (standing → floor → lying →
+ * Child's Pose): flexion, extension, side bend, rotation, stability. Ali swaps in the reel's
+ * exact moves by renaming (tap a name) or by sending the list · 450 s work + 14 rests + lead-in = 600 s.
+ */
+export const SESSION_3: StretchMove[] = [
+  M("bounce",         "Bouncing on Toes",             20, 0),
+  M("neck",           "Neck Twists",                  20, 0),
+  M("side-bend",      "Standing Side Bends",          30, 0),
+  M("back-ext",       "Standing Back Extension",      25, 0),
+  M("roll-down",      "Standing Roll Down",           30, 0),
+  M("cat-cow",        "Cat Cow",                      40, 1),
+  M("needle-l",       "Thread the Needle · Left",     30, 1),
+  M("needle-r",       "Thread the Needle · Right",    30, 1),
+  M("bird-dog",       "Bird Dog",                     35, 1),
+  M("cobra",          "Cobra",                        30, 2),
+  M("open-book-l",    "Open Book · Left",             30, 2),
+  M("open-book-r",    "Open Book · Right",            30, 2),
+  M("supine-twist-l", "Supine Twist · Left",          30, 2),
+  M("supine-twist-r", "Supine Twist · Right",         30, 2),
+  M("child",          "Child's Pose",                 45, 3),
+];
+
+export type StretchSession = { key: SessionKey; name: string; focus: string; short: string; moves: StretchMove[]; reel?: { label: string; url: string } };
+export const STRETCH_SESSIONS: Record<SessionKey, StretchSession> = {
+  1: { key: 1, name: "Session 1", focus: "hips and the back line", short: "Hips · back", moves: SESSION_1 },
+  2: { key: 2, name: "Session 2", focus: "spine, shoulders, inner line", short: "Spine · shoulders", moves: SESSION_2 },
+  3: { key: 3, name: "Session 3", focus: "spine, the reel routine", short: "Spine · reel", moves: SESSION_3,
+       reel: { label: "Omar Eissa's spine routine", url: "https://www.instagram.com/reel/DcbsXEJN294/?stkn=MXgyMGRzdGZpNXB5eA==" } },
 };
+export const SESSION_KEYS: SessionKey[] = [1, 2, 3];
 
-/** Every distinct movement across both sessions (renames are stored by key). */
-export const STRETCH_MOVES: StretchMove[] = [...SESSION_1, ...SESSION_2].filter((m, i, all) => all.findIndex((x) => x.key === m.key) === i);
+/** Every distinct movement across the sessions (renames are stored by key). */
+export const STRETCH_MOVES: StretchMove[] = [...SESSION_1, ...SESSION_2, ...SESSION_3].filter((m, i, all) => all.findIndex((x) => x.key === m.key) === i);
 
-/** Which session a given day gets: alternates every calendar day (Europe/Madrid YYYY-MM-DD). */
+/** Which session a given day gets by default: 1 → 2 → 3 → 1, one step per calendar day (Europe/Madrid YYYY-MM-DD). */
 export function sessionForDate(ymd: string): SessionKey {
   const days = Math.floor(new Date(ymd + "T12:00:00Z").getTime() / 86400000);
-  return days % 2 === 1 ? 1 : 2;
+  return ((days % 3) + 1) as SessionKey;
+}
+
+/** Ali's pick for one morning (localStorage `cc-stretch-pick`) · the sequence takes over again the next day. */
+export const STRETCH_PICK_KEY = "cc-stretch-pick";
+export function readSessionPick(ymd: string): SessionKey | null {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STRETCH_PICK_KEY) ?? "null") as { ymd?: string; key?: number } | null;
+    return raw && raw.ymd === ymd && SESSION_KEYS.includes(raw.key as SessionKey) ? (raw.key as SessionKey) : null;
+  } catch { return null; }
+}
+export function writeSessionPick(ymd: string, key: SessionKey | null): void {
+  try { if (key === null) localStorage.removeItem(STRETCH_PICK_KEY); else localStorage.setItem(STRETCH_PICK_KEY, JSON.stringify({ ymd, key })); } catch { /* ignore */ }
 }
 
 /** Every name that has ever been a DEFAULT (current list + retired moves). A saved
@@ -162,5 +217,5 @@ export function buildStretchPlan(moves: StretchMove[]): StretchPhase[] {
 }
 
 export const sessionSeconds = (moves: StretchMove[]) => buildStretchPlan(moves).reduce((s, p) => s + p.seconds, 0);
-/** Both sessions are 600 s · this is the number shown on cards. */
+/** Every session is 600 s · this is the number shown on cards. */
 export const STRETCH_TOTAL_SECONDS = sessionSeconds(SESSION_1);
