@@ -20,7 +20,7 @@ import { parseHaePayload } from "@/lib/health/types";
 import { healthStatus, logRaw, rawPosts, storeParsed } from "@/lib/health/server";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 function keyOk(req: Request): boolean {
   const key = process.env.APP_KEY;
@@ -41,9 +41,10 @@ export async function POST(req: Request) {
   try { body = JSON.parse(text); } catch { return NextResponse.json({ error: "bad json" }, { status: 400 }); }
 
   const parsed = parseHaePayload(body);
+  const planned = `sleep ${parsed.sleep.length} · workouts ${parsed.workouts.length} · metrics ${parsed.metrics.length}${parsed.skipped.length ? ` · skipped ${parsed.skipped.length}` : ""}`;
+  // Log first, store second: a post that times out while storing is still visible in ?raw=1.
+  await logRaw(req.headers.get("automation-name"), text, planned);
   const result = await storeParsed(userId, parsed);
-  const summary = `sleep ${result.sleep} · workouts ${result.workouts} · metrics ${result.metrics}${result.skipped ? ` · skipped ${result.skipped}` : ""}`;
-  await logRaw(req.headers.get("automation-name"), text, summary);
   return NextResponse.json({ ok: true, ...result, skipped: parsed.skipped.slice(0, 10) });
 }
 

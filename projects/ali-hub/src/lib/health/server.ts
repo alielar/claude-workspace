@@ -112,9 +112,11 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
       await db.insert(healthWorkoutSeries).values(sr).onConflictDoUpdate({ target: healthWorkoutSeries.hkId, set: keepKnown(sr, ["userId", "hkId"]) });
     }
   }
-  for (const m of p.metrics) {
-    const row = { userId, date: m.date, metric: m.metric, qty: m.qty, min: m.min, avg: m.avg, max: m.max, units: m.units, updatedAt: now };
-    await db.insert(healthMetrics).values(row).onConflictDoUpdate({ target: [healthMetrics.userId, healthMetrics.date, healthMetrics.metric], set: keepKnown(row, ["userId", "date", "metric"]) });
+  // Metrics in chunks of 60 rows per statement · one round trip each instead of one per row (the 30 s timeout, 2026-09-30).
+  const rows = p.metrics.map((m) => ({ userId, date: m.date, metric: m.metric, qty: m.qty, min: m.min, avg: m.avg, max: m.max, units: m.units, updatedAt: now }));
+  for (let i = 0; i < rows.length; i += 60) {
+    const chunk = rows.slice(i, i + 60);
+    await db.insert(healthMetrics).values(chunk).onConflictDoUpdate({ target: [healthMetrics.userId, healthMetrics.date, healthMetrics.metric], set: keepKnown(chunk[0], ["userId", "date", "metric"]) });
   }
   return { sleep: p.sleep.length, workouts: p.workouts.length, metrics: p.metrics.length, skipped: p.skipped.length };
 }

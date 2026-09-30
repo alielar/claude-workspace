@@ -427,6 +427,42 @@ export function parseHaePayload(body: unknown): Parsed {
   const byDate = new Map<string, SleepNight>();
   for (const n of out.sleep) byDate.set(n.date, n);
   out.sleep = [...byDate.values()];
+  out.metrics = foldDaily(out.metrics);
+  return out;
+}
+
+/** Metrics that add up over a day (steps, energy, minutes, distance) · the rest are states and average. */
+const CUMULATIVE = /step|energy|exercise_time|stand_time|stand_hour|distance|flights|daylight|calories|dietary|water|caffeine/;
+
+/**
+ * One row per day and metric. HAE's "Time Grouping" (hours or minutes) makes a post carry
+ * dozens of rows per metric per day; storing each one was a database round trip apiece and
+ * the ingest timed out after 30 s (the sleep automation "failed" on the phone for two days,
+ * 2026-09-30). The app only reads daily values, so they are folded here: cumulative metrics
+ * sum, states average; Min/Avg/Max combine as min / mean / max.
+ */
+export function foldDaily(rows: DailyMetric[]): DailyMetric[] {
+  const acc = new Map<string, { m: DailyMetric; n: number; qtySum: number; avgSum: number; avgN: number }>();
+  for (const r of rows) {
+    const key = `${r.date}|${r.metric}`;
+    const a = acc.get(key);
+    if (!a) { acc.set(key, { m: { ...r }, n: 1, qtySum: r.qty ?? 0, avgSum: r.avg ?? 0, avgN: r.avg === null ? 0 : 1 }); continue; }
+    a.n++;
+    if (r.qty !== null) { a.qtySum += r.qty; a.m.qty = a.m.qty === null ? r.qty : a.m.qty; }
+    if (r.min !== null) a.m.min = a.m.min === null ? r.min : Math.min(a.m.min, r.min);
+    if (r.max !== null) a.m.max = a.m.max === null ? r.max : Math.max(a.m.max, r.max);
+    if (r.avg !== null) { a.avgSum += r.avg; a.avgN++; }
+    a.m.units ??= r.units;
+  }
+  const out: DailyMetric[] = [];
+  for (const { m, n, qtySum, avgSum, avgN } of acc.values()) {
+    if (n > 1) {
+      const qtyRows = rows.filter((r) => r.date === m.date && r.metric === m.metric && r.qty !== null).length;
+      if (qtyRows > 0) m.qty = rnd(CUMULATIVE.test(m.metric) ? qtySum : qtySum / qtyRows, 2);
+      if (avgN > 0) m.avg = rnd(avgSum / avgN, 2);
+    }
+    out.push(m);
+  }
   return out;
 }
 
