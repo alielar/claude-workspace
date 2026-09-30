@@ -17,7 +17,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserId } from "@/lib/user";
 import { parseHaePayload } from "@/lib/health/types";
-import { healthStatus, logRaw, rawPosts, storeParsed } from "@/lib/health/server";
+import { healthStatus, logRaw, rawPosts, replayRaw, storeParsed } from "@/lib/health/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -35,6 +35,8 @@ export async function POST(req: Request) {
   if (!keyOk(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "no user" }, { status: 500 });
+  // ?replay=1 · re-store the kept raw posts with the current parser (after a parser fix).
+  if (new URL(req.url).searchParams.get("replay")) return NextResponse.json(await replayRaw(userId));
 
   const text = await req.text();
   let body: unknown;

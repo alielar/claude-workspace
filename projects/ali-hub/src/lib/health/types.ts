@@ -374,15 +374,18 @@ function parseSleep(rec: Record<string, unknown>, units: string | null): SleepNi
   const endMs = sleepEnd ?? inBedEnd;
   const date = endMs !== null ? madridDate(endMs) : recordDay(rec.date);
   if (!date) return null;
-  const totalMin = toMinutes(rec.asleep ?? rec.totalSleep, units);
+  // HAE v2 (2026-09-30, Ali's Watch): `asleep: 0` and `inBed: 0` beside a real `totalSleep`, so a zero is
+  // "not measured", never a value · take the first positive number, then the stages, then the times.
+  const pos = (...vs: unknown[]): number | null => { for (const v of vs) { const m = toMinutes(v, units); if (m !== null && m > 0) return m; } return null; };
+  const coreMin = pos(rec.core), deepMin = pos(rec.deep), remMin = pos(rec.rem);
+  const stages = coreMin === null && deepMin === null && remMin === null ? null : (coreMin ?? 0) + (deepMin ?? 0) + (remMin ?? 0);
+  const totalMin = pos(rec.asleep, rec.totalSleep) ?? stages;
   const n: SleepNight = {
     date, sleepStart, sleepEnd, inBedStart, inBedEnd,
     totalMin,
-    coreMin: toMinutes(rec.core, units),
-    deepMin: toMinutes(rec.deep, units),
-    remMin: toMinutes(rec.rem, units),
-    awakeMin: toMinutes(rec.awake, units),
-    inBedMin: toMinutes(rec.inBed, units) ?? (inBedStart !== null && inBedEnd !== null ? Math.round((inBedEnd - inBedStart) / 60000) : null),
+    coreMin, deepMin, remMin,
+    awakeMin: pos(rec.awake) ?? (rec.awake == null ? null : 0),
+    inBedMin: pos(rec.inBed) ?? (inBedStart !== null && inBedEnd !== null ? Math.round((inBedEnd - inBedStart) / 60000) : null),
     score: null,
     source: typeof rec.sleepSource === "string" ? rec.sleepSource : typeof rec.source === "string" ? rec.source : null,
   };

@@ -8,7 +8,7 @@
 import { db } from "@/db";
 import { healthMetrics, healthSleep, healthWorkouts, healthWorkoutSeries } from "@/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { sleepScore, type Parsed, type SleepNight } from "./types";
+import { parseHaePayload, sleepScore, type Parsed, type SleepNight } from "./types";
 
 export const HEALTH_DDL = [
   `CREATE TABLE IF NOT EXISTS health_sleep (
@@ -208,4 +208,23 @@ export async function healthStatus(userId: string): Promise<HealthStatus> {
     nights: Number(cnt?.nights ?? 0),
     workouts: Number(cnt?.workouts ?? 0),
   };
+}
+
+/**
+ * Re-parse the kept raw posts with today's parser and store them again (every write is an upsert).
+ * For when the parser learns a shape after the phone already posted it (the `asleep: 0` night, 2026-09-30).
+ */
+export async function replayRaw(userId: string, limit = 30): Promise<{ posts: number; sleep: number; workouts: number; metrics: number; skipped: string[] }> {
+  await ensureHealthTables();
+  const rows = await db.all<{ body: string }>(sql`SELECT body FROM health_raw ORDER BY id DESC LIMIT ${limit}`).catch(() => []);
+  const out = { posts: 0, sleep: 0, workouts: 0, metrics: 0, skipped: [] as string[] };
+  for (const r of rows) {
+    let body: unknown;
+    try { body = JSON.parse(r.body); } catch { continue; } // truncated (kept before the cap was raised)
+    const parsed = parseHaePayload(body);
+    const res = await storeParsed(userId, parsed);
+    out.posts++; out.sleep += res.sleep; out.workouts += res.workouts; out.metrics += res.metrics;
+    out.skipped.push(...parsed.skipped.slice(0, 3));
+  }
+  return out;
 }
