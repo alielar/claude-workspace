@@ -49,11 +49,13 @@ Nothing is paid per use: suggestions run through the Claude Code subscription, h
   (Day 0 20:20 preadmission · Day 1 14:00 / 17:00 / 19:00 reminders · Day 2 15:00 / 18:00 and Day 3 16:00
   recovery · Day 6 14:30 / Day 7 17:30 reactivation, Madrid time, Day 0 = the day the preadmission template
   landed) is sent by the Sales Hub, skips a "no reply" step while the lead wrote last, and fires as soon as
-  Ali wrote last. Every minute the app checks each lead inside the sequence: **timing** alert when Ali
-  replied less than `TBC_TIMING_BEFORE_MIN` (180) min before the next step and the lead is silent;
-  **fit** check (recovery steps only, up to `TBC_FIT_LEAD_MIN` = 240 min before the step, max
-  `TBC_FIT_MAX_PER_DAY` = 20 Sonnet runs) when Ali's last burst asks a question the lead has not answered:
-  Claude says whether the template still makes sense and, if not, drafts the manual follow-up (the line
+  Ali wrote last. Every minute the app checks each lead inside the sequence (enrolled leads — welcome
+  template received, or CRM sale — are ignored). Only ONE situation is flagged (Ali, 30/09 afternoon):
+  Ali asked the **diagnostic question** (what really blocks you: price, timing, method?) and the lead
+  never answered, so the real issue is unknown — recovery steps only, up to `TBC_FIT_LEAD_MIN` = 240
+  min before the step, max `TBC_FIT_MAX_PER_DAY` = 20 Sonnet runs. When the blocker is known and a
+  solution was proposed without answer, the templates do their job: nothing is shown, and there is no
+  "template imminent" warning. Claude confirms the case and drafts the manual follow-up (the line
   Ali approved: "j'aurais besoin d'un retour aujourd'hui, même rapide, pour savoir où vous en êtes" +
   the unanswered question). Alerts: push (8h–22h) + section on the inbox + card on the thread with two
   steps — "J'ai mis en pause dans le Sales Hub" (Ali's word, never assumed) then the draft (copy / send /

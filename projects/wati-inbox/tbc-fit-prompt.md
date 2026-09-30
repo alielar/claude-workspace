@@ -15,11 +15,9 @@ Ali a écrit en dernier, à {{questionAt}}, et le lead n'a pas répondu depuis :
 {{transcript}}
 
 ## Ta décision
-Dis si ce template a encore du sens après la question d'Ali restée sans réponse.
+Ali ne veut être prévenu que dans UN cas : il a posé au lead la question de diagnostic — ce qui le retient vraiment (le prix, le timing, la méthode, autre chose) — et le lead n'y a jamais répondu, donc le vrai blocage est encore inconnu. Là, un template « j'ai dû libérer votre place », « liste d'attente » ou « une place vient de se libérer » tombe à côté : il faut le mettre en pause et redemander la réponse (`fits: false`).
 
-Il a du sens (`fits: true`) quand il ne contredit pas la conversation : le lead n'a rien dit de précis, Ali n'attend pas une réponse à une question ouverte, ou le template pose justement la question qu'Ali attend.
-
-Il n'a pas de sens (`fits: false`) quand il ignore ce qui vient d'être dit : le lead a déjà dit qu'il ne s'inscrit pas ou a nommé un blocage (prix, timing, méthode) et Ali lui a demandé ce qui le retient vraiment ou lui a proposé une alternative (format plus léger, paiement, délai) — un message « j'ai dû libérer votre place », « liste d'attente » ou « une place vient de se libérer » tomberait à côté. Dans ce cas Ali doit le mettre en pause dans le Sales Hub et envoyer lui-même une relance qui redemande la réponse attendue.
+Dans tous les autres cas le template peut partir (`fits: true`), et surtout : quand le blocage est déjà identifié (le lead a dit « le prix », « le financement », « le timing ») et qu'Ali a proposé une solution (format plus léger, paiement en plusieurs fois, délai, acompte) restée sans réponse — là, tout est dit, les templates font leur travail, on ne relance pas à la main. Idem si Ali a simplement conclu ou remercié sans question, si le lead a clairement refusé deux fois, ou si le lead est inscrit.
 
 ## La relance à proposer quand ça ne colle pas
 Ligne validée par Ali (retour d'Andrin) : demander un retour aujourd'hui, même court, parce qu'on a besoin de savoir où il en est — puis reposer la question restée sans réponse. Pas de rareté artificielle, pas de place « libérée », pas d'administration, rien d'inventé.

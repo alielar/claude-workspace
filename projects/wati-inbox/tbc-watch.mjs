@@ -5,13 +5,14 @@
 // the lead wrote last and fires as soon as Ali wrote last. This app cannot pause it: only Ali can, in
 // the Sales Hub ("Skip next" / the Paused switch). So this module only WARNS him, in two cases:
 //
-//   timing — Ali answered the lead shortly before a step and the lead is silent: that step will land
-//            on top of his message. No Claude involved.
-//   fit    — from the recovery week on (Day 2+): Ali's last message asks the lead what really blocks
-//            them (or offers an alternative) and the lead has not answered. One Sonnet run judges
-//            whether the next template contradicts that question. If it does, Ali gets a push:
-//            pause it in the Sales Hub, then send the manual follow-up drafted here. If it fits,
-//            nothing is shown (the row is kept as "ok" so it is not judged twice).
+//   fit    — from the recovery week on (Day 2+): Ali asked the lead what REALLY blocks them (the
+//            diagnostic question — price, timing, method?) and the lead never answered, so the real
+//            issue is still unknown. One Sonnet run confirms it and drafts the manual follow-up; Ali
+//            gets a push: pause the step in the Sales Hub, then send the follow-up. If the issue is
+//            already known and a solution was proposed (a lighter format, a payment plan…), the
+//            templates do their job: nothing is shown (the row is kept as "ok", never judged twice).
+//   Leads who received the welcome message (enrolled) are out of scope. There is no "template
+//   imminent" warning any more (Ali, 2026-09-30 afternoon): only what does not fit is flagged.
 //
 // Nothing is sent, nothing is written outside the database. Alerts close by themselves when the lead
 // replies, when the step fires anyway (we see the template land), or once the step time has passed.
@@ -39,7 +40,6 @@ export const STEPS = [
 // Old rows have no template name: recognise the steps by their text.
 const TEXT_KEYS = { 1: /résultats d.aujourd.hui par mail/i, 2: /place est réservée jusqu.à ce soir/i, 3: /finaliser les groupes des prochains mois/i, 4: /avant qu.on clôture aujourd.hui/i, 5: /dû libérer (votre|ta) place/i, 6: /mettre sur liste d.attente, et là/i, 7: /maintenant sur liste d.attente/i, 8: /place vient de se libérer pour les prochains mois/i, 9: /^sinon pas de souci, di/i };
 
-const TIMING_BEFORE_MIN = Number(process.env.TBC_TIMING_BEFORE_MIN || 180); // Ali's reply within 3 h before a step → timing alert
 const FIT_LEAD_MIN = Number(process.env.TBC_FIT_LEAD_MIN || 240);           // judge a recovery step up to 4 h before it fires
 const FIT_MAX_PER_DAY = Number(process.env.TBC_FIT_MAX_PER_DAY || 20);
 const FROM_H = Number(process.env.TBC_FROM_H || 8), TO_H = Number(process.env.TBC_TO_H || 22); // no pushes at night
@@ -57,6 +57,11 @@ export function madridInstant(dateStr, hhmm) {
 }
 const madridDate = (iso) => madrid(new Date(iso)).slice(0, 10);
 const madridHour = () => Number(madrid().slice(11, 13));
+// The lead enrolled: the welcome template (or Ali's welcome line) is in the thread, or the CRM says sale.
+const ENROLLED = /^(bienvenue chez easypeasy|bienvenu(e)? parmi nous)/i;
+const enrolled = (msgs, t) => /^(sale|won|inscrit|enrolled|client)/i.test(String(t?.stage || '')) || msgs.some((m) => m.who === 'US' && ((m.tpl_name && /^sales_text_1/.test(m.tpl_name)) || ENROLLED.test(String(m.text || '').trim())));
+// Ali's diagnostic question: he is still trying to learn what blocks the lead.
+const DIAGNOSTIC = /(qu.est-ce qui|ce qui|quoi) (vous|te|t.)\s?(retient|freine|bloque|fait hésiter|gêne|empêche|dérange)|le prix, le timing|prix, timing|timing, la méthode|autre chose\s*\?|toujours le prix|vrai (frein|blocage|souci|problème)|(quel|quelle) (est|serait) (le|la|votre) (souci|problème|frein|blocage|raison)|où (ça )?en (êtes|es)|ce qui (vous |te )?(pose|fait) (souci|problème)/i;
 const stepOf = (m) => { if (!m.tpl) return null; for (const s of STEPS) if ((m.tpl_name && m.tpl_name.startsWith(s.tpl)) || (!m.tpl_name && TEXT_KEYS[s.n].test(m.text || ''))) return s; return null; };
 
 // Where one lead stands in the sequence: Day 0, the steps already landed, who wrote last, the next step that will fire.
@@ -80,14 +85,14 @@ export function tbcState(waId, now = Date.now()) {
     return { ...s, firesAt, sent: sentSteps.has(s.n), past: Date.parse(firesAt) < now - 15 * 60e3 };
   });
   const next = steps.find((s) => !s.sent && !s.past && (s.gate === 'always' || !leadWaiting)) || null;
-  return { waId, name: t?.name || '', day0, steps, next, lastLead, lastHuman, last, leadWaiting, windowOpen: !!lastLead && now - Date.parse(lastLead.at) < 24 * 3600e3, msgs };
+  return { waId, name: t?.name || '', day0, steps, next, lastLead, lastHuman, last, leadWaiting, enrolled: enrolled(msgs, t), windowOpen: !!lastLead && now - Date.parse(lastLead.at) < 24 * 3600e3, msgs };
 }
 
-// Ali's last burst (his bubbles within 10 min of the last one) — the outstanding question lives there.
+// Ali's last burst: his bubbles after the lead's last message, within 10 min of his last one — the outstanding question lives there.
 function lastBurst(st) {
   if (!st.lastHuman) return [];
-  const end = Date.parse(st.lastHuman.at);
-  return st.msgs.filter((m) => m.who === 'US' && !m.tpl && end - Date.parse(m.at) < 10 * 60e3 && Date.parse(m.at) <= end);
+  const end = Date.parse(st.lastHuman.at), floor = st.lastLead ? Date.parse(st.lastLead.at) : 0;
+  return st.msgs.filter((m) => m.who === 'US' && !m.tpl && end - Date.parse(m.at) < 10 * 60e3 && Date.parse(m.at) <= end && Date.parse(m.at) > floor);
 }
 const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
 const inMin = (iso, now = Date.now()) => Math.round((Date.parse(iso) - now) / 60e3);
@@ -112,22 +117,13 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
     // 2. Look at every lead inside the sequence.
     for (const t of activeThreads(9)) {
       const st = tbcState(t.wa_id, now);
-      if (!st?.next || st.leadWaiting || !st.lastHuman) continue; // nothing fires while the lead is waiting for Ali
+      if (!st?.next || st.leadWaiting || !st.lastHuman || st.enrolled) continue; // nothing fires while the lead is waiting for Ali; enrolled leads are out
       const s = st.next, mins = inMin(s.firesAt, now);
-      const sinceReply = (now - Date.parse(st.lastHuman.at)) / 60e3;
-      // timing: Ali wrote after the lead, less than TIMING_BEFORE_MIN before the step.
-      if (mins < 3) continue; // too late to warn about this step; the next pass looks at the following one
-      if (mins <= TIMING_BEFORE_MIN && sinceReply <= TIMING_BEFORE_MIN && st.lastLead && !tbcAlert(t.wa_id, st.day0, s.n, 'timing') && !tbcAlert(t.wa_id, st.day0, s.n, 'fit')) {
-        const a = { wa_id: t.wa_id, name: st.name, step: s.n, day0: st.day0, kind: 'timing', fires_at: s.firesAt, tpl: s.tpl, tpl_text: s.text, question: lastBurst(st).map((m) => m.text).join(' / ').slice(0, 300), question_at: st.lastHuman.at, why: `Vous avez répondu à ${fmtHM(st.lastHuman.at)} et le lead n’a pas encore réagi : « ${s.tpl} » part à ${fmtHM(s.firesAt)} par-dessus votre message.`, window_open: st.windowOpen };
-        out.push(a);
-        if (!dry) insertTbcAlert(a);
-        continue;
-      }
-      // fit: recovery week, Ali's last burst asks something, the lead has not answered, the step is near.
+      // fit: recovery week, Ali's last burst is the diagnostic question, the lead never answered it, the step is near.
       if (s.phase !== 'recovery' || mins > FIT_LEAD_MIN || mins < 10) continue; // a judgement takes about a minute
       if (tbcAlert(t.wa_id, st.day0, s.n, 'fit')) continue;
       const burst = lastBurst(st);
-      if (!burst.some((m) => /\?/.test(m.text || ''))) continue;
+      if (!burst.some((m) => /\?/.test(m.text || '') && DIAGNOSTIC.test(m.text || ''))) continue;
       if (!st.lastLead) continue;
       const question = burst.map((m) => m.text).join(' / ').slice(0, 400);
       if (dry) { out.push({ wa_id: t.wa_id, name: st.name, step: s.n, day0: st.day0, kind: 'fit?', fires_at: s.firesAt, tpl: s.tpl, question }); continue; }
@@ -145,7 +141,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
     // 3. Push the new open alerts (daytime only; the rest waits for the next pass).
     if (!dry && madridHour() >= FROM_H && madridHour() < TO_H) {
       for (const a of unpushedTbcAlerts()) {
-        await pushAll({ title: `${a.kind === 'fit' ? 'Pause Sales Hub' : 'Template imminent'} · ${a.name || a.wa_id}`, body: `${a.tpl} part à ${fmtHM(a.fires_at)} — ${a.kind === 'fit' ? 'à mettre en pause, puis relance manuelle' : 'à désactiver si ça n’a plus de sens'}`, tag: `tbc-${a.wa_id}`, url: `/t/${a.wa_id}` });
+        await pushAll({ title: `Pause Sales Hub · ${a.name || a.wa_id}`, body: `${a.tpl} part à ${fmtHM(a.fires_at)} — à mettre en pause, puis relance manuelle`, tag: `tbc-${a.wa_id}`, url: `/t/${a.wa_id}` });
         markTbcAlertPushed(a.id);
       }
     }
@@ -172,7 +168,7 @@ async function judge(st, step, question) {
 export function startTbcWatch(everyMs = 60_000) {
   mkdirSync('logs', { recursive: true });
   setInterval(() => watch().catch((e) => log('error:', e.message)), everyMs);
-  log(`watch ready — every ${Math.round(everyMs / 1000)} s, timing ≤ ${TIMING_BEFORE_MIN} min, fit ≤ ${FIT_LEAD_MIN} min before a recovery step, ${FIT_MAX_PER_DAY} judgements/day`);
+  log(`watch ready — every ${Math.round(everyMs / 1000)} s, judges a recovery step up to ${FIT_LEAD_MIN} min ahead when the diagnostic question went unanswered, ${FIT_MAX_PER_DAY} judgements/day`);
 }
 
 if (process.argv[1] && process.argv[1].endsWith('tbc-watch.mjs')) {
@@ -181,6 +177,6 @@ if (process.argv[1] && process.argv[1].endsWith('tbc-watch.mjs')) {
   for (const a of res) console.log(`${a.kind.padEnd(7)} ${a.name || a.wa_id} (+${a.wa_id}) step ${a.step} ${a.tpl} at ${fmtHM(a.fires_at)} · day0 ${a.day0}\n        ${a.question || ''}${a.why ? `\n        → ${a.why}` : ''}`);
   if (!res.length) console.log('no candidate right now');
   // also print where each active lead stands
-  for (const t of activeThreads(9)) { const st = tbcState(t.wa_id); if (st?.next) console.log(`  ${(st.name || t.wa_id).padEnd(22)} day0 ${st.day0} · next #${st.next.n} ${st.next.tpl} ${fmtHM(st.next.firesAt)} (${inMin(st.next.firesAt)} min) · ${st.leadWaiting ? 'lead waiting → skipped' : 'will fire'}`); }
+  for (const t of activeThreads(9)) { const st = tbcState(t.wa_id); if (st?.next) console.log(`  ${(st.name || t.wa_id).padEnd(22)} day0 ${st.day0} · next #${st.next.n} ${st.next.tpl} ${fmtHM(st.next.firesAt)} (${inMin(st.next.firesAt)} min) · ${st.enrolled ? 'ENROLLED → ignored' : st.leadWaiting ? 'lead waiting → skipped' : 'will fire'}`); }
   process.exit(0);
 }
