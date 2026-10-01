@@ -142,6 +142,23 @@ export default function AlaiPage() {
     catch { feed.refresh(); }
   };
 
+  // Edit a waiting message (Ali 2026-10-01) · only while it waits; the server refuses once shipped.
+  const editText = async (id: number, text: string): Promise<boolean> => {
+    const before = requests.find((r) => r.id === id)?.text ?? "";
+    feed.setData((cur) => ({ requests: (cur?.requests ?? []).map((r) => (r.id === id ? { ...r, text } : r)), worker: cur?.worker ?? { seenAt: null, note: null } }));
+    try {
+      const res = await fetch("/api/fix", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, text }) });
+      if (!res.ok) throw new Error(res.status === 409 ? "already on its way to the Mac" : `HTTP ${res.status}`);
+      feed.markEdit();
+      return true;
+    } catch (e) {
+      feed.setData((cur) => ({ requests: (cur?.requests ?? []).map((r) => (r.id === id ? { ...r, text: before } : r)), worker: cur?.worker ?? { seenAt: null, note: null } }));
+      setErr(`Not saved · ${(e as Error).message}`);
+      feed.refresh();
+      return false;
+    }
+  };
+
   // Header line · is the Mac listening?
   const workerLine = useMemo(() => {
     if (!worker.seenAt) return { text: "Mac not connected yet", tone: "var(--ink-4)" };
@@ -243,7 +260,7 @@ export default function AlaiPage() {
 
       {/* The thread */}
       <div style={{ display: "grid", gap: 18 }}>
-        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} />)}
+        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} onEdit={(t) => editText(r.id, t)} />)}
         <div ref={endRef} />
       </div>
 
@@ -322,12 +339,23 @@ export default function AlaiPage() {
 }
 
 /** One request: Ali's bubble on the right, the status line under it, the reply on the left once built. */
-function Bubble({ r, now, onZoom, onCancel, onRetry }: { r: FixRequest; now: number; onZoom: (src: string) => void; onCancel: () => void; onRetry: () => void }) {
+function Bubble({ r, now, onZoom, onCancel, onRetry, onEdit }: { r: FixRequest; now: number; onZoom: (src: string) => void; onCancel: () => void; onRetry: () => void; onEdit: (text: string) => Promise<boolean> }) {
+  const [draft, setDraft] = useState<string | null>(null); // non-null = editing
+  const editing = draft !== null && r.status === "held";
+  const editRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { const el = editRef.current; if (el) { el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 320)}px`; } }, [draft]);
+  const save = async () => {
+    if (draft === null) return;
+    const t = draft.trim();
+    if (t === r.text.trim()) { setDraft(null); return; }
+    if (!t && r.imageCount === 0) return;
+    if (await onEdit(t)) setDraft(null);
+  };
   const tone = r.status === "shipped" ? "var(--pos)" : r.status === "failed" ? "var(--warn)" : r.status === "building" ? "var(--violet)" : "var(--ink-4)";
   return (
     <div style={{ display: "grid", gap: 8 }}>
       {/* Ali */}
-      <div style={{ justifySelf: "end", maxWidth: "88%", display: "grid", gap: 6, justifyItems: "end" }}>
+      <div style={{ justifySelf: "end", maxWidth: "88%", width: editing ? "88%" : undefined, display: "grid", gap: 6, justifyItems: "end" }}>
         {r.images && r.images.length > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {r.images.map((src, i) => (
@@ -337,7 +365,18 @@ function Bubble({ r, now, onZoom, onCancel, onRetry }: { r: FixRequest; now: num
           </div>
         )}
         {!r.images && r.imageCount > 0 && <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{r.imageCount} screenshot{r.imageCount === 1 ? "" : "s"}</span>}
-        {r.text && (
+        {editing ? (
+          <div style={{ display: "grid", gap: 6, width: "100%" }}>
+            <textarea ref={editRef} className="cc-input" value={draft} autoFocus maxLength={MAX_TEXT}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); save(); } if (e.key === "Escape") setDraft(null); }}
+              style={{ fontSize: 16, lineHeight: 1.45, padding: "10px 12px", borderRadius: 14, resize: "none", width: "100%", boxSizing: "border-box", minHeight: 88, maxHeight: 320, border: "1px solid var(--violet)" }} />
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button type="button" onClick={() => setDraft(null)} className="cc-btn cc-btn-ghost" style={{ minHeight: 40, padding: "0 14px", fontSize: 14, borderRadius: 10 }}>Discard</button>
+              <button type="button" onClick={save} className="cc-btn cc-btn-primary" disabled={!draft.trim() && r.imageCount === 0} style={{ minHeight: 40, padding: "0 16px", fontSize: 14, fontWeight: 600, borderRadius: 10 }}>Save</button>
+            </div>
+          </div>
+        ) : r.text && (
           <div style={{ background: "var(--violet)", color: "var(--on-accent)", padding: "10px 14px", borderRadius: "18px 18px 6px 18px", fontSize: 16, lineHeight: 1.45, whiteSpace: "pre-wrap", overflowWrap: "anywhere", WebkitUserSelect: "text", userSelect: "text" }}>
             {r.text}
           </div>
@@ -355,7 +394,8 @@ function Bubble({ r, now, onZoom, onCancel, onRetry }: { r: FixRequest; now: num
         {r.status === "shipped" && r.startedAt && r.finishedAt && <span>· built in {elapsed(r.startedAt, r.finishedAt)}</span>}
         {r.status === "shipped" && r.commitSha && <span style={{ fontFamily: "var(--f-mono)" }}>· {r.commitSha.slice(0, 7)}</span>}
         <span style={{ flex: 1 }} />
-        {(r.status === "held" || r.status === "queued") && <button type="button" onClick={onCancel} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Cancel</button>}
+        {r.status === "held" && !editing && <button type="button" onClick={() => setDraft(r.text)} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Edit</button>}
+        {(r.status === "held" || r.status === "queued") && !editing && <button type="button" onClick={onCancel} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Cancel</button>}
         {(r.status === "failed" || r.status === "skipped") && <button type="button" onClick={onRetry} className="cc-btn cc-btn-ghost" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, borderRadius: 8 }}>Send again</button>}
       </div>
 

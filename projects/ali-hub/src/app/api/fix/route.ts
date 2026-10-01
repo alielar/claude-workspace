@@ -9,6 +9,8 @@
  *                     (nothing is built until Ali taps Ship now → /api/fix/ship flips held → queued)
  * PATCH             · {id, status, reply?, commitSha?, batchId?} · the worker's progress, the
  *                     page's cancel (held/queued → skipped) and retry (failed → held).
+ *                     {id, text} alone = Ali edits a WAITING message (held only · once released
+ *                     by Ship now the text is the Mac's and stays as it was sent).
  *                     shipped / failed → one push to every device.
  */
 
@@ -95,6 +97,16 @@ export async function PATCH(req: Request) {
   await ensureFixTables();
   const b = await req.json().catch(() => null);
   const id = Number(b?.id);
+  if (Number.isFinite(id) && b?.status === undefined && typeof b?.text === "string") {
+    const text = b.text.trim().slice(0, MAX_TEXT);
+    const [cur] = await db.select().from(fixRequests).where(and(eq(fixRequests.id, id), eq(fixRequests.userId, userId)));
+    if (!cur) return NextResponse.json({ error: "not found" }, { status: 404 });
+    if (cur.status !== "held") return NextResponse.json({ error: "already shipped" }, { status: 409 });
+    if (!text && parseImages(cur.images).length === 0) return NextResponse.json({ error: "empty" }, { status: 400 });
+    await db.update(fixRequests).set({ text, updatedAt: new Date() }).where(and(eq(fixRequests.id, id), eq(fixRequests.status, "held")));
+    const [row] = await db.select().from(fixRequests).where(eq(fixRequests.id, id));
+    return NextResponse.json({ request: toRequest(row, true) });
+  }
   const status = b?.status as FixStatus;
   if (!Number.isFinite(id) || !STATUSES.includes(status)) return NextResponse.json({ error: "id and a valid status required" }, { status: 400 });
   const [cur] = await db.select().from(fixRequests).where(and(eq(fixRequests.id, id), eq(fixRequests.userId, userId)));
