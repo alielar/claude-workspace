@@ -378,8 +378,9 @@ async function renderPlan() {
   const soon = Date.now() + 3 * 3600e3, dueAt = (i) => Date.parse(i.when_at || i.hub_next_at || 0) || 0;
   const act = open.filter((i) => i.kind !== 'ok' && i.kind !== 'wait');
   const endOfDay = new Date(); endOfDay.setHours(23, 59, 59, 999);
-  const todo = act.filter((i) => dueAt(i) && dueAt(i) <= soon).sort(byTime); // a deadline within 3 h wins over age
-  const later = act.filter((i) => !(dueAt(i) && dueAt(i) <= soon) && ((dueAt(i) && dueAt(i) <= endOfDay.getTime()) || i.recent)).sort(byTime);
+  const live = (i) => dueAt(i) && dueAt(i) >= Date.now() - 3600e3; // a date more than an hour in the past is stale, not urgent
+  const todo = act.filter((i) => live(i) && dueAt(i) <= soon).sort(byTime); // a deadline within 3 h wins over age
+  const later = act.filter((i) => !todo.includes(i) && ((live(i) && dueAt(i) <= endOfDay.getTime()) || i.recent)).sort(byTime);
   const older = act.filter((i) => !todo.includes(i) && !later.includes(i)).sort(byTime);
   const wait = open.filter((i) => i.kind === 'wait').sort(byTime), ok = open.filter((i) => i.kind === 'ok');
   app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Aujourd’hui <span class="muted small">${fmtDay(new Date().toISOString())}</span></h1><button id="replan" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Claude relit…' : 'Replanifier'}</button></header>
