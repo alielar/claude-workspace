@@ -4,7 +4,7 @@
  */
 
 import {
-  Sun, Newspaper, Settings, Dumbbell, ListChecks, Sparkles, HeartPulse,
+  Sun, Newspaper, Settings, Target, ListChecks, Sparkles, HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -12,7 +12,7 @@ const ICONS = {
   today:    Sun,
   news:     Newspaper,
   settings: Settings,
-  train:    Dumbbell,
+  train:    Target, // body and mind both, not a dumbbell (Ali 2026-09-30)
   todo:     ListChecks,
   alai:     Sparkles,
   health:   HeartPulse,
