@@ -8,9 +8,10 @@
 // ONE option only (Ali's rule, 2026-09-27): bubbles = the messages to send, in order; why = two lines
 // of reasoning. A second option is dropped.
 // --at HH:MM (Madrid) = the time to send (Ali, 2026-10-01: « when the time comes, not now », « on my today
-// planning, as a notification »): the draft stays hidden until 15 min before, a `followup` card goes on the
-// Today screen at that time (any open card of the lead for that day is replaced, and the day plan will not
-// re-judge the lead while this card is open), and the app pushes the reminder 10 min before.
+// planning, as a notification », « the draft shows on the conversation so I can modify it or send it »): the
+// draft is in the thread at once (editable, sendable), its push waits until 15 min before the time, a `followup`
+// card goes on the Today screen at that time (any open card of the lead for that day is replaced, and the day
+// plan will not re-judge the lead while this card is open), and the app pushes the reminder 10 min before.
 
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
@@ -56,6 +57,6 @@ if (sendAt) {
   const n = clean[0].bubbles.length;
   db.prepare(`INSERT INTO plan_items (wa_id, name, day, kind, state, at, when_at, title, why, action, hub_sig, bubbles, suggestion_id, pushed, reminded, updated_at)
     VALUES (?, ?, ?, 'followup', 'open', ?, ?, ?, ?, ?, 'manual', ?, ?, 1, 0, ?)`)
-    .run(waId, t?.name || null, day, now, sendAt, title || `Follow-up ${hm}, planned in chat`, clean[0].why.slice(0, 600), `Send the ${n} bubble${n > 1 ? 's' : ''} waiting in the thread (shown from ${madrid(new Date(showAt)).slice(11, 16)})`, JSON.stringify(clean[0].bubbles), suggestionId, now);
-  console.log(`Suggestion saved for ${t?.name || waId} — hidden until ${madrid(new Date(showAt)).slice(11, 16)} Madrid; follow-up card at ${hm} on the Today screen${replaced ? ` (replaces ${replaced} open card)` : ''}, reminder push 10 min before.`);
+    .run(waId, t?.name || null, day, now, sendAt, title || `Follow-up ${hm}, planned in chat`, clean[0].why.slice(0, 600), `Send the ${n} bubble${n > 1 ? 's' : ''} waiting in the thread, around ${hm}`, JSON.stringify(clean[0].bubbles), suggestionId, now);
+  console.log(`Suggestion saved for ${t?.name || waId} — in the thread now; push at ${madrid(new Date(showAt)).slice(11, 16)} Madrid; follow-up card at ${hm} on the Today screen${replaced ? ` (replaces ${replaced} open card)` : ''}, reminder push 10 min before.`);
 } else console.log(`Suggestion saved for ${t?.name || waId} — the phone will be notified within 10 s.`);

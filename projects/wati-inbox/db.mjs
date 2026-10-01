@@ -59,7 +59,7 @@ for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL 
 }
 // note = what Ali should know before sending; source = auto | ali (app button) | chat (Claude Code session)
 // instruction = what Ali typed to get this draft instead of the previous one (parent_id)
-// show_at = the draft stays hidden (no push, not on screen) until this instant: a message planned for later in the day (Ali, 2026-10-01)
+// show_at = the push for this draft waits until this instant (a message planned for later in the day); the draft itself is on screen at once (Ali, 2026-10-01)
 for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER', 'kind TEXT', 'moves TEXT', 'needs TEXT', 'show_at TEXT']) { // kind = draft | needs | skip (2026-09-30)
   try { db.exec(`ALTER TABLE suggestions ADD COLUMN ${col}`); } catch {}
 }
@@ -190,7 +190,7 @@ const humanRepliesAfter = (waId, iso) => Math.max(
 const laterSent = (id) => !!db.prepare(`SELECT 1 FROM sends WHERE kind = 'text' AND ok = 1 AND payload LIKE ? AND payload LIKE ? LIMIT 1`).get(`%"suggestionId":${id},%`, '%"part":"later"%');
 export function suggestionVisible(t, s, { laterScheduled = false } = {}) {
   if (!s || !t) return false;
-  if (s.show_at && s.show_at > new Date().toISOString()) return false; // planned for later today: not yet
+  // show_at only delays the push (Ali, 2026-10-01): the draft itself is in the thread at once, to edit or send from there.
   if (t.last_inbound_at && s.created_at < t.last_inbound_at) return false;
   // Ali often copies the bubbles one by one, edits and sends them himself (2026-10-01): the draft stays until as many
   // messages as it has bubbles have left (or he taps Handled); a two-step draft also waits for its second part.

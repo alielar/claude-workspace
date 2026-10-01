@@ -196,8 +196,10 @@ saved to `data/suggestions/<date>.md` with the moves for the evening review.
 - **In this chat**, a draft you give Ali can also be posted to his phone:
   `node suggest.mjs <waId> '[{"bubbles":["…","…"],"why":"…"}]'` — do it when Ali asks for it on
   the phone, or on `c`/`C` (one call per lead). A message planned for later in the day takes `--at HH:MM`
-  (Madrid): it stays hidden, no push and not on screen, until that time (Ali, 2026-10-01: « when the time
-  comes, not now »). Plan follow-up drafts appear 15 min before their `when` for the same reason. **One set of bubbles per suggestion, never two
+  (Madrid, the time to send) and optionally `--title "…"`: the draft is in the thread at once (Ali edits or
+  sends it from there), a `followup` card goes on the Today screen at that time, the push waits until 15 min
+  before and the reminder push comes 10 min before (Ali, 2026-10-01: « when the time comes, not now », « on my
+  today planning », « the draft shows on the conversation »). Always use `--at` for a message meant for later. **One set of bubbles per suggestion, never two
   options** (Ali's rule, 2026-09-27) — in the app and here. `node compare-sent.mjs <waId>` shows a
   suggestion next to what Ali actually sent.
 - **The app learns by itself** (since 2026-09-27): after every send from the app, the app
