@@ -39,7 +39,7 @@ Si le lead a répondu après le message d'Ali, ce jugement n'a pas lieu (l'app n
 - Style des bulles : vouvoiement, concis, naturel, pas de point final, pas de point-virgule, **jamais le prénom du lead**, au plus un emoji et jamais sur l'argent, une seule question, dans la dernière bulle. Empathie précise, jamais un « je comprends » nu.
 - Ne jamais reprocher un silence. Rouvrir avec du neuf (un appel de 5 min proposé, une précision utile, une prolongation).
 
-## Ce qu'Ali a refusé par le passé (« pas d'accord »)
+## Ce qu'Ali a fait autrement (« I did it differently » : la carte, puis ce qu'il a fait à la place)
 Ne reproduis pas ces jugements, ni des cas proches :
 {{dismissed}}
 
