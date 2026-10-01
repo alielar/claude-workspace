@@ -22,7 +22,7 @@ import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-
 import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus } from './hub-sync.mjs';
-import { startPlanning, plan as runPlan, planStatus, today as planToday } from './plan-engine.mjs';
+import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -143,6 +143,7 @@ async function api(req, res, path) {
     skip_steps: skip.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
   if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL });
+  if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Numéro manquant' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
   if (path === '/api/plan/run' && req.method === 'POST') { runPlan({ scope: 'all', reason: 'ali' }).catch(() => {}); return json(res, 200, { ok: true }); }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);
   if (pli && req.method === 'POST') {

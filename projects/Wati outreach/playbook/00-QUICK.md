@@ -22,7 +22,7 @@ Tout ce qu'il faut pour répondre à 90 % des cas. Le détail est dans `02-PLAYB
    réponse à la question de diagnostic), sauter les marches 2 et 3 et proposer directement ce palier (veille du 29/09)
 5. **Moins d'heures/semaine** (minimum 2h, le total d'heures ne bouge pas, la durée s'allonge)
 6. **Prolonger la deadline** (gratuit — toujours avant de lâcher un euro)
-7. **Démarrage plus tard** + la sanction : liste d'attente 10-12 mois, sans garantie
+7. **Démarrage plus tard** + la sanction : liste d'attente 10-12 mois, **sans garantie de date de démarrage** (toujours la formule complète, jamais « sans garantie de date »)
 8. **Acompte 196 €**, puis 96 € en seconde concession — **jamais l'inverse**
 9. **Formats de repli** (dernier cran) : 48h/583 €, 36h/434 €, **24h/294 €** (validé par Ali le 30/09, tous marchés) ;
    les autres anciens paliers (60h/737 €, 40h, 32h, 20h) datent de début 2026, confirmer avec Ali avant de les citer
@@ -103,7 +103,7 @@ redemande pas**.
 
 1 800 € / 180h avec la garantie B2 · 990 € / 90-96h · 4 fois = 450 €/mois · 10 fois = 180 €/mois · acompte 196 € puis 96 € ·
 rétractation 14 j **à partir du premier cours** — retenue = **196 € d'onboarding + les cours déjà organisés du mois 1** (toujours les deux) ·
-démarrage flexible, choisi après l'inscription (aucune date citée spontanément) · liste d'attente 10-12 mois · support étudiant +39 375 585 8639.
+démarrage flexible, choisi après l'inscription (aucune date citée spontanément) · liste d'attente 10-12 mois sans garantie de date de démarrage · support étudiant +39 375 585 8639.
 Suisse : mêmes montants en CHF.
 
 CPF : pas un moyen de paiement (société suisse) → **20 % d'heures en plus**, proportionnel au format

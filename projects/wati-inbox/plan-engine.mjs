@@ -47,11 +47,16 @@ function madridIso(s) {
 const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
 
 // Who matters today. reason: paused | due | finished | stale.
+// Leads Ali took out of the plan for good (state key plan_ignore, JSON list of wa_ids): e.g. Ilyes, a minor whose
+// mother decided not to buy (2026-10-01) — paused in the Hub indefinitely, never a card again.
+export const ignored = () => { try { return new Set(JSON.parse(getState('plan_ignore') || '[]')); } catch { return new Set(); } };
+export const ignore = (waId, on = true) => { const s = ignored(); on ? s.add(waId) : s.delete(waId); setState('plan_ignore', JSON.stringify([...s])); if (on) for (const i of openPlanItems(waId)) setPlanState(i.id, 'dismissed', 'Lead retiré du plan par Ali'); return [...s]; };
 export function candidates(now = Date.now()) {
   const out = [];
+  const skip = ignored();
   const dueBefore = new Date(now + 24 * 3600e3).toISOString();
   for (const r of hubLeadRows()) {
-    if (r.wa_id === TEST_NUMBER) continue;
+    if (r.wa_id === TEST_NUMBER || skip.has(r.wa_id)) continue;
     let reason = null;
     if (r.paused && ['TBC', 'IITF', 'CITF'].includes(r.status)) reason = 'paused';
     else if (r.status === 'TBC' && r.next_at && r.next_at <= dueBefore && r.next_at >= new Date(now - 60 * 60e3).toISOString()) reason = 'due';
