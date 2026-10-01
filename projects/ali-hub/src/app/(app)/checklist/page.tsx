@@ -27,11 +27,12 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ensureMigrate } from "@/lib/ensureMigrate";
 import type { ChecklistData, ChecklistItem, ItemKind, TimeOfDay } from "@/lib/checklist/types";
+import { EVENING_HOUR } from "@/lib/checklist/day";
 
 const TIMES: { key: TimeOfDay; label: string; hint: string }[] = [
   { key: "morning",   label: "Morning",   hint: "04–12" },
-  { key: "afternoon", label: "Afternoon", hint: "12–21" },
-  { key: "evening",   label: "Evening",   hint: "21–04" },
+  { key: "afternoon", label: "Afternoon", hint: "12–19" },
+  { key: "evening",   label: "Evening",   hint: "19–04" },
   { key: "anytime",   label: "Anytime",   hint: "" },
 ];
 const DAYS: { key: string; label: string }[] = [
@@ -52,11 +53,11 @@ const chip = (on: boolean): React.CSSProperties => ({
 
 type Draft = { title: string; timeOfDay: TimeOfDay; notes: string; kind: ItemKind; weekdays: string[]; atTime: string };
 
-/** Which part of the day an "HH:MM" falls in · Ali's clock (morning 04–12, afternoon 12–21, evening 21–04). */
+/** Which part of the day an "HH:MM" falls in · Ali's clock (morning 04–12, afternoon 12–19, evening 19–04). */
 function partOfTime(hhmm: string): TimeOfDay {
   const h = Number(hhmm.slice(0, 2));
   if (h >= 4 && h < 12) return "morning";
-  if (h >= 12 && h < 21) return "afternoon";
+  if (h >= 12 && h < EVENING_HOUR) return "afternoon";
   return "evening";
 }
 

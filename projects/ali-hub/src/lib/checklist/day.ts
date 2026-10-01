@@ -20,17 +20,20 @@ export function checklistToday(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: DAY_TZ }).format(adjusted);
 }
 
+/** The hour the evening starts · one number for Today, the editor and the server. */
+export const EVENING_HOUR = 19;
+
 export type DayPart = "morning" | "afternoon" | "evening";
 
 /**
- * Ali's clock: wakes ~07:30 (10:00 weekends), evening starts 21:00, sleeps ~23:30.
+ * Ali's clock: wakes ~07:30 (10:00 weekends), evening starts 19:00 (Ali 2026-10-01, was 21:00), sleeps ~23:30.
  *  morning   04:00–11:59
- *  afternoon 12:00–20:59
- *  evening   21:00–03:59
+ *  afternoon 12:00–18:59
+ *  evening   19:00–03:59
  */
 export function dayPart(now: Date = new Date()): DayPart {
   const h = madridHour(now);
   if (h >= 4 && h < 12) return "morning";
-  if (h >= 12 && h < 21) return "afternoon";
+  if (h >= 12 && h < EVENING_HOUR) return "afternoon";
   return "evening";
 }

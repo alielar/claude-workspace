@@ -13,10 +13,10 @@
  *   LOOSE ENDS · due to-dos with no time slot, each with Time (native wheel → today at that
  *                hour) and Tmrw →. The card DISAPPEARS when the list is empty — the empty space
  *                is the point ("it motivates me to keep the page clean").
- *   THE SPINE  · Morning 04–12 · Afternoon 12–21 · Evening 21–04 on a vertical time line;
+ *   THE SPINE  · Morning 04–12 · Afternoon 12–19 · Evening 19–04 on a vertical time line;
  *                routine steps and timed to-dos placed by the hour, past segments folded to one
  *                line, the current one outlined, a violet "now" line with the clock after it.
- *   TOMORROW   · one quiet folded line under the spine (Ali 2026-09-30): wake time, steps, to-dos;
+ *   TOMORROW   · a folded card under the spine (Ali 2026-09-30 · framed per part of day 2026-10-01): wake time, steps, to-dos;
  *                tap = the whole day in clock order, read-only except a to-do opens its sheet.
  *   Morning brief, then ONE highlight · listening and watching come after the day's actions.
  *
@@ -46,7 +46,7 @@ import { useCached, fetchJson, readCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ensureMigrate } from "@/lib/ensureMigrate";
 import { useOnline } from "@/lib/useOnline";
-import { checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
+import { EVENING_HOUR, checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
 import { itemColor, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
 import type { BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
@@ -113,7 +113,7 @@ function greeting(h: number): string {
 }
 
 const PART_TITLE: Record<DayPart, string> = { morning: "Morning", afternoon: "Afternoon", evening: "Evening" };
-const PART_HOURS: Record<DayPart, [string, string]> = { morning: ["04:00", "12:00"], afternoon: ["12:00", "21:00"], evening: ["21:00", "04:00"] };
+const PART_HOURS: Record<DayPart, [string, string]> = { morning: ["04:00", "12:00"], afternoon: ["12:00", "19:00"], evening: ["19:00", "04:00"] };
 const PART_ORDER: Record<DayPart, number> = { morning: 0, afternoon: 1, evening: 2 };
 const PARTS: DayPart[] = ["morning", "afternoon", "evening"];
 
@@ -128,7 +128,7 @@ function clock(d: Date): string {
 function partOfTime(hhmm: string): DayPart {
   const h = Number(hhmm.slice(0, 2));
   if (h >= 4 && h < 12) return "morning";
-  if (h >= 12 && h < 21) return "afternoon";
+  if (h >= 12 && h < EVENING_HOUR) return "afternoon";
   return "evening";
 }
 function nextFullHour(): string {
@@ -584,6 +584,7 @@ export default function TodayPage() {
       <style>{`
         .today-row:last-child { border-bottom: none !important; }
         .today-row > button:active:not(:disabled) { background: var(--fill-1); }
+        .today-tmrw-todo:active { background: var(--fill-2); }
       `}</style>
     </div>
   );
@@ -615,8 +616,9 @@ function TomorrowCard({ today, plan, todos, onOpen }: { today: string; plan: Mor
   const minOf = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
   // Clock order inside each part · untimed rows first in their part, "anytime" steps at the end.
   const partIdx = (p: DayPart | "anytime") => (p === "anytime" ? 3 : PART_ORDER[p]);
-  type R = { key: string; part: DayPart | "anytime"; min: number; time: string | null; title: string; todo?: Todo };
+  type R = { key: string; part: DayPart | "anytime"; min: number; time: string | null; title: string; todo?: Todo; wake?: boolean };
   const rows: R[] = [
+    ...(kind === "sunday" ? [] : [{ key: "wake", part: "morning" as const, min: minOf(wake), time: wake, title: "Wake up", wake: true }]),
     ...steps.map((i) => ({ key: `i${i.id}`, part: i.atTime ? partOfTime(i.atTime) : i.timeOfDay, min: i.atTime ? minOf(i.atTime) : -1, time: i.atTime ?? null, title: i.title })),
     ...due.map((t) => ({ key: t.clientId, part: (t.dueTime ? partOfTime(t.dueTime) : t.evening ? "evening" : "anytime") as DayPart | "anytime", min: t.dueTime ? minOf(t.dueTime) : -1, time: t.dueTime, title: t.title, todo: t })),
   ].sort((a, b) => partIdx(a.part) - partIdx(b.part) || a.min - b.min);
@@ -624,39 +626,54 @@ function TomorrowCard({ today, plan, todos, onOpen }: { today: string; plan: Mor
   const dayName = new Intl.DateTimeFormat("en-GB", { weekday: "long" }).format(new Date(tmrw + "T12:00:00"));
 
   if (!data && due.length === 0) return null;
+  const PART_RANGE: Record<DayPart | "anytime", string> = { morning: "04–12", afternoon: "12–19", evening: "19–04", anytime: "" };
   return (
-    <section className="cc-card" style={{ background: "transparent", borderStyle: "dashed" }}>
-      <button type="button" onClick={toggleOpen} aria-expanded={open}
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
-        <span style={{ minWidth: 0 }}>
-          <b style={{ fontWeight: 500, color: "var(--ink-2)" }}>Tomorrow</b> · {dayName}
-          {kind === "sunday" ? " · no times" : <> · wake <span style={{ fontFamily: "var(--f-mono)" }}>{wake}</span></>}
-          {` · ${steps.length} step${steps.length === 1 ? "" : "s"}`}
-          {due.length > 0 && ` · ${due.length} to-do${due.length === 1 ? "" : "s"}`}
+    <section className="cc-card">
+      <button type="button" onClick={toggleOpen} aria-expanded={open} className="cc-card-head"
+        style={{ width: "100%", minHeight: 52, background: "transparent", border: "none", font: "inherit", cursor: "pointer", textAlign: "left", color: "inherit" }}>
+        <span className="title">Tomorrow <span style={{ fontWeight: 400, color: "var(--ink-3)" }}>· {dayName}</span></span>
+        <span className="tail" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span className="tabular-nums">
+            {kind === "sunday" ? "no times" : <>wake <span style={{ fontFamily: "var(--f-mono)", color: "var(--ink-2)" }}>{wake}</span></>}
+            {due.length > 0 && ` · ${due.length} to-do${due.length === 1 ? "" : "s"}`}
+          </span>
+          <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "none" }}><polyline points="6 9 12 15 18 9" /></svg>
         </span>
-        <span aria-hidden>{open ? "▴" : "▾"}</span>
       </button>
       {open && (
-        <div style={{ padding: "0 16px 10px" }}>
+        <div className="cc-card-body" style={{ display: "grid", gap: 10, paddingTop: 2 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, fontSize: 13, color: "var(--ink-3)" }}>
+            <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--fill-1)" }}>{kind === "sunday" ? "Sunday · whenever" : isTraining ? "Training day" : "Rest day"}</span>
+            <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--fill-1)" }}>{steps.length} step{steps.length === 1 ? "" : "s"}</span>
+            {due.length > 0 && <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--accent-soft)", color: "var(--ink-2)" }}>{due.length} to-do{due.length === 1 ? "" : "s"}</span>}
+          </div>
           {groups.map((g) => (
-            <div key={g.p} style={{ paddingTop: 6 }}>
-              {kind !== "sunday" && <div style={{ fontSize: 12.5, color: "var(--ink-4)", padding: "4px 0" }}>{g.p === "anytime" ? "Anytime" : PART_TITLE[g.p]}</div>}
-              {g.rows.map((r) => {
+            <div key={g.p} style={{ borderRadius: 12, border: "1px solid var(--line)", background: "var(--fill-1)", overflow: "hidden" }}>
+              {kind !== "sunday" && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "8px 12px 6px", borderBottom: "1px solid var(--line)" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-2)" }}>{g.p === "anytime" ? "Anytime" : PART_TITLE[g.p]}</span>
+                  <span className="tabular-nums" style={{ fontSize: 12.5, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{PART_RANGE[g.p]}</span>
+                </div>
+              )}
+              {g.rows.map((r, i) => {
+                const last = i === g.rows.length - 1;
                 const line = (
                   <>
-                    <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-4)" }}>{kind === "sunday" ? "" : r.time ?? ""}</span>
-                    <span style={{ fontSize: 14.5, color: r.todo ? "var(--ink-2)" : "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.title}</span>
-                    <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>{r.todo ? (r.todo.area === "work" ? "Work" : "to-do") : ""}</span>
+                    <span className="tabular-nums" style={{ fontFamily: "var(--f-mono)", fontSize: 13.5, color: r.wake ? "var(--violet)" : r.time && kind !== "sunday" ? "var(--ink-3)" : "var(--ink-4)" }}>{kind !== "sunday" && r.time ? r.time : "·"}</span>
+                    <span style={{ fontSize: 15, color: r.todo ? "var(--ink)" : "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.title}</span>
+                    {r.todo
+                      ? <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--ink-3)" }}><span style={{ padding: "2px 8px", borderRadius: 99, border: "1px solid var(--line-hi)" }}>{r.todo.area === "work" ? "Work" : "Personal"}</span><span aria-hidden style={{ color: "var(--ink-4)" }}>›</span></span>
+                      : <span />}
                   </>
                 );
-                const style: React.CSSProperties = { display: "grid", gridTemplateColumns: "44px 1fr auto", gap: 10, alignItems: "center", width: "100%", minHeight: 36, padding: "4px 0", background: "transparent", border: "none", font: "inherit", textAlign: "left", color: "inherit" };
+                const style: React.CSSProperties = { display: "grid", gridTemplateColumns: "48px 1fr auto", gap: 10, alignItems: "center", width: "100%", minHeight: 44, padding: "0 12px", background: "transparent", border: "none", borderBottom: last ? "none" : "1px solid var(--line)", font: "inherit", textAlign: "left", color: "inherit" };
                 return r.todo
-                  ? <button key={r.key} type="button" onClick={() => onOpen(r.todo!)} style={{ ...style, cursor: "pointer", minHeight: 44 }}>{line}</button>
+                  ? <button key={r.key} type="button" className="today-tmrw-todo" onClick={() => onOpen(r.todo!)} style={{ ...style, cursor: "pointer" }}>{line}</button>
                   : <div key={r.key} style={style}>{line}</div>;
               })}
             </div>
           ))}
-          {groups.length === 0 && <div style={{ padding: "8px 0", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
+          {groups.length === 0 && <div style={{ padding: "8px 2px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
         </div>
       )}
     </section>

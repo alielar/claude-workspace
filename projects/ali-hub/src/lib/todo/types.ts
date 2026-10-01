@@ -371,7 +371,9 @@ export function bucketOf(t: Todo, today: string, isEveningNow: boolean): Bucket 
   // No date = Someday (the "Anytime" bucket was retired 2026-08-31).
   if (t.someday || !t.dueDate) return "someday";
   if (t.dueDate < today) return "overdue";
-  if (t.dueDate === today) return t.evening && !isEveningNow ? "evening" : "today";
+  // Evening = the flag or any time from 19:00 (Ali 2026-10-01), whichever way the time was set.
+  const evening = t.evening || (!!t.dueTime && t.dueTime >= "19:00");
+  if (t.dueDate === today) return evening && !isEveningNow ? "evening" : "today";
   if (t.dueDate === addDays(today, 1)) return "tomorrow";
   const eow = endOfWeek(today);
   if (t.dueDate <= eow) return "week";

@@ -130,6 +130,9 @@ async function ensureColumns() {
   // (completions move to the oldest row) and a UNIQUE index so it cannot happen again.
   for (const ddl of DEDUPE_ROUTINE_ROWS) { try { await db.run(sql.raw(ddl)); } catch { /* best-effort */ } }
 
+  // Evening starts at 19:00 (Ali 2026-10-01, was 21:00) · steps timed 19:00–20:59 move to the evening.
+  try { await db.run(sql.raw(`UPDATE checklist_items SET time_of_day = 'evening' WHERE at_time >= '19:00' AND at_time < '21:00' AND time_of_day <> 'evening'`)); } catch { /* best-effort */ }
+
   // Kettlebell → Saturdays (Ali, 2026-09-11) · fills only an unset schedule, so a
   // later manual change in Settings is never overwritten.
   try { await db.run(sql.raw(`UPDATE kb_workouts SET assigned_days = '["sat"]' WHERE key = 'kb1' AND assigned_days IS NULL`)); } catch { /* table may not exist yet */ }
