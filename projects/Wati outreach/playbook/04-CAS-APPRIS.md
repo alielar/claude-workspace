@@ -872,3 +872,10 @@ Règles permanentes, intégrées dans `00-QUICK.md` (bloc « Revue du 29/09 »),
 **Comment appliquer :** n/a
 
 <!-- consolidé jusqu'ici · 2026-10-01 22:24:09 -->
+
+## 2026-10-02 — Retour d'Andrin : relances courtes, au bon moment, un point par bulle
+**Situation :** retour d'Andrin sur nos relances autour d'une deadline à 20h, quand les automatisations du Hub sont en pause et qu'Ali relance à la main.
+**Ce que le lead a écrit :** n/a (règle d'équipe)
+**Ce que j'ai répondu :** n/a
+**Pourquoi :** (1) Soir de deadline : jamais de trou entre 19h et 21h ; lead silencieux → rappel court à 20h-20h30. (2) Lendemain, Hub en pause : le matin, un point clair (deadline passée, on peut peut-être encore l'intégrer aujourd'hui via l'administration, sinon sa place doit être libérée) ; sans réponse, un seul message ferme vers 18h30-19h, pas une série de questions ; ensuite plus rien sauf une vraie nouvelle ouverture. (3) Un point par bulle courte : répondre à la question, pas d'explication en plus, pas de réassurance répétée. (4) Besoin de temps → deux bulles : quand pourriez-vous décider (pour vérifier avec l'administration), puis questions restantes ou appel rapide. (5) Lead qui préfère attendre : prendre acte, dire la conséquence (liste d'attente 10 à 12 mois, sans garantie de date de démarrage), lui laisser le prochain contact — la deadline sert à faire décider un indécis, pas à presser quelqu'un qui a dit non.
+**Résultat :** règle d'équipe, appliquée dans 05-PRINCIPES §11/§11b et dans les consignes de l'app (brouillons + plan du jour)

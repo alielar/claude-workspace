@@ -19,7 +19,7 @@ The default path is three steps and nothing else:
 3. Answer.
 
 For deadline-extension phrasing, the exact downsell wording for the 90h/96h split, payment-question
-structure, or the deadline-day follow-up rhythm (14h/17h30/19h30), check
+structure, or the deadline-day follow-up rhythm (14h/17h30/20h-20h30, then next-morning status and one firm 18h30-19h update), check
 `playbook/05-PRINCIPES-conversation.md` — it's short, read it whenever one of those situations
 comes up, not just on request.
 

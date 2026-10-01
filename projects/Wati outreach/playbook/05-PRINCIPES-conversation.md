@@ -249,17 +249,42 @@ relancer tôt — vers 8h30, pas en fin de matinée.
 - ~14h : point initial / rappel doux de la deadline
 - ~17h-17h30 : relance clé, souvent le moment où les gens finissent le travail/les
   cours — **ce message ne doit jamais sauter**
-- ~19h-19h30 : dernier rappel avant la deadline
+- **20h00-20h30 : rappel court si le lead s'est tu** (Andrin, 2026-10-02) — jamais de trou
+  entre 19h et 21h le soir de la deadline. Une bulle ou deux, la deadline et une question.
 
-Exemples : 14h « Bonjour [prénom], une question avant qu'on finalise l'organisation
-aujourd'hui ? » · 17h30 « Bonjour [prénom], où ça en est ? On finalise l'organisation du
-jour un peu plus tard ce soir, besoin d'aide pour l'inscription ? » · 19h-19h30 « Petit
-rappel, on clôture l'organisation du jour dans peu de temps. Vous pouvez finaliser
-maintenant ? »
+Exemples : 14h « Bonjour, une question avant qu'on finalise l'organisation
+aujourd'hui ? » · 17h30 « Bonjour, où ça en est ? On finalise l'organisation du
+jour un peu plus tard ce soir, besoin d'aide pour l'inscription ? » · 20h-20h30 « Petit
+rappel, on clôture l'organisation du jour maintenant. Vous pouvez finaliser ? »
+
+**Le lendemain, quand les automatisations du Hub sont en pause et qu'Ali relance à la main**
+(Andrin, 2026-10-02) — séquence complète, rien de plus :
+1. **Le matin** (vers 8h30-9h30) : un point de situation, pas un long trou. La deadline est
+   passée, on le dit clairement : on peut peut-être encore l'intégrer aujourd'hui (via
+   l'administration), sinon sa place doit être libérée. Une question.
+2. **Sans réponse : un seul message ferme vers 18h30-19h** — le dernier point du jour, pas
+   une série de questions étalées sur la journée.
+3. **Ensuite, plus rien**, sauf une vraie nouvelle ouverture à proposer (une place qui se
+   libère, une nouvelle session, un format qui répond à son blocage).
+
+La deadline sert à faire décider un lead indécis, pas à presser quelqu'un qui a dit non ou
+qui préfère attendre. Celui-là : on prend acte de son choix, on dit la conséquence
+(liste d'attente de 10 à 12 mois, sans garantie de date de démarrage) et on lui laisse
+l'initiative du prochain contact.
 
 Ne pas envoyer une relance générique 15 minutes après un message substantiel — laisser un
 vrai délai, puis relancer avec quelque chose de pertinent (cohérent avec la règle
 CLAUDE.md « un seul message de pression par jour »).
+
+## 11b. Taille des messages (Andrin, 2026-10-02)
+
+**Un point par bulle courte.** Répondre à ce qui a été demandé, rien d'autre : pas
+d'explication en plus, pas de réassurance répétée, pas de détail que le lead n'a pas
+demandé.
+
+Quand un lead a besoin de plus de temps, deux messages courts :
+1. Lui demander **quand** il pourrait décider, pour qu'on vérifie avec l'administration.
+2. Lui demander s'il reste des questions, ou proposer un appel rapide.
 
 ## 12. Positionnement : moi / le lead / l'administration
 
