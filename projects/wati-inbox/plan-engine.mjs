@@ -50,7 +50,7 @@ const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
 // Leads Ali took out of the plan for good (state key plan_ignore, JSON list of wa_ids): e.g. Ilyes, a minor whose
 // mother decided not to buy (2026-10-01) — paused in the Hub indefinitely, never a card again.
 export const ignored = () => { try { return new Set(JSON.parse(getState('plan_ignore') || '[]')); } catch { return new Set(); } };
-export const ignore = (waId, on = true) => { const s = ignored(); on ? s.add(waId) : s.delete(waId); setState('plan_ignore', JSON.stringify([...s])); if (on) for (const i of openPlanItems(waId)) setPlanState(i.id, 'dismissed', 'Lead retiré du plan par Ali'); return [...s]; };
+export const ignore = (waId, on = true) => { const s = ignored(); on ? s.add(waId) : s.delete(waId); setState('plan_ignore', JSON.stringify([...s])); if (on) for (const i of openPlanItems(waId)) setPlanState(i.id, 'dismissed', 'Lead removed from the plan by Ali'); return [...s]; };
 export function candidates(now = Date.now()) {
   const out = [];
   const skip = ignored();
@@ -109,7 +109,7 @@ function leadBlock(c) {
 }
 
 // The CITF reasons the Hub knows (seen in /leads): each one starts its own template set.
-export const CITF_CASES = { payment: 'paiement plus tard', payment_month: 'paiement le mois prochain', more_time: 'besoin de temps', general_later: 'plus tard, sans raison précise' };
+export const CITF_CASES = { payment: 'will pay later', payment_month: 'pays next month', more_time: 'needs time', general_later: 'later, no specific reason' };
 const SCHEMA = { type: 'object', properties: {
   items: { type: 'array', items: { type: 'object', properties: {
     waId: { type: 'string' }, kind: { type: 'string', enum: ['pause', 'followup', 'resume', 'wait', 'fix', 'ok'] }, when: { type: 'string' }, title: { type: 'string' }, why: { type: 'string' }, action: { type: 'string' },
@@ -148,13 +148,13 @@ function store(c, it) {
   const label = (t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; };
   if (pauseScope === 'next' && !skip.length) { const n = realNext(c); skip.push(n ? n.template : c.next_tpl); }
   const skipLabel = skip.map((t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; });
-  const actionBits = [pauseScope === 'all' ? 'Hub : pause complète' : pauseScope === 'next' ? `Hub : décocher ${skipLabel.join(' et ')}, le reste part normalement` : kind === 'resume' ? `Hub : lever la pause${skip.length ? `, décocher ${skip.map(label).join(', ')}` : ''}${keep.length ? `, laisser ${keep.map(label).join(', ')}` : ''}` : '', String(it.action || '').trim()];
+  const actionBits = [pauseScope === 'all' ? 'Hub: full pause' : pauseScope === 'next' ? `Hub: untick ${skipLabel.join(' and ')}, the rest goes out normally` : kind === 'resume' ? `Hub: lift the pause${skip.length ? `, untick ${skip.map(label).join(', ')}` : ''}${keep.length ? `, keep ${keep.map(label).join(', ')}` : ''}` : '', String(it.action || '').trim()];
   // IITF is retired (Ali, 2026-10-01): a lead who comes back later is CITF with a reason and a date.
   const hubStatus = it.hubStatus === 'IITF' ? 'CITF' : it.hubStatus;
-  if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Statut Hub : ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
+  if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Hub status: ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
   let suggestionId = null;
   if (bubbles.length) { // the draft becomes a normal suggestion in the thread: editable, sendable, learned from
-    suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Plan du jour : ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [] });
+    suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Today’s plan: ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [] });
     markSuggestionPushed(suggestionId);
   }
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
@@ -187,7 +187,7 @@ export async function plan({ scope = 'due', reason = 'auto', dry = false, only =
     status.last = { at: new Date().toISOString(), judged, scope, summary: summaries.join(' ').slice(0, 400) };
     setState('plan_last', JSON.stringify(status.last));
     status.state = 'idle';
-    if (judged && scope === 'all') { const c = planCounts(today()); await pushAll({ title: 'Plan du jour prêt', body: `${c.todo} à régler dans le Hub · ${c.followups} relance(s) · ${c.waits} à attendre · ${c.oks} template(s) qui collent`, tag: 'plan', url: '/plan' }); for (const i of unpushedPlanItems()) markPlanPushed(i.id); }
+    if (judged && scope === 'all') { const c = planCounts(today()); await pushAll({ title: 'Today’s plan is ready', body: `${c.todo} to handle in the Hub · ${c.followups} follow-up(s) · ${c.waits} waiting · ${c.oks} template(s) fine`, tag: 'plan', url: '/plan' }); for (const i of unpushedPlanItems()) markPlanPushed(i.id); }
     return status.last;
   } finally { running = false; status.state = 'idle'; }
 }
@@ -198,11 +198,11 @@ async function pushes() {
   const h = Number(madrid().slice(11, 13));
   if (h < FROM_H || h >= TO_H) return;
   for (const i of unpushedPlanItems()) {
-    if (i.kind === 'pause' || i.kind === 'fix' || i.kind === 'resume') await pushAll({ title: `${i.kind === 'pause' ? (i.pause_scope === 'next' ? 'Template à décocher' : 'Pause complète') : i.kind === 'resume' ? 'Reprendre l’automatisation' : 'À vérifier'} · ${i.name || i.wa_id}`, body: `${i.title}${i.hub_next_at ? `. ${i.hub_next} à ${fmtHM(i.hub_next_at)}` : ''}`, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
+    if (i.kind === 'pause' || i.kind === 'fix' || i.kind === 'resume') await pushAll({ title: `${i.kind === 'pause' ? (i.pause_scope === 'next' ? 'Template to untick' : 'Full pause') : i.kind === 'resume' ? 'Resume automation' : 'To check'} · ${i.name || i.wa_id}`, body: `${i.title}${i.hub_next_at ? `. ${i.hub_next} at ${fmtHM(i.hub_next_at)}` : ''}`, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
     markPlanPushed(i.id);
   }
   for (const i of dueReminders(new Date(Date.now() + 10 * 60e3).toISOString())) {
-    if (i.kind === 'followup' && i.day === today()) await pushAll({ title: `Relance ${fmtHM(i.when_at)} · ${i.name || i.wa_id}`, body: i.title, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
+    if (i.kind === 'followup' && i.day === today()) await pushAll({ title: `Follow-up ${fmtHM(i.when_at)} · ${i.name || i.wa_id}`, body: i.title, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
     markPlanReminded(i.id);
   }
 }

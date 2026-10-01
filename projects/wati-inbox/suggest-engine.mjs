@@ -64,7 +64,7 @@ export const suggestStatus = (waId) => status.get(waId) || null;
 export function requestSuggestion(waId, direction = {}) {
   const d = describeDirection(direction, getOffer(waId), currencyFor(getThread(waId)?.country));
   queue.set(waId, { direction, text: d.text || (direction.auto ? 'auto' : '') });
-  status.set(waId, { state: 'queued', at: new Date().toISOString(), direction: d.text || 'Claude choisit' });
+  status.set(waId, { state: 'queued', at: new Date().toISOString(), direction: d.text || 'Claude chooses' });
   return true;
 }
 
@@ -115,7 +115,7 @@ export async function draft(waId, direction = {}) {
   const d = describeDirection(direction, offer, cur);
   const auto = !d.moves.length && !String(direction.instruction || '').trim();
   const instruction = d.text;
-  status.set(waId, { state: 'drafting', at: new Date().toISOString(), direction: instruction || 'Claude choisit' });
+  status.set(waId, { state: 'drafting', at: new Date().toISOString(), direction: instruction || 'Claude chooses' });
   log('drafting for', t.name || waId, instruction ? `— ${instruction}` : '(sans cap)');
   // The draft Ali is replacing, if one is on screen: Claude must see what he did not send.
   const prev = latestSuggestion(waId);
@@ -158,7 +158,7 @@ export async function draft(waId, direction = {}) {
   const why = String(out.why || out.options?.[0]?.why || '').trim();
   const note = String(out.note || '').trim();
   const source = direction.auto ? 'auto' : 'ali';
-  const label = auto ? (chosen.length ? `Claude : ${chosen.map((m) => MOVES.find((x) => x.id === m).label).join(' · ')}` : '') : instruction;
+  const label = auto ? (chosen.length ? `Claude: ${chosen.map((m) => MOVES.find((x) => x.id === m).label).join(' · ')}` : '') : instruction;
   if (direction.dry) { log(`dry run for ${t.name || waId}: ${bubbles.length} bulle(s), ${Math.round(out.ms / 1000)} s`); return { dry: true, bubbles, later: out.later, why, note, needs, skip, moves: chosen, ms: out.ms }; }
   if ((needs || skip) && !bubbles.length) {
     // Not a draft: Claude asks Ali for one thing (needs) or says the message calls for no reply (skip).

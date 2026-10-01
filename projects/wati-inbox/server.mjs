@@ -65,9 +65,9 @@ function scheduleSend(waId, bubbles, meta, delayMs) {
   const timer = setTimeout(async () => {
     scheduled.delete(waId);
     const t = storedThread(waId);
-    if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, 'fenêtre fermée au moment de l’envoi différé'); return; }
+    if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, 'window closed at the time of the delayed send'); return; }
     try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
-    catch (e) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, e.message); sending.set(waId, { sent: 0, total: bubbles.length, error: `Envoi différé raté : ${e.message}` }); setTimeout(() => sending.delete(waId), 90_000); return; }
+    catch (e) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, e.message); sending.set(waId, { sent: 0, total: bubbles.length, error: `Delayed send failed: ${e.message}` }); setTimeout(() => sending.delete(waId), 90_000); return; }
     saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
     if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
     else sendRest(waId, t, bubbles, meta);
@@ -111,7 +111,7 @@ function tbcInfo(waId) {
 async function api(req, res, path) {
   if (path === '/api/login' && req.method === 'POST') {
     const b = await body(req);
-    if (String(b.password || '') !== PASSWORD) return json(res, 401, { error: 'Mot de passe incorrect' });
+    if (String(b.password || '') !== PASSWORD) return json(res, 401, { error: 'Wrong password' });
     setCookie(res);
     return json(res, 200, { ok: true });
   }
@@ -143,14 +143,14 @@ async function api(req, res, path) {
     skip_steps: stepsOf(skip), keep_steps: stepsOf(keep),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
   if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL });
-  if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Numéro manquant' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
+  if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Missing number' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
   if (path === '/api/plan/run' && req.method === 'POST') { runPlan({ scope: 'all', reason: 'ali' }).catch(() => {}); return json(res, 200, { ok: true }); }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);
   if (pli && req.method === 'POST') {
     const b = await body(req); const i = planItemById(Number(pli[1]));
-    if (!i) return json(res, 404, { error: 'Carte inconnue' });
+    if (!i) return json(res, 404, { error: 'Unknown card' });
     const state = ['done', 'dismissed', 'open'].includes(b.state) ? b.state : null;
-    if (!state) return json(res, 400, { error: 'État inconnu' });
+    if (!state) return json(res, 400, { error: 'Unknown state' });
     setPlanState(i.id, state, b.note ? String(b.note).slice(0, 300) : null);
     return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
   }
@@ -208,7 +208,7 @@ async function api(req, res, path) {
   }
   if (action === 'refresh') { await refreshThread(waId, storedThread(waId)?.name, { notify: false }); return json(res, 200, { ok: true }); }
   if (action === 'suggest') {
-    if (!storedThread(waId)) return json(res, 404, { error: 'Conversation inconnue' });
+    if (!storedThread(waId)) return json(res, 404, { error: 'Unknown conversation' });
     const b = req.method === 'POST' ? await body(req) : {};
     const direction = { moves: Array.isArray(b.moves) ? b.moves.map(String) : [], level: String(b.level || ''), level2: String(b.level2 || ''), until: String(b.until || '').trim(), instruction: String(b.instruction || '').trim() };
     if (!direction.moves.length && !direction.instruction) direction.auto = true; // nothing chosen: Claude picks the moves
@@ -227,10 +227,10 @@ async function api(req, res, path) {
   if (action === 'tbc' && req.method === 'POST') {
     const b = await body(req);
     const a = tbcAlertById(Number(b.id));
-    if (!a || a.wa_id !== waId) return json(res, 404, { error: 'Alerte inconnue' });
+    if (!a || a.wa_id !== waId) return json(res, 404, { error: 'Unknown alert' });
     if (b.action === 'paused' && a.state === 'open') setTbcAlertState(a.id, 'paused');
     else if (b.action === 'ignore' && (a.state === 'open' || a.state === 'paused')) setTbcAlertState(a.id, 'ignored');
-    else return json(res, 400, { error: 'Action impossible dans cet état' });
+    else return json(res, 400, { error: 'Action not possible in this state' });
     return json(res, 200, { ok: true, tbc: tbcInfo(waId) });
   }
   if (action === 'mute') { const b = await body(req); setMuted(waId, !!b.muted); return json(res, 200, { ok: true }); }
@@ -238,10 +238,10 @@ async function api(req, res, path) {
   if (action === 'send' && req.method === 'POST') {
     const b = await body(req);
     const bubbles = (b.bubbles || []).map((s) => String(s).trim()).filter(Boolean);
-    if (!bubbles.length) return json(res, 400, { error: 'Message vide' });
+    if (!bubbles.length) return json(res, 400, { error: 'Empty message' });
     const t = storedThread(waId);
-    if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) return json(res, 409, { error: 'Fenêtre de 24h fermée — utilisez un template' });
-    if (sending.has(waId) && !sending.get(waId).error) return json(res, 409, { error: 'Envoi en cours pour ce lead — attendez que les bulles soient parties' });
+    if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) return json(res, 409, { error: '24h window closed. Use a template' });
+    if (sending.has(waId) && !sending.get(waId).error) return json(res, 409, { error: 'Sending in progress for this lead. Wait until the bubbles are out' });
     // What was on screen when Ali sent: the fresh suggestion (even if he typed his own text), so the
     // learning step can compare. edited is recomputed here from the real bubbles.
     const shown = latestSuggestion(waId);
@@ -254,7 +254,7 @@ async function api(req, res, path) {
     const meta = ref ? { suggestionId: ref, option: b.option ?? 0, part, edited: !same, fromSuggestion: !!b.suggestionId, batch: String(Date.now()) } : { batch: String(Date.now()) };
     // A follow-up from a Sales Hub alert card only leaves once Ali confirmed the pause there.
     const alert = b.alertId ? tbcAlertById(Number(b.alertId)) : null;
-    if (alert && alert.wa_id === waId) { if (alert.state !== 'paused') return json(res, 409, { error: 'Confirmez d’abord la pause dans le Sales Hub' }); meta.alertId = alert.id; }
+    if (alert && alert.wa_id === waId) { if (alert.state !== 'paused') return json(res, 409, { error: 'Confirm the pause in the Sales Hub first' }); meta.alertId = alert.id; }
     const delayMs = Math.min(20 * 60_000, Math.max(0, Number(b.delayMs) || 0));
     if (delayMs) { scheduleSend(waId, bubbles, meta, delayMs); return json(res, 200, { ok: true, scheduled: new Date(Date.now() + delayMs).toISOString() }); }
     // First bubble right away, so a refusal (window closed, Wati down) comes back to the screen.
@@ -270,7 +270,7 @@ async function api(req, res, path) {
   if (action === 'template' && req.method === 'POST') {
     const b = await body(req);
     const tpl = (await frenchTemplates()).find((x) => x.name === b.template);
-    if (!tpl) return json(res, 400, { error: 'Template inconnu ou non approuvé' });
+    if (!tpl) return json(res, 400, { error: 'Unknown or unapproved template' });
     const params = Object.fromEntries(tpl.params.map((p) => [p, String(b.params?.[p] ?? '')]));
     const t = storedThread(waId);
     const sentAt = Date.now();
@@ -286,7 +286,7 @@ async function api(req, res, path) {
     const failed = status === 'FAILED';
     logSend(waId, 'template', { template: tpl.name, params, status }, !failed, failed ? status : null);
     refreshThread(waId, t?.name, { notify: false }).catch(() => {});
-    if (failed) return json(res, 502, { error: `Meta a refusé le template ${tpl.name} — voir le détail dans la conversation` });
+    if (failed) return json(res, 502, { error: `Meta refused the template ${tpl.name}. See the detail in the conversation` });
     const alert = b.alertId ? tbcAlertById(Number(b.alertId)) : null; // follow-up sent as a template from a Sales Hub card
     if (alert && alert.wa_id === waId && alert.state === 'paused') setTbcAlertState(alert.id, 'sent');
     saveThread({ ...(t || { wa_id: waId, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${tpl.name}]` });

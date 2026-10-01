@@ -118,7 +118,7 @@ async function pushSuggestions() {
     if (!suggestionVisible(storedThread(s.wa_id), s)) { markSuggestionPushed(s.id); continue; }
     // The notification is the lead's message; the title says what is waiting on screen.
     const who = s.name || s.wa_id;
-    const title = kind === 'needs' ? `${who} · Claude a une question` : kind === 'skip' ? `${who} · pas de réponse à envoyer` : `${who} · réponse prête`;
+    const title = kind === 'needs' ? `${who} · Claude has a question` : kind === 'skip' ? `${who} · no reply needed` : `${who} · reply ready`;
     const body = waitingText(s.wa_id) || (kind === 'needs' ? (s.needs || '').slice(0, 160) : '');
     await pushAll({ title, body, tag: `wati-${s.wa_id}`, url: `/t/${s.wa_id}` });
     markSuggestionPushed(s.id);

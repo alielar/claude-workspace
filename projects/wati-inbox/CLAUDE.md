@@ -58,6 +58,9 @@ node --check server.mjs && launchctl kickstart -k gui/$(id -u)/com.ali.wati-inbo
 Then commit and push. Test a draft from the terminal with
 `node --env-file=.env suggest-engine.mjs <waId>`.
 
+## Language
+Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
+
 ## What is forbidden
 - Never call `sendText` / `sendTemplate` from a script or a test: the app sends only when Ali taps
   in it. Ali's own number `34695064884` is the test thread.
