@@ -1,11 +1,15 @@
 /**
  * ALAI dictation · the microphone → live text (2026-10-01).
  *
- * Main path = Deepgram live (nova-3, the key Mental Training already uses): the phone streams
- * 16 kHz audio over a WebSocket opened with a 60 s token from POST /api/fix/dictate (the key itself
- * never reaches the phone) and gets words back while Ali speaks, a phrase being spoken (`interim`)
- * replaced until it is final. Fallback = the browser's own speech recognition when the token
- * route answers no (key missing) · Chrome / Safari on the laptop, Safari on the phone.
+ * Three ways, tried in this order, all on the Deepgram key Mental Training already uses:
+ *   1 LIVE · the phone streams 16 kHz audio over a WebSocket opened with a 60 s token from
+ *     POST /api/fix/dictate (the key never reaches the phone) and gets words back while Ali speaks
+ *     (`interim` = the phrase being spoken, replaced until final). Needs a key allowed to grant
+ *     tokens; the current one is refused (403), so today the app runs on 2.
+ *   2 PHRASE · the same audio, cut at every short pause (a level detector: ~0.45 s of quiet after
+ *     speech, or 12 s at most), each phrase sent as WAV to POST /api/fix/dictate?phrase=1 and its
+ *     text appended in order · words land about a second after each pause, "…" while speaking.
+ *   3 the browser's own recogniser, only where the page cannot record audio at all.
  *
  * Runs outside React (module singleton, state in `store.ts`), so it keeps listening while Ali
  * moves to another tab. A dropped socket reconnects with a fresh token; audio said meanwhile is
@@ -24,6 +28,10 @@ const DG_URL = `wss://api.deepgram.com/v1/listen?${new URLSearchParams({
 type Session = {
   stream: MediaStream; ctx: AudioContext; proc: ScriptProcessorNode; src: MediaStreamAudioSourceNode;
   ws: WebSocket | null; pending: ArrayBuffer[]; retries: number; closing: boolean;
+  mode: "live" | "phrase";
+  // phrase mode
+  bufs: ArrayBuffer[]; speechMs: number; quietMs: number; durMs: number; floor: number;
+  chain: Promise<void>; inFlight: number;
 };
 let cur: Session | null = null;
 let browser: { rec: BrowserRecognition; on: boolean } | null = null;
@@ -48,6 +56,56 @@ function downsample(input: Float32Array, from: number): ArrayBuffer {
   }
   return out.buffer;
 }
+
+// ── 2 · phrase by phrase ─────────────────────────────────────────────────────
+
+function wav(bufs: ArrayBuffer[]): Blob {
+  const len = bufs.reduce((n, b) => n + b.byteLength, 0);
+  const h = new DataView(new ArrayBuffer(44));
+  const str = (o: number, t: string) => { for (let i = 0; i < t.length; i++) h.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, "RIFF"); h.setUint32(4, 36 + len, true); str(8, "WAVE"); str(12, "fmt ");
+  h.setUint32(16, 16, true); h.setUint16(20, 1, true); h.setUint16(22, 1, true);
+  h.setUint32(24, RATE, true); h.setUint32(28, RATE * 2, true); h.setUint16(32, 2, true); h.setUint16(34, 16, true);
+  str(36, "data"); h.setUint32(40, len, true);
+  return new Blob([h.buffer, ...bufs], { type: "audio/wav" });
+}
+
+/** Sends the phrase gathered so far · its text is appended once every earlier phrase has landed. */
+function flushPhrase(s: Session) {
+  const bufs = s.bufs, spoke = s.speechMs >= 250;
+  s.bufs = []; s.speechMs = 0; s.quietMs = 0; s.durMs = 0;
+  if (!spoke) return;
+  s.inFlight++;
+  const ask = fetch("/api/fix/dictate?phrase=1", { method: "POST", body: wav(bufs), cache: "no-store" })
+    .then(async (r) => (r.ok ? ((await r.json()) as { text?: string }).text ?? "" : ""))
+    .catch(() => "");
+  s.chain = s.chain.then(async () => {
+    const text = await ask;
+    s.inFlight--;
+    const d = getDict();
+    setDict({ final: joinText(d.final, text), interim: s.inFlight > 0 || s.speechMs > 0 ? "…" : "" });
+  });
+}
+
+/** One audio frame in phrase mode: a level detector decides where a phrase ends. */
+function phraseFrame(s: Session, input: Float32Array, buf: ArrayBuffer, rate: number) {
+  const ms = (input.length / rate) * 1000;
+  let sum = 0;
+  for (let i = 0; i < input.length; i++) sum += input[i] * input[i];
+  const rms = Math.sqrt(sum / input.length);
+  const speaking = rms > Math.max(0.012, s.floor * 2.5);
+  if (!speaking) s.floor = s.floor * 0.98 + rms * 0.02;
+  s.bufs.push(buf); s.durMs += ms;
+  if (speaking) {
+    if (s.speechMs === 0 && getDict().interim !== "…") setDict({ interim: "…" });
+    s.speechMs += ms; s.quietMs = 0;
+  } else s.quietMs += ms;
+  // Nothing said yet · keep only a short lead-in, so a phrase never starts with long silence.
+  if (s.speechMs === 0) { while (s.bufs.length > 4) s.bufs.shift(); s.durMs = Math.min(s.durMs, 4 * ms); return; }
+  if ((s.quietMs >= 450 && s.durMs >= 800) || s.durMs >= 12000) flushPhrase(s);
+}
+
+// ── 1 · live ─────────────────────────────────────────────────────────────────
 
 async function token(): Promise<string | null> {
   try {
@@ -104,6 +162,11 @@ function teardown(s: Session) {
 
 function finish(s: Session) {
   teardown(s);
+  if (s.mode === "phrase") {
+    flushPhrase(s);
+    void s.chain.then(() => { setDict({ interim: "" }); commit(); });
+    return;
+  }
   commit();
 }
 
@@ -112,6 +175,11 @@ export async function startDictation(): Promise<void> {
   if (cur || browser) return;
   setDict({ status: "connecting", final: "", interim: "", error: null, startedAt: Date.now() });
   registerStopper(stopListening);
+  // 3 · no way to record audio here (very old browser) · the browser's own recogniser, if any.
+  if (!navigator.mediaDevices?.getUserMedia || typeof window.AudioContext === "undefined") {
+    if (!startBrowser()) commit("Dictation is not available in this browser");
+    return;
+  }
   // Created inside the tap, before any await: iOS refuses an AudioContext started later.
   const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ctx = new Ctx();
@@ -126,11 +194,16 @@ export async function startDictation(): Promise<void> {
   if (ctx.state === "suspended") await ctx.resume().catch(() => {});
   const src = ctx.createMediaStreamSource(stream);
   const proc = ctx.createScriptProcessor(4096, 1, 1);
-  const s: Session = { stream, ctx, proc, src, ws: null, pending: [], retries: 0, closing: false };
+  const s: Session = {
+    stream, ctx, proc, src, ws: null, pending: [], retries: 0, closing: false, mode: "live",
+    bufs: [], speechMs: 0, quietMs: 0, durMs: 0, floor: 0.004, chain: Promise.resolve(), inFlight: 0,
+  };
   cur = s;
   proc.onaudioprocess = (e) => {
-    const buf = downsample(e.inputBuffer.getChannelData(0), ctx.sampleRate);
+    const input = e.inputBuffer.getChannelData(0);
+    const buf = downsample(input, ctx.sampleRate);
     e.outputBuffer.getChannelData(0).fill(0);
+    if (s.mode === "phrase") { phraseFrame(s, input, buf, ctx.sampleRate); return; }
     if (s.ws && s.ws.readyState === WebSocket.OPEN) s.ws.send(buf);
     else { s.pending.push(buf); if (s.pending.length > 32) s.pending.shift(); }
   };
@@ -138,9 +211,11 @@ export async function startDictation(): Promise<void> {
   stream.getAudioTracks()[0]?.addEventListener("ended", () => { if (cur === s) stopListening(); });
 
   if (await openSocket(s)) return;
-  // No live service (key missing or refused) · the browser's own recogniser, when there is one.
-  teardown(s);
-  if (!startBrowser()) commit("Dictation is not available · the speech service did not answer");
+  if (s !== cur || s.closing) return;
+  // Live tokens refused · the same microphone, phrase by phrase. What was said while asking is kept.
+  s.mode = "phrase";
+  for (const b of s.pending.splice(0)) { const i16 = new Int16Array(b); phraseFrame(s, Float32Array.from(i16, (v) => v / 0x8000), b, RATE); }
+  setDict({ status: "live" });
 }
 
 /** Stop: the last phrase is flushed (Deepgram "Finalize"), then the socket closes and the text joins the draft. */
@@ -148,6 +223,7 @@ export function stopListening() {
   if (browser) { browser.on = false; try { browser.rec.stop(); } catch { /* ended */ } return; }
   const s = cur;
   if (!s) { commit(); return; }
+  if (s.mode === "phrase") { setDict({ status: "stopping" }); s.closing = true; finish(s); return; }
   setDict({ status: "stopping" });
   s.closing = true;
   s.proc.onaudioprocess = null;
