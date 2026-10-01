@@ -16,6 +16,8 @@
  *   THE SPINE  · Morning 04–12 · Afternoon 12–21 · Evening 21–04 on a vertical time line;
  *                routine steps and timed to-dos placed by the hour, past segments folded to one
  *                line, the current one outlined, a violet "now" line with the clock after it.
+ *   TOMORROW   · one quiet folded line under the spine (Ali 2026-09-30): wake time, steps, to-dos;
+ *                tap = the whole day in clock order, read-only except a to-do opens its sheet.
  *   Morning brief, then ONE highlight · listening and watching come after the day's actions.
  *
  * Tapping a to-do anywhere here opens the SAME task sheet as /todo (../todo/sheet), so time and
@@ -55,7 +57,8 @@ import { useBirthdays } from "@/lib/birthdays/useBirthdays";
 import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
 import { parseMorningPlan, computeMorning, dayKindOf, shiftHM, type DayKind, type MorningPlan } from "@/lib/morning/plan";
 import { useOverview } from "@/lib/train/useTrain";
-import { addDays, fmtDue, sortTodos, type Todo } from "@/lib/todo/types";
+import { addDays, fmtDue, isSleeping, sortTodos, type Todo } from "@/lib/todo/types";
+import { dayCode } from "@/lib/train/types";
 import { Sheet } from "../todo/sheet";
 
 // ─── One highlight suggestion (News keeps the rest) ──────────────────────────
@@ -561,6 +564,8 @@ export default function TodayPage() {
 
       {renderSpine()}
 
+      <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} />
+
       {/* Morning brief at the BOTTOM, just above the highlight (Ali 2026-09-14 night: once heard it
           must not sit on top · the day's actions come first, listening and watching last). */}
       <PodcastCard today={today} />
@@ -579,6 +584,80 @@ export default function TodayPage() {
         .today-row > button:active:not(:disabled) { background: var(--fill-1); }
       `}</style>
     </div>
+  );
+}
+
+/** Tomorrow at a glance (Ali 2026-09-30) · folded to one quiet line, tap = the day in clock order.
+ * Routine rows come from the editor's `checklist-all` copy (every weekday's rows), filtered to
+ * tomorrow's weekday and shifted / untimed the same way Today does it. */
+function TomorrowCard({ today, plan, todos, onOpen }: { today: string; plan: MorningPlan; todos: Todo[]; onOpen: (t: Todo) => void }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    try { setOpen(localStorage.getItem("cc-today-tomorrow-open") === "1"); } catch { /* ignore */ }
+  }, []);
+  const toggleOpen = () => setOpen((o) => { try { localStorage.setItem("cc-today-tomorrow-open", o ? "0" : "1"); } catch { /* ignore */ } return !o; });
+  const { data } = useCached<ChecklistData>("checklist-all", () => fetchJson<ChecklistData>("/api/checklist?all=1"));
+  const { data: ov } = useOverview();
+  const tmrw = addDays(today, 1);
+  const kind = dayKindOf(tmrw);
+  const code = dayCode(tmrw);
+  const steps = dayItems(
+    (data?.items ?? []).filter((i) => i.source !== "workout" && (!i.startDate || i.startDate <= tmrw) && (!i.weekdays || i.weekdays.includes(code))),
+    false, kind, kind === "saturday" ? plan.saturdayShiftMin : 0,
+  );
+  const isTraining = steps.some(isMachine) || ov?.schedule?.next?.date === tmrw;
+  const { wake } = computeMorning(plan, isTraining, kind);
+  const due = todos.filter((t) => !t.deleted && !t.doneAt && !t.someday && !isSleeping(t, tmrw) && t.dueDate === tmrw).sort(sortTodos);
+
+  const minOf = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+  // Clock order inside each part · untimed rows first in their part, "anytime" steps at the end.
+  const partIdx = (p: DayPart | "anytime") => (p === "anytime" ? 3 : PART_ORDER[p]);
+  type R = { key: string; part: DayPart | "anytime"; min: number; time: string | null; title: string; todo?: Todo };
+  const rows: R[] = [
+    ...steps.map((i) => ({ key: `i${i.id}`, part: i.atTime ? partOfTime(i.atTime) : i.timeOfDay, min: i.atTime ? minOf(i.atTime) : -1, time: i.atTime ?? null, title: i.title })),
+    ...due.map((t) => ({ key: t.clientId, part: (t.dueTime ? partOfTime(t.dueTime) : t.evening ? "evening" : "anytime") as DayPart | "anytime", min: t.dueTime ? minOf(t.dueTime) : -1, time: t.dueTime, title: t.title, todo: t })),
+  ].sort((a, b) => partIdx(a.part) - partIdx(b.part) || a.min - b.min);
+  const groups = (["morning", "afternoon", "evening", "anytime"] as const).map((p) => ({ p, rows: rows.filter((r) => r.part === p) })).filter((g) => g.rows.length > 0);
+  const dayName = new Intl.DateTimeFormat("en-GB", { weekday: "long" }).format(new Date(tmrw + "T12:00:00"));
+
+  if (!data && due.length === 0) return null;
+  return (
+    <section className="cc-card" style={{ background: "transparent", borderStyle: "dashed" }}>
+      <button type="button" onClick={toggleOpen} aria-expanded={open}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
+        <span style={{ minWidth: 0 }}>
+          <b style={{ fontWeight: 500, color: "var(--ink-2)" }}>Tomorrow</b> · {dayName}
+          {kind === "sunday" ? " · no times" : <> · wake <span style={{ fontFamily: "var(--f-mono)" }}>{wake}</span></>}
+          {` · ${steps.length} step${steps.length === 1 ? "" : "s"}`}
+          {due.length > 0 && ` · ${due.length} to-do${due.length === 1 ? "" : "s"}`}
+        </span>
+        <span aria-hidden>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 10px" }}>
+          {groups.map((g) => (
+            <div key={g.p} style={{ paddingTop: 6 }}>
+              {kind !== "sunday" && <div style={{ fontSize: 12.5, color: "var(--ink-4)", padding: "4px 0" }}>{g.p === "anytime" ? "Anytime" : PART_TITLE[g.p]}</div>}
+              {g.rows.map((r) => {
+                const line = (
+                  <>
+                    <span style={{ fontFamily: "var(--f-mono)", fontSize: 13, color: "var(--ink-4)" }}>{kind === "sunday" ? "" : r.time ?? ""}</span>
+                    <span style={{ fontSize: 14.5, color: r.todo ? "var(--ink-2)" : "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.title}</span>
+                    <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>{r.todo ? (r.todo.area === "work" ? "Work" : "to-do") : ""}</span>
+                  </>
+                );
+                const style: React.CSSProperties = { display: "grid", gridTemplateColumns: "44px 1fr auto", gap: 10, alignItems: "center", width: "100%", minHeight: 36, padding: "4px 0", background: "transparent", border: "none", font: "inherit", textAlign: "left", color: "inherit" };
+                return r.todo
+                  ? <button key={r.key} type="button" onClick={() => onOpen(r.todo!)} style={{ ...style, cursor: "pointer", minHeight: 44 }}>{line}</button>
+                  : <div key={r.key} style={style}>{line}</div>;
+              })}
+            </div>
+          ))}
+          {groups.length === 0 && <div style={{ padding: "8px 0", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
+        </div>
+      )}
+    </section>
   );
 }
 
