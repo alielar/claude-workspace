@@ -86,6 +86,9 @@ Then commit and push. Test a draft from the terminal with
 
 - **Pushes** (push.mjs, 2026-10-01): two devices registered (Google FCM and Apple). Each push gets up to 3 tries per device (2 s, then 6 s apart); a 404/410 removes the device; every failure logs the device host, the try and the detail. The blank `push failed` lines before this were network drops with no retry.
 
+- **End of a TBC sequence** (Mateo, Hub developer, 2026-10-01): 48 h after the last TBC template (day 7) with no reply, the Hub moves the lead to OR by itself and the OR cadence starts; the Hub shows no planned template during those 48 h. No card for that gap: `finished` candidates only exist 72 h to 6 days after the last template (the automatic move did not happen). Moving to OR by hand earlier is harmless, the OR cadence just starts sooner.
+- **Buttons removed** (Ali, 2026-10-01): the old Sales Hub alert card in a thread, Copy / Copy all on drafts, Clear under the composer, ↻ in a thread, Stop notifying, Stop planning. Kept on purpose: Reopen, Retry.
+
 ## Language
 Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
 

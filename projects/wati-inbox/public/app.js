@@ -261,7 +261,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const D = d.windowOpen ? await loadDirs() : null;
   const has = (id) => dir.moves.includes(id);
   const od = offerDraft || d.offer || { format: '', level: '', hpw: '', months: '' };
-  const tb = d.tbc || {}, al = tb.alert;
+  const tb = d.tbc || {}, al = null; // the old Sales Hub alert card is retired (2026-10-01): the day plan replaced it
 
   // Sales Hub: the next automatic step, and the alert card when a step must be paused first.
   const hubLink = tb.salesHub ? `<a class="small" href="${esc(tb.salesHub)}" target="_blank" rel="noopener">Open the Sales Hub ↗</a>` : '';
@@ -301,14 +301,14 @@ async function renderThread(waId, { quiet = false } = {}) {
     claude = `<div class="card opt">
         <div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}${editedTag('bubbles')}</span></div>
         ${sug.note ? `<p class="note small">${esc(sug.note)}</p>` : ''}
-        ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${j}">Copy</button></div>`).join('') : fields(draftEdit, 'eb')}
-        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}<button class="small" data-copyall="0">Copy all</button></div>
+        ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span></div>`).join('') : fields(draftEdit, 'eb')}
+        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>
         ${o.why ? `<details><summary>Why</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
         <div class="opt-head">In 5-10 min <span class="muted">· the good news from the administration${d.thread?.last_inbound_at && sug.created_at < d.thread.last_inbound_at ? ' · the lead wrote since, step 2 still to send' : ''}${editedTag('later')}</span></div>
-        ${laterEdit == null ? o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copyl="${j}">Copy</button></div>`).join('') : fields(laterEdit, 'lb')}
-        <div class="acts">${laterEdit != null ? `<button class="primary small" data-lbsave>Save</button>` : ''}${d.windowOpen ? `<button class="${laterEdit == null ? 'primary ' : ''}small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Schedule in 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Send now</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Edit' : 'Cancel'}</button><button class="small" data-copyalll="0">Copy all</button></div>
+        ${laterEdit == null ? o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span></div>`).join('') : fields(laterEdit, 'lb')}
+        <div class="acts">${laterEdit != null ? `<button class="primary small" data-lbsave>Save</button>` : ''}${d.windowOpen ? `<button class="${laterEdit == null ? 'primary ' : ''}small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Schedule in 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Send now</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Edit' : 'Cancel'}</button></div>
       </div>` : '');
   }
   const learnLine = d.learning && (d.learning.state === 'waiting' || d.learning.state === 'learning') ? '<p class="muted small learn">Claude is noting what you sent…</p>'
@@ -329,15 +329,14 @@ async function renderThread(waId, { quiet = false } = {}) {
     </details>` : '';
   const tplBox = `<input id="tplq" placeholder="Filter"><select id="tpl" style="margin-top:8px"><option value="">Loading…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Send the template</button><span id="stt"></span></div>`;
   const compose = d.windowOpen
-    ? `<div class="card"><div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Your message. An empty line separates two bubbles">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Send</button><button id="clr" class="small">Clear</button><span id="st"></span></div></div>
+    ? `<div class="card"><div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Your message. An empty line separates two bubbles">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Send</button><span id="st"></span></div></div>
        <details class="card fold"><summary>Send a template</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? '24h window closed: only a template can be sent.' : 'No conversation on the Sales number: a template can be sent.'}</p>${tplBox}</div>`;
 
-  app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button><button id="rf" class="small">↻</button></header>
+  app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
-    ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}
-    <div class="row foot"><button id="mute" class="small">${t.muted ? 'Notify again' : 'Stop notifying'}</button></div>`;
+    ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
   const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
@@ -368,8 +367,6 @@ async function renderThread(waId, { quiet = false } = {}) {
   };
   const draftBubbles = () => draftEdit == null ? o.bubbles : readFields('eb');
   const sameAsDraft = (arr) => !!orig && arr.length === orig.bubbles.length && arr.every((x, i) => x === orig.bubbles[i].trim()); // against Claude's version: that is what the learning wants to know
-  document.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => copyText(o.bubbles[Number(b.dataset.copy)], b));
-  document.querySelectorAll('[data-copyall]').forEach((b) => b.onclick = () => copyText(draftBubbles().join('\n\n'), b));
   document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { draftEdit = draftEdit == null ? o.bubbles.slice() : null; redraw(); });
   bindFields('eb', () => draftEdit, (v) => { draftEdit = v; });
   // Save = the edit becomes the draft (server side, every device); "Claude's version" = back to the original.
@@ -386,8 +383,6 @@ async function renderThread(waId, { quiet = false } = {}) {
   const laterBubbles = () => laterEdit == null ? o.later : readFields('lb');
   if ($('#laterEdit')) $('#laterEdit').onclick = () => { laterEdit = laterEdit == null ? o.later.slice() : null; redraw(); };
   bindFields('lb', () => laterEdit, (v) => { laterEdit = v; });
-  document.querySelectorAll('[data-copyl]').forEach((b) => b.onclick = () => copyText(o.later[Number(b.dataset.copyl)], b));
-  document.querySelectorAll('[data-copyalll]').forEach((b) => b.onclick = () => copyText(laterBubbles().join('\n\n'), b));
   document.querySelectorAll('[data-sendlater]').forEach((b) => armed(b, 'Schedule in 7 min', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, suggestionId: sug.id, option: 0, part: 'later', delayMs: 7 * 60_000 } }); toast('The Mac will send it in 7 min'); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-sendlaternow]').forEach((b) => armed(b, 'Send now', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await sendBubbles(waId, bubbles, { suggestionId: sug.id, option: 0, part: 'later' }); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   if ($('#cancelsched')) $('#cancelsched').onclick = async () => { await api(`/api/thread/${waId}/cancel`, { method: 'POST' }); toast('Second part cancelled'); redraw(); };
@@ -403,7 +398,6 @@ async function renderThread(waId, { quiet = false } = {}) {
     bindOffer(waId, d);
     document.querySelectorAll('[data-emoji]').forEach((b) => b.onclick = () => { const ta = $('#tx'); const a = ta.selectionStart ?? ta.value.length, z = ta.selectionEnd ?? a; ta.value = ta.value.slice(0, a) + b.dataset.emoji + ta.value.slice(z); ta.selectionStart = ta.selectionEnd = a + b.dataset.emoji.length; ta.focus(); ta.dispatchEvent(new Event('input')); });
     $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim() || sendLock; if (composerFrom) composerFrom.edited = composer !== (composerFrom.part === 'later' ? orig?.later : orig?.bubbles)?.join('\n\n'); };
-    $('#clr').onclick = () => { composer = ''; composerFrom = null; $('#tx').value = ''; $('#send').disabled = true; };
     armed($('#send'), 'Send', async () => {
       const bubbles = splitBubbles($('#tx').value);
       if (!bubbles.length) return;
@@ -412,10 +406,8 @@ async function renderThread(waId, { quiet = false } = {}) {
       catch (e) { $('#st').innerHTML = `<span class="err">${esc(e.message)}</span>`; $('#send').disabled = false; }
     });
   } else bindOffer(waId, d);
-  $('#rf').onclick = async () => { await api(`/api/thread/${waId}/refresh`, { method: 'POST' }); lastThreadKey = ''; route(); };
   $('#hd').onclick = async () => { await api(`/api/thread/${waId}/handled`, { method: 'POST' }); lastThreadKey = ''; route(); };
   bindPlanButtons(() => { lastThreadKey = ''; route(); });
-  $('#mute').onclick = async () => { await api(`/api/thread/${waId}/mute`, { method: 'POST', body: { muted: !t.muted } }); lastThreadKey = ''; route(); };
   {
     const { templates } = await api('/api/templates');
     const sel = $('#tpl'); if (!sel) return;

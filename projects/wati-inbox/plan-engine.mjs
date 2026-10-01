@@ -85,7 +85,10 @@ export function candidates(now = Date.now()) {
     if (r.paused && ['TBC', 'IITF', 'CITF'].includes(r.status)) reason = 'paused';
     else if (r.status === 'TBC' && r.next_at && r.next_at <= dueBefore && r.next_at >= new Date(now - 60 * 60e3).toISOString()) reason = 'due';
     else if (r.status === 'TBC' && r.next_at && r.next_at < new Date(now - 60 * 60e3).toISOString()) reason = 'stale';
-    else if (r.status === 'TBC' && !r.next_tpl && r.last_reason_at && now - Date.parse(r.last_reason_at) < 3 * 864e5) reason = 'finished';
+    // The Hub moves a lead to OR by itself 48 h after the last TBC template when there is no reply (Mateo, 2026-10-01):
+    // the empty gap between is normal, no card. Only a lead still TBC with nothing planned 72 h to 6 days after its last
+    // template is a real anomaly worth a card (the automatic move did not happen).
+    else if (r.status === 'TBC' && !r.next_tpl && r.last_reason_at && now - Date.parse(r.last_reason_at) >= 3 * 864e5 && now - Date.parse(r.last_reason_at) < 6 * 864e5) reason = 'finished';
     if (!reason) continue;
     const t = getThread(r.wa_id);
     const msgs = t ? threadMessages(r.wa_id) : [];
