@@ -84,6 +84,8 @@ Then commit and push. Test a draft from the terminal with
   for every other known thread (6 per tick, oldest check first). Before this, a lead silent for 15+ days who wrote back
   (Hajar El Rhomri, 2026-10-01 20:10, after a Hub template at 16:05) was never read: no draft, no push.
 
+- **Pushes** (push.mjs, 2026-10-01): two devices registered (Google FCM and Apple). Each push gets up to 3 tries per device (2 s, then 6 s apart); a 404/410 removes the device; every failure logs the device host, the try and the detail. The blank `push failed` lines before this were network drops with no retry.
+
 ## Language
 Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
 
