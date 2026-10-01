@@ -1,134 +1,157 @@
 # Règles apprises — consolidées
 
-_Reconstruit le 2026-09-30 22:20:08 par l'app à partir de `04-CAS-APPRIS.md` (680 lignes). Lu en entier avant chaque brouillon. Ne pas éditer à la main : les nouveaux cas vont dans 04, la consolidation tourne chaque soir à 22:15._
+_Reconstruit le 2026-10-01 22:24:09 par l'app à partir de `04-CAS-APPRIS.md` (873 lignes). Lu en entier avant chaque brouillon. Ne pas éditer à la main : les nouveaux cas vont dans 04, la consolidation tourne chaque soir à 22:15._
 
 ## Style et ton
 
-- Pas de point final ni point-virgule dans les bulles, ton conversationnel WhatsApp ; "?" seulement quand c'est une vraie question (Andrin, tranché 30/09).
+- Pas de point final ni point-virgule dans les bulles, ton conversationnel WhatsApp ; "?" seulement pour une vraie question (Andrin, tranché 30/09).
 - Jamais "bonne chance" (sous-entend l'échec) → "plein succès" / "belle réussite dans votre parcours" (Andrin 26/09).
-- Sur un imprévu pendant le cours, dire "nous" trouvons une solution, jamais un chiffre ("99 %"), jamais "le support" comme tiers étranger — script verbatim en section Scripts validés (Andrin 26/09).
-- Jamais le prénom du lead dans une bulle — ni en ouverture, ni au milieu, ni en clôture : ça sonne commercial (tranché 30/09 soir, remplace « au plus une fois en ouverture »). Exception : la variable prénom d'un template Wati.
-- Aucun détail non demandé (heures/semaine, durée, date de rentrée, réassurance sur la place) si le lead n'a rien demandé sur ce point précis (tranché 30/09 ; confirmé ×2, dernier 29/09 — Boris : "votre place reste de côté" retiré faute de friction nommée sur la place).
-- Toujours relire le fil complet juste avant d'écrire : un lead peut envoyer plusieurs bulles coup sur coup, une lecture faite quelques minutes plus tôt peut être incomplète (17/09).
-- Lead qui a lui-même fixé la prochaine étape (heure de retour, modalité demandée) : accuser réception en une seule bulle, sans question de clôture — vaut même pour une promesse de retour vague sans échéance chiffrée (confirmé ×4, dernier 27/09).
-- Jour même d'un rendez-vous ou de résultats : un accusé de réception ("bien reçu", "merci") se répond en une bulle chaleureuse, sans question de clôture ni deadline — la relance active reprend le lendemain (confirmé ×5, dernier 30/09, Mehdi/Mohamed). Peut se clore par une ouverture chaleureuse type « n'hésitez pas si vous avez des questions » (+ un emoji possible) sans que ce soit une fausse question de relance ; féliciter un résultat/réussite ("félicitations") plutôt qu'exprimer une satisfaction de service ("ravi que ça vous plaise").
-- Client déjà inscrit avec une question purement logistique (pas une décision d'achat en cours) : une bulle factuelle, sans salutation ni question de clôture, renvoi vers une ressource déjà communiquée si utile, ex. contact support étudiant (27/09).
-- Demande de rythme allégé venant d'un lead déjà chaud ou en cours de finalisation : valider en une bulle courte, sans rechiffrer durée/prix ni relancer vers le lien ou une question (25/09).
-- Refus avec raison précise + horizon personnel donné de lui-même (un plan concret, pas "je dois réfléchir") qui garde le contact : un seul accusé chaleureux, sans mécanisme commercial ni question — même si une consigne a fait explorer un angle commercial, la consigne teste l'angle, elle n'engage pas à l'envoyer (30/09, Tania).
-- Si une bulle d'empathie/accusé vient d'être envoyée dans le message précédent de la même séquence, ne pas la répéter : enchaîner directement sur le mécanisme suivant, en y intégrant le bénéfice concret plutôt que de le laisser implicite (30/09, Tania).
-- Refus poli sans date où le lead dit lui-même ne pas vouloir être pressé : garder un geste gratuit déjà engagé (admin/extension) mais ne pas enchaîner sur une question qui le force à chiffrer un délai (30/09).
-- Si le lead nomme lui-même "des questions/doutes" comme blocage (pas un horizon temporel) : finir sur une question ouverte qui reprend ce mot, pas sur une question chiffrée de délai (30/09).
-- Ne pas demander une permission qui coûte un tour ("je mets à jour ?") : agir, puis annoncer le fait accompli + le lien dans la foulée (Andrin 26/09, confirmé 28/09 Antonio).
+- Imprévu pendant le cours : "nous" trouvons une solution, jamais un chiffre ("99 %"), jamais "le support" comme tiers étranger (Andrin 26/09, script en section Scripts validés).
+- **Jamais le prénom du lead dans une bulle** — ni ouverture, ni milieu, ni clôture : ça sonne commercial (tranché 30/09 soir). Seule exception : la variable {{1}} d'un template Wati. Écart observé le 01/10 (Tania 13:47, "Hello Tania" réintroduit) et cas limite le 01/10 (Mehdi 15:03, interlocuteur tiers parlant du lead à la 3e personne) — voir À trancher.
+- Aucun détail non demandé (heures/semaine, durée, rentrée, réassurance sur la place, offre d'aide sur une démarche que le lead a dit faire lui-même) si le lead n'a rien demandé sur ce point précis (confirmé ×4, dernier 01/10 Sarah : elle annonce qu'elle regardera elle-même les options de paiement, pas d'offre d'aide non sollicitée).
+- Toujours relire le fil complet juste avant d'écrire : plusieurs bulles peuvent arriver coup sur coup.
+- **Lead qui a fixé lui-même la prochaine étape** (heure de retour, modalité demandée, promesse de retour même vague) : accuser réception en une seule bulle, sans question de clôture, sans deuxième bulle de disponibilité si elle a déjà été dite plus tôt le même jour (confirmé ×6, dernier 01/10 : Liliane 19:20, Sarah 21:44).
+- **Jour même d'un rendez-vous ou de résultats** : un accusé ("bien reçu", "merci") se répond en une bulle chaleureuse, sans question de clôture ni deadline, même si une consigne du jour prévoit un mécanisme deadline/admin — celui-ci attend un message séparé, le lendemain (confirmé ×6, dernier 30/09 Loïc). Peut se clore par une ouverture chaleureuse ("n'hésitez pas si vous avez des questions" + emoji possible) sans que ce soit une fausse clôture. Féliciter un résultat/réussite ("félicitations") plutôt qu'exprimer une satisfaction de service ("ravi que ça vous plaise").
+- Client déjà inscrit, question purement logistique (pas une décision d'achat) : une bulle factuelle, sans salutation ni question de clôture, renvoi vers une ressource déjà communiquée si utile (27/09).
+- Demande de rythme allégé d'un lead déjà chaud ou en finalisation : valider en une bulle courte, sans rechiffrer ni relancer vers le lien (25/09).
+- Refus avec raison précise + horizon personnel donné de lui-même (un plan concret, pas "je dois réfléchir") qui garde le contact : un seul accusé chaleureux, sans mécanisme ni question — même si une consigne a fait tester un angle commercial, la consigne teste, elle n'engage pas à l'envoyer (30/09, Tania).
+- Si une bulle d'empathie/accusé vient d'être envoyée dans le message précédent de la même séquence, ne pas la répéter : enchaîner sur le mécanisme suivant avec le bénéfice concret inclus (confirmé ×3 : Tania 30/09, Mehdi 15:03, Loïc 19:24).
+- Refus poli sans date où le lead dit lui-même ne pas vouloir être pressé : garder un geste gratuit déjà engagé mais ne pas enchaîner sur une question qui le force à chiffrer un délai (30/09, Liliane).
+- Si le lead nomme lui-même "des questions/doutes" comme blocage (pas un horizon temporel) : finir sur une question ouverte qui reprend ce mot (30/09). Si le doute reste non précisé lors d'une relance ultérieure : rester en texte (ne pas proposer un canal — appel, visio — non mentionné dans l'échange), fusionner l'offre de répondre et la question en une seule bulle, reprendre si possible la formulation déjà utilisée dans la conversation (01/10, Liliane).
+- Ne pas demander une permission qui coûte un tour ("je mets à jour ?") : agir, puis fait accompli + lien dans la foulée (Andrin, confirmé 28/09).
+- Après avoir traité une objection précise déjà nommée, ne pas se limiter à "ça vous conviendrait ?" : élargir en demandant aussi s'il reste une autre objection bloquante, quitte à l'envoyer en bulle séparée un peu après l'offre (01/10, Nelya).
+- Relance après qu'un lead a dit ne pas être pressé : terminer sur une question d'accord douce ("ça vous conviendrait ?") plutôt que directive ("vous voulez qu'on avance comme ça ?") (01/10, Tania).
+- Quand c'est **Ali** (pas le lead) qui propose la prochaine étape, même en registre bas pression : toujours terminer sur une question de confirmation — l'exception "pas de question" ne vaut que si c'est le lead qui a fixé l'étape (01/10, Loïc).
+- Ne jamais inventer un degré de flexibilité ("modifiable jusqu'à la dernière minute") : utiliser le chiffre confirmé de l'échelle (2h/semaine minimum, créneaux reprogrammables jusqu'à 1h avant) (01/10, Mehdi).
+- Réassurance générique passe-partout ("ne vous inquiétez pas") à éviter en ouverture de mécanisme — personnaliser ("mais dans votre cas…") ; le script validé "on trouve toujours une solution" reste réservé au cas précis d'un imprévu pendant le cours (01/10, Naima).
+- Lead qui renvoie vers une réponse déjà donnée par un autre canal (mail illisible depuis WhatsApp) : répondre sans délai, bulle qui explique que WhatsApp est le canal principal ; si l'offre/le détail discuté est déjà connu par ailleurs (ex. de l'appel), confirmer point par point tout de suite sans attendre de lire le mail (01/10, Mehdi ×3).
 
 ## Diagnostic et échelle de concessions
 
-- Dès qu'une friction crédible apparaît (pas seulement "trop cher" littéral), envisager le downsell 90h/990€ directement, sans attendre la phrase exacte.
-- Dès que le lead nomme le prix ou le financement comme blocage — même en réponse à la question de diagnostic ("le prix, le timing, la méthode, ou autre chose") — sauter les marches isoler/budget et proposer directement le format réduit, cadré comme un ajustement d'objectif personnel, jamais une remise (confirmé ×3, 29/09 : Kamila, Ouassila, Ariane).
-- Un "plus tard" vague de la part d'un lead qui répond activement (pas un silence) n'est pas une clôture : creuser la vraie raison (prix, timing, méthode, autre) en s'appuyant sur ce qu'on sait déjà de sa situation, avant de lâcher (16/09).
-- Report sans raison ni date donnée : poser la question de diagnostic en une bulle avant d'envisager de libérer la place ou toute autre concession (29/09).
-- Formats confirmés par Ali le 30/09 (tous marchés, € France/Belgique, CHF Suisse) : 90h/990€ avec garantie de niveau ; 96h/990€ sans garantie ("progression générale") ; 48h/583€ sans garantie ; 36h/434€ ; 24h/294€ (dernier palier de repli, sans garantie, après le 36h/434€).
-- Anciens formats mentionnés dans une veille mais non reconfirmés en 2026 (60h/737€, 40h/583€, 32h/399€, 20h/240€) : ne pas citer de prix précis sans validation d'Ali.
-- Choix 90h vs 96h : niveau A2+ → 90h avec garantie ; niveau A0/A1 ou garantie non pertinente → 96h sans garantie, jamais de niveau cible inventé sur ce format.
-- Deux refus nets sur le même blocage ne ferme le dossier que si tous les formats de repli chiffrés ont déjà été proposés ou refusés — s'il reste un palier non encore proposé, le proposer avant toute clôture (confirmé ×2, 29/09 : Cedric, Ouassila).
-- Un refus poli qui introduit une objection NOUVELLE à chaque fois n'est pas un refus ferme au sens de la règle des deux refus — seul un refus qui répète le même motif compte (24/09, Naelle).
-- Au palier 48h/583€ (sans garantie), anticiper une objection sur le volume d'heures perçu comme insuffisant : recadrer sur un objectif réaliste ("progresser sur un point précis"), pas "atteindre un niveau complet" (27/09, Hamza).
-- Malentendu de calcul (le lead divise le prix total par la durée du programme en mois, pas par l'échéancier de paiement, ex. 180h à 2h/semaine sur 22 mois) : ne pas downseller — expliquer qu'on paie le programme complet et que l'échéancier va jusqu'à 10 mensualités max, puis finir par une question de diagnostic (malentendu vs vraie objection) avant de concéder quoi que ce soit (24/09, Mondher).
-- Une mensualité annoncée seule, sans le format ("Xh au lieu de 180h, Y€ au lieu de 1800€"), laisse le lead comparer à son propre ancrage au lieu du produit d'origine — toujours faire précéder la mensualité par la bulle de comparaison heures/prix (24/09, Naelle).
+- Dès qu'une friction crédible apparaît (pas seulement "trop cher" littéral), envisager le downsell 90h/990€ directement.
+- Dès que le lead nomme le prix ou le financement comme blocage — même en réponse à la question de diagnostic — sauter les marches isoler/budget et proposer directement le format réduit, cadré comme un ajustement d'objectif personnel (confirmé ×3, 29/09).
+- Un "plus tard" vague d'un lead qui répond activement (pas un silence) n'est pas une clôture : creuser la vraie raison avant de lâcher (16/09).
+- Report sans raison ni date donnée : poser la question de diagnostic avant d'envisager une concession (29/09).
+- Formats confirmés (tous marchés, € FR/BE, CHF Suisse) : 90h/990€ avec garantie ; 96h/990€ sans garantie ("progression générale") ; 48h/583€ ; 36h/434€ ; 24h/294€ (dernier palier de repli, sans garantie).
+- Anciens formats non reconfirmés en 2026 (60h/737€, 40h, 32h, 20h) : ne pas citer de prix sans validation d'Ali.
+- Choix 90h vs 96h : A2+ → 90h avec garantie ; A0/A1 ou garantie non pertinente → 96h sans garantie, jamais de niveau cible inventé.
+- Deux refus nets sur le même blocage ne ferment le dossier que si tous les formats de repli chiffrés ont déjà été proposés ou refusés (confirmé ×2, 29/09).
+- Un refus poli qui introduit une objection **nouvelle** à chaque fois n'est pas un refus ferme (24/09).
+- Au palier 48h/583€, anticiper l'objection sur le volume d'heures perçu comme insuffisant (27/09).
+- Malentendu de calcul (le lead divise le prix total par la durée en mois, pas par l'échéancier) : ne pas downseller, expliquer le programme complet + échéancier max 10 mois, finir par une question de diagnostic (24/09).
+- Une mensualité annoncée seule sans le format laisse le lead comparer à son propre ancrage : toujours faire précéder la mensualité par la comparaison heures/prix (24/09).
+- Deuxième refus avec raison concrète + lead qui dit lui-même ne pas être pressé : accusé + rappel factuel court (liste d'attente), seul, sans nouveau mécanisme ni question — **sauf** si la raison est adossée à un événement vérifiable et daté (création de société, retour de voyage…) : accompagner le rappel d'une question sur l'échéance de cet événement (01/10, Tania, nuance à la règle du 30/09).
+- Refus net où le lead nomme explicitement la pression comme ce qui le pousse à partir ailleurs, et fixe lui-même la suite : une seule bulle d'explication de la pression, zéro reprise de mécanisme, zéro question (01/10, Tania).
+- Insistance répétée (3e fois) sur une demande déjà déclarée non négociable (ex. retrait d'une clause CGV) : ne pas refuser une 3e fois ni clôturer — relancer le script d'attente administration ("je retente une dernière fois… je reviens vers vous très vite"), sans promettre de résultat ni poser de question (01/10, Mehdi).
 
 ## Scripts validés
 
-- 90h avec garantie (remplace la version du 17-18/09) : « Un format de cours plus réduit vous conviendrait peut-être mieux pour démarrer ? Par exemple, 90 heures au lieu de 180, pour 990 € au lieu de 1 800 €. Vous pourriez aussi payer cela en plusieurs fois. La garantie de niveau [X] serait toujours incluse, et vous pourriez toujours continuer par la suite. Qu'en pensez-vous ? » — niveau [X] = variable lue sur le lead, jamais inventée (25/09).
+- 90h avec garantie : « Un format de cours plus réduit vous conviendrait peut-être mieux pour démarrer ? Par exemple, 90 heures au lieu de 180, pour 990 € au lieu de 1 800 €. Vous pourriez aussi payer cela en plusieurs fois. La garantie de niveau [X] serait toujours incluse, et vous pourriez toujours continuer par la suite. Qu'en pensez-vous ? » — niveau [X] = variable lue sur le lead, jamais inventée (25/09).
 - 96h sans garantie : « Je comprends ; sinon, il existe un format pour progresser en anglais de façon générale, sans garantie de réussite, sur 96 heures pour 990 €. Vous pourriez également payer cela en plusieurs fois. Est-ce que ce serait mieux adapté pour démarrer ? Qu'en pensez-vous ? » (25/09).
-- CPF : « On est une société suisse, donc pas agréés CPF. En revanche, si vous m'envoyez une capture de vos fonds CPF montrant que vous auriez pu financer toute la formation avec, on vous offre 20 % d'heures en plus, soit 36h supplémentaires. » — adapter le nombre d'heures au format (18h pour un 90h) (tranché 26/09).
-- Réassurance imprévu (Andrin) : « Ne vous inquiétez pas, de manière générale on trouve toujours une solution si vous avez le moindre souci pendant votre cours. »
-- Rétractation 14 jours : préciser toujours les deux éléments retenus — « les 196 € de frais d'onboarding et les cours déjà organisés du premier mois » (26/09, Andrin D1).
-- Garantie de niveau (180h/7h sem.) : progression de deux niveaux CECRL en 7 mois ; si les 4 conditions sont remplies et le niveau non atteint → 100 % des 1 800 € remboursés, 196 € compris. Renvoyer au contrat de garantie reçu par mail, ne jamais improviser les détails (26/09, D3).
-- Charge de travail plateforme : « en moyenne 1 à 2h par semaine sur le programme — plutôt 30 min à 1h au début, et jusqu'à 3 à 5h pendant la préparation IELTS » (26/09, Andrin E).
-- Étape 1 du mécanisme administration (accord de principe pas encore confirmé) : une seule bulle fusionnant accusé de réception et annonce du mécanisme, registre personnel — « [je vais voir / laissez-moi voir] ce que je peux faire pour vous dans votre cas précis, je vais voir ça avec l'administration » — puis « Je reviens vers vous très vite », sans question. Jamais deux bulles séparées, jamais la formule neutre "je vérifie avec l'administration" seule (confirmé ×2, 30/09 : Boris, Boubou — remplace le script Andrin en deux bulles du 26/09).
-- Étape 2 "bonne nouvelle" (après confirmation) : annoncer la confirmation de l'administration, le mécanisme obtenu (extension, place gardée, acompte) daté et borné, puis la question de clôture — ne rédiger cette étape que si l'étape 1 a bien été envoyée pour cette demande précise sur ce fil (30/09, Nelya).
-- Second message d'un refus qui appelle une concession payante après un premier accusé/rappel déjà envoyé : introduire par « j'ai pu trouver une solution pour votre situation particulière » avant de nommer le mécanisme (30/09, Tania).
-- Zéro pression, lead qui demande du temps (Andrin I, Fatine) : « Bonjour [prénom], pas de souci, prenez le temps qu'il vous faut, votre place peut être libérée sans problème. Je reviens vers vous la semaine prochaine, d'ici là n'hésitez pas à relire le mail avec tous les détails. » — zéro deadline, zéro liste d'attente, zéro "je plaide votre cause".
-- Lead revenant après une deadline dépassée : « la clôture des inscriptions était à 20h, donc on l'a dépassée. Voulez-vous que j'essaye de vérifier avec l'administration s'ils peuvent l'étendre pour vous ? » puis, après confirmation du lead, « bonne nouvelle ! Je viens d'avoir la confirmation écrite de l'administration : ils ont pu rouvrir votre inscription » (27/09, Henriqueta).
-- Virement bancaire hors Alma, échelonnement sur la durée du programme : « vu que votre programme est sur 7 mois à 7h/semaine, on peut aller dans ce cas jusqu'à 7 mensualités... ça reste en dessous des 10 fois que vous aviez via carte » (27/09, Sara).
-- Question "Confirmer ma place m'engage-t-il ?" : répondre que la première mensualité confirme directement la place, que c'est la dernière étape, qu'elle choisit ensuite sa date de démarrage et que les prochaines étapes arrivent sur WhatsApp — ne pas sortir la rétractation ni les 196 € non remboursables à ce stade (25/09, Sara).
-- Frais d'examen IELTS : dans la même phrase, dire qu'ils sont réglés directement au centre ET ce qui est pris en charge (préparation, réservation de session, logistique) — terminer sur ce qui est fait pour l'élève (25/09, Sara).
+- CPF : « On est une société suisse, donc pas agréés CPF. En revanche, si vous m'envoyez une capture de vos fonds CPF montrant que vous auriez pu financer toute la formation avec, on vous offre 20 % d'heures en plus, soit 36h supplémentaires. » — adapter le nombre d'heures au format (18h pour un 90h) (26/09). Un chiffre différent (32h pour un CPF >1800€) a été vu une fois (01/10, Mehdi) — voir À trancher.
+- Réassurance imprévu : « Ne vous inquiétez pas, de manière générale on trouve toujours une solution si vous avez le moindre souci pendant votre cours. »
+- Rétractation 14 jours : toujours les deux éléments retenus — « les 196 € de frais d'onboarding et les cours déjà organisés du premier mois » (26/09).
+- Garantie de niveau (180h/7h sem.) : deux niveaux CECRL en 7 mois ; si les 4 conditions sont remplies et le niveau non atteint → 100 % des 1 800 € remboursés, 196 € compris. Renvoyer au contrat reçu par mail, ne jamais improviser.
+- Charge de travail plateforme : « en moyenne 1 à 2h par semaine sur le programme — plutôt 30 min à 1h au début, et jusqu'à 3 à 5h pendant la préparation IELTS » (26/09).
+- Étape 1 administration (accord pas encore confirmé) : une seule bulle fusionnant accusé + mécanisme, registre personnel — « je vais voir / laissez-moi voir ce que je peux faire pour vous, dans votre cas précis » — puis « Je reviens vers vous très vite », sans question (confirmé ×3 : Boris, Boubou, Loïc).
+- Étape 2 "bonne nouvelle" : annoncer la confirmation, le mécanisme obtenu daté et borné, puis la question de clôture — seulement si l'étape 1 a bien été envoyée pour cette demande précise sur ce fil (30/09, Nelya).
+- Second message d'un refus qui appelle une concession payante, après un accusé déjà envoyé : introduire par « j'ai pu trouver une solution pour votre situation particulière » avant de nommer le mécanisme (30/09, Tania).
+- Zéro pression, lead qui demande du temps : « pas de souci, prenez le temps qu'il vous faut, votre place peut être libérée sans problème. Je reviens vers vous la semaine prochaine, d'ici là n'hésitez pas à relire le mail avec tous les détails. » — zéro deadline, zéro liste d'attente, zéro plaidoyer.
+- Lead revenant après une deadline dépassée : nommer le dépassement factuellement, demander s'il veut qu'on vérifie une extension, ne confirmer qu'après un vrai aller-retour (27/09).
+- Virement hors Alma : l'échelonnement peut suivre la durée du programme en mois plutôt que le plafond de 10 fois (27/09).
+- "Confirmer ma place m'engage-t-il ?" : la première mensualité confirme la place, c'est la dernière étape, la date de démarrage se choisit après — ne pas sortir la rétractation à ce stade (25/09).
+- Frais d'examen IELTS : dans la même phrase, dire qu'ils sont réglés au centre ET ce qui est pris en charge (préparation, réservation, logistique) (25/09).
+- **Liste d'attente** : toujours « 10 à 12 mois, **sans garantie de date de démarrage** » — jamais « sans garantie de date » tout court (tranché 01/10).
+- Lien de **paiement/acompte** : remplacer « Est-ce qu'il fonctionne bien ? » par une demande de confirmation une fois le paiement fait + l'annonce des prochaines étapes, et nommer explicitement la date du solde si elle a été mentionnée (01/10, Loïc). Un lien de contenu/démo garde la question « Est-ce qu'il fonctionne bien ? » par défaut.
+- Clause CGV contestée (ex. article 13 indemnisation) : tempo « je vérifie » → « bonne nouvelle » puis un **mail de confirmation écrite** (récapitule l'offre, confirme la dérogation, renvoie au lien des CGV) ; si le lead exige un document officiel, une **attestation nominative signée** (nom, coordonnées, programme, non-application de la clause, accord exprès pour toute modification substantielle) — jamais des CGV modifiées (01/10, Mehdi).
+- Mail de résultats non reçu : confirmer l'adresse mail exacte et renvoyer vérifier les spams — pas de mécanisme administration pour ce cas (01/10, Soly).
 
 ## Administration, délais et extensions
 
 - Toute concession (extension, place gardée) est datée et bornée par une heure ou un jour précis.
-- Reprendre l'heure exacte donnée dans la consigne d'Ali au mot près, ne pas la considérer comme stable jusqu'à l'envoi — un décalage a été observé une fois (20h dicté vs 21h envoyé, 30/09, Boris), à surveiller si ça se reproduit.
-- Registre pour attribuer une extension : à l'étape 1, registre personnel engagé ("je vais voir ce que je peux faire pour vous") plutôt que "je vérifie avec l'administration" neutre (confirmé ×2, 30/09 : Boris, Boubou). À l'étape 2 "bonne nouvelle", les deux registres coexistent encore dans la pratique — voir section À trancher.
-- Avant de rédiger une bulle "bonne nouvelle"/confirmation de l'administration, vérifier que l'étape 1 ("je vérifie") a bien été envoyée pour cette demande précise sur ce fil — sinon rédiger encore en étape 1, et faire porter la question de clôture sur l'horizon de décision en la reliant explicitement au mécanisme en cours plutôt qu'en question générique (30/09, Nelya).
-- Livraison de l'étape "bonne nouvelle" : format par défaut non tranché — voir À trancher (parfois coupée avant lien/CTA en message séparé, parfois tout regroupé lien+mensualité+deadline en une seule bulle).
-- Lead demande un délai de réponse ("d'ici mercredi") : ne pas l'accorder tel quel — dissocier inscription et démarrage (il peut bloquer sa place maintenant, démarrer plus tard), rappeler la vraie deadline (souvent le soir même) et la liste d'attente (10-12 mois, sans garantie de date) si elle n'est pas confirmée (16/09, François).
-- Rythme hebdomadaire ajustable uniquement le premier mois ; à partir du deuxième mois le planning est posé pour toute la durée. Raison donnée au lead : pédagogique (la continuité fait partie de la méthode), jamais administrative (24/09, Diana).
-- Date de démarrage : ne jamais la donner spontanément. Si demandée : c'est flexible, choisi après l'inscription ; une demande interne au support étudiant permet de démarrer hors dates officielles au besoin (tranché 30/09).
-- Créneaux : "vous choisissez vos créneaux", une leçon se déplace jusqu'à 1h avant sans compter comme absence — jamais "les mêmes créneaux pour le mois" (tranché 30/09).
+- Reprendre l'heure exacte donnée dans la consigne d'Ali au mot près.
+- Étape 1 : registre personnel engagé plutôt que neutre "je vérifie avec l'administration" (confirmé ×3). Même si le lead a lui-même donné une date/un horizon, ne pas encore l'ancrer à cette étape — nommer l'enjeu ("garder votre place") sans promettre la date précise, qui se réserve pour l'étape 2 (01/10, Loïc).
+- Avant toute bulle "bonne nouvelle"/confirmation, vérifier que l'étape 1 a bien été envoyée pour cette demande précise sur ce fil — sinon rédiger encore en étape 1 (30/09, Nelya).
+- Une fois l'étape 1 envoyée sur un point précis, **toute** réponse ultérieure sur ce même point — qu'elle accorde quelque chose ou soit un refus/une clause standard — doit ouvrir en référençant explicitement la vérification faite (01/10, Mehdi).
+- Format de livraison de l'étape "bonne nouvelle" : toujours non tranché formellement — tendance observée à tout regrouper en une seule bulle ponctuée par points quand il n'y a pas de lien à transmettre, avec une question de clôture générique sans détailler les sujets (01/10, Neila) ; voir À trancher pour le cas avec lien.
+- Lead demande un délai de réponse : ne pas l'accorder tel quel — dissocier inscription et démarrage, rappeler la vraie deadline et la liste d'attente si la place n'est pas réservée (16/09).
+- Rythme hebdomadaire ajustable uniquement le premier mois ; raison pédagogique, jamais administrative (24/09).
+- Date de démarrage : ne jamais la donner spontanément ; flexible, choisie après l'inscription (tranché 30/09).
+- Créneaux : "vous choisissez vos créneaux", reprogrammable jusqu'à 1h avant sans compter comme absence (tranché 30/09).
+- Pour une vérification d'extension non garantie, préférer « éventuellement possible » à « sans garantie » — registre plus doux (01/10, Loïc).
+- Quand un lead a lui-même donné sa fenêtre horaire pour agir, caler la relance sur cette fenêtre plutôt que poser une question d'engagement séparée (01/10, Loïc).
 
 ## Acompte, paiement et lien
 
-- Acompte par défaut 196 €, 96 € réservé à la seconde concession — jamais l'inverse (règle de base, 18/09).
-- Observation non tranchée : pour un blocage lié au TIMING (pas au prix — clôture le jour même, démarrage repoussé, weekend, retour de voyage), 96 € a été utilisé directement en première offre sur plusieurs cas (voir À trancher).
-- Toute annonce d'acompte doit préciser qu'il est déduit du montant total, pas une charge en plus — particulièrement important quand le lead vient de signaler une contrainte budgétaire (30/09, Boubou).
-- Place tenue sans aucun acompte seulement quand le lead a démontré sur plusieurs échanges qu'il ne PEUT physiquement payer par aucun moyen disponible (carte bloquée, virement inaccessible) — jamais pour une simple préférence ou un délai de convenance, où l'acompte reste la règle (27/09, Sara).
-- Paiement en plusieurs fois : 10 fois maximum sans frais ; 12 fois disponible mais avec frais, à proposer seulement si le lead le demande explicitement (25/09).
-- Par virement bancaire (hors Alma), l'échelonnement peut suivre la durée réelle du programme en mois plutôt que le plafond de 10 fois (27/09, Sara).
-- Ne pas chiffrer une mensualité ni un nombre de fois précis sans qu'Ali les ait lui-même donnés dans la conversation — dire "plusieurs fois possible" en générique (30/09, Tournier).
-- Dès qu'un lead confirme vouloir avancer, le lien de paiement part toujours dans le même message, jamais en différé ("je vous l'envoie" à proscrire) (16/09, Valon).
-- Vérifier côté admin que le lien mis à jour affiche bien le nouveau format avant de l'envoyer ; à défaut, envoyer le lien du mail de confirmation, qui reste à jour (Andrin 26/09).
-- Lien toujours suivi de "Est-ce qu'il fonctionne bien ?" par défaut ; l'omission a été observée deux fois (30/09, Boubou) dans des bulles qui regroupaient mise à jour + acompte + deadline same-day — à confirmer si c'est volontaire avant de généraliser (voir À trancher).
-- Livraison du lien après une "bonne nouvelle" (mécanisme admin obtenu) : regrouper mise à jour du lien, acompte et deadline same-day dans une seule bulle (30/09, Boubou).
-- Livraison du lien quand le lead était déjà vendu et bloqué par un souci technique réglé : rattacher "voici le lien" à la bulle qui décrit ce qui est prêt (paiement, format), garder la dernière bulle uniquement pour "Est-ce qu'il fonctionne bien ?" (30/09, Nelya).
+- Acompte par défaut 196 €, 96 € réservé à la seconde concession (règle de base).
+- Pour un blocage lié au **TIMING** (pas au prix — clôture le jour même, démarrage repoussé, besoin de temps pour boucler un financement) : 96 € directement en première offre, observé sans exception sur 5 cas (Massi, Jacques, Antonio, Boubou, Naima) — voir À trancher pour le statut formel.
+- Toute annonce d'acompte précise qu'il est déduit du total, jamais une charge en plus (confirmé plusieurs fois, dernier 01/10 Naima).
+- Place tenue sans aucun acompte seulement quand le lead a démontré sur plusieurs échanges qu'il ne PEUT physiquement payer par aucun moyen (27/09).
+- Paiement en plusieurs fois : 10 fois max sans frais ; 12 fois avec frais, sur demande explicite seulement (25/09).
+- Par virement hors Alma, l'échelonnement peut suivre la durée réelle du programme en mois (27/09).
+- Ne pas chiffrer une mensualité ni un nombre de fois précis sans qu'Ali l'ait donné dans la conversation — "première mensualité selon le plan choisi" plutôt que "versement libre" (confirmé, dernier 01/10 Loïc).
+- Dès qu'un lead confirme vouloir avancer, le lien part dans le même message, jamais en différé (16/09).
+- Vérifier que le lien mis à jour affiche le nouveau format avant envoi ; à défaut, envoyer le lien du mail de confirmation (Andrin 26/09).
+- Lien toujours suivi de "Est-ce qu'il fonctionne bien ?" par défaut — **sauf** lien de paiement/acompte, qui se termine par une demande de confirmation de paiement + annonce des prochaines étapes (01/10, Loïc).
+- Livraison du lien après une "bonne nouvelle" : regrouper mise à jour + acompte + deadline same-day dans une seule bulle (30/09, Boubou).
+- Lead déjà vendu, bloqué par un souci technique réglé : rattacher "voici le lien" à la bulle qui décrit ce qui est prêt, garder la dernière bulle pour la question de vérification seule (30/09, Nelya).
 
 ## Démarrage, calendrier, liste d'attente
 
-- Inscription et démarrage sont dissociables : on peut bloquer la place maintenant et démarrer à une date ultérieure (16/09, François).
-- Liste d'attente = 10 à 12 mois, sans garantie de date — argument de pression légitime quand une place n'est pas bloquée, y compris comme simple rappel factuel déjà évoqué la veille plutôt qu'une pression nouvelle (30/09, Tania).
+- Inscription et démarrage sont dissociables : bloquer la place maintenant, démarrer plus tard (16/09).
+- Liste d'attente = 10 à 12 mois, **sans garantie de date de démarrage** (formule complète tranchée 01/10) — argument de pression légitime, y compris en simple rappel déjà évoqué la veille.
 - Date de démarrage jamais donnée spontanément ; flexible, choisie après l'inscription (tranché 30/09).
-- Groupes de speaking : 2 à 3 élèves maximum (Andrin, confirmé).
-- Changement de créneau/groupe : pas une absence si replanifié au moins 1h avant ; le lead choisit ses créneaux librement (Andrin, confirmé + tranché 30/09).
-- Correspondance heures/semaine → durée (total et prix inchangés, ex. 6h/8 mois, 5h/10 mois, 4h/11 mois) : sert à choisir le rythme à l'inscription, pas à en changer après le premier mois.
+- Groupes de speaking : 2 à 3 élèves maximum.
+- Changement de créneau/groupe : pas une absence si replanifié au moins 1h avant ; le lead choisit ses créneaux librement.
+- Correspondance heures/semaine → durée (total et prix inchangés) sert à choisir le rythme à l'inscription, pas à en changer après le premier mois.
 
 ## Basse pression, clôture, leads à ne plus contacter
 
-- Un message de pression par jour maximum — en empiler plusieurs a produit les seules réponses hostiles de l'historique (règle dure).
-- Deux refus nets, ou une demande d'être laissé tranquille/supprimé : stop vente, clôture polie, marquer le lead (règle dure) — mais seulement une fois tous les formats de repli chiffrés épuisés ou refusés (confirmé 29/09).
-- Un refus qui introduit une nouvelle objection à chaque fois (pas la répétition du même motif) n'est pas un refus ferme — diagnostiquer et proposer le cran suivant plutôt que clôturer (24/09, Naelle).
-- Les concessions gratuites (extension, date de démarrage, place tenue) passent toujours avant toute concession qui coûte de l'argent — rejouer le geste gratuit encore disponible avant d'accepter un refus, surtout si le lead a lui-même proposé une date (confirmé 28/09, Eliane).
-- Lead qui demande du temps sans pression : ne jamais donner l'impression de garder sa place contre lui, répondre vite, proposer de libérer la place sans deadline ni liste d'attente ni plaidoyer (Andrin I, Fatine).
-- Répondre rapidement aux messages audio et aux objections, ne pas les laisser en attente (Andrin I).
-- Un "Oui" isolé après un ou plusieurs messages vides (vocal, photo non transcrite) n'est pas un accord de paiement par défaut : l'attribuer à la dernière question factuelle posée (souvent "le lien fonctionne-t-il ?"), puis rejouer brièvement le mécanisme administration avant de rerépéter l'offre (28/09, Eliane).
-- Deuxième refus avec raison concrète où le lead dit lui-même ne pas être pressé : répondre par un accusé + rappel factuel court d'une conséquence déjà mentionnée (ex. liste d'attente), seul, sans nouveau mécanisme ni question. S'il reste un mécanisme payant à proposer (acompte, facturation différée), l'envoyer en second message séparé quelques minutes après plutôt que dans le même bloc de bulles (30/09, Tania).
+- Un message de pression par jour maximum (règle dure).
+- Deux refus nets, ou demande d'être laissé tranquille/supprimé : stop vente, clôture polie, marquer le lead — mais seulement une fois tous les formats de repli chiffrés épuisés ou refusés (confirmé 29/09).
+- Un refus qui introduit une nouvelle objection à chaque fois n'est pas un refus ferme.
+- Les concessions gratuites passent toujours avant celles qui coûtent de l'argent (confirmé 28/09).
+- Lead qui demande du temps sans pression : ne jamais donner l'impression de garder sa place contre lui, répondre vite, proposer de libérer la place sans deadline ni liste d'attente ni plaidoyer.
+- Répondre rapidement aux messages audio et aux objections.
+- Un "Oui" isolé après un ou plusieurs messages vides n'est pas un accord de paiement par défaut : l'attribuer à la dernière question factuelle posée, puis rejouer brièvement le mécanisme administration (28/09).
+- Deuxième refus avec raison concrète, lead non pressé : accusé + rappel factuel court seul — sauf événement daté, voir section Diagnostic (nuance 01/10).
+- Refus net où la pression est nommée comme repoussoir et le lead fixe lui-même la suite : une seule bulle d'explication, zéro mécanisme, zéro question (01/10, Tania).
+- Insistance répétée sur une demande déjà déclarée non négociable : ne pas refuser une 3e fois ni clôturer — relancer le script d'attente administration (01/10, Mehdi).
 
 ## Cas particuliers
 
-- Tiers payeur / facture société : ne jamais bloquer sur l'administratif — réactiver le lien tout de suite, demander les infos société (nom, adresse) dans le même message, garder la main en annonçant un retour "aujourd'hui" (14/09, Wajdi).
-- Deux mécaniques de remboursement du 196 € à ne pas confondre : rétractation 14 jours → remboursé moins les 196 € d'onboarding et les cours déjà donnés du mois 1 ; garantie satisfait-remboursé (échec au niveau malgré les 4 conditions remplies) → remboursement à 100 % de l'intégralité, 196 € compris (22/09, Omar).
-- Les mensualités sont un engagement sur toute la durée du programme, indépendant d'une pause éventuelle — une pause prolonge la formation et gèle les heures/la garantie, mais ne suspend pas le paiement (22/09).
-- "Le contrat" = les CGV envoyées dans le mail d'admission. Le détail du programme (nombre de leçons, déroulé) est dans la présentation en slides, sur le deuxième lien du même mail — pas dans les CGV (22/09).
-- Client suisse : chiffrer systématiquement en CHF, mêmes chiffres qu'en euros. Vérifier le pays avant tout montant. Jamais de message de correction dédié pour un slip de devise — continuer dans la bonne devise et signaler l'écart à Ali (confirmé plusieurs fois, tranché 30/09).
-- CPF : 20 % d'heures en plus (36h sur un 180h, 18h sur un 90h), jamais une remise en euros. Conditions : capture d'écran des fonds CPF disponibles montrant qu'ils couvraient toute la formation, et première inscription seulement (tranché 26/09, remplace la version "4h gratuites" d'Andrin).
-- Les petits formats sans garantie (48h, 36h, 24h...) peuvent être proposés par chat, pas réservés à l'appel — contrairement à une ancienne note ; rester présenté comme une offre personnelle, pas un article de catalogue (16/09).
-- Malentendu sur le calcul de la mensualité (division du prix total par la durée du programme au lieu de l'échéancier) : ne pas downseller, expliquer le programme complet et l'échéancier max 10 mois, finir par une question de diagnostic (24/09, Mondher).
-- Retard de démarrage pour raison financière (~2 mois) : deux messages — (1) empathie + mention du paiement en 10 fois sans frais + annonce qu'on vérifie avec l'administration, retour "dans 5 minutes" ; (2) "bonne nouvelle" + acompte 196 € déduit du total + solde en 10 fois + question de clôture (16/09, Boubou).
-- Volume d'heures jugé insuffisant au palier 48h/583€ : anticiper l'objection avant qu'elle arrive, recadrer sur un objectif réaliste plutôt que laisser comparer silencieusement à l'objectif initial (27/09, Hamza).
-- Lead qui répond après une deadline déjà passée : la nommer factuellement comme dépassée, demander explicitement s'il veut qu'on vérifie une extension, ne confirmer la réouverture ("bonne nouvelle") qu'après un vrai aller-retour (27/09, Henriqueta).
-- Numéro de test interne (+34695064884, "Ali Test Fr" / "Ali from easypeasy") : à exclure de toute analyse de conversations, ne jamais traiter comme un vrai lead ni envoyer en vrai (29/09).
+- Tiers payeur / facture société : ne jamais bloquer sur l'administratif — réactiver le lien, demander les infos société dans le même message, garder la main en annonçant un retour "aujourd'hui" (14/09).
+- Deux mécaniques de remboursement du 196 € : rétractation 14 jours → remboursé moins 196 € + cours du mois 1 ; garantie satisfait-remboursé → 100 % remboursé, 196 € compris (22/09).
+- Les mensualités engagent sur toute la durée du programme, indépendamment d'une pause éventuelle (22/09).
+- "Le contrat" = les CGV du mail d'admission ; le programme détaillé est sur le deuxième lien du même mail (22/09).
+- Client suisse : chiffrer systématiquement en CHF, mêmes chiffres qu'en euros, jamais de message de correction dédié pour un slip de devise (tranché 30/09).
+- CPF : 20 % d'heures en plus (36h sur 180h, 18h sur 90h), jamais une remise en euros ; conditions : capture des fonds CPF couvrant toute la formation, première inscription seulement (tranché 26/09).
+- Les petits formats sans garantie peuvent être proposés par chat, pas réservés à l'appel (16/09).
+- Malentendu sur le calcul de la mensualité : ne pas downseller, expliquer le programme complet et l'échéancier max 10 mois (24/09).
+- Retard de démarrage pour raison financière : deux messages — (1) empathie + paiement en 10 fois + annonce de vérification admin ; (2) "bonne nouvelle" + acompte déduit du total + question de clôture (16/09).
+- Volume d'heures jugé insuffisant au palier 48h/583€ : anticiper l'objection, recadrer sur un objectif réaliste (27/09).
+- Lead qui répond après une deadline passée : la nommer factuellement, demander s'il veut qu'on vérifie une extension, confirmer seulement après un vrai aller-retour (27/09).
+- Numéro de test interne (+34695064884, "Ali Test Fr") : exclure de toute analyse, ne jamais traiter comme un vrai lead (29/09).
+- Lead déjà inscrit avec question purement logistique : bulle factuelle seule, sans salutation ni question (27/09).
+- Lead qui exige le retrait d'une clause des CGV : tempo administration + mail de confirmation écrite ; attestation nominative signée si document officiel exigé ; jamais de CGV modifiées (01/10, Mehdi).
+- Lead qui renvoie vers une réponse déjà donnée par mail illisible : répondre sans délai en redirigeant vers WhatsApp ; si l'offre est connue par ailleurs (appel), confirmer point par point sans attendre (01/10, Mehdi).
+- Offre d'appel absente de la fiche lead : demander les chiffres exacts à Ali tout de suite pour drafter la confirmation complète, plutôt que différer avec un accusé neutre (01/10, Noa).
+- Thread où un tiers parle du lead à la 3e personne : vérifier avec Ali avant de réintroduire son prénom dans la réponse — voir À trancher (01/10, Mehdi).
+- Mail de résultats non retrouvé : vérifier l'adresse mail exacte et renvoyer vers les spams (01/10, Soly).
 
 ## À trancher avec Ali
 
-- Acompte 96 € vs 196 € en première offre quand le blocage est un problème de TIMING (pas de prix) : observé au moins 4 fois (Massi, Jacques, Antonio, 27/09 ; Boubou, 30/09 — retour de voyage dans 2 mois), contredit la règle générale 196 €→96 €. Non tranché.
-- Antonio (27/09) : deux messages de pression envoyés le même jour sans réponse hostile visible — ne pas généraliser une exception à la règle "un message de pression par jour" sur la base d'un seul cas.
-- Registre des extensions à l'étape "bonne nouvelle" : "j'ai pu vous prolonger" (personnel) vs "l'administration a prolongé" (neutre) — les deux ont été utilisés par Ali sur des fils différents (29/09, Tournier ; 30/09, Boris). Le registre personnel est confirmé à l'étape 1 (×2, Boris/Boubou) mais reste flottant à l'étape 2.
-- Format de livraison de l'étape "bonne nouvelle" : parfois coupée avant le lien/la mensualité, envoyés dans un message séparé (29/09, Tournier), parfois tout regroupé (lien + acompte + deadline same-day) en une seule bulle (30/09, Boubou) — à confirmer lequel est le défaut.
-- Un refus qui laisse la porte ouverte ("si besoin je reviendrai") compte-t-il comme un des "deux refus nets" qui déclenchent l'arrêt de la vente ? Observé chez Amuthini (28/09) où Ali a relancé avec une nouvelle offre payante plutôt que de fermer.
-- Les créneaux d'appel 17h30/19h30 proposés à un lead (Zakaria, 28/09) sont-ils une disponibilité personnelle générale ou spécifiquement réservés au rythme de relance deadline-day (05-PRINCIPES) ?
-- Omission de la question "Est-ce qu'il fonctionne bien ?" après un lien envoyé dans une bulle groupée (mise à jour + acompte + deadline) : observée deux fois (30/09, Boubou) — volontaire ou oubli ponctuel ?
-- Absence de question de clôture après l'annonce d'un acompte "bonne nouvelle" (30/09, Boubou) : à rapprocher du point précédent, même incertitude sur l'intention.
-- Elorri (29/09) : demande de retrait de la liste d'attente restée plus de 4h sans réponse envoyée — signal de vigilance, pas encore une leçon de rédaction.
+- Acompte 96 € vs 196 € en première offre pour un blocage de **timing** (pas de prix) : observé sans exception sur 5 cas (Massi, Jacques, Antonio, 27/09 ; Boubou, Naima, 30/09-01/10) mais jamais tranché verbalement par Ali — à confirmer si ça remplace la règle 196 €→96 € pour ce cas précis.
+- Registre des extensions à l'étape "bonne nouvelle" : "j'ai pu vous prolonger" (personnel) vs "l'administration a prolongé" (neutre) — toujours flottant (Tournier 29/09, Boris 30/09, Loïc 01/10 penche personnel à l'étape 1 mais l'étape 2 reste non tranchée).
+- Format de livraison de l'étape "bonne nouvelle" avec lien à transmettre : parfois coupée avant lien/mensualité (Tournier 29/09), parfois tout regroupé (Boubou 30/09), parfois fusionnée sans lien (Neila 01/10) — toujours pas de défaut confirmé.
+- Un refus qui laisse la porte ouverte ("si besoin je reviendrai") compte-t-il comme un des "deux refus nets" ? (Amuthini 28/09, Ali a relancé plutôt que fermer).
+- Les créneaux 17h30/19h30 proposés à un lead (Zakaria 28/09) sont-ils une disponibilité générale ou réservés au rythme deadline-day ?
+- Antonio (27/09) : deux messages de pression le même jour sans réponse hostile — ne pas généraliser une exception sur un seul cas.
+- Prénom réintroduit par Ali lui-même dans une relance ("Hello Tania", 01/10) : relâchement volontaire de la règle "jamais le prénom" (tranchée 30/09) ou écart ponctuel ?
+- Chiffre CPF "32h de speaking en plus" vu une fois (Mehdi 01/10), différent du standard 20 %/36h documenté — offre spécifique à ce lead ou écart à corriger ?
 
 ## Vigilance technique
 
-- `data/french/threads-full.jsonl` reste incomplet pour les leads dont l'étage CRM n'a pas bougé dans la journée (observé plusieurs jours de suite, 28-29/09) — vérifier via `lead.mjs <numéro>` directement pour ces cas plutôt que de conclure à l'absence d'échange.
-- Le fichier contient par ailleurs, à certains horaires groupés, des dizaines de messages `LEAD` à texte vide sur des leads sans rapport entre eux — probablement un artefact de synchronisation (accusés de lecture), pas de vrais messages en attente ; vérifier l'impact avant tout scan `c`/`C`.
-- Un incident de configuration (`~/.claude/settings.json`, règle de permission malformée) a bloqué une exécution automatisée le 26/09 — résolu depuis, mentionné pour mémoire seulement.
+- `data/french/threads-full.jsonl` reste incomplet pour les leads dont l'étage CRM n'a pas bougé dans la journée — vérifier via `lead.mjs <numéro>` directement plutôt que de conclure à l'absence d'échange.
+- Le fichier contient aussi, à certains horaires groupés, des dizaines de messages `LEAD` à texte vide sur des leads sans rapport — probablement un artefact de synchronisation, pas de vrais messages en attente ; vérifier l'impact avant tout scan `c`/`C`.
+- Numéro de test interne (+34695064884, "Ali Test Fr" / "Ali from easypeasy") : exclure de toute analyse, ne jamais envoyer en vrai.
