@@ -387,7 +387,9 @@ export default function TodayPage() {
   }, [todoData, today]);
   const overdueTodos = dueList.filter((t) => t.dueDate < today);
   const todayTodos = dueList.filter((t) => t.dueDate === today);
-  const timedTodos = todayTodos.filter((t) => t.dueTime && !t.evening).sort((a, b) => (a.dueTime! < b.dueTime! ? -1 : 1));
+  // A time wins over the evening flag · quick add sets evening on any time from 19:00, and a
+  // "timed AND evening" to-do used to fall through all three lists and vanish from Today (2026-10-01).
+  const timedTodos = todayTodos.filter((t) => t.dueTime).sort((a, b) => (a.dueTime! < b.dueTime! ? -1 : 1));
   const eveningTodos = todayTodos.filter((t) => t.evening && !t.dueTime);
   const anytimeTodos = todayTodos.filter((t) => !t.dueTime && !t.evening);
   const giveTime = (t: Todo, hhmm: string) => upsert({ ...t, dueDate: today, dueTime: hhmm, evening: false });
