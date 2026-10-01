@@ -177,7 +177,9 @@ function store(c, it) {
   if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Hub status: ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
   let suggestionId = null;
   if (bubbles.length) { // the draft becomes a normal suggestion in the thread: editable, sendable, learned from
-    suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Today’s plan: ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [] });
+    // Shown in the thread 15 min before its time (the reminder push comes 10 min before), not all day (Ali, 2026-10-01).
+    const showAt = whenIso && Date.parse(whenIso) - 15 * 60e3 > Date.now() ? new Date(Date.parse(whenIso) - 15 * 60e3).toISOString() : null;
+    suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Today’s plan: ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [], showAt });
     markSuggestionPushed(suggestionId);
   }
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),

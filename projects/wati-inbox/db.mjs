@@ -59,7 +59,8 @@ for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL 
 }
 // note = what Ali should know before sending; source = auto | ali (app button) | chat (Claude Code session)
 // instruction = what Ali typed to get this draft instead of the previous one (parent_id)
-for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER', 'kind TEXT', 'moves TEXT', 'needs TEXT']) { // kind = draft | needs | skip (2026-09-30)
+// show_at = the draft stays hidden (no push, not on screen) until this instant: a message planned for later in the day (Ali, 2026-10-01)
+for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER', 'kind TEXT', 'moves TEXT', 'needs TEXT', 'show_at TEXT']) { // kind = draft | needs | skip (2026-09-30)
   try { db.exec(`ALTER TABLE suggestions ADD COLUMN ${col}`); } catch {}
 }
 try { db.exec('ALTER TABLE messages ADD COLUMN tpl_name TEXT'); } catch {} // name of the automated template (2026-09-30)
@@ -170,7 +171,7 @@ export const setMuted = (waId, muted) => db.prepare('UPDATE threads SET muted = 
 export const saveContact = (waId, c) => db.prepare('UPDATE threads SET name = COALESCE(NULLIF(?, \'\'), name), stage = ?, meeting = ?, country = ?, email = ?, contact_at = ? WHERE wa_id = ?').run(c.name, c.stage, c.meeting, c.country, c.email, new Date().toISOString(), waId);
 export const wantSuggestion = (waId) => db.prepare('UPDATE threads SET wanted = 1 WHERE wa_id = ?').run(waId);
 export const latestSuggestion = (waId) => db.prepare('SELECT * FROM suggestions WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);
-export const insertSuggestion = (waId, options, note, source, { instruction = null, parentId = null, kind = 'draft', moves = null, needs = null } = {}) => Number(db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source, instruction, parent_id, kind, moves, needs) VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)').run(waId, new Date().toISOString(), JSON.stringify(options), note || null, source, instruction, parentId, kind, moves ? JSON.stringify(moves) : null, needs).lastInsertRowid);
+export const insertSuggestion = (waId, options, note, source, { instruction = null, parentId = null, kind = 'draft', moves = null, needs = null, showAt = null } = {}) => Number(db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source, instruction, parent_id, kind, moves, needs, show_at) VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)').run(waId, new Date().toISOString(), JSON.stringify(options), note || null, source, instruction, parentId, kind, moves ? JSON.stringify(moves) : null, needs, showAt).lastInsertRowid);
 export const getSuggestion = (id) => db.prepare('SELECT * FROM suggestions WHERE id = ?').get(id);
 export const insertLesson = (l) => Number(db.prepare('INSERT INTO lessons (wa_id, at, kind, suggestion_id, batch, sent, title, text) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(l.wa_id, new Date().toISOString(), l.kind, l.suggestion_id ?? null, l.batch ?? null, JSON.stringify(l.sent), l.title ?? null, l.text ?? null).lastInsertRowid);
 export const latestLesson = (waId) => db.prepare('SELECT id, at, kind, title FROM lessons WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);
@@ -178,7 +179,7 @@ export const lessonRunsSince = (iso) => db.prepare("SELECT count(*) n FROM lesso
 export const messagesBefore = (waId, iso, n) => db.prepare('SELECT at, who, text, tpl FROM messages WHERE wa_id = ? AND at <= ? ORDER BY at DESC LIMIT ?').all(waId, iso, n).reverse();
 export const autoSuggestionsSince = (iso) => db.prepare("SELECT count(*) n FROM suggestions WHERE created_at >= ? AND source = 'auto'").get(iso).n;
 export const pendingRecent = (hours) => db.prepare('SELECT * FROM threads WHERE pending = 1 AND muted = 0 AND last_inbound_at > ?').all(new Date(Date.now() - hours * 3600e3).toISOString());
-export const unpushedSuggestions = () => db.prepare('SELECT s.*, t.name FROM suggestions s LEFT JOIN threads t ON t.wa_id = s.wa_id WHERE s.pushed = 0').all();
+export const unpushedSuggestions = () => db.prepare('SELECT s.*, t.name FROM suggestions s LEFT JOIN threads t ON t.wa_id = s.wa_id WHERE s.pushed = 0 AND (s.show_at IS NULL OR s.show_at <= ?)').all(new Date().toISOString());
 // A draft is shown only while it is still useful (Ali, 2026-09-30): not after a newer lead message, not once Ali
 // replied after it (from the app or straight from Wati — automatic templates do not count) and not once he marked the
 // thread treated. Exception: a two-step draft whose second part is still to send stays until that part left.
@@ -189,6 +190,7 @@ const humanRepliesAfter = (waId, iso) => Math.max(
 const laterSent = (id) => !!db.prepare(`SELECT 1 FROM sends WHERE kind = 'text' AND ok = 1 AND payload LIKE ? AND payload LIKE ? LIMIT 1`).get(`%"suggestionId":${id},%`, '%"part":"later"%');
 export function suggestionVisible(t, s, { laterScheduled = false } = {}) {
   if (!s || !t) return false;
+  if (s.show_at && s.show_at > new Date().toISOString()) return false; // planned for later today: not yet
   if (t.last_inbound_at && s.created_at < t.last_inbound_at) return false;
   // Ali often copies the bubbles one by one, edits and sends them himself (2026-10-01): the draft stays until as many
   // messages as it has bubbles have left (or he taps Handled); a two-step draft also waits for its second part.
