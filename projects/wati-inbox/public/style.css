@@ -135,3 +135,4 @@ header a[data-nav] { font-size: 22px; padding: 0 6px; }
 .plan-home { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; border-color: var(--accent); }
 .plan-home .chev { font-size: 22px; color: var(--muted); }
 .small.ok { color: var(--ok); }
+.card.plan.resume { border-left-color: var(--warn); }

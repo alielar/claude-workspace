@@ -139,8 +139,8 @@ async function api(req, res, path) {
   const tmt = /^\/api\/tm\/thread\/(\d{8,15})$/.exec(path);
   if (tmt) return json(res, 200, { messages: tmThread(tmt[1], 60) });
   // The day plan (plan-engine.mjs): the cards, their state, and Ali's verdicts.
-  const planItem = (i) => { const h = hubNextFor(i.wa_id); const skip = i.skip_templates ? JSON.parse(i.skip_templates) : []; return { ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: skip,
-    skip_steps: skip.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }),
+  const planItem = (i) => { const h = hubNextFor(i.wa_id); const skip = i.skip_templates ? JSON.parse(i.skip_templates) : [], keep = i.keep_templates ? JSON.parse(i.keep_templates) : []; const stepsOf = (list) => list.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }); return { ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: skip, keep_templates: keep,
+    skip_steps: stepsOf(skip), keep_steps: stepsOf(keep),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
   if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL });
   if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Numéro manquant' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }

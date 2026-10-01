@@ -345,7 +345,7 @@ function bindOffer(waId, d) {
 }
 
 // ── Aujourd'hui: the day plan written by Claude from the Sales Hub and the conversations ──
-const KIND = { pause: ['À mettre en pause', 'bad'], fix: ['À vérifier', 'warn'], followup: ['Relance', 'good'], wait: ['À attendre', ''], ok: ['Colle', 'ok'] };
+const KIND = { pause: ['À mettre en pause', 'bad'], resume: ['Reprendre l’automatisation', 'warn'], fix: ['À vérifier', 'warn'], followup: ['Relance', 'good'], wait: ['À attendre', ''], ok: ['Colle', 'ok'] };
 const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso), t = new Date(); return d.toDateString() === t.toDateString() ? fmtTime(iso) : `${fmtDay(iso)} ${fmtTime(iso)}`; };
 function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
   let [label, cls] = KIND[i.kind] || ['', ''];
@@ -357,10 +357,10 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     <div class="flag-title">${esc(i.title)}</div>
     ${i.why ? `<div class="small">${esc(i.why)}</div>` : ''}
     ${i.action ? `<div class="small action">→ ${esc(i.action)}</div>` : ''}
-    ${i.kind === 'pause' && i.pause_scope === 'next' && i.skip_steps?.length ? `<div class="small">À décocher : <b>${i.skip_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}${x.at ? ` · ${fmtWhen(x.at)}` : ''}`).join('</b> et <b>')}</b></div>` : ''}${i.kind === 'pause' && i.hub_paused_now ? '<div class="small ok">Le Hub indique ce lead en pause</div>' : ''}
+    ${i.kind === 'pause' && i.pause_scope === 'next' && i.skip_steps?.length ? `<div class="small">À décocher : <b>${i.skip_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}${x.at ? ` · ${fmtWhen(x.at)}` : ''}`).join('</b> et <b>')}</b></div>` : ''}${i.kind === 'pause' && i.hub_paused_now ? '<div class="small ok">Le Hub indique ce lead en pause</div>' : ''}${i.kind === 'resume' ? `<div class="small">${i.skip_steps?.length ? `Décocher : <b>${i.skip_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}`).join('</b>, <b>')}</b>` : ''}${i.keep_steps?.length ? `${i.skip_steps?.length ? ' · ' : ''}Laisser : <b>${i.keep_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}${x.at ? ` ${fmtWhen(x.at)}` : ''}`).join('</b>, <b>')}</b>` : ''}${!i.hub_paused_now ? '<div class="small ok">Le Hub indique la pause levée</div>' : ''}</div>` : ''}
     ${i.template ? `<div class="small">Template : <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">Le brouillon est plus bas, prêt à envoyer</div>' : ''}
-    ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Fait</button><button class="small" data-plandismiss="${i.id}">Pas d’accord</button><button class="small" data-planignore="${i.wa_id}" title="Plus jamais de carte pour ce lead">Ne plus planifier</button>${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Ouvrir</a>` : ''}${salesHub && (i.kind === 'pause' || i.kind === 'fix') ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Rouvrir</button></div>`}
+    ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Fait</button><button class="small" data-plandismiss="${i.id}">Pas d’accord</button><button class="small" data-planignore="${i.wa_id}" title="Plus jamais de carte pour ce lead">Ne plus planifier</button>${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Ouvrir</a>` : ''}${salesHub && (i.kind === 'pause' || i.kind === 'fix' || i.kind === 'resume') ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Rouvrir</button></div>`}
   </div>`;
 }
 function bindPlanButtons(after) {

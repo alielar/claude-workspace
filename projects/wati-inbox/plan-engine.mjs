@@ -112,9 +112,9 @@ function leadBlock(c) {
 export const CITF_CASES = { payment: 'paiement plus tard', payment_month: 'paiement le mois prochain', more_time: 'besoin de temps', general_later: 'plus tard, sans raison précise' };
 const SCHEMA = { type: 'object', properties: {
   items: { type: 'array', items: { type: 'object', properties: {
-    waId: { type: 'string' }, kind: { type: 'string', enum: ['pause', 'followup', 'wait', 'fix', 'ok'] }, when: { type: 'string' }, title: { type: 'string' }, why: { type: 'string' }, action: { type: 'string' },
-    pauseScope: { type: 'string' }, skipTemplates: { type: 'array', items: { type: 'string' } }, hubStatus: { type: 'string' }, citfCase: { type: 'string' }, citfDate: { type: 'string' }, bubbles: { type: 'array', items: { type: 'string' } }, template: { type: 'string' } },
-    required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'hubStatus', 'citfCase', 'citfDate', 'bubbles', 'template'] } },
+    waId: { type: 'string' }, kind: { type: 'string', enum: ['pause', 'followup', 'resume', 'wait', 'fix', 'ok'] }, when: { type: 'string' }, title: { type: 'string' }, why: { type: 'string' }, action: { type: 'string' },
+    pauseScope: { type: 'string' }, skipTemplates: { type: 'array', items: { type: 'string' } }, keepTemplates: { type: 'array', items: { type: 'string' } }, hubStatus: { type: 'string' }, citfCase: { type: 'string' }, citfDate: { type: 'string' }, bubbles: { type: 'array', items: { type: 'string' } }, template: { type: 'string' } },
+    required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'keepTemplates', 'hubStatus', 'citfCase', 'citfDate', 'bubbles', 'template'] } },
   summary: { type: 'string' } }, required: ['items', 'summary'] };
 
 async function judgeBatch(batch) {
@@ -138,15 +138,17 @@ function store(c, it) {
   for (const old of planItemsFor(c.wa_id, d)) if (old.state === 'open') { setPlanState(old.id, 'superseded'); if (old.pushed) pushed = true; } // a re-judged card is not pushed twice
   const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || null;
   const bubbles = (Array.isArray(it.bubbles) ? it.bubbles : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
-  let kind = ['pause', 'followup', 'wait', 'fix', 'ok'].includes(it.kind) ? it.kind : 'ok';
+  let kind = ['pause', 'followup', 'resume', 'wait', 'fix', 'ok'].includes(it.kind) ? it.kind : 'ok';
   if (kind === 'pause' && c.paused) kind = bubbles.length ? 'followup' : 'wait'; // already paused: nothing to pause, a human gesture or a date
   const whenIso = madridIso(it.when) || (kind === 'pause' && c.next_at ? c.next_at : null);
   // Which Hub mechanism: pause the whole automation, or skip only the named template(s) (Ali, 2026-10-01).
   const pauseScope = kind === 'pause' ? (it.pauseScope === 'next' ? 'next' : 'all') : null;
-  const skip = kind === 'pause' && pauseScope === 'next' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];
+  const skip = (kind === 'pause' && pauseScope === 'next') || kind === 'resume' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];
+  const keep = kind === 'resume' ? (Array.isArray(it.keepTemplates) ? it.keepTemplates.map(String).filter(Boolean) : []) : [];
+  const label = (t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; };
   if (pauseScope === 'next' && !skip.length) { const n = realNext(c); skip.push(n ? n.template : c.next_tpl); }
   const skipLabel = skip.map((t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; });
-  const actionBits = [pauseScope === 'all' ? 'Hub : pause complète' : pauseScope === 'next' ? `Hub : décocher ${skipLabel.join(' et ')}, le reste part normalement` : '', String(it.action || '').trim()];
+  const actionBits = [pauseScope === 'all' ? 'Hub : pause complète' : pauseScope === 'next' ? `Hub : décocher ${skipLabel.join(' et ')}, le reste part normalement` : kind === 'resume' ? `Hub : lever la pause${skip.length ? `, décocher ${skip.map(label).join(', ')}` : ''}${keep.length ? `, laisser ${keep.map(label).join(', ')}` : ''}` : '', String(it.action || '').trim()];
   // IITF is retired (Ali, 2026-10-01): a lead who comes back later is CITF with a reason and a date.
   const hubStatus = it.hubStatus === 'IITF' ? 'CITF' : it.hubStatus;
   if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Statut Hub : ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
@@ -156,7 +158,7 @@ function store(c, it) {
     markSuggestionPushed(suggestionId);
   }
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
-    hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: hubSig(c.wa_id), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, pushed });
+    hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: hubSig(c.wa_id), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, keep_templates: keep.length ? keep : null, pushed });
 }
 
 let running = false;
@@ -196,7 +198,7 @@ async function pushes() {
   const h = Number(madrid().slice(11, 13));
   if (h < FROM_H || h >= TO_H) return;
   for (const i of unpushedPlanItems()) {
-    if (i.kind === 'pause' || i.kind === 'fix') await pushAll({ title: `${i.kind === 'pause' ? (i.pause_scope === 'next' ? 'Template à sauter' : 'Pause complète') : 'À vérifier'} · ${i.name || i.wa_id}`, body: `${i.title}${i.hub_next_at ? `. ${i.hub_next} à ${fmtHM(i.hub_next_at)}` : ''}`, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
+    if (i.kind === 'pause' || i.kind === 'fix' || i.kind === 'resume') await pushAll({ title: `${i.kind === 'pause' ? (i.pause_scope === 'next' ? 'Template à décocher' : 'Pause complète') : i.kind === 'resume' ? 'Reprendre l’automatisation' : 'À vérifier'} · ${i.name || i.wa_id}`, body: `${i.title}${i.hub_next_at ? `. ${i.hub_next} à ${fmtHM(i.hub_next_at)}` : ''}`, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
     markPlanPushed(i.id);
   }
   for (const i of dueReminders(new Date(Date.now() + 10 * 60e3).toISOString())) {

@@ -271,10 +271,10 @@ export function saveHubTemplates(steps) {
 export const hubTemplate = (name) => db.prepare('SELECT * FROM hub_templates WHERE template = ?').get(name);
 export const hubTemplateRows = () => db.prepare('SELECT * FROM hub_templates ORDER BY anchor, day, time').all();
 
-for (const col of ['pause_scope TEXT', 'skip_templates TEXT']) { try { db.exec(`ALTER TABLE plan_items ADD COLUMN ${col}`); } catch {} } // all = pause the whole automation, next = skip the named template(s) (2026-10-01)
-export const insertPlanItem = (p) => Number(db.prepare(`INSERT INTO plan_items (wa_id, name, day, kind, state, at, when_at, title, why, action, hub_status, hub_next, hub_next_at, hub_paused, hub_sig, bubbles, template, suggestion_id, pause_scope, skip_templates, pushed, updated_at)
-  VALUES (?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-  .run(p.wa_id, p.name ?? null, p.day, p.kind, new Date().toISOString(), p.when_at ?? null, p.title ?? null, p.why ?? null, p.action ?? null, p.hub_status ?? null, p.hub_next ?? null, p.hub_next_at ?? null, p.hub_paused ? 1 : 0, p.hub_sig ?? null, p.bubbles ? JSON.stringify(p.bubbles) : null, p.template ?? null, p.suggestion_id ?? null, p.pause_scope ?? null, p.skip_templates ? JSON.stringify(p.skip_templates) : null, p.pushed ? 1 : 0, new Date().toISOString()).lastInsertRowid);
+for (const col of ['pause_scope TEXT', 'skip_templates TEXT', 'keep_templates TEXT']) { try { db.exec(`ALTER TABLE plan_items ADD COLUMN ${col}`); } catch {} } // all = pause the whole automation, next = skip the named template(s) (2026-10-01)
+export const insertPlanItem = (p) => Number(db.prepare(`INSERT INTO plan_items (wa_id, name, day, kind, state, at, when_at, title, why, action, hub_status, hub_next, hub_next_at, hub_paused, hub_sig, bubbles, template, suggestion_id, pause_scope, skip_templates, keep_templates, pushed, updated_at)
+  VALUES (?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+  .run(p.wa_id, p.name ?? null, p.day, p.kind, new Date().toISOString(), p.when_at ?? null, p.title ?? null, p.why ?? null, p.action ?? null, p.hub_status ?? null, p.hub_next ?? null, p.hub_next_at ?? null, p.hub_paused ? 1 : 0, p.hub_sig ?? null, p.bubbles ? JSON.stringify(p.bubbles) : null, p.template ?? null, p.suggestion_id ?? null, p.pause_scope ?? null, p.skip_templates ? JSON.stringify(p.skip_templates) : null, p.keep_templates ? JSON.stringify(p.keep_templates) : null, p.pushed ? 1 : 0, new Date().toISOString()).lastInsertRowid);
 export const planItemById = (id) => db.prepare('SELECT * FROM plan_items WHERE id = ?').get(id);
 export const planItems = (day) => db.prepare('SELECT * FROM plan_items WHERE day = ? ORDER BY CASE state WHEN \'open\' THEN 0 ELSE 1 END, COALESCE(when_at, hub_next_at, \'9\'), id').all(day);
 export const openPlanItems = (waId = null) => waId ? db.prepare("SELECT * FROM plan_items WHERE wa_id = ? AND state = 'open' ORDER BY id DESC").all(waId) : db.prepare("SELECT * FROM plan_items WHERE state = 'open' ORDER BY COALESCE(when_at, hub_next_at, '9')").all();
@@ -291,7 +291,7 @@ export const dueReminders = (untilIso) => db.prepare("SELECT * FROM plan_items W
 export const planDismissed = (limit = 30) => db.prepare("SELECT name, kind, title, note, day FROM plan_items WHERE state = 'dismissed' ORDER BY id DESC LIMIT ?").all(limit);
 export const planRunsSince = (iso) => db.prepare("SELECT count(*) n FROM state WHERE key LIKE 'plan_call_%' AND value >= ?").get(iso).n;
 export const planCounts = (day) => db.prepare(`SELECT
-  COALESCE(sum(state = 'open' AND kind IN ('pause', 'fix')), 0) todo,
+  COALESCE(sum(state = 'open' AND kind IN ('pause', 'fix', 'resume')), 0) todo,
   COALESCE(sum(state = 'open' AND kind = 'followup'), 0) followups,
   COALESCE(sum(state = 'open' AND kind = 'wait'), 0) waits,
   COALESCE(sum(state = 'open' AND kind = 'ok'), 0) oks,
