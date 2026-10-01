@@ -13,7 +13,7 @@
 //   node --env-file=.env plan-engine.mjs --run      judge them now, write the cards, push the summary
 
 import { readFileSync, mkdirSync } from 'node:fs';
-import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRows, insertPlanItem, planItems, openPlanItems, planItemsFor, setPlanState, expirePlanItems, unpushedPlanItems, markPlanPushed, dueReminders, markPlanReminded, planDismissed, planCounts, getState, setState, insertSuggestion, markSuggestionPushed } from './db.mjs';
+import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRows, insertPlanItem, laterPending, planItems, openPlanItems, planItemsFor, setPlanState, expirePlanItems, unpushedPlanItems, markPlanPushed, dueReminders, markPlanReminded, planDismissed, planCounts, getState, setState, insertSuggestion, markSuggestionPushed } from './db.mjs';
 import { hubReady } from './hub.mjs';
 import { hubSig, onHubChange, syncUpcoming, upcomingOf, realNext, stepOf } from './hub-sync.mjs';
 import { runClaude, madrid } from './suggest-engine.mjs';
@@ -180,7 +180,8 @@ function store(c, it) {
   const hubStatus = it.hubStatus === 'IITF' ? 'CITF' : it.hubStatus;
   if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Hub status: ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
   let suggestionId = null;
-  if (bubbles.length) { // the draft becomes a normal suggestion in the thread: editable, sendable, learned from
+  if (bubbles.length && laterPending(c.wa_id)) log(`${name || c.wa_id}: step 2 of a two-step draft still to send, the card keeps its bubbles but does not replace it`);
+  else if (bubbles.length) { // the draft becomes a normal suggestion in the thread: editable, sendable, learned from
     // Shown in the thread 15 min before its time (the reminder push comes 10 min before), not all day (Ali, 2026-10-01).
     const showAt = whenIso && Date.parse(whenIso) - 15 * 60e3 > Date.now() ? new Date(Date.parse(whenIso) - 15 * 60e3).toISOString() : null;
     suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Today’s plan: ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [], showAt });

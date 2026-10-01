@@ -264,7 +264,7 @@ async function renderThread(waId, { quiet = false } = {}) {
         ${o.why ? `<details><summary>Why</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
-        <div class="opt-head">In 5-10 min <span class="muted">· the good news from the administration</span></div>
+        <div class="opt-head">In 5-10 min <span class="muted">· the good news from the administration${d.thread?.last_inbound_at && sug.created_at < d.thread.last_inbound_at ? ' · the lead wrote since, step 2 still to send' : ''}</span></div>
         ${laterEdit == null ? o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copyl="${j}">Copy</button></div>`).join('') : fields(laterEdit, 'lb')}
         <div class="acts">${d.windowOpen ? `<button class="primary small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Schedule in 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Send now</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Edit' : 'Cancel'}</button><button class="small" data-copyalll="0">Copy all</button></div>
       </div>` : '');

@@ -9,6 +9,7 @@ import { startSuggesting, scheduleAutoDraft, AUTO_DELAY_MS } from './suggest-eng
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
 import { closeTbcAlerts, closePlanItems, openPlanItems, setPlanState } from './db.mjs';
 import { afterAliMessage } from './plan-engine.mjs';
+import { laterPending } from './db.mjs';
 
 export const POLL_MS = 45_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -54,7 +55,10 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
     // One notification per lead message, and it arrives when the draft is ready (Ali, 2026-09-30): the
     // push carries the lead's message and the reply is already on screen when he opens it. The message
     // itself is pushed only when no draft will come (window closed, cap reached) or when it is late.
-    if (pending && scheduleAutoDraft(waId)) deferNotification(waId, name);
+    // Step 2 of an administration two-step still to send: the lead's "merci" gets no draft, the step 2 stays on screen
+    // and the push says so (Ali, 2026-10-01). He can still ask for a draft by hand if the lead asked something real.
+    if (laterPending(waId)) await pushAll({ title: `${name || waId} · step 2 still to send`, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
+    else if (pending && scheduleAutoDraft(waId)) deferNotification(waId, name);
     else await pushAll({ title: name || waId, body: waitingText(waId) || lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
   }
   return { isNew, pending };

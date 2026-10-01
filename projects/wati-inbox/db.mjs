@@ -191,15 +191,29 @@ const laterSent = (id) => !!db.prepare(`SELECT 1 FROM sends WHERE kind = 'text' 
 export function suggestionVisible(t, s, { laterScheduled = false } = {}) {
   if (!s || !t) return false;
   // show_at only delays the push (Ali, 2026-10-01): the draft itself is in the thread at once, to edit or send from there.
-  if (t.last_inbound_at && s.created_at < t.last_inbound_at) return false;
   // Ali often copies the bubbles one by one, edits and sends them himself (2026-10-01): the draft stays until as many
   // messages as it has bubbles have left (or he taps Handled); a two-step draft also waits for its second part.
   let bubbles = [], later = []; try { const o = JSON.parse(s.options)[0] || {}; bubbles = o.bubbles || []; later = o.later || []; } catch {}
   if (t.handled_at && t.handled_at > s.created_at) return false;
+  const laterPendingHere = (!s.kind || s.kind === 'draft') && later.length > 0 && !laterSent(s.id) && !laterScheduled;
+  // The lead wrote after the draft: it is over — except a two-step administration draft whose step 2 ("bonne
+  // nouvelle") is still to send: it stays until Ali sends it, whatever the lead answered in between (Ali, 2026-10-01).
+  if (t.last_inbound_at && s.created_at < t.last_inbound_at) return laterPendingHere;
   const sent = humanRepliesAfter(t.wa_id, s.created_at);
   if (s.kind && s.kind !== 'draft') return sent === 0;
   if (sent < bubbles.length) return true;
-  return later.length > 0 && !laterSent(s.id) && !laterScheduled;
+  return laterPendingHere;
+}
+// The lead's latest draft when its step 2 is still to send (so no new draft replaces it, and no auto draft answers
+// the lead's "merci" in between): the suggestion row, or null.
+export function laterPending(waId) {
+  const s = latestSuggestion(waId);
+  if (!s || (s.kind && s.kind !== 'draft')) return null;
+  let later = []; try { later = JSON.parse(s.options)[0]?.later || []; } catch {}
+  if (!later.length || laterSent(s.id)) return null;
+  const t = getThread(waId);
+  if (t?.handled_at && t.handled_at > s.created_at) return null;
+  return s;
 }
 export const markSuggestionPushed = (id) => db.prepare('UPDATE suggestions SET pushed = 1 WHERE id = ?').run(id);
 

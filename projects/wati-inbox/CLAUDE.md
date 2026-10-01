@@ -63,6 +63,11 @@ node --check server.mjs && launchctl kickstart -k gui/$(id -u)/com.ali.wati-inbo
 Then commit and push. Test a draft from the terminal with
 `node --env-file=.env suggest-engine.mjs <waId>`.
 
+- **Two-step administration draft** (Ali, 2026-10-01): while its step 2 ("bonne nouvelle") is still to send, the draft stays on
+  screen whatever the lead writes in between (`suggestionVisible`), no automatic draft answers that reply (the push says
+  "step 2 still to send"), and a plan card keeps its bubbles without replacing the draft (`laterPending` in `db.mjs`).
+  Ali can still ask for a draft by hand if the lead asked something real.
+
 ## Language
 Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
 
