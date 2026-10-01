@@ -137,6 +137,8 @@ header a[data-nav] { font-size: 22px; padding: 0 6px; }
 .small.ok { color: var(--ok); }
 .card.plan.resume { border-left-color: var(--warn); }
 
-/* Dictation (2026-10-01): the button turns red while recording */
-button.mic.rec { background: #c62828; color: #fff; border-color: #c62828; animation: micpulse 1.2s ease-in-out infinite; }
+/* Dictation (2026-10-01): microphone icon, red and pulsing while recording, elapsed time next to it */
+button.mic { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; }
+button.mic svg { flex: none; }
+button.mic.rec { background: #c62828; color: #fff; border-color: #c62828; animation: micpulse 1.2s ease-in-out infinite; font-variant-numeric: tabular-nums; }
 @keyframes micpulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }

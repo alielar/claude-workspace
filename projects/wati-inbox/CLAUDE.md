@@ -84,8 +84,12 @@ Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, but
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.
 
 **Dictation** (Ali, 2026-10-01): a `Dictate` button next to each note-for-Claude field (the steer panel's note and the
-"Claude needs one detail" answer). Tap to start, tap again to stop; on the laptop the recording goes on while another
-window has the focus (the phone stops it when the app goes to the background, iOS rule). The browser records 16 kHz mono
+"Claude needs one detail" answer). Tap the microphone to start (red, pulsing, elapsed time), tap again to stop; on the laptop the
+recording goes on while another window has the focus (the phone stops it when the app goes to the background, iOS
+rule). The text appears while Ali speaks: the browser cuts the speech at pauses (≈0.7 s silence, pieces of 0.8–15 s),
+sends each piece, and meanwhile re-sends the piece being spoken every 2.5 s for a provisional text replaced at the
+pause; the previous pieces go along as `prompt` for context. Harness: `scratchpad/mic-harness.mjs` feeds a WAV through
+the real pipeline against the live server. The browser records 16 kHz mono
 WAV itself (`toWav16k` in `public/app.js`, no codec, no ffmpeg) and POSTs it to `/api/transcribe`; `transcribe.mjs` hands
 it to one long-lived Python worker (`transcribe-worker.py`, Whisper large-v3-turbo on Apple MLX, local and free, model
 cached under `~/.cache/huggingface`, ~1.6 GB) that starts on the first dictation and is let go after `DICTATION_IDLE_MIN`

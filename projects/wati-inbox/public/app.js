@@ -21,14 +21,18 @@ async function copyText(text, btn) {
   toast(ok ? 'Copied' : 'Could not copy here');
 }
 
-// Dictation (Ali, 2026-10-01): a Dictate button on each note-for-Claude field. Tap to start, tap again to stop; on the
-// laptop the recording goes on while another window has the focus. The browser records 16 kHz mono WAV (no codec, no
-// ffmpeg), the Mac transcribes it (Whisper large-v3-turbo, local) and the text is appended to the field.
-let rec = null; // { field, ctx, stream, src, node, chunks, rate, startedAt, timer }
-const micLabel = (field) => rec && rec.field === field ? `Stop · ${Math.floor((Date.now() - rec.startedAt) / 1000)} s` : rec ? 'Recording…' : 'Dictate';
-const micHtml = (field) => `<button class="small mic${rec && rec.field === field ? ' rec' : ''}" type="button" data-mic="${field}">${micLabel(field)}</button>`;
-const micPaint = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.textContent = micLabel(b.dataset.mic); b.classList.toggle('rec', !!rec && rec.field === b.dataset.mic); });
+// Dictation (Ali, 2026-10-01): a microphone button on each note-for-Claude field. Tap to start (red, pulsing, with the
+// elapsed time), tap again to stop; on the laptop the recording goes on while another window has the focus. The text
+// appears progressively while he speaks: the browser cuts the speech at pauses (≈0.7 s of silence) and sends each
+// piece as 16 kHz mono WAV to the Mac (Whisper large-v3-turbo, local); the piece being spoken is transcribed every
+// 2.5 s as a provisional text, replaced by the final one at the pause. Previous text gives the model its context.
+let rec = null; // { field, ctx, stream, src, node, rate, startedAt, timer, base, segs: [{id, text, final}], seg: chunks of the current piece, ... }
+const MIC_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4M8 21h8"/></svg>';
+const micLabel = (field) => rec && rec.field === field ? `${MIC_ICON}<span>${Math.floor((Date.now() - rec.startedAt) / 60000)}:${String(Math.floor((Date.now() - rec.startedAt) / 1000) % 60).padStart(2, '0')}</span>` : `${MIC_ICON}<span>${rec ? 'Busy' : 'Dictate'}</span>`;
+const micHtml = (field) => `<button class="small mic${rec && rec.field === field ? ' rec' : ''}" type="button" data-mic="${field}" title="Dictate">${micLabel(field)}</button>`;
+const micPaint = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.innerHTML = micLabel(b.dataset.mic); b.classList.toggle('rec', !!rec && rec.field === b.dataset.mic); });
 const bindMic = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.onclick = () => micToggle(b.dataset.mic); });
+const SEG_SILENCE_MS = 700, SEG_MIN_MS = 800, SEG_MAX_MS = 15000, INTERIM_MS = 2500, VOICE_RMS = 0.012;
 async function micToggle(field) {
   if (rec) { if (rec.field !== field) { toast('Stop the other dictation first'); return; } return micStop(); }
   if (!navigator.mediaDevices?.getUserMedia) { toast('No microphone access in this browser'); return; }
@@ -38,33 +42,59 @@ async function micToggle(field) {
     await ctx.resume();
     const src = ctx.createMediaStreamSource(stream);
     const node = ctx.createScriptProcessor(4096, 1, 1);
-    const chunks = [];
-    node.onaudioprocess = (e) => { if (rec) chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+    const ta = $(`#${field}`);
+    const base = (ta ? ta.value : dir.instruction).trim();
+    rec = { field, ctx, stream, src, node, rate: ctx.sampleRate, startedAt: Date.now(), base, segs: [], seg: [], segMs: 0, segVoice: false, lastVoiceAt: 0, lastInterimAt: 0, interimBusy: false, nextId: 1, inflight: 0 };
+    rec.timer = setInterval(micPaint, 1000);
+    node.onaudioprocess = (e) => { if (rec && rec.field === field) micFrame(e.inputBuffer.getChannelData(0)); };
     src.connect(node); node.connect(ctx.destination);
-    rec = { field, ctx, stream, src, node, chunks, rate: ctx.sampleRate, startedAt: Date.now(), timer: setInterval(micPaint, 1000) };
     micPaint();
   } catch (e) { toast(e.name === 'NotAllowedError' ? 'Microphone refused. Allow it in the browser settings' : `Microphone: ${e.message}`); }
+}
+// One audio frame (≈85 ms at 48 kHz): accumulate, detect voice, cut a piece at a pause, ask for a provisional text meanwhile.
+function micFrame(samples) {
+  const r = rec; const now = Date.now();
+  let s = 0; for (let i = 0; i < samples.length; i += 4) s += samples[i] * samples[i];
+  const rms = Math.sqrt(s / (samples.length / 4));
+  r.seg.push(new Float32Array(samples)); r.segMs += (samples.length / r.rate) * 1000;
+  if (rms > VOICE_RMS) { r.segVoice = true; r.lastVoiceAt = now; }
+  if (!r.segVoice) { if (r.segMs > 4000) { r.seg = []; r.segMs = 0; } return; } // silence only: drop it, keep the buffer small
+  const pause = now - r.lastVoiceAt >= SEG_SILENCE_MS;
+  if ((pause && r.segMs >= SEG_MIN_MS) || r.segMs >= SEG_MAX_MS) micCut(true);
+  else if (now - r.lastInterimAt >= INTERIM_MS && !r.interimBusy && r.segMs >= SEG_MIN_MS) micCut(false);
+}
+// Send the current piece: final = it ends here (a pause), provisional = still being spoken, resent later.
+function micCut(final) {
+  const r = rec;
+  const wav = toWav16k(r.seg, r.rate);
+  let seg = r.segs.find((x) => x.id === r.curId && !x.final);
+  if (!seg) { seg = { id: r.nextId++, text: '', final: false }; r.segs.push(seg); r.curId = seg.id; }
+  if (final) { seg.final = true; r.seg = []; r.segMs = 0; r.segVoice = false; r.curId = null; } else { r.lastInterimAt = Date.now(); r.interimBusy = true; }
+  const prev = r.segs.filter((x) => x.final && x.id < seg.id && x.text).map((x) => x.text).join(' ').slice(-200);
+  const run = ++seg.run || (seg.run = 1);
+  r.inflight++;
+  fetch(`/api/transcribe?prompt=${encodeURIComponent(prev)}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav })
+    .then(async (res) => { const d = await res.json().catch(() => ({})); if (res.status === 401) { renderLogin(); throw new Error('login'); } if (!res.ok) throw new Error(d.error || `Error ${res.status}`); return d; })
+    .then((d) => { if (run === seg.run || final) seg.text = (d.text || '').trim(); micRender(r); })
+    .catch((e) => { if (final) toast(e.message); })
+    .finally(() => { r.inflight--; if (!final) r.interimBusy = false; if (!rec && r.inflight === 0 && r.done) r.done(); });
+}
+// Field = what was there + every piece in order (provisional ones included, so the text grows as he speaks).
+function micRender(r) {
+  const text = [r.base, ...r.segs.map((x) => x.text).filter(Boolean)].filter(Boolean).join(' ');
+  dir.instruction = text;
+  const ta = $(`#${r.field}`);
+  if (ta && ta.value !== text) { ta.value = text; ta.scrollTop = ta.scrollHeight; }
 }
 async function micStop() {
   const r = rec; rec = null; clearInterval(r.timer);
   try { r.src.disconnect(); r.node.disconnect(); r.stream.getTracks().forEach((t) => t.stop()); await r.ctx.close(); } catch {}
   micPaint();
-  const wav = toWav16k(r.chunks, r.rate);
-  if (wav.byteLength < 44 + 16000) { toast('Too short'); return; }
-  toast('Transcribing…');
-  try {
-    const res = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav });
-    const d = await res.json().catch(() => ({}));
-    if (res.status === 401) { renderLogin(); return; }
-    if (!res.ok) throw new Error(d.error || `Error ${res.status}`);
-    if (!d.text) { toast('Nothing heard'); return; }
-    const ta = $(`#${r.field}`);
-    const cur = (ta ? ta.value : dir.instruction).trim();
-    const next = cur ? `${cur} ${d.text}` : d.text;
-    dir.instruction = next;
-    if (ta) { ta.value = next; ta.focus(); ta.setSelectionRange(next.length, next.length); }
-    toast(`Dictated in ${(d.ms / 1000).toFixed(1)} s`);
-  } catch (e) { toast(e.message); }
+  if (r.segVoice && r.segMs >= 300) { rec = r; micCut(true); rec = null; } // the last piece, cut by the tap
+  if (r.inflight) { toast('Finishing…'); await new Promise((ok) => { r.done = ok; setTimeout(ok, 20000); }); }
+  micRender(r);
+  const ta = $(`#${r.field}`); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  if (!r.segs.some((x) => x.text)) toast('Nothing heard');
 }
 // Float32 chunks at the device rate → 16 kHz mono 16-bit WAV (simple box-filter downsampling, fine for speech).
 function toWav16k(chunks, rate) {
@@ -450,13 +480,16 @@ async function renderPlan() {
     <p class="muted small">${status.ready ? `Sales Hub read ${hub.leadsAt ? ago(hub.leadsAt) : 'never'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'no plan yet'} · ${status.calls}/${status.max} reviews today` : 'Sales Hub not connected (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
     ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
     ${sec('Now', todo)}${sec('Later today', later)}${sec('Waiting', wait)}
-    ${older.length ? `<details class="card fold"><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
-    ${ok.length ? `<details class="card fold"><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
-    ${closed.length ? `<details class="card fold"><summary>Done (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${ok.length ? `<details class="card fold" data-fold="ok" ${planFolds.has('ok') ? 'open' : ''}><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${closed.length ? `<details class="card fold" data-fold="done" ${planFolds.has('done') ? 'open' : ''}><summary>Done (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${salesHub ? `<p class="center"><a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Open the Sales Hub ↗</a></p>` : ''}`;
+  // The folded sections stay as Ali left them across refreshes (Done tapped, 45 s tick).
+  document.querySelectorAll('[data-fold]').forEach((d) => { d.ontoggle = () => { d.open ? planFolds.add(d.dataset.fold) : planFolds.delete(d.dataset.fold); }; });
   $('#replan').onclick = async () => { $('#replan').disabled = true; try { await api('/api/plan/run', { method: 'POST' }); toast('Claude is reviewing every lead, 2 to 5 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 2000); };
   bindPlanButtons(route);
 }
+const planFolds = new Set();
 
 // ── France TM: what Claude flagged on the booking bot ─────────────────────────
 let tmOpen = new Set();
@@ -488,11 +521,16 @@ async function renderTm() {
 }
 
 // ── router ───────────────────────────────────────────────────────────────────
+let lastRoutedPath = null;
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
   if (!m || m[1] !== openedWaId) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; laterEdit = null; draftEdit = null; steerOpen = false; tbcTemplateAlert = null; clearTimeout(threadTimer); if (!m) openedWaId = ''; }
   document.body.classList.add('busy');
-  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : location.pathname === '/plan' ? await renderPlan() : await renderInbox(); if (!m) window.scrollTo(0, 0); }
+  // Scroll to the top only when arriving on a page; a refresh of the same page (Done tapped, 45 s tick) keeps the
+  // position and the open sections (Ali, 2026-10-01: "it gets me on top and closes the accordion").
+  const samePage = location.pathname === lastRoutedPath; lastRoutedPath = location.pathname;
+  const y = window.scrollY;
+  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : location.pathname === '/plan' ? await renderPlan() : await renderInbox(); if (!m) { if (samePage) requestAnimationFrame(() => window.scrollTo(0, y)); else window.scrollTo(0, 0); } }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹</a></header><p class="err">${esc(e.message)}</p>`; }
   finally { document.body.classList.remove('busy'); }
 }

@@ -123,8 +123,8 @@ async function api(req, res, path) {
   if (path === '/api/transcribe' && req.method === 'POST') {
     const wav = await rawBody(req);
     if (wav.length < 1000) return json(res, 400, { error: 'No audio' });
-    const lang = new URL(req.url, 'https://x').searchParams.get('lang') || null;
-    try { return json(res, 200, await transcribe(wav, { language: lang })); }
+    const q = new URL(req.url, 'https://x').searchParams;
+    try { return json(res, 200, await transcribe(wav, { language: q.get('lang') || null, prompt: (q.get('prompt') || '').slice(0, 300) || null })); }
     catch (e) { console.error('transcribe:', e.message); return json(res, 503, { error: e.message }); }
   }
   if (path === '/api/transcribe') return json(res, 200, transcribeStatus());
