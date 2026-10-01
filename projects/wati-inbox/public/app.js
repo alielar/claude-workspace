@@ -30,7 +30,10 @@ async function api(path, { method = 'GET', body } = {}) {
 }
 
 try { history.scrollRestoration = 'manual'; } catch {}
-const go = (path) => { history.pushState(null, '', path); route(); };
+// Where a conversation was opened from (home, Aujourd'hui, France TM): its back arrow returns there, not always home.
+let cameFrom = '/';
+const go = (path) => { if (/^\/t\//.test(path) && !/^\/t\//.test(location.pathname)) cameFrom = location.pathname; history.pushState(null, '', path); route(); };
+const backHref = () => (/^\/(plan|tm)$/.test(cameFrom) ? cameFrom : '/');
 window.addEventListener('popstate', route);
 document.addEventListener('click', (e) => { const a = e.target.closest('a[data-nav]'); if (a) { e.preventDefault(); go(a.getAttribute('href')); } });
 
@@ -230,7 +233,7 @@ async function renderThread(waId, { quiet = false } = {}) {
        <details class="card fold"><summary>Envoyer un template</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? 'Fenêtre de 24h fermée : seul un template peut partir.' : 'Aucune conversation sur le numéro Sales : un template peut partir.'}</p>${tplBox}</div>`;
 
-  app.innerHTML = `<header><a data-nav href="/">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Traité' : 'Traité ✓'}</button><button id="rf" class="small">↻</button></header>
+  app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Traité' : 'Traité ✓'}</button><button id="rf" class="small">↻</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
     ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}
