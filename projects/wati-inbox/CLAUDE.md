@@ -72,3 +72,14 @@ Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, but
 - Never edit `06-REGLES-APPRISES.md` by hand (rebuilt nightly); new cases go into `04-CAS-APPRIS.md`.
 - Headless runs load user, project and local settings (global file cleaned on 2026-09-27).
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.
+
+**Dictation** (Ali, 2026-10-01): a `Dictate` button next to each note-for-Claude field (the steer panel's note and the
+"Claude needs one detail" answer). Tap to start, tap again to stop; on the laptop the recording goes on while another
+window has the focus (the phone stops it when the app goes to the background, iOS rule). The browser records 16 kHz mono
+WAV itself (`toWav16k` in `public/app.js`, no codec, no ffmpeg) and POSTs it to `/api/transcribe`; `transcribe.mjs` hands
+it to one long-lived Python worker (`transcribe-worker.py`, Whisper large-v3-turbo on Apple MLX, local and free, model
+cached under `~/.cache/huggingface`, ~1.6 GB) that starts on the first dictation and is let go after `DICTATION_IDLE_MIN`
+(20) minutes without a request. Python lives in `.venv` (git-ignored): `python3 -m venv .venv && .venv/bin/pip install
+mlx-whisper`; `PYTHON` in `.env` overrides the interpreter. Homebrew has no bottles for this macOS (27), hence no
+whisper.cpp/ffmpeg; the scipy wheels for Python 3.10 do not load here either, so the worker stubs `scipy.signal`, which
+mlx-whisper only needs for word timestamps. `GET /api/transcribe` shows the worker state. Log tag `dictation`.

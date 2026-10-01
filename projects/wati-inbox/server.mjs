@@ -16,6 +16,7 @@ import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getCo
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
+import { transcribe, transcribeStatus, startDictation } from './transcribe.mjs';
 import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
@@ -39,6 +40,7 @@ const setCookie = (res) => res.setHeader('Set-Cookie', `wi=${token}; Path=/; Htt
 // ── helpers ──────────────────────────────────────────────────────────────────
 const json = (res, status, data) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(data)); };
 const body = (req) => new Promise((ok, ko) => { let s = ''; req.on('data', (c) => { s += c; if (s.length > 1e6) ko(new Error('too big')); }); req.on('end', () => { try { ok(s ? JSON.parse(s) : {}); } catch { ko(new Error('bad json')); } }); });
+const rawBody = (req, max = 30e6) => new Promise((ok, ko) => { const chunks = []; let n = 0; req.on('data', (c) => { n += c.length; if (n > max) { ko(new Error('too big')); req.destroy(); } else chunks.push(c); }); req.on('end', () => ok(Buffer.concat(chunks))); req.on('error', ko); });
 const hoursSince = (iso) => (Date.now() - new Date(iso).getTime()) / 3600e3;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.pem': 'application/x-pem-file' };
 
@@ -116,6 +118,16 @@ async function api(req, res, path) {
     return json(res, 200, { ok: true });
   }
   if (!authed(req)) return json(res, 401, { error: 'login' });
+
+  // Dictation (Ali, 2026-10-01): the browser posts a 16 kHz mono WAV, the Mac transcribes it (Whisper, local, free).
+  if (path === '/api/transcribe' && req.method === 'POST') {
+    const wav = await rawBody(req);
+    if (wav.length < 1000) return json(res, 400, { error: 'No audio' });
+    const lang = new URL(req.url, 'https://x').searchParams.get('lang') || null;
+    try { return json(res, 200, await transcribe(wav, { language: lang })); }
+    catch (e) { console.error('transcribe:', e.message); return json(res, 503, { error: e.message }); }
+  }
+  if (path === '/api/transcribe') return json(res, 200, transcribeStatus());
 
   if (path === '/api/inbox') {
     const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return suggestionVisible(t, s, { laterScheduled: scheduled.has(t.wa_id) }) ? (s.kind === 'needs' ? 'needs' : s.kind === 'skip' ? false : true) : false; };
@@ -352,4 +364,5 @@ server.listen(PORT, () => {
   startConsolidating();
   startHubSync();
   startPlanning();
+  startDictation();
 });

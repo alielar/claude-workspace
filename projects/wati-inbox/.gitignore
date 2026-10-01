@@ -5,3 +5,4 @@ logs/
 certs/*.pem
 certs/*.key
 certs/*.srl
+.venv/

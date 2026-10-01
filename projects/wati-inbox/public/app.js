@@ -21,6 +21,64 @@ async function copyText(text, btn) {
   toast(ok ? 'Copied' : 'Could not copy here');
 }
 
+// Dictation (Ali, 2026-10-01): a Dictate button on each note-for-Claude field. Tap to start, tap again to stop; on the
+// laptop the recording goes on while another window has the focus. The browser records 16 kHz mono WAV (no codec, no
+// ffmpeg), the Mac transcribes it (Whisper large-v3-turbo, local) and the text is appended to the field.
+let rec = null; // { field, ctx, stream, src, node, chunks, rate, startedAt, timer }
+const micLabel = (field) => rec && rec.field === field ? `Stop · ${Math.floor((Date.now() - rec.startedAt) / 1000)} s` : rec ? 'Recording…' : 'Dictate';
+const micHtml = (field) => `<button class="small mic${rec && rec.field === field ? ' rec' : ''}" type="button" data-mic="${field}">${micLabel(field)}</button>`;
+const micPaint = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.textContent = micLabel(b.dataset.mic); b.classList.toggle('rec', !!rec && rec.field === b.dataset.mic); });
+const bindMic = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.onclick = () => micToggle(b.dataset.mic); });
+async function micToggle(field) {
+  if (rec) { if (rec.field !== field) { toast('Stop the other dictation first'); return; } return micStop(); }
+  if (!navigator.mediaDevices?.getUserMedia) { toast('No microphone access in this browser'); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 } });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    const src = ctx.createMediaStreamSource(stream);
+    const node = ctx.createScriptProcessor(4096, 1, 1);
+    const chunks = [];
+    node.onaudioprocess = (e) => { if (rec) chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+    src.connect(node); node.connect(ctx.destination);
+    rec = { field, ctx, stream, src, node, chunks, rate: ctx.sampleRate, startedAt: Date.now(), timer: setInterval(micPaint, 1000) };
+    micPaint();
+  } catch (e) { toast(e.name === 'NotAllowedError' ? 'Microphone refused. Allow it in the browser settings' : `Microphone: ${e.message}`); }
+}
+async function micStop() {
+  const r = rec; rec = null; clearInterval(r.timer);
+  try { r.src.disconnect(); r.node.disconnect(); r.stream.getTracks().forEach((t) => t.stop()); await r.ctx.close(); } catch {}
+  micPaint();
+  const wav = toWav16k(r.chunks, r.rate);
+  if (wav.byteLength < 44 + 16000) { toast('Too short'); return; }
+  toast('Transcribing…');
+  try {
+    const res = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav });
+    const d = await res.json().catch(() => ({}));
+    if (res.status === 401) { renderLogin(); return; }
+    if (!res.ok) throw new Error(d.error || `Error ${res.status}`);
+    if (!d.text) { toast('Nothing heard'); return; }
+    const ta = $(`#${r.field}`);
+    const cur = (ta ? ta.value : dir.instruction).trim();
+    const next = cur ? `${cur} ${d.text}` : d.text;
+    dir.instruction = next;
+    if (ta) { ta.value = next; ta.focus(); ta.setSelectionRange(next.length, next.length); }
+    toast(`Dictated in ${(d.ms / 1000).toFixed(1)} s`);
+  } catch (e) { toast(e.message); }
+}
+// Float32 chunks at the device rate → 16 kHz mono 16-bit WAV (simple box-filter downsampling, fine for speech).
+function toWav16k(chunks, rate) {
+  let n = 0; for (const c of chunks) n += c.length;
+  const all = new Float32Array(n); let o = 0; for (const c of chunks) { all.set(c, o); o += c.length; }
+  const ratio = rate / 16000, len = Math.floor(all.length / ratio), out = new Int16Array(len);
+  for (let i = 0; i < len; i++) { const a = Math.floor(i * ratio), b = Math.min(all.length, Math.max(a + 1, Math.floor((i + 1) * ratio))); let s = 0; for (let j = a; j < b; j++) s += all[j]; const v = Math.max(-1, Math.min(1, s / (b - a))); out[i] = v < 0 ? v * 32768 : v * 32767; }
+  const buf = new ArrayBuffer(44 + out.length * 2), v = new DataView(buf);
+  const str = (p, s) => { for (let i = 0; i < s.length; i++) v.setUint8(p + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + out.length * 2, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 16000, true); v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, out.length * 2, true);
+  new Int16Array(buf, 44).set(out);
+  return buf;
+}
+
 async function api(path, { method = 'GET', body } = {}) {
   const r = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
   const d = await r.json().catch(() => ({}));
@@ -193,7 +251,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   else if (sug && sug.kind === 'needs') claude = `<div class="card needs"><div class="opt-head">Claude needs one detail</div><p>${esc(sug.needs || sug.note || '')}</p>
       ${/offre|format|niveau|heures|h\/sem|appel/i.test(sug.needs || '') ? offerBoxHtml(D, od, d, true) : ''}
       <textarea id="needs" placeholder="Your answer">${esc(dir.instruction)}</textarea>
-      <div class="row"><button class="primary" id="needsgo">Draft</button>${sug.why ? `<span class="muted small">${esc(sug.why)}</span>` : ''}</div></div>`;
+      <div class="row"><button class="primary" id="needsgo">Draft</button>${micHtml('needs')}${sug.why ? `<span class="muted small">${esc(sug.why)}</span>` : ''}</div></div>`;
   else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude: nothing to answer. ${esc(sug.why || '')}</span> <button class="small" id="anyway">Draft anyway</button></div>`;
   else if (o && o.bubbles?.length) {
     // Editing = one field per bubble; each field is still its own WhatsApp message when sent.
@@ -225,7 +283,7 @@ async function renderThread(waId, { quiet = false } = {}) {
       ${has('acompte') ? `<div class="chips">${D.acompte.map((a) => chip('lvl2', a, `${a} ${d.currency || '€'}`, dir.level2 === a)).join('')}</div>` : ''}
       ${has('delai') ? `<input id="until" placeholder="Until when? (e.g. tomorrow 12h)" value="${esc(dir.until)}" style="margin-bottom:8px">` : ''}
       <textarea id="ins" placeholder="Note for Claude (optional)">${esc(dir.instruction)}</textarea>
-      <div class="row"><button id="go" class="primary">Draft</button><span class="muted small">Nothing ticked = Claude chooses</span></div>
+      <div class="row"><button id="go" class="primary">Draft</button>${micHtml('ins')}<span class="muted small">Nothing ticked = Claude chooses</span></div>
     </details>` : '';
   const tplBox = `<input id="tplq" placeholder="Filter"><select id="tpl" style="margin-top:8px"><option value="">Loading…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Send the template</button><span id="stt"></span></div>`;
   const compose = d.windowOpen
@@ -257,6 +315,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   if ($('#anyway')) $('#anyway').onclick = () => askClaude({ moves: [], instruction: 'Réponds quand même, brièvement' });
   if ($('#needsgo')) $('#needsgo').onclick = async () => { const txt = $('#needs').value.trim(); if (!txt && !offerDraft) { toast('Type the detail Claude asked for'); return; } try { if (offerDraft?.format) await saveOffer(waId); } catch (e) { toast(e.message); return; } askClaude({ moves: [], instruction: txt }); };
   if ($('#needs')) $('#needs').oninput = (e) => { dir.instruction = e.target.value; };
+  bindMic();
   // one field per bubble while editing: read them back in order, drop the empty ones
   const readFields = (tag) => [...document.querySelectorAll(`textarea[data-${tag}]`)].map((ta) => ta.value.trim()).filter(Boolean);
   const bindFields = (tag, get, set) => {
