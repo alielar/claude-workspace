@@ -90,7 +90,7 @@ let inboxFilter = '';
 const suggPill = (t) => t.suggesting === 'drafting' || t.suggesting === 'queued' ? '<span class="pill work">Claude rédige…</span>' : t.suggested === 'needs' ? '<span class="pill warn">question de Claude</span>' : t.suggested ? '<span class="pill ready">brouillon prêt</span>' : '';
 let inboxCache = null;
 async function renderInbox({ fromCache = false } = {}) {
-  const { threads, tm, tbc = [], salesHub = '' } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
+  const { threads, tm, tbc = [], salesHub = '', plan = null } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
   const q = inboxFilter.trim().toLowerCase();
   const shown = q ? threads.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : threads;
   const pending = shown.filter((t) => t.pending && !t.muted), done = shown.filter((t) => !t.pending || t.muted);
@@ -99,9 +99,10 @@ async function renderInbox({ fromCache = false } = {}) {
   const digits = q.replace(/\D/g, '');
   const direct = /^\d{8,15}$/.test(digits) && !threads.some((t) => t.wa_id === digits) ? `<a class="card lead-row" data-nav href="/t/${digits}"><div class="who"><div class="name">Ouvrir +${digits}</div></div></a>` : '';
   const hub = tbc.length ? `<p class="section">Sales Hub — à traiter (${tbc.length})</p>${tbc.map((a) => `<a class="card lead-row tbc-row ${a.state}" data-nav href="/t/${a.wa_id}"><div class="who"><div class="name">${esc(a.name || a.wa_id)} <span class="pill ${a.state === 'paused' ? 'ready' : 'warn'}">${a.state === 'paused' ? 'en pause · relance à envoyer' : 'à mettre en pause'}</span></div><div class="txt">${esc(a.tpl)} à ${fmtTime(a.fires_at)} — ${esc(a.why || '')}</div></div></a>`).join('')}${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a>` : ''}` : '';
+  const planCard = plan ? `<a class="card plan-home" data-nav href="/plan"><div class="who"><div class="name">Aujourd’hui${plan.todo ? ` <span class="pill warn">${plan.todo} à régler</span>` : ''}${plan.followups ? ` <span class="pill ready">${plan.followups} relance${plan.followups > 1 ? 's' : ''}</span>` : ''}${!plan.todo && !plan.followups ? ' <span class="pill">rien à faire</span>' : ''}</div><div class="txt">${plan.next?.length ? plan.next.map((i) => `${esc(i.name || i.wa_id)} · ${esc(i.title)}`).join(' — ') : `${plan.waits} à attendre · ${plan.oks} template${plan.oks > 1 ? 's' : ''} qui collent · ${plan.done} fait${plan.done > 1 ? 's' : ''}`}</div></div><span class="chev">›</span></a>` : '';
   app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><a data-nav href="/tm" class="tmlink">France TM${tm?.unseen ? ` <span class="pill warn">${tm.unseen}</span>` : ''}</a><button id="rf" class="small">↻</button></header>
     <input class="search" id="q" placeholder="Nom ou numéro" value="${esc(inboxFilter)}" inputmode="search">${direct}
-    ${hub}
+    ${planCard}${plan ? '' : hub}
     ${pending.length ? `<p class="section">À répondre (${pending.length})</p>${pending.map(row).join('')}` : '<p class="muted center">Rien en attente</p>'}
     ${done.length ? `<p class="section">Répondu (${done.length})</p>${done.map(row).join('')}` : ''}
     <div class="row foot">${await pushButton()}${themeButton()}</div>`;
@@ -149,7 +150,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${d.hub?.next?.template}|${d.hub?.paused}`;
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
   if (quiet && key === lastThreadKey) return;
@@ -167,7 +168,10 @@ async function renderThread(waId, { quiet = false } = {}) {
 
   // Sales Hub: the next automatic step, and the alert card when a step must be paused first.
   const hubLink = tb.salesHub ? `<a class="small" href="${esc(tb.salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a>` : '';
-  const nextLine = tb.next && !al ? `<div class="ctx">Prochain automatique : <b>${esc(tb.next.tpl)}</b> à ${fmtTime(tb.next.firesAt)}${tb.leadWaiting ? ' (sauté tant que vous n’avez pas répondu)' : ''}</div>` : '';
+  const hb = d.hub, pl = d.plan;
+  const hubLine = hb ? `<div class="ctx">Sales Hub : <b>${esc(hb.status || '?')}</b>${hb.paused ? ' · <b>en pause</b>' : ''}${hb.next ? ` · prochain automatique <b>${esc(hb.next.template)}</b> ${hb.next.stale ? '<span class="warn">(date passée)</span>' : `${fmtDay(hb.next.at)} ${fmtTime(hb.next.at)}`}${hb.paused ? ' (ne partira pas)' : ''}` : ' · plus de template prévu'}${hb.citf?.momentLocal ? ` · CITF ${esc(String(hb.citf.momentLocal).slice(0, 10))}` : ''}</div>` : '';
+  const nextLine = hb ? hubLine : tb.next && !al ? `<div class="ctx">Prochain automatique : <b>${esc(tb.next.tpl)}</b> à ${fmtTime(tb.next.firesAt)}${tb.leadWaiting ? ' (sauté tant que vous n’avez pas répondu)' : ''}</div>` : '';
+  const planBox = pl ? planCardHtml(pl, { inThread: true, salesHub: tb.salesHub }) : '';
   const tbcBox = al ? `<div class="card tbc ${al.state}">
       <div class="opt-head">Sales Hub · ${esc(al.tpl)} part à ${fmtTime(al.fires_at)} (${fmtLeft(al.fires_at)})</div>
       <p class="small">${esc(al.why || '')}</p>
@@ -228,7 +232,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   app.innerHTML = `<header><a data-nav href="/">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Traité' : 'Traité ✓'}</button><button id="rf" class="small">↻</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
-    ${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}
+    ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}
     <div class="row foot"><button id="mute" class="small">${t.muted ? 'Notifier à nouveau' : 'Ne plus notifier'}</button></div>`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
@@ -295,6 +299,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   } else bindOffer(waId, d);
   $('#rf').onclick = async () => { await api(`/api/thread/${waId}/refresh`, { method: 'POST' }); lastThreadKey = ''; route(); };
   $('#hd').onclick = async () => { await api(`/api/thread/${waId}/handled`, { method: 'POST' }); lastThreadKey = ''; route(); };
+  bindPlanButtons(() => { lastThreadKey = ''; route(); });
   $('#mute').onclick = async () => { await api(`/api/thread/${waId}/mute`, { method: 'POST', body: { muted: !t.muted } }); lastThreadKey = ''; route(); };
   {
     const { templates } = await api('/api/templates');
@@ -338,6 +343,48 @@ function bindOffer(waId, d) {
   if ($('#offerclear')) $('#offerclear').onclick = async () => { await api(`/api/thread/${waId}/offer`, { method: 'POST', body: {} }); offerOpen = false; offerDraft = null; redraw(); };
 }
 
+// ── Aujourd'hui: the day plan written by Claude from the Sales Hub and the conversations ──
+const KIND = { pause: ['À mettre en pause', 'bad'], fix: ['À vérifier', 'warn'], followup: ['Relance', 'good'], wait: ['À attendre', ''], ok: ['Colle', 'ok'] };
+const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso), t = new Date(); return d.toDateString() === t.toDateString() ? fmtTime(iso) : `${fmtDay(iso)} ${fmtTime(iso)}`; };
+function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
+  let [label, cls] = KIND[i.kind] || ['', ''];
+  if (i.kind === 'pause') label = i.pause_scope === 'next' ? `Sauter ${i.skip_templates?.length > 1 ? i.skip_templates.length + ' templates' : '1 template'}` : 'Pause complète';
+  const open = i.state === 'open';
+  return `<div class="card plan ${i.kind} ${i.state}" data-plan="${i.id}">
+    <div class="flag-head"><span><span class="pill ${cls}">${label}</span>${i.when_at ? ` <b class="small">${fmtWhen(i.when_at)}</b>` : ''}${!open ? ` <span class="muted small">· ${{ done: 'fait', dismissed: 'pas d’accord', replied: 'le lead a répondu', expired: 'passé', superseded: 'remplacé' }[i.state] || i.state}</span>` : ''}</span>${i.hub_next && i.kind !== 'followup' ? `<span class="muted small">${esc(i.hub_next)}${i.hub_next_at ? ` ${fmtWhen(i.hub_next_at)}` : ''}</span>` : ''}</div>
+    ${inThread ? '' : `<a class="flag-who" data-nav href="/t/${i.wa_id}">${esc(i.name || i.wa_id)} · +${i.wa_id}</a>`}
+    <div class="flag-title">${esc(i.title)}</div>
+    ${i.why ? `<div class="small">${esc(i.why)}</div>` : ''}
+    ${i.action ? `<div class="small action">→ ${esc(i.action)}</div>` : ''}
+    ${i.kind === 'pause' && i.pause_scope === 'next' && i.skip_templates?.length ? `<div class="small">À sauter dans le Hub : <b>${i.skip_templates.map(esc).join('</b>, puis <b>')}</b></div>` : ''}
+    ${i.template ? `<div class="small">Template : <b>${esc(i.template)}</b></div>` : ''}
+    ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">Le brouillon est plus bas, prêt à envoyer</div>' : ''}
+    ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Fait</button><button class="small" data-plandismiss="${i.id}">Pas d’accord</button>${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Ouvrir</a>` : ''}${salesHub && (i.kind === 'pause' || i.kind === 'fix') ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Rouvrir</button></div>`}
+  </div>`;
+}
+function bindPlanButtons(after) {
+  document.querySelectorAll('[data-plandone]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.plandone}`, { method: 'POST', body: { state: 'done' } }); after(); });
+  document.querySelectorAll('[data-planreopen]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.planreopen}`, { method: 'POST', body: { state: 'open' } }); after(); });
+  document.querySelectorAll('[data-plandismiss]').forEach((b) => b.onclick = async () => { const note = prompt('Pourquoi ce n’est pas le bon geste ? (facultatif, Claude s’en souviendra)') ?? null; if (note === null) return; await api(`/api/plan/${b.dataset.plandismiss}`, { method: 'POST', body: { state: 'dismissed', note } }); toast('Noté'); after(); });
+}
+async function renderPlan() {
+  const { items, counts, status, hub, salesHub } = await api('/api/plan');
+  const running = status.state === 'running';
+  const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
+  const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
+  const byTime = (a, b) => String(a.when_at || a.hub_next_at || '9').localeCompare(String(b.when_at || b.hub_next_at || '9'));
+  const todo = open.filter((i) => i.kind === 'pause' || i.kind === 'fix').sort(byTime), fu = open.filter((i) => i.kind === 'followup').sort(byTime), wait = open.filter((i) => i.kind === 'wait').sort(byTime), ok = open.filter((i) => i.kind === 'ok');
+  app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Aujourd’hui <span class="muted small">${fmtDay(new Date().toISOString())}</span></h1><button id="replan" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Claude relit…' : 'Replanifier'}</button></header>
+    <p class="muted small">${status.ready ? `Sales Hub lu ${hub.leadsAt ? ago(hub.leadsAt) : 'jamais'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'pas encore de plan'} · ${status.calls}/${status.max} relectures aujourd’hui` : 'Sales Hub non connecté (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
+    ${!open.length && !closed.length ? '<p class="muted center">Rien pour aujourd’hui</p>' : ''}
+    ${sec('À régler dans le Sales Hub', todo)}${sec('Relances à envoyer', fu)}${sec('À attendre', wait)}
+    ${ok.length ? `<details class="card fold"><summary>Templates qui collent (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${closed.length ? `<details class="card fold"><summary>Terminé (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${salesHub ? `<p class="center"><a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a></p>` : ''}`;
+  $('#replan').onclick = async () => { $('#replan').disabled = true; try { await api('/api/plan/run', { method: 'POST' }); toast('Claude relit tous les leads, 2 à 5 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 2000); };
+  bindPlanButtons(route);
+}
+
 // ── France TM: what Claude flagged on the booking bot ─────────────────────────
 let tmOpen = new Set();
 async function renderTm() {
@@ -372,7 +419,7 @@ async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
   if (!m || m[1] !== openedWaId) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; laterEdit = null; draftEdit = null; steerOpen = false; tbcTemplateAlert = null; clearTimeout(threadTimer); if (!m) openedWaId = ''; }
   document.body.classList.add('busy');
-  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : await renderInbox(); if (!m) window.scrollTo(0, 0); }
+  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : location.pathname === '/plan' ? await renderPlan() : await renderInbox(); if (!m) window.scrollTo(0, 0); }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹</a></header><p class="err">${esc(e.message)}</p>`; }
   finally { document.body.classList.remove('busy'); }
 }
@@ -381,5 +428,5 @@ route();
 let ticks = 0;
 setInterval(() => { if (document.visibilityState !== 'visible') return; ticks++; const m = /^\/t\/(\d+)/.exec(location.pathname); if (m && (threadBusy || ticks % 4 === 0)) renderThread(m[1], { quiet: true }).catch(() => {}); }, 8_000);
 setInterval(() => { if (document.visibilityState === 'visible' && location.pathname === '/' && !typing()) route(); }, 60_000);
-setInterval(() => { if (document.visibilityState === 'visible' && location.pathname === '/tm' && !typing()) route(); }, 45_000);
+setInterval(() => { if (document.visibilityState === 'visible' && (location.pathname === '/tm' || location.pathname === '/plan') && !typing()) route(); }, 45_000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { const m = /^\/t\/(\d+)/.exec(location.pathname); m ? renderThread(m[1], { quiet: true }).catch(() => {}) : route(); } });

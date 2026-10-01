@@ -28,6 +28,19 @@ unanswered — the only case Ali wants flagged; enrolled leads and "solution pro
 the templates (`fit`); if it does not fit, a push + a card in the thread: 1. pause it in the Sales
 Hub (Ali confirms, the app never claims it), 2. the manual follow-up, unlocked only after that confirmation.
 Rows in `tbc_alerts`; `SALES_HUB_URL` in `.env` adds a link. Terminal dry run: `node --env-file=.env tbc-watch.mjs`.
+**Sales Hub mirror and the day plan** (2026-10-01, Mateo's read-only API, token `SALES_HUB_TOKEN` in `.env`, client `hub.mjs`):
+`hub-sync.mjs` copies the FR automations into `hub_leads` every minute and the cadence steps with their real WATI text
+into `hub_templates` every hour (limits 30/min, 600/h; a 429 or 5xx backs off). `plan-engine.mjs` writes **one card per
+lead and per day** (`plan_items`) for every lead that matters today — paused (a human follow-up is due), next template
+within 24 h, stuck (`next` in the past) or finished sequence — judged by one Sonnet run per batch of 6 with the
+conversation, the Hub state and the template text (`plan-prompt.md`). Kinds: `pause` (template contradicts the thread → pause
+in the Hub, status OR/CITF suggested), `followup` (time + draft, inserted as a normal suggestion `source = plan`), `wait`,
+`fix` (data issues), `ok`. Morning run at `PLAN_AT` (09:15), then every 5 min for what moved; cap `PLAN_MAX_CALLS` (15/day).
+Cards close by themselves (lead wrote → replied; Ali sent → followup done; midnight → expired); Ali taps « Fait » or
+« Pas d'accord » with a note that every later judgement reads. Screens: home card « Aujourd'hui » → `/plan`; the Sales
+Hub line and the card at the top of each thread. Pushes: morning summary, new pause/fix cards at once (8h–22h), a reminder
+10 min before a follow-up. The guessed schedule in `tbc-watch.mjs` is off while the token is present. Terminal:
+`node --env-file=.env plan-engine.mjs` (candidates) / `--run` (judge now) / `hub-sync.mjs` / `hub.mjs [+33…]`.
 The learned cases are consolidated by `consolidate-engine.mjs` (2026-09-30): every evening at `CONSOLIDATE_AT` (22:15
 Madrid), when the raw journal `../Wati outreach/playbook/04-CAS-APPRIS.md` moved, one Sonnet run rebuilds
 `../Wati outreach/playbook/06-REGLES-APPRISES.md` (every rule once, latest decision wins, scripts verbatim, 150–250
@@ -52,7 +65,7 @@ Then commit and push. Test a draft from the terminal with
 - Never change the suggestion prompt's rules or the cap guidance in `directions.mjs` without
   reading `../Wati outreach/CLAUDE.md` and `playbook/00-QUICK.md`; the playbook is the source of truth.
 - The inbox lists only open 24h windows; do not bring closed conversations back (Ali, 2026-09-29).
-- The app cannot pause the Sales Hub automation and must never say a step is paused unless Ali tapped the confirmation; a template that lands after his confirmation is reported back to him.
+- The app cannot pause the Sales Hub automation or change a status (the API is read-only) and must never say a step is paused unless the Hub says so; the day plan only tells Ali what to do. Never call the Hub from a screen: read the mirror (`hub_leads`).
 - Never edit `06-REGLES-APPRISES.md` by hand (rebuilt nightly); new cases go into `04-CAS-APPRIS.md`.
 - Headless runs load user, project and local settings (global file cleaned on 2026-09-27).
 - `.env`, `data/`, `logs/`, `certs/*.pem|key` are git-ignored; keep them so.

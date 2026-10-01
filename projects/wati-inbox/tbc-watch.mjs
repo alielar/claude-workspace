@@ -24,6 +24,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { activeThreads, threadMessages, getThread, getState, setState, tbcAlert, insertTbcAlert, setTbcAlertState, openTbcAlerts, unpushedTbcAlerts, markTbcAlertPushed, tbcFitRunsSince } from './db.mjs';
 import { pushAll } from './push.mjs';
 import { runClaude, madrid } from './suggest-engine.mjs';
+import { hubReady } from './hub.mjs';
 
 // The Sales Hub schedule (screenshots of 2026-09-30, "TO BE CONVERTED"). Times are Europe/Madrid (= Paris).
 export const STEPS = [
@@ -113,7 +114,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
       const fired = st?.steps.find((s) => s.n === a.step)?.sent;
       const replied = st?.lastLead && Date.parse(st.lastLead.at) > Date.parse(a.at);
       if (replied) setTbcAlertState(a.id, 'replied');
-      else if (fired) { setTbcAlertState(a.id, 'fired'); if (a.state === 'paused' && !dry) await pushAll({ title: `Le template est parti quand même · ${a.name || a.wa_id}`, body: `${a.tpl} a été envoyé malgré la pause — vérifiez le Sales Hub`, tag: `tbc-${a.wa_id}`, url: `/t/${a.wa_id}` }); }
+      else if (fired) { setTbcAlertState(a.id, 'fired'); if (a.state === 'paused' && !dry) await pushAll({ title: `Le template est parti quand même · ${a.name || a.wa_id}`, body: `${a.tpl} a été envoyé malgré la pause. Vérifiez le Sales Hub`, tag: `tbc-${a.wa_id}`, url: `/t/${a.wa_id}` }); }
       else if (Date.parse(a.fires_at) < now - 30 * 60e3 && a.state === 'open') setTbcAlertState(a.id, 'expired');
     }
     // 2. Look at every lead inside the sequence.
@@ -144,7 +145,7 @@ export async function watch({ dry = false, now = Date.now() } = {}) {
     // 3. Push the new open alerts (daytime only; the rest waits for the next pass).
     if (!dry && madridHour() >= FROM_H && madridHour() < TO_H) {
       for (const a of unpushedTbcAlerts()) {
-        await pushAll({ title: `Pause Sales Hub · ${a.name || a.wa_id}`, body: `${a.tpl} part à ${fmtHM(a.fires_at)} — à mettre en pause, puis relance manuelle`, tag: `tbc-${a.wa_id}`, url: `/t/${a.wa_id}` });
+        await pushAll({ title: `Pause Sales Hub · ${a.name || a.wa_id}`, body: `${a.tpl} part à ${fmtHM(a.fires_at)}. À mettre en pause, puis relance manuelle`, tag: `tbc-${a.wa_id}`, url: `/t/${a.wa_id}` });
         markTbcAlertPushed(a.id);
       }
     }
@@ -170,6 +171,7 @@ async function judge(st, step, question) {
 
 export function startTbcWatch(everyMs = 60_000) {
   mkdirSync('logs', { recursive: true });
+  if (hubReady()) { log('off — the Sales Hub mirror (hub-sync.mjs) and the day plan (plan-engine.mjs) replace this guessed schedule'); return; }
   setInterval(() => watch().catch((e) => log('error:', e.message)), everyMs);
   log(`watch ready — every ${Math.round(everyMs / 1000)} s, judges a recovery step up to ${FIT_LEAD_MIN} min ahead when the diagnostic question went unanswered, ${FIT_MAX_PER_DAY} judgements/day`);
 }

@@ -122,3 +122,15 @@ header a[data-nav] { font-size: 22px; padding: 0 6px; }
 .eb { display: flex; gap: 6px; align-items: flex-start; margin: 4px 0; }
 .eb textarea { min-height: 44px; resize: none; overflow: hidden; background: var(--us); }
 .eb button { min-width: 40px; padding: 8px; }
+
+/* Aujourd'hui — the day plan (2026-10-01) */
+.card.plan { border-left: 4px solid var(--line); }
+.card.plan.pause { border-left-color: var(--danger); } .card.plan.fix { border-left-color: var(--warn); } .card.plan.followup { border-left-color: var(--accent); } .card.plan.ok { border-left-color: var(--ok); }
+.card.plan.done, .card.plan.dismissed, .card.plan.replied, .card.plan.expired { opacity: .6; }
+.card.plan .action { margin-top: 6px; color: var(--ink); }
+.card.plan .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+.card.plan .acts a { padding: 8px 4px; }
+.card.plan .flag-who { display: block; text-decoration: none; }
+.pill.ok { background: var(--ok); color: #fff; margin: 0; }
+.plan-home { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; border-color: var(--accent); }
+.plan-home .chev { font-size: 22px; color: var(--muted); }

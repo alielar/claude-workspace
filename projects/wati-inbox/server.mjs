@@ -20,7 +20,9 @@ import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, 
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
 import { startConsolidating } from './consolidate-engine.mjs';
-import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts } from './db.mjs';
+import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems } from './db.mjs';
+import { startHubSync, hubNextFor, hubStatus } from './hub-sync.mjs';
+import { startPlanning, plan as runPlan, planStatus, today as planToday } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -120,7 +122,7 @@ async function api(req, res, path) {
     // Only conversations whose 24h window is open (2026-09-29): a closed one can still be opened by number.
     const threads = inbox().filter((t) => !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24)
       .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
-    return json(res, 200, { threads, tm: tmFlagCounts(), tbc: openTbcAlerts().map((a) => ({ ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] })), salesHub: SALES_HUB_URL });
+    return json(res, 200, { threads, tm: tmFlagCounts(), tbc: openTbcAlerts().map((a) => ({ ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] })), salesHub: SALES_HUB_URL, plan: planStatus().ready ? { ...planCounts(planToday()), next: openPlanItems().filter((i) => i.kind !== 'ok' && i.kind !== 'wait').slice(0, 3).map((i) => ({ id: i.id, wa_id: i.wa_id, name: i.name, kind: i.kind, title: i.title, when_at: i.when_at })) } : null });
   }
   if (path === '/api/directions') return json(res, 200, { moves: MOVES.map(({ id, label, sub, input }) => ({ id, label, sub: sub || null, input: input || null })), downsell: DOWNSELL.map((id) => ({ id, label: DOWNSELL_LABELS[id] })), acompte: ACOMPTE, formats: Object.entries(FORMATS).map(([id, f]) => ({ id, label: f.label })), levels: LEVELS });
   // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).
@@ -136,6 +138,19 @@ async function api(req, res, path) {
   }
   const tmt = /^\/api\/tm\/thread\/(\d{8,15})$/.exec(path);
   if (tmt) return json(res, 200, { messages: tmThread(tmt[1], 60) });
+  // The day plan (plan-engine.mjs): the cards, their state, and Ali's verdicts.
+  const planItem = (i) => ({ ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: i.skip_templates ? JSON.parse(i.skip_templates) : [] });
+  if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL });
+  if (path === '/api/plan/run' && req.method === 'POST') { runPlan({ scope: 'all', reason: 'ali' }).catch(() => {}); return json(res, 200, { ok: true }); }
+  const pli = /^\/api\/plan\/(\d+)$/.exec(path);
+  if (pli && req.method === 'POST') {
+    const b = await body(req); const i = planItemById(Number(pli[1]));
+    if (!i) return json(res, 404, { error: 'Carte inconnue' });
+    const state = ['done', 'dismissed', 'open'].includes(b.state) ? b.state : null;
+    if (!state) return json(res, 400, { error: 'État inconnu' });
+    setPlanState(i.id, state, b.note ? String(b.note).slice(0, 300) : null);
+    return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
+  }
   if (path === '/api/push') {
     if (req.method === 'GET') return json(res, 200, { publicKey: process.env.VAPID_PUBLIC_KEY || null, endpoints: subscriptions().map((s) => s.endpoint) });
     if (req.method === 'POST') { const b = await body(req); const s = b.subscription || b; if (!s?.endpoint || !s.keys?.p256dh || !s.keys?.auth) return json(res, 400, { error: 'bad subscription' }); addSubscription(s, (req.headers['user-agent'] || '').slice(0, 200)); return json(res, 200, { ok: true }); }
@@ -182,6 +197,8 @@ async function api(req, res, path) {
       currency: currencyFor(t.country),
       scheduled: scheduled.has(waId) ? { at: scheduled.get(waId).at, bubbles: scheduled.get(waId).bubbles } : null,
       tbc: tbcInfo(waId),
+      hub: hubNextFor(waId),
+      plan: openPlanItems(waId).map(planItem)[0] || null,
       stale,
       sending: sending.get(waId) || null,
     });
@@ -241,6 +258,7 @@ async function api(req, res, path) {
     try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
     catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }
     saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+    closePlanItems(waId, 'done', ['followup']); // the day plan's follow-up left
     if (meta.alertId) setTbcAlertState(meta.alertId, 'sent');
     if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
     else sendRest(waId, t, bubbles, meta); // the others follow in the background, one every 5–10 s; learning runs when the last one is out
@@ -269,6 +287,7 @@ async function api(req, res, path) {
     const alert = b.alertId ? tbcAlertById(Number(b.alertId)) : null; // follow-up sent as a template from a Sales Hub card
     if (alert && alert.wa_id === waId && alert.state === 'paused') setTbcAlertState(alert.id, 'sent');
     saveThread({ ...(t || { wa_id: waId, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${tpl.name}]` });
+    closePlanItems(waId, 'done', ['followup']);
     return json(res, 200, { ok: true, status });
   }
   return json(res, 405, { error: 'method' });
@@ -328,4 +347,6 @@ server.listen(PORT, () => {
   startPolling();
   startTmMonitor();
   startConsolidating();
+  startHubSync();
+  startPlanning();
 });

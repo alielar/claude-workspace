@@ -6,8 +6,11 @@ import { subscriptions, removeSubscription } from './db.mjs';
 const ready = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 if (ready) webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:ali@example.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 
+// No em dashes in notifications (Ali, 2026-10-01): a dash becomes a full stop or a comma.
+const clean = (x) => typeof x === 'string' ? x.replace(/\s*—\s*/g, '. ').replace(/\s+–\s+/g, ', ').replace(/\.\s*\./g, '.').trim() : x;
 export async function pushAll(payload) {
   if (!ready) return { sent: 0 };
+  payload = { ...payload, title: clean(payload.title), body: clean(payload.body) };
   let sent = 0;
   await Promise.all(subscriptions().map(async (s) => {
     try {

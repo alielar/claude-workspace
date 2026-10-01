@@ -216,3 +216,81 @@ export const tmFlagVerdict = (id, verdict) => db.prepare('UPDATE tm_flags SET ve
 export const tmDismissed = (limit = 40) => db.prepare("SELECT kind, title, detail, quote FROM tm_flags WHERE verdict = 'not_issue' ORDER BY id DESC LIMIT ?").all(limit);
 export const tmFlagSeen = (id, seen) => db.prepare('UPDATE tm_flags SET seen = ? WHERE id = ?').run(seen ? 1 : 0, id);
 export const tmFlagCounts = () => db.prepare('SELECT count(*) total, COALESCE(sum(seen = 0 AND verdict IS NULL), 0) unseen FROM tm_flags').get();
+
+// ── Sales Hub mirror + the day plan (2026-10-01) ──────────────────────────────
+// hub_leads: the FR automations as the Hub sees them, refreshed every minute (hub-sync.mjs).
+// plan_items: one card per lead and per day, written by plan-engine.mjs — what to do, when, why.
+db.exec(`CREATE TABLE IF NOT EXISTS hub_leads (
+  wa_id TEXT PRIMARY KEY,
+  lead_id TEXT, name TEXT, last_name TEXT, status TEXT, paused INTEGER NOT NULL DEFAULT 0, skip_next INTEGER NOT NULL DEFAULT 0,
+  phase TEXT, meeting_date TEXT, last_reason TEXT, last_reason_at TEXT, next_tpl TEXT, next_at TEXT, citf TEXT, raw TEXT, updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS hub_templates (
+  template TEXT PRIMARY KEY, day INTEGER, time TEXT, anchor TEXT, enabled INTEGER, text TEXT, updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS plan_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wa_id TEXT NOT NULL, name TEXT, day TEXT NOT NULL,
+  kind TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'open',
+  at TEXT NOT NULL, when_at TEXT,
+  title TEXT, why TEXT, action TEXT,
+  hub_status TEXT, hub_next TEXT, hub_next_at TEXT, hub_paused INTEGER, hub_sig TEXT,
+  bubbles TEXT, template TEXT, suggestion_id INTEGER,
+  note TEXT, pushed INTEGER NOT NULL DEFAULT 0, reminded INTEGER NOT NULL DEFAULT 0, updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_plan_day ON plan_items(day, state)`);
+
+export function saveHubLeads(rows) {
+  const up = db.prepare(`INSERT INTO hub_leads (wa_id, lead_id, name, last_name, status, paused, skip_next, phase, meeting_date, last_reason, last_reason_at, next_tpl, next_at, citf, raw, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(wa_id) DO UPDATE SET lead_id = excluded.lead_id, name = excluded.name, last_name = excluded.last_name, status = excluded.status, paused = excluded.paused, skip_next = excluded.skip_next,
+      phase = excluded.phase, meeting_date = excluded.meeting_date, last_reason = excluded.last_reason, last_reason_at = excluded.last_reason_at, next_tpl = excluded.next_tpl, next_at = excluded.next_at, citf = excluded.citf, raw = excluded.raw, updated_at = excluded.updated_at`);
+  const now = new Date().toISOString();
+  const seen = new Set();
+  for (const l of rows) {
+    const wa = String(l.phone || '').replace(/\D/g, '');
+    if (!wa) continue;
+    seen.add(wa);
+    up.run(wa, l.leadId != null ? String(l.leadId) : null, l.name || null, l.lastName || null, l.status || null, l.paused ? 1 : 0, l.skipNextPending ? 1 : 0, l.phase || null, l.meetingDate || null,
+      l.lastReason?.label || l.lastReason?.text || null, l.lastReason?.at || null, l.next?.template || null, l.next?.at || null, l.citf ? JSON.stringify(l.citf) : null, JSON.stringify(l), now);
+  }
+  // Leads that left the automations tab disappear from the mirror.
+  const gone = db.prepare('SELECT wa_id FROM hub_leads').all().map((r) => r.wa_id).filter((w) => !seen.has(w));
+  if (rows.length && gone.length) { const del = db.prepare('DELETE FROM hub_leads WHERE wa_id = ?'); for (const w of gone) del.run(w); }
+  return { saved: seen.size, gone: rows.length ? gone.length : 0 };
+}
+export const hubLeadRow = (waId) => db.prepare('SELECT * FROM hub_leads WHERE wa_id = ?').get(waId);
+export const hubLeadRows = () => db.prepare('SELECT * FROM hub_leads ORDER BY next_at').all();
+export function saveHubTemplates(steps) {
+  const up = db.prepare('INSERT OR REPLACE INTO hub_templates (template, day, time, anchor, enabled, text, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const now = new Date().toISOString();
+  for (const s of steps) if (s.template) up.run(s.template, s.day ?? null, s.time || null, s.anchor || null, s.enabled === false ? 0 : 1, s.watiText || s.text || null, now);
+}
+export const hubTemplate = (name) => db.prepare('SELECT * FROM hub_templates WHERE template = ?').get(name);
+export const hubTemplateRows = () => db.prepare('SELECT * FROM hub_templates ORDER BY anchor, day, time').all();
+
+for (const col of ['pause_scope TEXT', 'skip_templates TEXT']) { try { db.exec(`ALTER TABLE plan_items ADD COLUMN ${col}`); } catch {} } // all = pause the whole automation, next = skip the named template(s) (2026-10-01)
+export const insertPlanItem = (p) => Number(db.prepare(`INSERT INTO plan_items (wa_id, name, day, kind, state, at, when_at, title, why, action, hub_status, hub_next, hub_next_at, hub_paused, hub_sig, bubbles, template, suggestion_id, pause_scope, skip_templates, pushed, updated_at)
+  VALUES (?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+  .run(p.wa_id, p.name ?? null, p.day, p.kind, new Date().toISOString(), p.when_at ?? null, p.title ?? null, p.why ?? null, p.action ?? null, p.hub_status ?? null, p.hub_next ?? null, p.hub_next_at ?? null, p.hub_paused ? 1 : 0, p.hub_sig ?? null, p.bubbles ? JSON.stringify(p.bubbles) : null, p.template ?? null, p.suggestion_id ?? null, p.pause_scope ?? null, p.skip_templates ? JSON.stringify(p.skip_templates) : null, p.pushed ? 1 : 0, new Date().toISOString()).lastInsertRowid);
+export const planItemById = (id) => db.prepare('SELECT * FROM plan_items WHERE id = ?').get(id);
+export const planItems = (day) => db.prepare('SELECT * FROM plan_items WHERE day = ? ORDER BY CASE state WHEN \'open\' THEN 0 ELSE 1 END, COALESCE(when_at, hub_next_at, \'9\'), id').all(day);
+export const openPlanItems = (waId = null) => waId ? db.prepare("SELECT * FROM plan_items WHERE wa_id = ? AND state = 'open' ORDER BY id DESC").all(waId) : db.prepare("SELECT * FROM plan_items WHERE state = 'open' ORDER BY COALESCE(when_at, hub_next_at, '9')").all();
+export const planItemsFor = (waId, day) => db.prepare('SELECT * FROM plan_items WHERE wa_id = ? AND day = ? ORDER BY id DESC').all(waId, day);
+export const setPlanState = (id, state, note = null) => db.prepare('UPDATE plan_items SET state = ?, note = COALESCE(?, note), updated_at = ? WHERE id = ?').run(state, note, new Date().toISOString(), id);
+export const closePlanItems = (waId, state, kinds = null) => kinds
+  ? db.prepare(`UPDATE plan_items SET state = ?, updated_at = ? WHERE wa_id = ? AND state = 'open' AND kind IN (${kinds.map(() => '?').join(',')})`).run(state, new Date().toISOString(), waId, ...kinds).changes
+  : db.prepare("UPDATE plan_items SET state = ?, updated_at = ? WHERE wa_id = ? AND state = 'open'").run(state, new Date().toISOString(), waId).changes;
+export const expirePlanItems = (beforeDay) => db.prepare("UPDATE plan_items SET state = 'expired', updated_at = ? WHERE state = 'open' AND day < ?").run(new Date().toISOString(), beforeDay).changes;
+export const unpushedPlanItems = () => db.prepare("SELECT * FROM plan_items WHERE pushed = 0 AND state = 'open'").all();
+export const markPlanPushed = (id) => db.prepare('UPDATE plan_items SET pushed = 1 WHERE id = ?').run(id);
+export const markPlanReminded = (id) => db.prepare('UPDATE plan_items SET reminded = 1 WHERE id = ?').run(id);
+export const dueReminders = (untilIso) => db.prepare("SELECT * FROM plan_items WHERE state = 'open' AND reminded = 0 AND when_at IS NOT NULL AND when_at <= ? ORDER BY when_at").all(untilIso);
+export const planDismissed = (limit = 30) => db.prepare("SELECT name, kind, title, note, day FROM plan_items WHERE state = 'dismissed' ORDER BY id DESC LIMIT ?").all(limit);
+export const planRunsSince = (iso) => db.prepare("SELECT count(*) n FROM state WHERE key LIKE 'plan_call_%' AND value >= ?").get(iso).n;
+export const planCounts = (day) => db.prepare(`SELECT
+  COALESCE(sum(state = 'open' AND kind IN ('pause', 'fix')), 0) todo,
+  COALESCE(sum(state = 'open' AND kind = 'followup'), 0) followups,
+  COALESCE(sum(state = 'open' AND kind = 'wait'), 0) waits,
+  COALESCE(sum(state = 'open' AND kind = 'ok'), 0) oks,
+  COALESCE(sum(state = 'done'), 0) done FROM plan_items WHERE day = ?`).get(day);

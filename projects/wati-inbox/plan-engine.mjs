@@ -1,0 +1,219 @@
+// The day plan (2026-10-01): one card per lead that matters today — paused leads needing a human
+// follow-up, leads whose next Sales Hub template is due, finished or stuck sequences — judged by one
+// Sonnet run per batch of leads, with the real template text and the conversation. Nothing is sent and
+// nothing is changed in the Hub: the cards tell Ali what to do, when, and carry the draft.
+//
+//   morning run at PLAN_AT (09:15 Madrid) over every candidate; then every 5 min, any lead whose Hub
+//   state changed or whose template is due within 5 h and that has no card yet. Cap: PLAN_MAX_CALLS/day.
+//   A card closes by itself when the lead writes (replied), when Ali sends a message to that lead
+//   (followup → done), at midnight (expired); Ali taps « Fait » or « Pas d'accord » (with a note that the
+//   next judgements read).
+//
+//   node --env-file=.env plan-engine.mjs            candidates now (no Claude)
+//   node --env-file=.env plan-engine.mjs --run      judge them now, write the cards, push the summary
+
+import { readFileSync, mkdirSync } from 'node:fs';
+import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRows, insertPlanItem, planItems, openPlanItems, planItemsFor, setPlanState, expirePlanItems, unpushedPlanItems, markPlanPushed, dueReminders, markPlanReminded, planDismissed, planCounts, getState, setState, insertSuggestion, markSuggestionPushed } from './db.mjs';
+import { hubReady } from './hub.mjs';
+import { hubSig, onHubChange } from './hub-sync.mjs';
+import { runClaude, madrid } from './suggest-engine.mjs';
+import { pushAll } from './push.mjs';
+import { frenchTemplates } from './wati.mjs';
+
+const PLAN_AT = process.env.PLAN_AT || '09:15';
+const MAX_CALLS = Number(process.env.PLAN_MAX_CALLS || 15);
+const BATCH = 6;
+const DUE_H = Number(process.env.PLAN_DUE_H || 5);
+const FROM_H = 8, TO_H = 22;
+const TEST_NUMBER = '34695064884';
+const log = (...a) => console.log(new Date().toISOString().slice(11, 19), 'plan:', ...a);
+export const today = () => madrid().slice(0, 10);
+const status = { state: 'idle', at: null, last: null, error: null, calls: 0 };
+export const planStatus = () => ({ ...status, calls: callsToday(), max: MAX_CALLS, ready: hubReady() });
+const callsToday = () => db.prepare("SELECT count(*) n FROM state WHERE key LIKE 'plan_call_%' AND value LIKE ?").get(`${today()}%`).n;
+const countCall = () => setState(`plan_call_${Date.now()}`, new Date().toISOString());
+
+// "14:00" today or "2026-10-02 09:00" (Madrid) → ISO instant.
+function madridIso(s) {
+  if (!s) return null;
+  const m = /^(\d{4}-\d{2}-\d{2})?\s*(\d{1,2}):(\d{2})$/.exec(String(s).trim());
+  if (!m) return null;
+  const date = m[1] || today(), hhmm = `${m[2].padStart(2, '0')}:${m[3]}`;
+  const guess = Date.parse(`${date}T${hhmm}:00Z`);
+  const local = madrid(new Date(guess));
+  const offset = Date.parse(local.replace(' ', 'T') + 'Z') - guess;
+  return new Date(guess - offset).toISOString();
+}
+const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
+
+// Who matters today. reason: paused | due | finished | stale.
+export function candidates(now = Date.now()) {
+  const out = [];
+  const dueBefore = new Date(now + 24 * 3600e3).toISOString();
+  for (const r of hubLeadRows()) {
+    if (r.wa_id === TEST_NUMBER) continue;
+    let reason = null;
+    if (r.paused && ['TBC', 'IITF', 'CITF'].includes(r.status)) reason = 'paused';
+    else if (r.status === 'TBC' && r.next_at && r.next_at <= dueBefore && r.next_at >= new Date(now - 60 * 60e3).toISOString()) reason = 'due';
+    else if (r.status === 'TBC' && r.next_at && r.next_at < new Date(now - 60 * 60e3).toISOString()) reason = 'stale';
+    else if (r.status === 'TBC' && !r.next_tpl && r.last_reason_at && now - Date.parse(r.last_reason_at) < 3 * 864e5) reason = 'finished';
+    if (!reason) continue;
+    const t = getThread(r.wa_id);
+    const msgs = t ? threadMessages(r.wa_id) : [];
+    out.push({ ...r, reason, thread: t, msgs });
+  }
+  // Most urgent first: paused leads (a human gesture is due), then templates by time, then stuck and finished sequences.
+  const rank = { paused: 0, due: 1, stale: 2, finished: 3 };
+  return out.sort((a, b) => rank[a.reason] - rank[b.reason] || String(a.next_at || '9').localeCompare(String(b.next_at || '9')));
+}
+
+// Leads with no card today, or whose Hub state moved since their card (then the old card is superseded).
+function needing(cands) {
+  const d = today();
+  return cands.filter((c) => {
+    const items = planItemsFor(c.wa_id, d);
+    const sig = hubSig(c.wa_id);
+    const open = items.find((i) => i.state === 'open');
+    if (open && open.hub_sig === sig) return false;
+    if (items.some((i) => i.state !== 'open' && i.state !== 'superseded' && i.hub_sig === sig)) return false; // done/dismissed/replied for this same state
+    return true;
+  });
+}
+
+function leadBlock(c) {
+  const fmt = (iso) => madrid(new Date(iso)).slice(5, 16);
+  const tpl = c.next_tpl ? hubTemplate(c.next_tpl) : null;
+  const lastLead = [...c.msgs].reverse().find((m) => m.who === 'LEAD');
+  const windowOpen = !!lastLead && Date.now() - Date.parse(lastLead.at) < 24 * 3600e3;
+  const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || c.wa_id;
+  const head = [`### ${name} · waId ${c.wa_id}${c.thread?.country === 'Switzerland' ? ' · SUISSE (CHF)' : ''}`,
+    `Hub : statut ${c.status}${c.paused ? ' · EN PAUSE' : ''}${c.skip_next ? ' · prochain sauté' : ''} · phase ${c.phase || '-'} · entretien ${c.meeting_date || '-'} · dernier événement : ${c.last_reason || '-'}${c.last_reason_at ? ` (${fmt(c.last_reason_at)})` : ''}`,
+    c.next_tpl ? `Prochain template : ${c.next_tpl} à ${fmt(c.next_at)}${Date.parse(c.next_at) < Date.now() - 3600e3 ? ' (DANS LE PASSÉ)' : ''}${c.paused ? ' (ne partira pas tant que la pause tient)' : ''}` : 'Prochain template : aucun (séquence terminée)',
+    tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
+    c.citf ? `Plan CITF : ${c.citf}` : '',
+    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse' }[c.reason]}`,
+    `Fenêtre 24h : ${windowOpen ? `OUVERTE (dernier message du lead ${fmt(lastLead.at)})` : 'FERMÉE (template seulement)'}`,
+    c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
+  const conv = c.msgs.length
+    ? c.msgs.slice(-18).map((m) => `[${fmt(m.at)}] ${m.who === 'LEAD' ? 'LEAD' : m.tpl ? `AUTO ${m.tpl_name || ''}` : 'ALI '} : ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 320)}`).join('\n')
+    : '(aucune conversation lisible sur le numéro Sales : le lead n’a répondu à aucun message)';
+  return `${head}\nConversation :\n${conv}`;
+}
+
+const SCHEMA = { type: 'object', properties: {
+  items: { type: 'array', items: { type: 'object', properties: {
+    waId: { type: 'string' }, kind: { type: 'string', enum: ['pause', 'followup', 'wait', 'fix', 'ok'] }, when: { type: 'string' }, title: { type: 'string' }, why: { type: 'string' }, action: { type: 'string' },
+    pauseScope: { type: 'string' }, skipTemplates: { type: 'array', items: { type: 'string' } }, hubStatus: { type: 'string' }, citfDate: { type: 'string' }, bubbles: { type: 'array', items: { type: 'string' } }, template: { type: 'string' } },
+    required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'hubStatus', 'citfDate', 'bubbles', 'template'] } },
+  summary: { type: 'string' } }, required: ['items', 'summary'] };
+
+async function judgeBatch(batch) {
+  const weekday = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
+  const dismissed = planDismissed(30).map((p) => `- ${p.day} · ${p.name || ''} · ${p.kind} « ${p.title} »${p.note ? ` — Ali : ${p.note}` : ''}`).join('\n') || '(rien pour le moment)';
+  let tpls = [];
+  try { tpls = (await frenchTemplates()).filter((t) => /^tbc_|^followup_|_replied/.test(t.name)).slice(0, 25); } catch {}
+  const templates = tpls.map((t) => `- ${t.name} : « ${String(t.body || '').replace(/\s+/g, ' ').slice(0, 160)} »`).join('\n') || '(liste indisponible)';
+  const prompt = readFileSync(new URL('./plan-prompt.md', import.meta.url), 'utf8')
+    .replaceAll('{{now}}', madrid()).replaceAll('{{weekday}}', weekday).replaceAll('{{dismissed}}', dismissed).replaceAll('{{templates}}', templates)
+    .replaceAll('{{leads}}', batch.map(leadBlock).join('\n\n'));
+  countCall();
+  const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 3, tag: 'plan', timeoutMs: 5 * 60_000, tools: [] });
+  return { items: Array.isArray(out.items) ? out.items : [], summary: String(out.summary || '').trim(), ms: out.ms };
+}
+
+function store(c, it) {
+  const d = today();
+  let pushed = false;
+  for (const old of planItemsFor(c.wa_id, d)) if (old.state === 'open') { setPlanState(old.id, 'superseded'); if (old.pushed) pushed = true; } // a re-judged card is not pushed twice
+  const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || null;
+  const bubbles = (Array.isArray(it.bubbles) ? it.bubbles : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
+  let kind = ['pause', 'followup', 'wait', 'fix', 'ok'].includes(it.kind) ? it.kind : 'ok';
+  if (kind === 'pause' && c.paused) kind = bubbles.length ? 'followup' : 'wait'; // already paused: nothing to pause, a human gesture or a date
+  const whenIso = madridIso(it.when) || (kind === 'pause' && c.next_at ? c.next_at : null);
+  // Which Hub mechanism: pause the whole automation, or skip only the named template(s) (Ali, 2026-10-01).
+  const pauseScope = kind === 'pause' ? (it.pauseScope === 'next' ? 'next' : 'all') : null;
+  const skip = kind === 'pause' && pauseScope === 'next' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];
+  if (pauseScope === 'next' && !skip.length && c.next_tpl) skip.push(c.next_tpl);
+  const actionBits = [pauseScope === 'all' ? 'Hub : pause complète de l’automatisation' : pauseScope === 'next' ? `Hub : sauter seulement ${skip.join(' puis ')} (skip next), les suivants partent normalement` : '', String(it.action || '').trim()];
+  if (it.hubStatus && /^(OR|CITF|IITF)$/.test(it.hubStatus)) actionBits.push(`Statut Hub → ${it.hubStatus}${it.citfDate ? ` (${it.citfDate})` : ''}`);
+  let suggestionId = null;
+  if (bubbles.length) { // the draft becomes a normal suggestion in the thread: editable, sendable, learned from
+    suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Plan du jour : ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [] });
+    markSuggestionPushed(suggestionId);
+  }
+  return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
+    hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: hubSig(c.wa_id), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, pushed });
+}
+
+let running = false;
+// scope: 'all' (morning) or 'due' (state changed / template within DUE_H).
+export async function plan({ scope = 'due', reason = 'auto', dry = false, only = null } = {}) {
+  if (running || !hubReady()) return null;
+  running = true; status.state = 'running'; status.at = new Date().toISOString(); status.error = null;
+  try {
+    expirePlanItems(today());
+    let cands = only ? candidates().filter((c) => only.includes(c.wa_id)) : needing(candidates()); // only = re-judge these leads now, replacing their cards
+    if (scope === 'due') { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
+    if (dry) { status.state = 'idle'; return { candidates: cands.map((c) => ({ wa_id: c.wa_id, name: c.name, reason: c.reason, status: c.status, next: c.next_tpl, at: c.next_at })) }; }
+    if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
+    let judged = 0; const summaries = [];
+    for (let i = 0; i < cands.length; i += BATCH) {
+      if (callsToday() >= MAX_CALLS) { log(`cap of ${MAX_CALLS} calls reached today`); break; }
+      const batch = cands.slice(i, i + BATCH);
+      log(`judging ${batch.map((c) => c.name || c.wa_id).join(', ')} (${reason})`);
+      let out;
+      try { out = await judgeBatch(batch); } catch (e) { log('judge error:', e.message); status.error = e.message; continue; }
+      const byWa = new Map(batch.map((c) => [c.wa_id, c]));
+      for (const it of out.items) { const c = byWa.get(String(it.waId || '').replace(/\D/g, '')); if (!c) continue; store(c, it); judged++; }
+      if (out.summary) summaries.push(out.summary);
+      log(`${out.items.length} card(s) in ${Math.round((out.ms || 0) / 1000)} s`);
+    }
+    status.last = { at: new Date().toISOString(), judged, scope, summary: summaries.join(' ').slice(0, 400) };
+    setState('plan_last', JSON.stringify(status.last));
+    status.state = 'idle';
+    if (judged && scope === 'all') { const c = planCounts(today()); await pushAll({ title: 'Plan du jour prêt', body: `${c.todo} à régler dans le Hub · ${c.followups} relance(s) · ${c.waits} à attendre · ${c.oks} template(s) qui collent`, tag: 'plan', url: '/plan' }); for (const i of unpushedPlanItems()) markPlanPushed(i.id); }
+    return status.last;
+  } finally { running = false; status.state = 'idle'; }
+}
+
+// Pushes for cards created during the day (pause/fix: now; followup: 10 min before its time).
+async function pushes() {
+  if (!hubReady()) return;
+  const h = Number(madrid().slice(11, 13));
+  if (h < FROM_H || h >= TO_H) return;
+  for (const i of unpushedPlanItems()) {
+    if (i.kind === 'pause' || i.kind === 'fix') await pushAll({ title: `${i.kind === 'pause' ? (i.pause_scope === 'next' ? 'Template à sauter' : 'Pause complète') : 'À vérifier'} · ${i.name || i.wa_id}`, body: `${i.title}${i.hub_next_at ? `. ${i.hub_next} à ${fmtHM(i.hub_next_at)}` : ''}`, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
+    markPlanPushed(i.id);
+  }
+  for (const i of dueReminders(new Date(Date.now() + 10 * 60e3).toISOString())) {
+    if (i.kind === 'followup' && i.day === today()) await pushAll({ title: `Relance ${fmtHM(i.when_at)} · ${i.name || i.wa_id}`, body: i.title, tag: `plan-${i.wa_id}`, url: `/t/${i.wa_id}` });
+    markPlanReminded(i.id);
+  }
+}
+
+export function startPlanning() {
+  if (!hubReady()) { log('off (no Sales Hub token)'); return; }
+  mkdirSync('logs', { recursive: true });
+  onHubChange((changed) => { for (const w of changed) for (const i of openPlanItems(w)) if (i.hub_sig !== hubSig(w)) log(`${i.name || w}: Hub state moved, card will be re-judged`); });
+  setInterval(async () => {
+    try {
+      const now = madrid();
+      if (now.slice(11, 16) >= PLAN_AT && getState('plan_day') !== now.slice(0, 10)) { setState('plan_day', now.slice(0, 10)); await plan({ scope: 'all', reason: 'morning' }); }
+      else await plan({ scope: 'due', reason: 'auto' });
+      await pushes();
+    } catch (e) { log('tick error:', e.message); }
+  }, 5 * 60_000);
+  setInterval(() => pushes().catch(() => {}), 60_000);
+  log(`ready — morning plan at ${PLAN_AT} Madrid, then every 5 min for what moves, max ${MAX_CALLS} judgements/day`);
+}
+
+if (process.argv[1] && process.argv[1].endsWith('plan-engine.mjs')) {
+  mkdirSync('logs', { recursive: true });
+  const { syncLeads, syncTemplates } = await import('./hub-sync.mjs');
+  await syncTemplates(); await syncLeads();
+  const onlyArg = process.argv[process.argv.indexOf('--only') + 1];
+  const only = process.argv.includes('--only') && onlyArg ? onlyArg.split(',').map((x) => x.replace(/\D/g, '')) : null;
+  if (process.argv.includes('--run')) { const r = await plan({ scope: 'all', reason: 'ali', only }); console.log(JSON.stringify(r, null, 2)); for (const i of planItems(today())) console.log(`${i.state.padEnd(6)} ${i.kind.padEnd(8)} ${(i.name || i.wa_id).padEnd(24)} ${i.when_at ? fmtHM(i.when_at) : '     '}  ${i.title}`); }
+  else { const r = await plan({ dry: true, scope: 'all' }); console.log(JSON.stringify(r, null, 2)); }
+  process.exit(0);
+}
