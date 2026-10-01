@@ -12,6 +12,7 @@ const fmtLeft = (iso) => { const s = Math.max(0, Math.round((new Date(iso) - Dat
 let toastTimer;
 const toast = (msg) => { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); } t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 1800); };
 const splitBubbles = (text) => String(text || '').split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+const EMOJIS = ['😊', '👍', '😁', '🙂', '🙏', '💪', '✅', '🚀', '🎉', '😉'];
 
 async function copyText(text, btn) {
   let ok = false;
@@ -241,7 +242,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${d.hub?.next?.template}|${d.hub?.paused}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${d.hub?.next?.template}|${d.hub?.paused}`;
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
   if (quiet && key === lastThreadKey) return;
@@ -250,7 +251,9 @@ async function renderThread(waId, { quiet = false } = {}) {
   let lastDay = '';
   const msgs = d.messages.map((m) => { const day = fmtDay(m.at); const h = (day !== lastDay ? `<div class="day">${day}</div>` : '') + `<div class="msg ${m.who}${m.tpl ? ' tpl' : ''}">${esc(m.text)}<time>${fmtTime(m.at)}${m.tpl ? ' · automated' : ''}</time></div>`; lastDay = day; return h; }).join('');
   const ctx = [t.stage && `<b>${esc(t.stage)}</b>`, t.meeting && `meeting ${esc(t.meeting)}`, t.country && `${esc(t.country)}${t.country === 'Switzerland' ? ' · <b>CHF</b>' : ''}`, d.offerText && `offer: ${esc(d.offerText)}`].filter(Boolean).join(' · ');
-  const sug = d.suggestion, opts = sug?.options || [], o = opts[0] || null;
+  // orig = Claude's draft (what the learning compares with); o = what is shown and sent: Ali's saved edit when there is one.
+  const sug = d.suggestion, opts = sug?.options || [], orig = opts[0] || null;
+  const o = orig ? { ...orig, bubbles: sug.edited?.bubbles || orig.bubbles, later: sug.edited?.later || orig.later || [] } : null;
   const sendLock = !!sending && !sending.error;
   const D = d.windowOpen ? await loadDirs() : null;
   const has = (id) => dir.moves.includes(id);
@@ -285,18 +288,22 @@ async function renderThread(waId, { quiet = false } = {}) {
   else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude: nothing to answer. ${esc(sug.why || '')}</span> <button class="small" id="anyway">Draft anyway</button></div>`;
   else if (o && o.bubbles?.length) {
     // Editing = one field per bubble; each field is still its own WhatsApp message when sent.
-    const fields = (arr, tag) => arr.map((b, j) => `<div class="eb"><textarea data-${tag}="${j}" rows="2">${esc(b)}</textarea><button class="small" data-${tag}del="${j}" title="Remove this bubble">×</button></div>`).join('') + `<button class="small" data-${tag}add>+ bubble</button>`;
+    // Editing (Ali, 2026-10-01): emojis go into the bubble being edited; Save keeps the edit as the draft itself, on
+    // every device, so he sends from here, never through the composer below. Claude's original stays for the learning.
+    const emojiRow = `<div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emojie="${e}" type="button">${e}</button>`).join('')}</div>`;
+    const fields = (arr, tag) => emojiRow + arr.map((b, j) => `<div class="eb"><textarea data-${tag}="${j}" rows="2">${esc(b)}</textarea><button class="small" data-${tag}del="${j}" title="Remove this bubble">×</button></div>`).join('') + `<button class="small" data-${tag}add>+ bubble</button>`;
+    const editedTag = (part) => sug.edited?.[part] ? ' · <b>edited by you</b>' : '';
     claude = `<div class="card opt">
-        <div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}</span></div>
+        <div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}${editedTag('bubbles')}</span></div>
         ${sug.note ? `<p class="note small">${esc(sug.note)}</p>` : ''}
         ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copy="${j}">Copy</button></div>`).join('') : fields(draftEdit, 'eb')}
-        <div class="acts">${d.windowOpen ? `<button class="primary small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>` : ''}<button class="small" data-copyall="0">Copy all</button></div>
+        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}<button class="small" data-copyall="0">Copy all</button></div>
         ${o.why ? `<details><summary>Why</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
-        <div class="opt-head">In 5-10 min <span class="muted">· the good news from the administration${d.thread?.last_inbound_at && sug.created_at < d.thread.last_inbound_at ? ' · the lead wrote since, step 2 still to send' : ''}</span></div>
+        <div class="opt-head">In 5-10 min <span class="muted">· the good news from the administration${d.thread?.last_inbound_at && sug.created_at < d.thread.last_inbound_at ? ' · the lead wrote since, step 2 still to send' : ''}${editedTag('later')}</span></div>
         ${laterEdit == null ? o.later.map((b, j) => `<div class="b"><span>${esc(b)}</span><button class="small" data-copyl="${j}">Copy</button></div>`).join('') : fields(laterEdit, 'lb')}
-        <div class="acts">${d.windowOpen ? `<button class="primary small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Schedule in 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Send now</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Edit' : 'Cancel'}</button><button class="small" data-copyalll="0">Copy all</button></div>
+        <div class="acts">${laterEdit != null ? `<button class="primary small" data-lbsave>Save</button>` : ''}${d.windowOpen ? `<button class="${laterEdit == null ? 'primary ' : ''}small" data-sendlater="0" ${d.scheduled ? 'disabled' : ''}>Schedule in 7 min</button><button class="small" data-sendlaternow="0" ${sendLock ? 'disabled' : ''}>Send now</button>` : ''}<button class="small" id="laterEdit">${laterEdit == null ? 'Edit' : 'Cancel'}</button><button class="small" data-copyalll="0">Copy all</button></div>
       </div>` : '');
   }
   const learnLine = d.learning && (d.learning.state === 'waiting' || d.learning.state === 'learning') ? '<p class="muted small learn">Claude is noting what you sent…</p>'
@@ -317,7 +324,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     </details>` : '';
   const tplBox = `<input id="tplq" placeholder="Filter"><select id="tpl" style="margin-top:8px"><option value="">Loading…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Send the template</button><span id="stt"></span></div>`;
   const compose = d.windowOpen
-    ? `<div class="card"><div class="emojis">${['😊', '👍', '😁', '🙂', '🙏', '💪', '✅', '🚀', '🎉', '😉'].map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Your message. An empty line separates two bubbles">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Send</button><button id="clr" class="small">Clear</button><span id="st"></span></div></div>
+    ? `<div class="card"><div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Your message. An empty line separates two bubbles">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Send</button><button id="clr" class="small">Clear</button><span id="st"></span></div></div>
        <details class="card fold"><summary>Send a template</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? '24h window closed: only a template can be sent.' : 'No conversation on the Sales number: a template can be sent.'}</p>${tplBox}</div>`;
 
@@ -354,11 +361,20 @@ async function renderThread(waId, { quiet = false } = {}) {
     const add = $(`[data-${tag}add]`); if (add) add.onclick = () => { set([...get(), '']); redraw(); };
   };
   const draftBubbles = () => draftEdit == null ? o.bubbles : readFields('eb');
-  const sameAsDraft = (arr) => arr.length === o.bubbles.length && arr.every((x, i) => x === o.bubbles[i].trim());
+  const sameAsDraft = (arr) => !!orig && arr.length === orig.bubbles.length && arr.every((x, i) => x === orig.bubbles[i].trim()); // against Claude's version: that is what the learning wants to know
   document.querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => copyText(o.bubbles[Number(b.dataset.copy)], b));
   document.querySelectorAll('[data-copyall]').forEach((b) => b.onclick = () => copyText(draftBubbles().join('\n\n'), b));
   document.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { draftEdit = draftEdit == null ? o.bubbles.slice() : null; redraw(); });
   bindFields('eb', () => draftEdit, (v) => { draftEdit = v; });
+  // Save = the edit becomes the draft (server side, every device); "Claude's version" = back to the original.
+  const saveEdit = async (part, arr) => { if (!arr.length) { toast('No bubble'); return; } try { await api(`/api/thread/${waId}/edit`, { method: 'POST', body: { suggestionId: sug.id, [part]: arr } }); toast('Saved'); if (part === 'bubbles') draftEdit = null; else laterEdit = null; redraw(); } catch (e) { toast(e.message); } };
+  if ($('[data-ebsave]')) $('[data-ebsave]').onclick = () => saveEdit('bubbles', readFields('eb'));
+  if ($('[data-lbsave]')) $('[data-lbsave]').onclick = () => saveEdit('later', readFields('lb'));
+  if ($('[data-ebreset]')) $('[data-ebreset]').onclick = async () => { try { await api(`/api/thread/${waId}/edit`, { method: 'POST', body: { suggestionId: sug.id, bubbles: [] } }); redraw(); } catch (e) { toast(e.message); } };
+  // Emojis while editing: into the bubble last touched (or the first one), at the cursor.
+  let lastEditTa = null;
+  document.querySelectorAll('textarea[data-eb], textarea[data-lb]').forEach((ta) => { ta.addEventListener('focus', () => { lastEditTa = ta; }); });
+  document.querySelectorAll('[data-emojie]').forEach((b) => b.onclick = () => { const row = b.closest('.card'); const ta = (lastEditTa && row.contains(lastEditTa)) ? lastEditTa : row.querySelector('textarea[data-eb], textarea[data-lb]'); if (!ta) return; const a = ta.selectionStart ?? ta.value.length, z = ta.selectionEnd ?? a; ta.value = ta.value.slice(0, a) + b.dataset.emojie + ta.value.slice(z); ta.selectionStart = ta.selectionEnd = a + b.dataset.emojie.length; ta.focus(); ta.dispatchEvent(new Event('input')); });
   document.querySelectorAll('[data-send]').forEach((b) => armed(b, draftEdit == null ? 'Send' : 'Send these bubbles', async () => { const bubbles = draftBubbles(); if (!bubbles.length) { toast('No bubble'); return; } b.disabled = true; try { await sendBubbles(waId, bubbles, { suggestionId: sug.id, option: 0, edited: !sameAsDraft(bubbles) }); draftEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   // the second block: same editing, then scheduled or sent with the edited bubbles
   const laterBubbles = () => laterEdit == null ? o.later : readFields('lb');
@@ -380,7 +396,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     if ($('#go')) $('#go').onclick = async () => { if (has('downsell') && !dir.level) { toast('Downsell to what?'); return; } try { if (offerDraft?.format) await saveOffer(waId); } catch (e) { toast(e.message); return; } askClaude({ ...dir, instruction: dir.instruction.trim() }); };
     bindOffer(waId, d);
     document.querySelectorAll('[data-emoji]').forEach((b) => b.onclick = () => { const ta = $('#tx'); const a = ta.selectionStart ?? ta.value.length, z = ta.selectionEnd ?? a; ta.value = ta.value.slice(0, a) + b.dataset.emoji + ta.value.slice(z); ta.selectionStart = ta.selectionEnd = a + b.dataset.emoji.length; ta.focus(); ta.dispatchEvent(new Event('input')); });
-    $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim() || sendLock; if (composerFrom) composerFrom.edited = composer !== (composerFrom.part === 'later' ? o?.later : o?.bubbles)?.join('\n\n'); };
+    $('#tx').oninput = (e) => { composer = e.target.value; $('#send').disabled = !composer.trim() || sendLock; if (composerFrom) composerFrom.edited = composer !== (composerFrom.part === 'later' ? orig?.later : orig?.bubbles)?.join('\n\n'); };
     $('#clr').onclick = () => { composer = ''; composerFrom = null; $('#tx').value = ''; $('#send').disabled = true; };
     armed($('#send'), 'Send', async () => {
       const bubbles = splitBubbles($('#tx').value);

@@ -11,7 +11,7 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagVerdict, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
+import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, getSuggestion, setSuggestionEdited, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagVerdict, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
@@ -173,7 +173,7 @@ async function api(req, res, path) {
   }
   if (path === '/api/templates') return json(res, 200, { templates: await frenchTemplates() });
 
-  const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute|offer|cancel|tbc))?$/.exec(path);
+  const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute|offer|cancel|tbc|edit))?$/.exec(path);
   if (!m) return json(res, 404, { error: 'not found' });
   const waId = m[1], action = m[2];
 
@@ -203,7 +203,7 @@ async function api(req, res, path) {
       windowOpen: !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24,
       hoursSinceLead: t.last_inbound_at ? hoursSince(t.last_inbound_at) : null,
       templatesSent: sentTemplates(waId).map((s) => ({ at: s.at, name: JSON.parse(s.payload).template })),
-      suggestion: suggestionVisible(t, sugg, { laterScheduled: scheduled.has(waId) }) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '', kind: sugg.kind || 'draft', needs: sugg.needs || '', moves: sugg.moves ? JSON.parse(sugg.moves) : [] } : null,
+      suggestion: suggestionVisible(t, sugg, { laterScheduled: scheduled.has(waId) }) ? { id: sugg.id, created_at: sugg.created_at, options: JSON.parse(sugg.options), edited: sugg.edited ? JSON.parse(sugg.edited) : null, note: sugg.note || '', source: sugg.source || '', instruction: sugg.instruction || '', kind: sugg.kind || 'draft', needs: sugg.needs || '', moves: sugg.moves ? JSON.parse(sugg.moves) : [] } : null,
       suggesting: suggestStatus(waId),
       learning: learnStatus(waId),
       lastLesson: latestLesson(waId) || null,
@@ -235,6 +235,20 @@ async function api(req, res, path) {
     return json(res, 200, { ok: true, offer, offerText: describeOffer(offer, currencyFor(storedThread(waId)?.country)) });
   }
   if (action === 'cancel' && req.method === 'POST') return json(res, 200, { ok: true, cancelled: cancelScheduled(waId) });
+  // Ali saves his edit of a draft (Ali, 2026-10-01): the saved bubbles are what the card shows and sends, on every device;
+  // Claude's original stays in `options` for the learning. Empty `bubbles`/`later` = back to the original for that part.
+  if (action === 'edit' && req.method === 'POST') {
+    const b = await body(req);
+    const s = getSuggestion(Number(b.suggestionId));
+    if (!s || s.wa_id !== waId) return json(res, 404, { error: 'Unknown draft' });
+    const clean = (arr) => Array.isArray(arr) ? arr.map((x) => String(x).trim()).filter(Boolean) : null;
+    const prev = s.edited ? JSON.parse(s.edited) : {};
+    const edited = { ...prev };
+    if ('bubbles' in b) { const v = clean(b.bubbles); if (v?.length) edited.bubbles = v; else delete edited.bubbles; }
+    if ('later' in b) { const v = clean(b.later); if (v?.length) edited.later = v; else delete edited.later; }
+    setSuggestionEdited(s.id, Object.keys(edited).length ? edited : null);
+    return json(res, 200, { ok: true, edited: Object.keys(edited).length ? edited : null });
+  }
   // Sales Hub alert: Ali says he paused the step there (we only record his word), or tells us to let it go.
   if (action === 'tbc' && req.method === 'POST') {
     const b = await body(req);

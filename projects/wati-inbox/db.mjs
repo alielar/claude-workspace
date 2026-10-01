@@ -60,7 +60,9 @@ for (const col of ['wanted INTEGER NOT NULL DEFAULT 0', 'muted INTEGER NOT NULL 
 // note = what Ali should know before sending; source = auto | ali (app button) | chat (Claude Code session)
 // instruction = what Ali typed to get this draft instead of the previous one (parent_id)
 // show_at = the push for this draft waits until this instant (a message planned for later in the day); the draft itself is on screen at once (Ali, 2026-10-01)
-for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER', 'kind TEXT', 'moves TEXT', 'needs TEXT', 'show_at TEXT']) { // kind = draft | needs | skip (2026-09-30)
+// edited = Ali's saved version of the bubbles ({bubbles, later}, JSON) shown and sent in place of Claude's; `options` keeps the
+// original so the learning still compares Claude's draft with what left (Ali, 2026-10-01)
+for (const col of ['note TEXT', 'source TEXT', 'instruction TEXT', 'parent_id INTEGER', 'kind TEXT', 'moves TEXT', 'needs TEXT', 'show_at TEXT', 'edited TEXT']) { // kind = draft | needs | skip (2026-09-30)
   try { db.exec(`ALTER TABLE suggestions ADD COLUMN ${col}`); } catch {}
 }
 try { db.exec('ALTER TABLE messages ADD COLUMN tpl_name TEXT'); } catch {} // name of the automated template (2026-09-30)
@@ -173,6 +175,7 @@ export const wantSuggestion = (waId) => db.prepare('UPDATE threads SET wanted = 
 export const latestSuggestion = (waId) => db.prepare('SELECT * FROM suggestions WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);
 export const insertSuggestion = (waId, options, note, source, { instruction = null, parentId = null, kind = 'draft', moves = null, needs = null, showAt = null } = {}) => Number(db.prepare('INSERT INTO suggestions (wa_id, created_at, options, pushed, note, source, instruction, parent_id, kind, moves, needs, show_at) VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)').run(waId, new Date().toISOString(), JSON.stringify(options), note || null, source, instruction, parentId, kind, moves ? JSON.stringify(moves) : null, needs, showAt).lastInsertRowid);
 export const getSuggestion = (id) => db.prepare('SELECT * FROM suggestions WHERE id = ?').get(id);
+export const setSuggestionEdited = (id, edited) => db.prepare('UPDATE suggestions SET edited = ? WHERE id = ?').run(edited ? JSON.stringify(edited) : null, id);
 export const insertLesson = (l) => Number(db.prepare('INSERT INTO lessons (wa_id, at, kind, suggestion_id, batch, sent, title, text) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(l.wa_id, new Date().toISOString(), l.kind, l.suggestion_id ?? null, l.batch ?? null, JSON.stringify(l.sent), l.title ?? null, l.text ?? null).lastInsertRowid);
 export const latestLesson = (waId) => db.prepare('SELECT id, at, kind, title FROM lessons WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(waId);
 export const lessonRunsSince = (iso) => db.prepare("SELECT count(*) n FROM lessons WHERE at >= ? AND kind != 'confirmed'").get(iso).n;

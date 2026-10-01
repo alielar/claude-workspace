@@ -68,6 +68,12 @@ Then commit and push. Test a draft from the terminal with
   "step 2 still to send"), and a plan card keeps its bubbles without replacing the draft (`laterPending` in `db.mjs`).
   Ali can still ask for a draft by hand if the lead asked something real.
 
+- **Editing a draft** (Ali, 2026-10-01): in edit mode the card has an emoji row (into the bubble last touched, at the cursor),
+  « + bubble », « × », **Save** and « Send these bubbles ». Save posts `/api/thread/<waId>/edit` and the edit is stored in
+  `suggestions.edited` ({bubbles, later}): the card shows and sends it on every device, tagged « edited by you », with a
+  « Claude's version » button to go back. `options` keeps Claude's original, so the learning (learn-engine) still compares
+  the original with what left. Nothing goes through the composer below any more.
+
 ## Language
 Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
 
