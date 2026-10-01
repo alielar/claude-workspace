@@ -227,7 +227,32 @@ export async function gradeRecording(userId: string, part: MindPart, topicId: nu
     await db.run(sql`UPDATE mind_topics SET stage = ${step.stage}, next_due = ${step.nextDue}, last_accuracy = ${g.scores.accuracy}, recalls = recalls + 1 WHERE id = ${topicId}`);
   }
   const [row] = await db.all<SessionRow>(sql`SELECT s.*, t.title FROM mind_sessions s JOIN mind_topics t ON t.id = s.topic_id WHERE s.id = ${Number(res.lastInsertRowid)}`);
+  await tickIfSessionDone(userId, today).catch(() => { /* the page ticks it too */ });
   return sessionOf(row);
+}
+
+/**
+ * The session is done once the new topic is graded and no callback is still waiting (none was due,
+ * or it was recorded) · then the "Mental training" row on Today is ticked here, on the server, so it
+ * shows done on Today without a tap and without the phone having Today's list cached (Ali 2026-10-01).
+ */
+async function tickIfSessionDone(userId: string, today: string): Promise<void> {
+  const parts = await db.all<{ part: string }>(sql`SELECT DISTINCT part FROM mind_sessions WHERE user_id = ${userId} AND date = ${today}`);
+  if (!parts.some((p) => p.part === "new")) return;
+  if (!parts.some((p) => p.part === "callback")) {
+    const [due] = await db.all<{ id: number }>(sql`SELECT id FROM mind_topics WHERE user_id = ${userId} AND learned_at IS NOT NULL AND next_due IS NOT NULL AND next_due <= ${today} LIMIT 1`);
+    if (due) return;
+  }
+  const [item] = await db.all<{ id: number }>(sql`SELECT id FROM checklist_items WHERE user_id = ${userId} AND routine_key = 'mind' AND active = 1 LIMIT 1`);
+  if (!item) return;
+  const [has] = await db.all<{ id: number }>(sql`SELECT id FROM checklist_completions WHERE user_id = ${userId} AND item_id = ${item.id} AND date = ${today} LIMIT 1`);
+  if (!has) await db.run(sql`INSERT INTO checklist_completions (item_id, user_id, date) VALUES (${item.id}, ${userId}, ${today})`);
+}
+
+/** No more callbacks for this topic · it stays in the list as done (Ali 2026-10-01: the first topic no longer fits). */
+export async function retireTopic(userId: string, topicId: number): Promise<void> {
+  await ensureMindTables();
+  await db.run(sql`UPDATE mind_topics SET next_due = NULL WHERE id = ${topicId} AND user_id = ${userId}`);
 }
 
 // ── The day ───────────────────────────────────────────────────────────────────
@@ -275,7 +300,7 @@ export async function prewriteIfSessionDay(userId: string): Promise<void> {
   await ensureMindTables();
   const today = checklistToday();
   const dow = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date(today + "T12:00:00").getDay()];
-  const [row] = await db.all<{ weekdays: string | null }>(sql`SELECT weekdays FROM checklist_items WHERE user_id = ${userId} AND routine_key = 'mind' AND deleted_at IS NULL LIMIT 1`).catch(() => []);
+  const [row] = await db.all<{ weekdays: string | null }>(sql`SELECT weekdays FROM checklist_items WHERE user_id = ${userId} AND routine_key = 'mind' AND active = 1 LIMIT 1`).catch(() => []);
   const days = row?.weekdays ? J<string[]>(row.weekdays, []) : ["mon", "tue", "thu", "fri"];
   if (!days.includes(dow)) return;
   const [pending] = await db.all<{ id: number }>(sql`SELECT id FROM mind_topics WHERE user_id = ${userId} AND learned_at IS NULL LIMIT 1`);

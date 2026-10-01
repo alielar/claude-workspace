@@ -33,5 +33,14 @@ export function useMind() {
     return j;
   }, [c]);
 
-  return { ...c, writing, writeBrief, grade };
+  /** No more callbacks for one topic (idempotent: sets next_due to nothing). */
+  const retire = useCallback(async (topicId: number) => {
+    if (c.data) c.setData((prev) => ({ ...(prev ?? c.data!), callback: prev?.callback?.id === topicId ? null : prev?.callback ?? null, topics: (prev ?? c.data!).topics.map((t) => (t.id === topicId ? { ...t, nextDue: null } : t)) }));
+    try {
+      const res = await fetch("/api/mind/today", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ retire: topicId }) });
+      if (res.ok) { c.setData((await res.json()) as MindToday); c.markEdit(); }
+    } catch { c.refresh(); }
+  }, [c]);
+
+  return { ...c, writing, writeBrief, grade, retire };
 }

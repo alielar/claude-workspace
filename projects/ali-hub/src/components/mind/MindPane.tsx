@@ -8,7 +8,7 @@
  *   then the week-by-week progress and the topics with their next callback day.
  * Recording uses the phone's microphone (MediaRecorder, audio/mp4 on iOS); the file
  * goes to /api/mind/grade and is not kept. Both parts done → the "Mental training"
- * routine row ticks itself, like Mobility does.
+ * routine row ticks itself (here and on the server), with no callback due the new topic alone is the session.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -188,25 +188,55 @@ function Result({ s }: { s: MindSession }) {
 const daysAgo = (ms: number | null, today: string) => { if (!ms) return ""; const d = Math.round((Date.parse(today + "T12:00:00") - ms) / 86400000); return d <= 0 ? "today" : d === 1 ? "yesterday" : `${d} days ago`; };
 const dueWord = (d: string | null, today: string) => (!d ? "done" : d <= today ? "due" : d === today.slice(0, 8) + String(Number(today.slice(8)) + 1).padStart(2, "0") ? "tomorrow" : new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" }).format(new Date(d + "T12:00:00")));
 
+/** Where today's session stands, one line of three steps · the flow at a glance. */
+function Steps({ cbState, newState }: { cbState: "none" | "todo" | "done"; newState: "todo" | "done" }) {
+  const all = newState === "done" && cbState !== "todo";
+  const step = (label: string, st: "todo" | "done" | "none", now: boolean) => (
+    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: st === "done" ? "var(--pos)" : now ? "var(--ink)" : "var(--ink-3)", fontWeight: now ? 600 : 400, textDecoration: st === "none" ? "line-through" : "none", whiteSpace: "nowrap" }}>
+      <span aria-hidden style={{ width: 20, height: 20, borderRadius: 10, display: "grid", placeItems: "center", fontSize: 12, border: `1.5px solid ${st === "done" ? "var(--pos)" : now ? "var(--violet)" : "var(--line-2, var(--line))"}`, background: st === "done" ? "var(--pos)" : "transparent", color: st === "done" ? "var(--bg)" : "inherit" }}>{st === "done" ? "✓" : ""}</span>
+      {label}
+    </span>
+  );
+  return (
+    <div className="cc-card" style={{ padding: "12px 14px", display: "grid", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        {step("Callback", cbState, cbState === "todo")}
+        <span aria-hidden style={{ color: "var(--ink-4)" }}>›</span>
+        {step("New topic", newState, cbState !== "todo" && newState === "todo")}
+        <span aria-hidden style={{ color: "var(--ink-4)" }}>›</span>
+        {step("Done", all ? "done" : "todo", false)}
+      </div>
+      {all && <a href="/today" style={{ fontSize: 14, color: "var(--pos)", textDecoration: "none" }}>Session done · ticked on Today</a>}
+    </div>
+  );
+}
+
 export function MindPane() {
-  const { data, loading, writing, writeBrief } = useMind();
+  const { data, loading, writing, writeBrief, retire } = useMind();
   const [reading, setReading] = useState(false);
   const [closed, setClosed] = useState(false);
+  const [openTopic, setOpenTopic] = useState<number | null>(null);
+  const newRef = useRef<HTMLElement | null>(null);
   const today = data?.today ?? checklistToday();
-  useEffect(() => { if (data?.done.callback && data?.done.new) void tickMindRow(); }, [data?.done.callback, data?.done.new]);
-  const closeBrief = useCallback(() => { setReading(false); setClosed(true); window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
+  const sessionDone = !!data?.done.new && (!!data?.done.callback || !data?.callback);
+  useEffect(() => { if (sessionDone) void tickMindRow(); }, [sessionDone]);
+  const closeBrief = useCallback(() => { setReading(false); setClosed(true); window.setTimeout(() => newRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }, []);
 
   if (!data && loading) return <div className="cc-skeleton" style={{ height: 160 }} />;
   if (!data) return <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Could not load today&apos;s session.</div>;
   const cb = data.callback, nt = data.newTopic;
+  const cbState = data.done.callback ? "done" : cb ? "todo" : "none";
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
       {!data.sttReady && <div style={{ fontSize: 14, color: "var(--warn)", padding: "0 2px" }}>Speech-to-text not connected · add DEEPGRAM_API_KEY on Vercel, then redeploy.</div>}
 
-      {/* 1 · Callback */}
-      <Reveal i={0}><section className="cc-card">
-        <div className="cc-card-head"><span className="title">1 · Callback</span><span className="tail">{data.done.callback ? "done" : cb ? `learned ${daysAgo(cb.learnedAt, today)}` : "none due"}</span></div>
+      <Reveal i={0}><Steps cbState={cbState} newState={data.done.new ? "done" : "todo"} /></Reveal>
+
+      {/* 1 · Callback · a full card only when there is one to do or one done today */}
+      {cbState === "none" ? null : (
+      <Reveal i={1}><section className="cc-card">
+        <div className="cc-card-head"><span className="title">1 · Callback</span><span className="tail">{data.done.callback ? "done" : cb ? `learned ${daysAgo(cb.learnedAt, today)}` : ""}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
           {data.done.callback ? (
             <><div style={{ fontSize: 17, fontWeight: 600 }}>{data.done.callback.topicTitle}</div><Result s={data.done.callback} /></>
@@ -214,20 +244,20 @@ export function MindPane() {
             <>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em" }}>{cb.title}</div>
-                <div style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{cb.domain} · callback {cb.recalls + 1} · explain it from memory, no re-reading</div>
+                <div style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{cb.domain} · callback {cb.recalls + 1} · from memory, no re-reading</div>
               </div>
               <Prep />
-              <Recorder part="callback" topic={cb} onDone={() => { /* the hook already stored it */ }} />
+              <Recorder part="callback" topic={cb} onDone={() => window.setTimeout(() => newRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 400)} />
+              <button className="cc-btn cc-btn-ghost" onClick={() => void retire(cb.id)} style={{ minHeight: 44, justifySelf: "start", color: "var(--ink-3)" }}>Stop callbacks for this topic</button>
             </>
-          ) : (
-            <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{data.topics.length ? "No topic due today." : "The first callback comes the day after your first topic."}</div>
-          )}
+          ) : null}
         </div>
       </section></Reveal>
+      )}
 
       {/* 2 · New topic */}
-      <Reveal i={1}><section className="cc-card">
-        <div className="cc-card-head"><span className="title">2 · New topic</span><span className="tail">{data.done.new ? "done" : nt ? nt.domain : ""}</span></div>
+      <Reveal i={2}><section className="cc-card" ref={newRef} style={{ scrollMarginTop: "calc(env(safe-area-inset-top) + 12px)" }}>
+        <div className="cc-card-head"><span className="title">{cbState === "none" ? "New topic" : "2 · New topic"}</span><span className="tail">{data.done.new ? "done" : nt ? nt.domain : ""}</span></div>
         <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
           {data.done.new ? (
             <><div style={{ fontSize: 17, fontWeight: 600 }}>{data.done.new.topicTitle}</div><Result s={data.done.new} /></>
@@ -256,7 +286,7 @@ export function MindPane() {
               {closed && (
                 <>
                   <Prep />
-                  <Recorder part="new" topic={nt} onDone={() => setClosed(false)} />
+                  <Recorder part="new" topic={nt} onDone={() => { setClosed(false); window.setTimeout(() => newRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }} />
                   <button className="cc-btn cc-btn-ghost" onClick={() => { setClosed(false); setReading(true); }} style={{ minHeight: 40, justifySelf: "start" }}>Back to the brief</button>
                 </>
               )}
@@ -267,7 +297,7 @@ export function MindPane() {
 
       {/* Progress */}
       {data.weeks.length > 0 && (
-        <Reveal i={2}><section className="cc-card">
+        <Reveal i={3}><section className="cc-card">
           <div className="cc-card-head"><span className="title">Week by week</span><span className="tail">lower fillers and pauses · higher scores</span></div>
           <div style={{ padding: "4px 14px 8px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 44px 52px 52px 52px 52px", gap: 6, fontSize: 12, color: "var(--ink-4)", padding: "6px 0", borderBottom: "1px solid var(--line)", textAlign: "right" }}>
@@ -285,18 +315,23 @@ export function MindPane() {
 
       {/* Topics */}
       {data.topics.length > 0 && (
-        <Reveal i={3}><section className="cc-card">
+        <Reveal i={4}><section className="cc-card">
           <div className="cc-card-head"><span className="title">Topics</span><span className="tail">{data.topics.length} learned</span></div>
           <div style={{ padding: "0 14px" }}>
             {data.topics.map((t) => (
-              <div key={t.id} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, minHeight: 50, alignItems: "center", padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
-                  <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{t.domain} · learned {daysAgo(t.learnedAt, today)}{t.recalls ? ` · ${t.recalls} callback${t.recalls === 1 ? "" : "s"}` : ""}</span>
-                </span>
-                <span className="tabular-nums" style={{ fontSize: 14, color: t.nextDue && t.nextDue <= today ? "var(--violet)" : "var(--ink-3)", textAlign: "right" }}>
-                  {t.lastAccuracy !== null ? `${t.lastAccuracy}/5 · ` : ""}{dueWord(t.nextDue, today)}
-                </span>
+              <div key={t.id} style={{ borderBottom: "1px solid var(--line)" }}>
+                <button onClick={() => setOpenTopic((o) => (o === t.id ? null : t.id))} aria-expanded={openTopic === t.id} style={{ all: "unset", cursor: "pointer", boxSizing: "border-box", width: "100%", display: "grid", gridTemplateColumns: "1fr auto", gap: 12, minHeight: 50, alignItems: "center", padding: "6px 0" }}>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+                    <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>{t.domain} · learned {daysAgo(t.learnedAt, today)}{t.recalls ? ` · ${t.recalls} callback${t.recalls === 1 ? "" : "s"}` : ""}</span>
+                  </span>
+                  <span className="tabular-nums" style={{ fontSize: 14, color: t.nextDue && t.nextDue <= today ? "var(--violet)" : "var(--ink-3)", textAlign: "right" }}>
+                    {t.lastAccuracy !== null ? `${t.lastAccuracy}/5 · ` : ""}{dueWord(t.nextDue, today)}
+                  </span>
+                </button>
+                {openTopic === t.id && t.nextDue && (
+                  <button className="cc-btn cc-btn-ghost" onClick={() => { void retire(t.id); setOpenTopic(null); }} style={{ minHeight: 44, margin: "0 0 10px", color: "var(--ink-3)" }}>Stop callbacks for this topic</button>
+                )}
               </div>
             ))}
           </div>
