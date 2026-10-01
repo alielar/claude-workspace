@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Linkify, LinkChips } from "@/components/Linkify";
 import { SubtaskEditor, GrowInput, withDraftSubtask } from "./notes";
 import {
@@ -435,6 +436,18 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
   // Link mode: the address field edits the first address inside the text and leaves the rest alone.
   const url = mode === "link" ? (linkOf(d) ?? "") : "";
   const urlOk = /^https?:\/\/\S+$/.test(url);
+  const urlRef = useRef<HTMLInputElement>(null);
+  // The shape picker is a first question, not a fixture: once answered it goes, so the field
+  // it opened sits right under the name and stays above the keyboard (Ali 2026-10-02).
+  const [picked, setPicked] = useState(false);
+  const pick = (f: Format) => {
+    flushSync(() => { setFormat(f); setPicked(true); });
+    if (f === "link") urlRef.current?.focus(); // inside the tap, so iOS opens the keyboard
+  };
+  const [canPaste] = useState(() => typeof navigator !== "undefined" && !!navigator.clipboard?.readText);
+  const paste = async () => {
+    try { const v = (await navigator.clipboard.readText()).trim(); if (v) setUrl(v); } catch { urlRef.current?.focus(); }
+  };
   const setUrl = (v: string) => {
     const next = v.trim(), cur = linkOf(d), notes = d.notes ?? "";
     const out = cur ? notes.replace(cur, next) : next ? (notes.trim() ? `${next}\n${notes}` : next) : notes;
@@ -466,7 +479,7 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
   };
 
   return (
-    <SheetFrame label="Edit entry" onClose={close} fill>
+    <SheetFrame label="Edit entry" onClose={close} fill={mode !== "link"}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
           <div style={{ minWidth: 0 }}><TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="Name" /></div>
           <select className="cc-input" value={mode} onChange={(e) => setFormat(e.target.value as Format)} aria-label="How this doc displays"
@@ -476,12 +489,12 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
           <button onClick={close} aria-label="Close" style={{ width: 44, height: 44, borderRadius: 12, border: "none", background: "var(--fill-1)", color: "var(--ink-2)", fontSize: 17, cursor: "pointer" }}>✕</button>
         </div>
 
-        {isNew && !(d.notes ?? "").trim() && (
+        {isNew && !picked && !(d.notes ?? "").trim() && (
           <div style={{ display: "grid", gap: 6 }}>
             <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>How should it display? You can change this any time.</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
               {DOC_FORMATS.map((f) => (
-                <button key={f.key} type="button" onClick={() => setFormat(f.key)} aria-pressed={mode === f.key}
+                <button key={f.key} type="button" onClick={() => pick(f.key)} aria-pressed={mode === f.key}
                   style={{ ...chipStyle(mode === f.key), minHeight: 52, padding: "6px 10px", textAlign: "left", display: "grid", gap: 1 }}>
                   <span style={{ fontSize: 15, fontWeight: 600 }}>{f.label}</span>
                   <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>{f.hint}</span>
@@ -498,14 +511,18 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
         ) : mode === "link" ? (
           // A link entry: the title says what it is, the address opens it (Ali 2026-09-29: "the point is browsing").
           <div style={{ display: "grid", gap: 10, alignContent: "start" }}>
-            <input className="cc-input" type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={url} autoFocus={isNew && !url}
-              onChange={(e) => setUrl(e.target.value)} placeholder="https://…" aria-label="Address" style={{ fontSize: 16, minHeight: 46, borderRadius: 12 }} />
-            {urlOk ? (
+            <div style={{ display: "grid", gridTemplateColumns: canPaste && !url ? "1fr auto" : "1fr", gap: 8 }}>
+              <input ref={urlRef} className="cc-input" type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={url} autoFocus={isNew && !url}
+                onChange={(e) => setUrl(e.target.value)} onFocus={(e) => { const el = e.currentTarget; setTimeout(() => el.scrollIntoView({ block: "nearest" }), 300); }}
+                placeholder="https://…" aria-label="Address" style={{ fontSize: 16, minHeight: 48, borderRadius: 12, minWidth: 0 }} />
+              {canPaste && !url && (
+                <button type="button" onClick={paste} className="cc-btn cc-btn-secondary" style={{ minHeight: 48, borderRadius: 12, fontSize: 16, padding: "0 16px" }}>Paste</button>
+              )}
+            </div>
+            {urlOk && (
               <a href={url} target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-secondary" style={{ minHeight: 48, borderRadius: 12, fontSize: 16, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0 14px" }}>
                 <span>Open · {linkSource(url)}</span><span aria-hidden>↗</span>
               </a>
-            ) : (
-              <span style={{ fontSize: 14, color: "var(--ink-4)" }}>Paste the address · reel, video, article, anything</span>
             )}
             {(d.notes ?? "").trim() !== url && (
               <NotesEditor value={d.notes ?? ""} onChange={(v) => set({ notes: v || null })} placeholder="Notes" />
