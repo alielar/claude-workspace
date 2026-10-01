@@ -23,7 +23,7 @@ import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-
 import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus } from './hub-sync.mjs';
-import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore } from './plan-engine.mjs';
+import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -274,6 +274,7 @@ async function api(req, res, path) {
     catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }
     saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
     closePlanItems(waId, 'done', ['followup']); // the day plan's follow-up left
+    afterAliMessage(waId); // and a few minutes later: what the Hub needs now for this lead
     if (meta.alertId) setTbcAlertState(meta.alertId, 'sent');
     if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
     else sendRest(waId, t, bubbles, meta); // the others follow in the background, one every 5–10 s; learning runs when the last one is out
@@ -303,6 +304,7 @@ async function api(req, res, path) {
     if (alert && alert.wa_id === waId && alert.state === 'paused') setTbcAlertState(alert.id, 'sent');
     saveThread({ ...(t || { wa_id: waId, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${tpl.name}]` });
     closePlanItems(waId, 'done', ['followup']);
+    afterAliMessage(waId);
     return json(res, 200, { ok: true, status });
   }
   return json(res, 405, { error: 'method' });

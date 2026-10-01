@@ -21,8 +21,11 @@ import { pushAll } from './push.mjs';
 import { frenchTemplates } from './wati.mjs';
 
 const PLAN_AT = process.env.PLAN_AT || '09:15';
-const MAX_CALLS = Number(process.env.PLAN_MAX_CALLS || 15);
+const MAX_CALLS = Number(process.env.PLAN_MAX_CALLS || 30); // raised 15 → 30 on 2026-10-01: every manual message now costs one judgement
 const BATCH = 6;
+// After a manual message from Ali (app or Wati), the lead is judged again SENT_DELAY_MS later (Ali, 2026-10-01: "what
+// should I do in the Hub now: wait, second follow-up, pause, skip a template, resume, change the status").
+const SENT_DELAY_MS = Number(process.env.PLAN_SENT_DELAY_MIN || 3) * 60e3;
 const DUE_H = Number(process.env.PLAN_DUE_H || 5);
 const FROM_H = 8, TO_H = 22;
 // Second, low-pressure follow-up before the 24h window shuts (Ali, 2026-10-01): a paused lead whose window closes within
@@ -122,7 +125,7 @@ export function leadBlock(c) {
     tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
     upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
     c.citf ? `Plan CITF : ${c.citf}` : '',
-    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: 'la fenêtre 24h se ferme ce soir et le lead n’a pas répondu à la relance manuelle d’Ali du jour → seconde relance basse pression avant la fermeture (règle « fenêtre qui se ferme »), ou wait', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse' }[c.reason]}`,
+    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: 'la fenêtre 24h se ferme ce soir et le lead n’a pas répondu à la relance manuelle d’Ali du jour → seconde relance basse pression avant la fermeture (règle « fenêtre qui se ferme »), ou wait', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
@@ -188,14 +191,40 @@ function store(c, it) {
 }
 
 let running = false;
-// scope: 'all' (morning) or 'due' (state changed / template within DUE_H).
-export async function plan({ scope = 'due', reason = 'auto', dry = false, only = null } = {}) {
+// Ali just wrote to this lead by hand: judge the lead again a few minutes later (the lead may answer in between: then
+// the reply flow takes over and this judgement is skipped). Debounced per lead, so a 3-bubble send is one judgement.
+const sentTimers = new Map();
+export function afterAliMessage(waId, attempt = 0) {
+  if (!hubReady() || !waId || waId === TEST_NUMBER) return;
+  clearTimeout(sentTimers.get(waId));
+  sentTimers.set(waId, setTimeout(async () => {
+    sentTimers.delete(waId);
+    const msgs = threadMessages(waId);
+    const win = windowInfo(msgs);
+    if (win.lastLead && win.lastAli && Date.parse(win.lastLead.at) > Date.parse(win.lastAli.at)) { log(`${waId}: the lead answered, no after-send judgement`); return; }
+    const r = await plan({ only: [waId], reason: 'sent', sent: true }).catch((e) => { log('after-send error:', e.message); return 'error'; });
+    if (r === null && attempt < 5) afterAliMessage(waId, attempt + 1); // another judgement was running: try again in a few minutes
+  }, attempt ? 60e3 : SENT_DELAY_MS));
+}
+
+// scope: 'all' (morning) or 'due' (state changed / template within DUE_H). sent: judge the lead(s) in `only` because
+// Ali just wrote by hand, even if nothing else makes them a candidate (reason 'sent', the prompt reads it).
+export async function plan({ scope = 'due', reason = 'auto', dry = false, only = null, sent = false } = {}) {
   if (running || !hubReady()) return null;
   running = true; status.state = 'running'; status.at = new Date().toISOString(); status.error = null;
   try {
     expirePlanItems(today());
     let cands = only ? candidates().filter((c) => only.includes(c.wa_id)) : needing(candidates()); // only = re-judge these leads now, replacing their cards
-    if (scope === 'due') { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
+    if (only && sent) {
+      cands = cands.map((c) => ({ ...c, reason: 'sent', prior: c.reason }));
+      for (const w of only) if (!cands.some((c) => c.wa_id === w)) {
+        const row = hubLeadRows().find((x) => x.wa_id === w);
+        if (!row) { log(`${w}: not in the Sales Hub mirror, no after-send judgement`); continue; }
+        const t = getThread(w); const msgs = t ? threadMessages(w) : [];
+        cands.push({ ...row, reason: 'sent', prior: null, thread: t, msgs, win: windowInfo(msgs) });
+      }
+    }
+    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
     if (dry) { status.state = 'idle'; return { candidates: cands.map((c) => ({ wa_id: c.wa_id, name: c.name, reason: c.reason, status: c.status, next: c.next_tpl, at: c.next_at })) }; }
     if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
     let judged = 0; const summaries = [];

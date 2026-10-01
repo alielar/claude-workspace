@@ -8,6 +8,7 @@ import { pushAll } from './push.mjs';
 import { startSuggesting, scheduleAutoDraft, AUTO_DELAY_MS } from './suggest-engine.mjs';
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
 import { closeTbcAlerts, closePlanItems, openPlanItems, setPlanState } from './db.mjs';
+import { afterAliMessage } from './plan-engine.mjs';
 
 export const POLL_MS = 45_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -46,6 +47,8 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   if (isNew && before) { closeTbcAlerts(waId, 'replied'); closePlanItems(waId, 'replied'); } // the lead answered: the Sales Hub warning and the day plan's card are over
   // Ali answered straight from Wati after a follow-up card was written: that card is done.
   if (lastHuman) for (const i of openPlanItems(waId)) if (i.kind === 'followup' && lastHuman.at > i.at) setPlanState(i.id, 'done');
+  // A new manual message from Ali (from Wati itself, or from the app: the debounce makes it one judgement) → what next.
+  if (lastHuman && before && (before.last_outbound_at || '') < lastHuman.at && !lastHuman.tpl) afterAliMessage(waId);
   if (isNew && notify && before && !before.muted) {
     log('new message from', name || waId);
     // One notification per lead message, and it arrives when the draft is ready (Ali, 2026-09-30): the
