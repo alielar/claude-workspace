@@ -25,6 +25,10 @@ const MAX_CALLS = Number(process.env.PLAN_MAX_CALLS || 15);
 const BATCH = 6;
 const DUE_H = Number(process.env.PLAN_DUE_H || 5);
 const FROM_H = 8, TO_H = 22;
+// Second, low-pressure follow-up before the 24h window shuts (Ali, 2026-10-01): a paused lead whose window closes within
+// CLOSING_H and who stayed silent since Ali's manual message of the day (sent ≥ CLOSING_GAP_H ago) is judged once more.
+const CLOSING_H = Number(process.env.PLAN_CLOSING_H || 2.5);
+const CLOSING_GAP_H = Number(process.env.PLAN_CLOSING_GAP_H || 2);
 const TEST_NUMBER = '34695064884';
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), 'plan:', ...a);
 export const today = () => madrid().slice(0, 10);
@@ -46,7 +50,24 @@ function madridIso(s) {
 }
 const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
 
-// Who matters today. reason: paused | due | finished | stale.
+// The 24h free-text window of a thread and Ali's last manual message (templates excluded).
+// closingSoon: the window shuts within CLOSING_H, Ali wrote by hand today after the lead's last message, at least
+// CLOSING_GAP_H ago, and the lead has not answered → a second, low-pressure card before the window closes.
+export function windowInfo(msgs, now = Date.now()) {
+  const lastLead = [...msgs].reverse().find((m) => m.who === 'LEAD');
+  const lastAli = [...msgs].reverse().find((m) => m.who !== 'LEAD' && !m.tpl);
+  const closeAt = lastLead ? Date.parse(lastLead.at) + 24 * 3600e3 : null;
+  const open = !!closeAt && closeAt > now;
+  const aliAfterLead = !!lastAli && !!lastLead && Date.parse(lastAli.at) > Date.parse(lastLead.at);
+  const closingSoon = open && closeAt - now <= CLOSING_H * 3600e3 && aliAfterLead
+    && madrid(new Date(lastAli.at)).slice(0, 10) === madrid(new Date(now)).slice(0, 10)
+    && now - Date.parse(lastAli.at) >= CLOSING_GAP_H * 3600e3;
+  return { open, closeAt, lastLead, lastAli, closingSoon };
+}
+// A closing card has its own signature so it can follow a done/dismissed card of the same Hub state.
+const cardSig = (c) => hubSig(c.wa_id) + (c.reason === 'closing' ? '|closing' : '');
+
+// Who matters today. reason: paused | closing | due | finished | stale.
 // Leads Ali took out of the plan for good (state key plan_ignore, JSON list of wa_ids): e.g. Ilyes, a minor whose
 // mother decided not to buy (2026-10-01) — paused in the Hub indefinitely, never a card again.
 export const ignored = () => { try { return new Set(JSON.parse(getState('plan_ignore') || '[]')); } catch { return new Set(); } };
@@ -65,7 +86,9 @@ export function candidates(now = Date.now()) {
     if (!reason) continue;
     const t = getThread(r.wa_id);
     const msgs = t ? threadMessages(r.wa_id) : [];
-    out.push({ ...r, reason, thread: t, msgs });
+    const win = windowInfo(msgs, now);
+    if (reason === 'paused' && win.closingSoon) reason = 'closing';
+    out.push({ ...r, reason, thread: t, msgs, win });
   }
   // Most urgent first: paused leads (a human gesture is due), then templates by time, then stuck and finished sequences.
   // Recent leads (meeting in the last 3 days) and soonest templates first; stuck and finished sequences last.
@@ -79,7 +102,7 @@ function needing(cands) {
   const d = today();
   return cands.filter((c) => {
     const items = planItemsFor(c.wa_id, d);
-    const sig = hubSig(c.wa_id);
+    const sig = cardSig(c);
     const open = items.find((i) => i.state === 'open');
     if (open && open.hub_sig === sig) return false;
     if (items.some((i) => i.state !== 'open' && i.state !== 'superseded' && i.hub_sig === sig)) return false; // done/dismissed/replied for this same state
@@ -87,11 +110,10 @@ function needing(cands) {
   });
 }
 
-function leadBlock(c) {
+export function leadBlock(c) {
   const fmt = (iso) => madrid(new Date(iso)).slice(5, 16);
   const tpl = c.next_tpl ? hubTemplate(c.next_tpl) : null;
-  const lastLead = [...c.msgs].reverse().find((m) => m.who === 'LEAD');
-  const windowOpen = !!lastLead && Date.now() - Date.parse(lastLead.at) < 24 * 3600e3;
+  const win = c.win || windowInfo(c.msgs);
   const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || c.wa_id;
   const head = [`### ${name} · waId ${c.wa_id}${c.thread?.country === 'Switzerland' ? ' · SUISSE (CHF)' : ''}`,
     `Hub : statut ${c.status}${c.paused ? ' · EN PAUSE' : ''}${c.skip_next ? ' · prochain sauté' : ''} · phase ${c.phase || '-'} · entretien ${c.meeting_date || '-'} · dernier événement : ${c.last_reason || '-'}${c.last_reason_at ? ` (${fmt(c.last_reason_at)})` : ''}`,
@@ -99,8 +121,9 @@ function leadBlock(c) {
     tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
     upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
     c.citf ? `Plan CITF : ${c.citf}` : '',
-    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse' }[c.reason]}`,
-    `Fenêtre 24h : ${windowOpen ? `OUVERTE (dernier message du lead ${fmt(lastLead.at)})` : 'FERMÉE (template seulement)'}`,
+    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: 'la fenêtre 24h se ferme ce soir et le lead n’a pas répondu à la relance manuelle d’Ali du jour → seconde relance basse pression avant la fermeture (règle « fenêtre qui se ferme »), ou wait', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse' }[c.reason]}`,
+    `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
+    win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
   const conv = c.msgs.length
     ? c.msgs.slice(-18).map((m) => `[${fmt(m.at)}] ${m.who === 'LEAD' ? 'LEAD' : m.tpl ? `AUTO ${m.tpl_name || ''}` : 'ALI '} : ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 320)}`).join('\n')
@@ -158,7 +181,7 @@ function store(c, it) {
     markSuggestionPushed(suggestionId);
   }
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
-    hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: hubSig(c.wa_id), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, keep_templates: keep.length ? keep : null, pushed });
+    hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: cardSig(c), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, keep_templates: keep.length ? keep : null, pushed });
 }
 
 let running = false;
@@ -169,7 +192,7 @@ export async function plan({ scope = 'due', reason = 'auto', dry = false, only =
   try {
     expirePlanItems(today());
     let cands = only ? candidates().filter((c) => only.includes(c.wa_id)) : needing(candidates()); // only = re-judge these leads now, replacing their cards
-    if (scope === 'due') { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
+    if (scope === 'due') { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
     if (dry) { status.state = 'idle'; return { candidates: cands.map((c) => ({ wa_id: c.wa_id, name: c.name, reason: c.reason, status: c.status, next: c.next_tpl, at: c.next_at })) }; }
     if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
     let judged = 0; const summaries = [];
@@ -210,7 +233,7 @@ async function pushes() {
 export function startPlanning() {
   if (!hubReady()) { log('off (no Sales Hub token)'); return; }
   mkdirSync('logs', { recursive: true });
-  onHubChange((changed) => { for (const w of changed) for (const i of openPlanItems(w)) if (i.hub_sig !== hubSig(w)) log(`${i.name || w}: Hub state moved, card will be re-judged`); });
+  onHubChange((changed) => { for (const w of changed) for (const i of openPlanItems(w)) if (String(i.hub_sig || '').replace(/\|closing$/, '') !== hubSig(w)) log(`${i.name || w}: Hub state moved, card will be re-judged`); });
   setInterval(async () => {
     try {
       const now = madrid();
