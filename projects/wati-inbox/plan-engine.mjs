@@ -104,6 +104,7 @@ function needing(cands) {
     const items = planItemsFor(c.wa_id, d);
     const sig = cardSig(c);
     const open = items.find((i) => i.state === 'open');
+    if (open && open.hub_sig === 'manual') return false; // planned by Ali or a chat (suggest.mjs --at): not re-judged while open
     if (open && open.hub_sig === sig) return false;
     if (items.some((i) => i.state !== 'open' && i.state !== 'superseded' && i.hub_sig === sig)) return false; // done/dismissed/replied for this same state
     return true;
