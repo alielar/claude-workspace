@@ -16,6 +16,8 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { createPortal } from "react-dom";
 import { Linkify } from "@/components/Linkify";
 import { useCached, fetchJson } from "@/lib/local/store";
+import { composed, isDictating, setDict, useDict } from "@/lib/dictation/store";
+import { startDictation, stopListening } from "@/lib/dictation/engine";
 import { MAX_IMAGES, MAX_IMAGE_BYTES, MAX_TEXT, newFixId, type FixFeed, type FixRequest, type FixStatus } from "@/lib/fix/types";
 
 const TZ = "Europe/Madrid";
@@ -64,6 +66,9 @@ async function shrink(file: File): Promise<string> {
   return small.toDataURL("image/jpeg", 0.6);
 }
 
+/** A timestamp taken in an event handler (kept out of the component so the compiler never sees it as render work). */
+const stamp = () => Date.now();
+
 const STATUS_LABEL: Record<FixStatus, string> = { held: "Waiting", queued: "Queued", building: "Building", shipped: "Live", failed: "Needs you", skipped: "Cancelled" };
 
 export default function AlaiPage() {
@@ -86,7 +91,12 @@ export default function AlaiPage() {
     return () => clearInterval(t);
   }, [active]);
 
-  const [text, setText] = useState("");
+  // The draft lives in the dictation store (kept across screens and app restarts) · while the
+  // microphone runs, the box shows the draft plus the words as they are heard.
+  const dict = useDict();
+  const dictating = isDictating(dict);
+  const text = composed(dict);
+  const setText = (t: string) => setDict({ draft: t });
   const [images, setImages] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -95,8 +105,16 @@ export default function AlaiPage() {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
-  // Textarea grows with the text, up to ~6 lines.
-  useEffect(() => { const el = taRef.current; if (el) { el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 160)}px`; } }, [text]);
+  // Textarea grows with the text, up to ~6 lines · while dictating it follows the last words.
+  useEffect(() => { const el = taRef.current; if (el) { el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 160)}px`; if (dictating) el.scrollTop = el.scrollHeight; } }, [text, dictating]);
+  const [listenSec, setListenSec] = useState(0);
+  useEffect(() => {
+    if (!dictating || !dict.startedAt) return;
+    const from = dict.startedAt;
+    const t = setInterval(() => setListenSec(Math.floor((Date.now() - from) / 1000)), 500);
+    return () => clearInterval(t);
+  }, [dictating, dict.startedAt]);
+  const toggleMic = () => { if (dictating) stopListening(); else { setListenSec(0); void startDictation(); } };
   // New message or a status change → keep the end in view.
   const lastKey = requests.length ? `${requests[requests.length - 1].id}-${requests[requests.length - 1].status}` : "";
   useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [lastKey]);
@@ -116,11 +134,12 @@ export default function AlaiPage() {
   useEffect(() => { addFilesRef.current = addFiles; });
 
   const send = async () => {
+    if (dictating) { stopListening(); return; } // first tap ends the dictation, the text stays to check
     const t = text.trim();
     if ((!t && images.length === 0) || busy) return;
     setBusy(true); setErr(null);
     const clientId = newFixId();
-    const now = Date.now();
+    const now = stamp();
     const optimistic: FixRequest = { id: -now, clientId, text: t, images, imageCount: images.length, status: "held", reply: null, commitSha: null, batchId: null, createdAt: now, updatedAt: now, startedAt: null, finishedAt: null };
     feed.setData((cur) => ({ requests: [...(cur?.requests ?? []), optimistic], worker: cur?.worker ?? { seenAt: null, note: null } }));
     try {
@@ -281,6 +300,14 @@ export default function AlaiPage() {
               </div>
             )}
             {err && <div style={{ fontSize: 13.5, color: "var(--neg)" }}>{err}</div>}
+            {dict.status === "error" && dict.error && <div style={{ fontSize: 13.5, color: "var(--warn)" }}>{dict.error}</div>}
+            {dictating && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--ink-3)", minHeight: 24 }}>
+                <span aria-hidden className="dict-dot" />
+                <span>{dict.status === "connecting" ? "Starting" : dict.status === "stopping" ? "Finishing" : "Listening"}</span>
+                <span className="tabular-nums" style={{ fontFamily: "var(--f-mono)" }}>{Math.floor(listenSec / 60)}:{String(listenSec % 60).padStart(2, "0")}</span>
+              </div>
+            )}
             {(heldCount > 0 || queuedCount > 0) && (
               <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 36 }}>
                 <span style={{ fontSize: 14, color: "var(--ink-3)", flex: 1 }}>
@@ -294,17 +321,24 @@ export default function AlaiPage() {
                 )}
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "44px 1fr 44px", gap: 8, alignItems: "end" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "44px 1fr 44px 44px", gap: 6, alignItems: "end" }}>
               <button type="button" onClick={() => fileRef.current?.click()} className="cc-btn cc-btn-ghost" aria-label="Add a screenshot" title="Add a screenshot"
                 style={{ minHeight: 44, minWidth: 44, borderRadius: 14, padding: 0, color: images.length ? "var(--violet)" : undefined }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="10" r="1.6" /><path d="M21 16l-5-5-9 8" /></svg>
               </button>
               <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
-              <textarea ref={taRef} className="cc-input" value={text} rows={1} placeholder="What should change?" maxLength={MAX_TEXT}
+              <textarea ref={taRef} className="cc-input" value={text} rows={1} placeholder={dictating ? "Speak…" : "What should change?"} maxLength={MAX_TEXT}
+                readOnly={dictating}
                 onChange={(e) => setText(e.target.value)}
                 onPaste={(e) => { const files = Array.from(e.clipboardData?.files ?? []); if (files.length) { e.preventDefault(); addFiles(files); } }}
                 onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }}
                 style={{ fontSize: 17, minHeight: 44, maxHeight: 160, padding: "10px 12px", borderRadius: 14, resize: "none", lineHeight: 1.4, width: "100%", boxSizing: "border-box" }} />
+              <button type="button" onClick={toggleMic} className="cc-btn" aria-label={dictating ? "Stop dictation" : "Dictate"} title={dictating ? "Stop dictation" : "Dictate"} aria-pressed={dictating}
+                style={{ minHeight: 44, minWidth: 44, borderRadius: 14, padding: 0, border: dictating ? "none" : undefined, background: dictating ? "var(--neg)" : undefined, color: dictating ? "#fff" : undefined }}>
+                {dictating
+                  ? <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden><rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor" /></svg>
+                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><path d="M12 18v3" /></svg>}
+              </button>
               <button type="submit" disabled={!canSend} className="cc-btn cc-btn-primary" aria-label="Send" style={{ minHeight: 44, minWidth: 44, borderRadius: 14, padding: 0, opacity: canSend ? 1 : 0.45 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg>
               </button>

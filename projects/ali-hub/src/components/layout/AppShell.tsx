@@ -14,6 +14,7 @@ import { SwRegister } from "@/components/pwa/SwRegister";
 import { SyncOutbox } from "@/components/pwa/SyncOutbox";
 import { ThemeSunset } from "@/components/pwa/ThemeSunset";
 import { PushHealth } from "@/components/pwa/PushHealth";
+import { DictationPill } from "@/components/dictation/DictationPill";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -28,6 +29,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <SyncOutbox />
       <ThemeSunset />
       <PushHealth />
+      <DictationPill />
     </>
   );
 }
