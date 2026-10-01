@@ -58,7 +58,9 @@ export function startDictation() {
   log(`ready — worker starts on the first dictation, model ${process.env.WHISPER_MODEL || 'mlx-community/whisper-large-v3-turbo'}, idle stop after ${IDLE_MS / 60e3} min`);
 }
 
-export async function transcribe(wav, { language = null, prompt = null } = {}) {
+// fast: the small model, for the provisional text while Ali is still speaking; language: 'fr' | 'en' | null (the
+// worker then picks the likelier of the two on the piece and reports it).
+export async function transcribe(wav, { language = null, prompt = null, fast = false } = {}) {
   if (!ready) await start();
   touch();
   mkdirSync(TMP, { recursive: true });
@@ -69,10 +71,10 @@ export async function transcribe(wav, { language = null, prompt = null } = {}) {
     const res = await new Promise((ok, ko) => {
       const timer = setTimeout(() => { pending.delete(id); ko(new Error('Dictation timed out')); }, TIMEOUT_MS);
       pending.set(id, { ok, ko, timer });
-      child.stdin.write(JSON.stringify({ id, path, language, prompt }) + '\n');
+      child.stdin.write(JSON.stringify({ id, path, language: language === 'fr' || language === 'en' ? language : null, prompt, fast: !!fast }) + '\n');
     });
-    status.count++; status.last = { at: new Date().toISOString(), ms: res.ms, chars: res.text.length, language: res.language };
-    log(`${res.text.length} chars in ${res.ms} ms (${res.language || '?'})`);
+    status.count++; status.last = { at: new Date().toISOString(), ms: res.ms, chars: res.text.length, language: res.language, fast: !!fast };
+    log(`${fast ? 'fast ' : ''}${res.text.length} chars in ${res.ms} ms (${res.language || '?'})`);
     return { text: res.text, language: res.language, ms: res.ms };
   } finally { try { unlinkSync(path); } catch {} }
 }

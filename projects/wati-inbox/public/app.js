@@ -33,7 +33,8 @@ const micLabel = (field) => rec && rec.field === field ? `${MIC_ICON}<span>${Mat
 const micHtml = (field) => `<button class="small mic${rec && rec.field === field ? ' rec' : ''}" type="button" data-mic="${field}" title="Dictate">${micLabel(field)}</button>`;
 const micPaint = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.innerHTML = micLabel(b.dataset.mic); b.classList.toggle('rec', !!rec && rec.field === b.dataset.mic); });
 const bindMic = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.onclick = () => micToggle(b.dataset.mic); });
-const SEG_SILENCE_MS = 700, SEG_MIN_MS = 800, SEG_MAX_MS = 15000, INTERIM_MS = 2500, VOICE_RMS = 0.012;
+// A piece ends after 0.55 s of silence; while speaking, a provisional text (fast model) is asked every 0.9 s, one at a time.
+const SEG_SILENCE_MS = 550, SEG_MIN_MS = 600, SEG_MAX_MS = 15000, INTERIM_MS = 900, VOICE_RMS = 0.012;
 async function micToggle(field) {
   if (rec) { if (rec.field !== field) { toast('Stop the other dictation first'); return; } return micStop(); }
   if (!navigator.mediaDevices?.getUserMedia) { toast('No microphone access in this browser'); return; }
@@ -74,9 +75,11 @@ function micCut(final) {
   const prev = r.segs.filter((x) => x.final && x.id < seg.id && x.text).map((x) => x.text).join(' ').slice(-200);
   const run = ++seg.run || (seg.run = 1);
   r.inflight++;
-  fetch(`/api/transcribe?prompt=${encodeURIComponent(prev)}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav })
+  // fast=1: the small model for the provisional text; the final text of a piece uses the big one. The language (fr or
+  // en, Ali's two) is picked on the first piece and then passed along for the whole dictation.
+  fetch(`/api/transcribe?prompt=${encodeURIComponent(prev)}${final ? '' : '&fast=1'}${r.lang ? `&lang=${r.lang}` : ''}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav })
     .then(async (res) => { const d = await res.json().catch(() => ({})); if (res.status === 401) { renderLogin(); throw new Error('login'); } if (!res.ok) throw new Error(d.error || `Error ${res.status}`); return d; })
-    .then((d) => { if (run === seg.run || final) seg.text = (d.text || '').trim(); micRender(r); })
+    .then((d) => { if (!r.lang && d.language) r.lang = d.language; if (run === seg.run || final) seg.text = (d.text || '').trim(); micRender(r); })
     .catch((e) => { if (final) toast(e.message); })
     .finally(() => { r.inflight--; if (!final) r.interimBusy = false; if (!rec && r.inflight === 0 && r.done) r.done(); });
 }
@@ -285,7 +288,9 @@ async function renderThread(waId, { quiet = false } = {}) {
       ${/offre|format|niveau|heures|h\/sem|appel/i.test(sug.needs || '') ? offerBoxHtml(D, od, d, true) : ''}
       <textarea id="needs" placeholder="Your answer">${esc(dir.instruction)}</textarea>
       <div class="row"><button class="primary" id="needsgo">Draft</button>${micHtml('needs')}${sug.why ? `<span class="muted small">${esc(sug.why)}</span>` : ''}</div></div>`;
-  else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude: nothing to answer. ${esc(sug.why || '')}</span> <button class="small" id="anyway">Draft anyway</button></div>`;
+  // "Nothing to answer": one tap sends a single emoji as the reply (Wati's API has no WhatsApp reaction, Ali 2026-10-01).
+  else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude: nothing to answer. ${esc(sug.why || '')}</span> <button class="small" id="anyway">Draft anyway</button>
+      ${d.windowOpen ? `<div class="emojis" style="margin-top:8px">${['🙏', '👍', '😊', '🎉', '💪', '✅'].map((e) => `<button class="small" data-react="${e}" type="button" title="Send ${e} as the reply">${e}</button>`).join('')}<span class="muted small">· sends the emoji as a message</span></div>` : ''}</div>`;
   else if (o && o.bubbles?.length) {
     // Editing = one field per bubble; each field is still its own WhatsApp message when sent.
     // Editing (Ali, 2026-10-01): emojis go into the bubble being edited; Save keeps the edit as the draft itself, on
@@ -350,6 +355,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   // Claude cards
   if ($('#retry')) $('#retry').onclick = () => askClaude({ moves: [], instruction: '' });
   if ($('#anyway')) $('#anyway').onclick = () => askClaude({ moves: [], instruction: 'Réponds quand même, brièvement' });
+  document.querySelectorAll('[data-react]').forEach((b) => armed(b, b.dataset.react, async () => { b.disabled = true; try { await sendBubbles(waId, [b.dataset.react], { suggestionId: sug.id, option: 0, reaction: true }); lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   if ($('#needsgo')) $('#needsgo').onclick = async () => { const txt = $('#needs').value.trim(); if (!txt && !offerDraft) { toast('Type the detail Claude asked for'); return; } try { if (offerDraft?.format) await saveOffer(waId); } catch (e) { toast(e.message); return; } askClaude({ moves: [], instruction: txt }); };
   if ($('#needs')) $('#needs').oninput = (e) => { dir.instruction = e.target.value; };
   bindMic();

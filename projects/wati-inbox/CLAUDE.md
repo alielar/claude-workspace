@@ -74,6 +74,10 @@ Then commit and push. Test a draft from the terminal with
   « Claude's version » button to go back. `options` keeps Claude's original, so the learning (learn-engine) still compares
   the original with what left. Nothing goes through the composer below any more.
 
+- **Emoji reply on « nothing to answer »** (Ali, 2026-10-01): the skip card has a row of emojis; one tap (armed) sends that
+  emoji as a plain message. Wati's API has no WhatsApp *reaction* endpoint (its web inbox reacts through the agent
+  session, not the API token), so this is a message, not a reaction. `meta.reaction` skips the learning run.
+
 ## Language
 Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
 
@@ -93,8 +97,12 @@ Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, but
 "Claude needs one detail" answer). Tap the microphone to start (red, pulsing, elapsed time), tap again to stop; on the laptop the
 recording goes on while another window has the focus (the phone stops it when the app goes to the background, iOS
 rule). The text appears while Ali speaks: the browser cuts the speech at pauses (≈0.7 s silence, pieces of 0.8–15 s),
-sends each piece, and meanwhile re-sends the piece being spoken every 2.5 s for a provisional text replaced at the
-pause; the previous pieces go along as `prompt` for context. Harness: `scratchpad/mic-harness.mjs` feeds a WAV through
+sends each piece, and meanwhile re-sends the piece being spoken every 0.9 s for a provisional text replaced at the
+pause; the previous pieces go along as `prompt` for context. Two models stay resident in the worker (patched
+`ModelHolder`, else mlx-whisper reloads from disk on every switch): `WHISPER_FAST` (whisper-small-mlx, ~0.3 s) for the
+provisional text, `WHISPER_MODEL` (large-v3-turbo, ~1.1 s) for the final text; `temperature=0`, no fallback decodes.
+Language is French or English only (Ali, 2026-10-01): the small model picks the likelier of the two on the first
+piece, the client passes it for the rest of the dictation. Harness: `scratchpad/mic-harness.mjs` feeds a WAV through
 the real pipeline against the live server. The browser records 16 kHz mono
 WAV itself (`toWav16k` in `public/app.js`, no codec, no ffmpeg) and POSTs it to `/api/transcribe`; `transcribe.mjs` hands
 it to one long-lived Python worker (`transcribe-worker.py`, Whisper large-v3-turbo on Apple MLX, local and free, model

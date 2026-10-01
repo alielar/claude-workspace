@@ -39,6 +39,7 @@ export const learnStatus = (waId) => status.get(waId) || null;
 
 // Called by the server once every bubble of a send is out.
 export function learnFromSend(waId, bubbles, meta = {}) {
+  if (meta.reaction) return; // a one-tap emoji reply to a 'nothing to answer' card: nothing to learn from (Ali, 2026-10-01)
   const p = pendingSends.get(waId);
   if (p) { clearTimeout(p.timer); p.bubbles.push(...bubbles); }
   const entry = p || { bubbles: [...bubbles], meta, at: new Date().toISOString() };

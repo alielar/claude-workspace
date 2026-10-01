@@ -1,21 +1,30 @@
 #!/usr/bin/env python3
 """Dictation worker for the Wati Inbox app (2026-10-01).
 
-Reads one JSON request per line on stdin: {"id": "...", "path": "/abs/file.wav", "language": "fr"|null}
-and answers one JSON line on stdout: {"id": "...", "text": "...", "language": "fr", "ms": 812} or {"id": ..., "error": "..."}.
-The WAV must be 16 kHz, mono, 16-bit (the browser records it that way). The model (Whisper large-v3-turbo,
-Apple MLX build) loads once per process and is downloaded from Hugging Face on first use (~1.6 GB, cached
-under ~/.cache/huggingface). Started and kept alive by transcribe.mjs; nothing else calls it.
+Reads one JSON request per line on stdin:
+  {"id": "...", "path": "/abs/file.wav", "language": "fr"|"en"|null, "prompt": "...", "fast": true|false}
+and answers one JSON line on stdout:
+  {"id": "...", "text": "...", "language": "fr", "ms": 812}  or  {"id": ..., "error": "..."}
+
+Two models (Apple MLX builds, downloaded from Hugging Face on first use, cached under ~/.cache/huggingface):
+  - fast=true  → WHISPER_FAST (small): the provisional text while Ali is still speaking, ~0.3 s a piece
+  - fast=false → WHISPER_MODEL (large-v3-turbo): the final text of a piece once he paused, ~1 s
+Language: Ali dictates in French or English only (2026-10-01). With no language given, the fast model picks the more
+likely of the two on the piece; the client then passes that language for the rest of the dictation.
+The WAV must be 16 kHz, mono, 16-bit (the browser records it that way). Started and kept alive by transcribe.mjs.
 """
 import json
 import os
 import sys
 import time
+import types
 import wave
 
 import numpy as np
 
 MODEL = os.environ.get("WHISPER_MODEL", "mlx-community/whisper-large-v3-turbo")
+FAST = os.environ.get("WHISPER_FAST", "mlx-community/whisper-small-mlx")
+LANGS = ("fr", "en")
 
 
 def read_wav(path):
@@ -30,7 +39,6 @@ def main():
     # mlx_whisper imports scipy.signal only for word timestamps (timing.py), which dictation never asks for. The scipy
     # binaries shipped for Python 3.10 do not load on this macOS (dyld "__thread_bss" error, 2026-10-01), so a stub
     # module stands in for scipy.signal; everything else in mlx_whisper is untouched.
-    import types
     stub = types.ModuleType("scipy.signal")
     stub.medfilt = None
     sys.modules.setdefault("scipy.signal", stub)
@@ -39,9 +47,37 @@ def main():
         scipy.signal = stub
     except Exception:  # noqa: BLE001
         pass
-    import mlx_whisper  # imported here so a missing install is reported as a JSON error, not a crash before the loop
+    import mlx.core as mx
+    import mlx_whisper
+    from mlx_whisper import audio as wa
+    from mlx_whisper import decoding
+    from mlx_whisper.transcribe import ModelHolder
+    from mlx_whisper.load_models import load_model
 
-    sys.stdout.write(json.dumps({"ready": True, "model": MODEL}) + "\n")
+    # mlx_whisper keeps ONE model in memory and reloads from disk when the repo changes: alternating fast/final would
+    # cost ~1.5 s per call. Keep both resident instead, and load them now so the first piece is not slow.
+    cache = {}
+
+    def get_model(path, dtype=mx.float16):
+        key = (path, str(dtype))
+        if key not in cache:
+            cache[key] = load_model(path, dtype=dtype)
+        return cache[key]
+
+    ModelHolder.get_model = staticmethod(get_model)
+    get_model(FAST)
+    get_model(MODEL)
+
+    def pick_language(samples):
+        """fr or en, whichever the fast model finds more likely on this piece (restricted detection)."""
+        model = ModelHolder.get_model(FAST, mx.float16)
+        mel = wa.log_mel_spectrogram(samples, n_mels=model.dims.n_mels, padding=wa.N_SAMPLES)
+        seg = wa.pad_or_trim(mel, wa.N_FRAMES, axis=-2).astype(mx.float16)
+        _, probs = decoding.detect_language(model, seg)
+        p = probs[0] if isinstance(probs, list) else probs
+        return max(LANGS, key=lambda l: float(p.get(l, 0.0)))
+
+    sys.stdout.write(json.dumps({"ready": True, "model": MODEL, "fast": FAST}) + "\n")
     sys.stdout.flush()
     for line in sys.stdin:
         line = line.strip()
@@ -56,20 +92,22 @@ def main():
         rid = req.get("id")
         try:
             t0 = time.time()
-            audio = read_wav(req["path"])
-            if len(audio) < 1600:  # under 0.1 s: nothing to hear
+            samples = read_wav(req["path"])
+            if len(samples) < 1600:  # under 0.1 s: nothing to hear
                 out = {"id": rid, "text": "", "language": None, "ms": 0}
             else:
+                lang = req.get("language") if req.get("language") in LANGS else pick_language(samples)
                 res = mlx_whisper.transcribe(
-                    audio,
-                    path_or_hf_repo=MODEL,
-                    language=req.get("language") or None,
+                    samples,
+                    path_or_hf_repo=FAST if req.get("fast") else MODEL,
+                    language=lang,
                     fp16=True,
+                    temperature=0.0,  # one pass, no fallback decodes: speed over the last percent of quality
                     condition_on_previous_text=False,
                     no_speech_threshold=0.6,
                     initial_prompt=req.get("prompt") or None,
                 )
-                out = {"id": rid, "text": (res.get("text") or "").strip(), "language": res.get("language"), "ms": int((time.time() - t0) * 1000)}
+                out = {"id": rid, "text": (res.get("text") or "").strip(), "language": lang, "ms": int((time.time() - t0) * 1000)}
         except Exception as e:  # noqa: BLE001
             out = {"id": rid, "error": str(e)[:300]}
         sys.stdout.write(json.dumps(out, ensure_ascii=False) + "\n")
