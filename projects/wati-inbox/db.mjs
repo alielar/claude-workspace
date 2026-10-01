@@ -182,16 +182,21 @@ export const unpushedSuggestions = () => db.prepare('SELECT s.*, t.name FROM sug
 // A draft is shown only while it is still useful (Ali, 2026-09-30): not after a newer lead message, not once Ali
 // replied after it (from the app or straight from Wati — automatic templates do not count) and not once he marked the
 // thread treated. Exception: a two-step draft whose second part is still to send stays until that part left.
-const humanReplyAfter = (waId, iso) => !!db.prepare("SELECT 1 FROM messages WHERE wa_id = ? AND who = 'US' AND tpl = 0 AND at > ? LIMIT 1").get(waId, iso)
-  || !!db.prepare("SELECT 1 FROM sends WHERE wa_id = ? AND kind = 'text' AND ok = 1 AND at > ? LIMIT 1").get(waId, iso);
+// How many human messages left after a moment: the larger of what Wati shows and what the app sent (the two overlap).
+const humanRepliesAfter = (waId, iso) => Math.max(
+  db.prepare("SELECT count(*) n FROM messages WHERE wa_id = ? AND who = 'US' AND tpl = 0 AND at > ?").get(waId, iso).n,
+  db.prepare("SELECT count(*) n FROM sends WHERE wa_id = ? AND kind = 'text' AND ok = 1 AND at > ?").get(waId, iso).n);
 const laterSent = (id) => !!db.prepare(`SELECT 1 FROM sends WHERE kind = 'text' AND ok = 1 AND payload LIKE ? AND payload LIKE ? LIMIT 1`).get(`%"suggestionId":${id},%`, '%"part":"later"%');
 export function suggestionVisible(t, s, { laterScheduled = false } = {}) {
   if (!s || !t) return false;
   if (t.last_inbound_at && s.created_at < t.last_inbound_at) return false;
-  const answered = humanReplyAfter(t.wa_id, s.created_at) || (t.handled_at && t.handled_at > s.created_at);
-  if (!answered) return true;
-  if (s.kind && s.kind !== 'draft') return false;
-  let later = []; try { later = JSON.parse(s.options)[0]?.later || []; } catch {}
+  // Ali often copies the bubbles one by one, edits and sends them himself (2026-10-01): the draft stays until as many
+  // messages as it has bubbles have left (or he taps Handled); a two-step draft also waits for its second part.
+  let bubbles = [], later = []; try { const o = JSON.parse(s.options)[0] || {}; bubbles = o.bubbles || []; later = o.later || []; } catch {}
+  if (t.handled_at && t.handled_at > s.created_at) return false;
+  const sent = humanRepliesAfter(t.wa_id, s.created_at);
+  if (s.kind && s.kind !== 'draft') return sent === 0;
+  if (sent < bubbles.length) return true;
   return later.length > 0 && !laterSent(s.id) && !laterScheduled;
 }
 export const markSuggestionPushed = (id) => db.prepare('UPDATE suggestions SET pushed = 1 WHERE id = ?').run(id);
