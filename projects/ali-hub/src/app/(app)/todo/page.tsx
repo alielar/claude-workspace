@@ -190,23 +190,6 @@ function ListRow({ t, onOpen }: { t: Todo; onOpen: () => void }) {
     fmtAgo(t.updatedAt),
   ].filter(Boolean).join(" · ");
 
-  // A link entry: the row itself opens the address (that is the point of keeping it), Edit opens the sheet.
-  if (url) return (
-    <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
-      <div className="todo-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", background: "var(--bg-card)" }}>
-        <a href={url} target="_blank" rel="noopener noreferrer"
-          style={{ display: "grid", gridTemplateColumns: "28px 1fr", gap: 10, alignItems: "center", minHeight: 58, padding: "8px 4px 8px 16px", textDecoration: "none", color: "inherit", minWidth: 0 }}>
-          <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, background: "var(--accent-soft)", color: "var(--violet)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>↗</span>
-          <span style={{ minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</span>
-          </span>
-        </a>
-        <button onClick={onOpen} className="cc-btn cc-btn-ghost" aria-label="Edit" style={{ minHeight: 40, padding: "0 10px", fontSize: 13.5, borderRadius: 10, marginRight: 8 }}>Edit</button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
       <button onClick={onOpen} className="todo-row"
