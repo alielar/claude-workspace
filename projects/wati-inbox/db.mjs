@@ -259,6 +259,8 @@ export function saveHubLeads(rows) {
   if (rows.length && gone.length) { const del = db.prepare('DELETE FROM hub_leads WHERE wa_id = ?'); for (const w of gone) del.run(w); }
   return { saved: seen.size, gone: rows.length ? gone.length : 0 };
 }
+for (const col of ['upcoming TEXT', 'upcoming_at TEXT']) { try { db.exec(`ALTER TABLE hub_leads ADD COLUMN ${col}`); } catch {} } // /leads/{id}/upcoming, fetched at judgement time (2026-10-01)
+export const saveHubUpcoming = (waId, steps) => db.prepare('UPDATE hub_leads SET upcoming = ?, upcoming_at = ? WHERE wa_id = ?').run(JSON.stringify(steps), new Date().toISOString(), waId);
 export const hubLeadRow = (waId) => db.prepare('SELECT * FROM hub_leads WHERE wa_id = ?').get(waId);
 export const hubLeadRows = () => db.prepare('SELECT * FROM hub_leads ORDER BY next_at').all();
 export function saveHubTemplates(steps) {

@@ -139,7 +139,9 @@ async function api(req, res, path) {
   const tmt = /^\/api\/tm\/thread\/(\d{8,15})$/.exec(path);
   if (tmt) return json(res, 200, { messages: tmThread(tmt[1], 60) });
   // The day plan (plan-engine.mjs): the cards, their state, and Ali's verdicts.
-  const planItem = (i) => ({ ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: i.skip_templates ? JSON.parse(i.skip_templates) : [] });
+  const planItem = (i) => { const h = hubNextFor(i.wa_id); const skip = i.skip_templates ? JSON.parse(i.skip_templates) : []; return { ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: skip,
+    skip_steps: skip.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }),
+    meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
   if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL });
   if (path === '/api/plan/run' && req.method === 'POST') { runPlan({ scope: 'all', reason: 'ali' }).catch(() => {}); return json(res, 200, { ok: true }); }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);

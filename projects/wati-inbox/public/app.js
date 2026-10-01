@@ -169,7 +169,8 @@ async function renderThread(waId, { quiet = false } = {}) {
   // Sales Hub: the next automatic step, and the alert card when a step must be paused first.
   const hubLink = tb.salesHub ? `<a class="small" href="${esc(tb.salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a>` : '';
   const hb = d.hub, pl = d.plan;
-  const hubLine = hb ? `<div class="ctx">Sales Hub : <b>${esc(hb.status || '?')}</b>${hb.paused ? ' · <b>en pause</b>' : ''}${hb.next ? ` · prochain automatique <b>${esc(hb.next.template)}</b> ${hb.next.stale ? '<span class="warn">(date passée)</span>' : `${fmtDay(hb.next.at)} ${fmtTime(hb.next.at)}`}${hb.paused ? ' (ne partira pas)' : ''}` : ' · plus de template prévu'}${hb.citf?.momentLocal ? ` · CITF ${esc(String(hb.citf.momentLocal).slice(0, 10))}` : ''}</div>` : '';
+  const nx = hb ? (hb.realNext || hb.next) : null; // the Hub's `next` can be a step Ali unticked: prefer the first step still ahead
+  const hubLine = hb ? `<div class="ctx">Sales Hub : <b>${esc(hb.status || '?')}</b>${hb.paused ? ' · <b>en pause</b>' : ''}${nx ? ` · prochain <b>${nx.step ? `#${nx.step} ` : ''}${esc(nx.template)}</b> ${Date.parse(nx.at) < Date.now() - 3600e3 ? '<span class="warn">(date passée)</span>' : `${fmtDay(nx.at)} ${fmtTime(nx.at)}`}${hb.paused ? ' (ne partira pas)' : ''}` : ' · plus de template prévu'}${hb.citf?.momentLocal ? ` · CITF ${esc(String(hb.citf.momentLocal).slice(0, 10))}${hb.citf.case ? ` (${esc(hb.citf.case)})` : ''}` : ''}</div>` : '';
   const nextLine = hb ? hubLine : tb.next && !al ? `<div class="ctx">Prochain automatique : <b>${esc(tb.next.tpl)}</b> à ${fmtTime(tb.next.firesAt)}${tb.leadWaiting ? ' (sauté tant que vous n’avez pas répondu)' : ''}</div>` : '';
   const planBox = pl ? planCardHtml(pl, { inThread: true, salesHub: tb.salesHub }) : '';
   const tbcBox = al ? `<div class="card tbc ${al.state}">
@@ -356,7 +357,7 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     <div class="flag-title">${esc(i.title)}</div>
     ${i.why ? `<div class="small">${esc(i.why)}</div>` : ''}
     ${i.action ? `<div class="small action">→ ${esc(i.action)}</div>` : ''}
-    ${i.kind === 'pause' && i.pause_scope === 'next' && i.skip_templates?.length ? `<div class="small">À sauter dans le Hub : <b>${i.skip_templates.map(esc).join('</b>, puis <b>')}</b></div>` : ''}
+    ${i.kind === 'pause' && i.pause_scope === 'next' && i.skip_steps?.length ? `<div class="small">À décocher : <b>${i.skip_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}${x.at ? ` · ${fmtWhen(x.at)}` : ''}`).join('</b> et <b>')}</b></div>` : ''}${i.kind === 'pause' && i.hub_paused_now ? '<div class="small ok">Le Hub indique ce lead en pause</div>' : ''}
     ${i.template ? `<div class="small">Template : <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">Le brouillon est plus bas, prêt à envoyer</div>' : ''}
     ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Fait</button><button class="small" data-plandismiss="${i.id}">Pas d’accord</button>${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Ouvrir</a>` : ''}${salesHub && (i.kind === 'pause' || i.kind === 'fix') ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Rouvrir</button></div>`}
@@ -373,11 +374,18 @@ async function renderPlan() {
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
   const byTime = (a, b) => String(a.when_at || a.hub_next_at || '9').localeCompare(String(b.when_at || b.hub_next_at || '9'));
-  const todo = open.filter((i) => i.kind === 'pause' || i.kind === 'fix').sort(byTime), fu = open.filter((i) => i.kind === 'followup').sort(byTime), wait = open.filter((i) => i.kind === 'wait').sort(byTime), ok = open.filter((i) => i.kind === 'ok');
+  // Urgency first: a template to untick or a follow-up due within 3 h, then the rest of today, then older leads (meeting > 3 days ago, stuck or finished sequences) folded.
+  const soon = Date.now() + 3 * 3600e3, dueAt = (i) => Date.parse(i.when_at || i.hub_next_at || 0) || 0;
+  const act = open.filter((i) => i.kind !== 'ok' && i.kind !== 'wait');
+  const todo = act.filter((i) => i.recent && dueAt(i) && dueAt(i) <= soon).sort(byTime);
+  const later = act.filter((i) => i.recent && !(dueAt(i) && dueAt(i) <= soon)).sort(byTime);
+  const older = act.filter((i) => !i.recent).sort(byTime);
+  const wait = open.filter((i) => i.kind === 'wait').sort(byTime), ok = open.filter((i) => i.kind === 'ok');
   app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Aujourd’hui <span class="muted small">${fmtDay(new Date().toISOString())}</span></h1><button id="replan" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Claude relit…' : 'Replanifier'}</button></header>
     <p class="muted small">${status.ready ? `Sales Hub lu ${hub.leadsAt ? ago(hub.leadsAt) : 'jamais'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'pas encore de plan'} · ${status.calls}/${status.max} relectures aujourd’hui` : 'Sales Hub non connecté (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
     ${!open.length && !closed.length ? '<p class="muted center">Rien pour aujourd’hui</p>' : ''}
-    ${sec('À régler dans le Sales Hub', todo)}${sec('Relances à envoyer', fu)}${sec('À attendre', wait)}
+    ${sec('Maintenant', todo)}${sec('Plus tard aujourd’hui', later)}${sec('À attendre', wait)}
+    ${older.length ? `<details class="card fold"><summary>Plus anciens (${older.length}) <span class="muted small">· séquences finies ou bloquées, à voir quand vous avez un moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${ok.length ? `<details class="card fold"><summary>Templates qui collent (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${closed.length ? `<details class="card fold"><summary>Terminé (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${salesHub ? `<p class="center"><a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Ouvrir le Sales Hub ↗</a></p>` : ''}`;

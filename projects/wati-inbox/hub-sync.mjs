@@ -4,8 +4,8 @@
 //
 //   node --env-file=.env hub-sync.mjs     one sync now, prints what changed
 
-import { hubReady, hubLeads, hubTemplates } from './hub.mjs';
-import { saveHubLeads, saveHubTemplates, hubLeadRow, hubLeadRows, hubTemplate, getState, setState } from './db.mjs';
+import { hubReady, hubLeads, hubTemplates, hubUpcoming } from './hub.mjs';
+import { saveHubLeads, saveHubTemplates, saveHubUpcoming, hubLeadRow, hubLeadRows, hubTemplate, getState, setState } from './db.mjs';
 
 const LEADS_MS = Number(process.env.HUB_LEADS_MS || 60_000);
 const TEMPLATES_MS = Number(process.env.HUB_TEMPLATES_MS || 3_600_000);
@@ -50,13 +50,28 @@ export async function syncTemplates() {
   } catch (e) { log('templates:', e.message); return null; }
 }
 
+// The next 5 steps of one lead (#n, template, time). The Hub's `next` can point at a step Ali unticked, so the
+// real next is the first upcoming step still ahead. The API does not say which steps are unticked (asked Mateo).
+export async function syncUpcoming(waId, { maxAgeMs = 30 * 60_000 } = {}) {
+  const r = hubLeadRow(waId);
+  if (!r?.lead_id) return null;
+  if (r.upcoming && r.upcoming_at && Date.now() - Date.parse(r.upcoming_at) < maxAgeMs) return JSON.parse(r.upcoming);
+  try { const u = await hubUpcoming(r.lead_id); const steps = Array.isArray(u) ? u : u.upcoming || []; saveHubUpcoming(waId, steps); return steps; }
+  catch (e) { log('upcoming', waId, e.message); return r.upcoming ? JSON.parse(r.upcoming) : null; }
+}
+export const upcomingOf = (r) => { try { return r?.upcoming ? JSON.parse(r.upcoming) : []; } catch { return []; } };
+export const realNext = (r, now = Date.now()) => upcomingOf(r).filter((u) => u.scheduledAt && Date.parse(u.scheduledAt) > now - 15 * 60e3).sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))[0] || null;
+export const stepOf = (r, template) => upcomingOf(r).find((u) => u.template === template) || null;
+
 // What one lead's next automatic step is, with the real text — for the thread screen and the prompts.
 export function hubNextFor(waId) {
   const r = hubLeadRow(waId);
   if (!r) return null;
   const tpl = r.next_tpl ? hubTemplate(r.next_tpl) : null;
   return { status: r.status, paused: !!r.paused, skipNext: !!r.skip_next, phase: r.phase, meetingDate: r.meeting_date, lastReason: r.last_reason, lastReasonAt: r.last_reason_at,
-    next: r.next_tpl ? { template: r.next_tpl, at: r.next_at, text: tpl?.text || null, stale: !!r.next_at && Date.parse(r.next_at) < Date.now() - 60 * 60e3 } : null,
+    next: r.next_tpl ? { template: r.next_tpl, at: r.next_at, text: tpl?.text || null, stale: !!r.next_at && Date.parse(r.next_at) < Date.now() - 60 * 60e3, step: stepOf(r, r.next_tpl)?.stepIndex ?? null } : null,
+    realNext: (() => { const n = realNext(r); return n ? { step: n.stepIndex, template: n.template, at: n.scheduledAt, text: hubTemplate(n.template)?.text || null } : null; })(),
+    upcoming: upcomingOf(r).map((u) => ({ step: u.stepIndex, template: u.template, at: u.scheduledAt, past: Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 })),
     citf: r.citf ? JSON.parse(r.citf) : null, leadId: r.lead_id, updatedAt: r.updated_at };
 }
 

@@ -15,7 +15,7 @@
 import { readFileSync, mkdirSync } from 'node:fs';
 import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRows, insertPlanItem, planItems, openPlanItems, planItemsFor, setPlanState, expirePlanItems, unpushedPlanItems, markPlanPushed, dueReminders, markPlanReminded, planDismissed, planCounts, getState, setState, insertSuggestion, markSuggestionPushed } from './db.mjs';
 import { hubReady } from './hub.mjs';
-import { hubSig, onHubChange } from './hub-sync.mjs';
+import { hubSig, onHubChange, syncUpcoming, upcomingOf, realNext, stepOf } from './hub-sync.mjs';
 import { runClaude, madrid } from './suggest-engine.mjs';
 import { pushAll } from './push.mjs';
 import { frenchTemplates } from './wati.mjs';
@@ -63,8 +63,10 @@ export function candidates(now = Date.now()) {
     out.push({ ...r, reason, thread: t, msgs });
   }
   // Most urgent first: paused leads (a human gesture is due), then templates by time, then stuck and finished sequences.
-  const rank = { paused: 0, due: 1, stale: 2, finished: 3 };
-  return out.sort((a, b) => rank[a.reason] - rank[b.reason] || String(a.next_at || '9').localeCompare(String(b.next_at || '9')));
+  // Recent leads (meeting in the last 3 days) and soonest templates first; stuck and finished sequences last.
+  const cutoff = new Date(now - 3 * 864e5).toISOString().slice(0, 10);
+  const rank = (c) => (c.reason === 'stale' || c.reason === 'finished' ? 2 : 0) + ((c.meeting_date || '') >= cutoff ? 0 : 1);
+  return out.sort((a, b) => rank(a) - rank(b) || String(a.next_at || '9').localeCompare(String(b.next_at || '9')));
 }
 
 // Leads with no card today, or whose Hub state moved since their card (then the old card is superseded).
@@ -88,8 +90,9 @@ function leadBlock(c) {
   const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || c.wa_id;
   const head = [`### ${name} · waId ${c.wa_id}${c.thread?.country === 'Switzerland' ? ' · SUISSE (CHF)' : ''}`,
     `Hub : statut ${c.status}${c.paused ? ' · EN PAUSE' : ''}${c.skip_next ? ' · prochain sauté' : ''} · phase ${c.phase || '-'} · entretien ${c.meeting_date || '-'} · dernier événement : ${c.last_reason || '-'}${c.last_reason_at ? ` (${fmt(c.last_reason_at)})` : ''}`,
-    c.next_tpl ? `Prochain template : ${c.next_tpl} à ${fmt(c.next_at)}${Date.parse(c.next_at) < Date.now() - 3600e3 ? ' (DANS LE PASSÉ)' : ''}${c.paused ? ' (ne partira pas tant que la pause tient)' : ''}` : 'Prochain template : aucun (séquence terminée)',
+    c.next_tpl ? `Prochain template selon le Hub : ${stepOf(c, c.next_tpl) ? `#${stepOf(c, c.next_tpl).stepIndex} ` : ''}${c.next_tpl} à ${fmt(c.next_at)}${Date.parse(c.next_at) < Date.now() - 3600e3 ? ' (DANS LE PASSÉ : probablement décoché par Ali)' : ''}${c.paused ? ' (ne partira pas tant que la pause tient)' : ''}` : 'Prochain template : aucun (séquence terminée)',
     tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
+    upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
     c.citf ? `Plan CITF : ${c.citf}` : '',
     `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse' }[c.reason]}`,
     `Fenêtre 24h : ${windowOpen ? `OUVERTE (dernier message du lead ${fmt(lastLead.at)})` : 'FERMÉE (template seulement)'}`,
@@ -100,14 +103,17 @@ function leadBlock(c) {
   return `${head}\nConversation :\n${conv}`;
 }
 
+// The CITF reasons the Hub knows (seen in /leads): each one starts its own template set.
+export const CITF_CASES = { payment: 'paiement plus tard', payment_month: 'paiement le mois prochain', more_time: 'besoin de temps', general_later: 'plus tard, sans raison précise' };
 const SCHEMA = { type: 'object', properties: {
   items: { type: 'array', items: { type: 'object', properties: {
     waId: { type: 'string' }, kind: { type: 'string', enum: ['pause', 'followup', 'wait', 'fix', 'ok'] }, when: { type: 'string' }, title: { type: 'string' }, why: { type: 'string' }, action: { type: 'string' },
-    pauseScope: { type: 'string' }, skipTemplates: { type: 'array', items: { type: 'string' } }, hubStatus: { type: 'string' }, citfDate: { type: 'string' }, bubbles: { type: 'array', items: { type: 'string' } }, template: { type: 'string' } },
-    required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'hubStatus', 'citfDate', 'bubbles', 'template'] } },
+    pauseScope: { type: 'string' }, skipTemplates: { type: 'array', items: { type: 'string' } }, hubStatus: { type: 'string' }, citfCase: { type: 'string' }, citfDate: { type: 'string' }, bubbles: { type: 'array', items: { type: 'string' } }, template: { type: 'string' } },
+    required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'hubStatus', 'citfCase', 'citfDate', 'bubbles', 'template'] } },
   summary: { type: 'string' } }, required: ['items', 'summary'] };
 
 async function judgeBatch(batch) {
+  for (const c of batch) { const u = await syncUpcoming(c.wa_id); if (u) c.upcoming = JSON.stringify(u); } // the #n steps the Hub shows Ali
   const weekday = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
   const dismissed = planDismissed(30).map((p) => `- ${p.day} · ${p.name || ''} · ${p.kind} « ${p.title} »${p.note ? ` — Ali : ${p.note}` : ''}`).join('\n') || '(rien pour le moment)';
   let tpls = [];
@@ -133,9 +139,12 @@ function store(c, it) {
   // Which Hub mechanism: pause the whole automation, or skip only the named template(s) (Ali, 2026-10-01).
   const pauseScope = kind === 'pause' ? (it.pauseScope === 'next' ? 'next' : 'all') : null;
   const skip = kind === 'pause' && pauseScope === 'next' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];
-  if (pauseScope === 'next' && !skip.length && c.next_tpl) skip.push(c.next_tpl);
-  const actionBits = [pauseScope === 'all' ? 'Hub : pause complète de l’automatisation' : pauseScope === 'next' ? `Hub : sauter seulement ${skip.join(' puis ')} (skip next), les suivants partent normalement` : '', String(it.action || '').trim()];
-  if (it.hubStatus && /^(OR|CITF|IITF)$/.test(it.hubStatus)) actionBits.push(`Statut Hub → ${it.hubStatus}${it.citfDate ? ` (${it.citfDate})` : ''}`);
+  if (pauseScope === 'next' && !skip.length) { const n = realNext(c); skip.push(n ? n.template : c.next_tpl); }
+  const skipLabel = skip.map((t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; });
+  const actionBits = [pauseScope === 'all' ? 'Hub : pause complète' : pauseScope === 'next' ? `Hub : décocher ${skipLabel.join(' et ')}, le reste part normalement` : '', String(it.action || '').trim()];
+  // IITF is retired (Ali, 2026-10-01): a lead who comes back later is CITF with a reason and a date.
+  const hubStatus = it.hubStatus === 'IITF' ? 'CITF' : it.hubStatus;
+  if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Statut Hub : ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
   let suggestionId = null;
   if (bubbles.length) { // the draft becomes a normal suggestion in the thread: editable, sendable, learned from
     suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Plan du jour : ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [] });

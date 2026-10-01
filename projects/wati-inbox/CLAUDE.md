@@ -39,7 +39,7 @@ in the Hub, status OR/CITF suggested), `followup` (time + draft, inserted as a n
 Cards close by themselves (lead wrote → replied; Ali sent → followup done; midnight → expired); Ali taps « Fait » or
 « Pas d'accord » with a note that every later judgement reads. Screens: home card « Aujourd'hui » → `/plan`; the Sales
 Hub line and the card at the top of each thread. Pushes: morning summary, new pause/fix cards at once (8h–22h), a reminder
-10 min before a follow-up. The guessed schedule in `tbc-watch.mjs` is off while the token is present. Terminal:
+10 min before a follow-up. A pause card says which mechanism: pause complète, or décocher a named step (#n from `/leads/{id}/upcoming`, fetched at judgement time; the API does not expose which steps Ali unticked, asked Mateo on 2026-10-01). Rules from Ali (2026-10-01): the templates are built to push even after a « pas intéressé », so a single refusal is `ok`; IITF is retired, a lead who comes back later is CITF with a reason (`payment`, `payment_month`, `more_time`, `general_later`) and a date. The guessed schedule in `tbc-watch.mjs` is off while the token is present. Terminal:
 `node --env-file=.env plan-engine.mjs` (candidates) / `--run` (judge now) / `hub-sync.mjs` / `hub.mjs [+33…]`.
 The learned cases are consolidated by `consolidate-engine.mjs` (2026-09-30): every evening at `CONSOLIDATE_AT` (22:15
 Madrid), when the raw journal `../Wati outreach/playbook/04-CAS-APPRIS.md` moved, one Sonnet run rebuilds
