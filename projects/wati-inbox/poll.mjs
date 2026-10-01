@@ -9,7 +9,7 @@ import { startSuggesting, scheduleAutoDraft, AUTO_DELAY_MS } from './suggest-eng
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
 import { closeTbcAlerts, closePlanItems, openPlanItems, setPlanState } from './db.mjs';
 import { afterAliMessage } from './plan-engine.mjs';
-import { laterPending } from './db.mjs';
+import { laterPending, hubLeadRows } from './db.mjs';
 
 export const POLL_MS = 45_000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -96,20 +96,33 @@ const lastCheck = new Map(); // wa_id → time of the last read
 
 // Wati's contact timestamp only moves when a chat is opened, not on each
 // message, so contacts page 1 only reveals NEW leads. Known threads are read
-// directly: every tick while active in the last 24h, every 5 min up to 14 days.
+// directly: every tick while active in the last 24h, every 5 min up to 14 days,
+// and (since 2026-10-01, Hajar El Rhomri's "Bonsoir" after 15 days of silence went unseen):
+//   - every 2 min when the Sales Hub moved the lead in the last 24 h (a template just left, a reply may follow),
+//   - every 30 min for every other known thread, a few per tick, oldest check first — so a lead who comes back
+//     after weeks is seen within half an hour at worst, instead of never.
+const HUBWARM_H = 24, HUBWARM_EVERY_MS = 2 * 60_000, COLD_EVERY_MS = 30 * 60_000, COLD_PER_TICK = 6;
 async function tick() {
   const first = !getState('last_poll');
   const contacts = await recentContacts(first ? 3 : 1);
   const now = Date.now();
   const due = new Map();
   for (const c of contacts) if (FR.test(c.waId) && !storedThread(c.waId)) due.set(c.waId, c.name);
+  const lastAt = (t) => Math.max(new Date(t.last_inbound_at || 0).getTime(), new Date(t.last_outbound_at || 0).getTime());
   for (const t of activeThreads(WARM_DAYS)) {
-    const lastAt = Math.max(new Date(t.last_inbound_at || 0).getTime(), new Date(t.last_outbound_at || 0).getTime());
-    const hot = now - lastAt < HOT_H * 3600e3;
+    const hot = now - lastAt(t) < HOT_H * 3600e3;
     if (hot || now - (lastCheck.get(t.wa_id) || 0) > WARM_EVERY_MS) due.set(t.wa_id, t.name);
   }
+  for (const r of hubLeadRows()) {
+    const ev = Math.max(Date.parse(r.last_reason_at || 0) || 0, (Date.parse(r.next_at || 0) || 0) <= now ? Date.parse(r.next_at || 0) || 0 : 0);
+    const t = now - ev < HUBWARM_H * 3600e3 && !due.has(r.wa_id) ? storedThread(r.wa_id) : null;
+    if (t && now - (lastCheck.get(t.wa_id) || 0) > HUBWARM_EVERY_MS) due.set(t.wa_id, t.name || r.name);
+  }
+  const cold = activeThreads(3650).filter((t) => !due.has(t.wa_id) && now - lastAt(t) >= WARM_DAYS * 864e5 && now - (lastCheck.get(t.wa_id) || 0) > COLD_EVERY_MS)
+    .sort((a, b) => (lastCheck.get(a.wa_id) || 0) - (lastCheck.get(b.wa_id) || 0)).slice(0, COLD_PER_TICK);
+  for (const t of cold) due.set(t.wa_id, t.name);
   for (const [waId, name] of due) {
-    try { await refreshThread(waId, name, { notify: !first }); lastCheck.set(waId, Date.now()); }
+    try { const r = await refreshThread(waId, name, { notify: !first }); lastCheck.set(waId, Date.now()); if (r?.isNew && cold.some((t) => t.wa_id === waId)) log('cold thread came back:', name || waId); }
     catch (e) { log('thread', waId, e.message); }
   }
   setState('last_poll', new Date().toISOString());

@@ -78,6 +78,12 @@ Then commit and push. Test a draft from the terminal with
   emoji as a plain message. Wati's API has no WhatsApp *reaction* endpoint (its web inbox reacts through the agent
   session, not the API token), so this is a message, not a reaction. `meta.reaction` skips the learning run.
 
+- **Which threads the poller reads** (poll.mjs `tick`, 2026-10-01): new French-prefix contacts from Wati's page 1; known
+  threads every 45 s while active in the last 24 h and every 5 min up to 14 days; **plus** every 2 min when the Sales Hub
+  moved the lead in the last 24 h (`hub_leads.last_reason_at` / a passed `next_at`: a template just left), and every 30 min
+  for every other known thread (6 per tick, oldest check first). Before this, a lead silent for 15+ days who wrote back
+  (Hajar El Rhomri, 2026-10-01 20:10, after a Hub template at 16:05) was never read: no draft, no push.
+
 ## Language
 Everything Ali reads in the app is in English (Ali, 2026-10-01): navigation, buttons, section titles, badges, toasts, error messages, push titles, plan-card `title`/`why`/`action`, France TM flags. Only what is written to a lead stays French: drafts, bubbles, templates, and the consignes Claude receives.
 
