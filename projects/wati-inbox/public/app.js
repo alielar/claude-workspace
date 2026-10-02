@@ -231,7 +231,7 @@ function armed(btn, label, fn) {
   let t;
   btn.onclick = () => {
     if (btn.dataset.armed) { clearTimeout(t); delete btn.dataset.armed; btn.textContent = label; btn.classList.remove('on'); return fn(); }
-    btn.dataset.armed = '1'; btn.textContent = 'Confirm?'; btn.classList.add('on');
+    btn.dataset.armed = '1'; btn.textContent = 'Tap again to confirm'; btn.classList.add('on');
     t = setTimeout(() => { delete btn.dataset.armed; btn.textContent = label; btn.classList.remove('on'); }, 3500);
   };
 }
@@ -302,7 +302,8 @@ async function renderThread(waId, { quiet = false } = {}) {
         <div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}${editedTag('bubbles')}</span></div>
         ${sug.note ? `<p class="note small">${esc(sug.note)}</p>` : ''}
         ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span></div>`).join('') : fields(draftEdit, 'eb')}
-        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>
+        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>${draftEdit == null ? `<button class="small ${steerOpen ? 'on' : ''}" id="redo">Redo</button>` : ''}` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>
+        ${o.later?.length && d.windowOpen && draftEdit == null && laterEdit == null && !d.scheduled ? `<div class="acts"><button class="small" id="sendall" ${sendLock ? 'disabled' : ''}>Send all · part 2 in 7 min</button></div>` : ''}
         ${o.why ? `<details><summary>Why</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
@@ -318,15 +319,17 @@ async function renderThread(waId, { quiet = false } = {}) {
   const sendBox = sending ? `<div class="card sending ${sending.error ? 'failed' : ''}">${sending.error ? esc(sending.error) : `Sending ${sending.sent}/${sending.total}`}</div>` : '';
 
   // Steering Claude (folded): the initial offer, the moves, a free consigne.
-  const steer = d.windowOpen ? `<details class="card fold" id="steer" ${steerOpen ? 'open' : ''}><summary>${o ? 'Redo the draft' : 'Ask for a draft'} <span class="muted small">· steer Claude</span></summary>
-      ${offerBoxHtml(D, od, d, false)}
+  const steerBody = d.windowOpen ? `${offerBoxHtml(D, od, d, false)}
       <div class="chips">${D.moves.map((m) => chip('mv', m.id, m.label, has(m.id))).join('')}</div>
       ${has('downsell') ? `<div class="chips">${D.downsell.map((x) => chip('lvl', x.id, x.label, dir.level === x.id)).join('')}</div>` : ''}
       ${has('acompte') ? `<div class="chips">${D.acompte.map((a) => chip('lvl2', a, `${a} ${d.currency || '€'}`, dir.level2 === a)).join('')}</div>` : ''}
       ${has('delai') ? `<input id="until" placeholder="Until when? (e.g. tomorrow 12h)" value="${esc(dir.until)}" style="margin-bottom:8px">` : ''}
       <textarea id="ins" placeholder="Note for Claude (optional)">${esc(dir.instruction)}</textarea>
-      <div class="row"><button id="go" class="primary">Draft</button>${micHtml('ins')}<span class="muted small">Nothing ticked = Claude chooses</span></div>
-    </details>` : '';
+      <div class="row"><button id="go" class="primary">Draft</button>${micHtml('ins')}<span class="muted small">Nothing ticked = Claude chooses</span></div>` : '';
+  // With a draft on screen (Ali, 2026-10-02): « Redo » sits next to Edit and opens the panel right under the draft.
+  const hasDraft = !!(o && o.bubbles?.length && !threadBusy);
+  const steer = !d.windowOpen ? '' : hasDraft ? (steerOpen ? `<div class="card" id="steer"><div class="opt-head">Redo the draft <span class="muted">· steer Claude</span></div>${steerBody}</div>` : '')
+    : `<details class="card fold" id="steer" ${steerOpen ? 'open' : ''}><summary>Ask for a draft <span class="muted small">· steer Claude</span></summary>${steerBody}</details>`;
   const tplBox = `<input id="tplq" placeholder="Filter"><select id="tpl" style="margin-top:8px"><option value="">Loading…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Send the template</button><span id="stt"></span></div>`;
   const compose = d.windowOpen
     ? `<div class="card"><div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Your message. An empty line separates two bubbles">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Send</button><span id="st"></span></div></div>
@@ -336,7 +339,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
-    ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${learnLine}${compose}${steer}`;
+    ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${hasDraft ? steer : ''}${learnLine}${compose}${hasDraft ? '' : steer}`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
   const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
@@ -361,6 +364,8 @@ async function renderThread(waId, { quiet = false } = {}) {
   // one field per bubble while editing: read them back in order, drop the empty ones
   const readFields = (tag) => [...document.querySelectorAll(`textarea[data-${tag}]`)].map((ta) => ta.value.trim()).filter(Boolean);
   const bindFields = (tag, get, set) => {
+    // Enter while editing = Save (like editing a message in Slack); Shift+Enter keeps a line break. Enter never sends.
+    document.querySelectorAll(`textarea[data-${tag}]`).forEach((ta) => { ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $(`[data-${tag}save]`)?.click(); } }; });
     document.querySelectorAll(`textarea[data-${tag}]`).forEach((ta) => { ta.oninput = () => { get()[Number(ta.dataset[tag])] = ta.value; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }; ta.style.height = ta.scrollHeight + 'px'; });
     document.querySelectorAll(`[data-${tag}del]`).forEach((b) => b.onclick = () => { const arr = get(); arr.splice(Number(b.dataset[`${tag}del`]), 1); set(arr.length ? arr : ['']); redraw(); });
     const add = $(`[data-${tag}add]`); if (add) add.onclick = () => { set([...get(), '']); redraw(); };
@@ -385,10 +390,21 @@ async function renderThread(waId, { quiet = false } = {}) {
   bindFields('lb', () => laterEdit, (v) => { laterEdit = v; });
   document.querySelectorAll('[data-sendlater]').forEach((b) => armed(b, 'Schedule in 7 min', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, suggestionId: sug.id, option: 0, part: 'later', delayMs: 7 * 60_000 } }); toast('The Mac will send it in 7 min'); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-sendlaternow]').forEach((b) => armed(b, 'Send now', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await sendBubbles(waId, bubbles, { suggestionId: sug.id, option: 0, part: 'later' }); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
+  if ($('#redo')) $('#redo').onclick = () => { steerOpen = !steerOpen; redraw(); if (steerOpen) requestAnimationFrame(() => $('#steer')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
+  // Both parts at once: part 2 is put on the Mac's 7-min timer first (a send in progress blocks new requests), then part 1 leaves.
+  armed($('#sendall'), 'Send all · part 2 in 7 min', async () => {
+    const now = draftBubbles(), later = laterBubbles(); if (!now.length || !later.length) { toast('A part is empty'); return; }
+    $('#sendall').disabled = true;
+    try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles: later, suggestionId: sug.id, option: 0, part: 'later', delayMs: 7 * 60_000 } }); }
+    catch (e) { toast(e.message); $('#sendall').disabled = false; return; }
+    try { await sendBubbles(waId, now, { suggestionId: sug.id, option: 0, edited: !sameAsDraft(now) }); toast('Part 1 sent, part 2 leaves in 7 min'); }
+    catch (e) { await api(`/api/thread/${waId}/cancel`, { method: 'POST' }).catch(() => {}); toast(`Not sent, part 2 cancelled: ${e.message}`); }
+    lastThreadKey = ''; route();
+  });
   if ($('#cancelsched')) $('#cancelsched').onclick = async () => { await api(`/api/thread/${waId}/cancel`, { method: 'POST' }); toast('Second part cancelled'); redraw(); };
   // steering panel
   if (d.windowOpen) {
-    const det = $('#steer'); if (det) det.ontoggle = () => { steerOpen = det.open; };
+    const det = $('details#steer'); if (det) det.ontoggle = () => { steerOpen = det.open; };
     document.querySelectorAll('[data-mv]').forEach((b) => b.onclick = () => { const id = b.dataset.mv; dir.moves = has(id) ? dir.moves.filter((x) => x !== id) : [...dir.moves, id]; steerOpen = true; redraw(); });
     document.querySelectorAll('[data-lvl]').forEach((b) => b.onclick = () => { dir.level = dir.level === b.dataset.lvl ? '' : b.dataset.lvl; steerOpen = true; redraw(); });
     document.querySelectorAll('[data-lvl2]').forEach((b) => b.onclick = () => { dir.level2 = dir.level2 === b.dataset.lvl2 ? '' : b.dataset.lvl2; steerOpen = true; redraw(); });

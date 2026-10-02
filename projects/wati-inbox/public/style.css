@@ -142,3 +142,5 @@ button.mic { display: inline-flex; align-items: center; gap: 6px; padding: 8px 1
 button.mic svg { flex: none; }
 button.mic.rec { background: #c62828; color: #fff; border-color: #c62828; animation: micpulse 1.2s ease-in-out infinite; font-variant-numeric: tabular-nums; }
 @keyframes micpulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+/* the second tap of a send button (armed): its own colour, the label always readable (was green on green) */
+button[data-armed] { background: #b45309; border-color: #b45309; color: #fff; font-weight: 600; }
