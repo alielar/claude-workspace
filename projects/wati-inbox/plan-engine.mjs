@@ -154,15 +154,17 @@ const SCHEMA = { type: 'object', properties: {
     required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'keepTemplates', 'hubStatus', 'citfCase', 'citfDate', 'bubbles', 'template'] } },
   summary: { type: 'string' } }, required: ['items', 'summary'] };
 
-export async function judgeBatch(batch) {
+// fakeNow (tests only): the clock Claude is told, e.g. 'replay tomorrow 09:15' — the stored card still uses the real clock.
+export async function judgeBatch(batch, fakeNow = null) {
   for (const c of batch) { const u = await syncUpcoming(c.wa_id); if (u) c.upcoming = JSON.stringify(u); } // the #n steps the Hub shows Ali
-  const weekday = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
+  const clock = fakeNow ? new Date(fakeNow) : new Date();
+  const weekday = clock.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
   const dismissed = planDismissed(30).map((p) => `- ${p.day} · ${p.name || ''} · ${p.kind} « ${p.title} »${p.note ? ` — Ali : ${p.note}` : ''}`).join('\n') || '(rien pour le moment)';
   let tpls = [];
   try { tpls = (await frenchTemplates()).filter((t) => /^tbc_|^followup_|_replied/.test(t.name)).slice(0, 25); } catch {}
   const templates = tpls.map((t) => `- ${t.name} : « ${String(t.body || '').replace(/\s+/g, ' ').slice(0, 160)} »`).join('\n') || '(liste indisponible)';
   const prompt = readFileSync(new URL('./plan-prompt.md', import.meta.url), 'utf8')
-    .replaceAll('{{now}}', madrid()).replaceAll('{{weekday}}', weekday).replaceAll('{{dismissed}}', dismissed).replaceAll('{{templates}}', templates)
+    .replaceAll('{{now}}', madrid(clock)).replaceAll('{{weekday}}', weekday).replaceAll('{{dismissed}}', dismissed).replaceAll('{{templates}}', templates)
     .replaceAll('{{leads}}', batch.map(leadBlock).join('\n\n'));
   countCall();
   const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 3, tag: 'plan', timeoutMs: 5 * 60_000, tools: [] });
