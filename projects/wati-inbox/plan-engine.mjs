@@ -114,7 +114,9 @@ function needing(cands, now = Date.now()) {
     const sig = cardSig(c);
     const open = items.find((i) => i.state === 'open');
     if (open && open.hub_sig === 'manual') return false; // planned by Ali or a chat (suggest.mjs --at): not re-judged while open
-    if (open && open.kind === 'wait' && open.when_at && Date.parse(open.when_at) <= now && c.reason !== 'closing') { c.prior = c.reason; c.reason = 'overdue'; c.overdueAt = open.when_at; return true; }
+    // Same for a « followup » Ali did not send within the hour: the next step of the day's rhythm takes over.
+    const grace = open?.kind === 'followup' ? 60 * 60e3 : 0;
+    if (open && (open.kind === 'wait' || open.kind === 'followup') && open.when_at && Date.parse(open.when_at) + grace <= now && c.reason !== 'closing') { c.prior = c.reason; c.reason = 'overdue'; c.overdueAt = open.when_at; c.overdueKind = open.kind; return true; }
     if (open && open.hub_sig === sig) return false;
     if (items.some((i) => i.state !== 'open' && i.state !== 'superseded' && i.hub_sig === sig)) return false; // done/dismissed/replied for this same state
     return true;
@@ -133,7 +135,7 @@ export function leadBlock(c) {
     upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
     c.citf ? `Plan CITF : ${c.citf}` : '',
     `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: `la fenêtre 24h se ferme à ${c.win?.closeAt ? fmtHM(new Date(c.win.closeAt).toISOString()) : '?'} et le lead n’a pas répondu au dernier message manuel d’Ali (${c.win?.aliToday ? 'envoyé aujourd’hui → seconde relance basse pression' : 'envoyé avant aujourd’hui, aucune relance aujourd’hui → relance courte et directe'}) avant la fermeture (règle « fenêtre qui se ferme »)`,
-      overdue: `la carte « wait » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
+      overdue: `la carte « ${c.overdueKind || 'wait'} » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée${c.overdueKind === 'followup' ? ' et Ali n’a pas envoyé ce message : propose l’étape suivante du rythme, pas la même' : ''} et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
@@ -152,7 +154,7 @@ const SCHEMA = { type: 'object', properties: {
     required: ['waId', 'kind', 'when', 'title', 'why', 'action', 'pauseScope', 'skipTemplates', 'keepTemplates', 'hubStatus', 'citfCase', 'citfDate', 'bubbles', 'template'] } },
   summary: { type: 'string' } }, required: ['items', 'summary'] };
 
-async function judgeBatch(batch) {
+export async function judgeBatch(batch) {
   for (const c of batch) { const u = await syncUpcoming(c.wa_id); if (u) c.upcoming = JSON.stringify(u); } // the #n steps the Hub shows Ali
   const weekday = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
   const dismissed = planDismissed(30).map((p) => `- ${p.day} · ${p.name || ''} · ${p.kind} « ${p.title} »${p.note ? ` — Ali : ${p.note}` : ''}`).join('\n') || '(rien pour le moment)';
