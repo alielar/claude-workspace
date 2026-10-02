@@ -30,7 +30,7 @@ const DUE_H = Number(process.env.PLAN_DUE_H || 5);
 const FROM_H = 8, TO_H = 22;
 // Second, low-pressure follow-up before the 24h window shuts (Ali, 2026-10-01): a paused lead whose window closes within
 // CLOSING_H and who stayed silent since Ali's manual message of the day (sent ≥ CLOSING_GAP_H ago) is judged once more.
-const CLOSING_H = Number(process.env.PLAN_CLOSING_H || 2.5);
+const CLOSING_H = Number(process.env.PLAN_CLOSING_H || 4);
 const CLOSING_GAP_H = Number(process.env.PLAN_CLOSING_GAP_H || 2);
 const TEST_NUMBER = '34695064884';
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), 'plan:', ...a);
@@ -54,8 +54,9 @@ function madridIso(s) {
 const fmtHM = (iso) => madrid(new Date(iso)).slice(11, 16);
 
 // The 24h free-text window of a thread and Ali's last manual message (templates excluded).
-// closingSoon: the window shuts within CLOSING_H, Ali wrote by hand today after the lead's last message, at least
-// CLOSING_GAP_H ago, and the lead has not answered → a second, low-pressure card before the window closes.
+// closingSoon: the window shuts within CLOSING_H, Ali wrote by hand after the lead's last message (today or the day
+// before), at least CLOSING_GAP_H ago, and the lead has not answered → a short follow-up card while free text still
+// works (Ali, 2026-10-02: Liliane's window closed at 19:14 with no card because his last message was from the day before).
 export function windowInfo(msgs, now = Date.now()) {
   const lastLead = [...msgs].reverse().find((m) => m.who === 'LEAD');
   const lastAli = [...msgs].reverse().find((m) => m.who !== 'LEAD' && !m.tpl);
@@ -63,9 +64,9 @@ export function windowInfo(msgs, now = Date.now()) {
   const open = !!closeAt && closeAt > now;
   const aliAfterLead = !!lastAli && !!lastLead && Date.parse(lastAli.at) > Date.parse(lastLead.at);
   const closingSoon = open && closeAt - now <= CLOSING_H * 3600e3 && aliAfterLead
-    && madrid(new Date(lastAli.at)).slice(0, 10) === madrid(new Date(now)).slice(0, 10)
     && now - Date.parse(lastAli.at) >= CLOSING_GAP_H * 3600e3;
-  return { open, closeAt, lastLead, lastAli, closingSoon };
+  const aliToday = !!lastAli && madrid(new Date(lastAli.at)).slice(0, 10) === madrid(new Date(now)).slice(0, 10);
+  return { open, closeAt, lastLead, lastAli, closingSoon, aliToday };
 }
 // A closing card has its own signature so it can follow a done/dismissed card of the same Hub state.
 const cardSig = (c) => hubSig(c.wa_id) + (c.reason === 'closing' ? '|closing' : '');
@@ -104,13 +105,16 @@ export function candidates(now = Date.now()) {
 }
 
 // Leads with no card today, or whose Hub state moved since their card (then the old card is superseded).
-function needing(cands) {
+// A « wait » card whose time has come is judged again (Ali, 2026-10-02: Liliane's « wait until 13:14 » was still on
+// screen at 17:39 with no follow-up). The new card never keeps a time already past, so this happens once per card.
+function needing(cands, now = Date.now()) {
   const d = today();
   return cands.filter((c) => {
     const items = planItemsFor(c.wa_id, d);
     const sig = cardSig(c);
     const open = items.find((i) => i.state === 'open');
     if (open && open.hub_sig === 'manual') return false; // planned by Ali or a chat (suggest.mjs --at): not re-judged while open
+    if (open && open.kind === 'wait' && open.when_at && Date.parse(open.when_at) <= now && c.reason !== 'closing') { c.prior = c.reason; c.reason = 'overdue'; c.overdueAt = open.when_at; return true; }
     if (open && open.hub_sig === sig) return false;
     if (items.some((i) => i.state !== 'open' && i.state !== 'superseded' && i.hub_sig === sig)) return false; // done/dismissed/replied for this same state
     return true;
@@ -128,7 +132,8 @@ export function leadBlock(c) {
     tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
     upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
     c.citf ? `Plan CITF : ${c.citf}` : '',
-    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: 'la fenêtre 24h se ferme ce soir et le lead n’a pas répondu à la relance manuelle d’Ali du jour → seconde relance basse pression avant la fermeture (règle « fenêtre qui se ferme »), ou wait', due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
+    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: `la fenêtre 24h se ferme à ${c.win?.closeAt ? fmtHM(new Date(c.win.closeAt).toISOString()) : '?'} et le lead n’a pas répondu au dernier message manuel d’Ali (${c.win?.aliToday ? 'envoyé aujourd’hui → seconde relance basse pression' : 'envoyé avant aujourd’hui, aucune relance aujourd’hui → relance courte et directe'}) avant la fermeture (règle « fenêtre qui se ferme »)`,
+      overdue: `la carte « wait » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
@@ -170,7 +175,8 @@ function store(c, it) {
   const bubbles = (Array.isArray(it.bubbles) ? it.bubbles : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
   let kind = ['pause', 'followup', 'resume', 'wait', 'fix', 'ok'].includes(it.kind) ? it.kind : 'ok';
   if (kind === 'pause' && c.paused) kind = bubbles.length ? 'followup' : 'wait'; // already paused: nothing to pause, a human gesture or a date
-  const whenIso = madridIso(it.when) || (kind === 'pause' && c.next_at ? c.next_at : null);
+  let whenIso = madridIso(it.when) || (kind === 'pause' && c.next_at ? c.next_at : null);
+  if (kind === 'wait' && whenIso && Date.parse(whenIso) <= Date.now() + 5 * 60e3) whenIso = null; // a time already past would re-judge every 5 min
   // Which Hub mechanism: pause the whole automation, or skip only the named template(s) (Ali, 2026-10-01).
   const pauseScope = kind === 'pause' ? (it.pauseScope === 'next' ? 'next' : 'all') : null;
   const skip = (kind === 'pause' && pauseScope === 'next') || kind === 'resume' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];
@@ -228,7 +234,7 @@ export async function plan({ scope = 'due', reason = 'auto', dry = false, only =
         cands.push({ ...row, reason: 'sent', prior: null, thread: t, msgs, win: windowInfo(msgs) });
       }
     }
-    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
+    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || c.reason === 'overdue' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
     if (dry) { status.state = 'idle'; return { candidates: cands.map((c) => ({ wa_id: c.wa_id, name: c.name, reason: c.reason, status: c.status, next: c.next_tpl, at: c.next_at })) }; }
     if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
     let judged = 0; const summaries = [];
