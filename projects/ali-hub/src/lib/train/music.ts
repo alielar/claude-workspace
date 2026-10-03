@@ -7,7 +7,7 @@
  * attribution in `by` is the license condition · keep it visible in the picker.
  */
 
-import { STRETCH_TRACKS, trackUrl, type StretchTrack } from "@/lib/routine/music";
+import { STRETCH_TRACKS, BENCHED_TRACKS, trackUrl, type StretchTrack } from "@/lib/routine/music";
 
 export type TrainTrack = StretchTrack & { shelf: "drive" | "mobility" };
 
@@ -24,7 +24,7 @@ const MOBILITY_PICKS = ["sunrise", "calls-and-echoes", "fairytale", "lights-came
 
 export const TRAIN_TRACKS: TrainTrack[] = [
   ...DRIVE,
-  ...STRETCH_TRACKS.filter((t) => MOBILITY_PICKS.includes(t.slug)).map((t) => ({ ...t, shelf: "mobility" as const })),
+  ...[...STRETCH_TRACKS, ...BENCHED_TRACKS].filter((t) => MOBILITY_PICKS.includes(t.slug)).map((t) => ({ ...t, shelf: "mobility" as const })),
 ];
 
 export { trackUrl };

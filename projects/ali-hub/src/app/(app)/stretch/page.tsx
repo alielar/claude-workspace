@@ -98,12 +98,13 @@ export default function StretchPage() {
     played.current.push(slug);
     return slug;
   }, []);
+  const playNextRef = useRef<() => void>(() => {});
   const playNext = useCallback(() => {
     const slug = nextTrack();
     if (!slug) return;
     if (!music.current) {
       music.current = new Audio();
-      music.current.addEventListener("ended", () => playNext());
+      music.current.addEventListener("ended", () => playNextRef.current());
     }
     const el = music.current;
     el.src = trackUrl(slug);
@@ -112,18 +113,19 @@ export default function StretchPage() {
     el.play().catch(() => { /* autoplay refused · beeps still work */ });
     setNowPlaying(slug);
   }, [nextTrack]);
+  useEffect(() => { playNextRef.current = playNext; }, [playNext]);
   const stopMusic = useCallback(() => {
     music.current?.pause();
     if (music.current) music.current.currentTime = 0;
     setNowPlaying(null);
   }, []);
-  // Music follows the session: starts with Start, pauses with Pause, stops at the end.
+  // Music follows the session: Start and Resume play (from the tap, iOS wants that), Pause pauses,
+  // the end or an exit stops and forgets what was played.
   useEffect(() => {
-    if (status === "running") { if (music.current?.src && music.current.paused && nowPlaying) music.current.play().catch(() => {}); else if (!nowPlaying) playNext(); }
-    else if (status === "paused") music.current?.pause();
-    else { stopMusic(); played.current = []; }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- nowPlaying is read, not a trigger
-  }, [status, playNext, stopMusic]);
+    if (status === "paused") music.current?.pause();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- stopping the player clears the "now playing" line
+    else if (status === "idle" || status === "done") { stopMusic(); played.current = []; }
+  }, [status, stopMusic]);
   useEffect(() => () => { stopMusic(); cues.silence(); }, [stopMusic]);  // leaving the page stops everything
 
   // Movement names are editable · renames live on the phone BY MOVE KEY (cc-stretch-names-v3).
@@ -131,12 +133,13 @@ export default function StretchPage() {
   const [renames, setRenames] = useState<Record<string, string>>({});
   const moves = MOVES.map((m) => renames[m.key]?.trim() || m.name);
   const movesRef = useRef<string[]>(MOVE_NAMES);
-  movesRef.current = moves;
+  useEffect(() => { movesRef.current = moves; });
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
   useEffect(() => {
     try {
       const v3 = JSON.parse(localStorage.getItem("cc-stretch-names-v3") ?? "null");
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the phone's renames after mount
       if (v3 && typeof v3 === "object" && !Array.isArray(v3)) { setRenames(v3 as Record<string, string>); return; }
       const v2 = JSON.parse(localStorage.getItem("cc-stretch-names-v2") ?? "null");
       if (Array.isArray(v2)) {
@@ -256,6 +259,7 @@ export default function StretchPage() {
     cues.arm();
     setStatus("running");
     enterStep(0, false);
+    playNext();
   };
   const pause = () => {
     pausedRemaining.current = Math.max(0, phaseEndsAt.current - Date.now());
@@ -265,6 +269,7 @@ export default function StretchPage() {
     cues.arm();
     phaseEndsAt.current = Date.now() + pausedRemaining.current;
     setStatus("running");
+    if (music.current?.src) music.current.play().catch(() => {}); else playNext();
   };
   const skip = () => {
     let s = step + 1;
@@ -336,7 +341,7 @@ export default function StretchPage() {
           ▶ Start
         </button>
         <div style={{ fontSize: 14, color: "var(--ink-3)", display: "flex", justifyContent: "space-between", padding: "0 2px" }}>
-          <span>Music · a random epic track, another when it ends</span>
+          <span>Music · random, epic, never twice</span>
           <span style={{ fontFamily: "var(--f-mono)" }}>{STRETCH_TRACKS.length} tracks</span>
         </div>
 
