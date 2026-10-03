@@ -17,7 +17,7 @@ import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
 import { learnFromSend, learnStatus } from './learn-engine.mjs';
 import { transcribe, transcribeStatus, startDictation } from './transcribe.mjs';
-import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
+import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, MONTHS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
 import { startConsolidating } from './consolidate-engine.mjs';
@@ -136,7 +136,7 @@ async function api(req, res, path) {
       .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
     return json(res, 200, { threads, tm: tmFlagCounts(), tbc: openTbcAlerts().map((a) => ({ ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] })), salesHub: SALES_HUB_URL, plan: planStatus().ready ? { ...planCounts(planToday()), next: openPlanItems().filter((i) => i.kind !== 'ok' && i.kind !== 'wait').slice(0, 3).map((i) => ({ id: i.id, wa_id: i.wa_id, name: i.name, kind: i.kind, title: i.title, when_at: i.when_at })) } : null });
   }
-  if (path === '/api/directions') return json(res, 200, { moves: MOVES.map(({ id, label, sub, input }) => ({ id, label, sub: sub || null, input: input || null })), downsell: DOWNSELL.map((id) => ({ id, label: DOWNSELL_LABELS[id] })), acompte: ACOMPTE, formats: Object.entries(FORMATS).map(([id, f]) => ({ id, label: f.label })), levels: LEVELS });
+  if (path === '/api/directions') return json(res, 200, { months: MONTHS, moves: MOVES.map(({ id, label, sub, input }) => ({ id, label, sub: sub || null, input: input || null })), downsell: DOWNSELL.map((id) => ({ id, label: DOWNSELL_LABELS[id] })), acompte: ACOMPTE, formats: Object.entries(FORMATS).map(([id, f]) => ({ id, label: f.label })), levels: LEVELS });
   // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).
   if (path === '/api/tm') return json(res, 200, { flags: tmFlags(120), status: tmStatus() });
   if (path === '/api/tm/review' && req.method === 'POST') { tmReview('ali').catch(() => {}); return json(res, 200, { ok: true }); }
@@ -163,7 +163,7 @@ async function api(req, res, path) {
     if (!i) return json(res, 404, { error: 'Unknown card' });
     const state = ['done', 'dismissed', 'open'].includes(b.state) ? b.state : null;
     if (!state) return json(res, 400, { error: 'Unknown state' });
-    setPlanState(i.id, state, b.note ? String(b.note).slice(0, 300) : null);
+    setPlanState(i.id, state, b.note ? String(b.note).slice(0, 3000) : null);
     return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
   }
   if (path === '/api/push') {

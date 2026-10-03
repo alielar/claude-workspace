@@ -28,6 +28,7 @@ async function copyText(text, btn) {
 // piece as 16 kHz mono WAV to the Mac (Whisper large-v3-turbo, local); the piece being spoken is transcribed every
 // 2.5 s as a provisional text, replaced by the final one at the pause. Previous text gives the model its context.
 let rec = null; // { field, ctx, stream, src, node, rate, startedAt, timer, base, segs: [{id, text, final}], seg: chunks of the current piece, ... }
+const COPY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
 const MIC_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4M8 21h8"/></svg>';
 const micLabel = (field) => rec && rec.field === field ? `${MIC_ICON}<span>${Math.floor((Date.now() - rec.startedAt) / 60000)}:${String(Math.floor((Date.now() - rec.startedAt) / 1000) % 60).padStart(2, '0')}</span>` : `${MIC_ICON}<span>${rec ? 'Busy' : 'Dictate'}</span>`;
 const micHtml = (field) => `<button class="small mic${rec && rec.field === field ? ' rec' : ''}" type="button" data-mic="${field}" title="Dictate">${micLabel(field)}</button>`;
@@ -336,12 +337,14 @@ async function renderThread(waId, { quiet = false } = {}) {
        <details class="card fold"><summary>Send a template</summary>${tplBox}</details>`
     : `<div class="card"><p class="muted small">${d.messages.length ? '24h window closed: only a template can be sent.' : 'No conversation on the Sales number: a template can be sent.'}</p>${tplBox}</div>`;
 
-  app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <span class="muted small">+${waId}</span></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button></header>
+  app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <button class="icon" id="copynum" title="Copy +${waId}" aria-label="Copy the number">${COPY_ICON}</button></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
     ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${hasDraft ? steer : ''}${learnLine}${compose}${hasDraft ? '' : steer}`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
+  // Copy the lead's number from the header icon (Ali, 2026-10-03: the icon instead of the number itself).
+  if ($('#copynum')) $('#copynum').onclick = async () => { const b = $('#copynum'); try { await navigator.clipboard.writeText(`+${waId}`); b.classList.add('done'); toast('Number copied'); } catch { toast(`+${waId}`); } setTimeout(() => b.classList.remove('done'), 1400); };
   const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
   const askClaude = async (body) => { try { await api(`/api/thread/${waId}/suggest`, { method: 'POST', body }); toast('Claude is drafting, about a minute'); steerOpen = false; laterEdit = null; draftEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); } };
   // Sales Hub card
@@ -445,6 +448,8 @@ async function renderThread(waId, { quiet = false } = {}) {
 }
 
 // The initial offer (what the lead was offered on the call), typed once per lead; every downsell is computed from it.
+// Months from the product page's table (server: MONTHS), formula fallback for formats without a row.
+function monthsOf(D, od) { const hours = parseInt(od.format, 10), hpw = Number(od.hpw); if (!hours || !hpw) return ''; return D?.months?.[hours]?.[hpw] ?? Math.ceil(hours / (hpw * 4.33)); }
 function offerBoxHtml(D, od, d, forceOpen) {
   if (!D) return '';
   const open = forceOpen || offerOpen;
@@ -452,9 +457,9 @@ function offerBoxHtml(D, od, d, forceOpen) {
     ${open ? `<div class="chips" style="margin-top:8px">${D.formats.map((f) => chip('fmt', f.id, f.label, od.format === f.id)).join('')}</div>
     <div class="chips">${D.levels.map((l) => chip('lvlobj', l, `→ ${l}`, od.level === l)).join('')}</div>
     <div class="chips">${[2, 3, 4, 5, 6, 7].map((h) => chip('hpw', String(h), `${h}h/week`, Number(od.hpw) === h)).join('')}</div>
-    <div class="row"><input id="months" type="number" inputmode="numeric" placeholder="months (auto)" value="${esc(od.months || '')}" style="max-width:130px">${forceOpen ? '' : `<button class="primary small" id="offersave">Save</button>`}${od.format && !forceOpen ? `<button class="small" id="offerclear">Clear</button>` : ''}</div>` : ''}</div>`;
+    <div class="row">${od.format && od.hpw ? `<span class="small">≈ <b>${monthsOf(D, od)}</b> months</span>` : '<span class="muted small">months follow from the format and the hours/week</span>'}${forceOpen ? '' : `<button class="primary small" id="offersave">Save</button>`}${od.format && !forceOpen ? `<button class="small" id="offerclear">Clear</button>` : ''}</div>` : ''}</div>`;
 }
-async function saveOffer(waId) { if (!offerDraft) return; offerDraft.months = $('#months')?.value || ''; await api(`/api/thread/${waId}/offer`, { method: 'POST', body: offerDraft }); offerOpen = false; offerDraft = null; }
+async function saveOffer(waId) { if (!offerDraft) return; offerDraft.months = ''; await api(`/api/thread/${waId}/offer`, { method: 'POST', body: offerDraft }); offerOpen = false; offerDraft = null; }
 function bindOffer(waId, d) {
   const redraw = () => { lastThreadKey = ''; renderThread(waId).catch((e) => toast(e.message)); };
   const ensure = () => { offerDraft ||= { ...(d.offer || { format: '', level: '', hpw: '', months: '' }) }; };

@@ -13,7 +13,15 @@ export const FORMATS = {
 };
 export const LEVELS = ['A2', 'B1', 'B2', 'C1'];
 const below = (lvl) => LEVELS[Math.max(0, LEVELS.indexOf(lvl) - 1)] || lvl;
-export const monthsFor = (hours, hpw) => hours && hpw ? Math.ceil(hours / (hpw * 4.33)) : null; // 180h at 4h/sem → 11 mois, 90h → 6
+// Months per format and hours/week, from playbook/01-NUMBERS-PRODUCT-france.md (the product page is the source of truth,
+// Ali 2026-10-03: « you already know how many months it takes »). Formats without a row fall back to the formula.
+export const MONTHS = {
+  270: { 3: 23, 4: 17, 5: 14, 6: 12, 7: 10 },
+  180: { 2: 22, 3: 15, 4: 11, 5: 10, 6: 8, 7: 7 },
+  90: { 2: 11, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3 },
+  96: { 2: 12, 3: 8, 4: 6, 5: 5 },
+};
+export const monthsFor = (hours, hpw) => hours && hpw ? (MONTHS[hours]?.[hpw] ?? Math.ceil(hours / (hpw * 4.33))) : null;
 // Currency by market (Ali, 30/09/2026): same figures everywhere, € for France/Belgium, CHF for Switzerland.
 export const currencyFor = (country) => /^(switzerland|suisse|schweiz|ch)$/i.test(String(country || '').trim()) ? 'CHF' : '€';
 const money = (n, cur = '€') => n == null ? '[PRIX]' : `${n} ${cur}`;
@@ -23,7 +31,7 @@ const monthly = (price, cur = '€') => price == null ? '[MENSUALITÉ]' : `${Mat
 export function describeOffer(o, cur = '€') {
   if (!o?.format || !FORMATS[o.format]) return '';
   const f = FORMATS[o.format];
-  const m = o.months || monthsFor(f.hours, o.hpw);
+  const m = monthsFor(f.hours, o.hpw) || o.months; // the product page's table first; a stored months value is only a fallback (Ali, 2026-10-03)
   return `${o.format}${o.level ? ` → ${o.level}` : ''}${o.hpw ? ` · ${o.hpw}h/sem` : ''}${m ? ` · ${m} mois` : ''} · ${money(f.price, cur)}${f.price ? ` (${monthly(f.price, cur)})` : ''}${f.guarantee ? ' · garantie' : ' · sans garantie'}`;
 }
 
@@ -57,7 +65,7 @@ export const ACOMPTE = ['196', '96'];
 // cur = '€' or 'CHF' (currencyFor(thread.country)): every figure in the block carries the lead's currency.
 export function describeDirection(d = {}, offer = null, cur = '€') {
   const moves = (Array.isArray(d.moves) ? d.moves : String(d.moves || '').split(',')).map((x) => x.trim()).filter((x) => MOVES.some((m) => m.id === x));
-  const ins = String(d.instruction || '').trim().slice(0, 600);
+  const ins = String(d.instruction || '').trim().slice(0, 6000); // was 600: a dictated consigne lost its end before reaching Claude (Ali, 2026-10-03)
   // A consigne that asks for the administration mechanism in words counts as the move (Ali, 2026-10-03: « give me the two batches
   // of bubbles also when I only type the instruction, not only when I tick the button »).
   if (!moves.includes('admin') && /administr|deux (temps|étapes|parties|blocs|messages)|2 (temps|étapes|parties|blocs)|two[- ]?(step|part|batch)|second (bloc|temps|message)|bonne nouvelle/i.test(ins)) moves.unshift('admin');
