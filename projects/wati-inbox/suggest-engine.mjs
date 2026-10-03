@@ -101,8 +101,24 @@ async function pump() {
   finally { running = null; }
 }
 
+// At startup: the 60-s timers live in memory, so a restart right after a lead's message lost the draft (Alex, 2026-10-03:
+// message 19:59, app restarted 19:59:43, no draft after 5 min). Re-arm every open thread where the lead wrote last and
+// no suggestion is newer than that message.
+function restoreAutoDrafts() {
+  const since = new Date(Date.now() - 24 * 3600e3).toISOString();
+  const rows = db.prepare('SELECT wa_id, name, last_inbound_at FROM threads WHERE last_inbound_at >= ? AND (last_outbound_at IS NULL OR last_outbound_at < last_inbound_at) AND COALESCE(muted, 0) = 0').all(since);
+  let n = 0;
+  for (const r of rows) {
+    const s = db.prepare('SELECT created_at FROM suggestions WHERE wa_id = ? ORDER BY id DESC LIMIT 1').get(r.wa_id);
+    if (s && s.created_at >= r.last_inbound_at) continue; // a draft (or a « needs »/« skip ») already answers this message
+    if (scheduleAutoDraft(r.wa_id)) { n++; log(`restore: draft re-armed for ${r.name || r.wa_id} (lead wrote ${r.last_inbound_at.slice(11, 16)}Z, nothing drafted since)`); }
+  }
+  if (!n) log('restore: no lead message waiting for a draft');
+}
+
 export function startSuggesting() {
   mkdirSync('logs', { recursive: true });
+  try { restoreAutoDrafts(); } catch (e) { log('restore error:', e.message); }
   setInterval(() => pump().catch((e) => log('pump error:', e.message)), 3_000);
   log(`ready — model ${MODEL}, auto draft ${Math.round(AUTO_DELAY_MS / 1000)} s after a lead's last bubble (max ${AUTO_MAX_PER_DAY}/day), Ali can steer`);
 }
