@@ -20,14 +20,21 @@ async function getModel() {
   return genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 }
 
-/** One prompt → text, Gemini first (free), Claude Haiku second. Null when neither is configured or both fail. */
-async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
+/** The last failure seen by askAI · for the podcast's lastError line. */
+export let lastAiError: string | null = null;
+
+/** One prompt → text, Gemini first (free), Claude Haiku second. Null when neither is configured or both fail.
+ * Exported 2026-10-04: the weekly brief and both podcast scripts use it too · the Anthropic account ran
+ * out of credits that night and the free Gemini tier keeps the morning alive. */
+export async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
+  lastAiError = null;
   const model = await getModel();
   if (model) {
     try {
-      const result = await model.generateContent(prompt);
-      return result.response.text().trim();
-    } catch { /* fall through to Haiku */ }
+      const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: Math.min(8192, maxTokens) } });
+      const t = result.response.text().trim();
+      if (t) return t;
+    } catch (e) { lastAiError = `gemini: ${String((e as Error).message).slice(0, 120)}`; }
   }
   if (process.env.ANTHROPIC_API_KEY) {
     try {
@@ -39,7 +46,7 @@ async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
         messages: [{ role: "user", content: prompt }],
       });
       return (message.content[0] as { type: string; text: string }).text?.trim() ?? null;
-    } catch { /* give up quietly */ }
+    } catch (e) { lastAiError = `${lastAiError ? `${lastAiError} · ` : ""}haiku: ${String((e as Error).message).slice(0, 160)}`; }
   }
   return null;
 }

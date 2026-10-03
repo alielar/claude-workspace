@@ -17,6 +17,7 @@ import { db } from "@/db";
 import { footballMeta, ytVideos } from "@/db/schema";
 import { and, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { ALL_CHANNELS, DAILY_PICKS, LATER_WINDOW_DAYS, WATCH_LATER, channelById, type Channel } from "@/lib/news/channels";
+import { searchVideos } from "@/lib/news/youtubeSearch";
 
 export type Video = {
   videoId: string;
@@ -36,7 +37,8 @@ export type VideoFeed = {
 
 const POLL_EVERY_MS = 30 * 60_000;
 const PER_CHANNEL = 5;
-const DURATION_BUDGET = 24;         // lengths read per poll (the player endpoint is a few KB each)
+const DURATION_BUDGET = 24;
+const SEARCH_BUDGET = 6;            // search-page lookups per poll (~1 MB each)         // lengths read per poll (the player endpoint is a few KB each)
 const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "accept-language": "en" };
 
 async function ensureTable() {
@@ -91,16 +93,17 @@ async function fetchFeed(channelId: string): Promise<FeedEntry[]> {
 
 /** The innertube clients tried in order · a server IP gets a "sign in" wall on the web client for fresh
  * videos, the embedded-TV and mobile clients usually still answer. */
-const PLAYER_CLIENTS: { name: string; client: Record<string, unknown>; headers?: Record<string, string>; thirdParty?: boolean }[] = [
+const PLAYER_CLIENTS: { name: string; client: Record<string, unknown>; headers?: Record<string, string>; thirdParty?: boolean; key?: string }[] = [
   { name: "WEB", client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en" } },
   { name: "TV_EMBED", client: { clientName: "TVHTML5_SIMPLY_EMBEDDED_PLAYER", clientVersion: "2.0", hl: "en" }, thirdParty: true },
-  { name: "ANDROID", client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30, hl: "en", osName: "Android", osVersion: "11" }, headers: { "user-agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip", "x-youtube-client-name": "3", "x-youtube-client-version": "19.09.37" } },
-  { name: "IOS", client: { clientName: "IOS", clientVersion: "19.09.3", deviceModel: "iPhone14,3", hl: "en", osName: "iPhone", osVersion: "15.6.0.19G71" }, headers: { "user-agent": "com.google.ios.youtube/19.09.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)", "x-youtube-client-name": "5", "x-youtube-client-version": "19.09.3" } },
+  // The mobile apps' public keys (the ones every client ships with · yt-dlp uses the same).
+  { name: "ANDROID", key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w", client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30, hl: "en", gl: "US", osName: "Android", osVersion: "11", platform: "MOBILE" }, headers: { "user-agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip", "x-youtube-client-name": "3", "x-youtube-client-version": "19.09.37" } },
+  { name: "IOS", key: "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc", client: { clientName: "IOS", clientVersion: "19.09.3", deviceModel: "iPhone14,3", hl: "en", gl: "US", osName: "iPhone", osVersion: "15.6.0.19G71", platform: "MOBILE" }, headers: { "user-agent": "com.google.ios.youtube/19.09.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)", "x-youtube-client-name": "5", "x-youtube-client-version": "19.09.3" } },
   { name: "MWEB", client: { clientName: "MWEB", clientVersion: "2.20240101.00.00", hl: "en" }, headers: { "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" } },
 ];
 
 async function playerLength(videoId: string, c: typeof PLAYER_CLIENTS[number]): Promise<{ sec: number | null; status: number; note: string }> {
-  const res = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
+  const res = await fetch(`https://www.youtube.com/youtubei/v1/player?prettyPrint=false${c.key ? `&key=${c.key}` : ""}`, {
     method: "POST", headers: { "content-type": "application/json", "user-agent": UA["user-agent"], ...(c.headers ?? {}) }, signal: AbortSignal.timeout(8000),
     body: JSON.stringify({ context: { client: c.client, ...(c.thirdParty ? { thirdParty: { embedUrl: "https://www.youtube.com/" } } : {}) }, videoId, contentCheckOk: true, racyCheckOk: true }),
   });
@@ -108,6 +111,15 @@ async function playerLength(videoId: string, c: typeof PLAYER_CLIENTS[number]): 
   const sec = Number(text.match(/"lengthSeconds":"(\d+)"/)?.[1]);
   const note = text.match(/"status":"([A-Z_]+)"/)?.[1] ?? "";
   return { sec: Number.isFinite(sec) && sec > 0 ? sec : null, status: res.status, note };
+}
+
+/** Last resort: YouTube's search results page names the length of every hit (the highlights code reads
+ * it the same way, and that works from Vercel) · about 1 MB a call, so a few per poll. */
+async function searchLength(videoId: string, title: string): Promise<number | null> {
+  try {
+    const hits = await searchVideos(title.slice(0, 80));
+    return hits.find((h) => h.videoId === videoId)?.seconds ?? null;
+  } catch { return null; }
 }
 
 /** The video's length · the innertube clients in order, then the watch page. Null when nothing answered. */
@@ -164,9 +176,11 @@ export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ adde
   // progress, a premiere) is left null and tried again next time; after 45 days it is gone anyway.
   let measured = 0;
   let sample: unknown = null;
-  const pending = await db.select({ videoId: ytVideos.videoId }).from(ytVideos).where(isNull(ytVideos.durationSec)).orderBy(desc(ytVideos.publishedAt)).limit(DURATION_BUDGET).catch((e) => { errors.push(`pending: ${String((e as Error).message).slice(0, 80)}`); return []; });
+  const pending = await db.select({ videoId: ytVideos.videoId, title: ytVideos.title }).from(ytVideos).where(isNull(ytVideos.durationSec)).orderBy(desc(ytVideos.publishedAt)).limit(DURATION_BUDGET).catch((e) => { errors.push(`pending: ${String((e as Error).message).slice(0, 80)}`); return []; });
+  let searches = 0;
   for (const p of pending) {
-    const sec = await readDuration(p.videoId);
+    let sec = await readDuration(p.videoId);
+    if (sec === null && searches < SEARCH_BUDGET) { searches += 1; sec = await searchLength(p.videoId, p.title); }
     if (sample === null) sample = { videoId: p.videoId, sec };
     if (sec === null) continue;
     // Shorts and clips under 75 s do not belong on the page · 0 marks "measured, not shown".

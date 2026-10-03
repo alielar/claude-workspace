@@ -40,6 +40,7 @@ import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
 import { isWeekKey, prettyRange, weeklyMaterials, type WeeklyBrief } from "@/lib/news/weekly";
+import { askAI, lastAiError } from "@/lib/news/summarize";
 
 // Free Microsoft voices worth hearing for a breakfast brief (Edge "Conversation" set):
 //   en-US-BrianMultilingualNeural  · approachable, casual, sincere (the current one)
@@ -186,22 +187,13 @@ function storiesBlock(brief: NewsBrief, max = 20): string {
     .join("\n\n");
 }
 
-/** The last failure of the writer · surfaced in `lastError` so a silent null has a reason. */
+/** The script writer · Gemini (free) first, Haiku second (summarize.ts askAI); the failure reason rides in lastError. */
 let lastHaikuError: string | null = null;
 async function haiku(prompt: string, maxTokens: number): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) { lastHaikuError = "no ANTHROPIC_API_KEY"; return null; }
-  try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic();
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    });
-    const text = (message.content[0] as { type: string; text: string }).text?.trim();
-    if (!text || text.length <= 200) lastHaikuError = `short answer (${text?.length ?? 0} chars · stop ${message.stop_reason})`;
-    return text && text.length > 200 ? text : null;
-  } catch (e) { lastHaikuError = String((e as Error).message).slice(0, 200); return null; }
+  const text = await askAI(prompt, maxTokens);
+  lastHaikuError = text ? null : (lastAiError ?? "no answer");
+  if (!text || text.length <= 200) { if (text) lastHaikuError = `short answer (${text.length} chars)`; return null; }
+  return text;
 }
 
 // ── Length ────────────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ import { newsBriefs, weeklyBriefs } from "@/db/schema";
 import { and, between, desc, eq, sql } from "drizzle-orm";
 import { noDash } from "@/lib/utils";
 import type { NewsBrief, NewsStory } from "@/lib/news-brief";
+import { askAI } from "@/lib/news/summarize";
 
 export type WeeklySection = { key: "tech" | "business" | "geopolitics"; label: string; color: string; stories: NewsStory[] };
 export type WeeklyBrief = {
@@ -106,15 +107,8 @@ export async function listWeeks(userId: string, n = 12): Promise<{ week: string;
 }
 
 // ─── Writing ──────────────────────────────────────────────────────────────────
-async function haiku(prompt: string, maxTokens: number): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
-  try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic();
-    const message = await client.messages.create({ model: "claude-haiku-4-5-20251001", max_tokens: maxTokens, messages: [{ role: "user", content: prompt }] });
-    return (message.content[0] as { type: string; text: string }).text?.trim() ?? null;
-  } catch { return null; }
-}
+/** Gemini (free) first, Haiku second · see summarize.ts askAI. */
+const haiku = (prompt: string, maxTokens: number) => askAI(prompt, maxTokens);
 const parseJson = <T,>(text: string): T | null => {
   try { return JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "")) as T; } catch { return null; }
 };
