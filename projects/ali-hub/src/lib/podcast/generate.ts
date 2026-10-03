@@ -186,8 +186,10 @@ function storiesBlock(brief: NewsBrief, max = 20): string {
     .join("\n\n");
 }
 
+/** The last failure of the writer · surfaced in `lastError` so a silent null has a reason. */
+let lastHaikuError: string | null = null;
 async function haiku(prompt: string, maxTokens: number): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!process.env.ANTHROPIC_API_KEY) { lastHaikuError = "no ANTHROPIC_API_KEY"; return null; }
   try {
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
     const client = new Anthropic();
@@ -197,8 +199,9 @@ async function haiku(prompt: string, maxTokens: number): Promise<string | null> 
       messages: [{ role: "user", content: prompt }],
     });
     const text = (message.content[0] as { type: string; text: string }).text?.trim();
+    if (!text || text.length <= 200) lastHaikuError = `short answer (${text?.length ?? 0} chars · stop ${message.stop_reason})`;
     return text && text.length > 200 ? text : null;
-  } catch { return null; }
+  } catch (e) { lastHaikuError = String((e as Error).message).slice(0, 200); return null; }
 }
 
 // ── Length ────────────────────────────────────────────────────────────────────
@@ -494,7 +497,7 @@ async function produceEpisode(userId: string, date: string, p: Produce): Promise
     const written = await p.write();
     if (!written) {
       await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
-      return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: "script generation failed" };
+      return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: `script generation failed${lastHaikuError ? ` · ${lastHaikuError}` : ""}` };
     }
     script = written.script;
     // Date lint (the "yesterday" bug): relative day words about events → one

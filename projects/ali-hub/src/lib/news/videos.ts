@@ -89,20 +89,32 @@ async function fetchFeed(channelId: string): Promise<FeedEntry[]> {
   return out;
 }
 
-/** The video's length · first from YouTube's own small player endpoint (works even when the video is
- * not playable from a server), then from the watch page · null when neither said. */
+/** The innertube clients tried in order · a server IP gets a "sign in" wall on the web client for fresh
+ * videos, the embedded-TV and mobile clients usually still answer. */
+const PLAYER_CLIENTS: { name: string; client: Record<string, unknown>; headers?: Record<string, string>; thirdParty?: boolean }[] = [
+  { name: "WEB", client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en" } },
+  { name: "TV_EMBED", client: { clientName: "TVHTML5_SIMPLY_EMBEDDED_PLAYER", clientVersion: "2.0", hl: "en" }, thirdParty: true },
+  { name: "ANDROID", client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30, hl: "en", osName: "Android", osVersion: "11" }, headers: { "user-agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip", "x-youtube-client-name": "3", "x-youtube-client-version": "19.09.37" } },
+  { name: "IOS", client: { clientName: "IOS", clientVersion: "19.09.3", deviceModel: "iPhone14,3", hl: "en", osName: "iPhone", osVersion: "15.6.0.19G71" }, headers: { "user-agent": "com.google.ios.youtube/19.09.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)", "x-youtube-client-name": "5", "x-youtube-client-version": "19.09.3" } },
+  { name: "MWEB", client: { clientName: "MWEB", clientVersion: "2.20240101.00.00", hl: "en" }, headers: { "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" } },
+];
+
+async function playerLength(videoId: string, c: typeof PLAYER_CLIENTS[number]): Promise<{ sec: number | null; status: number; note: string }> {
+  const res = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
+    method: "POST", headers: { "content-type": "application/json", "user-agent": UA["user-agent"], ...(c.headers ?? {}) }, signal: AbortSignal.timeout(8000),
+    body: JSON.stringify({ context: { client: c.client, ...(c.thirdParty ? { thirdParty: { embedUrl: "https://www.youtube.com/" } } : {}) }, videoId, contentCheckOk: true, racyCheckOk: true }),
+  });
+  const text = await res.text();
+  const sec = Number(text.match(/"lengthSeconds":"(\d+)"/)?.[1]);
+  const note = text.match(/"status":"([A-Z_]+)"/)?.[1] ?? "";
+  return { sec: Number.isFinite(sec) && sec > 0 ? sec : null, status: res.status, note };
+}
+
+/** The video's length · the innertube clients in order, then the watch page. Null when nothing answered. */
 async function readDuration(videoId: string): Promise<number | null> {
-  try {
-    const res = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
-      method: "POST", headers: { "content-type": "application/json", "user-agent": UA["user-agent"] }, signal: AbortSignal.timeout(8000),
-      body: JSON.stringify({ context: { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en" } }, videoId }),
-    });
-    if (res.ok) {
-      const j = (await res.json()) as { videoDetails?: { lengthSeconds?: string; isLiveContent?: boolean } };
-      const n = Number(j.videoDetails?.lengthSeconds);
-      if (Number.isFinite(n) && n > 0) return n;
-    }
-  } catch { /* fall through to the page */ }
+  for (const c of PLAYER_CLIENTS) {
+    try { const r = await playerLength(videoId, c); if (r.sec) return r.sec; } catch { /* next client */ }
+  }
   try {
     const res = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, { headers: UA, signal: AbortSignal.timeout(9000) });
     if (!res.ok) return null;
@@ -117,19 +129,9 @@ async function readDuration(videoId: string): Promise<number | null> {
 /** Diagnostics: what each length source answers for one video (the page shows nothing of this). */
 export async function probeDuration(videoId: string): Promise<Record<string, unknown>> {
   const out: Record<string, unknown> = {};
-  try {
-    const res = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
-      method: "POST", headers: { "content-type": "application/json", "user-agent": UA["user-agent"] }, signal: AbortSignal.timeout(8000),
-      body: JSON.stringify({ context: { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en" } }, videoId }),
-    });
-    const text = await res.text();
-    out.player = { status: res.status, len: text.length, lengthSeconds: text.match(/"lengthSeconds":"(\d+)"/)?.[1] ?? null, head: text.slice(0, 160) };
-  } catch (e) { out.player = { error: String((e as Error).message).slice(0, 120) }; }
-  try {
-    const res = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, { headers: UA, signal: AbortSignal.timeout(9000) });
-    const html = await res.text();
-    out.page = { status: res.status, len: html.length, lengthSeconds: html.match(/"lengthSeconds":"(\d+)"/)?.[1] ?? null, consent: /consent\.youtube\.com/.test(html) };
-  } catch (e) { out.page = { error: String((e as Error).message).slice(0, 120) }; }
+  for (const c of PLAYER_CLIENTS) {
+    try { out[c.name] = await playerLength(videoId, c); } catch (e) { out[c.name] = { error: String((e as Error).message).slice(0, 100) }; }
+  }
   return out;
 }
 
