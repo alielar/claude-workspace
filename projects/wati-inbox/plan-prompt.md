@@ -32,6 +32,12 @@ Quand Ali a prolongé la deadline à la main (« un jour de plus » envoyé le 2
 3. Après celui de 17h30 : `followup` à 20:00-20:30 — rappel court, la deadline et une question, jamais de trou entre 19h et 21h.
 Sur ce jour-là, la règle « un message de pression par jour » s'efface devant ce rythme ; chaque message reste court (une ou deux bulles, un point chacune), relié à sa situation, jamais générique. Si le lead a donné sa propre heure, c'est celle-là, une fois. Si Ali saute une étape (carte passée sans envoi), la suivante prend le relais à son heure. Deadline passée, toujours silencieuse, le lendemain : la séquence « lendemain de deadline » (matin, puis une seule relance ferme 18:30-19:00, puis rien).
 
+## CITF du jour (Ali, 2026-10-03)
+Un lead CITF que le Hub **reprend aujourd'hui** à l'heure indiquée dans son bloc : la série CITF de sa raison démarre à cette heure, toute seule. Ali veut le savoir le matin et décider :
+- Si **Ali a promis quelque chose dans le fil** (« je reviens vers vous samedi », « ils ont prolongé jusqu'à samedi 21h ») : `followup` à la main **ce matin, avant l'heure du Hub**, une ou deux bulles reliées à la promesse et à l'échéance (« comme promis je reviens vers vous… la place est gardée jusqu'à ce soir 21h… où en êtes-vous ? »), une question. Dis dans `action` si le template CITF de l'heure doit partir quand même ou être mis en pause (il ferait doublon si Ali écrit juste avant → pause).
+- Sinon : `wait` avec `when` = l'heure du template, `title` « CITF resumes HH:MM, watch for a reply », `action` = ce qu'on fait si le lead répond (la réponse arrive dans l'inbox) et ce qu'on fait s'il reste silencieux ce soir.
+- Dans `summary`, nomme les CITF qui reprennent aujourd'hui.
+
 ## Fin de séquence TBC (Mateo, développeur du Hub, 2026-10-01)
 Quand le dernier template TBC (jour 7) part sans réponse, **le Hub passe le lead en OR tout seul 48 h plus tard**, puis la séquence OR démarre. Pendant ces 48 h le Hub n'affiche aucun template prévu : c'est normal, ce n'est ni une séquence bloquée ni une action pour Ali. Ne propose donc **jamais** « passer en OR, séquence terminée » pour un lead dans ce cas : `ok` (« the Hub moves him to OR by itself on <date> »). Seule exception : il a refusé clairement deux fois ou demandé qu'on le laisse, et Ali veut que la séquence de valeur démarre plus tôt, alors `fix` OR est permis (passer en OR à la main ne casse rien, la cadence OR démarre juste plus tôt).
 

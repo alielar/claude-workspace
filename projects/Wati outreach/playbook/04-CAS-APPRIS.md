@@ -1050,3 +1050,16 @@ Règles permanentes, intégrées dans `00-QUICK.md` (bloc « Revue du 29/09 »),
 **Comment appliquer :** Pour une clôture propre doublée d'une question de réouverture future (raison personnelle confirmée, aucun mécanisme commercial à jouer), tenir ça en 2 bulles — empathie courte puis directement la question de relance future — sans bulle « plein succès » séparée.
 
 <!-- consolidé jusqu'ici · 2026-10-02 22:19:37 -->
+
+## 2026-10-03 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+- 09:13 · Rim · **retouche** — Question diagnostic après refus vague : pas d'adjectif sur la réponse du lead, formulation au présent, virgules plutôt que deux-points (Ali retire "claire" (évite de qualifier/juger la réponse du lead), passe "a fait hésiter" au présent "fait hésiter" (moins définitif, laisse la porte ouverte), et remplace le deux-points par une virgule avant la liste d'options — cohérent avec le ton des templates auto déjà envoyés ("comme le prix, le timing ou la méthode"). Retouche de formulation, pas une nouvelle règle de fond ; la décision de poser la question diagnostique plutôt que clôturer venait déjà de sa consigne.)
+
+## 2026-10-03 — Les CITF du jour font partie du plan du matin
+**Situation :** Boris, CITF « a besoin de temps », reprise par le Hub aujourd'hui 15:00 (date donnée par le lead). Le 30/09 Ali lui avait écrit « ils ont prolongé votre délai jusqu'à samedi 21h… je reviens vers vous samedi », il a répondu « Oui très bien ». Le plan du jour ne le voyait pas : seuls les leads TBC et les leads en pause étaient regardés.
+**Ce que le lead a écrit :** « Oui trés bien. »
+**Ce que j'ai répondu :** n/a — question d'Ali sur le plan
+**Pourquoi :** un lead CITF que le Hub reprend aujourd'hui entre dans le plan du matin. Si Ali a promis quelque chose dans le fil, relance à la main le matin avant l'heure du Hub (fenêtre fermée → template approuvé), reliée à la promesse et à l'échéance, et le template de l'heure est décoché pour éviter le doublon ; sinon carte « wait » à l'heure du template, surveiller la réponse. L'en-tête du plan liste les CITF qui reprennent aujourd'hui.
+**Résultat :** carte Boris 10:00 « envoyer le template CITF à la main, décocher le 15:00, garder #25/#26 » ; en-tête « Resuming today (CITF): Boris 15:00 (needs time) »

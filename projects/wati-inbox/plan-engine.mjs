@@ -69,7 +69,13 @@ export function windowInfo(msgs, now = Date.now()) {
   return { open, closeAt, lastLead, lastAli, closingSoon, aliToday };
 }
 // A closing card has its own signature so it can follow a done/dismissed card of the same Hub state.
-const cardSig = (c) => hubSig(c.wa_id) + (c.reason === 'closing' ? '|closing' : '');
+const cardSig = (c) => hubSig(c.wa_id) + (c.reason === 'closing' ? '|closing' : c.reason === 'citf' ? '|citf' : '');
+// The Hub's CITF plan of a lead: { moment, momentLocal, case, dateSource, state } or null.
+export const citfOf = (r) => { try { const c = r?.citf ? JSON.parse(r.citf) : null; return c?.moment && c.state !== 'CANCELLED' ? c : null; } catch { return null; } };
+// The CITF leads the Hub resumes today, for the Plan screen's header (data, not a judgement).
+export const citfToday = (now = Date.now()) => hubLeadRows().filter((r) => r.status === 'CITF' && citfOf(r) && madrid(new Date(citfOf(r).moment)).slice(0, 10) === today())
+  .map((r) => { const c = citfOf(r); return { wa_id: r.wa_id, name: [r.name, r.last_name].filter(Boolean).join(' ') || r.wa_id, at: c.moment, case: CITF_CASES[c.case] || c.case || '', bySource: c.dateSource === 'lead' ? 'date given by the lead' : 'estimated date', passed: Date.parse(c.moment) < now }; })
+  .sort((a, b) => a.at.localeCompare(b.at));
 
 // Who matters today. reason: paused | closing | due | finished | stale.
 // Leads Ali took out of the plan for good (state key plan_ignore, JSON list of wa_ids): e.g. Ilyes, a minor whose
@@ -90,6 +96,9 @@ export function candidates(now = Date.now()) {
     // the empty gap between is normal, no card. Only a lead still TBC with nothing planned 72 h to 6 days after its last
     // template is a real anomaly worth a card (the automatic move did not happen).
     else if (r.status === 'TBC' && !r.next_tpl && r.last_reason_at && now - Date.parse(r.last_reason_at) >= 3 * 864e5 && now - Date.parse(r.last_reason_at) < 6 * 864e5) reason = 'finished';
+    // CITF lead the Hub resumes TODAY at its citf moment (Ali, 2026-10-03, Boris: « je reviens vers vous samedi » promised,
+    // the CITF series starts at 15:00 and the plan knew nothing). Ali must see them in the morning plan.
+    else if (r.status === 'CITF' && citfOf(r) && madrid(new Date(citfOf(r).moment)).slice(0, 10) === today()) reason = 'citf';
     if (!reason) continue;
     const t = getThread(r.wa_id);
     const msgs = t ? threadMessages(r.wa_id) : [];
@@ -133,8 +142,9 @@ export function leadBlock(c) {
     c.next_tpl ? `Prochain template selon le Hub : ${stepOf(c, c.next_tpl) ? `#${stepOf(c, c.next_tpl).stepIndex} ` : ''}${c.next_tpl} à ${fmt(c.next_at)}${Date.parse(c.next_at) < Date.now() - 3600e3 ? ' (DANS LE PASSÉ : probablement décoché par Ali)' : ''}${c.paused ? ' (ne partira pas tant que la pause tient)' : ''}` : 'Prochain template : aucun (séquence terminée)',
     tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
     upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
-    c.citf ? `Plan CITF : ${c.citf}` : '',
+    citfOf(c) ? `CITF : le Hub reprend ce lead le ${fmt(citfOf(c).moment)} (raison : ${CITF_CASES[citfOf(c).case] || citfOf(c).case || '-'}, date ${citfOf(c).dateSource === 'lead' ? 'donnée par le lead' : 'estimée'}) : à cette heure part le premier template de la série CITF correspondante (l'app n'en connaît pas le texte), puis la série continue si le lead ne répond pas.` : '',
     `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: `la fenêtre 24h se ferme à ${c.win?.closeAt ? fmtHM(new Date(c.win.closeAt).toISOString()) : '?'} et le lead n’a pas répondu au dernier message manuel d’Ali (${c.win?.aliToday ? 'envoyé aujourd’hui → seconde relance basse pression' : 'envoyé avant aujourd’hui, aucune relance aujourd’hui → relance courte et directe'}) avant la fermeture (règle « fenêtre qui se ferme »)`,
+      citf: `le Hub REPREND CE LEAD AUJOURD'HUI à ${citfOf(c) ? fmtHM(citfOf(c).moment) : '?'} (série CITF) → règle « CITF du jour »`,
       overdue: `la carte « ${c.overdueKind || 'wait'} » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée${c.overdueKind === 'followup' ? ' et Ali n’a pas envoyé ce message : propose l’étape suivante du rythme, pas la même' : ''} et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
@@ -238,7 +248,7 @@ export async function plan({ scope = 'due', reason = 'auto', dry = false, only =
         cands.push({ ...row, reason: 'sent', prior: null, thread: t, msgs, win: windowInfo(msgs) });
       }
     }
-    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || c.reason === 'overdue' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
+    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || c.reason === 'overdue' || c.reason === 'citf' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
     if (dry) { status.state = 'idle'; return { candidates: cands.map((c) => ({ wa_id: c.wa_id, name: c.name, reason: c.reason, status: c.status, next: c.next_tpl, at: c.next_at })) }; }
     if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
     let judged = 0; const summaries = [];

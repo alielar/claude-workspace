@@ -494,7 +494,7 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
 }
 async function renderPlan() {
-  const { items, counts, status, hub, salesHub } = await api('/api/plan');
+  const { items, counts, status, hub, salesHub, citf = [] } = await api('/api/plan');
   const running = status.state === 'running';
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
@@ -510,6 +510,7 @@ async function renderPlan() {
   const wait = open.filter((i) => i.kind === 'wait').sort(byTime), ok = open.filter((i) => i.kind === 'ok');
   app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Today <span class="muted small">${fmtDay(new Date().toISOString())}</span></h1><button id="replan" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Claude is reviewing…' : 'Replan'}</button></header>
     <p class="muted small">${status.ready ? `Sales Hub read ${hub.leadsAt ? ago(hub.leadsAt) : 'never'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'no plan yet'} · ${status.calls}/${status.max} reviews today` : 'Sales Hub not connected (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
+    ${citf.length ? `<p class="muted small">Resuming today (CITF): ${citf.map((c) => `<a data-nav href="/t/${c.wa_id}">${esc(c.name)}</a> ${fmtTime(c.at)}${c.case ? ` (${esc(c.case)})` : ''}${c.passed ? ' · sent' : ''}`).join(' · ')}</p>` : ''}
     ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
     ${sec('Now', todo)}${sec('Later today', later)}${sec('Waiting', wait)}
     ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
