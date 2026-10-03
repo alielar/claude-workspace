@@ -183,13 +183,13 @@ function dayItems(base: ChecklistItem[], clearTicks: boolean, kind: DayKind, shi
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
-function Row({ item, onToggle, compact = false, currentBook = null, flag }: {
+function Row({ item, onToggle, compact = false, currentBook = null, late = false }: {
   item: ChecklistItem;
   onToggle: (item: ChecklistItem) => void;
   compact?: boolean;
   currentBook?: string | null;
-  /** Small note under the title, e.g. "from this morning". */
-  flag?: string;
+  /** A routine step from an earlier part of the day, still open (Ali 2026-10-03): red, like "very important". */
+  late?: boolean;
 }) {
   const auto = item.source === "workout" || item.autoSource !== null;
   const done = item.completedToday;
@@ -208,7 +208,8 @@ function Row({ item, onToggle, compact = false, currentBook = null, flag }: {
   const action = routineAction(item);
   const actionClass = done ? "cc-btn cc-btn-ghost" : "cc-btn cc-btn-primary";
   const actionLabel = done ? "Again" : action?.label;
-  const notes = flag ?? (compact ? null : displayNotes(item, currentBook));
+  const notes = compact && !late ? null : displayNotes(item, currentBook);
+  const titleColor = done ? "var(--ink-3)" : late ? "var(--neg)" : "var(--ink)";
 
   // The virtual workout row (a KB session done today on an unplanned day) is a door to Train.
   if (item.source === "workout") {
@@ -229,18 +230,19 @@ function Row({ item, onToggle, compact = false, currentBook = null, flag }: {
       <button type="button" onClick={tickItem} disabled={auto} aria-pressed={done}
         style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 14, alignItems: "center", width: "100%", minHeight: compact ? 48 : 56, padding: compact ? "8px 4px" : "12px 4px", background: "transparent", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: auto ? "default" : "pointer", opacity: done ? 0.55 : 1, WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined}
-          style={{ position: "relative", width: 28, height: 28, borderRadius: 10, border: `2px solid ${showDone ? "transparent" : auto ? `${accent}66` : "var(--line-strong)"}`, background: showDone ? accent : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s, border-color 0.15s", flexShrink: 0 }}>
+          style={{ position: "relative", width: 28, height: 28, borderRadius: 10, border: `2px solid ${showDone ? "transparent" : late ? "var(--neg)" : auto ? `${accent}66` : "var(--line-strong)"}`, background: showDone ? accent : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s, border-color 0.15s", flexShrink: 0 }}>
           {showDone && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
           {celebrating && <span className="cc-done-ring" />}
         </span>
         <span style={{ minWidth: 0 }}>
-          <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: compact ? 14 : 16, fontWeight: 500, lineHeight: 1.3, color: done ? "var(--ink-3)" : "var(--ink)", textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
+          <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: compact && !late ? 14 : 16, fontWeight: 500, lineHeight: 1.3, color: titleColor, textDecoration: done ? "line-through" : "none", textDecorationColor: "var(--ink-4)" }}>
+            {late && !done && <span style={{ marginRight: 6, fontWeight: 700 }}>!!</span>}
             <Linkify text={item.title} />
           </span>
           {(item.atTime || notes) && (
-            <span style={{ display: "block", fontSize: 14, color: flag ? "var(--warn)" : "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
-              {item.atTime && <span style={{ fontFamily: "var(--f-mono)" }}>{item.atTime}{notes ? " · " : ""}</span>}
-              {notes && linkify(notes)}
+            <span style={{ display: "block", fontSize: 14, color: late && !done ? "var(--neg)" : "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
+              {item.atTime && <span style={{ fontFamily: "var(--f-mono)" }}>{item.atTime}</span>}
+              {notes && <span>{item.atTime ? " · " : ""}{linkify(notes)}</span>}
             </span>
           )}
         </span>
@@ -368,9 +370,10 @@ export default function TodayPage() {
   }, [setData, today]);
 
   // ── Checklist grouping ────────────────────────────────────────────────────
-  // Habits being built, the virtual workout row and the machine/kettlebell days are shown but never counted.
+  // Only ROUTINE steps count (Ali 2026-10-03) · an Extra, the virtual workout row and the
+  // machine/kettlebell days are shown but never counted.
   const machineDay = items.some(isMachine);
-  const counted = items.filter((i) => i.kind !== "habit" && i.source !== "workout" && !isMachine(i));
+  const counted = items.filter((i) => i.kind === "routine" && i.source !== "workout" && !isMachine(i));
   const total = counted.length;
   const doneCount = counted.filter((i) => i.completedToday).length;
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
@@ -399,6 +402,7 @@ export default function TodayPage() {
   const [openTodo, setOpenTodo] = useState<Todo | null>(null);
 
   const [opened, setOpened] = useState<Set<DayPart>>(new Set()); // past segments reopened by tap
+  const [folded, setFolded] = useState<Set<DayPart>>(new Set()); // a past segment with late steps, folded by hand
 
   // ── Header · shared ───────────────────────────────────────────────────────
   const header = (
@@ -434,16 +438,19 @@ export default function TodayPage() {
       const todos = p === "evening"
         ? [...timedTodos.filter((t) => partOfTime(t.dueTime!) === "evening"), ...(part !== "evening" ? eveningTodos : [])]
         : timedTodos.filter((t) => partOfTime(t.dueTime!) === p);
-      const openCount = routine.filter((i) => !i.completedToday && i.kind !== "habit").length + todos.length;
+      const openCount = routine.filter((i) => !i.completedToday).length + todos.length;
       const status: "past" | "now" | "future" = PART_ORDER[p] < PART_ORDER[part] ? "past" : p === part ? "now" : "future";
+      // A ROUTINE step left open in a part of the day that has passed stays in view, in red
+      // (Ali 2026-10-03) · Extras, training days and to-dos are not chased this way.
+      const lateIds = new Set(status === "past" ? routine.filter((i) => !i.completedToday && i.kind === "routine" && i.source !== "workout" && !isMachine(i)).map((i) => i.id) : []);
       // One list in clock order · anything without an hour sits above the timed rows.
       const rows: { key: string; min: number; order: number; node: React.ReactNode }[] = [
         ...routine.map((i, n) => ({ key: `i${i.id}`, min: i.atTime ? minOf(i.atTime) : -1, order: n,
-          node: <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={status !== "now"} /> })),
+          node: <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={status !== "now"} late={lateIds.has(i.id)} /> })),
         ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n,
           node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} /> })),
       ].sort((a, b) => a.min - b.min || a.order - b.order);
-      return { p, routine, todos, rows, openCount, status };
+      return { p, routine, todos, rows, openCount, status, lateCount: lateIds.size };
     };
     const segs = PARTS.map(segFor);
     const nowIdx = PARTS.indexOf(part);
@@ -451,7 +458,7 @@ export default function TodayPage() {
     // Sunday · one plain card, no hours, nothing folded · steps first, then the to-dos that carry a time.
     if (kind === "sunday") {
       const sundayTodos = [...timedTodos].sort((a, b) => (a.dueTime! < b.dueTime! ? -1 : 1));
-      const open = items.filter((i) => !i.completedToday && i.kind !== "habit").length + sundayTodos.length;
+      const open = items.filter((i) => !i.completedToday).length + sundayTodos.length;
       return (
         <>
           {loose.length > 0 && (
@@ -500,9 +507,10 @@ export default function TodayPage() {
 
         <div style={{ display: "grid", gap: 0 }}>
           {segs.map((s, idx) => {
-            const collapsed = s.status === "past" && !opened.has(s.p);
+            const late = s.lateCount > 0;
+            const collapsed = s.status === "past" && (late ? folded.has(s.p) : !opened.has(s.p));
             const [from, to] = PART_HOURS[s.p];
-            const dotColor = s.status === "past" ? "var(--pos)" : s.status === "now" ? "var(--violet)" : "var(--line-strong)";
+            const dotColor = late ? "var(--neg)" : s.status === "past" ? "var(--pos)" : s.status === "now" ? "var(--violet)" : "var(--line-strong)";
             return (
               <div key={s.p}>
                 <div style={{ display: "grid", gridTemplateColumns: "52px 1fr", gap: 10, position: "relative", paddingBottom: 14 }}>
@@ -511,19 +519,19 @@ export default function TodayPage() {
                   </div>
                   <span aria-hidden style={{ position: "absolute", left: 58, top: 0, bottom: 0, width: 2, background: "var(--line)" }} />
                   <span aria-hidden style={{ position: "absolute", left: 53, top: 18, width: 12, height: 12, borderRadius: "50%", background: s.status === "future" ? "var(--bg-chrome)" : dotColor, border: `2px solid ${dotColor}`, boxShadow: s.status === "now" ? "0 0 0 4px var(--accent-soft)" : "none" }} />
-                  <section className="cc-card" style={{ marginLeft: 14, borderColor: s.status === "now" ? "var(--violet)" : undefined, borderStyle: s.status === "past" ? "dashed" : undefined, background: s.status === "past" ? "transparent" : undefined, opacity: s.status === "future" ? 0.75 : 1 }}>
+                  <section className="cc-card" style={{ marginLeft: 14, borderColor: late ? "var(--neg)" : s.status === "now" ? "var(--violet)" : undefined, borderStyle: s.status === "past" && !late ? "dashed" : undefined, background: s.status === "past" && !late ? "transparent" : undefined, opacity: s.status === "future" ? 0.75 : 1 }}>
                     {collapsed ? (
-                      <button type="button" onClick={() => setOpened((o) => new Set(o).add(s.p))}
-                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
-                        <span><b style={{ fontWeight: 500, color: "var(--ink-2)" }}>{PART_TITLE[s.p]}</b> · {s.openCount === 0 ? "✓ all done" : `${s.openCount} left open`}</span><span>▾</span>
+                      <button type="button" onClick={() => { if (late) setFolded((o) => { const n = new Set(o); n.delete(s.p); return n; }); else setOpened((o) => new Set(o).add(s.p)); }}
+                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: late ? "var(--neg)" : "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
+                        <span><b style={{ fontWeight: 500, color: late ? "var(--neg)" : "var(--ink-2)" }}>{PART_TITLE[s.p]}</b> · {s.openCount === 0 ? "✓ all done" : late ? `${s.lateCount} routine step${s.lateCount === 1 ? "" : "s"} still open` : `${s.openCount} left open`}</span><span>▾</span>
                       </button>
                     ) : (
                       <>
-                        <div className="cc-card-head" onClick={s.status === "past" ? () => setOpened((o) => { const n = new Set(o); n.delete(s.p); return n; }) : undefined}
+                        <div className="cc-card-head" onClick={s.status === "past" ? () => { if (late) setFolded((o) => new Set(o).add(s.p)); else setOpened((o) => { const n = new Set(o); n.delete(s.p); return n; }); } : undefined}
                           role={s.status === "past" ? "button" : undefined} style={s.status === "past" ? { cursor: "pointer" } : undefined}>
-                          <span className="title">{PART_TITLE[s.p]}</span>
-                          <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                            {s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}{s.status === "past" && <span aria-hidden> ▴</span>}
+                          <span className="title" style={late ? { color: "var(--neg)" } : undefined}>{PART_TITLE[s.p]}</span>
+                          <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10, color: late ? "var(--neg)" : undefined }}>
+                            {late ? `${s.lateCount} still open` : <>{s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}</>}{s.status === "past" && <span aria-hidden> ▴</span>}
                             {s.status === "now" && <Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
                           </span>
                         </div>
@@ -680,7 +688,7 @@ function TomorrowCard({ today, plan, todos, onOpen }: { today: string; plan: Mor
   );
 }
 
-/** One quiet line inside the spine's Morning segment: the wake time (Saturday: shifted), tap → Settings. */
+/** One quiet line inside the spine's Morning segment: the wake time (Saturday: shifted), tap → Routine (the morning clock lives there). */
 function MorningCardLine({ machineDay, plan, kind }: { machineDay: boolean; plan: MorningPlan; kind: DayKind }) {
   const { data: ov } = useOverview();
   const sched = ov?.schedule ?? null;
@@ -688,10 +696,10 @@ function MorningCardLine({ machineDay, plan, kind }: { machineDay: boolean; plan
   const { wake, callsAt, bufferMin } = computeMorning(plan, isTraining, kind);
   const link: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 36, padding: "6px 4px", fontSize: 13.5, color: "var(--ink-4)", textDecoration: "none", borderBottom: "1px solid var(--line)" };
   if (kind === "sunday") {
-    return <Link href="/settings" style={link}><span>Sunday · no fixed times · {isTraining ? "training day" : "rest day"}</span></Link>;
+    return <Link href="/checklist" style={link}><span>Sunday · no fixed times · {isTraining ? "training day" : "rest day"}</span></Link>;
   }
   return (
-    <Link href="/settings" style={link}>
+    <Link href="/checklist" style={link}>
       <span>Wake {wake} · {isTraining ? "training day" : "rest day"} · calls {callsAt}{kind === "saturday" ? ` · Saturday, +${plan.saturdayShiftMin} min` : ""}</span>
       <span style={{ color: bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>{bufferMin >= 0 ? `${bufferMin} min spare` : `${-bufferMin} min over`}</span>
     </Link>

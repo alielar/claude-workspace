@@ -3,11 +3,11 @@
 export type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
 
 /**
- * routine · fixed daily routine step (counts toward the day's streak)
- * habit   · being built; own streak, not counted in the day total until promoted
- * manual  · regular item
+ * routine · counts toward the day's streak
+ * manual  · "Extra" on screen: something being added (reading), tracked, NEVER counted
+ * (Ali 2026-10-03: the third kind, "habit", is gone · old rows were folded into manual.)
  */
-export type ItemKind = "routine" | "habit" | "manual";
+export type ItemKind = "routine" | "manual";
 
 export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs" | "gym-kb" | "mind";
 
@@ -97,5 +97,5 @@ export const ROUTINE_SEED: {
   // pre-write of the brief reads this row's weekdays.
   { routineKey: "mind",    title: "Mental training",     emoji: "", timeOfDay: "afternoon", kind: "routine", color: "violet", notes: "Callback 2 min · read the brief · speak 2 min", sortOrder: -25, weekdays: ["mon", "tue", "thu", "fri"] },
   { routineKey: "supp-pm", title: "Magnesium",           emoji: "🌙", timeOfDay: "evening", kind: "routine", color: "violet", notes: "Night supplement", sortOrder: -20 },
-  { routineKey: "read",    title: "Read before sleep",   emoji: "📚", timeOfDay: "evening", kind: "habit",   color: "pink",   notes: "A physical book, even ten pages", sortOrder: -10 },
+  { routineKey: "read",    title: "Read before sleep",   emoji: "📚", timeOfDay: "evening", kind: "manual",  color: "pink",   notes: "A physical book, even ten pages", sortOrder: -10 },
 ];

@@ -29,8 +29,8 @@ export async function PATCH(
   if (body.color !== undefined) updates.color = body.color;
   if (body.notes !== undefined) updates.notes = body.notes?.trim() || null;
   if (body.autoSource !== undefined) updates.autoSource = body.autoSource ?? null;
-  // kind: "routine" | "habit" | "manual" · promoting a habit = setting kind to "routine"
-  if (body.kind === "routine" || body.kind === "habit" || body.kind === "manual") updates.kind = body.kind;
+  // kind: "routine" (counts) | "manual" (Extra, never counts) · two kinds since 2026-10-03
+  if (body.kind === "routine" || body.kind === "manual") updates.kind = body.kind;
   // weekdays: ["mon","thu"] · null / [] = every day (2026-09-14, editable on /checklist)
   if (body.weekdays !== undefined) {
     const DAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);

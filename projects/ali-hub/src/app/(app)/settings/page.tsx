@@ -3,59 +3,29 @@
 /**
  * /settings · the few things worth a setting. No explanations (Ali 2026-09-24: "remove every
  * filler sentence · Settings is the worst offender") · a card is its control and its state.
+ *
+ * Cleaned up 2026-10-03 (Ali): Appearance is Auto · Light · Dark · Night (Split gone) · the
+ * training-day picker, News topics and the Morning routine card are gone (the routine and the
+ * morning clock live on /checklist, "Routine") · Widgets is one compact card · Apple Watch is
+ * condensed to its status with the setup folded · Reminders is two buttons · one Update button
+ * runs the database update and reloads the app.
  */
 
-import React, { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue, useNow } from "@/lib/useClientValue";
-import { useCached, fetchJson, isOnline } from "@/lib/local/store";
-import { sendOrQueue } from "@/lib/local/outbox";
-import { VIDEO_CATEGORIES, allChannels, defaultEnabledIds, isBuiltIn, parseCustomChannels, type CustomChannel, type VideoCategory } from "@/lib/news/youtube";
-import type { ChannelHit } from "@/lib/news/youtubeSearch";
-import { useWorkouts } from "@/lib/train/useTrain";
-import { DAY_CODES, DAY_LABELS, type DayCode, type WorkoutKey } from "@/lib/train/types";
+import { useCached, fetchJson } from "@/lib/local/store";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
-import { parseMorningPlan, computeMorning, type MorningPlan } from "@/lib/morning/plan";
 import { metricWords, pipeNote, type PipeStatus } from "@/lib/health/client";
-
-type UserSettings = {
-  timezone: string;
-  newsTopics: string;
-  newsEmailEnabled: boolean;
-  newsEmailTime: string;
-  newsChannels?: string | null;
-  newsCustomChannels?: string | null;
-  kettlebellKg?: number;
-  calendarFeeds?: string | null;
-  morningPlan?: string | null;
-};
-
-/** Browser online/offline as an external store (search box disables itself offline). */
-function subscribeOnline(cb: () => void) {
-  window.addEventListener("online", cb); window.addEventListener("offline", cb);
-  return () => { window.removeEventListener("online", cb); window.removeEventListener("offline", cb); };
-}
-
-const NEWS_TOPICS = [
-  { key: "football",    label: "Football" },
-  { key: "geopolitics", label: "Geopolitics" },
-  { key: "tech",        label: "Technology" },
-  { key: "ai",          label: "Artificial Intelligence" },
-  { key: "business",    label: "Business & Markets" },
-];
+import { ChannelsCard } from "@/components/news/ChannelsCard";
 
 const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
   { key: "system", label: "Auto",  hint: "Phone by day · Night 20:00–07:00" },
   { key: "light",  label: "Light", hint: "" },
   { key: "dark",   label: "Dark",  hint: "" },
   { key: "night",  label: "Night", hint: "Warm · less blue light" },
-  { key: "split",  label: "Split", hint: "Light screen · black bar" },
 ];
-
-function parseTopics(s: string | undefined): string[] {
-  try { return s ? (JSON.parse(s) as string[]) : []; } catch { return []; }
-}
 
 function Segmented<T extends string>({ value, options, onChange }: {
   value: T; options: { key: T; label: string }[]; onChange: (v: T) => void;
@@ -89,6 +59,17 @@ function Segmented<T extends string>({ value, options, onChange }: {
   );
 }
 
+/** A plain row that opens another screen. */
+function DoorRow({ href, label, tail = "Open ›" }: { href: string; label: string; tail?: string }) {
+  return (
+    <Link href={href} className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
+        <span style={{ fontSize: 16, fontWeight: 500 }}>{label}</span>
+        <span style={{ color: "var(--ink-3)", fontSize: 15 }}>{tail}</span>
+      </div>
+    </Link>
+  );
+}
 
 type HealthStatus = {
   pipe?: PipeStatus;
@@ -101,14 +82,13 @@ type HealthStatus = {
 };
 
 const HAE_STEPS = [
-  "App Store → Health Auto Export (JSON+CSV) → install, allow Health access (Sleep, Workouts, Heart Rate, Resting Heart Rate, HRV, Respiratory Rate, Blood Oxygen).",
-  "Inside the app: Premium → yearly plan (7-day trial). Only Premium runs automations in the background.",
-  "Automations → + → REST API · name “ALI sleep” · URL below · HTTP Headers: x-app-key = the key below · Data Type: Health Metrics · Select Health Metrics: Select all · Export Format JSON · Summarize Data on · Date Range: Previous 7 Days · Sync Cadence: every 1 hour · Save.",
-  "Automations → + → REST API · name “ALI workouts” · same URL and header · Data Type: Workouts · Include Route Data on · Date Range: Previous 7 Days · every 1 hour · Save. One automation carries ONE data type, so sleep and workouts need two.",
-  "Open each automation → Manual Export once, then come back here: “Last posts carried” below must name sleep and a workout.",
-  "iPhone Settings → Apps → Health Auto Export → Background App Refresh on. Add its “Automations” widget to a home screen: one tap = sync now. A locked phone or Low Power Mode blocks the hourly run.",
+  "Health Auto Export (JSON+CSV) · Premium · allow Health access.",
+  "Automations → REST API “ALI sleep” · URL and header below · Data Type Health Metrics · Select all · JSON · Date Range Default · every hour.",
+  "Automations → REST API “ALI workouts” · same URL and header · Data Type Workouts · Include Route Data · every hour.",
+  "iPhone Settings → Health Auto Export → Background App Refresh on.",
 ];
 
+/** Apple Watch · the pipe's status in three lines, the setup folded away (condensed 2026-10-03). */
 function AppleWatchCard() {
   const { data } = useCached<HealthStatus>("health-status", () => fetchJson<HealthStatus>("/api/health/ingest"));
   const [open, setOpen] = useState(false);
@@ -124,93 +104,55 @@ function AppleWatchCard() {
     return `${sameDay ? "today" : d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
   };
   const fmtMin = (m: number | null) => (m === null ? "" : ` · ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")}`);
-  const staleDays = data?.lastPost && now ? (now - data.lastPost.receivedAt) / 86400000 : null;
-  const tail = !data ? "…" : !data.lastPost ? "not connected" : staleDays !== null && staleDays > 2 ? "quiet for days" : "connected";
+  const staleH = data?.lastPost && now ? (now - data.lastPost.receivedAt) / 3600000 : null;
+  const tail = !data ? "…" : !data.lastPost ? "not connected" : staleH !== null && staleH > 20 ? "quiet · tap the widget" : "connected";
+  const note = data?.pipe && now > 0 ? (pipeNote(data.pipe, "sleep", now) ?? pipeNote(data.pipe, "workouts", now)) : null;
   return (
     <section className="cc-card">
-      <div className="cc-card-head"><span className="title">Apple Watch</span><span className="tail" style={tail === "quiet for days" ? { color: "var(--warn)" } : undefined}>{tail}</span></div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 8, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-        <div style={{ display: "grid", gap: 2, fontSize: 14, color: "var(--ink-3)" }}>
-          <span>Sleep · {data ? (data.lastSleep ? `night of ${data.lastSleep.date}${fmtMin(data.lastSleep.totalMin)} · received ${stamp(data.lastSleep.receivedAt)}` : "nothing yet") : "—"}</span>
-          <span>Workouts · {data ? (data.lastWorkout ? `${data.lastWorkout.type} on ${data.lastWorkout.date} · received ${stamp(data.lastWorkout.receivedAt)}` : "nothing yet") : "—"}</span>
-          <span>Last post · {data ? (data.lastPost ? `${stamp(data.lastPost.receivedAt)}${data.lastPost.automation ? ` · ${data.lastPost.automation}` : ""} · ${data.lastPost.summary}` : "nothing yet") : "—"}</span>
+      <div className="cc-card-head"><span className="title">Apple Watch</span><span className="tail" style={tail.startsWith("quiet") ? { color: "var(--warn)" } : tail === "connected" ? { color: "var(--pos)" } : undefined}>{tail}</span></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 8, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
+        <div style={{ display: "grid", gap: 2 }}>
+          <span>Sleep · {data ? (data.lastSleep ? `night of ${data.lastSleep.date}${fmtMin(data.lastSleep.totalMin)}` : "nothing yet") : "—"}</span>
+          <span>Workouts · {data ? (data.lastWorkout ? `${data.lastWorkout.type} on ${data.lastWorkout.date}` : "nothing yet") : "—"}</span>
+          <span>Last post · {data ? (data.lastPost ? `${stamp(data.lastPost.receivedAt)}${data.lastPost.automation ? ` · ${data.lastPost.automation}` : ""}` : "nothing yet") : "—"}</span>
           {data?.pipe && data.pipe.posts > 0 && (
-            <span>Last posts carried · {[...data.pipe.carried.map(metricWords), ...(data.pipe.workoutsSeen ? ["workouts"] : [])].join(", ") || "nothing"}{!data.pipe.sleepSeen ? " · no sleep" : ""}{!data.pipe.workoutsSeen ? " · no workouts" : ""}</span>
+            <span>Carrying · {[...data.pipe.carried.map(metricWords), ...(data.pipe.workoutsSeen ? ["workouts"] : [])].join(", ") || "nothing"}{!data.pipe.sleepSeen ? " · no sleep" : ""}{!data.pipe.workoutsSeen ? " · no workouts" : ""}</span>
           )}
         </div>
-        {data?.pipe && now > 0 && (() => { const n = pipeNote(data.pipe, "sleep", now) ?? pipeNote(data.pipe, "workouts", now); return n ? <div style={{ fontSize: 14, color: "var(--warn)", lineHeight: 1.45 }}>{n}</div> : null; })()}
-        {data?.setup && (
+        {note && <div style={{ color: "var(--warn)" }}>{note}</div>}
+        <button className="cc-btn cc-btn-ghost" onClick={() => setOpen((v) => !v)} style={{ minHeight: 40, justifySelf: "start", fontSize: 14 }}>{open ? "Hide setup" : "Setup"}</button>
+        {open && data?.setup && (
           <div style={{ display: "grid", gap: 6 }}>
             {(["url", "key"] as const).map((what) => {
               const val = what === "url" ? data.setup.url : data.setup.key;
               return (
                 <div key={what} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 8, minHeight: 44 }}>
-                  <span style={{ minWidth: 0, fontSize: 13, fontFamily: "ui-monospace, monospace", color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    <span style={{ color: "var(--ink-4)" }}>{what === "url" ? "URL " : `${data.setup.header} `}</span>{what === "key" && !open ? "••••••••" : val}
+                  <span style={{ minWidth: 0, fontSize: 13, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ color: "var(--ink-4)" }}>{what === "url" ? "URL " : `${data.setup.header} `}</span>{what === "key" ? "••••••••" : val}
                   </span>
                   <button className="cc-btn cc-btn-ghost" onClick={() => copy(what, val)} disabled={!val} style={{ minHeight: 36, padding: "0 10px", fontSize: 13 }}>{copied === what ? "Copied" : "Copy"}</button>
                 </div>
               );
             })}
+            <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
+              {HAE_STEPS.map((t) => <li key={t}>{t}</li>)}
+            </ol>
           </div>
-        )}
-        <button className="cc-btn cc-btn-ghost" onClick={() => setOpen((v) => !v)} style={{ minHeight: 44, justifySelf: "start" }}>{open ? "Hide the setup steps" : "Setup steps"}</button>
-        {open && (
-          <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
-            {HAE_STEPS.map((t) => <li key={t}>{t}</li>)}
-          </ol>
         )}
       </div>
     </section>
   );
 }
 
-export default function SettingsPage() {
-  const [theme, setTheme] = useTheme();
-  const standalone = useClientValue(
-    () => window.matchMedia("(display-mode: standalone)").matches
-       || ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true),
-    true
-  );
-  const isIOS = useClientValue(() => /iPhone|iPad|iPod/.test(navigator.userAgent), false);
-
-  const { data: settings, setData } = useCached<UserSettings>("settings", () => fetchJson<UserSettings>("/api/settings"));
-  const topics = parseTopics(settings?.newsTopics);
-
-  const toggleTopic = async (key: string) => {
-    if (!settings) return;
-    const next = topics.includes(key) ? topics.filter((t) => t !== key) : [...topics, key];
-    setData({ ...settings, newsTopics: JSON.stringify(next) });
-    try {
-      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { newsTopics: JSON.stringify(next) }, dedupeKey: "settings:newsTopics" });
-    } catch { /* keep optimistic state; next refresh corrects it */ }
-  };
-
-  // Fixed training days (optional). A day belongs to one workout; tapping it on the other moves it.
-  const { workouts, saveWorkout } = useWorkouts();
-  const dayOwner = (d: DayCode): WorkoutKey | null => workouts.find((w) => w.assignedDays?.includes(d))?.key ?? null;
-  const toggleDay = (key: WorkoutKey, d: DayCode) => {
-    const owner = dayOwner(d);
-    for (const w of workouts) {
-      const has = w.assignedDays?.includes(d) ?? false;
-      if (w.key === key) {
-        if (owner === key) saveWorkout({ ...w, assignedDays: (w.assignedDays ?? []).filter((x) => x !== d) });
-        else saveWorkout({ ...w, assignedDays: [...(w.assignedDays ?? []), d] });
-      } else if (has) {
-        saveWorkout({ ...w, assignedDays: (w.assignedDays ?? []).filter((x) => x !== d) });
-      }
-    }
-    // Today and Train read the schedule from the server; drop their cached copies so the next open is fresh.
-    try { localStorage.removeItem("cc:v1:train-overview"); } catch { /* ignore */ }
-  };
-  const plannedCount = workouts.reduce((n, w) => n + (w.assignedDays?.length ?? 0), 0);
-
-  // Reminders (push) on this device
+/** Reminders · on/off for this device and a test · the device list folded (compact 2026-10-03). */
+function RemindersCard() {
   const [push, setPush] = useState<PushState | "loading">("loading");
   const [pushMsg, setPushMsg] = useState<string | null>(null);
   type PushDevice = { endpoint: string; userAgent: string; lastUsedAt: number | null };
   const [pushInfo, setPushInfo] = useState<{ count: number; lastTickAt: number | null; devices: PushDevice[] } | null>(null);
   const [myEndpoint, setMyEndpoint] = useState<string | null>(null);
+  const [showDevices, setShowDevices] = useState(false);
+  const now = useNow();
   useEffect(() => { pushState().then(setPush).catch(() => setPush("unsupported")); }, []);
   useEffect(() => {
     (async () => {
@@ -232,7 +174,6 @@ export default function SettingsPage() {
     await fetch("/api/push", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint }) }).catch(() => {});
     loadPushInfo();
   };
-  // "iPhone · A L I app" from a user-agent string · enough to tell devices apart.
   const deviceName = (ua: string) => {
     const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Macintosh|Mac OS/.test(ua) ? "Mac" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : "Device";
     const br = /CriOS|Chrome/.test(ua) ? "Chrome" : /FxiOS|Firefox/.test(ua) ? "Firefox" : /Safari/.test(ua) ? "Safari" : "";
@@ -241,117 +182,70 @@ export default function SettingsPage() {
   const togglePush = async () => {
     setPushMsg(null);
     try { setPush(push === "on" ? await disablePush() : await enablePush()); loadPushInfo(); }
-    catch { setPushMsg("Couldn't turn reminders on · try again in a moment."); }
+    catch { setPushMsg("Could not turn reminders on · try again in a moment."); }
   };
   const testPush = async () => {
     setPushMsg("Sending…");
     const r = await fetch("/api/push/test", { method: "POST" }).then((x) => x.json()).catch(() => null) as { sent?: number } | null;
     setPushMsg(r?.sent ? "Sent · it should appear in a few seconds." : "Nothing sent · is this device subscribed?");
   };
+  const mins = pushInfo?.lastTickAt && now ? Math.round((now - pushInfo.lastTickAt) / 60000) : null;
+  const tickStale = pushInfo !== null && now > 0 && (mins === null || mins > 30);
+  const tail = push === "on" ? "on" : push === "loading" ? "…" : "off";
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">Reminders</span><span className="tail" style={push === "on" ? { color: "var(--pos)" } : undefined}>{tail}{pushInfo && pushInfo.devices.length > 0 ? ` · ${pushInfo.devices.length} device${pushInfo.devices.length === 1 ? "" : "s"}` : ""}</span></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
+        {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>Works from the installed app only.</p>}
+        {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Blocked in iOS Settings → Notifications → A L I.</p>}
+        {push === "unsupported" && <p style={{ margin: 0 }}>Not supported in this browser.</p>}
+        {tickStale && <p style={{ margin: 0, color: "var(--warn)" }}>Nag service {mins === null ? "has not run yet" : `last ran ${mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`} ago`} · the every-5-min pinger looks down</p>}
+        {push === "on" && pushInfo?.count === 0 && <p style={{ margin: 0, color: "var(--warn)" }}>No device registered on the server · turn reminders off and on again.</p>}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
+            {push === "on" ? "Turn off here" : "Turn on"}
+          </button>
+          {push === "on" && <button className="cc-btn cc-btn-ghost" onClick={testPush}>Send a test</button>}
+          {pushInfo && pushInfo.devices.length > 0 && <button className="cc-btn cc-btn-ghost" onClick={() => setShowDevices((v) => !v)} style={{ fontSize: 14 }}>{showDevices ? "Hide devices" : "Devices"}</button>}
+        </div>
+        {showDevices && pushInfo && (
+          <div style={{ display: "grid", gap: 2 }}>
+            {pushInfo.devices.map((d) => (
+              <div key={d.endpoint} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 8, minHeight: 44 }}>
+                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {deviceName(d.userAgent)}
+                  {d.endpoint === myEndpoint && <span style={{ color: "var(--violet)" }}> · this device</span>}
+                  {d.lastUsedAt && <span style={{ color: "var(--ink-4)" }}> · added {new Date(d.lastUsedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>}
+                </span>
+                <button onClick={() => removeDevice(d.endpoint)} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13, color: "var(--neg)" }}>Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+        {pushMsg && <p style={{ margin: 0 }}>{pushMsg}</p>}
+      </div>
+    </section>
+  );
+}
+
+export default function SettingsPage() {
+  const [theme, setTheme] = useTheme();
+  const standalone = useClientValue(
+    () => window.matchMedia("(display-mode: standalone)").matches
+       || ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true),
+    true
+  );
+  const isIOS = useClientValue(() => /iPhone|iPad|iPod/.test(navigator.userAgent), false);
   const { data: me } = useCached<{ required: boolean; email: string | null }>("auth-me", () => fetchJson("/api/auth/me"));
 
-  // Morning routine · wake times + minutes per step, all editable and sticky.
-  const plan = parseMorningPlan(settings?.morningPlan);
-  const savePlan = async (next: MorningPlan) => {
-    const json = JSON.stringify(next);
-    if (settings) setData({ ...settings, morningPlan: json });
-    try {
-      await sendOrQueue({ url: "/api/settings", method: "PATCH", body: { morningPlan: json }, dedupeKey: "settings:morningPlan" });
-    } catch { /* replayed later */ }
-  };
-  const setStepMinutes = (id: string, minutes: number) =>
-    savePlan({ ...plan, steps: plan.steps.map((s) => (s.id === id ? { ...s, minutes: Math.max(0, Math.min(180, Math.round(minutes))) } : s)) });
-  const trainDay = computeMorning(plan, true);
-  const restDay = computeMorning(plan, false);
-  const saturday = computeMorning(plan, true, "saturday");
-
-  // One-tap schema update · the migrate route is idempotent, safe to tap any time.
-  const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
-  const runMigrate = async () => {
-    setMigrateMsg("Updating…");
-    const r = await fetch("/api/admin/migrate", { method: "POST" }).then((x) => x.json()).catch(() => null);
-    setMigrateMsg(r ? "Database is up to date." : "Failed · try again in a moment.");
-  };
-
-  // YouTube channels for the brief: built-ins + Ali's additions; newsChannels = enabled ids, null = all on.
-  const custom = parseCustomChannels(settings?.newsCustomChannels);
-  const channelList = allChannels(custom);
-  // null = the defaults (every channel except the ones shipped off, e.g. the daily briefs to try).
-  const channels: string[] = (() => {
-    try { return settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : defaultEnabledIds(channelList); }
-    catch { return defaultEnabledIds(channelList); }
-  })();
-  const [showChannels, setShowChannels] = useState(false);
-  const saveChannels = async (enabled: string[] | null, nextCustom: CustomChannel[]) => {
-    if (!settings) return;
-    const body = { newsChannels: enabled ? JSON.stringify(enabled) : null, newsCustomChannels: JSON.stringify(nextCustom) };
-    setData({ ...settings, ...body });
-    try {
-      await sendOrQueue({ url: "/api/settings", method: "PATCH", body, dedupeKey: "settings:channels" });
-    } catch { /* keep optimistic state */ }
-  };
-  const toggleChannel = (id: string) =>
-    saveChannels(channels.includes(id) ? channels.filter((c) => c !== id) : [...channels, id], custom);
-  const addChannel = (hit: ChannelHit, category: VideoCategory) => {
-    const entry: CustomChannel = { id: hit.id, name: hit.name, category, handle: hit.handle, subs: hit.subs };
-    const nextCustom = [...custom.filter((c) => c.id !== hit.id), entry];
-    // null = "all on" stays null (the new one is on too); an explicit list gets the new id.
-    const enabled = settings?.newsChannels ? Array.from(new Set([...channels, hit.id])) : null;
-    void saveChannels(enabled, nextCustom);
-  };
-  // Remove: a custom channel is dropped; a built-in gets a `removed` marker (restorable).
-  const removeChannel = (id: string) => {
-    const enabled = settings?.newsChannels ? channels.filter((c) => c !== id) : null;
-    const rest = custom.filter((c) => c.id !== id);
-    const ch = channelList.find((c) => c.id === id);
-    void saveChannels(enabled, isBuiltIn(id) && ch ? [...rest, { id, name: ch.name, category: ch.category, removed: true }] : rest);
-    setEditing(null);
-  };
-  // Edit name / topic: custom rows change in place, built-ins get an override entry with the same id.
-  const editChannel = (id: string, name: string, category: VideoCategory) => {
-    const clean = name.trim();
-    if (!clean) return;
-    const prev = custom.find((c) => c.id === id);
-    const entry: CustomChannel = { ...(prev ?? {}), id, name: clean, category, removed: false };
-    void saveChannels(settings?.newsChannels ? channels : null, [...custom.filter((c) => c.id !== id), entry]);
-    setEditing(null);
-  };
-  // Restore one built-in (or all) to how the app shipped it.
-  const restoreChannel = (id: string) => { void saveChannels(settings?.newsChannels ? channels : null, custom.filter((c) => c.id !== id)); setEditing(null); };
-  const builtInOverrides = custom.filter((c) => isBuiltIn(c.id));
-  const restoreAll = () => { if (confirm("Put every built-in channel back the way it shipped? Channels you added stay.")) void saveChannels(settings?.newsChannels ? channels : null, custom.filter((c) => !isBuiltIn(c.id))); };
-  const [editing, setEditing] = useState<{ id: string; name: string; category: VideoCategory } | null>(null);
-
-  // Live channel search (needs a connection · offline the box is disabled, the list above still shows).
-  const online = useSyncExternalStore(subscribeOnline, isOnline, () => true);
-  const [query, setQuery] = useState("");
-  const [topic, setTopic] = useState<VideoCategory>("tech");
-  const [hits, setHits] = useState<ChannelHit[] | null>(null);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const searchActive = query.trim().length >= 2 && online;
-  useEffect(() => {
-    const q = query.trim();
-    if (q.length < 2 || !online) return;
-    const ctrl = new AbortController();
-    const t = setTimeout(async () => {
-      setSearching(true); setSearchError(null);
-      try {
-        const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
-        if (!res.ok) throw new Error(String(res.status));
-        const json = (await res.json()) as { hits: ChannelHit[] };
-        setHits(json.hits);
-      } catch (e) {
-        if ((e as Error).name === "AbortError") return;
-        setHits(null); setSearchError("Could not reach YouTube. Check the connection and try again.");
-      } finally {
-        if (!ctrl.signal.aborted) setSearching(false);
-      }
-    }, 350);
-    return () => { clearTimeout(t); ctrl.abort(); };
-  }, [query, online]);
-
-  const hardRefresh = async () => {
+  // One Update: the database first (idempotent, a second), then the app's caches, then a reload.
+  // "Update app" and "Update database" were two buttons until 2026-10-03; the database step is
+  // cheap and only ever adds, so there was no reason to keep them apart.
+  const [updating, setUpdating] = useState<string | null>(null);
+  const update = async () => {
+    setUpdating("Database…");
+    await fetch("/api/admin/migrate", { method: "POST" }).catch(() => null);
+    setUpdating("App…");
     try {
       const regs = await navigator.serviceWorker?.getRegistrations?.();
       await Promise.all((regs ?? []).map((r) => r.update()));
@@ -369,7 +263,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Appearance */}
+      {/* Appearance · Auto turns to Night 20:00–07:00 (refreshThemeAttr, checked every minute) */}
       <section className="cc-card">
         <div className="cc-card-head"><span className="title">Appearance</span><span className="tail">{THEMES.find((t) => t.key === theme)?.hint}</span></div>
         <div className="cc-card-body">
@@ -377,208 +271,28 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Training days */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Training days</span><span className="tail">{plannedCount ? `${plannedCount} a week` : "any days"}</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
-          {workouts.map((w) => (
-            <div key={w.key} style={{ display: "grid", gap: 8 }}>
-              <span style={{ fontSize: 15, fontWeight: 500 }}>{w.name}</span>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
-                {DAY_CODES.map((d) => {
-                  const owner = dayOwner(d);
-                  const on = owner === w.key;
-                  const other = owner !== null && !on;
-                  return (
-                    <button key={d} onClick={() => toggleDay(w.key, d)} aria-pressed={on}
-                      style={{ minHeight: 44, borderRadius: 10, fontSize: 14, font: "inherit", cursor: "pointer", padding: 0,
-                        border: `1px solid ${on ? "var(--violet)" : "var(--line-hi)"}`,
-                        background: on ? "var(--violet)" : "var(--fill-1)",
-                        color: on ? "var(--on-accent)" : other ? "var(--ink-4)" : "var(--ink-2)",
-                        textDecoration: other ? "line-through" : "none" }}>
-                      {DAY_LABELS[d]}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Routine · the weekly planner, the item details and the morning clock (was "Edit list" + "Morning routine") */}
+      <DoorRow href="/checklist" label="Routine" />
 
-      {/* News topics */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">News topics</span><span className="tail">{settings ? `${topics.length} on` : "…"}</span></div>
-        <div style={{ padding: "4px 14px" }}>
-          {NEWS_TOPICS.map((t, i) => {
-            const on = topics.includes(t.key);
-            return (
-              <button
-                key={t.key}
-                onClick={() => toggleTopic(t.key)}
-                disabled={!settings}
-                role="switch"
-                aria-checked={on}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%",
-                  minHeight: 52, padding: "0 2px", background: "transparent", border: "none",
-                  borderBottom: i < NEWS_TOPICS.length - 1 ? "1px solid var(--line)" : "none",
-                  color: "var(--ink)", font: "inherit", fontSize: 16, cursor: "pointer", textAlign: "left",
-                }}
-              >
-                <span>{t.label}</span>
-                <span aria-hidden style={{
-                  width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0,
-                  background: on ? "var(--violet)" : "var(--fill-3)", transition: "background 0.15s",
-                }}>
-                  <span style={{
-                    position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 99,
-                    background: "#fff", transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                  }} />
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* YouTube channels · built-ins per topic + live search to add your own (2026-09-12) */}
-      <section className="cc-card">
-        <button onClick={() => setShowChannels((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showChannels ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-          <span className="title">YouTube channels</span>
-          <span className="tail">{settings ? `${channels.filter((id) => channelList.some((c) => c.id === id)).length} of ${channelList.length} on` : "…"} {showChannels ? "▴" : "▾"}</span>
-        </button>
-        {showChannels && (
-          <div style={{ padding: "4px 14px 10px" }}>
-            {/* Search · add a channel to a topic */}
-            <div style={{ display: "grid", gap: 8, padding: "10px 0 6px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-                <input
-                  type="search" value={query} onChange={(e) => setQuery(e.target.value)} disabled={!online || !settings}
-                  placeholder={online ? "Search YouTube channels or paste a link" : "Search needs a connection"}
-                  autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="search"
-                  style={{ minHeight: 44, fontSize: 16, padding: "0 12px", borderRadius: 10, border: "1px solid var(--line)", background: "var(--fill-1)", color: "var(--ink)", font: "inherit", minWidth: 0, width: "100%", opacity: online ? 1 : 0.6 }}
-                />
-                <select value={topic} onChange={(e) => setTopic(e.target.value as VideoCategory)} aria-label="Topic for added channels" disabled={!online || !settings}
-                  style={{ minHeight: 44, fontSize: 16, padding: "0 10px", borderRadius: 10, border: "1px solid var(--line)", background: "var(--fill-1)", color: "var(--ink)", font: "inherit", maxWidth: 150 }}>
-                  {VIDEO_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
-                </select>
-              </div>
-              {!online && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Offline · search needs a connection.</div>}
-              {searchActive && searchError && <div style={{ fontSize: 14, color: "var(--warn)" }}>{searchError}</div>}
-              {searchActive && searching && !hits && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>Searching…</div>}
-              {searchActive && hits && hits.length === 0 && !searching && <div style={{ fontSize: 14, color: "var(--ink-3)" }}>No channels found.</div>}
-              {searchActive && hits && hits.length > 0 && (
-                <div style={{ display: "grid", borderTop: "1px solid var(--line)" }}>
-                  {hits.map((h) => {
-                    const have = channelList.some((c) => c.id === h.id);
-                    return (
-                      <div key={h.id} style={{ display: "grid", gridTemplateColumns: "36px 1fr auto", gap: 10, alignItems: "center", minHeight: 52, padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- YouTube avatar, plain <img> keeps the bundle small */}
-                        {h.thumb ? <img src={h.thumb} alt="" loading="lazy" style={{ width: 36, height: 36, borderRadius: 99, background: "var(--fill-2)" }} /> : <span style={{ width: 36, height: 36, borderRadius: 99, background: "var(--fill-2)" }} />}
-                        <span style={{ minWidth: 0 }}>
-                          <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.name}</span>
-                          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[h.handle, h.subs].filter(Boolean).join(" · ") || h.about || "YouTube channel"}</span>
-                        </span>
-                        {have
-                          ? <span style={{ fontSize: 14, color: "var(--ink-4)", padding: "0 6px" }}>Added</span>
-                          : <button onClick={() => addChannel(h, topic)} style={{ minHeight: 44, padding: "0 12px", borderRadius: 10, border: "none", background: "var(--accent-soft)", color: "var(--violet)", font: "inherit", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>Add</button>}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Daily briefs to try (2026-09-24 research) first, then the topics */}
-            {[{ key: "daily", label: "Daily news briefs · try one" }, ...VIDEO_CATEGORIES].map((g) => {
-              const rows = g.key === "daily" ? channelList.filter((c) => c.daily) : channelList.filter((c) => c.category === g.key && !c.daily);
-              if (g.key === "daily" && rows.length === 0) return null;
-              const onCount = rows.filter((c) => channels.includes(c.id)).length;
-              return (
-                <div key={g.key}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--ink-3)", padding: "12px 2px 4px" }}>
-                    <span>{g.label}</span><span>{onCount} of {rows.length} on</span>
-                  </div>
-                  {rows.map((c) => {
-                    const on = channels.includes(c.id);
-                    return (
-                      <React.Fragment key={c.id}>
-                      <div style={{ display: "flex", alignItems: "stretch", borderBottom: editing?.id === c.id ? "none" : "1px solid var(--line)" }}>
-                        <button onClick={() => toggleChannel(c.id)} disabled={!settings} role="switch" aria-checked={on}
-                          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flex: 1, minWidth: 0, minHeight: 52, padding: "6px 2px", background: "transparent", border: "none", color: "var(--ink)", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-                          <span style={{ minWidth: 0 }}>
-                            <span style={{ display: "block", fontSize: 16 }}>{c.name}</span>
-                            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{c.why}</span>
-                          </span>
-                          <span aria-hidden style={{ width: 44, height: 26, borderRadius: 99, position: "relative", flexShrink: 0, background: on ? "var(--violet)" : "var(--fill-3)", transition: "background 0.15s" }}>
-                            <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
-                          </span>
-                        </button>
-                        <button onClick={() => setEditing(editing?.id === c.id ? null : { id: c.id, name: c.name, category: c.category })} disabled={!settings} aria-label={`Edit ${c.name}`} aria-expanded={editing?.id === c.id}
-                          style={{ minWidth: 44, padding: "0 4px 0 12px", background: "transparent", border: "none", color: editing?.id === c.id ? "var(--violet)" : "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>{editing?.id === c.id ? "Close" : "Edit"}</button>
-                      </div>
-                      {editing?.id === c.id && (
-                        <div style={{ display: "grid", gap: 8, padding: "10px 0 12px", borderBottom: "1px solid var(--line)" }}>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-                            <input className="cc-input" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} aria-label="Channel name" style={{ fontSize: 16, minHeight: 44, minWidth: 0 }} />
-                            <select className="cc-input" value={editing.category} onChange={(e) => setEditing({ ...editing, category: e.target.value as VideoCategory })} aria-label="Topic"
-                              style={{ minHeight: 44, fontSize: 16, padding: "0 10px", maxWidth: 150, WebkitAppearance: "menulist", appearance: "auto" }}>
-                              {VIDEO_CATEGORIES.map((g2) => <option key={g2.key} value={g2.key}>{g2.label}</option>)}
-                            </select>
-                          </div>
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                            <button className="cc-btn cc-btn-primary" onClick={() => editChannel(c.id, editing.name, editing.category)} disabled={!editing.name.trim()} style={{ minHeight: 44, padding: "0 16px", fontSize: 15 }}>Save</button>
-                            {c.edited && <button className="cc-btn cc-btn-ghost" onClick={() => restoreChannel(c.id)} style={{ minHeight: 44, padding: "0 12px", fontSize: 14 }}>Restore default</button>}
-                            <span style={{ flex: 1 }} />
-                            <button className="cc-btn cc-btn-ghost" onClick={() => { if (confirm(`Remove ${c.name} from the brief?`)) removeChannel(c.id); }} style={{ minHeight: 44, padding: "0 12px", fontSize: 14, color: "var(--neg)" }}>Remove</button>
-                          </div>
-                        </div>
-                      )}
-                    </React.Fragment>
-                    );
-                  })}
-                  {rows.length === 0 && <div style={{ fontSize: 14, color: "var(--ink-4)", padding: "6px 2px" }}>No channels yet. Search above and add one.</div>}
-                </div>
-              );
-            })}
-            {builtInOverrides.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 2px 0" }}>
-                <button className="cc-btn cc-btn-ghost" onClick={restoreAll} style={{ minHeight: 40, padding: "0 12px", fontSize: 14 }}>Restore built-ins ({builtInOverrides.length})</button>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+      {/* YouTube channels · the fixed list behind News (daily picks + watch later) */}
+      <ChannelsCard />
 
       {/* Mobility player (route /stretch) · a second door, so it is reachable even when the Today row is ticked */}
-      <Link href="/stretch" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-          <span style={{ fontSize: 16, fontWeight: 500 }}>Mobility</span>
-          <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
-        </div>
-      </Link>
+      <DoorRow href="/stretch" label="Mobility" />
 
-      {/* Home-screen widget · the Scriptable script with this app's key already filled in */}
-      <a href="/api/widget/script" target="_blank" rel="noopener noreferrer" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      {/* Widgets · one line; the Scriptable script is served by /api/widget/script when it is needed again */}
+      <section className="cc-card">
         <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
           <span>
-            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Home-screen widget</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Scriptable script · copy, paste over &ldquo;ALI&rdquo;</span>
+            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Widgets</span>
+            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Home screen · lock screen · Scriptable</span>
           </span>
-          <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
+          <span style={{ color: "var(--pos)", fontSize: 14 }}>set up</span>
         </div>
-      </a>
+      </section>
 
-      {/* Books */}
-      <Link href="/books" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-          <span style={{ fontSize: 16, fontWeight: 500 }}>Books</span>
-          <span style={{ color: "var(--ink-3)", fontSize: 15 }}>Open ›</span>
-        </div>
-      </Link>
+      <DoorRow href="/books" label="Books" />
 
-      {/* Install hint */}
       {!standalone && (
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Install on your phone</span></div>
@@ -590,98 +304,10 @@ export default function SettingsPage() {
         </section>
       )}
 
-      {/* Morning routine · Ali-approved sequence, every number editable */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Morning routine</span><span className="tail">calls {plan.callsAt}</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 12, fontSize: 15, color: "var(--ink-2)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-            {([["Wake · training", plan.trainWake, (v: string) => savePlan({ ...plan, trainWake: v })],
-               ["Wake · rest", plan.restWake, (v: string) => savePlan({ ...plan, restWake: v })],
-               ["Calls start", plan.callsAt, (v: string) => savePlan({ ...plan, callsAt: v })]] as const).map(([label, value, save]) => (
-              <label key={label} style={{ display: "grid", gap: 4, fontSize: 13, color: "var(--ink-3)", minWidth: 0 }}>{label}
-                <input type="time" className="cc-input" value={value} onChange={(e) => e.target.value && save(e.target.value)}
-                  style={{ fontSize: 16, minHeight: 44, width: "100%", boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} />
-              </label>
-            ))}
-          </div>
-          <div style={{ display: "grid", gap: 2 }}>
-            {plan.steps.map((s) => (
-              <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center", minHeight: 44, borderBottom: "1px solid var(--line)" }}>
-                <span style={{ fontSize: 15 }}>{s.label}{s.trainOnly ? <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}> · training days</span> : null}</span>
-                <input className="cc-input" type="number" inputMode="numeric" min={0} max={180} value={s.minutes}
-                  onChange={(e) => setStepMinutes(s.id, Number(e.target.value))}
-                  style={{ fontSize: 16, minHeight: 40, width: 64, boxSizing: "border-box", textAlign: "right" }} />
-                <span style={{ fontSize: 13, color: "var(--ink-4)" }}>min</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "grid", gap: 2 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center", minHeight: 44, borderBottom: "1px solid var(--line)" }}>
-              <span style={{ fontSize: 15 }}>Saturday · later by<span style={{ fontSize: 12.5, color: "var(--ink-4)" }}> · wake {saturday.wake}, calls {saturday.callsAt}, every timed step</span></span>
-              <input className="cc-input" type="number" inputMode="numeric" min={0} max={240} step={15} value={plan.saturdayShiftMin}
-                onChange={(e) => savePlan({ ...plan, saturdayShiftMin: Math.max(0, Math.min(240, Math.round(Number(e.target.value) || 0))) })}
-                style={{ fontSize: 16, minHeight: 40, width: 64, boxSizing: "border-box", textAlign: "right" }} />
-              <span style={{ fontSize: 13, color: "var(--ink-4)" }}>min</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 44, fontSize: 15 }}>
-              <span>Sunday</span><span style={{ fontSize: 13, color: "var(--ink-4)" }}>no fixed times</span>
-            </div>
-          </div>
-          <p style={{ margin: 0, fontSize: 13.5, color: trainDay.bufferMin < 0 || restDay.bufferMin < 0 ? "var(--warn)" : "var(--ink-4)" }}>
-            Training day ends {trainDay.rows.at(-1)?.end ?? "—"} · {trainDay.bufferMin} min spare · rest day ends {restDay.rows.at(-1)?.end ?? "—"} · {restDay.bufferMin} min spare
-          </p>
-        </div>
-      </section>
-
-      {/* Apple Watch · Health Auto Export (spec §7c item 5) */}
       <AppleWatchCard />
 
-      {/* Reminders */}
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Reminders</span><span className="tail">{push === "on" ? "on for this device" : push === "loading" ? "…" : "off"}</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 10, fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          {push === "needs-install" && <p style={{ margin: 0, color: "var(--warn)" }}>Works from the installed app only.</p>}
-          {push === "blocked" && <p style={{ margin: 0, color: "var(--warn)" }}>Blocked in iOS Settings → Notifications → A L I.</p>}
-          {push === "unsupported" && <p style={{ margin: 0, color: "var(--ink-3)" }}>Not supported in this browser.</p>}
-          {pushInfo && (() => {
-            const mins = pushInfo.lastTickAt ? Math.round((Date.now() - pushInfo.lastTickAt) / 60000) : null;
-            const stale = mins === null || mins > 30;
-            return (
-              <p style={{ margin: 0, fontSize: 14, color: stale ? "var(--warn)" : "var(--ink-3)" }}>
-                Nag service {mins === null ? "has not run yet" : `last ran ${mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`} ago`}
-                {stale && " · the every-5-min pinger (cron-job.org) looks down"}
-              </p>
-            );
-          })()}
-          {pushInfo && pushInfo.devices.length > 0 && (
-            <div style={{ display: "grid", gap: 2 }}>
-              <div style={{ fontSize: 13, color: "var(--ink-4)" }}>Devices</div>
-              {pushInfo.devices.map((d) => (
-                <div key={d.endpoint} style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 8, minHeight: 44 }}>
-                  <span style={{ fontSize: 14, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {deviceName(d.userAgent)}
-                    {d.endpoint === myEndpoint && <span style={{ color: "var(--violet)" }}> · this device</span>}
-                    {d.lastUsedAt && <span style={{ color: "var(--ink-4)" }}> · added {new Date(d.lastUsedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>}
-                  </span>
-                  <button onClick={() => removeDevice(d.endpoint)} className="cc-btn cc-btn-ghost" style={{ minHeight: 36, padding: "0 10px", fontSize: 13, color: "var(--neg)" }}>Remove</button>
-                </div>
-              ))}
-            </div>
-          )}
-          {push === "on" && pushInfo?.count === 0 && (
-            <p style={{ margin: 0, fontSize: 14, color: "var(--warn)" }}>No device registered on the server · turn reminders off and on again.</p>
-          )}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className={push === "on" ? "cc-btn cc-btn-secondary" : "cc-btn cc-btn-primary"} disabled={push === "loading" || push === "unsupported" || push === "needs-install" || push === "blocked"} onClick={togglePush}>
-              {push === "on" ? "Turn off on this device" : "Turn on reminders"}
-            </button>
-            {push === "on" && <button className="cc-btn cc-btn-ghost" onClick={testPush}>Send a test</button>}
-          </div>
-          {pushMsg && <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)" }}>{pushMsg}</p>}
-        </div>
-      </section>
+      <RemindersCard />
 
-      {/* Account */}
       {me?.required && (
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Account</span><span className="tail">{me.email ?? ""}</span></div>
@@ -691,15 +317,11 @@ export default function SettingsPage() {
         </section>
       )}
 
-      {/* App */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-09-24</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-10-03</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{migrateMsg ?? ""}</span>
-          <span style={{ display: "flex", gap: 8 }}>
-            <button className="cc-btn cc-btn-ghost" onClick={hardRefresh}>Update app</button>
-            <button className="cc-btn cc-btn-ghost" onClick={runMigrate}>Update database</button>
-          </span>
+          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{updating ?? "database, then the app"}</span>
+          <button className="cc-btn cc-btn-secondary" onClick={update} disabled={!!updating}>Update</button>
         </div>
       </section>
     </div>

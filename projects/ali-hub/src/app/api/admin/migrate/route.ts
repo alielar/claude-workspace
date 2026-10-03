@@ -196,6 +196,8 @@ export async function POST() {
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
     // ── 2026-09-12 evening: "Mobility", 21 moves, 12:00 · title and note refreshed ──
     `UPDATE checklist_items SET title = 'Mobility' WHERE routine_key = 'stretch' AND title = 'Stretching'`,
+    // ── 2026-10-03: two kinds only · a "habit" becomes an Extra (manual) ──
+    `UPDATE checklist_items SET kind = 'manual' WHERE kind = 'habit'`,
     // ── 2026-09-24: the KB Hour became Kettlebell 30 · the Saturday row follows (only if untouched) ──
     `UPDATE checklist_items SET title = 'Kettlebell', notes = 'AMRAP 30 · 11 moves' WHERE routine_key = 'gym-kb' AND title = 'Kettlebell · KB Hour'`,
     `UPDATE checklist_items SET notes = '2 sessions of 10 minutes, alternating · 10 s rests'

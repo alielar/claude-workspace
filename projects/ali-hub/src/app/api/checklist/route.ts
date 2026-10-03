@@ -5,9 +5,9 @@
  *
  * GET Response: { items: Item[], overallStreak, monthlyPct, thirtyDayAvg, bestStreak30 }
  *
- * Day-level stats (overall streak, %, 30-day average) count routine + manual items.
- * Habits being built (kind = "habit") have their own streak but do not count
- * toward the day until promoted · that is the whole point of "building".
+ * Day-level stats (overall streak, %, 30-day average) count ROUTINE items only (Ali 2026-10-03:
+ * "Routine counts toward the streak · Extra does not"). The old third kind, "habit", was folded
+ * into manual (= Extra) by ensureColumns.
  */
 
 import { NextResponse } from "next/server";
@@ -129,6 +129,9 @@ async function ensureColumns() {
   // as the doubled work blocks: an insert with no uniqueness rule. Fix = merge the doubles
   // (completions move to the oldest row) and a UNIQUE index so it cannot happen again.
   for (const ddl of DEDUPE_ROUTINE_ROWS) { try { await db.run(sql.raw(ddl)); } catch { /* best-effort */ } }
+
+  // Two kinds only (Ali 2026-10-03): a "habit" row becomes an Extra.
+  try { await db.run(sql.raw(`UPDATE checklist_items SET kind = 'manual' WHERE kind = 'habit'`)); } catch { /* best-effort */ }
 
   // Evening starts at 19:00 (Ali 2026-10-01, was 21:00) · steps timed 19:00–20:59 move to the evening.
   try { await db.run(sql.raw(`UPDATE checklist_items SET time_of_day = 'evening' WHERE at_time >= '19:00' AND at_time < '21:00' AND time_of_day <> 'evening'`)); } catch { /* best-effort */ }
@@ -268,7 +271,7 @@ export async function GET(req?: Request) {
       emoji: item.emoji,
       sortOrder: item.sortOrder,
       timeOfDay: (item.timeOfDay ?? "anytime") as TimeOfDay,
-      kind: ((item.kind as ItemKind) ?? "manual"),
+      kind: (item.kind === "routine" ? "routine" : "manual") as ItemKind,
       routineKey: (item.routineKey as RoutineKey | null) ?? null,
       // The kettlebell Saturday ticks itself once a KB session is finished today (2026-09-14 evening).
       completedToday: itemDates.includes(today) || (item.routineKey === "gym-kb" && todayTrain !== null),
@@ -286,9 +289,9 @@ export async function GET(req?: Request) {
   };
   const enriched = visible.map(enrich);
 
-  // Day-level stats: everything except habits still being built and the machine
-  // training days (gym-*) · a skipped gym morning must never break the streak.
-  const counted = new Set(enriched.filter((i) => i.kind !== "habit" && !i.routineKey?.startsWith("gym-")).map((i) => i.id));
+  // Day-level stats: ROUTINE items only (an Extra is tracked, never counted) and never the
+  // machine training days (gym-*) · a skipped gym morning must never break the streak.
+  const counted = new Set(enriched.filter((i) => i.kind === "routine" && !i.routineKey?.startsWith("gym-")).map((i) => i.id));
   const byDate = groupByDate(allCompletions, counted);
   const total = counted.size;
   const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
@@ -333,7 +336,7 @@ export async function POST(req: Request) {
       title: title.trim(),
       emoji: emoji?.trim() || null,
       timeOfDay: timeOfDay ?? "anytime",
-      kind: kind === "routine" || kind === "habit" ? kind : "manual",
+      kind: kind === "routine" ? "routine" : "manual",
       autoSource: autoSource ?? null,
       color: color ?? "violet",
       notes: notes?.trim() || null,

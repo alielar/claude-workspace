@@ -27,7 +27,7 @@ export async function GET() {
   const part = dayPart();
   const items = data.items;
   // Machine days (gym-*) are shown but never counted · same rule as the server's streak and Today (2026-09-14).
-  const counted = items.filter((i) => i.kind !== "habit" && i.source !== "workout" && !i.routineKey?.startsWith("gym-"));
+  const counted = items.filter((i) => i.kind === "routine" && i.source !== "workout" && !i.routineKey?.startsWith("gym-"));
   const done = counted.filter((i) => i.completedToday).length;
 
   const partOf = (i: ChecklistItem) => (i.timeOfDay === "anytime" ? null : i.timeOfDay);
@@ -37,7 +37,7 @@ export async function GET() {
   };
   // Same order as Today's NOW list: this part of day + anything still open from earlier.
   const next = items
-    .filter((i) => !i.completedToday && i.kind !== "habit" && i.source !== "workout" && dueNow(i))
+    .filter((i) => !i.completedToday && i.kind === "routine" && i.source !== "workout" && dueNow(i))
     .sort((a, b) => PART_ORDER[partOf(a) ?? part] - PART_ORDER[partOf(b) ?? part] || a.sortOrder - b.sortOrder)
     .slice(0, 3)
     .map((i) => ({ title: i.title, emoji: i.emoji }));
@@ -45,7 +45,7 @@ export async function GET() {
   // Lock-screen widget · strict order (Ali 2026-09-14): today's routine steps for THIS part
   // of the day, then work to-dos, then personal to-dos only once the two above are done.
   const routineNow = items
-    .filter((i) => !i.completedToday && i.kind !== "habit" && i.source !== "workout" && (partOf(i) === null || partOf(i) === part))
+    .filter((i) => !i.completedToday && i.kind === "routine" && i.source !== "workout" && (partOf(i) === null || partOf(i) === part))
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((i) => ({ t: i.title, w: "now" }));
   const dueTasks = todos
