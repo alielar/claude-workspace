@@ -21,11 +21,11 @@ import { pushAll } from './push.mjs';
 import { frenchTemplates } from './wati.mjs';
 
 const PLAN_AT = process.env.PLAN_AT || '09:15';
-const MAX_CALLS = Number(process.env.PLAN_MAX_CALLS || 30); // raised 15 → 30 on 2026-10-01: every manual message now costs one judgement
+const MAX_CALLS = Number(process.env.PLAN_MAX_CALLS || 80); // 15 → 30 (2026-10-01) → 80 (2026-10-03): the plan reacts to every manual message, and tests count too
 const BATCH = 6;
 // After a manual message from Ali (app or Wati), the lead is judged again SENT_DELAY_MS later (Ali, 2026-10-01: "what
 // should I do in the Hub now: wait, second follow-up, pause, skip a template, resume, change the status").
-const SENT_DELAY_MS = Number(process.env.PLAN_SENT_DELAY_MIN || 3) * 60e3;
+const SENT_DELAY_MS = Number(process.env.PLAN_SENT_DELAY_MIN || 1) * 60e3; // 1 min (was 3): Ali wants the plan to react as soon as he answers (2026-10-03)
 const DUE_H = Number(process.env.PLAN_DUE_H || 5);
 const FROM_H = 8, TO_H = 22;
 // Second, low-pressure follow-up before the 24h window shuts (Ali, 2026-10-01): a paused lead whose window closes within
@@ -145,9 +145,10 @@ export function leadBlock(c) {
     citfOf(c) ? `CITF : le Hub reprend ce lead le ${fmt(citfOf(c).moment)} (raison : ${CITF_CASES[citfOf(c).case] || citfOf(c).case || '-'}, date ${citfOf(c).dateSource === 'lead' ? 'donnée par le lead' : 'estimée'}) : à cette heure part le premier template de la série CITF correspondante (l'app n'en connaît pas le texte), puis la série continue si le lead ne répond pas.` : '',
     `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: `la fenêtre 24h se ferme à ${c.win?.closeAt ? fmtHM(new Date(c.win.closeAt).toISOString()) : '?'} et le lead n’a pas répondu au dernier message manuel d’Ali (${c.win?.aliToday ? 'envoyé aujourd’hui → seconde relance basse pression' : 'envoyé avant aujourd’hui, aucune relance aujourd’hui → relance courte et directe'}) avant la fermeture (règle « fenêtre qui se ferme »)`,
       citf: `le Hub REPREND CE LEAD AUJOURD'HUI à ${citfOf(c) ? fmtHM(citfOf(c).moment) : '?'} (série CITF) → règle « CITF du jour »`,
-      overdue: `la carte « ${c.overdueKind || 'wait'} » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée${c.overdueKind === 'followup' ? ' et Ali n’a pas envoyé ce message : propose l’étape suivante du rythme, pas la même' : ''} et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir. Exception : lead NON pausé dont un template qui colle part dans l’heure → « ok » ou « wait », pas de relance manuelle (règle Martin)`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → dire ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut), ou followup seulement si une règle l’autorise' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
+      overdue: `la carte « ${c.overdueKind || 'wait'} » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée${c.overdueKind === 'followup' ? ' et Ali n’a pas envoyé ce message : propose l’étape suivante du rythme, pas la même' : ''} et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir. Exception : lead NON pausé dont un template qui colle part dans l’heure → « ok » ou « wait », pas de relance manuelle (règle Martin)`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → (1) ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut) ; (2) les prochaines étapes que son message vient de créer (règle « ce que le message d’Ali engage »), chacune son item avec son heure' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
+    openPlanItems(c.wa_id).length ? 'Cartes déjà prévues pour ce lead (elles seront remplacées par ta réponse : reprends celles qui restent valables) :\n' + openPlanItems(c.wa_id).map((i) => `  - ${i.kind} ${i.when_at ? fmt(i.when_at) : ''} « ${i.title} »`).join('\n') : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
   const conv = c.msgs.length
     ? c.msgs.slice(-18).map((m) => `[${fmt(m.at)}] ${m.who === 'LEAD' ? 'LEAD' : m.tpl ? `AUTO ${m.tpl_name || ''}` : 'ALI '} : ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 320)}`).join('\n')
@@ -181,10 +182,12 @@ export async function judgeBatch(batch, fakeNow = null) {
   return { items: Array.isArray(out.items) ? out.items : [], summary: String(out.summary || '').trim(), ms: out.ms };
 }
 
-function store(c, it) {
-  const d = today();
+// supersede: the first item of a judgement replaces every open card of the lead (today's and the ones planned ahead);
+// the next items of the same judgement are added next to it (Ali, 2026-10-03: the Hub action AND the next steps the
+// conversation created, e.g. « get his availabilities for the trial lesson tomorrow »).
+function store(c, it, { supersede = true } = {}) {
   let pushed = false;
-  for (const old of planItemsFor(c.wa_id, d)) if (old.state === 'open') { setPlanState(old.id, 'superseded'); if (old.pushed) pushed = true; } // a re-judged card is not pushed twice
+  if (supersede) for (const old of openPlanItems(c.wa_id)) { setPlanState(old.id, 'superseded'); if (old.pushed) pushed = true; } // a re-judged card is not pushed twice
   const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || null;
   const bubbles = (Array.isArray(it.bubbles) ? it.bubbles : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
   let kind = ['pause', 'followup', 'resume', 'wait', 'fix', 'ok'].includes(it.kind) ? it.kind : 'ok';
@@ -209,6 +212,8 @@ function store(c, it) {
     suggestionId = insertSuggestion(c.wa_id, [{ bubbles, later: [], why: String(it.why || '') }], null, 'plan', { instruction: `Today’s plan: ${String(it.title || '').slice(0, 80)}`, kind: 'draft', moves: [], showAt });
     markSuggestionPushed(suggestionId);
   }
+  // A card planned for a later day lives in that day's plan (and in today's « Tomorrow » fold), not in today's list.
+  const d = whenIso && madrid(new Date(whenIso)).slice(0, 10) > today() ? madrid(new Date(whenIso)).slice(0, 10) : today();
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
     hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: cardSig(c), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, keep_templates: keep.length ? keep : null, pushed });
 }
@@ -252,13 +257,18 @@ export async function plan({ scope = 'due', reason = 'auto', dry = false, only =
     if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
     let judged = 0; const summaries = [];
     for (let i = 0; i < cands.length; i += BATCH) {
-      if (callsToday() >= MAX_CALLS) { log(`cap of ${MAX_CALLS} calls reached today`); break; }
+      if (callsToday() >= MAX_CALLS) { // never silent (Ali, 2026-10-03): one push the first time the cap blocks a judgement
+        log(`cap of ${MAX_CALLS} calls reached today`);
+        if (getState(`plan_cap_pushed_${today()}`) !== '1') { setState(`plan_cap_pushed_${today()}`, '1'); pushAll({ title: 'Plan paused for today', body: `${MAX_CALLS} Claude reviews used. New messages get no plan update until tomorrow (raise PLAN_MAX_CALLS in .env).`, tag: 'plan-cap', url: '/plan' }).catch(() => {}); }
+        break;
+      }
       const batch = cands.slice(i, i + BATCH);
       log(`judging ${batch.map((c) => c.name || c.wa_id).join(', ')} (${reason})`);
       let out;
       try { out = await judgeBatch(batch); } catch (e) { log('judge error:', e.message); status.error = e.message; continue; }
       const byWa = new Map(batch.map((c) => [c.wa_id, c]));
-      for (const it of out.items) { const c = byWa.get(String(it.waId || '').replace(/\D/g, '')); if (!c) continue; store(c, it); judged++; }
+      const seen = new Set();
+      for (const it of out.items) { const c = byWa.get(String(it.waId || '').replace(/\D/g, '')); if (!c) continue; store(c, it, { supersede: !seen.has(c.wa_id) }); seen.add(c.wa_id); judged++; }
       if (out.summary) summaries.push(out.summary);
       log(`${out.items.length} card(s) in ${Math.round((out.ms || 0) / 1000)} s`);
     }

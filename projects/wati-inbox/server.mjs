@@ -40,6 +40,7 @@ const authed = (req) => {
 const setCookie = (res) => res.setHeader('Set-Cookie', `wi=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`);
 
 // ── helpers ──────────────────────────────────────────────────────────────────
+const nextDay = (day) => { const t = new Date(`${day}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + 1); return t.toISOString().slice(0, 10); };
 const json = (res, status, data) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(data)); };
 const body = (req) => new Promise((ok, ko) => { let s = ''; req.on('data', (c) => { s += c; if (s.length > 1e6) ko(new Error('too big')); }); req.on('end', () => { try { ok(s ? JSON.parse(s) : {}); } catch { ko(new Error('bad json')); } }); });
 const rawBody = (req, max = 30e6) => new Promise((ok, ko) => { const chunks = []; let n = 0; req.on('data', (c) => { n += c.length; if (n > max) { ko(new Error('too big')); req.destroy(); } else chunks.push(c); }); req.on('end', () => ok(Buffer.concat(chunks))); req.on('error', ko); });
@@ -177,7 +178,7 @@ async function api(req, res, path) {
   const planItem = (i) => { const h = hubNextFor(i.wa_id); const skip = i.skip_templates ? JSON.parse(i.skip_templates) : [], keep = i.keep_templates ? JSON.parse(i.keep_templates) : []; const stepsOf = (list) => list.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }); return { ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: skip, keep_templates: keep,
     skip_steps: stepsOf(skip), keep_steps: stepsOf(keep),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
-  if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
+  if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), tomorrow: planItems(nextDay(planToday())).filter((i) => i.state === 'open').map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
   const ms = /^\/api\/thread\/(\d{8,15})\/missed-seen$/.exec(path);
   if (ms && req.method === 'POST') { markScheduledSeen(ms[1]); return json(res, 200, { ok: true }); }
   if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Missing number' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
@@ -240,6 +241,7 @@ async function api(req, res, path) {
       tbc: tbcInfo(waId),
       hub: hubNextFor(waId),
       plan: openPlanItems(waId).map(planItem)[0] || null,
+      plans: openPlanItems(waId).map(planItem).sort((a, b) => String(a.when_at || '9').localeCompare(String(b.when_at || '9'))),
       stale,
       sending: sending.get(waId) || null,
     });

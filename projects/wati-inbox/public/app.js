@@ -246,7 +246,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.scheduledMissed?.id}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${d.hub?.next?.template}|${d.hub?.paused}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.scheduledMissed?.id}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${(d.plans || []).map((i) => i.id).join(',')}|${d.hub?.next?.template}|${d.hub?.paused}`;
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
   if (quiet && key === lastThreadKey) return;
@@ -270,7 +270,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const nx = hb ? (hb.realNext || hb.next) : null; // the Hub's `next` can be a step Ali unticked: prefer the first step still ahead
   const hubLine = hb ? `<div class="ctx">Sales Hub: <b>${esc(hb.status || '?')}</b>${hb.paused ? ' · <b>paused</b>' : ''}${nx ? ` · next <b>${nx.step ? `#${nx.step} ` : ''}${esc(nx.template)}</b> ${Date.parse(nx.at) < Date.now() - 3600e3 ? '<span class="warn">(date passed)</span>' : `${fmtDay(nx.at)} ${fmtTime(nx.at)}`}${hb.paused ? ' (will not be sent)' : ''}` : ' · no template scheduled'}${hb.citf?.momentLocal ? ` · CITF ${esc(String(hb.citf.momentLocal).slice(0, 10))}${hb.citf.case ? ` (${esc(hb.citf.case)})` : ''}` : ''}</div>` : '';
   const nextLine = hb ? hubLine : tb.next && !al ? `<div class="ctx">Next automated: <b>${esc(tb.next.tpl)}</b> at ${fmtTime(tb.next.firesAt)}${tb.leadWaiting ? ' (skipped until you reply)' : ''}</div>` : '';
-  const planBox = pl ? planCardHtml(pl, { inThread: true, salesHub: tb.salesHub }) : '';
+  const planBox = (d.plans?.length ? d.plans : pl ? [pl] : []).map((i) => planCardHtml(i, { inThread: true, salesHub: tb.salesHub })).join(''); // every open card of the lead: the Hub action and the next steps
   const tbcBox = al ? `<div class="card tbc ${al.state}">
       <div class="opt-head">Sales Hub · ${esc(al.tpl)} leaves at ${fmtTime(al.fires_at)} (${fmtLeft(al.fires_at)})</div>
       <p class="small">${esc(al.why || '')}</p>
@@ -515,7 +515,7 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
 }
 async function renderPlan() {
-  const { items, counts, status, hub, salesHub, citf = [] } = await api('/api/plan');
+  const { items, counts, status, hub, salesHub, citf = [], tomorrow = [] } = await api('/api/plan');
   const running = status.state === 'running';
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
@@ -534,6 +534,7 @@ async function renderPlan() {
     ${citf.length ? `<p class="muted small">Resuming today (CITF): ${citf.map((c) => `<a data-nav href="/t/${c.wa_id}">${esc(c.name)}</a> ${fmtTime(c.at)}${c.case ? ` (${esc(c.case)})` : ''}${c.passed ? ' · sent' : ''}`).join(' · ')}</p>` : ''}
     ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
     ${sec('Now', todo)}${sec('Later today', later)}${sec('Waiting', wait)}
+    ${tomorrow.length ? `<details class="card fold" data-fold="tomorrow" ${planFolds.has('tomorrow') ? 'open' : ''}><summary>Tomorrow (${tomorrow.length}) <span class="muted small">· next steps already planned</span></summary>${tomorrow.sort(byTime).map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${ok.length ? `<details class="card fold" data-fold="ok" ${planFolds.has('ok') ? 'open' : ''}><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${closed.length ? `<details class="card fold" data-fold="done" ${planFolds.has('done') ? 'open' : ''}><summary>Done (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
