@@ -11,13 +11,17 @@ import { noDash } from "@/lib/utils";
 
 let genAI: InstanceType<typeof import("@google/generative-ai").GoogleGenerativeAI> | null = null;
 
-async function getModel() {
+/** Free-tier models, tried in order (Google retires names; the first that answers wins and is kept). */
+const GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"];
+let geminiModel: string | null = null;
+
+async function getModel(name = geminiModel ?? GEMINI_MODELS[0]) {
   if (!process.env.GEMINI_API_KEY) return null;
   if (!genAI) {
     const { GoogleGenerativeAI } = await import("@google/generative-ai");
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   }
-  return genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  return genAI.getGenerativeModel({ model: name });
 }
 
 /** The last failure seen by askAI · for the podcast's lastError line. */
@@ -28,13 +32,23 @@ export let lastAiError: string | null = null;
  * out of credits that night and the free Gemini tier keeps the morning alive. */
 export async function askAI(prompt: string, maxTokens = 4000): Promise<string | null> {
   lastAiError = null;
-  const model = await getModel();
-  if (model) {
-    try {
-      const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: Math.min(8192, maxTokens) } });
-      const t = result.response.text().trim();
-      if (t) return t;
-    } catch (e) { lastAiError = `gemini: ${String((e as Error).message).slice(0, 120)}`; }
+  if (process.env.GEMINI_API_KEY) {
+    const names = geminiModel ? [geminiModel] : GEMINI_MODELS;
+    for (const name of names) {
+      const model = await getModel(name);
+      if (!model) break;
+      try {
+        const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: Math.min(8192, maxTokens) } });
+        const t = result.response.text().trim();
+        if (t) { geminiModel = name; return t; }
+        lastAiError = `gemini ${name}: empty answer`;
+      } catch (e) {
+        const msg = String((e as Error).message);
+        lastAiError = `gemini ${name}: ${msg.slice(0, 220)}`;
+        // A retired model name or a quota wall → the next name; anything else is this prompt's problem.
+        if (!/404|not found|429|quota|RESOURCE_EXHAUSTED|400/i.test(msg)) break;
+      }
+    }
   }
   if (process.env.ANTHROPIC_API_KEY) {
     try {

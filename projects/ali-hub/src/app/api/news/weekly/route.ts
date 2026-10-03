@@ -12,6 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { ensureWeeklyBrief, getWeeklyBrief, isWeekKey, latestWeeklyBrief, listWeeks } from "@/lib/news/weekly";
 import { ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
+import { askAI, lastAiError } from "@/lib/news/summarize";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ export async function GET(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
   const q = req.nextUrl.searchParams;
+  // ?aiprobe=1 · which writer answers (diagnostics · the night the Anthropic credits ran out, 2026-10-04).
+  if (q.get("aiprobe") === "1") { const t = await askAI("Answer with the single word: ready", 20); return NextResponse.json({ answer: t, error: lastAiError }); }
   const week = q.get("week");
   let brief = week && isWeekKey(week) ? await getWeeklyBrief(userId, week) : await latestWeeklyBrief(userId);
   let made: string | null = null;

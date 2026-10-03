@@ -38,7 +38,7 @@ export type VideoFeed = {
 const POLL_EVERY_MS = 30 * 60_000;
 const PER_CHANNEL = 5;
 const DURATION_BUDGET = 24;
-const SEARCH_BUDGET = 6;            // search-page lookups per poll (~1 MB each)         // lengths read per poll (the player endpoint is a few KB each)
+const SEARCH_BUDGET = 10;           // search-page lookups per poll (~1 MB each)         // lengths read per poll (the player endpoint is a few KB each)
 const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "accept-language": "en" };
 
 async function ensureTable() {
