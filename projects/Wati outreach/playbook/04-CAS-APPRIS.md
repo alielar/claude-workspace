@@ -1125,3 +1125,26 @@ Règles permanentes, intégrées dans `00-QUICK.md` (bloc « Revue du 29/09 »),
 **Ce que j'ai répondu :** n/a — Ali a demandé de vérifier que les templates partent et collent
 **Pourquoi :** quand le Hub n'est pas en pause et que les templates du jour collent au fil, ce sont eux la relance : `ok` ou `wait`, jamais un message manuel, et jamais dans l'heure qui précède un template (deux messages de pression à dix minutes d'écart). Une heure donnée par le lead et passée ne change rien si un template qui colle part dans l'heure.
 **Résultat :** carte Martin remplacée par « Watch for reply, 17:00 template covers it » ; règle écrite dans plan-prompt.md et dans le motif « overdue » du plan
+
+## 2026-10-03 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+### 18:45 · Liliane — Basse pression après refus répété : dire explicitement qu'on libère la place, pas juste "je ne solliciterai plus"
+**Situation :** Liliane a refusé une 3e fois, agacée ("je vous l'ai dit"), un acompte flexible proposé par template ; elle dit revenir d'elle-même sans date.
+**Ce qui était proposé :** Claude: Low pressure → « Je comprends, pas de souci / Je ne vous solliciterai plus d'ici là, écrivez-moi quand vous serez prête »
+**Ce qu'Ali a envoyé :** « Je comprends, pas de souci / Je vais devoir libérer votre place pour le moment pour l'accorder à un autre candidat, je vous dirai si une place se libère au cas ou vous aurez pris une décision 👍 »
+**Pourquoi :** Règle déjà apprise (04-CAS-APPRIS, section « Basse pression, clôture ») : un lead qui demande du temps sans pression doit entendre qu'on libère sa place — pas de deadline, pas de liste d'attente, pas de plaidoyer — jamais l'impression qu'on la garde contre lui. Le brouillon de Claude omettait ce mécanisme et restait vague ("je ne solliciterai plus"), sans jamais dire que la place part réellement. Ali corrige en nommant l'action concrète (place libérée/réattribuée) tout en gardant l'initiative du futur contact ("je vous dirai"), plutôt que de renvoyer la balle au lead ("écrivez-moi").
+**Comment appliquer :** Pour une clôture basse pression après refus répété, inclure explicitement que la place est libérée/réattribuée (sans deadline ni liste d'attente ni plaidoyer), et garder l'initiative du recontact du côté d'Ali plutôt que de dire au lead d'écrire quand il sera prêt.
+
+## 2026-10-03 — Script de référence du mécanisme administration en deux temps (validé par Ali, à reprendre tel quel)
+**Situation :** lead qui ne peut pas finaliser avant la deadline du soir pour une raison concrète (ici une compétition ce soir). Ali a retouché le brouillon et demande que cette formulation serve de modèle pour toutes les propositions « Administration (2 temps) ».
+**Ce que le lead a écrit :** n/a — modèle
+**Ce que j'ai répondu :** MAINTENANT (2 bulles) :
+> « Pas de souci, la date limite était ce soir, mais je comprends qu'avec [sa raison : la compétition ce soir] ce n'est pas possible, du coup je vérifie et je vais essayer avec l'administration pour voir ce que je peux faire pour vous »
+> « Je reviens vers vous très vite »
+DANS 5-10 MIN (2 bulles) :
+> « Bonne nouvelle, j'ai pu avoir la confirmation et l'accord de l'administration pour votre dossier 👍 »
+> « Ils ont prolongé votre délai jusqu'à [demain 15h] pour que vous ayez le temps de finaliser l'inscription, le lien est le même que sur le mail d'admission que vous avez reçu le jour de notre entretien, vous pensez pouvoir finaliser ça [demain] sans problème ? »
+**Pourquoi :** la structure à garder : (1) on nomme la deadline telle quelle (« la date limite était ce soir ») et la raison précise du lead, pas un « je comprends » nu ; (2) « je vérifie et je vais essayer avec l'administration pour voir ce que je peux faire pour vous » puis « je reviens vers vous très vite » en bulle séparée ; (3) la bonne nouvelle = « confirmation et accord de l'administration pour votre dossier », un seul emoji ici et nulle part ailleurs ; (4) « ils ont prolongé votre délai jusqu'à … » (jamais « je vous ai étendu »), la raison du délai (« pour que vous ayez le temps de finaliser l'inscription »), le lien : s'il n'y a pas de nouveau lien, « le lien est le même que sur le mail d'admission que vous avez reçu le jour de notre entretien » ; s'il y a un lien mis à jour, le lien puis « Est-ce qu'il fonctionne bien de votre côté ? » ; (5) une seule question, en clôture : « vous pensez pouvoir finaliser ça demain sans problème ? ».
+**Résultat :** modèle ; repris dans le move « Administration (2 steps) » de l'app

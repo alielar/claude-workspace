@@ -25,7 +25,7 @@ Lead : {{name}} · +{{waId}} · il est {{now}} (Europe/Madrid).
 
 Réponse : uniquement l'objet JSON demandé.
 - bubbles : les bulles dans l'ordre, telles qu'Ali les collera (le bloc MAINTENANT).
-- later : les bulles du second temps (DANS 5-10 MIN) uniquement pour une administration en deux temps, sinon tableau vide.
+- later : les bulles du second temps (DANS 5-10 MIN) pour une administration en deux temps — move coché par Ali, demandée dans sa consigne, ou choisie par toi —, sinon tableau vide.
 - why : deux lignes — où en est le lead, quel blocage tu traites, quel barreau de l'échelle tu joues, et la relance si silence (quand et quoi).
 - note : ce qu'Ali doit savoir avant d'envoyer (fenêtre fermée → template obligatoire, chiffre à confirmer, lead à marquer), sinon chaîne vide.
 - moves, needs, skip : voir les consignes ci-dessus quand personne n'a choisi de cap ; sinon `moves` = les moves d'Ali, `needs` = "", `skip` = false.
