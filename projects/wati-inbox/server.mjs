@@ -11,6 +11,8 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
+import { insertScheduled, setScheduledState, pendingScheduled, missedScheduled, markScheduledSeen } from './db.mjs';
+import { pushAll } from './push.mjs';
 import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, getSuggestion, setSuggestionEdited, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagVerdict, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
@@ -60,23 +62,44 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // here so the phone can lock or lose the network and the bubbles still go out.
 const sending = new Map(); // wa_id → { sent, total, error }
 // The "dans 5-10 min" block of an administration two-step: the Mac sends it later, the phone can lock.
-const scheduled = new Map(); // wa_id → { bubbles, meta, at, timer }
-function scheduleSend(waId, bubbles, meta, delayMs) {
+const scheduled = new Map(); // wa_id → { id, bubbles, meta, at, timer } — mirror of the pending rows of scheduled_sends
+// id: the scheduled_sends row (re-arming at startup); without it a new row is written.
+function scheduleSend(waId, bubbles, meta, delayMs, { id = null } = {}) {
   cancelScheduled(waId);
-  const at = new Date(Date.now() + delayMs).toISOString();
-  const timer = setTimeout(async () => {
-    scheduled.delete(waId);
-    const t = storedThread(waId);
-    if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, 'window closed at the time of the delayed send'); return; }
-    try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
-    catch (e) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, e.message); sending.set(waId, { sent: 0, total: bubbles.length, error: `Delayed send failed: ${e.message}` }); setTimeout(() => sending.delete(waId), 90_000); return; }
-    saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
-    if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
-    else sendRest(waId, t, bubbles, meta);
-  }, delayMs);
-  scheduled.set(waId, { bubbles, meta, at, timer });
+  const at = id ? pendingScheduled().find((r) => r.id === id)?.at || new Date(Date.now() + delayMs).toISOString() : new Date(Date.now() + delayMs).toISOString();
+  const rowId = id || insertScheduled(waId, bubbles, meta, at);
+  const timer = setTimeout(() => fireScheduled(rowId, waId, bubbles, meta), Math.max(0, delayMs));
+  scheduled.set(waId, { id: rowId, bubbles, meta, at, timer });
 }
-function cancelScheduled(waId) { const p = scheduled.get(waId); if (p) { clearTimeout(p.timer); scheduled.delete(waId); return true; } return false; }
+async function fireScheduled(rowId, waId, bubbles, meta) {
+  scheduled.delete(waId);
+  const t = storedThread(waId);
+  if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, 'window closed at the time of the delayed send'); setScheduledState(rowId, 'skipped', 'window closed at the time of the delayed send'); return; }
+  try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); setScheduledState(rowId, 'sent'); }
+  catch (e) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, e.message); setScheduledState(rowId, 'failed', e.message); sending.set(waId, { sent: 0, total: bubbles.length, error: `Delayed send failed: ${e.message}` }); setTimeout(() => sending.delete(waId), 90_000); return; }
+  saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+  if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
+  else sendRest(waId, t, bubbles, meta);
+}
+function cancelScheduled(waId) { const p = scheduled.get(waId); if (p) { clearTimeout(p.timer); scheduled.delete(waId); setScheduledState(p.id, 'cancelled'); return true; } return false; }
+// At startup: re-arm what was pending. Due while the app was down: sent at once if less than 30 min late, otherwise
+// marked « missed », a push to Ali and a red card in the thread — never a silent loss (Boris, 2026-10-03).
+async function restoreScheduled() {
+  const rows = pendingScheduled();
+  if (!rows.length) { console.log('scheduled: nothing pending'); return; }
+  for (const r of rows) {
+    const bubbles = JSON.parse(r.bubbles), meta = JSON.parse(r.meta || '{}'), late = Date.now() - Date.parse(r.at);
+    if (late > 30 * 60_000) {
+      setScheduledState(r.id, 'missed', `the app was not running at ${r.at.slice(11, 16)}Z`);
+      const t = storedThread(r.wa_id);
+      console.log(`scheduled: MISSED #${r.id} for ${t?.name || r.wa_id}, due ${r.at}`);
+      if (t) pushAll({ title: `Part 2 NOT sent · ${t.name || r.wa_id}`, body: 'The app was down when it was due. Open the thread and send it by hand.', tag: `missed-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {});
+      continue;
+    }
+    console.log(`scheduled: re-armed #${r.id} for ${r.wa_id}${late > 0 ? `, ${Math.round(late / 1000)} s late, sending now` : `, due ${r.at}`}`);
+    scheduleSend(r.wa_id, bubbles, meta, Math.max(0, Date.parse(r.at) - Date.now()), { id: r.id });
+  }
+}
 const typingGap = (text) => 5000 + Math.min(5000, text.length * 20);
 function sendRest(waId, t, bubbles, meta) {
   const state = { sent: 1, total: bubbles.length, error: null };
@@ -155,6 +178,8 @@ async function api(req, res, path) {
     skip_steps: stepsOf(skip), keep_steps: stepsOf(keep),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
   if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
+  const ms = /^\/api\/thread\/(\d{8,15})\/missed-seen$/.exec(path);
+  if (ms && req.method === 'POST') { markScheduledSeen(ms[1]); return json(res, 200, { ok: true }); }
   if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Missing number' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
   if (path === '/api/plan/run' && req.method === 'POST') { runPlan({ scope: 'all', reason: 'ali' }).catch(() => {}); return json(res, 200, { ok: true }); }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);
@@ -211,6 +236,7 @@ async function api(req, res, path) {
       offerText: describeOffer(getOffer(waId), currencyFor(t.country)),
       currency: currencyFor(t.country),
       scheduled: scheduled.has(waId) ? { at: scheduled.get(waId).at, bubbles: scheduled.get(waId).bubbles } : null,
+      scheduledMissed: (() => { const m = missedScheduled(waId); return m ? { id: m.id, at: m.at, bubbles: JSON.parse(m.bubbles) } : null; })(),
       tbc: tbcInfo(waId),
       hub: hubNextFor(waId),
       plan: openPlanItems(waId).map(planItem)[0] || null,
@@ -375,6 +401,7 @@ createHttp((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Wati Inbox on https://localhost:${PORT}  ·  https://${TS_HOST}:${PORT}`);
+  restoreScheduled().catch((e) => console.log('scheduled: restore error', e.message));
   startPolling();
   startTmMonitor();
   startConsolidating();

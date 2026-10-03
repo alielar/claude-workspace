@@ -69,6 +69,15 @@ try { db.exec('ALTER TABLE messages ADD COLUMN tpl_name TEXT'); } catch {} // na
 // Sales Hub automation alerts (2026-09-30): one row per (lead, step) when the next TBC template should be
 // paused by Ali in the Sales Hub — kind timing (he replied just before it) or fit (it contradicts his
 // unanswered question; Claude judged it). state: open → paused → sent | replied | fired | expired | ignored | ok
+// Delayed sends (the « dans 5-10 min » block): on disk, so a restart of the app re-arms them instead of losing them
+// (Boris, 2026-10-03: part 1 sent 18:50, app restarted 18:51, part 2 never left and nothing said so).
+db.exec(`CREATE TABLE IF NOT EXISTS scheduled_sends (id INTEGER PRIMARY KEY AUTOINCREMENT, wa_id TEXT NOT NULL, bubbles TEXT NOT NULL, meta TEXT, at TEXT NOT NULL, created_at TEXT NOT NULL,
+  state TEXT NOT NULL DEFAULT 'pending', error TEXT, seen INTEGER NOT NULL DEFAULT 0)`);
+export const insertScheduled = (waId, bubbles, meta, at) => Number(db.prepare('INSERT INTO scheduled_sends (wa_id, bubbles, meta, at, created_at) VALUES (?, ?, ?, ?, ?)').run(waId, JSON.stringify(bubbles), JSON.stringify(meta || {}), at, new Date().toISOString()).lastInsertRowid);
+export const setScheduledState = (id, state, error = null) => db.prepare('UPDATE scheduled_sends SET state = ?, error = ? WHERE id = ?').run(state, error, id);
+export const pendingScheduled = () => db.prepare("SELECT * FROM scheduled_sends WHERE state = 'pending' ORDER BY at").all();
+export const missedScheduled = (waId) => db.prepare("SELECT * FROM scheduled_sends WHERE wa_id = ? AND state = 'missed' AND seen = 0 ORDER BY id DESC LIMIT 1").get(waId);
+export const markScheduledSeen = (waId) => db.prepare("UPDATE scheduled_sends SET seen = 1 WHERE wa_id = ? AND state = 'missed'").run(waId);
 db.exec(`CREATE TABLE IF NOT EXISTS tbc_alerts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   wa_id TEXT NOT NULL,

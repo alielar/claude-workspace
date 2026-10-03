@@ -246,7 +246,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${d.hub?.next?.template}|${d.hub?.paused}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.scheduledMissed?.id}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${d.hub?.next?.template}|${d.hub?.paused}`;
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
   if (quiet && key === lastThreadKey) return;
@@ -317,6 +317,8 @@ async function renderThread(waId, { quiet = false } = {}) {
     : d.learning?.state === 'error' ? `<p class="err small">Lesson not saved: ${esc(d.learning.error)}</p>`
     : d.lastLesson && (!sug || d.lastLesson.at >= sug.created_at) ? `<p class="muted small learn">Learned ${ago(d.lastLesson.at)}: ${d.lastLesson.kind === 'confirmed' ? 'draft sent as is' : d.lastLesson.kind === 'lesson' ? `lesson: ${esc(d.lastLesson.title || '')}` : d.lastLesson.kind === 'minor' ? 'small edit noted' : 'nothing to keep'}</p>` : '';
   const schedBox = d.scheduled ? `<div class="card sending">Second part in ${fmtLeft(d.scheduled.at)}: « ${esc(d.scheduled.bubbles[0].slice(0, 80))}… » <button class="small" id="cancelsched">Cancel</button></div>` : '';
+  // A delayed send the app could not make (it was down at the time): never silent (Boris, 2026-10-03).
+  const missedBox = d.scheduledMissed ? `<div class="card sending failed"><b>Part 2 was NOT sent</b> at ${fmtTime(d.scheduledMissed.at)}: the app was not running. Send it by hand from the « In 5-10 min » card below, or dismiss.<div class="acts"><button class="small" id="missedseen">Dismiss</button></div></div>` : '';
   const sendBox = sending ? `<div class="card sending ${sending.error ? 'failed' : ''}">${sending.error ? esc(sending.error) : `Sending ${sending.sent}/${sending.total}`}</div>` : '';
 
   // Steering Claude (folded): the initial offer, the moves, a free consigne.
@@ -340,7 +342,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <button class="icon" id="copynum" title="Copy +${waId}" aria-label="Copy the number">${COPY_ICON}</button></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
-    ${planBox}${tbcBox}${sendBox}${schedBox}${claude}${hasDraft ? steer : ''}${learnLine}${compose}${hasDraft ? '' : steer}`;
+    ${planBox}${tbcBox}${sendBox}${missedBox}${schedBox}${claude}${hasDraft ? steer : ''}${learnLine}${compose}${hasDraft ? '' : steer}`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
   // Copy the lead's number from the header icon (Ali, 2026-10-03: the icon instead of the number itself).
@@ -404,6 +406,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     catch (e) { await api(`/api/thread/${waId}/cancel`, { method: 'POST' }).catch(() => {}); toast(`Not sent, part 2 cancelled: ${e.message}`); }
     lastThreadKey = ''; route();
   });
+  if ($('#missedseen')) $('#missedseen').onclick = async () => { await api(`/api/thread/${waId}/missed-seen`, { method: 'POST' }); redraw(); };
   if ($('#cancelsched')) $('#cancelsched').onclick = async () => { await api(`/api/thread/${waId}/cancel`, { method: 'POST' }); toast('Second part cancelled'); redraw(); };
   // steering panel
   if (d.windowOpen) {
