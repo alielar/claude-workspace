@@ -35,6 +35,32 @@ def read_wav(path):
     return np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
 
 
+# Whisper invents words on silence or room noise ("Okay.", "Thank you.", "Merci.", subtitle credits). Ali, 2026-10-03: a
+# dictation left running for 21 min filled the box with them. Keep only segments Whisper itself does not flag as
+# no-speech, and drop a piece that is nothing but filler when the no-speech score is doubtful.
+FILLER = {"okay", "ok", "thank you", "thanks", "thank you very much", "merci", "merci beaucoup", "d'accord", "bye", "au revoir",
+          "sous-titres réalisés par la communauté d'amara.org", "sous-titrage st' 501", "thanks for watching", "you", "oui", "hmm", "mm"}
+
+
+def clean_text(res):
+    segs = res.get("segments") or []
+    if not segs:
+        return (res.get("text") or "").strip()
+    kept = []
+    for sg in segs:
+        txt = (sg.get("text") or "").strip()
+        if not txt:
+            continue
+        nsp = float(sg.get("no_speech_prob") or 0.0)
+        if nsp > 0.5:  # Whisper's own verdict: more likely silence than speech
+            continue
+        bare = "".join(ch for ch in txt.lower() if ch.isalnum() or ch in " '").strip().rstrip(".!?")
+        if bare in FILLER and nsp > 0.15:  # a bare "okay"/"thank you" with a doubtful score: the classic hallucination
+            continue
+        kept.append(txt)
+    return " ".join(kept).strip()
+
+
 def main():
     # mlx_whisper imports scipy.signal only for word timestamps (timing.py), which dictation never asks for. The scipy
     # binaries shipped for Python 3.10 do not load on this macOS (dyld "__thread_bss" error, 2026-10-01), so a stub
@@ -107,7 +133,7 @@ def main():
                     no_speech_threshold=0.6,
                     initial_prompt=req.get("prompt") or None,
                 )
-                out = {"id": rid, "text": (res.get("text") or "").strip(), "language": lang, "ms": int((time.time() - t0) * 1000)}
+                out = {"id": rid, "text": clean_text(res), "language": lang, "ms": int((time.time() - t0) * 1000)}
         except Exception as e:  # noqa: BLE001
             out = {"id": rid, "error": str(e)[:300]}
         sys.stdout.write(json.dumps(out, ensure_ascii=False) + "\n")

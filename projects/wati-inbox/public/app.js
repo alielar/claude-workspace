@@ -36,6 +36,9 @@ const micPaint = () => document.querySelectorAll('[data-mic]').forEach((b) => { 
 const bindMic = () => document.querySelectorAll('[data-mic]').forEach((b) => { b.onclick = () => micToggle(b.dataset.mic); });
 // A piece ends after 0.55 s of silence; while speaking, a provisional text (fast model) is asked every 0.9 s, one at a time.
 const SEG_SILENCE_MS = 550, SEG_MIN_MS = 600, SEG_MAX_MS = 15000, INTERIM_MS = 900, VOICE_RMS = 0.012;
+// The recorder stops by itself: 90 s without a voice, or 10 min in all (Ali, 2026-10-03: a dictation left on for 21 min
+// kept feeding room noise to Whisper, which filled the box with "okay okay thank you").
+const MIC_IDLE_STOP_MS = 90_000, MIC_MAX_MS = 10 * 60_000;
 async function micToggle(field) {
   if (rec) { if (rec.field !== field) { toast('Stop the other dictation first'); return; } return micStop(); }
   if (!navigator.mediaDevices?.getUserMedia) { toast('No microphone access in this browser'); return; }
@@ -57,6 +60,8 @@ async function micToggle(field) {
 // One audio frame (≈85 ms at 48 kHz): accumulate, detect voice, cut a piece at a pause, ask for a provisional text meanwhile.
 function micFrame(samples) {
   const r = rec; const now = Date.now();
+  if (now - r.startedAt >= MIC_MAX_MS) { toast('Dictation stopped after 10 min'); micStop(); return; }
+  if (now - (r.lastVoiceAt || r.startedAt) >= MIC_IDLE_STOP_MS) { toast('Dictation stopped: no voice for 90 s'); micStop(); return; }
   let s = 0; for (let i = 0; i < samples.length; i += 4) s += samples[i] * samples[i];
   const rms = Math.sqrt(s / (samples.length / 4));
   r.seg.push(new Float32Array(samples)); r.segMs += (samples.length / r.rate) * 1000;
