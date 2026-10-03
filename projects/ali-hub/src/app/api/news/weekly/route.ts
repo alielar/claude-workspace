@@ -23,6 +23,12 @@ export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
   // ?aiprobe=1 · which writer answers (diagnostics · the night the Anthropic credits ran out, 2026-10-04).
   if (q.get("aiprobe") === "1") { const t = await askAI("Answer with the single word: ready", 20); return NextResponse.json({ answer: t, error: lastAiError }); }
+  if (q.get("aiprobe") === "models") {
+    // The free models Google still serves this key · names retire without notice.
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${process.env.GEMINI_API_KEY ?? ""}`).catch(() => null);
+    const j = r ? await r.json().catch(() => null) as { models?: { name: string; supportedGenerationMethods?: string[] }[] } | null : null;
+    return NextResponse.json({ status: r?.status, models: (j?.models ?? []).filter((m) => m.supportedGenerationMethods?.includes("generateContent")).map((m) => m.name.replace("models/", "")) });
+  }
   const week = q.get("week");
   let brief = week && isWeekKey(week) ? await getWeeklyBrief(userId, week) : await latestWeeklyBrief(userId);
   let made: string | null = null;
