@@ -83,7 +83,7 @@ export function describeDirection(d = {}, offer = null, cur = '€') {
     if (id === 'delai' && String(d.until || '').trim()) { label += ` → ${String(d.until).trim()}`; hint += ` Échéance donnée par Ali : « ${String(d.until).trim()} ».`; }
     parts.push(label); lines.push(`- **${label}** — ${hint}`);
   }
-  if (ins) { parts.push(`Consigne : ${ins}`); lines.push(`- Consigne libre d'Ali (prioritaire sur tout le reste) : « ${ins} »`); }
+  if (ins) { parts.push(`Consigne : ${ins}`); lines.push(`- Consigne libre d'Ali — ABSOLUE, elle prime sur toute règle (clôture après deux refus comprise) ; en cas de désaccord, écris ce qu'il demande et dis-le dans note : « ${ins} »`); }
   const twoStep = moves.includes('admin');
   let block = lines.join('\n') + (lines.length ? '\n' : '');
   block += `Devise du lead : ${cur} — tous les montants dans les bulles en ${cur}, jamais dans une autre devise.\n`;
