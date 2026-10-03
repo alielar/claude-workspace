@@ -1,8 +1,9 @@
 /**
  * GET /api/news/weekly → { brief, episode, weeks } · the latest weekly brief (news/weekly.ts),
  * its podcast episode (light shape) and the list of past weeks. ?week=2026-W40 picks one.
- * ?make=1 builds last week's brief and podcast now (the Monday cron does it otherwise); with
- * &rebuild=1 it starts from scratch. Signed in only.
+ * ?make=1 builds last week's BRIEF now (the Monday cron does it otherwise); ?podcast=1 writes and
+ * voices its episode (a second call · the two together would not fit one function run); with
+ * &rebuild=1 either starts from scratch. Signed in only.
  */
 
 export const maxDuration = 300;
@@ -22,13 +23,14 @@ export async function GET(req: NextRequest) {
   const week = q.get("week");
   let brief = week && isWeekKey(week) ? await getWeeklyBrief(userId, week) : await latestWeeklyBrief(userId);
   let made: string | null = null;
+  const rebuild = q.get("rebuild") === "1";
   if (q.get("make") === "1") {
-    const rebuild = q.get("rebuild") === "1";
     brief = await ensureWeeklyBrief(userId, { week: week && isWeekKey(week) ? week : undefined, force: rebuild });
-    if (brief) {
-      const ep = await ensureWeeklyPodcast(userId, brief, true, rebuild);
-      made = `${brief.week} · ${brief.sections.map((s) => `${s.label} ${s.stories.length}`).join(", ")} · ${brief.readMinutes} min read · podcast ${ep.status}${ep.durationSec ? ` ${ep.durationSec}s` : ""}${ep.lastError ? ` · ${ep.lastError}` : ""}`;
-    } else made = "no daily briefs for that week · nothing to build";
+    made = brief ? `${brief.week} · ${brief.sections.map((s) => `${s.label} ${s.stories.length}`).join(", ")} · ${brief.readMinutes} min read` : "no daily briefs for that week · nothing to build";
+  }
+  if (q.get("podcast") === "1" && brief) {
+    const ep = await ensureWeeklyPodcast(userId, brief, true, rebuild);
+    made = `${made ? `${made} · ` : ""}podcast ${ep.status}${ep.durationSec ? ` ${ep.durationSec}s` : ""}${ep.lastError ? ` · ${ep.lastError}` : ""}`;
   }
   const episode = brief ? await todaysEpisode(userId, brief.week) : null;
   return NextResponse.json({ brief, episode, weeks: await listWeeks(userId), ...(made ? { made } : {}) }, { headers: { "Cache-Control": "no-store" } });

@@ -18,7 +18,11 @@ export function ChannelsCard() {
   const { data: settings, setData } = useCached<UserSettings>("settings", () => fetchJson<UserSettings>("/api/settings"));
   const [open, setOpen] = useState(false);
   const enabled: string[] = (() => {
-    try { const v = settings?.newsChannels ? JSON.parse(settings.newsChannels) : null; return Array.isArray(v) ? v : WATCH_LATER.map((c) => c.id); } catch { return WATCH_LATER.map((c) => c.id); }
+    try {
+      const v = settings?.newsChannels ? JSON.parse(settings.newsChannels) : null;
+      // A list from the old per-topic system (ids not in WATCH_LATER) reads as "all on".
+      return Array.isArray(v) && v.every((id) => WATCH_LATER.some((c) => c.id === id)) ? v : WATCH_LATER.map((c) => c.id);
+    } catch { return WATCH_LATER.map((c) => c.id); }
   })();
   const toggle = async (id: string) => {
     if (!settings) return;

@@ -135,14 +135,14 @@ async function writeSection(label: string, stories: NewsStory[], dates: Map<News
   if (!stories.length) return [];
   const prompt = `You are writing Ali's WEEKLY brief, the "${label}" section, for the week of ${prettyRange(from, to)}. He reads it once, on Monday, in 10 to 15 minutes for the whole brief, so this section must be worth about four minutes of careful reading. He is a product person, not an engineer: plain words, no jargon, no em dashes anywhere (use a comma, a period or " · ").
 
-From the week's stories below, choose the FOUR or FIVE developments that genuinely mattered this week (merge stories about the same development · prefer the week's arc over a single day's headline · skip anything trivial, promotional or repetitive). For each, write in depth and in this order:
+From the week's stories below, choose the THREE or FOUR developments that genuinely mattered this week (merge stories about the same development · prefer the week's arc over a single day's headline · skip anything trivial, promotional or repetitive). The whole section must read in about four minutes: 800 to 1000 words in total, so every sentence earns its place. For each development write, in this order:
 - headline: one line, specific, no clickbait
-- summary: 3-4 sentences · what happened this week, in plain words, with the key numbers
-- whatHappened: the facts, 4-6 sentences, with the days of the week when they matter
-- whyItMatters: 3-5 sentences · for someone who builds with AI, runs a small online company, follows business and geopolitics, is Moroccan and lives in Spain · only mention him when it is real
-- context: 3-5 sentences · the background a smart reader may not have
-- implications: 3-5 sentences · who gains, who loses, what changes next
-- whatsNext: 2-4 sentences · what to watch in the coming weeks, with dates when known
+- summary: 2-3 sentences · what happened this week, in plain words, with the key numbers
+- whatHappened: the facts, 3-4 sentences, with the days of the week when they matter
+- whyItMatters: 2-3 sentences · for someone who builds with AI, runs a small online company, follows business and geopolitics, is Moroccan and lives in Spain · only mention him when it is real
+- context: 2-3 sentences · the background a smart reader may not have
+- implications: 2-3 sentences · who gains, who loses, what changes next
+- whatsNext: 1-2 sentences · what to watch in the coming weeks, with dates when known
 - sources: the article URLs you drew on (from the material · never invent one)
 
 Never invent facts, numbers, names or outcomes that are not in the material. If the material is thin on something, say less rather than guess.
@@ -151,10 +151,10 @@ Output ONLY a JSON array of objects with exactly these keys: headline, summary, 
 
 THE WEEK'S STORIES:
 ${materials(stories, dates)}`;
-  const out = await haiku(prompt, 7000);
+  const out = await haiku(prompt, 5000);
   const items = out ? parseJson<Written[]>(out) : null;
   if (!items || !Array.isArray(items)) return [];
-  return items.filter((w) => w && typeof w.headline === "string").slice(0, 5).map((w) => ({
+  return items.filter((w) => w && typeof w.headline === "string").slice(0, 4).map((w) => ({
     headline: noDash(w.headline), summary: noDash(w.summary ?? ""), keyPoints: [],
     category: label === "Tech & AI" ? "tech" : label === "Business" ? "business" : "geopolitics",
     source: Array.isArray(w.sources) && typeof w.sources[0] === "string" ? w.sources[0] : undefined,

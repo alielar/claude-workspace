@@ -35,7 +35,7 @@ export type VideoFeed = {
 };
 
 const POLL_EVERY_MS = 30 * 60_000;
-const DURATION_BUDGET = 8;          // watch pages read per poll (~0.5 MB each)
+const DURATION_BUDGET = 24;         // lengths read per poll (the player endpoint is a few KB each)
 const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "accept-language": "en" };
 
 async function ensureTable() {
@@ -88,8 +88,20 @@ async function fetchFeed(channelId: string): Promise<FeedEntry[]> {
   return out;
 }
 
-/** The video's length from its watch page · null when the page did not say (a live stream, a premiere, a block). */
+/** The video's length · first from YouTube's own small player endpoint (works even when the video is
+ * not playable from a server), then from the watch page · null when neither said. */
 async function readDuration(videoId: string): Promise<number | null> {
+  try {
+    const res = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
+      method: "POST", headers: { "content-type": "application/json", "user-agent": UA["user-agent"] }, signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({ context: { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en" } }, videoId }),
+    });
+    if (res.ok) {
+      const j = (await res.json()) as { videoDetails?: { lengthSeconds?: string; isLiveContent?: boolean } };
+      const n = Number(j.videoDetails?.lengthSeconds);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+  } catch { /* fall through to the page */ }
   try {
     const res = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, { headers: UA, signal: AbortSignal.timeout(9000) });
     if (!res.ok) return null;
@@ -150,13 +162,13 @@ const toVideo = (r: typeof ytVideos.$inferSelect): Video => ({
 export async function listVideos(enabled: string[] | null = null): Promise<VideoFeed> {
   await ensureTable();
   const picks = await Promise.all(DAILY_PICKS.map(async (channel) => {
-    const [row] = await db.select().from(ytVideos).where(and(eq(ytVideos.channelId, channel.id), sql`${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0`)).orderBy(desc(ytVideos.publishedAt)).limit(1).catch(() => []);
+    const [row] = await db.select().from(ytVideos).where(and(eq(ytVideos.channelId, channel.id), sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`)).orderBy(desc(ytVideos.publishedAt)).limit(1).catch(() => []);
     return { channel, video: row ? toVideo(row) : null };
   }));
   const laterChannels = WATCH_LATER.filter((c) => !enabled || enabled.includes(c.id));
   const since = new Date(Date.now() - LATER_WINDOW_DAYS * 86400_000);
   const rows = laterChannels.length
-    ? await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, laterChannels.map((c) => c.id)), gte(ytVideos.publishedAt, since), isNull(ytVideos.watchedAt), sql`${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0`)).catch(() => [])
+    ? await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, laterChannels.map((c) => c.id)), gte(ytVideos.publishedAt, since), isNull(ytVideos.watchedAt), sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`)).catch(() => [])
     : [];
   const rank = (id: string) => channelById(id)?.priority ?? 99;
   const later = rows.map(toVideo).sort((a, b) => rank(a.channelId) - rank(b.channelId) || b.publishedAt - a.publishedAt);

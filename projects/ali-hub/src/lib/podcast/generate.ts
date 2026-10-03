@@ -288,8 +288,8 @@ ${weeklyMaterials(brief)}`;
 }
 const WEEKLY_MIN_WORDS = 1500;
 const WEEKLY_MAX_WORDS = 2600;
-const WEEKLY_MIN_SEC = 540;    // 9 min
-const WEEKLY_MAX_SEC = 1020;   // 17 min
+const WEEKLY_MIN_SEC = 420;    // 7 min · wide on purpose: a second voicing of a 15-min script would not fit the function run
+const WEEKLY_MAX_SEC = 1200;   // 20 min
 
 /**
  * Deterministic second line of defence: if the finished script still uses a

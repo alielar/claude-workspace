@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { listVideos, pollVideos, videosStale } from "@/lib/news/videos";
+import { WATCH_LATER } from "@/lib/news/channels";
 import { db } from "@/db";
 import { userSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -19,7 +20,10 @@ async function enabledFor(userId: string): Promise<string[] | null> {
     await ensureSettingsColumns();
     const [s] = await db.select({ newsChannels: userSettings.newsChannels }).from(userSettings).where(eq(userSettings.userId, userId));
     const v = s?.newsChannels ? JSON.parse(s.newsChannels) : null;
-    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : null;
+    const ids = Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : null;
+    // A list saved by the OLD channel system (per-topic ids, before 2026-10-03) means nothing here · all on.
+    if (!ids || ids.some((id) => !WATCH_LATER.some((c) => c.id === id))) return null;
+    return ids;
   } catch { return null; }
 }
 
