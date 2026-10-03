@@ -1,5 +1,7 @@
 import { NextResponse, after, type NextRequest } from "next/server";
-import { ensureTodaysPodcast, todaysEpisode } from "@/lib/podcast/generate";
+import { ensureTodaysPodcast, ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
+import { getWeeklyBrief, previousWeek } from "@/lib/news/weekly";
+import { pollVideos } from "@/lib/news/videos";
 import { pollHighlights } from "@/lib/news/highlights";
 import { prewriteIfSessionDay } from "@/lib/mind/server";
 import { db } from "@/db";
@@ -28,6 +30,8 @@ import { daysUntil, fmtDaysUntil, nextOccurrence, turningAge } from "@/lib/birth
  */
 
 export const dynamic = "force-dynamic";
+// The background work (a podcast voicing can take 2 min) must outlive the default limit.
+export const maxDuration = 300;
 
 const nagMs = (t: { nagMinutes: number | null }) => (t.nagMinutes ?? 30) * 60 * 1000;
 
@@ -56,8 +60,17 @@ export async function GET(req: NextRequest) {
         const ep = await todaysEpisode(userId);
         if (!ep || (ep.status !== "ready")) await ensureTodaysPodcast(userId);
       } catch { /* next tick retries */ }
+      // The weekly episode (2026-10-03): the Monday cron writes it; a failed voicing is retried here.
+      try {
+        const prev = previousWeek(checklistToday(now));
+        const brief = await getWeeklyBrief(userId, prev.week);
+        const wep = brief ? await todaysEpisode(userId, prev.week) : null;
+        if (brief && (!wep || wep.status !== "ready")) await ensureWeeklyPodcast(userId, brief);
+      } catch { /* next tick retries */ }
     });
   }
+  // YouTube picks (News): the channel feeds, every 30 min (pollVideos throttles itself).
+  after(async () => { try { await pollVideos(); } catch { /* next tick */ } });
 
   // Football highlights: the channel feeds only hold the last 15 uploads, so every
   // tick (5 min, all day · matches end near midnight) stores what is new.

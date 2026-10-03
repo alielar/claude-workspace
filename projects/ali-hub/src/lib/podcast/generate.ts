@@ -20,6 +20,11 @@
  * second of silence is spliced between two paragraphs, and the voice is a constant below
  * with the candidates.
  *
+ * Since 2026-10-03 the same pipeline (`produceEpisode`) also makes the WEEKLY episode, keyed by
+ * the ISO week ("2026-W40") instead of a date, from the weekly brief (news/weekly.ts) · 10-15
+ * min, the main podcast now. The daily one keeps running (it costs nothing) behind a small
+ * button on News, with a 30-day archive.
+ *
  * Failure behaviour (Ali's explicit requirement, never a silent morning):
  *  · script exists but audio failed → the play card shows "voice is down · read it
  *    instead" with the full script, and every reminders tick between 06:30–10:30
@@ -30,10 +35,11 @@
 import { db } from "@/db";
 import { noDash } from "@/lib/utils";
 import { podcastEpisodes } from "@/db/schema";
-import { and, eq, lt, desc } from "drizzle-orm";
+import { and, eq, lt, desc, like, notLike } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
+import { isWeekKey, prettyRange, weeklyMaterials, type WeeklyBrief } from "@/lib/news/weekly";
 
 // Free Microsoft voices worth hearing for a breakfast brief (Edge "Conversation" set):
 //   en-US-BrianMultilingualNeural  · approachable, casual, sincere (the current one)
@@ -87,23 +93,37 @@ const rowToEpisode = (r: typeof podcastEpisodes.$inferSelect): Episode => ({
   durationSec: r.durationSec ?? null,
 });
 
-/** The last N episodes (newest first), light shape · for the News list of recent briefs. */
+/** The last N DAILY episodes (newest first), light shape · the News archive (30 days, Ali 2026-10-03). */
 export async function recentEpisodes(userId: string, n = KEEP_EPISODES): Promise<Episode[]> {
   const rows = await db.select({
     date: podcastEpisodes.date, status: podcastEpisodes.status, script: podcastEpisodes.script,
     audioUrl: podcastEpisodes.audioUrl, attempts: podcastEpisodes.attempts,
     chapters: podcastEpisodes.chapters, durationSec: podcastEpisodes.durationSec,
-  }).from(podcastEpisodes).where(eq(podcastEpisodes.userId, userId)).orderBy(desc(podcastEpisodes.date)).limit(n);
+  }).from(podcastEpisodes).where(and(eq(podcastEpisodes.userId, userId), notLike(podcastEpisodes.date, "%-W%"))).orderBy(desc(podcastEpisodes.date)).limit(n);
   return rows.map((row) => ({ date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts, chapters: parseChaptersJson(row.chapters), durationSec: row.durationSec ?? null }));
 }
 
-/** Exactly KEEP_EPISODES episodes stay (Ali 2026-09-14) · older rows are deleted, audio included. */
+/** The weekly episodes (newest first), light shape. */
+export async function weeklyEpisodes(userId: string, n = KEEP_WEEKLY): Promise<Episode[]> {
+  const rows = await db.select({
+    date: podcastEpisodes.date, status: podcastEpisodes.status, script: podcastEpisodes.script,
+    audioUrl: podcastEpisodes.audioUrl, attempts: podcastEpisodes.attempts,
+    chapters: podcastEpisodes.chapters, durationSec: podcastEpisodes.durationSec,
+  }).from(podcastEpisodes).where(and(eq(podcastEpisodes.userId, userId), like(podcastEpisodes.date, "%-W%"))).orderBy(desc(podcastEpisodes.date)).limit(n);
+  return rows.map((row) => ({ date: row.date, status: (row.status as Episode["status"]) ?? "pending", script: row.script, audioUrl: row.audioUrl, attempts: row.attempts, chapters: parseChaptersJson(row.chapters), durationSec: row.durationSec ?? null }));
+}
+
+/** Retention (Ali 2026-10-03: a 30-day archive): daily episodes stay 30 days with their audio;
+ * the newest KEEP_WEEKLY weekly episodes stay. Older rows are deleted, audio included. */
 export async function pruneEpisodes(userId: string): Promise<void> {
-  const keep = await db.select({ date: podcastEpisodes.date }).from(podcastEpisodes)
-    .where(eq(podcastEpisodes.userId, userId)).orderBy(desc(podcastEpisodes.date)).limit(KEEP_EPISODES);
-  if (keep.length < KEEP_EPISODES) return;
-  const oldest = keep[keep.length - 1].date;
-  await db.delete(podcastEpisodes).where(and(eq(podcastEpisodes.userId, userId), lt(podcastEpisodes.date, oldest)));
+  const dayCutoff = new Date(Date.now() - KEEP_EPISODES * 86400_000).toISOString().slice(0, 10);
+  await db.delete(podcastEpisodes).where(and(eq(podcastEpisodes.userId, userId), notLike(podcastEpisodes.date, "%-W%"), lt(podcastEpisodes.date, dayCutoff)));
+  const weeks = await db.select({ date: podcastEpisodes.date }).from(podcastEpisodes)
+    .where(and(eq(podcastEpisodes.userId, userId), like(podcastEpisodes.date, "%-W%"))).orderBy(desc(podcastEpisodes.date)).limit(KEEP_WEEKLY);
+  if (weeks.length === KEEP_WEEKLY) {
+    const oldest = weeks[weeks.length - 1].date;
+    await db.delete(podcastEpisodes).where(and(eq(podcastEpisodes.userId, userId), like(podcastEpisodes.date, "%-W%"), lt(podcastEpisodes.date, oldest)));
+  }
 }
 
 export async function todaysEpisode(userId: string, date = checklistToday()): Promise<Episode | null> {
@@ -185,8 +205,10 @@ async function haiku(prompt: string, maxTokens: number): Promise<string | null> 
 // Ali (2026-09-11): five minutes is a guide, not a cap. Cover what matters, never
 // pad, never truncate a story worth hearing. So: a wide sanity band instead of the
 // old 4-6 min gate. Brian at the slower rate (-8 %) runs ≈ 160 words/min.
-/** How many days of episodes stay reachable (News → last briefs). Older ones are deleted. */
-export const KEEP_EPISODES = 3;
+/** How many days of daily episodes stay reachable, audio included (Ali 2026-10-03: 30-day archive). */
+export const KEEP_EPISODES = 30;
+/** How many weekly episodes stay. */
+export const KEEP_WEEKLY = 8;
 const MIN_WORDS = 650;
 const MAX_WORDS = 1550;
 const MIN_SEC = 240;   // 4 min · below this the day was under-told
@@ -238,6 +260,37 @@ ${storiesBlock(brief)}`;
   return haiku(prompt, 3200);
 }
 
+/** The weekly podcast's script (2026-10-03) · the main podcast now: the previous week's developments
+ * in the same three chapters as the written weekly brief, 10 to 15 minutes. */
+async function writeWeeklyScript(brief: WeeklyBrief): Promise<string | null> {
+  const prompt = `You write Ali's private WEEKLY news podcast. He listens on Monday, over breakfast or on a walk, for ten to fifteen minutes. The whole point: the developments of LAST WEEK (${prettyRange(brief.from, brief.to)}), in depth, in the order below, told by a friend who followed it all.
+
+ABOUT ALI (mention only when a story genuinely touches him): runs easypeasy, a small company teaching languages online; builds with AI every day and loves the tech; follows business and geopolitics; Moroccan, lives in Spain, interested in business opportunities in Morocco. Football is NOT part of this podcast.
+
+${TONE_RULES}
+
+DATES: this is a look back at a whole week. Place events by WEEKDAY ("on Tuesday", "by Friday") or by "last week" · never "yesterday", "today", "tonight" or "this morning" for events. Never invent facts, numbers, names or outcomes that are not in the material below. When the material says nobody knows yet, say so.
+
+STRUCTURE · chapters, each starting with a line "### <short title>" (2-4 words), in THIS order:
+1. Open: one warm good-morning line naming the week, then straight into the biggest development of the week. No preamble about what is coming.
+2. "### AI and tech" (one or several chapters): the heart of it · go deepest here, the week's arc, what it means for someone who builds with these tools.
+3. "### Business": companies, markets, money, ventures · Morocco when the material has something real.
+4. "### The world": geopolitics, what mattered and why.
+5. Last, "### For the week": two or three human sentences for the week ahead, NOT about sales or productivity. Then a simple goodbye.
+
+LENGTH: twelve minutes is the guide. Aim for 1800 to 2200 words; never under ${WEEKLY_MIN_WORDS}, never over ${WEEKLY_MAX_WORDS}. Every development in the material deserves real time · do not rush the later chapters.
+
+Output ONLY the chapter lines and the spoken text. No markdown besides the ### lines, no stage directions.
+
+THE WEEK'S BRIEF:
+${weeklyMaterials(brief)}`;
+  return haiku(prompt, 6000);
+}
+const WEEKLY_MIN_WORDS = 1500;
+const WEEKLY_MAX_WORDS = 2600;
+const WEEKLY_MIN_SEC = 540;    // 9 min
+const WEEKLY_MAX_SEC = 1020;   // 17 min
+
 /**
  * Deterministic second line of defence: if the finished script still uses a
  * relative day word, one Haiku pass rewrites ONLY those time references into
@@ -261,7 +314,8 @@ ${script}`;
 }
 
 /** Ask Haiku to stretch or trim an out-of-range script without touching facts or structure. */
-async function reviseScriptLength(script: string, targetWords: number): Promise<string | null> {
+async function reviseScriptLength(script: string, targetWords: number, band: [number, number] = [MIN_WORDS, MAX_WORDS]): Promise<string | null> {
+  const [MIN_WORDS, MAX_WORDS] = band;
   const current = wordCount(script);
   const direction = current > targetWords
     ? "Trim it: cut the least important sentences and tighten wording. Never cut a whole chapter."
@@ -378,12 +432,39 @@ async function synthesize(script: string): Promise<{ audio: Buffer; chapters: Ch
  */
 export async function ensureTodaysPodcast(userId: string, force = false, rebuild = false): Promise<Episode> {
   const date = checklistToday();
+  return produceEpisode(userId, date, {
+    force, rebuild,
+    write: async () => { const brief = await ensureTodaysBrief(userId); const script = await writeScript(brief, date); return script ? { script, brief } : null; },
+    words: [MIN_WORDS, MAX_WORDS], seconds: [MIN_SEC, MAX_SEC],
+  });
+}
+
+/** The WEEKLY episode (2026-10-03) · keyed by the week ("2026-W40"), same pipeline, longer bands. */
+export async function ensureWeeklyPodcast(userId: string, brief: WeeklyBrief, force = false, rebuild = false): Promise<Episode> {
+  return produceEpisode(userId, brief.week, {
+    force, rebuild,
+    write: async () => { const script = await writeWeeklyScript(brief); return script ? { script, brief: null } : null; },
+    words: [WEEKLY_MIN_WORDS, WEEKLY_MAX_WORDS], seconds: [WEEKLY_MIN_SEC, WEEKLY_MAX_SEC],
+  });
+}
+
+type Produce = {
+  force: boolean; rebuild: boolean;
+  /** Writes the script (once per key) · the daily writer also hands back its brief for the date audit. */
+  write: () => Promise<{ script: string; brief: NewsBrief | null } | null>;
+  words: [number, number]; seconds: [number, number];
+};
+
+/** One episode, by key (a date or a week): script once, then voice with retries · see the header. */
+async function produceEpisode(userId: string, date: string, p: Produce): Promise<Episode> {
+  const [minWords, maxWords] = p.words;
+  const [minSec, maxSec] = p.seconds;
   let [row] = await db.select().from(podcastEpisodes)
     .where(and(eq(podcastEpisodes.userId, userId), eq(podcastEpisodes.date, date)));
 
-  // rebuild (cron-only, manual) wipes today's episode and regenerates from scratch ·
+  // rebuild (cron-only, manual) wipes the episode and regenerates from scratch ·
   // used when the script format or voice changes mid-day.
-  if (rebuild && row) {
+  if (p.rebuild && row) {
     await db.update(podcastEpisodes)
       .set({ script: null, audioB64: null, audioUrl: null, chapters: null, durationSec: null, status: "pending" })
       .where(eq(podcastEpisodes.id, row.id));
@@ -392,8 +473,8 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
   }
 
   if (row?.status === "ready" && row.audioUrl) return rowToEpisode(row);
-  if (!force && row && row.attempts >= MAX_ATTEMPTS) return rowToEpisode(row);
-  if (!force && row?.lastAttemptAt && Date.now() - row.lastAttemptAt.getTime() < RETRY_SPACING_MS) return rowToEpisode(row);
+  if (!p.force && row && row.attempts >= MAX_ATTEMPTS) return rowToEpisode(row);
+  if (!p.force && row?.lastAttemptAt && Date.now() - row.lastAttemptAt.getTime() < RETRY_SPACING_MS) return rowToEpisode(row);
 
   if (!row) {
     try {
@@ -407,26 +488,26 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
     .set({ attempts: row.attempts + 1, lastAttemptAt: new Date() })
     .where(eq(podcastEpisodes.id, row.id));
 
-  // 1 · Script (once per day · this is the daily AI call).
+  // 1 · Script (once per key · this is the AI call).
   let script = row.script;
   if (!script) {
-    const brief = await ensureTodaysBrief(userId);
-    script = await writeScript(brief, date);
-    if (!script) {
+    const written = await p.write();
+    if (!written) {
       await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
       return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: "script generation failed" };
     }
+    script = written.script;
     // Date lint (the "yesterday" bug): relative day words about events → one
-    // corrective pass with the absolute publish stamps, then re-check.
-    if (relativeDayWords(script).length) {
-      const fixed = await auditDates(script, brief, date);
+    // corrective pass with the absolute publish stamps, then re-check. Daily only.
+    if (written.brief && relativeDayWords(script).length) {
+      const fixed = await auditDates(script, written.brief, date);
       if (fixed) script = fixed;
     }
     // Length sanity band, BEFORE voicing: fix an out-of-range script, up to twice.
     for (let pass = 0; pass < 2; pass++) {
       const words = wordCount(script);
-      if (words >= MIN_WORDS && words <= MAX_WORDS) break;
-      const revised = await reviseScriptLength(script, Math.round((MIN_WORDS + MAX_WORDS) / 2));
+      if (words >= minWords && words <= maxWords) break;
+      const revised = await reviseScriptLength(script, Math.round((minWords + maxWords) / 2), p.words);
       if (!revised) break; // reviser down · voice the original rather than ship nothing
       script = revised;
     }
@@ -440,14 +521,15 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
     let { audio, chapters, durationSec } = await synthesize(script);
     // Length band, AFTER voicing: the measured duration is the truth. If the
     // word estimate missed, revise toward the right length and voice once more.
-    if (durationSec < MIN_SEC || durationSec > MAX_SEC) {
-      const targetWords = Math.min(MAX_WORDS - 50, Math.max(MIN_WORDS + 50, Math.round(wordCount(script) * (360 / durationSec))));
-      const revised = await reviseScriptLength(script, targetWords);
+    if (durationSec < minSec || durationSec > maxSec) {
+      const mid = (minSec + maxSec) / 2;
+      const targetWords = Math.min(maxWords - 50, Math.max(minWords + 50, Math.round(wordCount(script) * (mid / durationSec))));
+      const revised = await reviseScriptLength(script, targetWords, p.words);
       if (revised) {
         try {
           const second = await synthesize(revised);
-          // Keep whichever attempt is closer to the 4-10 min window.
-          const miss = (s: number) => (s < MIN_SEC ? MIN_SEC - s : s > MAX_SEC ? s - MAX_SEC : 0);
+          // Keep whichever attempt is closer to the window.
+          const miss = (x: number) => (x < minSec ? minSec - x : x > maxSec ? x - maxSec : 0);
           if (miss(second.durationSec) <= miss(durationSec)) {
             script = revised;
             ({ audio, chapters, durationSec } = second);
@@ -461,15 +543,7 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
     await db.update(podcastEpisodes)
       .set({ status: "ready", audioUrl, audioB64: audio.toString("base64"), chapters: JSON.stringify(chapters), durationSec })
       .where(eq(podcastEpisodes.id, row.id));
-    // Retention: audio survives 2 days (today + one late catch-up), then the ~3 MB
-    // blob is dropped; the tiny script rows are removed entirely after 30 days.
-    try {
-      const audioCutoff = new Date(Date.now() - 2 * 86400_000).toISOString().slice(0, 10);
-      await db.update(podcastEpisodes).set({ audioB64: null }).where(lt(podcastEpisodes.date, audioCutoff));
-      const rowCutoff = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
-      await db.delete(podcastEpisodes).where(lt(podcastEpisodes.date, rowCutoff));
-    } catch { /* pruning is best-effort */ }
-    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1, chapters, durationSec, dateFlags: relativeDayWords(script) };
+    return { date, status: "ready", script, audioUrl, attempts: row.attempts + 1, chapters, durationSec, dateFlags: isWeekKey(date) ? [] : relativeDayWords(script) };
   } catch (e) {
     await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
     return { date, status: "failed", script, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: `audio: ${String((e as Error).message).slice(0, 150)}` };

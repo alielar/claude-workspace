@@ -258,6 +258,28 @@ export const highlights = sqliteTable("highlights", {
   watchedAt: integer("watched_at", { mode: "timestamp_ms" }),   // set when Ali taps it (any device)
 });
 
+// ─── YouTube picks (News · daily picks + watch later · src/lib/news/videos.ts, 2026-10-03) ─────
+// Global content (one user). video_id unique → polls are idempotent; watched_at = Ali tapped it.
+export const ytVideos = sqliteTable("yt_videos", {
+  videoId: text("video_id").primaryKey(),
+  channelId: text("channel_id").notNull(),
+  title: text("title").notNull(),
+  publishedAt: integer("published_at", { mode: "timestamp_ms" }).notNull(),
+  durationSec: integer("duration_sec"),          // null = not read yet · 0 = could not be read
+  thumbnail: text("thumbnail"),
+  watchedAt: integer("watched_at", { mode: "timestamp_ms" }),
+  fetchedAt: integer("fetched_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+// ─── Weekly brief (News · the previous week's developments, 2026-10-03) ──────
+export const weeklyBriefs = sqliteTable("weekly_briefs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  week: text("week").notNull(),                  // ISO week key "2026-W40"
+  content: text("content").notNull(),            // WeeklyBrief JSON
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(sql`(unixepoch() * 1000)`),
+});
+
 // Small key/value store beside the highlights: the cached FIFA ranking and the national-team scan stamp.
 export const footballMeta = sqliteTable("football_meta", {
   key: text("key").primaryKey(),

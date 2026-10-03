@@ -196,6 +196,10 @@ export async function POST() {
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
     // ── 2026-09-12 evening: "Mobility", 21 moves, 12:00 · title and note refreshed ──
     `UPDATE checklist_items SET title = 'Mobility' WHERE routine_key = 'stretch' AND title = 'Stretching'`,
+    // ── 2026-10-03: News rebuild · YouTube picks + weekly briefs (self-creating in their modules too) ──
+    `CREATE TABLE IF NOT EXISTS yt_videos (video_id TEXT PRIMARY KEY, channel_id TEXT NOT NULL, title TEXT NOT NULL, published_at INTEGER NOT NULL, duration_sec INTEGER, thumbnail TEXT, watched_at INTEGER, fetched_at INTEGER NOT NULL)`,
+    `CREATE TABLE IF NOT EXISTS weekly_briefs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, week TEXT NOT NULL, content TEXT NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_weekly_brief ON weekly_briefs(user_id, week)`,
     // ── 2026-10-03: two kinds only · a "habit" becomes an Extra (manual) ──
     `UPDATE checklist_items SET kind = 'manual' WHERE kind = 'habit'`,
     // ── 2026-09-24: the KB Hour became Kettlebell 30 · the Saturday row follows (only if untouched) ──

@@ -1,223 +1,141 @@
 "use client";
 
 /**
- * /news · Daily Brief, phone first (Phase 6 upgrade).
+ * /news · rebuilt 2026-10-03 (Ali). Top to bottom:
  *
- *   WORTH YOUR TIME · the standout story of each interest (keyword-matched to Ali's interests)
- *   VIDEOS          · fresh uploads from the chosen YouTube channels (2 per interest), open in the YouTube app
- *   BY INTEREST     · Geopolitics · Business · Tech & AI · Football, 5 stories each, tap to expand
+ *   DAILY PICKS   · two video cards a day: the latest upload of The AI Daily Brief (AI & Tech) and
+ *                   of TLDR News Global (Global news). Thumbnail, title, channel, length. Tap opens
+ *                   YouTube and marks it watched (server side, every device agrees).
+ *   WATCH LATER   · uploads of the last two weeks from Ali's curated channels, in his priority
+ *                   order, same cards; watched ones drop off. Folded past the first six.
+ *   WEEKLY BRIEF  · the previous week's developments in Tech & AI · Business · Geopolitics, each
+ *                   story expandable to its in-depth analysis (what happened, why it matters,
+ *                   context, implications, what's next). Read it, or listen: the weekly podcast
+ *                   (the main podcast now) plays in /podcast?date=<week>.
+ *   DAILY PODCAST · still made every morning (it is free) · one low-key row, 30-day archive folded.
+ *   HIGHLIGHTS    · football, spoiler-free, in three sections: European clubs · Moroccan clubs ·
+ *                   International teams. Matchup + context only, never a score or a thumbnail.
  *
- * Generated once a day by the 06:00 cron (RSS + YouTube feeds, AI summaries). Cached on the phone:
- * the last brief shows instantly and offline; Refresh is the only manual trigger.
- * Archive drawer shows the last 30 days (DB-only reads).
+ * The daily written news (story lists by interest) is gone from the page: the daily brief is
+ * still generated at 06:00 because the daily podcast and the weekly brief are built from it.
+ * Everything paints from the phone's saved copy first.
  */
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
-import type { NewsBrief, NewsStory, NewsVideo } from "@/lib/news-brief";
-import { PodcastCard } from "@/components/PodcastCard";
+import { useVideos, watchUrl } from "@/lib/news/useVideos";
+import type { Video } from "@/lib/news/videos";
+import type { NewsStory } from "@/lib/news-brief";
+import type { WeeklyBrief } from "@/lib/news/weekly";
+import type { Highlight, HighlightGroup } from "@/lib/news/highlights";
 import { checklistToday } from "@/lib/checklist/day";
+import { useNow } from "@/lib/useClientValue";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-type ArchiveEntry = {
-  date: string;
-  storyCount: number;
-  topHeadline: string;
-  generatedAt: string;
+const fmtLen = (s: number | null) => (s ? (s >= 3600 ? `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}` : `${Math.round(s / 60)} min`) : "");
+function ago(ms: number, now: number): string {
+  const h = Math.max(0, Math.round((now - ms) / 3600_000));
+  if (h < 1) return "just now";
+  if (h < 24) return `${h} h ago`;
+  const d = Math.round(h / 24);
+  return d === 1 ? "yesterday" : `${d} d ago`;
+}
+const prettyRange = (from: string, to: string) => {
+  const f = new Date(`${from}T12:00:00Z`), t = new Date(`${to}T12:00:00Z`);
+  const fmt = (d: Date, m: boolean) => new Intl.DateTimeFormat("en-GB", { day: "numeric", ...(m ? { month: "long" } : {}), timeZone: "UTC" }).format(d);
+  return `${fmt(f, f.getUTCMonth() !== t.getUTCMonth())} to ${fmt(t, true)}`;
 };
+const fmtSec = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, Math.floor(s % 60))).padStart(2, "0")}`;
 
-// ─── Column config ────────────────────────────────────────────────────────────
+// ─── Video cards ──────────────────────────────────────────────────────────────
 
-const COLUMNS = [
-  { id: "geopolitics", label: "Geopolitics", color: "#D05A5A", categories: ["geopolitics"] },
-  { id: "business",    label: "Business",    color: "#3E9A63", categories: ["business"] },
-  { id: "tech",        label: "Tech & AI",   color: "#2E9E8F", categories: ["tech", "ai"] },
-  { id: "football",    label: "Football",    color: "#D97A2B", categories: ["football"] },
-];
-
-// ─── Story card ───────────────────────────────────────────────────────────────
-
-type DeepDive = {
-  whatHappened: string;
-  whyItMatters: string;
-  context: string;
-  implications?: string;
-  whatsNext: string;
-  vocabulary?: { advanced: string; simple: string }[];
-};
-
-function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColor: string; index: number }) {
-  const [open, setOpen] = useState(false);
-  // Use pre-generated deep dive if available, otherwise null
-  const [deepDive, setDeepDive] = useState<DeepDive | null>(story.deepDive ?? null);
-  const [loadingDive, setLoadingDive] = useState(false);
-
-  let hostname = "";
-  if (story.source) {
-    try { hostname = new URL(story.source).hostname.replace("www.", ""); } catch { /* noop */ }
-  }
-
-  const summaryText = story.summary || "";
-  const isTopStory = index === 0;
-
-  // Fetch deep dive on-demand only if not pre-generated
-  const fetchDiveIfNeeded = async () => {
-    if (deepDive || loadingDive) return;
-    setLoadingDive(true);
-    try {
-      const res = await fetch("/api/news/deep-dive", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ headline: story.headline, summary: summaryText, source: story.source }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDeepDive(data);
-      }
-    } catch { /* ignore */ }
-    setLoadingDive(false);
-  };
-
-  // When expanded and no deep dive yet, fetch it automatically
-  const handleToggle = () => {
-    const willOpen = !open;
-    setOpen(willOpen);
-    if (willOpen && !deepDive && !loadingDive) {
-      fetchDiveIfNeeded();
-    }
-  };
-
-  const DIVE_SECTIONS = [
-    { key: "whatHappened", label: "What happened" },
-    { key: "whyItMatters", label: "Why it matters" },
-    { key: "context", label: "Context" },
-    { key: "implications", label: "Implications" },
-    { key: "whatsNext", label: "What's next" },
-  ] as const;
-
+/** A big card · the daily picks. */
+function PickCard({ label, v, onWatch, now }: { label: string; v: Video | null; onWatch: (id: string) => void; now: number }) {
+  if (!v) return (
+    <div className="cc-card" style={{ padding: 14, display: "grid", gap: 6 }}>
+      <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{label}</span>
+      <span style={{ fontSize: 15, color: "var(--ink-3)" }}>Nothing new yet</span>
+    </div>
+  );
   return (
-    <div
-      onClick={handleToggle}
-      style={{
-        padding: isTopStory ? "14px 0" : "12px 0",
-        borderBottom: "1px solid var(--line)",
-        cursor: "pointer",
-        transition: "background 0.1s",
-      }}
-    >
-      {/* Headline row */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-        <div style={{
-          fontSize: isTopStory ? 16.5 : 15.5,
-          lineHeight: 1.4,
-          minWidth: 0, overflowWrap: "anywhere",
-          letterSpacing: "-0.01em",
-          fontWeight: 600,
-          color: "var(--ink)",
-          flex: 1,
-        } as React.CSSProperties}>
-          {story.headline}
-        </div>
-        <svg
-          width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          style={{
-            color: "var(--ink-4)",
-            transform: open ? "rotate(180deg)" : "none",
-            transition: "transform 0.15s",
-            flexShrink: 0,
-            marginTop: 3,
-          }}
-        >
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </div>
+    <a href={watchUrl(v.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => { if (!v.watched) onWatch(v.videoId); }} className="cc-card news-pick"
+      style={{ display: "grid", textDecoration: "none", color: "inherit", overflow: "hidden", opacity: v.watched ? 0.6 : 1 }}>
+      <span style={{ position: "relative", display: "block", aspectRatio: "16 / 9", background: "var(--fill-2)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail, plain <img> keeps the bundle small */}
+        <img src={v.thumbnail} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        <span style={{ position: "absolute", left: 10, top: 10, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, color: "#fff", background: "rgba(0,0,0,.55)", padding: "4px 8px", borderRadius: 7, fontFamily: "var(--f-mono)" }}>{label}</span>
+        {v.durationSec ? <span style={{ position: "absolute", right: 10, bottom: 10, fontSize: 12.5, fontWeight: 600, color: "#fff", background: "rgba(0,0,0,.7)", padding: "3px 7px", borderRadius: 6, fontFamily: "var(--f-mono)" }}>{fmtLen(v.durationSec)}</span> : null}
+        <span aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
+          <span style={{ width: 52, height: 52, borderRadius: 99, background: v.watched ? "rgba(0,0,0,.5)" : "rgba(0,0,0,.6)", display: "grid", placeItems: "center", color: "#fff", fontSize: 20, paddingLeft: v.watched ? 0 : 3 }}>{v.watched ? "✓" : "▶"}</span>
+        </span>
+      </span>
+      <span style={{ display: "grid", gap: 4, padding: "12px 14px 14px" }}>
+        <span style={{ fontSize: 16.5, fontWeight: 600, lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{v.title}</span>
+        <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{v.channel} · {ago(v.publishedAt, now)}{v.watched ? " · watched" : ""}</span>
+      </span>
+    </a>
+  );
+}
 
-      {/* Source domain + summary preview */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, minWidth: 0 }}>
-        {story.featured && (
-          <span style={{ fontSize: 13, color: "var(--warn)", flexShrink: 0, padding: "1px 5px", borderRadius: 4, border: "1px solid var(--warn)", opacity: 0.9 }}>★ worth it</span>
-        )}
-        {hostname && (
-          <span style={{
-            fontSize: 13, color: accentColor, flexShrink: 0,
-            fontFamily: "var(--f-mono)", letterSpacing: "0.04em",
-            textTransform: "uppercase",
-            padding: "1px 5px", borderRadius: 4,
-            background: `${accentColor}12`, border: `1px solid ${accentColor}25`,
-          }}>
-            {hostname}
-          </span>
-        )}
-        {!open && summaryText && (
-          <span style={{
-            fontSize: 14, color: "var(--ink-3)", flex: 1, minWidth: 0,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>
-            {summaryText.slice(0, 120)}{summaryText.length > 120 ? "…" : ""}
-          </span>
-        )}
-      </div>
+/** A row card · watch later. */
+function LaterRow({ v, onWatch, now }: { v: Video; onWatch: (id: string) => void; now: number }) {
+  return (
+    <a href={watchUrl(v.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => onWatch(v.videoId)} className="news-later"
+      style={{ display: "grid", gridTemplateColumns: "128px 1fr", gap: 12, alignItems: "center", padding: "10px 14px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
+      <span style={{ position: "relative", display: "block", aspectRatio: "16 / 9", borderRadius: 10, overflow: "hidden", background: "var(--fill-2)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail */}
+        <img src={v.thumbnail} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        {v.durationSec ? <span style={{ position: "absolute", right: 5, bottom: 5, fontSize: 11.5, fontWeight: 600, color: "#fff", background: "rgba(0,0,0,.7)", padding: "2px 5px", borderRadius: 5, fontFamily: "var(--f-mono)" }}>{fmtLen(v.durationSec)}</span> : null}
+      </span>
+      <span style={{ minWidth: 0, display: "grid", gap: 3 }}>
+        <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{v.title}</span>
+        <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>{v.channel} · {ago(v.publishedAt, now)}</span>
+      </span>
+    </a>
+  );
+}
 
-      {/* Expanded: Summary + key points + deep dive + source */}
-      {open && (
-        <div style={{ marginTop: 10, borderLeft: `2px solid ${accentColor}40`, paddingLeft: 12 }}>
-          {/* Deep dive analysis · pre-generated or fetched on expand */}
-          {loadingDive && (
-            <div style={{ fontSize: 13, color: "var(--ink-4)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 14 }}>⟳</span>
-              Analyzing...
-            </div>
-          )}
-          {deepDive && (
-            <div style={{
-              marginBottom: 12, padding: "12px 14px", borderRadius: 10,
-              background: `${accentColor}06`, border: `1px solid ${accentColor}15`,
-              display: "flex", flexDirection: "column", gap: 10,
-            }}>
-              {DIVE_SECTIONS.map(({ key, label }) => {
-                const text = deepDive[key];
-                if (!text) return null;
-                return (
-                  <div key={key}>
-                    <div style={{ fontSize: 13, color: accentColor, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)" }}>
-                      {label}
-                    </div>
-                    <div style={{ fontSize: 15, lineHeight: 1.6, color: "var(--ink-2)" }}>{text}</div>
-                  </div>
-                );
-              })}
-              {!!deepDive.vocabulary?.length && (
-                <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
-                  <div style={{ fontSize: 13, color: accentColor, fontWeight: 600, marginBottom: 5, fontFamily: "var(--f-mono)" }}>
-                    Words worth knowing
-                  </div>
-                  <div style={{ display: "grid", gap: 4 }}>
-                    {deepDive.vocabulary.map((v, i) => (
-                      <div key={i} style={{ fontSize: 14, lineHeight: 1.5, color: "var(--ink-2)" }}>
-                        <span style={{ fontWeight: 600, color: "var(--ink)" }}>{v.advanced}</span>
-                        <span style={{ color: "var(--ink-4)" }}> · here: </span>{v.simple}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+// ─── Weekly story (the in-depth read) ─────────────────────────────────────────
 
+const DIVE_SECTIONS = [
+  { key: "whatHappened", label: "What happened" },
+  { key: "whyItMatters", label: "Why it matters" },
+  { key: "context", label: "Context" },
+  { key: "implications", label: "Implications" },
+  { key: "whatsNext", label: "What's next" },
+] as const;
+
+function WeeklyStory({ story, color, last }: { story: NewsStory; color: string; last: boolean }) {
+  const [open, setOpen] = useState(false);
+  let host = "";
+  try { host = story.source ? new URL(story.source).hostname.replace("www.", "") : ""; } catch { /* none */ }
+  return (
+    <div style={{ padding: "12px 0", borderBottom: last ? "none" : "1px solid var(--line)" }}>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "start", width: "100%", background: "transparent", border: "none", padding: 0, textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
+        <span style={{ display: "grid", gap: 6, minWidth: 0 }}>
+          <span style={{ fontSize: 16.5, fontWeight: 600, lineHeight: 1.35, letterSpacing: "-0.01em" }}>{story.headline}</span>
+          <span style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink-2)" }}>{story.summary}</span>
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--ink-4)", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s", marginTop: 6 }}><polyline points="6 9 12 15 18 9" /></svg>
+      </button>
+      {open && story.deepDive && (
+        <div style={{ marginTop: 12, borderLeft: `2px solid ${color}55`, paddingLeft: 12, display: "grid", gap: 12 }}>
+          {DIVE_SECTIONS.map(({ key, label }) => {
+            const text = story.deepDive?.[key];
+            if (!text) return null;
+            return (
+              <div key={key}>
+                <div style={{ fontSize: 12.5, color, fontWeight: 600, marginBottom: 3, fontFamily: "var(--f-mono)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</div>
+                <div style={{ fontSize: 15.5, lineHeight: 1.6, color: "var(--ink-2)" }}>{text}</div>
+              </div>
+            );
+          })}
           {story.source && (
-            <a
-              href={story.source} target="_blank" rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              style={{ fontSize: 15, color: accentColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 500, minHeight: 44 }}
-            >
-              Read full article
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
+            <a href={story.source} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14.5, color, display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, minHeight: 40, textDecoration: "none" }}>
+              Read the source{host ? ` · ${host}` : ""} ↗
             </a>
           )}
         </div>
@@ -226,446 +144,216 @@ function StoryCard({ story, accentColor, index }: { story: NewsStory; accentColo
   );
 }
 
-// ─── Column skeleton ──────────────────────────────────────────────────────────
+// ─── Football highlights · three sections (2026-10-03) ────────────────────────
 
-function ColumnSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 5 }, (_, i) => (
-        <div key={i} style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}>
-          <div className="cc-skeleton" style={{ height: 13, borderRadius: 4, marginBottom: 6, width: "100%" }} />
-          <div className="cc-skeleton" style={{ height: 13, borderRadius: 4, width: "70%" }} />
-          <div className="cc-skeleton" style={{ height: 10, borderRadius: 4, width: "35%", marginTop: 8 }} />
-        </div>
-      ))}
-    </>
-  );
-}
+const GROUPS: { key: HighlightGroup; label: string }[] = [
+  { key: "europe",   label: "European clubs" },
+  { key: "morocco",  label: "Moroccan clubs" },
+  { key: "national", label: "International teams" },
+];
 
-// ─── Archive drawer ───────────────────────────────────────────────────────────
-
-function formatArchiveDate(dateStr: string): string {
-  const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-}
-
-function ArchiveDrawer({
-  open, onClose, entries, loading, onSelectDate, selectedDate,
-}: {
-  open: boolean;
-  onClose: () => void;
-  entries: ArchiveEntry[];
-  loading: boolean;
-  onSelectDate: (date: string) => void;
-  selectedDate: string | null;
-}) {
-  return (
-    <>
-      {/* Backdrop */}
-      {open && (
-        <div
-          onClick={onClose}
-          style={{
-            position: "fixed", inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            zIndex: 40,
-            backdropFilter: "blur(2px)",
-          }}
-        />
-      )}
-
-      {/* Drawer panel */}
-      <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0,
-        width: "min(320px, 90vw)",
-        background: "var(--bg-chrome)",
-        borderLeft: "1px solid var(--line)",
-        zIndex: 41,
-        transform: open ? "translateX(0)" : "translateX(100%)",
-        transition: "transform 0.25s ease",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}>
-        {/* Drawer header */}
-        <div style={{
-          padding: "16px 20px",
-          borderBottom: "1px solid var(--line)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          flexShrink: 0,
-        }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-2)" }}>
-            Archive
-          </span>
-          <button
-            onClick={onClose}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "var(--ink-4)" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* Drawer list */}
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {loading ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 14, color: "var(--ink-4)" }}>
-              Loading…
-            </div>
-          ) : entries.length === 0 ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 14, color: "var(--ink-4)" }}>
-              No past briefs yet
-            </div>
-          ) : (
-            entries.map(entry => {
-              const isSelected = selectedDate === entry.date;
-              return (
-                <div
-                  key={entry.date}
-                  onClick={() => { onSelectDate(entry.date); onClose(); }}
-                  style={{
-                    padding: "12px 20px",
-                    borderBottom: "1px solid var(--line)",
-                    cursor: "pointer",
-                    background: isSelected ? "var(--fill-2)" : "transparent",
-                    transition: "background 100ms",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: isSelected ? "var(--violet)" : "var(--ink-2)", letterSpacing: "0.02em" }}>
-                      {formatArchiveDate(entry.date)}
-                    </span>
-                    <span style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                      {entry.storyCount}
-                    </span>
-                  </div>
-                  {entry.topHeadline && (
-                    <div style={{
-                      fontSize: 14, color: "var(--ink-3)", lineHeight: 1.4,
-                      overflow: "hidden", display: "-webkit-box",
-                      WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                    } as React.CSSProperties}>
-                      {entry.topHeadline}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ─── Video card ───────────────────────────────────────────────────────────────
-
-function ago(iso: string): string {
-  const h = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 3600_000));
-  if (h < 1) return "just now";
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
-}
-
-const VIDEO_COLOR: Record<string, string> = { tools: "var(--violet)", tech: "#2E9E8F", ai: "#2E9E8F", geopolitics: "#D05A5A", business: "#3E9A63", football: "#D97A2B" };
-
-function VideoCard({ v, color }: { v: NewsVideo; color: string }) {
-  return (
-    <a href={v.url} target="_blank" rel="noopener noreferrer" className="news-video" style={{ display: "grid", gap: 8, alignContent: "start", width: 180, flexShrink: 0, scrollSnapAlign: "start", textDecoration: "none", color: "inherit" }}>
-      <span style={{ position: "relative", display: "block", width: 180, aspectRatio: "16 / 9", borderRadius: 10, overflow: "hidden", background: "var(--fill-2)" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail, plain <img> keeps the bundle small */}
-        <img src={v.thumbnail} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        <span aria-hidden style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ width: 30, height: 30, borderRadius: 99, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, paddingLeft: 2 }}>▶</span>
-        </span>
-      </span>
+function HighlightRow({ h, onWatch }: { h: Highlight; onWatch: (id: string) => void }) {
+  if (h.pending) return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", borderBottom: "1px solid var(--line)", opacity: 0.7 }}>
       <span style={{ minWidth: 0 }}>
-        <span style={{ fontSize: 15, lineHeight: 1.35, fontWeight: 500, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{v.title}</span>
-        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 4 }}>
-          <span style={{ color }}>{v.channel}</span> · {ago(v.publishedAt)}
-        </span>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context} · highlights not up yet</span>
       </span>
+      <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, border: "1px dashed var(--line-strong)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-4)", fontSize: 13 }}>…</span>
+    </div>
+  );
+  return (
+    <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => { if (!h.watched) onWatch(h.videoId); }}
+      style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)", opacity: h.watched ? 0.45 : 1 }}>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 16, fontWeight: h.watched ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: h.watched ? "var(--ink-3)" : "var(--ink)" }}>{h.home} vs {h.away}</span>
+        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}{h.watched ? " · watched" : ""}</span>
+      </span>
+      <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: h.watched ? "transparent" : "var(--fill-2)", border: h.watched ? "1px solid var(--line-strong)" : "none", display: "flex", alignItems: "center", justifyContent: "center", color: h.watched ? "var(--ink-4)" : "var(--ink-2)", fontSize: 13, paddingLeft: h.watched ? 0 : 2 }}>{h.watched ? "✓" : "▶"}</span>
     </a>
   );
 }
 
-// ─── Football highlights · spoiler-free (2026-09-12) ─────────────────────────
-// Matchup + context only. No thumbnail (beIN's carry the score), no title. The
-// tap opens the YouTube app; the video's own page is Ali's responsibility.
-
-function dayLabel(ms: number): string {
-  const d = new Date(ms), now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  const yesterday = new Date(now.getTime() - 86400_000).toDateString() === d.toDateString();
-  if (sameDay) return "Today";
-  if (yesterday) return "Yesterday";
-  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-}
-
-function HighlightsCard() {
-  const { items, unwatched, markWatched } = useHighlights();
+function HighlightsSection({ label, items, onWatch }: { label: string; items: Highlight[]; onWatch: (id: string) => void }) {
   const [showAll, setShowAll] = useState(false);
-  if (items.length === 0) return null;
-  const shown = showAll ? items : items.slice(0, 8);
+  const unwatched = items.filter((h) => !h.watched && !h.pending).length;
+  const shown = showAll ? items : items.slice(0, 6);
   return (
     <section className="cc-card">
-      <div className="cc-card-head"><span className="title">Highlights</span><span className="tail">{unwatched.length === 0 ? "all watched" : `${unwatched.length} to watch`} · opens YouTube</span></div>
-      <div>
-        {shown.map((h, i) => {
-          const newDay = i === 0 || dayLabel(shown[i - 1].publishedAt) !== dayLabel(h.publishedAt);
-          return (
-            <div key={h.videoId}>
-              {newDay && <div style={{ padding: "10px 16px 2px", fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{dayLabel(h.publishedAt)}</div>}
-              {/* Tap = watched (server-side, every device agrees) + opens YouTube. Watched rows dim and get a tick. */}
-              {h.pending ? (
-                // A national-team match with no public highlight yet (2026-09-30): matchup + context, no play button · the hourly scan fills it in.
-                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", borderBottom: "1px solid var(--line)", opacity: 0.7 }}>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
-                    <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context} · highlights not up yet</span>
-                  </span>
-                  <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, border: "1px dashed var(--line-strong)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-4)", fontSize: 13 }}>…</span>
-                </div>
-              ) : (
-              <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => { if (!h.watched) markWatched(h.videoId); }}
-                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)", opacity: h.watched ? 0.45 : 1 }}>
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 16, fontWeight: h.watched ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: h.watched ? "var(--ink-3)" : "var(--ink)" }}>{h.home} vs {h.away}</span>
-                  <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}{h.watched ? " · watched" : ""}</span>
-                </span>
-                <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: h.watched ? "transparent" : "var(--fill-2)", border: h.watched ? "1px solid var(--line-strong)" : "none", display: "flex", alignItems: "center", justifyContent: "center", color: h.watched ? "var(--ink-4)" : "var(--ink-2)", fontSize: 13, paddingLeft: h.watched ? 0 : 2 }}>{h.watched ? "✓" : "▶"}</span>
-              </a>
-              )}
-            </div>
-          );
-        })}
-        {items.length > 8 && (
-          <button onClick={() => setShowAll((v) => !v)} style={{ width: "100%", minHeight: 44, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>
-            {showAll ? "Show fewer" : `Show all ${items.length}`}
-          </button>
-        )}
-      </div>
+      <div className="cc-card-head"><span className="title">{label}</span><span className="tail">{items.length === 0 ? "nothing new" : unwatched === 0 ? "all watched" : `${unwatched} to watch`}</span></div>
+      {items.length > 0 && (
+        <div>
+          {shown.map((h) => <HighlightRow key={h.videoId} h={h} onWatch={onWatch} />)}
+          {items.length > 6 && (
+            <button onClick={() => setShowAll((v) => !v)} style={{ width: "100%", minHeight: 44, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>
+              {showAll ? "Show fewer" : `Show all ${items.length}`}
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Podcasts ─────────────────────────────────────────────────────────────────
 
-export default function NewsPage() {
-  // Local-first: the last brief shows instantly (also offline); a fresh copy
-  // is fetched in the background. Nothing is generated on open · the 06:00
-  // cron does that; the Refresh button is the only manual trigger.
-  const { data: brief, loading, stale, setData: setBrief } = useCached<NewsBrief>(
-    "news-brief",
-    () => fetchJson<NewsBrief>("/api/news/generate")
-  );
-  const { data: liveVideos } = useCached<{ videos: NewsVideo[] }>("news-videos", () => fetchJson<{ videos: NewsVideo[] }>("/api/news/videos"));
-  const [generating, setGenerating] = useState(false);
-  const [confirmRefresh, setConfirmRefresh] = useState(false);
-  const [section, setSection] = useState<string | null>(null); // interest filter chip
+type Chapter = { title: string; startSec: number };
+type Episode = { date: string; status: "pending" | "ready" | "failed"; script: string | null; audioUrl: string | null; attempts: number; chapters: Chapter[]; durationSec: number | null };
 
-  // Archive state
-  const [archiveOpen, setArchiveOpen]     = useState(false);
-  const [archiveList, setArchiveList]     = useState<ArchiveEntry[]>([]);
-  const [archiveLoading, setArchiveLoading] = useState(false);
-  const [viewingDate, setViewingDate]     = useState<string | null>(null);
-  const [viewingBrief, setViewingBrief]   = useState<NewsBrief | null>(null);
-  const [viewingLoading, setViewingLoading] = useState(false);
-
-  const generate = useCallback(async (force = false) => {
-    setGenerating(true);
-    setConfirmRefresh(false);
-    const res = await fetch("/api/news/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ force }),
-    }).catch(() => null);
-    if (res?.ok) {
-      const data = await res.json();
-      if (data) setBrief(data);
-    }
-    setGenerating(false);
-  }, [setBrief]);
-
-  function openArchive() {
-    setArchiveOpen(true);
-    if (archiveList.length > 0) return;
-    setArchiveLoading(true);
-    fetch("/api/news/archive")
-      .then(r => r.json())
-      .then(data => setArchiveList(Array.isArray(data) ? data : []))
-      .catch(() => {})
-      .finally(() => setArchiveLoading(false));
-  }
-
-  async function loadDateBrief(date: string) {
-    setViewingDate(date);
-    setViewingBrief(null);
-    setViewingLoading(true);
-    const res = await fetch(`/api/news/archive?date=${date}`).catch(() => null);
-    if (res?.ok) setViewingBrief(await res.json());
-    setViewingLoading(false);
-  }
-  function backToToday() { setViewingDate(null); setViewingBrief(null); setViewingLoading(false); }
-  function handleRefreshClick() {
-    if (!brief) { generate(true); return; }
-    const ageMs = Date.now() - new Date(brief.generatedAt).getTime();
-    if (ageMs < 3600000) setConfirmRefresh(true); else generate(true);
-  }
-
-  const isViewingPast = viewingDate !== null;
-  const displayedBrief = isViewingPast ? viewingBrief : brief;
-  const displayedLoading = isViewingPast ? viewingLoading : loading;
-
-  const dateLabel = displayedBrief
-    ? new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date(displayedBrief.date + "T12:00:00"))
-    : new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date());
-  const genTime = displayedBrief ? new Date(displayedBrief.generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : null;
-
-  const columns = COLUMNS.map(col => ({
-    ...col,
-    stories: (displayedBrief?.stories ?? []).filter(s => col.categories.includes(s.category)),
-    videos: (displayedBrief?.videos ?? []).filter(v => col.categories.includes(v.category)),
-  })).filter(col => col.stories.length > 0 || col.videos.length > 0 || displayedLoading);
-
-  // Featured: one flagged story per interest; if the generator flagged none (old brief), fall back to the first story.
-  const featured = columns.flatMap(col => {
-    const s = col.stories.find(x => x.featured) ?? col.stories[0];
-    return s ? [{ story: s, col }] : [];
-  });
-  // Videos come from their own live endpoint (2026-09-12) · the brief's copy is frozen
-  // at 06:00 and a device with a stale saved brief showed none (Ali's laptop).
-  const videos = liveVideos?.videos?.length ? liveVideos.videos : (displayedBrief?.videos ?? []);
-  const shown = section ? columns.filter(c => c.id === section) : columns;
-
+/** The daily podcast, low key (2026-10-03): one row, the 30-day archive behind it. */
+function DailyPodcastRow({ today }: { today: string }) {
+  const { data } = useCached<{ episode: Episode | null; recent?: Episode[] }>("podcast-today", () => fetchJson("/api/podcast/today"));
+  const [open, setOpen] = useState(false);
+  const ep = data?.episode && data.episode.date === today ? data.episode : null;
+  const previous = (data?.recent ?? []).filter((e) => e.date !== today && e.status === "ready" && e.audioUrl);
+  if (!data) return null;
+  const dayLabel = (ymd: string) => new Date(ymd + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   return (
-    <div style={{ display: "grid", gap: 18, paddingBottom: 24, maxWidth: "100%", minWidth: 0, overflowX: "hidden" }}>
-
-      {!isViewingPast && <PodcastCard today={checklistToday()} />}
-
-      {/* Page title */}
-      <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 600 }}>News</h1>
-          <div className="sub">
-            {dateLabel}
-            {genTime && !isViewingPast ? ` · ${genTime}` : ""}
-            {stale && !isViewingPast ? " · saved copy" : ""}
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button className="cc-btn cc-btn-ghost" onClick={openArchive} style={{ minHeight: 44, minWidth: 44, borderRadius: 12 }} aria-label="Archive">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+    <section className="cc-card">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}>
+        <Link href="/podcast" style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, alignItems: "center", minHeight: 54, padding: "8px 14px", textDecoration: "none", color: "inherit" }}>
+          <span aria-hidden style={{ width: 36, height: 36, borderRadius: 99, background: "var(--fill-2)", color: "var(--ink-2)", display: "grid", placeItems: "center", fontSize: 14, paddingLeft: 2 }}>▶</span>
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15.5, fontWeight: 500 }}>Daily podcast</span>
+            <span style={{ display: "block", fontSize: 13.5, color: "var(--ink-3)" }}>{ep ? (ep.status === "ready" && ep.durationSec ? `today · ${fmtSec(ep.durationSec)}` : ep.script ? "today · voice is down, read it" : "today's is on its way") : "today's is on its way"}</span>
+          </span>
+        </Link>
+        {previous.length > 0 && (
+          <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="cc-btn cc-btn-ghost" style={{ minHeight: 40, padding: "0 12px", fontSize: 13.5, marginRight: 8, borderRadius: 10 }}>
+            {open ? "Hide" : `Archive · ${previous.length}`}
           </button>
-          {!isViewingPast && (
-            <button className="cc-btn cc-btn-ghost" onClick={handleRefreshClick} disabled={generating || loading} style={{ minHeight: 44, minWidth: 44, borderRadius: 12 }} aria-label="Refresh">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: generating ? "spin 1s linear infinite" : "none" }}>
-                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
-            </button>
-          )}
-        </div>
+        )}
       </div>
-
-      {confirmRefresh && (
-        <div className="cc-card"><div className="cc-card-body" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Today&apos;s brief is fresh ({genTime}). Rebuild it anyway?</span>
-          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-            <button className="cc-btn cc-btn-ghost" onClick={() => setConfirmRefresh(false)} style={{ minHeight: 40 }}>Cancel</button>
-            <button className="cc-btn cc-btn-primary" onClick={() => generate(true)} style={{ minHeight: 40 }}>Refresh</button>
-          </div>
-        </div></div>
-      )}
-
-      {isViewingPast && (
-        <div className="cc-card" style={{ borderColor: "var(--violet)" }}><div className="cc-card-body" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <span style={{ fontSize: 15, color: "var(--ink-2)" }}>Viewing {formatArchiveDate(viewingDate!)}</span>
-          <button className="cc-btn cc-btn-ghost" onClick={backToToday} style={{ minHeight: 40 }}>‹ Back to today</button>
-        </div></div>
-      )}
-
-      {generating && (
-        <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
-          <div style={{ fontSize: 15, color: "var(--ink-2)" }}>Building today&apos;s brief… about half a minute.</div>
-          {[0, 1, 2].map(i => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}
-        </div></div>
-      )}
-
-      {!generating && !displayedLoading && !displayedBrief && (
-        <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-          No brief yet. It arrives every morning around 08:00; tap the refresh button to build one now.
-        </div></div>
-      )}
-
-      {/* Worth your time */}
-      {!generating && (displayedLoading || featured.length > 0) && (
-        <section className="cc-card">
-          <div className="cc-card-head"><span className="title" style={{ color: "var(--warn)" }}>★ Worth your time</span></div>
-          <div style={{ padding: "0 16px" }}>
-            {displayedLoading && <ColumnSkeleton />}
-            {!displayedLoading && featured.map(({ story, col }) => (
-              <div key={col.id} style={{ borderLeft: `2px solid ${col.color}`, paddingLeft: 12, margin: "4px 0" }}>
-                <div style={{ fontSize: 13, color: col.color, marginTop: 10 }}>{col.label}</div>
-                <StoryCard story={story} accentColor={col.color} index={0} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Videos */}
-      {!generating && !isViewingPast && videos.length > 0 && (
-        <section className="cc-card">
-          <div className="cc-card-head"><span className="title">▶ Videos</span><span className="tail">opens YouTube</span></div>
-          <div className="news-videos" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "12px 16px 14px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
-            {videos.map(v => <VideoCard key={v.id} v={v} color={VIDEO_COLOR[v.category] ?? "var(--ink-2)"} />)}
-          </div>
-        </section>
-      )}
-
-      {/* Football highlights · spoiler-free */}
-      {!generating && <HighlightsCard />}
-
-      {/* Interest chips */}
-      {!generating && columns.length > 1 && (
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
-          {[{ id: null as string | null, label: "All", color: "var(--ink-2)" }, ...columns.map(c => ({ id: c.id as string | null, label: c.label, color: c.color }))].map(c => (
-            <button key={c.id ?? "all"} onClick={() => setSection(c.id)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", borderColor: section === c.id ? c.color : undefined, color: section === c.id ? "var(--ink)" : undefined }}>
-              {c.label}
-            </button>
+      {open && previous.length > 0 && (
+        <div style={{ borderTop: "1px solid var(--line)", padding: "4px 14px 8px", display: "grid" }}>
+          {previous.map((e) => (
+            <Link key={e.date} href={`/podcast?date=${e.date}`} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", minHeight: 42, textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
+              <span style={{ fontSize: 14.5, color: "var(--ink-2)" }}>{dayLabel(e.date)}</span>
+              <span style={{ fontSize: 13.5, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.durationSec ? fmtSec(e.durationSec) : "brief"} ›</span>
+            </Link>
           ))}
         </div>
       )}
+    </section>
+  );
+}
 
-      {/* By interest */}
-      {!generating && shown.map(col => (
-        <section key={col.id} className="cc-card">
-          <div className="cc-card-head">
-            <span className="title" style={{ color: col.color }}>{col.label}</span>
-            <span className="tail">{displayedLoading ? "…" : `${col.stories.length} stories`}</span>
-          </div>
-          <div style={{ padding: "0 16px" }}>
-            {displayedLoading ? <ColumnSkeleton /> : col.stories.length === 0 ? (
-              <div style={{ padding: "16px 0", fontSize: 15, color: "var(--ink-4)" }}>No stories today</div>
-            ) : col.stories.map((s, i) => <StoryCard key={i} story={s} accentColor={col.color} index={i} />)}
-          </div>
-        </section>
-      ))}
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
-      {displayedBrief && !displayedLoading && !generating && (
-        <div style={{ color: "var(--ink-4)", fontSize: 14, letterSpacing: "0.02em", display: "flex", justifyContent: "space-between", gap: 12 }}>
-          <span>RSS + YouTube feeds · summaries by AI · no editorial opinion</span>
-          <Link href="/settings" style={{ color: "var(--ink-3)", textDecoration: "none", whiteSpace: "nowrap" }}>Topics & channels ›</Link>
+type WeeklyFeed = { brief: WeeklyBrief | null; episode: Episode | null; weeks: { week: string; from: string; to: string; label: string }[] };
+
+export default function NewsPage() {
+  const today = checklistToday();
+  const now = useNow();
+  const { feed, loading: videosLoading, markWatched } = useVideos();
+  const { data: weekly, loading: weeklyLoading } = useCached<WeeklyFeed>("news-weekly", () => fetchJson<WeeklyFeed>("/api/news/weekly"));
+  const { items: highlights, markWatched: markHighlight } = useHighlights();
+  const [laterAll, setLaterAll] = useState(false);
+  const [section, setSection] = useState<string | null>(null);
+
+  const later = feed?.later ?? [];
+  const laterShown = laterAll ? later : later.slice(0, 6);
+  const brief = weekly?.brief ?? null;
+  const ep = weekly?.episode ?? null;
+  const sections = brief ? (section ? brief.sections.filter((s) => s.key === section) : brief.sections) : [];
+
+  return (
+    <div style={{ display: "grid", gap: 18, paddingBottom: 24, maxWidth: "100%", minWidth: 0, overflowX: "hidden" }}>
+      <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 600 }}>News</h1>
+          <div className="sub">{new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date(today + "T12:00:00"))}</div>
         </div>
-      )}
+      </div>
 
-      <ArchiveDrawer open={archiveOpen} onClose={() => setArchiveOpen(false)} entries={archiveList} loading={archiveLoading} onSelectDate={loadDateBrief} selectedDate={viewingDate} />
+      {/* 1 · Daily picks */}
+      <div style={{ display: "grid", gap: 6 }}>
+        <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "0 2px" }}>Daily picks</span>
+        {videosLoading && !feed ? (
+          <div style={{ display: "grid", gap: 12 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ aspectRatio: "16 / 10", borderRadius: 14 }} />)}</div>
+        ) : (
+          <div className="news-picks" style={{ display: "grid", gap: 12 }}>
+            {(feed?.picks ?? []).map((p, i) => <PickCard key={p.channel.id} label={i === 0 ? "AI & Tech" : "Global news"} v={p.video} onWatch={markWatched} now={now} />)}
+          </div>
+        )}
+      </div>
+
+      {/* 2 · Watch later */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Watch later</span><span className="tail">{later.length === 0 ? (feed ? "all caught up" : "…") : `${later.length} · last two weeks`}</span></div>
+        {later.length > 0 && (
+          <div>
+            {laterShown.map((v) => <LaterRow key={v.videoId} v={v} onWatch={markWatched} now={now} />)}
+            {later.length > 6 && (
+              <button onClick={() => setLaterAll((v) => !v)} style={{ width: "100%", minHeight: 44, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>
+                {laterAll ? "Show fewer" : `Show all ${later.length}`}
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* 3 · Weekly brief · read or listen */}
+      <div style={{ display: "grid", gap: 10 }}>
+        <div className="cc-pagetitle" style={{ marginBottom: 0, alignItems: "end" }}>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>Weekly brief</h2>
+            <div className="sub">{brief ? `${prettyRange(brief.from, brief.to)} · ${brief.readMinutes} min read` : weeklyLoading ? "…" : "arrives on Monday morning"}</div>
+          </div>
+          {brief && ep?.status === "ready" && ep.audioUrl && (
+            <Link href={`/podcast?date=${brief.week}`} className="cc-btn cc-btn-primary" style={{ minHeight: 44, padding: "0 16px", borderRadius: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
+              ▶ Listen{ep.durationSec ? ` · ${Math.round(ep.durationSec / 60)} min` : ""}
+            </Link>
+          )}
+        </div>
+        {brief && brief.sections.length > 1 && (
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
+            {[{ key: null as string | null, label: "All", color: "var(--ink-2)" }, ...brief.sections.map((s) => ({ key: s.key as string | null, label: s.label, color: s.color }))].map((c) => (
+              <button key={c.key ?? "all"} onClick={() => setSection(c.key)} className="cc-pill" style={{ minHeight: 34, padding: "0 12px", fontSize: 15, cursor: "pointer", whiteSpace: "nowrap", borderColor: section === c.key ? c.color : undefined, color: section === c.key ? "var(--ink)" : undefined }}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {!brief && !weeklyLoading && (
+          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>The first weekly brief is written on Monday morning from the week&apos;s daily briefs.</div></div>
+        )}
+        {sections.map((sec) => (
+          <section key={sec.key} className="cc-card">
+            <div className="cc-card-head"><span className="title" style={{ color: sec.color }}>{sec.label}</span><span className="tail">{sec.stories.length} development{sec.stories.length === 1 ? "" : "s"}</span></div>
+            <div style={{ padding: "0 16px" }}>
+              {sec.stories.map((s, i) => <WeeklyStory key={i} story={s} color={sec.color} last={i === sec.stories.length - 1} />)}
+            </div>
+          </section>
+        ))}
+        {brief && weekly && weekly.weeks.length > 1 && (
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, fontSize: 13.5, color: "var(--ink-4)", alignItems: "center" }}>
+            <span>Past weeks</span>
+            {weekly.weeks.filter((w) => w.week !== brief.week).slice(0, 6).map((w) => (
+              <Link key={w.week} href={`/podcast?date=${w.week}`} className="cc-pill" style={{ minHeight: 30, padding: "0 10px", fontSize: 13, whiteSpace: "nowrap", textDecoration: "none" }}>{w.label}</Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 4 · Daily podcast · low key */}
+      <DailyPodcastRow today={today} />
+
+      {/* 5 · Football highlights · three sections */}
+      <div style={{ display: "grid", gap: 10 }}>
+        <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "0 2px" }}>Football · spoiler-free</span>
+        {GROUPS.map((g) => <HighlightsSection key={g.key} label={g.label} items={highlights.filter((h) => (h.group ?? (h.national ? "national" : "europe")) === g.key)} onWatch={markHighlight} />)}
+      </div>
+
+      <div style={{ color: "var(--ink-4)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 12 }}>
+        <span>Videos open in YouTube · summaries by AI</span>
+        <Link href="/settings" style={{ color: "var(--ink-3)", textDecoration: "none", whiteSpace: "nowrap" }}>Channels ›</Link>
+      </div>
 
       <style>{`
-        @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
-        .news-videos::-webkit-scrollbar { display: none; }
-        .news-video:active { opacity: 0.7; }
+        .news-pick:active, .news-later:active { opacity: 0.75; }
+        .news-later:last-child { border-bottom: none !important; }
+        @media (min-width: 720px) { .news-picks { grid-template-columns: 1fr 1fr; } }
       `}</style>
     </div>
   );

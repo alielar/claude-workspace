@@ -26,9 +26,14 @@
  * National teams (2026-09-30): the FIFA top 10 + Morocco, see national.ts · same table,
  * source "national" (video found) or "national-pending" (matchup only, video not up yet).
  *
- * Retention (Ali 2026-09-29): an UNWATCHED club highlight lives 3 days, unless one side is
- * a TOP5_CLUBS club (UEFA club coefficient top 5 + Real Madrid always) · those and every
- * national-team row stay until watched. Watched rows go after 21 days.
+ * Moroccan league (Ali 2026-10-03): the Botola Pro from Arryadia TV's channel (the public
+ * broadcaster, 10-12 min highlights per match, titles "ملخص | home – away | البطولة الاحترافية
+ * «إنوي» | الجولة N") · source "botola", shown in its own "Moroccan clubs" section.
+ *
+ * Retention (Ali 2026-10-03): KEPT UNTIL WATCHED · the top-5 European clubs (UEFA coefficient),
+ * Real Madrid and Kawkab Marrakech (KACM), plus every national-team row. Every other club,
+ * European or Moroccan, is deleted 4 days after publication if unwatched. Watched rows go
+ * after 21 days.
  */
 
 import { db } from "@/db";
@@ -37,8 +42,10 @@ import { and, desc, eq, isNotNull, isNull, lt, notInArray, notLike, sql } from "
 import { searchVideos } from "@/lib/news/youtubeSearch";
 import { ensureMetaTable, isPendingId, pollNational } from "@/lib/news/national";
 
-export type Competition = "Champions League" | "La Liga" | "Premier League" | "Bundesliga" | "Serie A" | "Ligue 1";
-type League = "ESP" | "GER" | "ITA" | "FRA" | "ENG" | "OTHER";
+export type Competition = "Champions League" | "La Liga" | "Premier League" | "Bundesliga" | "Serie A" | "Ligue 1" | "Botola Pro";
+type League = "ESP" | "GER" | "ITA" | "FRA" | "ENG" | "MAR" | "OTHER";
+/** The three sections on News (Ali 2026-10-03). */
+export type HighlightGroup = "europe" | "morocco" | "national";
 
 export type Highlight = {
   videoId: string;
@@ -50,6 +57,7 @@ export type Highlight = {
   watched?: boolean;     // Ali tapped it (stored server-side, so phone and laptop agree)
   national?: boolean;    // a national-team match (national.ts)
   pending?: boolean;     // matchup known, no public highlight found yet · shown without a play button
+  group: HighlightGroup; // which section it sits in
 };
 
 /**
@@ -58,12 +66,15 @@ export type Highlight = {
  * Madrid always in. Names as in TEAMS. Ali confirms or corrects the list.
  */
 export const TOP5_CLUBS = ["Bayern Munich", "Arsenal", "Real Madrid", "PSG", "Inter Milan"];
-const CLUB_UNWATCHED_DAYS = 3;
+/** Kept until watched (Ali 2026-10-03): the top 5, Real Madrid, and Kawkab Marrakech. */
+export const KEEP_UNTIL_WATCHED = [...TOP5_CLUBS, "Kawkab Marrakech"];
+const CLUB_UNWATCHED_DAYS = 4;
 const WATCHED_KEEP_DAYS = 21;
 
-type Source = { id: string; channelId: string; kind: "bein" | "latin" };
+type Source = { id: string; channelId: string; kind: "bein" | "latin" | "botola" };
 export const SOURCES: Source[] = [
   { id: "bein",    channelId: "UCJUCcJUeh0Cz2xyKwkw5Q1w", kind: "bein" },
+  { id: "botola",  channelId: "UCRN5ho3UGhUi7ZCBe2G2f2w", kind: "botola" }, // Arryadia TV
   { id: "seriea",  channelId: "UCBJeMCIeLQos7wacox4hmLQ", kind: "latin" },
   { id: "bayern",  channelId: "UCZkcxFIsqW5htimoUQKA0iA", kind: "latin" },
   { id: "bvb",     channelId: "UCK8rTVgp3-MebXkmeJcQb1Q", kind: "latin" },
@@ -198,6 +209,31 @@ const TEAMS: Record<string, TeamDef> = {
   "Leicester City":     { league: "ENG", aliases: ["ليستر سيتي", "leicester", "leicester city"] },
   "Southampton":        { league: "ENG", aliases: ["ساوثهامبتون", "southampton"] },
   "Sheffield United":   { league: "ENG", aliases: ["شيفيلد يونايتد", "sheffield united"] },
+  // Morocco · Botola Pro (Arryadia writes the full Arabic names; Latin aliases for searches)
+  "Kawkab Marrakech":   { league: "MAR", aliases: ["الكوكب المراكشي", "الكوكب", "kawkab marrakech", "kacm", "kawkab"] },
+  "Raja Casablanca":    { league: "MAR", aliases: ["الرجاء الرياضي", "الرجاء البيضاوي", "الرجاء", "raja casablanca", "raja"] },
+  "Wydad Casablanca":   { league: "MAR", aliases: ["الوداد الرياضي", "الوداد البيضاوي", "الوداد", "wydad casablanca", "wydad", "wac"] },
+  "FAR Rabat":          { league: "MAR", aliases: ["الجيش الملكي", "far rabat", "as far", "far"] },
+  "RS Berkane":         { league: "MAR", aliases: ["نهضة بركان", "rs berkane", "renaissance berkane", "berkane"] },
+  "MAS Fès":            { league: "MAR", aliases: ["المغرب الفاسي", "mas fes", "mas fès", "maghreb fes", "maghreb de fès"] },
+  "Hassania Agadir":    { league: "MAR", aliases: ["حسنية أكادير", "حسنية اكادير", "hassania agadir", "husa", "hassania"] },
+  "Olympique Khouribga":{ league: "MAR", aliases: ["أولمبيك خريبكة", "اولمبيك خريبكة", "olympique khouribga", "ock"] },
+  "Olympic Safi":       { league: "MAR", aliases: ["أولمبيك آسفي", "اولمبيك اسفي", "olympic safi", "olympique safi", "ocs"] },
+  "Difaa El Jadida":    { league: "MAR", aliases: ["الدفاع الحسني الجديدي", "الدفاع الجديدي", "difaa el jadida", "dhj", "difaa"] },
+  "Ittihad Tanger":     { league: "MAR", aliases: ["اتحاد طنجة", "إتحاد طنجة", "ittihad tanger", "irt", "ittihad tangier"] },
+  "Moghreb Tétouan":    { league: "MAR", aliases: ["المغرب التطواني", "moghreb tetouan", "mat", "maghreb tétouan"] },
+  "Union Touarga":      { league: "MAR", aliases: ["اتحاد تواركة", "إتحاد تواركة", "union touarga", "ust"] },
+  "Youssoufia Berrechid":{ league: "MAR", aliases: ["يوسفية برشيد", "youssoufia berrechid", "cayb"] },
+  "Chabab Mohammédia":  { league: "MAR", aliases: ["شباب المحمدية", "chabab mohammedia", "scm", "mohammedia"] },
+  "Renaissance Zemamra":{ league: "MAR", aliases: ["نهضة الزمامرة", "renaissance zemamra", "rcaz", "zemamra"] },
+  "CODM Meknès":        { league: "MAR", aliases: ["النادي المكناسي", "codm meknes", "codm", "meknes"] },
+  "Stade Marocain":     { league: "MAR", aliases: ["الستاد المراكشي", "stade marocain"] },
+  "Wydad Fès":          { league: "MAR", aliases: ["الوداد الفاسي", "wydad fes", "wydad fès"] },
+  "Rapide Oued Zem":    { league: "MAR", aliases: ["سريع وادي زم", "rapide oued zem", "rcoz"] },
+  "JS Soualem":         { league: "MAR", aliases: ["شباب السوالم", "js soualem", "jss", "soualem"] },
+  "Raja Beni Mellal":   { league: "MAR", aliases: ["رجاء بني ملال", "raja beni mellal", "rbm"] },
+  "KAC Kénitra":        { league: "MAR", aliases: ["النادي القنيطري", "kac kenitra", "kac", "kenitra"] },
+  "Chabab Atlas Khénifra":{ league: "MAR", aliases: ["شباب أطلس خنيفرة", "شباب اطلس خنيفرة", "chabab atlas khenifra", "cak"] },
   // Champions League regulars from elsewhere (so the other side has an English name)
   "Bodø/Glimt":         { league: "OTHER", aliases: ["بودو/غليمت", "بودو غليمت", "bodø/glimt", "bodo/glimt", "fk bodø/glimt", "bodo glimt"] },
   "Slovan Bratislava":  { league: "OTHER", aliases: ["سلوفان براتيسلافا", "slovan bratislava"] },
@@ -285,6 +321,7 @@ function competitionOf(text: string): Competition | null {
   if (/الدوري الالماني/.test(ar) || /bundesliga/.test(lat)) return "Bundesliga";
   if (/الدوري الايطالي/.test(ar) || /serie a/.test(lat)) return "Serie A";
   if (/الدوري الفرنسي/.test(ar) || /ligue 1/.test(lat)) return "Ligue 1";
+  if (/البطوله الاحترافيه|البطولة الاحترافية|botola/.test(ar) || /botola/.test(lat)) return "Botola Pro";
   return null;
 }
 
@@ -340,6 +377,24 @@ export function parseBein(title: string): Parsed | null {
   const home = resolveTeam(homeRaw) ?? { name: homeRaw, league: "OTHER" as League };
   const away = resolveTeam(awayRaw) ?? { name: awayRaw, league: "OTHER" as League };
   return { home, away, competition: comp, context: `${comp}${roundOf(tail, comp) ? ` · ${roundOf(tail, comp)}` : ""}` };
+}
+
+/** Arryadia: "ملخص | <home> – <away> | البطولة الاحترافية «إنوي» | الجولة <N>" · press conferences, live
+ * streams and other sports never start with ملخص, so they fall out here. */
+export function parseBotola(title: string): Parsed | null {
+  const t = title.replace(/\s+/g, " ").trim();
+  if (!/^ملخص\s*\|/.test(t)) return null;
+  const parts = t.split("|").map((x) => x.trim());
+  if (parts.length < 3) return null;
+  const comp = competitionOf(parts.slice(2).join(" | "));
+  if (comp !== "Botola Pro") return null;
+  const teams = parts[1].replace(/\(.*?\)/g, "").replace(/\d+\s*[-–:]\s*\d+/g, "").split(/\s+[–—-]\s+/);
+  if (teams.length !== 2) return null;
+  const home = resolveTeam(teams[0]) ?? { name: teams[0].trim(), league: "MAR" as League };
+  const away = resolveTeam(teams[1]) ?? { name: teams[1].trim(), league: "MAR" as League };
+  if (!home.name || !away.name || home.name === away.name) return null;
+  const round = roundOf(parts.slice(2).join(" "), comp);
+  return { home, away, competition: comp, context: `${comp}${round ? ` · ${round}` : ""}` };
 }
 
 /**
@@ -440,8 +495,16 @@ async function clTeams(): Promise<Set<string>> {
 
 function wanted(p: Parsed, cl: Set<string>): boolean {
   const sides = [p.home, p.away];
+  if (p.competition === "Botola Pro") return true; // the whole Moroccan league (Ali 2026-10-03)
   if (p.competition === "Champions League") return sides.some((s) => TOP5.includes(s.league));
   return sides.some((s) => cl.has(s.name));
+}
+
+/** Which section a stored row belongs to. */
+export function groupOf(source: string, competition: string): HighlightGroup {
+  if (source.startsWith("national")) return "national";
+  if (source === "botola" || competition === "Botola Pro") return "morocco";
+  return "europe";
 }
 
 /** The poll runs from the tick before anyone opened Today (ensureMigrate) · same DDL as migrate. */
@@ -464,7 +527,7 @@ export async function pruneHighlights(): Promise<void> {
     await db.delete(highlights).where(and(
       isNull(highlights.watchedAt), notLike(highlights.source, "national%"),
       lt(highlights.publishedAt, new Date(now - CLUB_UNWATCHED_DAYS * 86400_000)),
-      notInArray(highlights.home, TOP5_CLUBS), notInArray(highlights.away, TOP5_CLUBS),
+      notInArray(highlights.home, KEEP_UNTIL_WATCHED), notInArray(highlights.away, KEEP_UNTIL_WATCHED),
     ));
   } catch { /* best effort */ }
 }
@@ -480,9 +543,9 @@ export async function scanSources(cl: Set<string> = CL_TEAMS_SEED): Promise<{ ca
   results.forEach((r, i) => {
     if (r.status === "rejected") { errors.push(`${SOURCES[i].id}: ${String((r.reason as Error)?.message ?? r.reason).slice(0, 60)}`); return; }
     for (const e of r.value.entries) {
-      const p = r.value.src.kind === "bein" ? parseBein(e.title) : parseLatin(e.title);
+      const p = r.value.src.kind === "bein" ? parseBein(e.title) : r.value.src.kind === "botola" ? parseBotola(e.title) : parseLatin(e.title);
       if (!p || !wanted(p, cl)) { rejected.push({ source: r.value.src.id, title: e.title }); continue; }
-      candidates.push({ videoId: e.videoId, home: p.home.name, away: p.away.name, competition: p.competition, context: p.context, publishedAt: e.publishedAt, source: r.value.src.id, title: e.title });
+      candidates.push({ videoId: e.videoId, home: p.home.name, away: p.away.name, competition: p.competition, context: p.context, publishedAt: e.publishedAt, source: r.value.src.id, title: e.title, group: groupOf(r.value.src.id, p.competition) });
     }
   });
   return { candidates, rejected, errors };
@@ -542,10 +605,11 @@ export async function pollHighlights(opts: { search?: boolean } = {}): Promise<{
   return { added, seen: candidates.length, errors };
 }
 
-export async function listHighlights(limit = 40): Promise<Highlight[]> {
+export async function listHighlights(limit = 60): Promise<Highlight[]> {
   const rows = await db.select().from(highlights).orderBy(desc(highlights.publishedAt)).limit(limit);
   return rows.map((r) => ({
     videoId: r.videoId, home: r.home, away: r.away, competition: r.competition, context: r.context, publishedAt: r.publishedAt.getTime(), watched: r.watchedAt !== null,
+    group: groupOf(r.source, r.competition),
     ...(r.source.startsWith("national") ? { national: true } : {}),
     ...(isPendingId(r.videoId) ? { pending: true } : {}),
   }));

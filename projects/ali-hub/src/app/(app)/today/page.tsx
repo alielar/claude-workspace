@@ -51,7 +51,6 @@ import { itemColor, type ChecklistData, type ChecklistItem } from "@/lib/checkli
 import type { BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
-import { PodcastCard } from "@/components/PodcastCard";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import { useBirthdays } from "@/lib/birthdays/useBirthdays";
 import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
@@ -576,9 +575,7 @@ export default function TodayPage() {
 
       <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} />
 
-      {/* Morning brief at the BOTTOM, just above the highlight (Ali 2026-09-14 night: once heard it
-          must not sit on top · the day's actions come first, listening and watching last). */}
-      <PodcastCard today={today} />
+      {/* The daily podcast is low key since 2026-10-03 · it lives on News (one row, 30-day archive). */}
 
       {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose. */}
       <HighlightSuggestion />

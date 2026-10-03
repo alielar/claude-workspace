@@ -11,7 +11,6 @@ import { eq, and } from "drizzle-orm";
 import { generateNewsBrief, type NewsBrief } from "@/lib/news-brief";
 import { todayInTz } from "@/lib/utils";
 import { enhanceStoriesWithAI, generateDeepDives } from "@/lib/news/summarize";
-import { fetchBriefVideos, parseCustomChannels } from "@/lib/news/youtube";
 import { ensureSettingsColumns } from "@/lib/db/ensureColumns";
 
 export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
@@ -32,11 +31,9 @@ export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
 
   if (existing) return JSON.parse(existing.content) as NewsBrief;
 
-  // Generate (articles + YouTube videos in parallel), enhance with AI summaries + deep dives, and save
-  let enabledChannels: string[] | null = null;
-  try { enabledChannels = settings?.newsChannels ? (JSON.parse(settings.newsChannels) as string[]) : null; } catch { enabledChannels = null; }
-  const [brief, videos] = await Promise.all([generateNewsBrief(today), fetchBriefVideos(enabledChannels, parseCustomChannels(settings?.newsCustomChannels))]);
-  brief.videos = videos;
+  // Generate the articles, enhance with AI summaries + deep dives, and save (videos left the brief
+  // on 2026-10-03 · the News page reads them from yt_videos, see news/videos.ts).
+  const brief = await generateNewsBrief(today);
   // Summaries and the deeper analysis run side by side (both read the RSS text), in small
   // concurrent batches · same number of tokens as before, a fraction of the wall time.
   await Promise.all([enhanceStoriesWithAI(brief.stories), generateDeepDives(brief.stories)]);

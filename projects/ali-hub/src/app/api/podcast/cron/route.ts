@@ -11,7 +11,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { sql } from "drizzle-orm";
-import { ensureTodaysPodcast, todaysEpisode } from "@/lib/podcast/generate";
+import { ensureTodaysPodcast, ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
+import { ensureWeeklyBrief, previousWeek } from "@/lib/news/weekly";
+import { checklistToday } from "@/lib/checklist/day";
 
 /** The cron must never fail on a missing table (idempotent, same DDL as migrate). */
 async function ensureTable() {
@@ -79,11 +81,25 @@ export async function GET(req: NextRequest) {
       results[u.id] = `error: ${String((e as Error).message).slice(0, 120)}`;
     }
   }
+  // The WEEKLY brief + podcast (2026-10-03): built once last week's dailies are in · on Monday, or
+  // any later day it is still missing (the tick also retries the audio in the morning window).
+  const weekly: Record<string, string> = {};
+  const wantWeekly = req.nextUrl.searchParams.get("weekly") === "1" || new Date(`${checklistToday()}T12:00:00Z`).getUTCDay() === 1;
+  for (const u of allUsers) {
+    try {
+      const prev = previousWeek(checklistToday());
+      const brief = await ensureWeeklyBrief(u.id, { week: prev.week });
+      if (!brief) { weekly[u.id] = `${prev.week} · no daily briefs`; continue; }
+      if (!wantWeekly && !req.nextUrl.searchParams.get("weekly")) { weekly[u.id] = `${prev.week} · brief ready`; continue; }
+      const ep = await ensureWeeklyPodcast(u.id, brief);
+      weekly[u.id] = `${prev.week} · ${ep.status} · ${ep.durationSec ?? "?"}s${ep.lastError ? ` · ${ep.lastError}` : ""}`;
+    } catch (e) { weekly[u.id] = `error: ${String((e as Error).message).slice(0, 120)}`; }
+  }
   // ?script=1 · echo today's script for verification (the route is already key-gated).
   if (req.nextUrl.searchParams.get("script") === "1") {
     const scripts: Record<string, string | null> = {};
     for (const u of allUsers) scripts[u.id] = (await todaysEpisode(u.id))?.script ?? null;
     return NextResponse.json({ ok: true, results, scripts });
   }
-  return NextResponse.json({ ok: true, results });
+  return NextResponse.json({ ok: true, results, weekly });
 }

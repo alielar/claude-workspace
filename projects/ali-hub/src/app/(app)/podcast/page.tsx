@@ -67,7 +67,9 @@ function PodcastPlayer() {
   const router = useRouter();
   // ?date=YYYY-MM-DD opens one of the last briefs (Ali 2026-09-14) · default = today's.
   const q = useSearchParams().get("date");
-  const today = q && /^\d{4}-\d{2}-\d{2}$/.test(q) ? q : checklistToday();
+  // ?date=YYYY-MM-DD = one of the last daily briefs · ?date=2026-W40 = a WEEKLY episode (2026-10-03).
+  const today = q && /^\d{4}-(\d{2}-\d{2}|W\d{2})$/.test(q) ? q : checklistToday();
+  const isWeekly = /-W\d{2}$/.test(today);
   const isToday = today === checklistToday();
   const { data, setData } = useCached<{ episode: Episode | null }>(isToday ? "podcast-today" : `podcast-${today}`, () => fetchJson(isToday ? "/api/podcast/today" : `/api/podcast/today?date=${today}`));
   const ep = data?.episode && data.episode.date === today ? data.episode : null;
@@ -136,7 +138,7 @@ function PodcastPlayer() {
     a.addEventListener("play", () => setPlaying(true));
     audioRef.current = a;
     if ("mediaSession" in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({ title: "Morning brief", artist: "A L I", album: ep.date });
+      navigator.mediaSession.metadata = new MediaMetadata({ title: isWeekly ? "Weekly brief" : "Morning brief", artist: "A L I", album: ep.date });
       navigator.mediaSession.setActionHandler("play", () => a.play());
       navigator.mediaSession.setActionHandler("pause", () => a.pause());
       navigator.mediaSession.setActionHandler("seekbackward", () => { a.currentTime = Math.max(0, a.currentTime - 15); });
@@ -150,7 +152,7 @@ function PodcastPlayer() {
       } catch { /* older Safari */ }
     }
     return a;
-  }, [ep, speed, today, markHeard]);
+  }, [ep, speed, today, markHeard, isWeekly]);
 
   const toggle = () => {
     const a = ensureAudio();
@@ -202,7 +204,7 @@ function PodcastPlayer() {
       <div style={{ display: "grid", gap: 16, maxWidth: 560 }}>
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 600 }}>Morning brief</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 600 }}>{isWeekly ? "Weekly brief" : "Morning brief"}</h1>
             <div className="sub">{today}</div>
           </div>
         </div>
@@ -234,7 +236,7 @@ function PodcastPlayer() {
       {/* Top bar */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 600 }}>Morning brief{isToday ? "" : ` · ${new Date(today + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}`}</div>
+          <div style={{ fontSize: 17, fontWeight: 600 }}>{isWeekly ? `Weekly brief · ${today}` : `Morning brief${isToday ? "" : ` · ${new Date(today + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}`}`}</div>
           <div style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {currentChapter ? currentChapter.title : ep.date}
           </div>
