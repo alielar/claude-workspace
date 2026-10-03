@@ -412,6 +412,15 @@ Any future session picks these up from here; Ali should not have to repeat them.
    Then, if wanted: phase 1 = nightly cloud routine pulling finished sessions into the app as
    training sessions; phase 2 = pushing A/B programs to the machine.
 
+14. **Training program (recorded 2026-10-03, do not build yet).** Two upper-body Speediance sessions
+   (back, biceps, triceps, core, chest, shoulders), two runs, one kettlebell session · the kettlebell
+   and the runs cover the legs. Waiting on Ali to build the custom workouts in the Speediance app
+   first; then the Routine rows (Settings → Routine) and the Train tab follow that week.
+15. **AI training insights (recorded 2026-10-03, needs a plan first).** Combine the Apple Watch data
+   (sleep, vitals, runs), the Speediance sessions and the kettlebell logs into interpreted insights,
+   objectives and a weekly training report, in the same fixed-rules-first spirit as the Health tab
+   (rules for what the numbers mean, AI only for the prose). Plan it with Ali before any code.
+
 ## 7b. Stop conditions
 
 Stop and come back to me when:
