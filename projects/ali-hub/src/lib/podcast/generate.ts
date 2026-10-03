@@ -488,7 +488,9 @@ async function produceEpisode(userId: string, date: string, p: Produce): Promise
   if (!script) {
     const written = await p.write();
     if (!written) {
-      await db.update(podcastEpisodes).set({ status: "failed" }).where(eq(podcastEpisodes.id, row.id));
+      // A writer that is down (no credits, 2026-10-04) must not burn the attempt cap: the row keeps
+      // its count, the spacing still applies, and the tick picks it up again once the writer is back.
+      await db.update(podcastEpisodes).set({ status: "failed", attempts: row.attempts }).where(eq(podcastEpisodes.id, row.id));
       return { date, status: "failed", script: null, audioUrl: null, attempts: row.attempts + 1, chapters: [], durationSec: null, lastError: `script generation failed${lastHaikuError ? ` · ${lastHaikuError}` : ""}` };
     }
     script = written.script;
