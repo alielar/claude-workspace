@@ -1,21 +1,31 @@
 "use client";
 
 /**
- * /stretch · guided morning stretching timer.
+ * /stretch · "Mobility" · the guided morning timer.
  *
- * 22 movements in 4 blocks · per-move durations (20–50 s, deep holds get more),
- * 10 s rest between every movement, 14:40 total incl. 5 s lead-in. Full-screen while running.
- * Time is computed from timestamps (not tick counts) so it stays correct if the
- * phone sleeps briefly or the app is backgrounded. Screen stays awake (Wake Lock),
- * every change beeps + vibrates, the movement name is spoken so it works from a pocket.
- * Finishing ticks "Stretching" on today's checklist (offline-safe).
+ * Three 10:00 sessions in sequence by calendar day (src/lib/routine/stretching.ts), 10 s rests,
+ * full-screen while running. Time is computed from timestamps (not tick counts) so it stays
+ * correct if the phone sleeps briefly. Screen stays awake (Wake Lock); every change beeps and
+ * vibrates · NO voice since 2026-10-03 (Ali: the robotic names were disturbing).
+ * Finishing ticks "Mobility" on today's checklist (offline-safe).
+ *
+ * MUSIC (2026-10-03): no picker. A random track from the epic shelf starts with the session;
+ * when it ends the next one is another track, never one already heard this session.
+ *
+ * THE RUNNING SCREEN (2026-10-03, Ali: "it is all I look at for ten minutes · more engaging,
+ * tasteful"): a big ring that drains with the phase (violet for a move, cyan for a rest, amber
+ * for the lead-in), a slow ambient glow behind it that breathes with the block of the session,
+ * the move name sliding in on every change, a strip of dots for the whole session (done · now ·
+ * next), and the last three seconds pulse the ring. No figure demonstrating the move · Ali's
+ * standing rule is precise motion or nothing (spec §7c item 13), so nothing approximate here.
+ * Everything collapses to the plain numbers under prefers-reduced-motion.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, SESSION_KEYS, buildStretchPlan, isDefaultName, sessionForDate, sessionSeconds,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, SESSION_KEYS, MOVE_TARGETS, buildStretchPlan, isDefaultName, sessionForDate, sessionSeconds,
   readSessionPick, writeSessionPick, type SessionKey, type StretchPhase,
 } from "@/lib/routine/stretching";
 import { cues } from "@/lib/routine/cues";
@@ -33,7 +43,7 @@ function fmt(s: number) {
   return `${m}:${String(r).padStart(2, "0")}`;
 }
 
-/** Mark the "Stretching" routine item done for today · local copy first, server after. */
+/** Mark the "Mobility" routine item done for today · local copy first, server after. */
 async function completeStretchItem() {
   const today = checklistToday();
   const cached = readCache<ChecklistData>("checklist");
@@ -52,6 +62,9 @@ async function completeStretchItem() {
     });
   } catch { /* server refused · the next refresh will show the truth */ }
 }
+
+/** The block's hue for the ambient glow · standing warm, floor cooler, lying deep, finish calm. */
+const BLOCK_GLOW = ["#F0A35B", "#8B7CF0", "#5B8DEF", "#6FD49A"];
 
 export default function StretchPage() {
   const router = useRouter();
@@ -72,15 +85,48 @@ export default function StretchPage() {
   const TOTAL = sessionSeconds(MOVES);
   const [step, setStep] = useState(0);                 // index into PLAN
   const [remainingMs, setRemainingMs] = useState(STRETCH_LEADIN_SECONDS * 1000);
-  const [voice, setVoice] = useState(true);
-  const [track, setTrack] = useState<string>("off");           // track slug | "off"
-  const [previewing, setPreviewing] = useState<string | null>(null);
+
+  // ── Music · random, never the same track twice in one session ──
   const music = useRef<HTMLAudioElement | null>(null);
-  // Movement names are editable · renames live on the phone BY MOVE KEY
-  // (cc-stretch-names-v3). The older cc-stretch-names-v2 stored the whole list by
-  // position, so every code change to the list was painted over by the snapshot
-  // (Ali's screen on 2026-09-11 still showed "Seated Toe Stretch" and "Frog Pose").
-  // It is migrated once: only names that were never a default survive as renames.
+  const played = useRef<string[]>([]);
+  const [nowPlaying, setNowPlaying] = useState<string | null>(null);
+  const nextTrack = useCallback((): string | null => {
+    const pool = STRETCH_TRACKS.map((t) => t.slug).filter((s) => !played.current.includes(s));
+    const from = pool.length ? pool : STRETCH_TRACKS.map((t) => t.slug).filter((s) => s !== played.current.at(-1));
+    if (!from.length) return null;
+    const slug = from[Math.floor(Math.random() * from.length)];
+    played.current.push(slug);
+    return slug;
+  }, []);
+  const playNext = useCallback(() => {
+    const slug = nextTrack();
+    if (!slug) return;
+    if (!music.current) {
+      music.current = new Audio();
+      music.current.addEventListener("ended", () => playNext());
+    }
+    const el = music.current;
+    el.src = trackUrl(slug);
+    el.loop = false;
+    el.volume = 0.35;
+    el.play().catch(() => { /* autoplay refused · beeps still work */ });
+    setNowPlaying(slug);
+  }, [nextTrack]);
+  const stopMusic = useCallback(() => {
+    music.current?.pause();
+    if (music.current) music.current.currentTime = 0;
+    setNowPlaying(null);
+  }, []);
+  // Music follows the session: starts with Start, pauses with Pause, stops at the end.
+  useEffect(() => {
+    if (status === "running") { if (music.current?.src && music.current.paused && nowPlaying) music.current.play().catch(() => {}); else if (!nowPlaying) playNext(); }
+    else if (status === "paused") music.current?.pause();
+    else { stopMusic(); played.current = []; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nowPlaying is read, not a trigger
+  }, [status, playNext, stopMusic]);
+  useEffect(() => () => { stopMusic(); cues.silence(); }, [stopMusic]);  // leaving the page stops everything
+
+  // Movement names are editable · renames live on the phone BY MOVE KEY (cc-stretch-names-v3).
   const MOVE_NAMES = MOVES.map((m) => m.name);
   const [renames, setRenames] = useState<Record<string, string>>({});
   const moves = MOVES.map((m) => renames[m.key]?.trim() || m.name);
@@ -112,37 +158,6 @@ export default function StretchPage() {
     setRenames(next);
     try { localStorage.setItem("cc-stretch-names-v3", JSON.stringify(next)); } catch { /* ignore */ }
   };
-  // A previously chosen track may have been removed from the library · fall back to off.
-  useEffect(() => { try { const t = localStorage.getItem("cc-stretch-track"); if (t && (t === "off" || STRETCH_TRACKS.some((x) => x.slug === t))) setTrack(t); } catch { /* ignore */ } }, []);
-  const pickTrack = (slug: string) => {
-    setTrack(slug);
-    try { localStorage.setItem("cc-stretch-track", slug); } catch { /* ignore */ }
-  };
-  const stopMusic = useCallback(() => {
-    music.current?.pause();
-    if (music.current) music.current.currentTime = 0;
-    setPreviewing(null);
-  }, []);
-  const playTrack = useCallback((slug: string, volume: number) => {
-    if (!music.current) music.current = new Audio();
-    const el = music.current;
-    if (!el.src.endsWith(trackUrl(slug))) el.src = trackUrl(slug);
-    el.loop = true;
-    el.volume = volume;
-    el.play().catch(() => { /* autoplay refused · beeps and voice still work */ });
-  }, []);
-  const preview = (slug: string) => {
-    if (previewing === slug) { stopMusic(); return; }
-    playTrack(slug, 0.5);
-    setPreviewing(slug);
-  };
-  // Music follows the session: starts with Start, pauses with Pause, stops at the end.
-  useEffect(() => {
-    if (status === "running" && track !== "off") { setPreviewing(null); playTrack(track, 0.35); }
-    else if (status === "paused") music.current?.pause();
-    else stopMusic();
-  }, [status, track, playTrack, stopMusic]);
-  useEffect(() => () => { stopMusic(); cues.silence(); }, [stopMusic]);  // leaving the page stops everything
 
   const phaseEndsAt = useRef<number>(0);               // absolute ms
   const pausedRemaining = useRef<number>(0);
@@ -196,8 +211,8 @@ export default function StretchPage() {
     phaseEndsAt.current = Date.now() + p.seconds * 1000;
     setRemainingMs(p.seconds * 1000);
     if (!announce) return;
-    if (p.kind === "work") cues.work(movesRef.current[p.index]);
-    else if (p.kind === "rest") cues.rest(movesRef.current[p.index + 1]);
+    if (p.kind === "work") cues.work();
+    else if (p.kind === "rest") cues.rest();
   }, [PLAN]);
 
   // ── Ticker ────────────────────────────────────────────────────────────────
@@ -218,8 +233,8 @@ export default function StretchPage() {
             phaseEndsAt.current = now + p.seconds * 1000 - overshoot;
             setStep(s);
             lastTickSecond.current = -1;
-            if (p.kind === "work") cues.work(movesRef.current[p.index]);
-            else cues.rest(movesRef.current[p.index + 1]);
+            if (p.kind === "work") cues.work();
+            else cues.rest();
             rem = phaseEndsAt.current - now;
             break;
           }
@@ -232,17 +247,15 @@ export default function StretchPage() {
         lastTickSecond.current = sec;
         cues.tick();
       }
-    }, 200);
+    }, 100);
     return () => clearInterval(id);
   }, [status, step, enterStep, PLAN]);
 
   // ── Controls ──────────────────────────────────────────────────────────────
   const start = () => {
     cues.arm();
-    cues.setVoice(voice);
     setStatus("running");
     enterStep(0, false);
-    cues.say("Get ready");  // the first move announces itself when it starts
   };
   const pause = () => {
     pausedRemaining.current = Math.max(0, phaseEndsAt.current - Date.now());
@@ -254,14 +267,12 @@ export default function StretchPage() {
     setStatus("running");
   };
   const skip = () => {
-    // jump to the next *work* phase (or done)
     let s = step + 1;
     while (PLAN[s].kind === "rest") s += 1;
     if (status === "paused") { setStatus("running"); }
     enterStep(s);
   };
   const back = () => {
-    // jump to the start of the current move (or the previous move if within 2s)
     let s = step;
     if (PLAN[s].kind === "rest") s -= 1;
     const intoPhase = PLAN[step].seconds * 1000 - remainingMs;
@@ -285,7 +296,11 @@ export default function StretchPage() {
   const isRest = phase.kind === "rest";
   const isLead = phase.kind === "leadin";
   const accent = isRest ? "var(--cyan)" : isLead ? "var(--warn)" : "var(--violet)";
+  const moveIdx = phase.kind === "done" ? MOVES.length - 1 : phase.kind === "leadin" ? 0 : phase.index;
   const moveNumber = phase.kind === "done" ? MOVES.length : phase.kind === "leadin" ? 1 : phase.index + 1;
+  const blockIdx = MOVES[Math.min(moveIdx, MOVES.length - 1)].block;
+  const glow = BLOCK_GLOW[blockIdx] ?? BLOCK_GLOW[1];
+  const nowTitle = nowPlaying ? STRETCH_TRACKS.find((t) => t.slug === nowPlaying)?.title : null;
 
   // ── Idle screen ───────────────────────────────────────────────────────────
   if (status === "idle") {
@@ -317,58 +332,13 @@ export default function StretchPage() {
           </a>
         )}
 
-        <button
-          className="cc-btn cc-btn-primary"
-          onClick={start}
-          style={{ minHeight: 64, fontSize: 19, borderRadius: 14, width: "100%" }}
-        >
+        <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 14, width: "100%" }}>
           ▶ Start
         </button>
-
-        <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 44, fontSize: 15, color: "var(--ink-2)" }}>
-          <span>Speak each movement name</span>
-          <input type="checkbox" checked={voice} onChange={(e) => setVoice(e.target.checked)} style={{ width: 22, height: 22, accentColor: "var(--violet)" }} />
-        </label>
-
-        <section className="cc-card">
-          <div className="cc-card-head"><span className="title">Music</span><span className="tail">{track === "off" ? "off" : STRETCH_TRACKS.find((m) => m.slug === track)?.title}</span></div>
-          <div className="cc-card-body" style={{ display: "grid", gap: 2 }}>
-            <div style={{ fontSize: 14, color: "var(--ink-3)", padding: "2px 10px 8px" }}>
-              Tap a track to choose it. The small ▶ only previews the sound.
-            </div>
-            {[{ slug: "off", title: "No music", by: "" }, ...STRETCH_TRACKS].map((m) => {
-              const on = track === m.slug;
-              const isOff = m.slug === "off";
-              return (
-                <div key={m.slug} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 6 }}>
-                  <button
-                    onClick={() => { pickTrack(m.slug); if (isOff) stopMusic(); }}
-                    aria-pressed={on}
-                    style={{ display: "grid", gridTemplateColumns: "26px 1fr", alignItems: "center", textAlign: "left", padding: "6px 10px", minHeight: 52, borderRadius: 10, border: `1px solid ${on ? "var(--violet)" : "var(--line)"}`, background: on ? "var(--accent-soft)" : "transparent", color: "var(--ink)", font: "inherit", cursor: "pointer" }}
-                  >
-                    <span aria-hidden style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? "var(--violet)" : "var(--line-hi)"}`, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                      {on && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--violet)" }} />}
-                    </span>
-                    <span style={{ display: "grid", alignContent: "center" }}>
-                      <span style={{ fontSize: 16 }}>{m.title}{on && !isOff ? " · chosen" : ""}</span>
-                      {m.by && <span style={{ fontSize: 13, color: "var(--ink-3)" }}>{m.by}</span>}
-                    </span>
-                  </button>
-                  {!isOff && (
-                    <button onClick={() => preview(m.slug)} aria-label={previewing === m.slug ? "Stop preview" : `Preview ${m.title}`} style={{ width: 48, minHeight: 52, borderRadius: 10, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: previewing === m.slug ? "var(--violet)" : "var(--ink-2)", fontSize: 16, cursor: "pointer" }}>{previewing === m.slug ? "■" : "▶"}</button>
-                  )}
-                </div>
-              );
-            })}
-            <button
-              className="cc-btn cc-btn-primary"
-              onClick={start}
-              style={{ minHeight: 54, fontSize: 17, borderRadius: 14, width: "100%", marginTop: 8 }}
-            >
-              Next · start{track === "off" ? " in silence" : ` with ${STRETCH_TRACKS.find((m) => m.slug === track)?.title}`}
-            </button>
-          </div>
-        </section>
+        <div style={{ fontSize: 14, color: "var(--ink-3)", display: "flex", justifyContent: "space-between", padding: "0 2px" }}>
+          <span>Music · a random epic track, another when it ends</span>
+          <span style={{ fontFamily: "var(--f-mono)" }}>{STRETCH_TRACKS.length} tracks</span>
+        </div>
 
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Order</span><span className="tail">tap a name to rename</span></div>
@@ -417,27 +387,36 @@ export default function StretchPage() {
   if (status === "done") {
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
-        <div style={{ fontSize: 64 }}>✓</div>
+        <div className="mob-done-ring" aria-hidden><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--pos)" strokeWidth="4" className="mob-done-circle" /><path d="M38 62l15 15 30-32" fill="none" stroke="var(--pos)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" className="mob-done-check" /></svg></div>
         <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility done</h1>
         <p style={{ color: "var(--ink-3)", fontSize: 16 }}>{SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)} · ticked on today&rsquo;s list</p>
         <button className="cc-btn cc-btn-primary" onClick={exit} style={{ minHeight: 56, fontSize: 18, borderRadius: 14, width: "min(320px, 100%)", marginTop: 12 }}>
           Back to Today
         </button>
+        <style>{`
+          .mob-done-circle { stroke-dasharray: 327; stroke-dashoffset: 327; animation: mob-draw 0.7s var(--easeOut) forwards; }
+          .mob-done-check { stroke-dasharray: 70; stroke-dashoffset: 70; animation: mob-draw 0.45s var(--easeOut) 0.5s forwards; }
+          @keyframes mob-draw { to { stroke-dashoffset: 0; } }
+          @media (prefers-reduced-motion: reduce) { .mob-done-circle, .mob-done-check { animation: none; stroke-dashoffset: 0; } }
+        `}</style>
       </div>
     );
   }
 
   // ── Running / paused (full-screen) ────────────────────────────────────────
+  const R = 46;                                   // ring radius in a 100 × 100 box
+  const C = 2 * Math.PI * R;
+  const frac = phase.seconds > 0 ? Math.max(0, Math.min(1, remainingMs / (phase.seconds * 1000))) : 0;
+  const last3 = seconds <= 3 && seconds >= 1 && status === "running";
+  const target = MOVE_TARGETS[MOVES[Math.min(moveIdx, MOVES.length - 1)].key];
+
   return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)",
-        display: "flex", flexDirection: "column",
-        padding: "calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px)",
-      }}
-    >
+    <div className="mob-screen" style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px)", overflow: "hidden" }}>
+      {/* Ambient glow · the block's colour, breathing slowly behind everything */}
+      <div aria-hidden className="mob-glow" style={{ ["--glow" as string]: glow, opacity: status === "paused" ? 0.25 : undefined }} />
+
       {/* Top: overall progress + exit */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
         <div className="cc-progress-track" style={{ flex: 1, height: 4 }}>
           <div className="cc-progress-fill" style={{ width: `${(elapsed / TOTAL) * 100}%`, transition: "width 0.3s linear" }} />
         </div>
@@ -445,39 +424,66 @@ export default function StretchPage() {
         <button onClick={exit} aria-label="Exit" className="cc-btn cc-btn-ghost" style={{ minWidth: 44, minHeight: 44, padding: 0, borderRadius: 12 }}>✕</button>
       </div>
 
-      {/* Middle: phase, name, countdown */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 8 }}>
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 14, letterSpacing: "0.18em", textTransform: "uppercase", color: accent }}>
-          {isLead ? "Get ready" : isRest ? "Rest" : `Move ${moveNumber} of ${MOVES.length} · ${STRETCH_BLOCKS[MOVES[Math.min(phase.index, MOVES.length - 1)].block]}`}
-        </div>
-        <div style={{ fontSize: "clamp(24px, 7vw, 34px)", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em", minHeight: "2.4em", display: "flex", alignItems: "center" }}>
-          {isRest ? (nextName ?? "") : moveName}
-        </div>
-        <div
-          className="tabular-nums"
-          style={{ fontSize: "clamp(96px, 32vw, 160px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", color: status === "paused" ? "var(--ink-3)" : "var(--ink)", fontVariantNumeric: "tabular-nums" }}
-        >
-          {seconds}
-        </div>
-        {!isRest && nextName && (
-          <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Next: {nextName}</div>
-        )}
-        {isRest && <div style={{ fontSize: 15, color: "var(--ink-3)" }}>coming up</div>}
-        {status === "paused" && <div className="cc-pill cc-pill-warn" style={{ marginTop: 8 }}>Paused</div>}
+      {/* The session as a strip of dots · done, now (bigger), next */}
+      <div aria-hidden style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14, position: "relative" }}>
+        {MOVES.map((m, i) => {
+          const state = i < moveIdx || phase.kind === "done" ? "done" : i === moveIdx ? "now" : "next";
+          return <span key={m.key + i} className={`mob-dot mob-dot-${state}`} style={{ background: state === "next" ? "var(--line-strong)" : state === "done" ? "var(--pos)" : isRest ? "var(--cyan)" : "var(--violet)" }} />;
+        })}
       </div>
 
+      {/* Middle: ring with the countdown inside, the name under it */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 14, position: "relative", minHeight: 0 }}>
+        <div className={`mob-ring${last3 ? " mob-ring-last" : ""}`} style={{ width: "min(68vw, 46vh, 320px)", aspectRatio: "1", position: "relative", display: "grid", placeItems: "center" }}>
+          <svg viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }} aria-hidden>
+            <circle cx="50" cy="50" r={R} fill="none" stroke="var(--line)" strokeWidth="3" />
+            <circle cx="50" cy="50" r={R} fill="none" stroke={accent} strokeWidth="3.5" strokeLinecap="round"
+              strokeDasharray={C} strokeDashoffset={C * (1 - frac)} style={{ transition: status === "running" ? "stroke-dashoffset 0.12s linear, stroke 0.3s" : "stroke 0.3s" }} />
+          </svg>
+          <div style={{ display: "grid", gap: 2, position: "relative" }}>
+            <span className="tabular-nums" style={{ fontSize: "clamp(72px, 22vw, 120px)", fontWeight: 200, lineHeight: 1, letterSpacing: "-0.04em", color: status === "paused" ? "var(--ink-3)" : "var(--ink)" }}>{seconds}</span>
+            <span style={{ fontFamily: "var(--f-mono)", fontSize: 12.5, letterSpacing: "0.18em", textTransform: "uppercase", color: accent }}>
+              {isLead ? "get ready" : isRest ? "rest" : `${moveNumber} of ${MOVES.length}`}
+            </span>
+          </div>
+        </div>
+
+        <div key={`${phase.kind}-${moveIdx}`} className="mob-name" style={{ display: "grid", gap: 6, maxWidth: 420 }}>
+          <div style={{ fontSize: "clamp(24px, 7vw, 34px)", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+            {isRest ? (nextName ?? "") : moveName}
+          </div>
+          <div style={{ fontSize: 14.5, color: "var(--ink-3)" }}>
+            {isRest ? "coming up" : isLead ? `${STRETCH_BLOCKS[blockIdx]} · ${SESSION.focus}` : target ?? STRETCH_BLOCKS[blockIdx]}
+          </div>
+          {!isRest && nextName && <div style={{ fontSize: 14, color: "var(--ink-4)" }}>Next · {nextName}</div>}
+        </div>
+        {status === "paused" && <div className="cc-pill cc-pill-warn" style={{ marginTop: 4 }}>Paused</div>}
+      </div>
+
+      {nowTitle && <div style={{ textAlign: "center", fontSize: 12.5, color: "var(--ink-4)", marginBottom: 10, position: "relative" }}>♪ {nowTitle}</div>}
+
       {/* Bottom: controls · thumb zone */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10, position: "relative" }}>
         <button onClick={back} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 14, fontSize: 16 }}>‹ Back</button>
-        <button
-          onClick={status === "running" ? pause : resume}
-          className="cc-btn cc-btn-primary"
-          style={{ minHeight: 64, borderRadius: 14, fontSize: 19 }}
-        >
+        <button onClick={status === "running" ? pause : resume} className="cc-btn cc-btn-primary" style={{ minHeight: 64, borderRadius: 14, fontSize: 19 }}>
           {status === "running" ? "Pause" : "Resume"}
         </button>
         <button onClick={skip} className="cc-btn cc-btn-ghost" style={{ minHeight: 64, borderRadius: 14, fontSize: 16 }}>Skip ›</button>
       </div>
+
+      <style>{`
+        .mob-glow { position: absolute; left: 50%; top: 38%; width: 120vw; height: 120vw; max-width: 720px; max-height: 720px; transform: translate(-50%, -50%); border-radius: 50%;
+          background: radial-gradient(circle, color-mix(in srgb, var(--glow) 28%, transparent) 0%, color-mix(in srgb, var(--glow) 10%, transparent) 38%, transparent 68%);
+          filter: blur(10px); animation: mob-breathe 7s ease-in-out infinite; transition: opacity 0.6s, background 1.2s; pointer-events: none; }
+        @keyframes mob-breathe { 0%, 100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.75; } 50% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; } }
+        .mob-dot { width: 7px; height: 7px; border-radius: 99px; transition: transform 0.3s var(--easeOut), background 0.3s; }
+        .mob-dot-now { transform: scale(1.7); box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent); }
+        .mob-name { animation: mob-slide 0.42s var(--easeOut) both; }
+        @keyframes mob-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .mob-ring-last { animation: mob-pulse 1s ease-out infinite; }
+        @keyframes mob-pulse { 0% { transform: scale(1); } 30% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) { .mob-glow, .mob-name, .mob-ring-last { animation: none; } .mob-dot { transition: none; } }
+      `}</style>
     </div>
   );
 }

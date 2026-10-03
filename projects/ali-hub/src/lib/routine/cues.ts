@@ -1,7 +1,9 @@
 "use client";
 
 /**
- * Sound, voice and vibration cues for timers.
+ * Sound and vibration cues for timers. Speech is OFF since 2026-10-03 (Ali: "remove the spoken
+ * movement names, the robotic voice is disturbing · the other sounds are fine") · `say()` is a
+ * no-op unless `setVoice(true)` is called; nothing calls it any more.
  * Everything here is offline and needs no permission. The AudioContext must
  * be created from a user tap (iOS rule) · call `cues.arm()` in the Start handler.
  */
@@ -10,7 +12,7 @@ type Tone = { freq: number; ms: number; gap?: number };
 
 class Cues {
   private ctx: AudioContext | null = null;
-  private voiceOn = true;
+  private voiceOn = false;
 
   /** Create/resume the audio context. Call from a tap handler. */
   arm() {
@@ -105,20 +107,18 @@ class Cues {
     } catch { /* ignore */ }
   }
 
-  /** New movement starts. */
+  /** New movement starts · two rising notes, no voice. */
   work(name?: string) {
     this.play([{ freq: 880, ms: 120 }, { freq: 1175, ms: 160 }]);
     this.vibrate([120, 60, 120]);
-    if (name) this.say(name);
+    void name;
   }
 
-  /** Rest begins. The next movement's name is NOT spoken here · it is announced
-   * once, when the move actually starts (Ali, 2026-09-01: it was said twice). */
+  /** Rest begins · one soft note. */
   rest(nextName?: string) {
     this.play([{ freq: 523, ms: 180 }]);
     this.vibrate(80);
     void nextName;
-    this.say("Rest");
   }
 
   /** Last three seconds of a phase. */
@@ -136,7 +136,6 @@ class Cues {
   done() {
     this.play([{ freq: 784, ms: 140 }, { freq: 988, ms: 140 }, { freq: 1318, ms: 260 }]);
     this.vibrate([200, 100, 200, 100, 400]);
-    this.say("Done. Nice work.");
   }
 }
 

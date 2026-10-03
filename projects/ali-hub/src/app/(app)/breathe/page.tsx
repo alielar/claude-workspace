@@ -3,9 +3,10 @@
 /**
  * /breathe · technique picker + players (2026-09-07).
  *
- * Opens on a picker: Wim Hof (the daily, first and biggest) + six paced
- * techniques from src/lib/breathe/techniques.ts, each showing goal and duration
- * (evidence stated in prose on the detail screen · no rating dots, Ali 2026-09-08).
+ * Opens on a picker of THREE (Ali 2026-10-03), organised by when to use them: Wim Hof under
+ * "Morning energy" (the daily), Cyclic sighing under "Quick reset", Coherent breathing under
+ * "Wind down" · the four others (box, 4-7-8, alternate nostril, Kapalabhati) are archived in
+ * src/lib/breathe/techniques.ts and come back by moving an entry into TECHNIQUES.
  * One tap deeper = full detail + duration choice + Start. Any finished session
  * ticks the "breathe" routine item (offline-safe).
  *
@@ -1124,35 +1125,31 @@ export default function BreathePage() {
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Breathing</h1>
-          <div className="sub">pick for how you feel right now</div>
+          <div className="sub">three, by when</div>
         </div>
       </div>
 
-      {/* Wim Hof · the daily one, first and biggest */}
-      <button onClick={() => setView("wimhof")} className="cc-card" style={{ display: "grid", gap: 4, padding: "16px 18px", textAlign: "left", border: "1px solid var(--violet)", cursor: "pointer", font: "inherit", color: "var(--ink)", width: "100%" }}>
-        <span style={{ fontSize: 18, fontWeight: 600 }}>Wim Hof <span style={{ fontSize: 13, color: "var(--violet)", fontWeight: 500 }}>· your daily</span></span>
-        <span style={{ fontSize: 14.5, color: "var(--ink-3)" }}>energy + stress reset · 3 rounds · ~12 min · <span style={{ color: GOAL_COLOR.Energy }}>Energy</span></span>
-      </button>
+      {/* Three techniques, by WHEN to use them (Ali 2026-10-03): morning energy · quick reset · wind down */}
+      <div style={{ display: "grid", gap: 6 }}>
+        <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "0 2px" }}>Morning energy</span>
+        <button onClick={() => setView("wimhof")} className="cc-card" style={{ display: "grid", gap: 4, padding: "16px 18px", textAlign: "left", border: "1px solid var(--violet)", cursor: "pointer", font: "inherit", color: "var(--ink)", width: "100%" }}>
+          <span style={{ fontSize: 18, fontWeight: 600 }}>Wim Hof <span style={{ fontSize: 13, color: "var(--violet)", fontWeight: 500 }}>· your daily</span></span>
+          <span style={{ fontSize: 14.5, color: "var(--ink-3)" }}>3 rounds · ~12 min · after mobility, before the shower</span>
+        </button>
+      </div>
 
-      <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Techniques</span><span className="tail">strongest evidence first</span></div>
-        <div className="cc-card-body" style={{ display: "grid", padding: "0 0 6px" }}>
-          {TECHNIQUES.map((t, i) => (
-            <button key={t.id} onClick={() => setView(t.id)}
-              style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", minHeight: 62, padding: "8px 16px", background: "transparent", border: "none", borderBottom: i < TECHNIQUES.length - 1 ? "1px solid var(--line)" : "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }}>
-              <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 16.5, fontWeight: 600 }}>{t.name}</span>
-                <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 1 }}>{t.tagline}</span>
-              </span>
-              <span style={{ display: "grid", justifyItems: "end", gap: 3 }}>
-                <span style={{ fontSize: 13, color: GOAL_COLOR[t.goal] }}>{t.goal}</span>
-                <span style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{durationRange(t)}</span>
-              </span>
-            </button>
-          ))}
+      {TECHNIQUES.map((t) => (
+        <div key={t.id} style={{ display: "grid", gap: 6 }}>
+          <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "0 2px" }}>{t.moment}</span>
+          <button onClick={() => setView(t.id)} className="cc-card" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", padding: "14px 18px", textAlign: "left", cursor: "pointer", font: "inherit", color: "var(--ink)", width: "100%" }}>
+            <span style={{ minWidth: 0, display: "grid", gap: 3 }}>
+              <span style={{ fontSize: 17, fontWeight: 600 }}>{t.name}</span>
+              <span style={{ fontSize: 14, color: "var(--ink-3)", lineHeight: 1.4 }}>{t.when}</span>
+            </span>
+            <span style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)", whiteSpace: "nowrap" }}>{durationRange(t)}</span>
+          </button>
         </div>
-      </section>
-
+      ))}
 
       <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center" }}>← Back to Today</Link>
     </div>

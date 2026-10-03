@@ -11,6 +11,12 @@
  * warm-up → down to the floor → floor and lying holds → Child's Pose to finish.
  * 10 s rest between every movement, 5 s lead-in, both sessions exactly 600 s.
  *
+ * 2026-10-03 (Ali: "the seated toe touch disappeared, bring it back"): Session 2 · Seiza →
+ * Seated Toe Touch (25 s, same slot). Session 1 · Torso Twists OUT, Seated Toe Touch IN on the
+ * floor block (25 s each, still 600 s) · Torso Twists was the most duplicated move there: the
+ * World's Greatest Stretch already rotates the thoracic spine on both sides, and sessions 2 and 3
+ * keep standing rotation. Both sessions still run exactly 10:00.
+ *
  * Audit of the old list (2026-09-14): Lateral Arm Swings cut (Around the World does the
  * same shoulder job better, full circle); Toe Touches cut (hamstrings already covered by
  * Down Dog in session 1 and Kneeling Hamstring in session 2); Squat Hold and Hindu Squats
@@ -59,7 +65,8 @@ export const MOVE_TARGETS: Record<string, string> = {
   "kneel-ham-l":  "hamstrings · left",
   "kneel-ham-r":  "hamstrings · right",
   "happy-baby":   "groin, inner thighs, lower back",
-  "seiza":        "knees, ankles, quads",
+  "seiza":        "knees, ankles, quads (out of the sessions since 2026-10-03, key kept for renames)",
+  "seated-toe":   "hamstrings, calves, lower back · seated, reach for the toes",
   "cat-cow":      "spine flexion and extension",
   "cobra":        "spine extension, hip flexors, chest",
   "child":        "lower back, calm finish",
@@ -83,12 +90,12 @@ export const SESSION_1: StretchMove[] = [
   M("bounce",       "Bouncing on Toes",                 20, 0),
   M("neck",         "Neck Twists",                      25, 0),
   M("around-world", "Around the World",                 35, 0),
-  M("torso",        "Torso Twists",                     25, 0),
   M("hindu",        "Hindu Squats",                     30, 0),
   M("cossack",      "Cossack Squats",                   40, 0),
   M("down-dog",     "Down Dog + Calf Pedal",            45, 1),
   M("wgs-l",        "World's Greatest Stretch · Left",  35, 1),
   M("wgs-r",        "World's Greatest Stretch · Right", 35, 1),
+  M("seated-toe",   "Seated Toe Touch",                 25, 2),
   M("9090",         "90/90 Switches",                   45, 2),
   M("pigeon-l",     "Pigeon · Left",                    50, 2),
   M("pigeon-r",     "Pigeon · Right",                   50, 2),
@@ -107,7 +114,7 @@ export const SESSION_2: StretchMove[] = [
   M("kneel-ham-l",  "Kneeling Hamstring · Left",        40, 2),
   M("kneel-ham-r",  "Kneeling Hamstring · Right",       40, 2),
   M("happy-baby",   "Happy Baby",                       45, 2),
-  M("seiza",        "Seiza",                            25, 2),
+  M("seated-toe",   "Seated Toe Touch",                 25, 2),
   M("cat-cow",      "Cat Cow",                          35, 2),
   M("cobra",        "Cobra",                            30, 2),
   M("child",        "Child's Pose",                     35, 3),
@@ -173,7 +180,7 @@ export function writeSessionPick(ymd: string, key: SessionKey | null): void {
  * name equal to one of these is a stale snapshot entry, never one of Ali's renames. */
 export const DEFAULT_NAMES_EVER = new Set<string>([
   ...STRETCH_MOVES.map((m) => m.name),
-  "Seated Toe Stretch", "Frog Pose", "Frog", "Butterfly Stretch", "Kneeling Hamstring", "Forearm Stretch",
+  "Seated Toe Stretch", "Seated Toe Touch", "Seiza", "Frog Pose", "Frog", "Butterfly Stretch", "Kneeling Hamstring", "Forearm Stretch",
   "World's Greatest Stretch", "Pigeon", "Down Dog", "Calf Pedal", "Torso Twists", "Lateral Arm Swings", "Toe Touches",
 ].map((n) => n.toLowerCase()));
 export const isDefaultName = (n: string) => DEFAULT_NAMES_EVER.has(n.trim().toLowerCase());

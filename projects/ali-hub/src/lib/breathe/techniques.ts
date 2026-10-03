@@ -1,10 +1,14 @@
 /**
- * Breathing techniques (2026-09-07, spec: batch "ALSO" item).
- * Six paced techniques next to Wim Hof, each driven by the same generic player:
- * a cycle of steps, repeated N times. Evidence is stated in prose (evidenceNote,
- * shown on the detail screen · no rating dots, Ali 2026-09-08) from the 2026-09-06
- * research pass: coherent breathing has the strongest backing, 4-7-8 is tradition
- * with a plausible mechanism. The list is ordered strongest evidence first.
+ * Breathing techniques (2026-09-07, spec: batch "ALSO" item) · THREE since 2026-10-03 (Ali):
+ *   Wim Hof         · the daily (its own player in /breathe · morning energy)
+ *   Cyclic sighing  · the quick reset, before a call or before speaking
+ *   Coherent        · the evening wind-down
+ * The picker is organised by WHEN to use each one, not by evidence rank.
+ *
+ * ARCHIVED the same day, code kept below in ARCHIVED_TECHNIQUES so they come back in one line
+ * (move an entry into TECHNIQUES): Box breathing, 4-7-8, Alternate nostril, Kapalabhati. The
+ * generic player still runs every step kind they use (hold, fire, rest, pan), so nothing else
+ * needs touching to restore one.
  */
 
 export type PaceStep = {
@@ -24,8 +28,12 @@ export type Technique = {
   /** Compact timing pattern, e.g. "4 · 7 · 8". */
   pattern: string;
   patternWords: string;
-  /** 1-3 · how solid the research is. */
+  /** 1-3 · how solid the research is (shown nowhere since 2026-10-03, kept for the notes). */
   evidence: 1 | 2 | 3;
+  /** When to reach for it · the picker's organising line (2026-10-03). */
+  when: string;
+  /** One word for the picker's section: morning energy · quick reset · wind down. */
+  moment: "Morning energy" | "Quick reset" | "Wind down";
   evidenceNote: string;
   what: string;
   effect: string;
@@ -35,30 +43,11 @@ export type Technique = {
 
 export const TECHNIQUES: Technique[] = [
   {
-    id: "coherent",
-    name: "Coherent breathing",
-    tagline: "daily calm, steady baseline",
-    goal: "Calm",
-    pattern: "5.5 · 5.5",
-    patternWords: "in 5.5 s · out 5.5 s · no holds",
-    evidence: 3,
-    evidenceNote: "The best-studied technique here: dozens of trials on heart-rate variability, blood pressure and anxiety. Around 5-6 breaths a minute is where the nervous system settles.",
-    what: "Slow, even breathing at about five and a half breaths per minute, no holds. Nothing to count beyond in and out.",
-    effect: "A calm that builds over 10-20 minutes and lingers after. Gentle · impossible to overdo, fine every day.",
-    durations: [
-      { label: "5 min", cycles: 27 },
-      { label: "10 min", cycles: 55 },
-      { label: "15 min", cycles: 82 },
-    ],
-    steps: [
-      { kind: "in", seconds: 5.5, label: "Breathe in" },
-      { kind: "out", seconds: 5.5, label: "Breathe out" },
-    ],
-  },
-  {
     id: "sigh",
     name: "Cyclic sighing",
-    tagline: "fast mood reset",
+    tagline: "fast reset before a call or a talk",
+    when: "Before a call, before speaking, after a tense moment · two minutes is enough.",
+    moment: "Quick reset",
     goal: "Reset",
     pattern: "2 + 1 · 5",
     patternWords: "two nose inhales · one long mouth exhale",
@@ -77,9 +66,38 @@ export const TECHNIQUES: Technique[] = [
     ],
   },
   {
+    id: "coherent",
+    name: "Coherent breathing",
+    tagline: "evening wind-down",
+    when: "In the evening, after work or before bed · ten minutes settles the day.",
+    moment: "Wind down",
+    goal: "Calm",
+    pattern: "5.5 · 5.5",
+    patternWords: "in 5.5 s · out 5.5 s · no holds",
+    evidence: 3,
+    evidenceNote: "The best-studied technique here: dozens of trials on heart-rate variability, blood pressure and anxiety. Around 5-6 breaths a minute is where the nervous system settles.",
+    what: "Slow, even breathing at about five and a half breaths per minute, no holds. Nothing to count beyond in and out.",
+    effect: "A calm that builds over 10-20 minutes and lingers after. Gentle · impossible to overdo, fine every day.",
+    durations: [
+      { label: "5 min", cycles: 27 },
+      { label: "10 min", cycles: 55 },
+      { label: "15 min", cycles: 82 },
+    ],
+    steps: [
+      { kind: "in", seconds: 5.5, label: "Breathe in" },
+      { kind: "out", seconds: 5.5, label: "Breathe out" },
+    ],
+  },
+];
+
+/** Out of the picker since 2026-10-03 · move one back into TECHNIQUES to restore it. */
+export const ARCHIVED_TECHNIQUES: Technique[] = [
+  {
     id: "box",
     name: "Box breathing",
     tagline: "steady yourself before something hard",
+    when: "Before something hard.",
+    moment: "Quick reset",
     goal: "Focus",
     pattern: "4 · 4 · 4 · 4",
     patternWords: "in 4 s · hold 4 · out 4 · hold 4",
@@ -103,6 +121,8 @@ export const TECHNIQUES: Technique[] = [
     id: "478",
     name: "4-7-8",
     tagline: "falling asleep",
+    when: "In bed.",
+    moment: "Wind down",
     goal: "Sleep",
     pattern: "4 · 7 · 8",
     patternWords: "in 4 s nose · hold 7 · out 8 mouth",
@@ -124,6 +144,8 @@ export const TECHNIQUES: Technique[] = [
     id: "nostril",
     name: "Alternate nostril",
     tagline: "wind down, settle the head",
+    when: "After a loud day.",
+    moment: "Wind down",
     goal: "Calm",
     pattern: "4 · 4 · 4 · 4",
     patternWords: "in left · out right · in right · out left",
@@ -146,6 +168,8 @@ export const TECHNIQUES: Technique[] = [
     id: "kapalabhati",
     name: "Kapalabhati",
     tagline: "wake up, energize",
+    when: "First thing in the morning.",
+    moment: "Morning energy",
     goal: "Energy",
     pattern: "30 × 1s",
     patternWords: "30 sharp exhales · 30 s rest · repeat",
