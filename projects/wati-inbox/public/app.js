@@ -520,7 +520,7 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
 }
 async function renderPlan() {
-  const { items, counts, status, hub, salesHub, citf = [], tomorrow = [] } = await api('/api/plan');
+  const { items, counts, status, hub, salesHub, citf = [], ahead = [] } = await api('/api/plan');
   const running = status.state === 'running';
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
@@ -530,7 +530,8 @@ async function renderPlan() {
   const act = open.filter((i) => i.kind !== 'ok' && i.kind !== 'wait');
   const endOfDay = new Date(); endOfDay.setHours(23, 59, 59, 999);
   const live = (i) => dueAt(i) && dueAt(i) >= Date.now() - 3600e3; // a date more than an hour in the past is stale, not urgent
-  const todo = act.filter((i) => live(i) && dueAt(i) <= soon).sort(byTime); // a deadline within 3 h wins over age
+  const hubAction = (i) => i.kind === 'pause' || i.kind === 'fix' || i.kind === 'resume'; // to do in the Hub as soon as seen, whatever the template's hour (Ali, 2026-10-03)
+  const todo = act.filter((i) => hubAction(i) || (live(i) && dueAt(i) <= soon)).sort(byTime); // a Hub action or a deadline within 3 h wins over age
   const later = act.filter((i) => !todo.includes(i) && ((live(i) && dueAt(i) <= endOfDay.getTime()) || i.recent)).sort(byTime);
   const older = act.filter((i) => !todo.includes(i) && !later.includes(i)).sort(byTime);
   const wait = open.filter((i) => i.kind === 'wait').sort(byTime), ok = open.filter((i) => i.kind === 'ok');
@@ -539,7 +540,7 @@ async function renderPlan() {
     ${citf.length ? `<p class="muted small">Resuming today (CITF): ${citf.map((c) => `<a data-nav href="/t/${c.wa_id}">${esc(c.name)}</a> ${fmtTime(c.at)}${c.case ? ` (${esc(c.case)})` : ''}${c.passed ? ' · sent' : ''}`).join(' · ')}</p>` : ''}
     ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
     ${sec('Now', todo)}${sec('Later today', later)}${sec('Waiting', wait)}
-    ${tomorrow.length ? `<details class="card fold" data-fold="tomorrow" ${planFolds.has('tomorrow') ? 'open' : ''}><summary>Tomorrow (${tomorrow.length}) <span class="muted small">· next steps already planned</span></summary>${tomorrow.sort(byTime).map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${(() => { const tmr = new Date(); tmr.setDate(tmr.getDate() + 1); const tKey = tmr.toISOString().slice(0, 10); const sameDay = (i) => new Date(i.when_at || `${i.day}T12:00:00`).toDateString() === tmr.toDateString(); const tom = ahead.filter((i) => i.day === tKey || sameDay(i)).sort(byTime), lat = ahead.filter((i) => !tom.includes(i)).sort(byTime); return sec('Tomorrow', tom) + sec('Later', lat); })()}
     ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${ok.length ? `<details class="card fold" data-fold="ok" ${planFolds.has('ok') ? 'open' : ''}><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${closed.length ? `<details class="card fold" data-fold="done" ${planFolds.has('done') ? 'open' : ''}><summary>Done (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}

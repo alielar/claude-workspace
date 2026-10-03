@@ -213,7 +213,8 @@ function store(c, it, { supersede = true } = {}) {
     markSuggestionPushed(suggestionId);
   }
   // A card planned for a later day lives in that day's plan (and in today's « Tomorrow » fold), not in today's list.
-  const d = whenIso && madrid(new Date(whenIso)).slice(0, 10) > today() ? madrid(new Date(whenIso)).slice(0, 10) : today();
+  // Only a timed message or wait moves to its day; a Hub action (pause, resume, fix) is to do now, whatever the template's hour (Ali, 2026-10-03).
+  const d = (kind === 'followup' || kind === 'wait') && whenIso && madrid(new Date(whenIso)).slice(0, 10) > today() ? madrid(new Date(whenIso)).slice(0, 10) : today();
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
     hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: cardSig(c), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, keep_templates: keep.length ? keep : null, pushed });
 }
