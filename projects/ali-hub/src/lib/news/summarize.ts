@@ -12,7 +12,7 @@ import { noDash } from "@/lib/utils";
 let genAI: InstanceType<typeof import("@google/generative-ai").GoogleGenerativeAI> | null = null;
 
 /** Free-tier models, tried in order (Google retires names; the first that answers wins and is kept). */
-const GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"];
+const GEMINI_MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-2.5-flash"];
 let geminiModel: string | null = null;
 
 async function getModel(name = geminiModel ?? GEMINI_MODELS[0]) {
@@ -44,7 +44,7 @@ export async function askAI(prompt: string, maxTokens = 4000): Promise<string | 
         lastAiError = `gemini ${name}: empty answer`;
       } catch (e) {
         const msg = String((e as Error).message);
-        lastAiError = `gemini ${name}: ${msg.slice(0, 220)}`;
+        lastAiError = `${lastAiError ? `${lastAiError} | ` : ""}gemini ${name}: ${msg.replace(/\s+/g, " ").slice(0, 160)}`;
         // A retired model name or a quota wall → the next name; anything else is this prompt's problem.
         if (!/404|not found|429|quota|RESOURCE_EXHAUSTED|400/i.test(msg)) break;
       }
