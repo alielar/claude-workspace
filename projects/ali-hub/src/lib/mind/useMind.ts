@@ -42,5 +42,14 @@ export function useMind() {
     } catch { c.refresh(); }
   }, [c]);
 
-  return { ...c, writing, writeBrief, grade, retire };
+  /** Not today · the callback is due again tomorrow, the new topic alone makes the session. */
+  const skip = useCallback(async (topicId: number) => {
+    if (c.data) c.setData((prev) => ({ ...(prev ?? c.data!), callback: prev?.callback?.id === topicId ? null : prev?.callback ?? null }));
+    try {
+      const res = await fetch("/api/mind/today", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skip: topicId }) });
+      if (res.ok) { c.setData((await res.json()) as MindToday); c.markEdit(); }
+    } catch { c.refresh(); }
+  }, [c]);
+
+  return { ...c, writing, writeBrief, grade, retire, skip };
 }

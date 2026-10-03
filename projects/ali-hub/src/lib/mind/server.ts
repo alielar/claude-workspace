@@ -250,6 +250,12 @@ async function tickIfSessionDone(userId: string, today: string): Promise<void> {
 }
 
 /** No more callbacks for this topic · it stays in the list as done (Ali 2026-10-01: the first topic no longer fits). */
+/** Skip today's callback (Ali 2026-10-03: "a callback I skip can simply drop") · due again tomorrow, the stage unchanged. */
+export async function skipCallback(userId: string, topicId: number): Promise<void> {
+  await ensureMindTables();
+  await db.run(sql`UPDATE mind_topics SET next_due = ${addDays(checklistToday(), 1)} WHERE id = ${topicId} AND user_id = ${userId} AND next_due IS NOT NULL`);
+}
+
 export async function retireTopic(userId: string, topicId: number): Promise<void> {
   await ensureMindTables();
   await db.run(sql`UPDATE mind_topics SET next_due = NULL WHERE id = ${topicId} AND user_id = ${userId}`);
@@ -273,6 +279,7 @@ export async function mindToday(userId: string, make: boolean): Promise<MindToda
     newTopic: todays ? topicOf(todays) : null,
     done: { callback: done.callback ? sessionOf(done.callback) : null, new: done.new ? sessionOf(done.new) : null },
     weeks: weekly(sessions.map(sessionOf)),
+    points: sessions.slice(0, 60).reverse().map((r) => { const x = sessionOf(r); return { date: x.date, part: x.part, accuracy: x.scores.accuracy, structure: x.scores.structure, clarity: x.scores.clarity, fillersPerMin: x.metrics.fillersPerMin, pauses: x.metrics.pauses, wpm: x.metrics.wpm }; }),
     topics: all.map((r) => { const t = topicOf(r); return { id: t.id, title: t.title, domain: t.domain, stage: t.stage, nextDue: t.nextDue, lastAccuracy: t.lastAccuracy, recalls: t.recalls, learnedAt: t.learnedAt }; }),
     sttReady: sttReady(),
     aiReady: !!process.env.ANTHROPIC_API_KEY,

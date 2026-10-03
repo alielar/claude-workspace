@@ -1229,3 +1229,13 @@ body:has(.todo-addbar) .dict-pill { bottom: calc(var(--tabbar-h) + env(safe-area
 /* The quick-add bar and the R2-D2 composer hug the keyboard: `--kb` is the keyboard's height in
    layout-viewport pixels (useKeyboardInset), 0 when it is closed. */
 .todo-addbar[style*="--kb"] { bottom: var(--kb); }
+
+/* ─── Health grid (2026-10-03) · two columns on the phone, small panels one each, the rest span ── */
+.h-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.h-grid > * { min-width: 0; }
+.h-span { grid-column: span 2; }
+@media (min-width: 760px) {
+  .h-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .h-span { grid-column: span 4; }
+  .h-half { grid-column: span 2; }
+}

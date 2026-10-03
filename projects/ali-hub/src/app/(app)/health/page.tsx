@@ -17,8 +17,14 @@
  *   Fitness  · the slow numbers (VO2 max, cardio recovery, walking HR, walking speed).
  *   All measures · everything else the Watch sends, folded away.
  * Everything comes from /api/health/summary, phone copy first. Nothing here is judged by an
- * AI · the sentences are fixed rules (`dayRead`, `vitalsRead`, `nightVerdict`), so the same
- * night reads the same every day. Motion in `src/components/health/checkup.tsx`.
+ * AI · the sentences are fixed rules (`dayRead`, `vitalsRead`, `nightVerdict`, `insightsFor`,
+ * `weekBrief`), so the same night reads the same every day. Motion in checkup.tsx.
+ *
+ * 2026-10-03 (Ali): a GRID instead of one long scroll · the important things sit at the top,
+ * small panels share a row. Order: Checkup · Insights (what is off, what to do) · Last night and
+ * Today side by side · This week (the weekly health brief) · Recovery tiles · Sleep history ·
+ * Movement · Fitness and All measures folded. `.h-grid` in globals.css: two columns on the phone
+ * (small panels take one, the rest span both), three from 760 px.
  */
 
 import { useState } from "react";
@@ -32,6 +38,7 @@ import { Bars, Line, RangeBar, Spark, StageBar } from "@/components/health/chart
 import { CheckupRing, CountUp, Fold, MiniRing, Reveal, StateDot } from "@/components/health/checkup";
 import { checklistToday } from "@/lib/checklist/day";
 import { useNow } from "@/lib/useClientValue";
+import { insightsFor, weekBrief, type Insight } from "@/lib/health/insights";
 
 function scoreTone(s: number | null): string {
   return s === null ? "var(--ink-3)" : s >= 75 ? "var(--pos)" : s >= 55 ? "var(--warn)" : "var(--neg)";
@@ -89,6 +96,84 @@ function Checkup({ read, today }: { read: ReturnType<typeof dayRead>; today: str
             </button>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Insights · what is off and what to do (fixed rules, insights.ts) ──────────
+
+function Insights({ items }: { items: Insight[] }) {
+  const color = (t: Insight["tone"]) => (t === "pos" ? "var(--pos)" : t === "neg" ? "var(--neg)" : t === "warn" ? "var(--warn)" : "var(--violet)");
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">What to do</span><span className="tail">{items.length === 1 && items[0].tone === "pos" ? "all clear" : `${items.length} thing${items.length === 1 ? "" : "s"}`}</span></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
+        {items.map((it) => (
+          <div key={it.key} style={{ display: "grid", gridTemplateColumns: "10px 1fr", gap: 10, alignItems: "start" }}>
+            <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: color(it.tone), marginTop: 7 }} />
+            <span style={{ display: "grid", gap: 3 }}>
+              <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
+              <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{it.text}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** The weekly health brief · the last 7 full days against the 7 before. */
+function Week({ brief }: { brief: ReturnType<typeof weekBrief> }) {
+  if (!brief) return null;
+  const tone = (t: "pos" | "neg" | "flat") => (t === "pos" ? "var(--pos)" : t === "neg" ? "var(--neg)" : "var(--ink-3)");
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">{brief.title}</span><span className="tail">vs the week before</span></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
+        <div style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>{brief.verdict}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+          {brief.lines.map((l) => (
+            <div key={l.label} style={{ display: "grid", gap: 2, padding: "8px 10px", borderRadius: 10, background: "var(--fill-1)", minWidth: 0 }}>
+              <span style={{ fontSize: 12, color: "var(--ink-4)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.label}</span>
+              <span className="tabular-nums" style={{ fontSize: 16, fontWeight: 600, whiteSpace: "nowrap" }}>{l.now}</span>
+              {l.prev && <span className="tabular-nums" style={{ fontSize: 12, color: tone(l.tone), whiteSpace: "nowrap" }}>{l.tone === "pos" ? "↑" : l.tone === "neg" ? "↓" : "="} {l.prev}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Small panel · last night at a glance. */
+function NightTile({ n, today }: { n: NightRow; today: string }) {
+  return (
+    <section className="cc-card" style={{ padding: "14px 14px 12px", display: "grid", gap: 8, alignContent: "start" }}>
+      <span style={{ fontSize: 13, color: "var(--ink-3)" }}>Last night · {fmtDay(n.date, today).toLowerCase()}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <ScoreRing score={n.score} />
+        <span className="tabular-nums" style={{ display: "grid", gap: 2 }}>
+          <span style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1 }}><CountUp value={n.totalMin} fmt={(v) => fmtMin(Math.round(v))} /></span>
+          <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>asleep</span>
+        </span>
+      </div>
+      <span style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.4 }}>{nightVerdict(n)}</span>
+    </section>
+  );
+}
+
+/** Small panel · today's movement rings. */
+function TodayTile({ known, today }: { known: Record<string, Series>; today: string }) {
+  const ex = known.apple_exercise_time ? valueOn(known.apple_exercise_time, METRIC_INFO.apple_exercise_time, today) : null;
+  const st = known.step_count ? valueOn(known.step_count, METRIC_INFO.step_count, today) : null;
+  const stMean = known.step_count ? avg(seriesValues(known.step_count, METRIC_INFO.step_count).filter((p) => p.date !== today).slice(-7).map((p) => p.v)) : null;
+  return (
+    <section className="cc-card" style={{ padding: "14px 14px 12px", display: "grid", gap: 8, alignContent: "start" }}>
+      <span style={{ fontSize: 13, color: "var(--ink-3)" }}>Today so far</span>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+        <MiniRing value={ex} target={30} fmt={(v) => String(Math.round(v))} label="exercise" sub="of 30 min" size={64} />
+        <MiniRing value={st} target={stMean && stMean > 0 ? stMean : null} fmt={(v) => `${(Math.round(v) / 1000).toFixed(1)}k`} label="steps" sub={stMean ? `avg ${(Math.round(stMean) / 1000).toFixed(1)}k` : ""} size={64} />
       </div>
     </section>
   );
@@ -403,6 +488,14 @@ export default function HealthPage() {
   const fitnessKeys = FITNESS_KEYS.filter((k) => known[k]);
   const restKeys = Object.keys(METRIC_INFO).filter((k) => known[k] && !METRIC_INFO[k].vital && !(ACTIVITY_TILES as readonly string[]).includes(k) && !FITNESS_KEYS.includes(k));
   const hasAny = nights.length > 0 || knownKeys.length > 0;
+
+  // Insights + the weekly brief (fixed rules · insights.ts)
+  const dowIdx = (new Date(today + "T12:00:00").getDay() + 6) % 7;
+  const weekDays = days14.slice(days14.length - 1 - dowIdx);
+  const weekEx = known.apple_exercise_time ? weekDays.map((d) => valueOn(known.apple_exercise_time, METRIC_INFO.apple_exercise_time, d) ?? 0).reduce((a, b) => a + b, 0) : null;
+  const insights = hasAny ? insightsFor({ vitals, night: last, nights, exerciseWeekMin: weekEx, steps7: st7, today }) : [];
+  const series14 = (k: string) => (known[k] ? days14.map((d) => valueOn(known[k], METRIC_INFO[k], d)) : days14.map(() => null));
+  const week = hasAny ? weekBrief({ nights, today, daily: { exercise: series14("apple_exercise_time"), steps: series14("step_count"), rhr: series14("resting_heart_rate"), hrv: series14("heart_rate_variability") } }) : null;
   let i = 0;
 
   return (
@@ -418,29 +511,30 @@ export default function HealthPage() {
       {empty && !note && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>Nothing from the Watch yet. Tonight&apos;s sleep lands in the morning.</div>}
       {!data && loading && <div className="cc-skeleton" style={{ height: 200 }} />}
 
-      {hasAny && <Reveal i={i++}><Checkup read={read} today={today} /></Reveal>}
-
-      {vitals.length > 0 && <Reveal i={i++} id="h-recovery"><Recovery rows={vitals} today={today} days30={days30} /></Reveal>}
-
-      {last && <Reveal i={i++} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal>}
-
-      {ACTIVITY_TILES.some((k) => known[k]) && <Reveal i={i++} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal>}
-
-      {fitnessKeys.length > 0 && <Reveal i={i++}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} /></Reveal>}
-
-      {(restKeys.length > 0 || unknown.length > 0) && (
-        <Reveal i={i++}>
-          <RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed />
-          {unknown.length > 0 && (
-            <section className="cc-card" style={{ marginTop: 14 }}>
-              <div className="cc-card-head"><span className="title">Also received</span></div>
-              <div className="cc-card-body" style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
-                {unknown.map((k) => { const p = data!.metrics[k].points; const l = p[p.length - 1]; return <span key={k} className="tabular-nums">{k.replace(/_/g, " ")} · {fmtMetric(l?.qty ?? l?.avg ?? null, data!.metrics[k].units ?? "")} · {l ? fmtDay(l.date, today) : ""}</span>; })}
-              </div>
-            </section>
-          )}
-        </Reveal>
-      )}
+      <div className="h-grid">
+        {hasAny && <div className="h-span"><Reveal i={i++}><Checkup read={read} today={today} /></Reveal></div>}
+        {insights.length > 0 && <div className="h-span"><Reveal i={i++}><Insights items={insights} /></Reveal></div>}
+        {last && <Reveal i={i++}><NightTile n={last} today={today} /></Reveal>}
+        {ACTIVITY_TILES.some((k) => known[k]) && <Reveal i={i++}><TodayTile known={known} today={today} /></Reveal>}
+        {week && <div className="h-span"><Reveal i={i++}><Week brief={week} /></Reveal></div>}
+        {vitals.length > 0 && <div className="h-span"><Reveal i={i++} id="h-recovery"><Recovery rows={vitals} today={today} days30={days30} /></Reveal></div>}
+        {last && <div className="h-span h-half"><Reveal i={i++} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal></div>}
+        {ACTIVITY_TILES.some((k) => known[k]) && <div className="h-span h-half"><Reveal i={i++} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal></div>}
+        {fitnessKeys.length > 0 && <div className="h-span"><Reveal i={i++}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} closed /></Reveal></div>}
+        {(restKeys.length > 0 || unknown.length > 0) && (
+          <div className="h-span"><Reveal i={i++}>
+            <RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed />
+            {unknown.length > 0 && (
+              <section className="cc-card" style={{ marginTop: 14 }}>
+                <div className="cc-card-head"><span className="title">Also received</span></div>
+                <div className="cc-card-body" style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
+                  {unknown.map((k) => { const p = data!.metrics[k].points; const l = p[p.length - 1]; return <span key={k} className="tabular-nums">{k.replace(/_/g, " ")} · {fmtMetric(l?.qty ?? l?.avg ?? null, data!.metrics[k].units ?? "")} · {l ? fmtDay(l.date, today) : ""}</span>; })}
+                </div>
+              </section>
+            )}
+          </Reveal></div>
+        )}
+      </div>
     </div>
   );
 }

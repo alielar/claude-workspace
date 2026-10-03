@@ -57,12 +57,17 @@ export type MindSession = {
 
 export type MindWeek = { week: string; label: string; sessions: number; fillersPerMin: number | null; pauses: number | null; accuracy: number | null; structure: number | null; clarity: number | null };
 
+/** One graded talk, light · the progress charts (2026-10-03). */
+export type MindPoint = { date: string; part: MindPart; accuracy: number; structure: number; clarity: number; fillersPerMin: number; pauses: number; wpm: number };
+
 export type MindToday = {
   today: string;
   callback: MindTopic | null;   // due today (or overdue), not yet recalled today
   newTopic: MindTopic | null;   // today's brief (null until written)
   done: { callback: MindSession | null; new: MindSession | null };
   weeks: MindWeek[];            // newest first, 10
+  /** Every graded talk, oldest first, up to 60 · drives the progress graph and the analytics. */
+  points: MindPoint[];
   topics: Pick<MindTopic, "id" | "title" | "domain" | "stage" | "nextDue" | "lastAccuracy" | "recalls" | "learnedAt">[];
   sttReady: boolean;            // DEEPGRAM_API_KEY present
   aiReady: boolean;             // ANTHROPIC_API_KEY present
@@ -72,6 +77,37 @@ export type MindToday = {
 export const INTERVALS = [1, 3, 7, 21];
 export const MAX_SPEAK_SEC = 120;
 export const PREP = ["Point · say it in one sentence", "Reason · why it is true", "Example · one concrete case", "Point · say it again"];
+/** The reading timer can be stretched three times by 15 s (Ali 2026-10-03). */
+export const READ_EXTRA_SEC = 15;
+export const READ_EXTRA_MAX = 3;
+
+/** Speaking tips from the numbers alone · the same numbers always give the same tips (2026-10-03). */
+export function speakingTips(m: MindMetrics): string[] {
+  const t: string[] = [];
+  if (m.fillersPerMin >= 4) t.push(`${m.fillers} fillers in ${fmtSec(m.durationSec)}. Replace each "um" with a silent beat: close the mouth, breathe through the nose, then the next sentence. Silence sounds like thinking; "um" sounds like searching.`);
+  else if (m.fillersPerMin >= 2) t.push(`${m.fillersPerMin} fillers a minute. Under 2 is clean. Finish each sentence with a full stop in your voice, pause, then start the next one.`);
+  if (m.pauses >= 4) t.push(`${m.pauses} pauses over 1.5 s. Before pressing record, say the four PREP lines in your head once; a known route removes most long pauses.`);
+  if (m.longestPauseSec >= 4) t.push(`One pause of ${m.longestPauseSec} s. When you lose the thread, repeat the point out loud ("so the point is…"), it restarts the argument.`);
+  if (m.falseStarts >= 3) t.push(`${m.falseStarts} false starts. Slow the first word of each sentence; the restart usually comes from starting before the sentence is chosen.`);
+  if (m.wpm > 175) t.push(`${m.wpm} words a minute is fast. Aim for 140 to 160: stress the key word of each sentence and let it land.`);
+  else if (m.wpm > 0 && m.wpm < 110) t.push(`${m.wpm} words a minute is slow for a 2-minute explanation. Trust the structure and move on after the example.`);
+  if (m.durationSec < 75) t.push(`Only ${fmtSec(m.durationSec)}. Use the whole two minutes: one more concrete example or one consequence fills the gap.`);
+  if (!t.length) t.push("Clean delivery: few fillers, few pauses, a good pace. Next step is range: one number, one name and one consequence in every talk.");
+  return t.slice(0, 3);
+}
+
+/** How to retain more, from what was missed · fixed techniques, picked by the gap (2026-10-03). */
+export function retentionTips(recalled: string[], missed: string[], part: MindPart): string[] {
+  const t: string[] = [];
+  const total = recalled.length + missed.length;
+  if (total && missed.length >= total / 2) t.push(part === "new"
+    ? "Half the key facts went missing right after reading. Next time, close the brief and write the five Remember facts from memory before recording; what you cannot write, re-read once."
+    : "Half the key facts are gone. Before the next callback, say the topic's five facts out loud once in the morning; a 30-second rehearsal the same day doubles what survives.");
+  else if (missed.length) t.push(`${missed.length} fact${missed.length === 1 ? "" : "s"} missed. Tie each fact to a number or a name you already know (a date, a person, a place); facts with a hook survive, bare facts do not.`);
+  if (part === "new") t.push("Explain it to someone today, even in two sentences. Teaching the same day is the strongest single move for keeping a new topic.");
+  else t.push("Each callback that lands moves the topic to a longer gap (1, 3, 7, 21 days). Missing one is fine; the gap just stays where it was.");
+  return t.slice(0, 2);
+}
 
 export const DOMAINS = ["AI and tech", "geopolitics and politics", "business", "philosophy", "science", "history", "economics"];
 
