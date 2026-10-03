@@ -166,6 +166,8 @@ export const todos = sqliteTable("todos", {
   notifyTarget: text("notify_target"), // "phone" | "laptop" · null = both (where reminder pushes go)
   /** How the notes display (2026-09-12): tasks "doc" | "checklist" (subtasks) · docs "doc" | "list" | "checklist" | "sections" | "accordion". null = detected from the text. */
   format: text("format"),
+  /** Knowledge search words (2026-10-03): related words an AI tagged, comma-separated, never shown · search matches them. */
+  keywords: text("keywords"),
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),

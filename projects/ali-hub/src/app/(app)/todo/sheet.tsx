@@ -503,16 +503,21 @@ export function ListSheet({ t, today, isNew = false, onSave, onDelete, onClose }
     <SheetFrame label="Edit entry" onClose={close} fill={mode !== "link"}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}>
           <div style={{ minWidth: 0 }}><TitleInput value={d.title} onChange={(v) => set({ title: v })} placeholder="Name" /></div>
-          <select className="cc-input" value={mode} onChange={(e) => setFormat(e.target.value as Format)} aria-label="How this doc displays"
-            style={{ minHeight: 44, fontSize: 15, padding: "0 8px", borderRadius: 12, width: "auto", maxWidth: 132, color: "var(--ink-2)", WebkitAppearance: "menulist", appearance: "auto" }}>
-            {DOC_FORMATS.map((f) => <option key={f.key} value={f.key}>{f.label}</option>)}
-          </select>
+          {/* The shape is chosen once, on a new entry, and LOCKED after (Ali 2026-10-03) · an existing entry shows it as a word. */}
+          {isNew ? (
+            <select className="cc-input" value={mode} onChange={(e) => setFormat(e.target.value as Format)} aria-label="How this entry displays"
+              style={{ minHeight: 44, fontSize: 15, padding: "0 8px", borderRadius: 12, width: "auto", maxWidth: 132, color: "var(--ink-2)", WebkitAppearance: "menulist", appearance: "auto" }}>
+              {DOC_FORMATS.map((f) => <option key={f.key} value={f.key}>{f.label}</option>)}
+            </select>
+          ) : (
+            <span style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.06em", textTransform: "uppercase", padding: "0 4px" }}>{DOC_FORMATS.find((f) => f.key === mode)?.label}</span>
+          )}
           <button onClick={close} aria-label="Close" style={{ width: 44, height: 44, borderRadius: 12, border: "none", background: "var(--fill-1)", color: "var(--ink-2)", fontSize: 17, cursor: "pointer" }}>✕</button>
         </div>
 
         {isNew && !picked && !(d.notes ?? "").trim() && (
           <div style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>How should it display? You can change this any time.</span>
+            <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>How should it display? Chosen once.</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
               {DOC_FORMATS.map((f) => (
                 <button key={f.key} type="button" onClick={() => pick(f.key)} aria-pressed={mode === f.key}

@@ -196,6 +196,7 @@ export async function POST() {
       WHERE routine_key = 'stretch' AND notes LIKE '16 moves%'`,
     // ── 2026-09-12 evening: "Mobility", 21 moves, 12:00 · title and note refreshed ──
     `UPDATE checklist_items SET title = 'Mobility' WHERE routine_key = 'stretch' AND title = 'Stretching'`,
+    `ALTER TABLE todos ADD COLUMN keywords TEXT`,
     // ── 2026-10-03: News rebuild · YouTube picks + weekly briefs (self-creating in their modules too) ──
     `CREATE TABLE IF NOT EXISTS yt_videos (video_id TEXT PRIMARY KEY, channel_id TEXT NOT NULL, title TEXT NOT NULL, published_at INTEGER NOT NULL, duration_sec INTEGER, thumbnail TEXT, watched_at INTEGER, fetched_at INTEGER NOT NULL)`,
     `CREATE TABLE IF NOT EXISTS weekly_briefs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, week TEXT NOT NULL, content TEXT NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`,

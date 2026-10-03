@@ -35,6 +35,7 @@ export type Todo = {
   wakeDate?: string | null;    // YYYY-MM-DD · Vault (far-future items): hidden from every list until this day
   notifyTarget?: "phone" | "laptop" | null; // where the reminder push goes · null = both
   format?: Format | null;      // how the notes display · see FORMATS (null = detected from the text)
+  keywords?: string | null;    // Knowledge: hidden search words tagged by AI (2026-10-03) · set by the server, echoed back by the phone
   someday: boolean;            // parked, out of the way
   priority: Priority;
   sortOrder: number;

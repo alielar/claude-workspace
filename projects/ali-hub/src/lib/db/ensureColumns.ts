@@ -13,6 +13,7 @@ const LATE_COLUMNS = [
 ];
 const TODO_COLUMNS = [
   `ALTER TABLE todos ADD COLUMN format TEXT`,
+  `ALTER TABLE todos ADD COLUMN keywords TEXT`,
 ];
 
 function once(ddls: string[]) {

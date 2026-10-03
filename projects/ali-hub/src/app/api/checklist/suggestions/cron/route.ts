@@ -16,6 +16,7 @@ import {
 } from "@/db/schema";
 import { eq, and, gte } from "drizzle-orm";
 import { format, subDays } from "date-fns";
+import { tagKnowledge } from "@/lib/todo/keywords";
 
 function todayMadrid(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -165,6 +166,8 @@ export async function POST(req: NextRequest) {
   for (const user of allUsers) {
     try {
       await generateForUser(user.id);
+      // Knowledge search words (2026-10-03): tag the entries added this week.
+      try { await tagKnowledge(user.id); } catch { /* the writer may be down · next Sunday */ }
       results.ok++;
     } catch (err) {
       console.error(`[suggestions-cron] Failed for user ${user.id}:`, err);

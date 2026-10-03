@@ -18,6 +18,7 @@ function rowToTodo(r: typeof todos.$inferSelect): Todo {
     dueDate: r.dueDate, dueTime: r.dueTime, evening: r.evening, someday: r.someday, nagMinutes: r.nagMinutes ?? null, wakeDate: r.wakeDate ?? null,
     notifyTarget: r.notifyTarget === "phone" || r.notifyTarget === "laptop" ? r.notifyTarget : null,
     format: (FORMATS as readonly string[]).includes(r.format ?? "") ? (r.format as Format) : null,
+    keywords: r.keywords ?? null,
     priority: (r.priority as Priority) ?? 0, sortOrder: r.sortOrder,
     doneAt: r.doneAt ? r.doneAt.getTime() : null,
     createdAt: r.createdAt.getTime(), updatedAt: r.updatedAt.getTime(), deleted: r.deleted,
@@ -70,15 +71,20 @@ export async function PUT(req: Request) {
     updatedAt,
   };
 
-  const [existing] = await db.select({ id: todos.id, updatedAt: todos.updatedAt }).from(todos)
+  const [existing] = await db.select({ id: todos.id, updatedAt: todos.updatedAt, keywords: todos.keywords, title: todos.title, notes: todos.notes }).from(todos)
     .where(and(eq(todos.userId, userId), eq(todos.clientId, b.clientId))).limit(1);
+
+  // Search words are the server's: a phone that does not know the field keeps them; a changed
+  // title or text drops them, so the weekly tagger writes fresh ones.
+  const keywords = typeof b.keywords === "string" ? b.keywords.slice(0, 600) || null
+    : existing && existing.title === values.title && (existing.notes ?? null) === values.notes ? existing.keywords : null;
 
   if (existing) {
     if (existing.updatedAt.getTime() > updatedAt.getTime()) return NextResponse.json({ ok: true, ignored: "older" });
-    await db.update(todos).set(values).where(eq(todos.id, existing.id));
+    await db.update(todos).set({ ...values, keywords }).where(eq(todos.id, existing.id));
   } else {
-    try { await db.insert(todos).values(values); }
-    catch { await db.update(todos).set(values).where(eq(todos.clientId, b.clientId)); }
+    try { await db.insert(todos).values({ ...values, keywords }); }
+    catch { await db.update(todos).set({ ...values, keywords }).where(eq(todos.clientId, b.clientId)); }
   }
   return NextResponse.json({ ok: true });
 }

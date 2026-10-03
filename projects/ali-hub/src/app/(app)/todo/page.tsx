@@ -21,6 +21,7 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { Linkify } from "@/components/Linkify";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
@@ -55,6 +56,8 @@ const BUCKETS: { key: Bucket; label: string; color: string; foldable?: boolean; 
 ];
 
 const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)", 2: "var(--neg)" };
+/** A timestamp taken in an event handler (kept out of the component so the compiler never sees it as render work). */
+const stamp = () => Date.now();
 
 /** "today" / "yesterday" / "5d ago" / "3w ago" for a ms timestamp. */
 function fmtAgo(ms: number): string {
@@ -213,6 +216,7 @@ const SLIDE_EASE = `transform ${SLIDE_MS}ms cubic-bezier(.2,.8,.2,1)`;
 export default function TodoPage() {
   // true only on the client after hydration (the quick-add bar is portalled into <body>)
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
+  const router = useRouter();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60_000); return () => clearInterval(t); }, []);
   const today = checklistToday(now);
@@ -332,7 +336,7 @@ export default function TodoPage() {
   // through the sheet: the name and the shape are chosen there (the shape is locked afterwards).
   const quickSave = () => {
     if (isLists || !text.trim()) { submit(); return; }
-    const ts = Date.now();
+    const ts = stamp();
     upsert({
       clientId: newTodoId(),
       title: literal ? text.trim() : parsed?.title || text.trim(),
@@ -373,7 +377,7 @@ export default function TodoPage() {
     const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
     // Knowledge · pinned first, then most recently touched; search covers names and content.
     const lists = a !== "list" ? [] : inArea
-      .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q))
+      .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q) || (t.keywords ?? "").toLowerCase().includes(q))
       .sort((x, y) => (y.priority > 0 ? 1 : 0) - (x.priority > 0 ? 1 : 0) || y.updatedAt - x.updatedAt);
     return { inArea, openTasks, doneToday, groups, lists };
   };
@@ -448,7 +452,7 @@ export default function TodoPage() {
         {lists.length > 0 && (
           <section className="cc-card">
             <div className="cc-card-list">
-              {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => setOpen(t)} />)}
+              {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => router.push(`/todo/entry/${t.clientId}`)} />)}
             </div>
           </section>
         )}
@@ -595,7 +599,7 @@ export default function TodoPage() {
         : <Sheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />)}
       {draft && (draft.area === "list"
         ? <ListSheet t={draft} today={today} isNew
-            onSave={(t) => { upsert(t); setText(""); }}
+            onSave={(t) => { upsert(t); setText(""); router.push(`/todo/entry/${t.clientId}`); }}
             onDelete={() => { /* discard the draft */ }}
             onClose={() => setDraft(null)} />
         : <Sheet t={draft} today={today} isNew
