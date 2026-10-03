@@ -1,14 +1,18 @@
 "use client";
 
 /**
- * /alai · ALAI, the fifth tab (2026-09-27). Ali says what he wants changed, in his words, with
- * screenshots (camera roll, paste, or drag and drop on the laptop). Messages WAIT here · nothing
- * is built until he taps Ship now ("hold until I say go"); then the Mac (fix-worker) takes every
- * released message as one batch, builds, ships and answers in this same thread.
+ * /r2d2 · R2-D2, the app's own mechanic (built as ALAI 2026-09-27, renamed 2026-10-03). Ali says
+ * what he wants changed, in his words, with screenshots (camera roll, paste, or drag and drop on
+ * the laptop). Messages WAIT here · nothing is built until he taps Ship now ("hold until I say
+ * go"); then the Mac (fix-worker) takes every released message as one batch, builds, ships and
+ * answers in this same thread.
  *
  * One thread, newest at the bottom. Ali's bubbles on the right; under each one a quiet status
- * line (waiting · queued · building · live) and, once built, the worker's reply on the left. The
- * header says whether the Mac is listening · the worker only runs while the Mac is awake.
+ * line (waiting · queued · building · live) and, once built, the reply on the left. The header
+ * says whether the Mac is listening · the worker only runs while the Mac is awake.
+ * Fast on the phone (2026-10-03): the feed carries no pictures (each one is loaded on its own
+ * from /api/fix/image and kept by the browser), so the saved copy fits and paints at once; the
+ * composer rides on the keyboard; dictation shows the words as they are heard.
  * Behind the login gate: the page and /api/fix both need the session cookie.
  */
 
@@ -18,6 +22,7 @@ import { Linkify } from "@/components/Linkify";
 import { useCached, fetchJson } from "@/lib/local/store";
 import { composed, isDictating, setDict, useDict } from "@/lib/dictation/store";
 import { startDictation, stopListening } from "@/lib/dictation/engine";
+import { useKeyboardInset } from "../todo/sheet";
 import { MAX_IMAGES, MAX_IMAGE_BYTES, MAX_TEXT, newFixId, type FixFeed, type FixRequest, type FixStatus } from "@/lib/fix/types";
 
 const TZ = "Europe/Madrid";
@@ -69,7 +74,7 @@ async function shrink(file: File): Promise<string> {
 /** A timestamp taken in an event handler (kept out of the component so the compiler never sees it as render work). */
 const stamp = () => Date.now();
 
-const STATUS_LABEL: Record<FixStatus, string> = { held: "Waiting", queued: "Queued", building: "Building", shipped: "Live", failed: "Needs you", skipped: "Cancelled" };
+const STATUS_LABEL: Record<FixStatus, string> = { held: "Waiting", queued: "On its way", building: "Building", shipped: "Live", failed: "Needs you", skipped: "Cancelled" };
 
 export default function AlaiPage() {
   // true only on the client after hydration (the composer is portalled into <body>)
@@ -104,6 +109,7 @@ export default function AlaiPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const kb = useKeyboardInset(); // the composer rides on the keyboard
 
   // Textarea grows with the text, up to ~6 lines · while dictating it follows the last words.
   useEffect(() => { const el = taRef.current; if (el) { el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 160)}px`; if (dictating) el.scrollTop = el.scrollHeight; } }, [text, dictating]);
@@ -243,7 +249,7 @@ export default function AlaiPage() {
     <div style={{ display: "grid", gap: 14, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 190 + Math.min(images.length, 1) * 84 + (heldCount + queuedCount > 0 ? 44 : 0) }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 600 }}>ALAI</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 600 }}>R2-D2</h1>
           <div className="sub" style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: workerLine.tone, boxShadow: workerLine.tone === "var(--pos)" ? "0 0 0 3px color-mix(in srgb, var(--pos) 22%, transparent)" : undefined }} />
             <span style={{ color: workerLine.tone === "var(--warn)" ? "var(--warn)" : undefined }}>{workerLine.text}</span>
@@ -273,7 +279,7 @@ export default function AlaiPage() {
           <div style={{ fontSize: 40, marginBottom: 8, color: "var(--violet)" }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.6 9.6a2 2 0 0 1-2.8-2.8l9.6-9.6" /><path d="M3 21l3-3" /></svg>
           </div>
-          Nothing written yet.
+          Tell R2-D2 what should change.
         </div>
       )}
 
@@ -285,7 +291,7 @@ export default function AlaiPage() {
 
       {/* Composer · fixed above the tab bar (same box as the To-do quick add) */}
       {mounted && createPortal(
-        <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); send(); }} style={{ padding: "8px 12px 10px" }}>
+        <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); send(); }} style={{ padding: "8px 12px 10px", ...(kb > 0 ? ({ "--kb": `${kb}px` } as React.CSSProperties) : {}) }}>
           <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 8 }}>
             {images.length > 0 && (
               <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
@@ -390,15 +396,14 @@ function Bubble({ r, now, onZoom, onCancel, onRetry, onEdit }: { r: FixRequest; 
     <div style={{ display: "grid", gap: 8 }}>
       {/* Ali */}
       <div style={{ justifySelf: "end", maxWidth: "88%", width: editing ? "88%" : undefined, display: "grid", gap: 6, justifyItems: "end" }}>
-        {r.images && r.images.length > 0 && (
+        {r.imageCount > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {r.images.map((src, i) => (
+            {Array.from({ length: r.imageCount }, (_, i) => r.images?.[i] ?? (r.id > 0 ? `/api/fix/image?id=${r.id}&i=${i}` : null)).map((src, i) => src && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={src} alt="" onClick={() => onZoom(src)} style={{ height: 96, maxWidth: 140, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)", cursor: "zoom-in" }} />
+              <img key={i} src={src} alt="" loading="lazy" decoding="async" onClick={() => onZoom(src)} style={{ height: 96, maxWidth: 140, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)", cursor: "zoom-in", background: "var(--fill-1)" }} />
             ))}
           </div>
         )}
-        {!r.images && r.imageCount > 0 && <span style={{ fontSize: 13, color: "var(--ink-4)" }}>{r.imageCount} screenshot{r.imageCount === 1 ? "" : "s"}</span>}
         {editing ? (
           <div style={{ display: "grid", gap: 6, width: "100%" }}>
             <textarea ref={editRef} className="cc-input" value={draft} autoFocus maxLength={MAX_TEXT}

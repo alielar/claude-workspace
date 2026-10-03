@@ -44,17 +44,38 @@ export function useLockBodyScroll() {
 export function useVisualViewport() {
   const read = () => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
-    return { top: vv?.offsetTop ?? 0, height: vv?.height ?? (typeof window !== "undefined" ? window.innerHeight : 800) };
+    return { top: Math.round(vv?.offsetTop ?? 0), height: Math.round(vv?.height ?? (typeof window !== "undefined" ? window.innerHeight : 800)) };
   };
   const [box, setBox] = useState(read);
   useEffect(() => {
     const vv = window.visualViewport;
-    const update = () => setBox(read());
+    // One update per frame, and only when the box really moved · iOS fires `scroll` on the
+    // visual viewport continuously while a finger scrolls inside the sheet, and a re-render of
+    // the whole sheet per event made typing stutter (responsiveness pass 2026-10-03).
+    let raf = 0;
+    const update = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const next = read();
+        setBox((cur) => (cur.top === next.top && cur.height === next.height ? cur : next));
+      });
+    };
     update();
     vv?.addEventListener("resize", update); vv?.addEventListener("scroll", update); window.addEventListener("resize", update);
-    return () => { vv?.removeEventListener("resize", update); vv?.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+    return () => { if (raf) cancelAnimationFrame(raf); vv?.removeEventListener("resize", update); vv?.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
   }, []);
   return box;
+}
+
+/** How much of the layout viewport's bottom the keyboard covers, in px (0 = closed). A bar fixed
+ * at `bottom: 0` sits under the keys on iOS; `bottom: <this>` puts it right above them. */
+export function useKeyboardInset(): number {
+  const vv = useVisualViewport();
+  if (typeof window === "undefined") return 0;
+  const inset = Math.round(window.innerHeight - vv.height - vv.top);
+  // Under ~80 px it is the browser chrome moving, not a keyboard.
+  return inset > 80 ? inset : 0;
 }
 
 /** Bottom sheet that always sits inside the visible (keyboard-free) part of the screen. */

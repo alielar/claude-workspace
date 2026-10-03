@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns"],
   },
+  async redirects() {
+    // ALAI became R2-D2 (Ali 2026-10-03) · old bookmarks and pushes still land.
+    return [{ source: "/alai", destination: "/r2d2", permanent: true }];
+  },
   async headers() {
     return [
       {

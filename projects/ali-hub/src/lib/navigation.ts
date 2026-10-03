@@ -1,36 +1,54 @@
 /**
  * Navigation · single source of truth for the tab bar (phone) and sidebar (desktop).
  *
- * Today · To-do · News · Train · Health · ALAI · Settings. Keep this list short on purpose —
- * if something needs a second thought about where it lives, the nav is wrong.
+ * FIVE tabs on the phone (Ali 2026-10-03, "seven is too many"): Today · To-do · R2-D2 · Other ·
+ * Settings. "Other" is not a page: it opens a small picker with News, Train and Health
+ * (`OTHER`). The desktop rail has room, so it lists those three in place of the picker.
  *
  * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
  * journal) are deliberately NOT here. They are reachable from /archive.
- * To restore one: add a line to NAV below. That is the whole restore step.
+ * To restore one: add a line to OTHER below. That is the whole restore step.
  */
+
+export type IconKey = "today" | "news" | "settings" | "train" | "todo" | "r2d2" | "health" | "other";
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: "today" | "news" | "settings" | "train" | "todo" | "alai" | "health";
+  icon: IconKey;
   match?: string[]; // extra route prefixes that mark this item active
+  /** One quiet line under the label inside the Other picker. */
+  hint?: string;
 };
 
-// Order (Ali 2026-09-27, Health added 2026-09-28 "just above ALAI"): Today · To-do · News · Train ·
-// Health · ALAI · Settings. Settings stays in the bar, last ("keep it on the bottom"); on the desktop
-// rail it sits alone at the foot.
+/** The sections behind the "Other" tab, in this order. */
+export const OTHER: NavItem[] = [
+  { href: "/news",   label: "News",   icon: "news",   match: ["/news", "/podcast"], hint: "Daily picks · watch later · football" },
+  { href: "/train",  label: "Train",  icon: "train",  hint: "Body · Mind" },
+  { href: "/health", label: "Health", icon: "health", hint: "Today's checkup" },
+];
+
+/** The phone's tab bar. "Other" carries no page of its own: its href is the first section inside it. */
 export const NAV: NavItem[] = [
   { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/breathe", "/books"] },
   { href: "/todo",     label: "To-do",    icon: "todo",     match: ["/todo", "/vault", "/birthdays"] },
-  { href: "/news",     label: "News",     icon: "news",     match: ["/news", "/podcast"] },
-  { href: "/train",    label: "Train",    icon: "train" },
-  { href: "/health",   label: "Health",   icon: "health" },
-  { href: "/alai",     label: "ALAI",     icon: "alai",     match: ["/alai", "/fix"] },
+  { href: "/r2d2",     label: "R2-D2",    icon: "r2d2",     match: ["/r2d2", "/alai", "/fix"] },
+  { href: "/news",     label: "Other",    icon: "other",    match: OTHER.flatMap((o) => o.match ?? [o.href]) },
   { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
 ];
+
+export const OTHER_TAB_HREF = "/news";
+
+/** The desktop rail: the same order, with the Other picker unfolded. */
+export const RAIL: NavItem[] = NAV.flatMap((n) => (n.label === "Other" ? OTHER : [n]));
 
 /** Whether a nav item is active for the current pathname. */
 export function isNavActive(item: NavItem, pathname: string): boolean {
   const prefixes = item.match ?? [item.href];
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+/** The Other section the current path belongs to, if any. */
+export function otherSection(pathname: string): NavItem | null {
+  return OTHER.find((o) => isNavActive(o, pathname)) ?? null;
 }

@@ -1,5 +1,5 @@
 /**
- * ALAI dictation · the microphone → live text (2026-10-01).
+ * R2-D2 dictation · the microphone → live text (2026-10-01).
  *
  * Three ways, tried in this order, all on the Deepgram key Mental Training already uses:
  *   1 LIVE · the phone streams 16 kHz audio over a WebSocket opened with a 60 s token from
@@ -8,7 +8,10 @@
  *     tokens; the current one is refused (403), so today the app runs on 2.
  *   2 PHRASE · the same audio, cut at every short pause (a level detector: ~0.45 s of quiet after
  *     speech, or 12 s at most), each phrase sent as WAV to POST /api/fix/dictate?phrase=1 and its
- *     text appended in order · words land about a second after each pause, "…" while speaking.
+ *     text appended in order. WHILE a phrase is still being spoken, the part heard so far is sent
+ *     every ~1.1 s as a PARTIAL and shown as the live line (`interim`), replaced each time, so the
+ *     words appear as Ali speaks (2026-10-03) · the final text of the phrase replaces it. A partial
+ *     re-sends audio already sent, so a phrase costs about twice its length in Deepgram minutes.
  *   3 the browser's own recogniser, only where the page cannot record audio at all.
  *
  * Runs outside React (module singleton, state in `store.ts`), so it keeps listening while Ali
@@ -32,6 +35,8 @@ type Session = {
   // phrase mode
   bufs: ArrayBuffer[]; speechMs: number; quietMs: number; durMs: number; floor: number;
   chain: Promise<void>; inFlight: number;
+  /** partials · `seq` names the phrase in progress (a late partial of a flushed phrase is dropped) */
+  seq: number; partialBusy: boolean; partialAtMs: number;
 };
 let cur: Session | null = null;
 let browser: { rec: BrowserRecognition; on: boolean } | null = null;
@@ -73,7 +78,7 @@ function wav(bufs: ArrayBuffer[]): Blob {
 /** Sends the phrase gathered so far · its text is appended once every earlier phrase has landed. */
 function flushPhrase(s: Session) {
   const bufs = s.bufs, spoke = s.speechMs >= 250;
-  s.bufs = []; s.speechMs = 0; s.quietMs = 0; s.durMs = 0;
+  s.bufs = []; s.speechMs = 0; s.quietMs = 0; s.durMs = 0; s.seq++; s.partialAtMs = 0;
   if (!spoke) return;
   s.inFlight++;
   const ask = fetch("/api/fix/dictate?phrase=1", { method: "POST", body: wav(bufs), cache: "no-store" })
@@ -102,7 +107,23 @@ function phraseFrame(s: Session, input: Float32Array, buf: ArrayBuffer, rate: nu
   } else s.quietMs += ms;
   // Nothing said yet · keep only a short lead-in, so a phrase never starts with long silence.
   if (s.speechMs === 0) { while (s.bufs.length > 4) s.bufs.shift(); s.durMs = Math.min(s.durMs, 4 * ms); return; }
-  if ((s.quietMs >= 450 && s.durMs >= 800) || s.durMs >= 12000) flushPhrase(s);
+  if ((s.quietMs >= 450 && s.durMs >= 800) || s.durMs >= 12000) { flushPhrase(s); return; }
+  // Still talking · every ~1.1 s send what is heard so far and show it as the live line.
+  if (speaking && !s.partialBusy && s.speechMs - s.partialAtMs >= 1100) sendPartial(s);
+}
+
+function sendPartial(s: Session) {
+  const seq = s.seq;
+  s.partialBusy = true; s.partialAtMs = s.speechMs;
+  fetch("/api/fix/dictate?phrase=1", { method: "POST", body: wav(s.bufs.slice()), cache: "no-store" })
+    .then(async (r) => (r.ok ? ((await r.json()) as { text?: string }).text ?? "" : ""))
+    .catch(() => "")
+    .then((text) => {
+      s.partialBusy = false;
+      // The phrase ended meanwhile (its final text is on its way) · this partial is old news.
+      if (s !== cur || s.seq !== seq || !text) return;
+      setDict({ interim: text });
+    });
 }
 
 // ── 1 · live ─────────────────────────────────────────────────────────────────
@@ -197,6 +218,7 @@ export async function startDictation(): Promise<void> {
   const s: Session = {
     stream, ctx, proc, src, ws: null, pending: [], retries: 0, closing: false, mode: "live",
     bufs: [], speechMs: 0, quietMs: 0, durMs: 0, floor: 0.004, chain: Promise.resolve(), inFlight: 0,
+    seq: 0, partialBusy: false, partialAtMs: 0,
   };
   cur = s;
   proc.onaudioprocess = (e) => {

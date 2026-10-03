@@ -13,13 +13,13 @@ import { composed, isDictating, stopDictation, useDict } from "@/lib/dictation/s
 export function DictationPill() {
   const d = useDict();
   const path = usePathname();
-  if (!isDictating(d) || path?.startsWith("/alai")) return null;
+  if (!isDictating(d) || path?.startsWith("/r2d2")) return null;
   const all = composed(d);
   const said = all.length > 80 ? all.slice(-80).replace(/^\S*\s/, "") : all; // the last words, cut at a word
   return (
     <div className="dict-pill" role="status" aria-live="polite">
       <span aria-hidden className="dict-dot" />
-      <Link href="/alai" style={{ flex: 1, minWidth: 0, color: "var(--ink)", textDecoration: "none", fontSize: 15, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", direction: "ltr" }}>
+      <Link href="/r2d2" style={{ flex: 1, minWidth: 0, color: "var(--ink)", textDecoration: "none", fontSize: 15, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", direction: "ltr" }}>
         {d.status === "connecting" ? "Starting…" : d.status === "stopping" ? "Finishing…" : said ? <>{said.length < all.length ? "…" : ""}{said}</> : "Listening"}
       </Link>
       <button type="button" onClick={stopDictation} className="cc-btn" style={{ minHeight: 40, minWidth: 64, borderRadius: 12, background: "var(--neg)", color: "#fff", border: "none", fontWeight: 600 }}>Stop</button>

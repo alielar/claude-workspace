@@ -3,14 +3,14 @@
 /**
  * Sidebar · desktop only (hidden <768px via CSS). 56px icon rail, ALWAYS collapsed
  * (Ali 2026-09-27 · it used to widen to 200px on hover); the label shows as a small
- * tooltip beside the icon. Same NAV list as the phone bar; Settings, last in NAV, sits alone
- * at the BOTTOM of the rail (Ali, 2026-09-01 and again 2026-09-27: "keep it on the bottom").
+ * tooltip beside the icon. Same order as the phone bar with the Other picker unfolded
+ * (`RAIL`); Settings sits alone at the BOTTOM of the rail (Ali: "keep it on the bottom").
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
-import { NAV, isNavActive } from "@/lib/navigation";
+import { RAIL, isNavActive } from "@/lib/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -18,7 +18,7 @@ export function Sidebar() {
   return (
     <aside className="cc-sidebar">
       <nav className="cc-sidebar-nav" aria-label="Main navigation" style={{ flex: 1 }}>
-        {NAV.map((item) => {
+        {RAIL.map((item) => {
           const active = isNavActive(item, pathname);
           return (
             <Link

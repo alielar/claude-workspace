@@ -1,11 +1,11 @@
 /**
- * ALAI dictation · the shared state (Ali 2026-10-01: "talk, go and look at another section, keep
- * transcribing"). A module-level store, so it outlives the ALAI page: the app changes screens
+ * R2-D2 dictation · the shared state (Ali 2026-10-01: "talk, go and look at another section, keep
+ * transcribing"). A module-level store, so it outlives the R2-D2 page: the app changes screens
  * without a reload, the microphone keeps running and the text keeps growing; the small pill in
  * AppShell shows it on every other screen. The composer's draft lives here too (and in
  * localStorage), so nothing said is lost if the page is left or the app is closed.
  *
- * Tiny on purpose (it ships on every page): the engine (`engine.ts`) is imported by the ALAI page
+ * Tiny on purpose (it ships on every page): the engine (`engine.ts`) is imported by the R2-D2 page
  * only and registers its stop function here.
  */
 

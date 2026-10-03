@@ -34,6 +34,11 @@ export function writeCache<T>(key: string, data: T): void {
   }
 }
 
+/** Cheap structural equality for cached payloads (both sides are plain JSON). */
+function sameJson(a: unknown, b: unknown): boolean {
+  try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
+}
+
 export function isOnline(): boolean {
   return typeof navigator === "undefined" ? true : navigator.onLine !== false;
 }
@@ -107,6 +112,10 @@ export function useCached<T>(key: string, fetcher: () => Promise<T | null>, opts
             return { data: fresh, savedAt: s.savedAt, loading: false, refreshing: false, stale: true };
           }
           const next = mergeRef.current ? mergeRef.current(s.data, fresh) : fresh;
+          // Nothing changed on the server · keep the same object, so no screen re-renders and no
+          // localStorage write happens on the 45 s tick or on every return to the foreground
+          // (responsiveness pass 2026-10-03: Today runs eight of these at once).
+          if (s.data !== null && sameJson(s.data, next)) return { ...s, refreshing: false, loading: false, stale: false };
           writeCache(key, next);
           return { data: next, savedAt: Date.now(), loading: false, refreshing: false, stale: false };
         });

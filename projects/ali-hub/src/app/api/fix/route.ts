@@ -3,7 +3,7 @@
  * `src/proxy.ts` answers 401 without the session cookie or the `x-app-key` header, and
  * `auth()` checks the same two things again here. The Mac worker uses the key.
  *
- * GET               · the chat feed: newest 40 requests (images only on the newest 8) + worker heartbeat
+ * GET               · the chat feed: newest 40 requests (counts only · pictures via /api/fix/image) + worker heartbeat
  * GET ?queued=1     · the worker's poll: stamps the heartbeat, returns queued requests with images
  * POST              · a new request {clientId, text, images[]} · idempotent on clientId · lands as "held"
  *                     (nothing is built until Ali taps Ship now → /api/fix/ship flips held → queued)
@@ -61,7 +61,7 @@ export async function GET(req: Request) {
   const rows = await db.select().from(fixRequests).where(eq(fixRequests.userId, userId)).orderBy(desc(fixRequests.createdAt)).limit(40);
   const [w] = await db.select().from(fixWorker).where(eq(fixWorker.userId, userId));
   return NextResponse.json({
-    requests: rows.map((r, i) => toRequest(r, i < 8)).reverse(),
+    requests: rows.map((r) => toRequest(r, false)).reverse(),
     worker: { seenAt: w?.seenAt?.getTime() ?? null, note: w?.note ?? null },
   });
 }
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     await db.insert(fixRequests).values({ userId, clientId, text, images: images.length ? JSON.stringify(images) : null, status: "held", createdAt: now, updatedAt: now });
   } catch { /* same clientId sent twice (an offline replay) · the first one stands */ }
   const [row] = await db.select().from(fixRequests).where(eq(fixRequests.clientId, clientId));
-  return NextResponse.json({ request: toRequest(row, true) });
+  return NextResponse.json({ request: toRequest(row, false) });
 }
 
 export async function PATCH(req: Request) {
@@ -105,7 +105,7 @@ export async function PATCH(req: Request) {
     if (!text && parseImages(cur.images).length === 0) return NextResponse.json({ error: "empty" }, { status: 400 });
     await db.update(fixRequests).set({ text, updatedAt: new Date() }).where(and(eq(fixRequests.id, id), eq(fixRequests.status, "held")));
     const [row] = await db.select().from(fixRequests).where(eq(fixRequests.id, id));
-    return NextResponse.json({ request: toRequest(row, true) });
+    return NextResponse.json({ request: toRequest(row, false) });
   }
   const status = b?.status as FixStatus;
   if (!Number.isFinite(id) || !STATUSES.includes(status)) return NextResponse.json({ error: "id and a valid status required" }, { status: 400 });
@@ -127,9 +127,9 @@ export async function PATCH(req: Request) {
     const head = cur.text.replace(/\s+/g, " ").slice(0, 70) || "your fix";
     try {
       await sendToUser(userId, {
-        title: status === "shipped" ? "Fix shipped" : "Fix needs you",
+        title: status === "shipped" ? "R2-D2 shipped it" : "R2-D2 needs you",
         body: `${head}${row.reply ? ` · ${row.reply.slice(0, 120)}` : ""}`,
-        tag: `fix-${id}`, url: "/alai",
+        tag: `fix-${id}`, url: "/r2d2",
       });
     } catch { /* push is a courtesy */ }
   }

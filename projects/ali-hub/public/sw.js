@@ -13,12 +13,12 @@
  * (see src/lib/local/outbox.ts) and replays when back online.
  */
 
-const VERSION = "cc-v18";
+const VERSION = "cc-v19";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const API = `${VERSION}-api`;
 
-const PRECACHE_PAGES = ["/today", "/stretch", "/breathe", "/checklist", "/train", "/train/kb1", "/books", "/todo", "/news", "/settings", "/offline"];
+const PRECACHE_PAGES = ["/today", "/stretch", "/breathe", "/checklist", "/train", "/train/kb1", "/books", "/todo", "/news", "/health", "/r2d2", "/settings", "/offline"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

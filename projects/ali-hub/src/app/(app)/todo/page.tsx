@@ -25,7 +25,7 @@ import { createPortal } from "react-dom";
 import { Linkify } from "@/components/Linkify";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { NotesPreview, SubtaskList } from "./notes";
-import { Sheet, ListSheet, openPicker } from "./sheet";
+import { Sheet, ListSheet, openPicker, useKeyboardInset } from "./sheet";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
@@ -206,7 +206,7 @@ function ListRow({ t, onOpen }: { t: Todo; onOpen: () => void }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 /** The slide between segments · dx follows the finger, `settle` turns the transition on, `w` = pane width. */
-type Slide = { dx: number; settle: boolean; w: number };
+type Slide = { dx: number; settle: boolean; w: number; neighbour: Area | null };
 const SLIDE_MS = 230;
 const SLIDE_EASE = `transform ${SLIDE_MS}ms cubic-bezier(.2,.8,.2,1)`;
 
@@ -247,6 +247,7 @@ export default function TodoPage() {
     setOpenGroupsState((o) => { const next = fn(o); try { localStorage.setItem("cc-todo-open-groups", JSON.stringify(next)); } catch { /* ignore */ } return next; });
   };
   const inputRef = useRef<HTMLInputElement>(null);
+  const kb = useKeyboardInset(); // the add bar rides on the keyboard
 
   const parsed = useMemo(() => (!isLists && !literal && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists, literal]);
 
@@ -257,18 +258,23 @@ export default function TodoPage() {
   // segment changes and the new pane is already in place. Otherwise everything glides back.
   // At an edge (no next pane) the page only gives a little · a rubber band.
   const idx = SEGMENTS.findIndex((s) => s.key === area);
-  const [slide, setSlide] = useState<Slide>({ dx: 0, settle: false, w: 0 });
-  const gesture = useRef<{ x: number; y: number; t: number; w: number; axis: "" | "x" | "y" } | null>(null);
+  // While the finger is down the two panes are moved by hand (style.transform on their DOM nodes,
+  // no React render per frame · responsiveness pass 2026-10-03); React only renders the neighbour
+  // once, when the slide starts, and again on release to glide and switch.
+  const [slide, setSlide] = useState<Slide>({ dx: 0, settle: false, w: 0, neighbour: null });
+  const gesture = useRef<{ x: number; y: number; t: number; w: number; axis: "" | "x" | "y"; dx: number } | null>(null);
   const paneRef = useRef<HTMLDivElement>(null);
+  const curPaneRef = useRef<HTMLDivElement>(null);
+  const nextPaneRef = useRef<HTMLDivElement>(null);
   const switching = useRef<number | null>(null);
   useEffect(() => () => { if (switching.current) clearTimeout(switching.current); }, []);
-  const neighbour = slide.dx < 0 ? SEGMENTS[idx + 1] : slide.dx > 0 ? SEGMENTS[idx - 1] : undefined;
+  const neighbour = slide.neighbour ? SEGMENTS.find((sg) => sg.key === slide.neighbour) : undefined;
   // The listeners sit on the document, so the slide works from anywhere on the screen, empty
   // space under a short list included · not only on the page's own box.
   const onPageTouchStart = (e: TouchEvent) => {
     const el = e.target as HTMLElement;
     if (switching.current || el.closest('[role="dialog"], input, textarea, select, .todo-addbar, .cc-mobile-nav, header, nav')) { gesture.current = null; return; }
-    gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp, w: paneRef.current?.clientWidth ?? window.innerWidth, axis: "" };
+    gesture.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp, w: paneRef.current?.clientWidth ?? window.innerWidth, axis: "", dx: 0 };
   };
   const onPageTouchMove = (e: TouchEvent) => {
     const g = gesture.current;
@@ -279,25 +285,29 @@ export default function TodoPage() {
       g.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y"; // the first clear direction wins for the whole touch
     }
     if (g.axis !== "x") return;
-    const hasNext = dx < 0 ? idx < SEGMENTS.length - 1 : idx > 0;
-    setSlide({ dx: hasNext ? dx : dx * 0.25, settle: false, w: g.w });
+    const side = dx < 0 ? 1 : -1;
+    const next = SEGMENTS[idx + side];
+    g.dx = dx;
+    if (next && slide.neighbour !== next.key) setSlide({ dx: 0, settle: false, w: g.w, neighbour: next.key }); // mount the neighbour once
+    const shown = next ? dx : dx * 0.25; // rubber band at an edge
+    if (curPaneRef.current) curPaneRef.current.style.transform = `translateX(${shown}px)`;
+    if (nextPaneRef.current) nextPaneRef.current.style.transform = `translateX(${shown + side * g.w}px)`;
   };
   const onPageTouchEnd = (e: TouchEvent) => {
     const g = gesture.current; gesture.current = null;
     if (!g || g.axis !== "x") return;
     const c = e.changedTouches[0];
-    if (!c) { setSlide({ dx: 0, settle: true, w: g.w }); return; }
-    const dx = c.clientX - g.x;
+    const dx = c ? c.clientX - g.x : g.dx;
     const next = SEGMENTS[idx + (dx < 0 ? 1 : -1)];
-    if (next && (Math.abs(dx) > g.w / 3 || isFlick(dx, c.clientY - g.y, e.timeStamp - g.t))) {
-      setSlide({ dx: dx < 0 ? -g.w : g.w, settle: true, w: g.w });
+    if (c && next && (Math.abs(dx) > g.w / 3 || isFlick(dx, c.clientY - g.y, e.timeStamp - g.t))) {
+      setSlide({ dx: dx < 0 ? -g.w : g.w, settle: true, w: g.w, neighbour: next.key });
       switching.current = window.setTimeout(() => {
         switching.current = null;
         setArea(next.key);
-        setSlide({ dx: 0, settle: false, w: g.w });
+        setSlide({ dx: 0, settle: false, w: g.w, neighbour: null });
       }, SLIDE_MS);
     } else {
-      setSlide({ dx: 0, settle: true, w: g.w });
+      setSlide({ dx: 0, settle: true, w: g.w, neighbour: next?.key ?? null });
     }
   };
   const touchHandlers = useRef({ start: onPageTouchStart, move: onPageTouchMove, end: onPageTouchEnd });
@@ -316,9 +326,25 @@ export default function TodoPage() {
     };
   }, []);
 
-  // "+" opens the full sheet so every detail is set at creation. For tasks the typed
-  // line is already parsed in ("fri 9am !!"); for Knowledge the line is the name, or,
-  // when it is an address, the link of a new Link entry (the sheet asks for the name).
+  // Return SAVES the task at once (responsiveness pass 2026-10-03: "creating a to-do must feel
+  // instant") · the line above the box already shows what was read, and the keyboard stays up for
+  // the next one. "+" opens the full sheet instead, for the details. Knowledge entries always go
+  // through the sheet: the name and the shape are chosen there (the shape is locked afterwards).
+  const quickSave = () => {
+    if (isLists || !text.trim()) { submit(); return; }
+    const ts = Date.now();
+    upsert({
+      clientId: newTodoId(),
+      title: literal ? text.trim() : parsed?.title || text.trim(),
+      area, notes: null, project: null,
+      dueDate: parsed?.dueDate ?? null, dueTime: parsed?.dueTime ?? null,
+      evening: parsed?.evening ?? false, someday: parsed?.someday ?? false,
+      priority: parsed?.priority ?? 0,
+      sortOrder: ts, doneAt: null, createdAt: ts, updatedAt: ts, deleted: false,
+    });
+    setText("");
+    inputRef.current?.focus();
+  };
   const submit = () => {
     const ts = Date.now();
     const pastedLink = isLists && isUrlText(text);
@@ -478,7 +504,7 @@ export default function TodoPage() {
     );
   };
 
-  const moving = slide.dx !== 0 || slide.settle;
+  const moving = slide.neighbour !== null || slide.settle;
   return (
     <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
@@ -499,13 +525,13 @@ export default function TodoPage() {
 
       {/* The panes · the current one in flow, the next one riding alongside while the finger is down */}
       <div ref={paneRef} style={{ position: "relative", overflow: moving ? "hidden" : undefined }}>
-        <div style={{ display: "grid", gap: 16, transform: moving ? `translateX(${slide.dx}px)` : undefined, transition: slide.settle ? SLIDE_EASE : "none" }}
-          onTransitionEnd={() => setSlide((s) => (s.dx === 0 ? { ...s, settle: false } : s))}>
+        <div ref={curPaneRef} style={{ display: "grid", gap: 16, transform: moving ? `translateX(${slide.dx}px)` : undefined, transition: slide.settle ? SLIDE_EASE : "none" }}
+          onTransitionEnd={() => setSlide((s) => (s.dx === 0 ? { ...s, settle: false, neighbour: null } : s))}>
           {pane(area)}
         </div>
         {neighbour && (
-          <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", overflow: "hidden", display: "grid", gap: 16, alignContent: "start",
-            transform: `translateX(${slide.dx + (slide.dx < 0 ? slide.w : -slide.w)}px)`, transition: slide.settle ? SLIDE_EASE : "none" }}>
+          <div ref={nextPaneRef} aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", overflow: "hidden", display: "grid", gap: 16, alignContent: "start",
+            transform: `translateX(${slide.dx + (SEGMENTS.findIndex((sg) => sg.key === neighbour.key) > idx ? slide.w : -slide.w)}px)`, transition: slide.settle ? SLIDE_EASE : "none" }}>
             {pane(neighbour.key)}
           </div>
         )}
@@ -541,7 +567,7 @@ export default function TodoPage() {
           followed the page's box instead of the window; from <body> nothing can shift it) · the
           position lives in globals.css `.todo-addbar`. */}
       {mounted && createPortal(
-      <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+      <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); quickSave(); }} style={kb > 0 ? ({ "--kb": `${kb}px` } as React.CSSProperties) : undefined}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
           {(readSomething || literal) && text.trim() && !isLists && (
             <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, minHeight: 28 }}>
@@ -559,7 +585,7 @@ export default function TodoPage() {
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
               placeholder={isLists ? "New entry or paste a link…" : area === "work" ? "Add a work task…" : "Add a task…"}
               enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
-            <button type="submit" className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add">+</button>
+            <button type="button" onClick={submit} className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label={isLists ? "New entry" : "Add with details"}>+</button>
           </div>
         </div>
       </form>, document.body)}

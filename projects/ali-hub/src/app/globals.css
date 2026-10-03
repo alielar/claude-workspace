@@ -1196,3 +1196,36 @@ body:has(.todo-addbar) .dict-pill { bottom: calc(var(--tabbar-h) + env(safe-area
 .dict-dot { width: 10px; height: 10px; border-radius: 99px; background: var(--neg); flex: 0 0 auto; animation: dict-pulse 1.2s ease-in-out infinite; }
 @keyframes dict-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.8); } }
 @media (prefers-reduced-motion: reduce) { .dict-dot { animation: none; } }
+
+/* ─── "Other" picker · News · Train · Health, above the tab bar (five tabs, Ali 2026-10-03) ─── */
+.cc-other-veil { position: fixed; inset: 0; z-index: 39; background: rgba(0,0,0,0.28); }
+.cc-other-picker {
+  position: fixed; left: 10px; right: 10px; z-index: 41;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 10px);
+  display: grid; gap: 2px; padding: 6px;
+  background: var(--bg-card); border: 1px solid var(--line-hi); border-radius: 18px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.28);
+  animation: cc-other-in 0.18s var(--easeOut) both;
+  transform-origin: 50% 100%;
+}
+@keyframes cc-other-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.cc-other-row {
+  display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center;
+  min-height: 60px; padding: 8px 10px 8px 6px; border-radius: 13px;
+  color: var(--ink); text-decoration: none; -webkit-tap-highlight-color: transparent;
+}
+.cc-other-row:active { background: var(--fill-1); }
+.cc-other-row.active { background: var(--accent-soft); }
+.cc-other-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--fill-1); color: var(--ink-2); }
+.cc-other-row.active .cc-other-icon { color: var(--violet); background: var(--bg-card); }
+@media (min-width: 768px) { .cc-other-veil, .cc-other-picker { display: none; } }
+@media (prefers-reduced-motion: reduce) { .cc-other-picker { animation: none; } }
+
+/* Every button answers the finger at once · a small press, no delay (responsiveness pass 2026-10-03). */
+.cc-btn:active:not(:disabled) { transform: scale(0.97); }
+.cc-btn { transition: transform 80ms ease-out, opacity var(--t-1) var(--easeOut), background var(--t-1) var(--easeOut); }
+@media (prefers-reduced-motion: reduce) { .cc-btn:active:not(:disabled) { transform: none; } }
+
+/* The quick-add bar and the R2-D2 composer hug the keyboard: `--kb` is the keyboard's height in
+   layout-viewport pixels (useKeyboardInset), 0 when it is closed. */
+.todo-addbar[style*="--kb"] { bottom: var(--kb); }

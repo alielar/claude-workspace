@@ -1,5 +1,5 @@
 /**
- * ALAI (2026-09-27) · Ali types what he wants changed (with screenshots) inside the app; the
+ * R2-D2 (built as ALAI 2026-09-27, renamed 2026-10-03) · Ali types what he wants changed (with screenshots) inside the app; the
  * messages wait ("held") until he taps Ship now; then a job on his Mac (`fix-worker/worker.mjs`)
  * takes everything released as one batch, runs Claude Code headless in this repository, ships,
  * and writes a plain-language reply back into the chat.
@@ -14,7 +14,8 @@ export type FixRequest = {
   id: number;
   clientId: string;
   text: string;
-  /** Data URLs · only sent for the newest few requests (the list stays light). */
+  /** Data URLs · only on a request the phone just composed; the feed carries counts and the
+   *  page loads each picture from /api/fix/image?id=&i= (2026-10-03). */
   images: string[] | null;
   imageCount: number;
   status: FixStatus;

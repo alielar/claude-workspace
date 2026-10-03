@@ -16,6 +16,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Where the browser supports it the page itself shrinks above the keyboard, so fixed bars sit
+  // on top of the keys instead of under them (iOS 26 Safari, Chrome). Elsewhere `useKeyboardInset`
+  // in todo/sheet.tsx measures the keyboard and the bars follow it by hand.
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#0B0B10" },
     { media: "(prefers-color-scheme: light)", color: "#F3F4F7" },
