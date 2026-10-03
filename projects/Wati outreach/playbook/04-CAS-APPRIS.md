@@ -1253,3 +1253,14 @@ DANS 5-10 MIN (2 bulles) :
 **Ce que j'ai répondu :** (consigne d'Ali) « Je respecte votre décision, aucun souci » / « Juste pour que je comprenne, sans aucune insistance : la période d'essai était le frein et on avait trouvé une solution pour ça » / « Du coup, c'est plutôt le budget, la méthode, ou autre chose qui vous a fait renoncer ? »
 **Pourquoi :** quand Ali donne une consigne, on écrit ce qu'il demande, même si une règle dit autre chose ; le désaccord éventuel va dans la note, jamais dans un autre message à la place. Et après un refus où le frein annoncé a été levé, une question de compréhension sans pression (budget, méthode, autre) vaut mieux qu'une clôture : c'est la vraie raison qui apprend quelque chose.
 **Résultat :** à suivre (s'il ne répond pas, c'est sa réponse : marquer le lead, pas de relance)
+
+## 2026-10-03 — Script de référence : prolongation exceptionnelle du week-end (validé par Ali, à reprendre tel quel)
+**Situation :** le week-end, un lead demande vraiment plus de temps (Havva : ses parents ne sont pas là, elle propose de laisser sa place et de revenir dans la semaine). Ali accorde un jour de plus, présenté comme une exception rendue possible par le week-end.
+**Ce que le lead a écrit :** « Est-ce qu'il est possible que je vous laisse attribuer ma place à quelqu'un d'autre et que je vous recontacte pour faire à nouveau les démarches dans la semaine ? »
+**Ce que j'ai répondu :** (un seul bloc, 4 bulles)
+> « Oui je comprends »
+> « J'ai pu vérifier et ça tombe bien, vu que c'est le week-end l'administration a décidé de grouper les sessions de vendredi/samedi/dimanche et a accepté de prolonger votre délai jusqu'à [demain 20h] pour votre situation »
+> « Si on réattribue votre place à quelqu'un d'autre, vous passeriez en liste d'attente, qui est de 10 à 12 mois sans garantie de date de démarrage. Votre profil m'a beaucoup plu à l'entretien, et je préférerais ne pas en arriver là avec votre dossier, ça serait dommage »
+> « J'ai mis à jour la validité de votre lien d'inscription pour [demain 20h], donc c'est tout bon de ce côté, n'hésitez pas si vous avez des questions d'ici là surtout 😊 »
+**Pourquoi :** le week-end, la prolongation d'un jour a une raison crédible (l'administration groupe les sessions du vendredi au dimanche), donc elle reste exceptionnelle et jamais un dû. Structure : accusé court ; la prolongation via l'administration avec la raison du week-end et la date ; la conséquence liste d'attente (formule complète) + « votre profil m'a beaucoup plu, ça serait dommage » ; le lien mis à jour et une porte ouverte aux questions. Une prolongation d'un jour maximum ; si pas de confirmation à l'échéance, la place est libérée. Jamais le prénom du lead dans une bulle (règle du 30/09).
+**Résultat :** modèle ; repris dans le move « Extend the deadline » de l'app
