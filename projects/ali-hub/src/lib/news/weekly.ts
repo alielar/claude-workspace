@@ -135,7 +135,7 @@ async function writeSection(label: string, stories: NewsStory[], dates: Map<News
   if (!stories.length) return [];
   const prompt = `You are writing Ali's WEEKLY brief, the "${label}" section, for the week of ${prettyRange(from, to)}. He reads it once, on Monday, in 10 to 15 minutes for the whole brief, so this section must be worth about four minutes of careful reading. He is a product person, not an engineer: plain words, no jargon, no em dashes anywhere (use a comma, a period or " · ").
 
-From the week's stories below, choose the THREE or FOUR developments that genuinely mattered this week (merge stories about the same development · prefer the week's arc over a single day's headline · skip anything trivial, promotional or repetitive). The whole section must read in about four minutes: 800 to 1000 words in total, so every sentence earns its place. For each development write, in this order:
+From the week's stories below, choose the THREE developments that genuinely mattered this week (merge stories about the same development · prefer the week's arc over a single day's headline · skip anything trivial, promotional or repetitive). HARD LIMIT: at most 330 words per development, about 1000 words for the section · the whole brief must read in 12 minutes, so every sentence earns its place. For each development write, in this order:
 - headline: one line, specific, no clickbait
 - summary: 2-3 sentences · what happened this week, in plain words, with the key numbers
 - whatHappened: the facts, 3-4 sentences, with the days of the week when they matter
@@ -151,10 +151,10 @@ Output ONLY a JSON array of objects with exactly these keys: headline, summary, 
 
 THE WEEK'S STORIES:
 ${materials(stories, dates)}`;
-  const out = await haiku(prompt, 5000);
+  const out = await haiku(prompt, 4000);
   const items = out ? parseJson<Written[]>(out) : null;
   if (!items || !Array.isArray(items)) return [];
-  return items.filter((w) => w && typeof w.headline === "string").slice(0, 4).map((w) => ({
+  return items.filter((w) => w && typeof w.headline === "string").slice(0, 3).map((w) => ({
     headline: noDash(w.headline), summary: noDash(w.summary ?? ""), keyPoints: [],
     category: label === "Tech & AI" ? "tech" : label === "Business" ? "business" : "geopolitics",
     source: Array.isArray(w.sources) && typeof w.sources[0] === "string" ? w.sources[0] : undefined,

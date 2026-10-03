@@ -35,6 +35,7 @@ export type VideoFeed = {
 };
 
 const POLL_EVERY_MS = 30 * 60_000;
+const PER_CHANNEL = 5;
 const DURATION_BUDGET = 24;         // lengths read per poll (the player endpoint is a few KB each)
 const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "accept-language": "en" };
 
@@ -113,6 +114,25 @@ async function readDuration(videoId: string): Promise<number | null> {
   } catch { return null; }
 }
 
+/** Diagnostics: what each length source answers for one video (the page shows nothing of this). */
+export async function probeDuration(videoId: string): Promise<Record<string, unknown>> {
+  const out: Record<string, unknown> = {};
+  try {
+    const res = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
+      method: "POST", headers: { "content-type": "application/json", "user-agent": UA["user-agent"] }, signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({ context: { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en" } }, videoId }),
+    });
+    const text = await res.text();
+    out.player = { status: res.status, len: text.length, lengthSeconds: text.match(/"lengthSeconds":"(\d+)"/)?.[1] ?? null, head: text.slice(0, 160) };
+  } catch (e) { out.player = { error: String((e as Error).message).slice(0, 120) }; }
+  try {
+    const res = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, { headers: UA, signal: AbortSignal.timeout(9000) });
+    const html = await res.text();
+    out.page = { status: res.status, len: html.length, lengthSeconds: html.match(/"lengthSeconds":"(\d+)"/)?.[1] ?? null, consent: /consent\.youtube\.com/.test(html) };
+  } catch (e) { out.page = { error: String((e as Error).message).slice(0, 120) }; }
+  return out;
+}
+
 /** Fetch every channel, store what is new, read a few lengths, prune. */
 export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ added: number; measured: number; errors: string[] }> {
   await ensureTable();
@@ -171,7 +191,10 @@ export async function listVideos(enabled: string[] | null = null): Promise<Video
     ? await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, laterChannels.map((c) => c.id)), gte(ytVideos.publishedAt, since), isNull(ytVideos.watchedAt), sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`)).catch(() => [])
     : [];
   const rank = (id: string) => channelById(id)?.priority ?? 99;
-  const later = rows.map(toVideo).sort((a, b) => rank(a.channelId) - rank(b.channelId) || b.publishedAt - a.publishedAt);
+  // At most PER_CHANNEL per channel (The Diary Of A CEO posts ten a fortnight and would bury the rest).
+  const seen = new Map<string, number>();
+  const later = rows.map(toVideo).sort((a, b) => rank(a.channelId) - rank(b.channelId) || b.publishedAt - a.publishedAt)
+    .filter((v) => { const n = (seen.get(v.channelId) ?? 0) + 1; seen.set(v.channelId, n); return n <= PER_CHANNEL; });
   return { picks, later, fetchedAt: Date.now() };
 }
 

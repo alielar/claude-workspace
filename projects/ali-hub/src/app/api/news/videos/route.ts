@@ -7,7 +7,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { listVideos, pollVideos, videosStale } from "@/lib/news/videos";
+import { listVideos, pollVideos, probeDuration, videosStale } from "@/lib/news/videos";
 import { WATCH_LATER } from "@/lib/news/channels";
 import { db } from "@/db";
 import { userSettings } from "@/db/schema";
@@ -33,6 +33,8 @@ export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const url = new URL(req.url);
+  const probe = url.searchParams.get("probe");
+  if (probe && /^[\w-]{6,20}$/.test(probe)) return NextResponse.json(await probeDuration(probe), { headers: { "Cache-Control": "no-store" } });
   if (url.searchParams.get("poll") === "1") {
     const r = await pollVideos({ force: true });
     return NextResponse.json({ poll: r, ...(await listVideos(await enabledFor(session.user.id))) }, { headers: { "Cache-Control": "no-store" } });
