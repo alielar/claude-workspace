@@ -152,9 +152,20 @@ Output ONLY a JSON array of objects with exactly these keys: headline, summary, 
 THE WEEK'S STORIES:
 ${materials(stories, dates)}`;
   const out = await haiku(prompt, 4000);
-  const items = out ? parseJson<Written[]>(out) : null;
+  let items = out ? parseJson<Written[]>(out) : null;
   if (!items || !Array.isArray(items)) return [];
-  return items.filter((w) => w && typeof w.headline === "string").slice(0, 3).map((w) => ({
+  items = items.filter((w) => w && typeof w.headline === "string").slice(0, 3);
+  // Haiku overshoots the word cap · one compress pass when the section runs long (over ~1150 words).
+  const fields: (keyof Written)[] = ["summary", "whatHappened", "whyItMatters", "context", "implications", "whatsNext"];
+  const words = items.reduce((n, w) => n + wordCount(fields.map((f) => String(w[f] ?? "")).join(" ")), 0);
+  if (words > 1150) {
+    const tight = await haiku(`Shorten this JSON array of news write-ups to about 950 words in total (at most 320 words per item), keeping every item, every key, the facts, the numbers and the plain-words tone. Cut repetition and the least important sentences; never add anything. No em dashes. Output ONLY the JSON array, same keys.
+
+${JSON.stringify(items)}`, 3200);
+    const t = tight ? parseJson<Written[]>(tight) : null;
+    if (t && Array.isArray(t) && t.length === items.length && t.every((w) => w && typeof w.headline === "string")) items = t;
+  }
+  return items.map((w) => ({
     headline: noDash(w.headline), summary: noDash(w.summary ?? ""), keyPoints: [],
     category: label === "Tech & AI" ? "tech" : label === "Business" ? "business" : "geopolitics",
     source: Array.isArray(w.sources) && typeof w.sources[0] === "string" ? w.sources[0] : undefined,

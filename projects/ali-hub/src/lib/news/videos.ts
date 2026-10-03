@@ -134,7 +134,7 @@ export async function probeDuration(videoId: string): Promise<Record<string, unk
 }
 
 /** Fetch every channel, store what is new, read a few lengths, prune. */
-export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ added: number; measured: number; errors: string[] }> {
+export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ added: number; measured: number; errors: string[]; pending?: number; sample?: unknown }> {
   await ensureTable();
   if (!opts.force && Date.now() - (await lastPoll()) < POLL_EVERY_MS) return { added: 0, measured: 0, errors: ["throttled"] };
   await stampPoll();
@@ -161,16 +161,18 @@ export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ adde
   // Lengths · newest first, a few per poll. A video whose page says nothing (a live stream in
   // progress, a premiere) is left null and tried again next time; after 45 days it is gone anyway.
   let measured = 0;
-  const pending = await db.select({ videoId: ytVideos.videoId }).from(ytVideos).where(isNull(ytVideos.durationSec)).orderBy(desc(ytVideos.publishedAt)).limit(DURATION_BUDGET).catch(() => []);
+  let sample: unknown = null;
+  const pending = await db.select({ videoId: ytVideos.videoId }).from(ytVideos).where(isNull(ytVideos.durationSec)).orderBy(desc(ytVideos.publishedAt)).limit(DURATION_BUDGET).catch((e) => { errors.push(`pending: ${String((e as Error).message).slice(0, 80)}`); return []; });
   for (const p of pending) {
     const sec = await readDuration(p.videoId);
+    if (sample === null) sample = { videoId: p.videoId, sec };
     if (sec === null) continue;
     // Shorts and clips under 75 s do not belong on the page · 0 marks "measured, not shown".
     await db.update(ytVideos).set({ durationSec: sec < 75 ? 0 : sec }).where(eq(ytVideos.videoId, p.videoId)).catch(() => {});
     measured += 1;
   }
   try { await db.delete(ytVideos).where(lt(ytVideos.publishedAt, new Date(cutoff))); } catch { /* best effort */ }
-  return { added, measured, errors };
+  return { added, measured, errors, pending: pending.length, sample };
 }
 
 const toVideo = (r: typeof ytVideos.$inferSelect): Video => ({
