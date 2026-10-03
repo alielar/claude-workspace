@@ -144,3 +144,10 @@ button.mic.rec { background: #c62828; color: #fff; border-color: #c62828; animat
 @keyframes micpulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
 /* the second tap of a send button (armed): its own colour, the label always readable (was green on green) */
 button[data-armed] { background: #b45309; border-color: #b45309; color: #fff; font-weight: 600; }
+
+/* plan card « Do » block: label column + one line per instruction */
+.card.plan .do { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; color: var(--ink); }
+.card.plan .do > div { display: flex; gap: 10px; align-items: flex-start; }
+.card.plan .do .lbl { flex: none; width: 48px; color: var(--muted); font-weight: 600; }
+.card.plan .do .lines > div > div { padding: 1px 0; }
+.card.plan .why { margin-top: 8px; }

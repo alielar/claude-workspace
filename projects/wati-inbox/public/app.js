@@ -469,6 +469,20 @@ function bindOffer(waId, d) {
 // ── Aujourd'hui: the day plan written by Claude from the Sales Hub and the conversations ──
 const KIND = { pause: ['To pause', 'bad'], resume: ['Resume automation', 'warn'], fix: ['To check', 'warn'], followup: ['Follow-up', 'good'], wait: ['Wait', ''], ok: ['Fine', 'ok'] };
 const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso), t = new Date(); return d.toDateString() === t.toDateString() ? fmtTime(iso) : `${fmtDay(iso)} ${fmtTime(iso)}`; };
+// The « Do » block of a plan card (Ali, 2026-10-03): one line per instruction, read at a glance — the Hub action,
+// then every template to untick and to keep on its own line with its time. Nothing said twice: the mechanics come
+// from skip/keep steps, Claude's `action` only adds what is not ticking (a message time, a status change).
+function planDoHtml(i) {
+  const step = (x) => `<b>${x.step ? `#${x.step} ` : ''}${esc(x.template)}</b>${x.at ? ` <span class="muted">${fmtWhen(x.at)}</span>` : ''}`;
+  const list = (lbl, steps) => steps?.length ? `<div class="lines"><span class="lbl">${lbl}</span><div>${steps.map((x) => `<div>${step(x)}</div>`).join('')}</div></div>` : '';
+  const extra = String(i.action || '').replace(/^Hub: (full pause|untick|lift the pause)[^·]*(· |$)/, '').trim(); // older cards carried the mechanics in the text
+  const rows = [];
+  if (i.kind === 'resume') { rows.push(`<div><span class="lbl">Hub</span><div>Lift the pause${i.hub_paused_now ? '' : ' <span class="ok">(the Hub shows it lifted)</span>'}</div></div>`); rows.push(list('Untick', i.skip_steps)); rows.push(list('Keep', i.keep_steps)); }
+  else if (i.kind === 'pause' && i.pause_scope === 'next') { rows.push(list('Untick', i.skip_steps)); rows.push(`<div><span class="lbl"></span><div class="muted">the rest goes out normally</div></div>`); if (i.hub_paused_now) rows.push(`<div><span class="lbl">Hub</span><div class="ok">shows this lead as paused</div></div>`); }
+  else if (i.kind === 'pause') rows.push(`<div><span class="lbl">Hub</span><div>Full pause${i.hub_next && i.hub_next_at ? `, before <b>${esc(i.hub_next)}</b> <span class="muted">${fmtWhen(i.hub_next_at)}</span>` : ''}${i.hub_paused_now ? ' <span class="ok">(the Hub shows it paused)</span>' : ''}</div></div>`);
+  if (extra) rows.push(`<div><span class="lbl">${i.kind === 'pause' || i.kind === 'resume' ? 'Then' : 'Do'}</span><div>${esc(extra)}</div></div>`);
+  return rows.filter(Boolean).length ? `<div class="do small">${rows.filter(Boolean).join('')}</div>` : '';
+}
 function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
   let [label, cls] = KIND[i.kind] || ['', ''];
   if (i.kind === 'pause') label = i.pause_scope === 'next' ? `Untick ${i.skip_templates?.length > 1 ? i.skip_templates.length + ' templates' : '1 template'}` : 'Full pause';
@@ -477,9 +491,8 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     <div class="flag-head"><span><span class="pill ${cls}">${label}</span>${i.when_at ? ` <b class="small">${fmtWhen(i.when_at)}</b>` : ''}${!open ? ` <span class="muted small">· ${{ done: 'done', dismissed: 'done differently', replied: 'lead replied', expired: 'expired', superseded: 'replaced' }[i.state] || i.state}</span>` : ''}</span>${i.hub_next && i.kind !== 'followup' ? `<span class="muted small">${esc(i.hub_next)}${i.hub_next_at ? ` ${fmtWhen(i.hub_next_at)}` : ''}</span>` : ''}</div>
     ${inThread ? '' : `<a class="flag-who" data-nav href="/t/${i.wa_id}">${esc(i.name || i.wa_id)} · +${i.wa_id}</a>`}
     <div class="flag-title">${esc(i.title)}</div>
-    ${i.why ? `<div class="small">${esc(i.why)}</div>` : ''}
-    ${i.action ? `<div class="small action">→ ${esc(i.action)}</div>` : ''}
-    ${i.kind === 'pause' && i.pause_scope === 'next' && i.skip_steps?.length ? `<div class="small">Untick: <b>${i.skip_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}${x.at ? ` · ${fmtWhen(x.at)}` : ''}`).join('</b> and <b>')}</b></div>` : ''}${i.kind === 'pause' && i.hub_paused_now ? '<div class="small ok">The Hub shows this lead as paused</div>' : ''}${i.kind === 'resume' ? `<div class="small">${i.skip_steps?.length ? `Untick: <b>${i.skip_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}`).join('</b>, <b>')}</b>` : ''}${i.keep_steps?.length ? `${i.skip_steps?.length ? ' · ' : ''}Keep: <b>${i.keep_steps.map((x) => `${x.step ? `#${x.step} ` : ''}${esc(x.template)}${x.at ? ` ${fmtWhen(x.at)}` : ''}`).join('</b>, <b>')}</b>` : ''}${!i.hub_paused_now ? '<div class="small ok">The Hub shows the pause lifted</div>' : ''}</div>` : ''}
+    ${planDoHtml(i)}
+    ${i.why ? `<div class="muted small why">${esc(i.why)}</div>` : ''}
     ${i.template ? `<div class="small">Template: <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">The draft is below, ready to send</div>' : ''}
     ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Done</button><button class="small" data-plandismiss="${i.id}">I did it differently</button><button class="small" data-plancopy="+${i.wa_id}">Copy number</button>${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Open</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Reopen</button></div>`}

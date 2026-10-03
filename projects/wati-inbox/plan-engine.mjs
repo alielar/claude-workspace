@@ -195,10 +195,9 @@ function store(c, it) {
   const pauseScope = kind === 'pause' ? (it.pauseScope === 'next' ? 'next' : 'all') : null;
   const skip = (kind === 'pause' && pauseScope === 'next') || kind === 'resume' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];
   const keep = kind === 'resume' ? (Array.isArray(it.keepTemplates) ? it.keepTemplates.map(String).filter(Boolean) : []) : [];
-  const label = (t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; };
   if (pauseScope === 'next' && !skip.length) { const n = realNext(c); skip.push(n ? n.template : c.next_tpl); }
-  const skipLabel = skip.map((t) => { const u = stepOf(c, t); return u ? `#${u.stepIndex} ${t}` : t; });
-  const actionBits = [pauseScope === 'all' ? 'Hub: full pause' : pauseScope === 'next' ? `Hub: untick ${skipLabel.join(' and ')}, the rest goes out normally` : kind === 'resume' ? `Hub: lift the pause${skip.length ? `, untick ${skip.map(label).join(', ')}` : ''}${keep.length ? `, keep ${keep.map(label).join(', ')}` : ''}` : '', String(it.action || '').trim()];
+  // The card draws the Hub mechanics itself (pause scope, untick/keep lists): `action` keeps only what Claude adds beyond them (Ali, 2026-10-03: nothing said twice).
+  const actionBits = [String(it.action || '').trim()];
   // IITF is retired (Ali, 2026-10-01): a lead who comes back later is CITF with a reason and a date.
   const hubStatus = it.hubStatus === 'IITF' ? 'CITF' : it.hubStatus;
   if (hubStatus && /^(OR|CITF)$/.test(hubStatus)) actionBits.push(`Hub status: ${hubStatus}${hubStatus === 'CITF' ? ` (${[CITF_CASES[it.citfCase] || it.citfCase, it.citfDate].filter(Boolean).join(', ')})` : ''}`);
