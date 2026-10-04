@@ -19,7 +19,7 @@ import { askAI, lastAiError } from "@/lib/news/summarize";
 import { noDash } from "@/lib/utils";
 import { sendToUser } from "@/lib/push/server";
 import { checklistToday } from "@/lib/checklist/day";
-import { fmtSec, headSkillFor, mondayOf, objectiveProgress, seedObjectives, shiftDay, weekNumbers, type CoachReport, type Objective, type ProgressData, type WeekNumbers } from "./types";
+import { fmtSec, headSkillFor, mondayOf, objectiveProgress, PROGRAM_START_DAY, seedObjectives, shiftDay, weekNumbers, type CoachReport, type Objective, type ProgressData, type WeekNumbers } from "./types";
 
 export const COACH_DDL = [
   `CREATE TABLE IF NOT EXISTS train_objectives (
@@ -74,10 +74,12 @@ export async function coachData(userId: string): Promise<CoachData> {
 
 // ─── Objectives ───────────────────────────────────────────────────────────────
 
+const KIND_ORDER: Objective["kind"][] = ["run5k", "strengthWeeks", "kbRounds", "vo2max"];
+
 export async function listObjectives(userId: string, data?: CoachData): Promise<Objective[]> {
   await ensureCoachTables();
   const rows = await db.all<ObjRow>(sql`SELECT id, kind, title, target, due, started_at, start_value, note, done, deleted, updated_at FROM train_objectives WHERE user_id = ${userId} ORDER BY created_at`);
-  if (rows.length) return rows.filter((r) => !r.deleted).map(objOf);
+  if (rows.length) return rows.filter((r) => !r.deleted).map(objOf).sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.due.localeCompare(b.due));
   // First visit: seed Ali's goals from the data of the day (targets stay editable).
   const seed = seedObjectives(data ?? (await coachData(userId)));
   for (const o of seed) await upsertObjective(userId, o);
@@ -138,22 +140,20 @@ export async function ensureCoachReport(userId: string, weekOf: string, opts: { 
   const run5k = progress.find((x) => x.o.kind === "run5k");
   const head = headSkillFor(n, { missedSessions: opts.missed ?? 0, run5kPct: run5k && run5k.p.state !== "wait" ? run5k.p.pct : null });
   const objLines = progress.map(({ o, p }) => `- ${o.title} (by ${o.due}): ${p.valueLabel} now, target ${p.targetLabel} · ${p.state === "wait" ? "no data yet" : p.state} · ${p.line}`).join("\n");
+  const beforeProgram = n.to < PROGRAM_START_DAY;
   const prompt = `You are Ali's training coach. Write his weekly training report for the week below. He is 30s, trains five days a week (Push and Pull on a Speediance machine, a sprint run, a long run, Kettlebell 30 on Saturday), wears an Apple Watch, and his goals are a 5 km under 20 minutes one day, a toned body and feeling strong. Tone: a coach who knows him, direct and warm, no cheerleading, no filler, no jargon. Plain words, short sentences. A number only when it carries the point. Never an em dash: commas and full stops only. Never invent a number that is not below.
 
 THE WEEK'S NUMBERS (fixed, from the Watch and the app):
 ${line(n, opts.missed ?? 0, opts.planned ?? 0)}
+${beforeProgram ? `THE PROGRAM (Mon Push · Tue Sprint run · Wed Pull · Fri Long run · Sat Kettlebell 30) STARTS ON MONDAY ${PROGRAM_START_DAY}: this week came BEFORE it, so nothing was missed or skipped · describe what he did, judge nothing, and point him at the first week.` : opts.planned ? "" : "No plan is given for this week: count what he did, never call anything missed or skipped."}
 
 OBJECTIVES:
 ${objLines || "- none set"}
 
 HEAD SKILL OF THE WEEK (chosen by rule, you explain it in his context): ${head.title} · "${head.cue}" · ${head.text}
 
-Write 250 to 320 words in markdown with EXACTLY these five sections, in this order, each a short paragraph:
-## The week · what he did, honestly, against the plan
-## Recovery · what sleep and the night numbers say about how the body took it
-## Objectives · where the goals stand, one sentence each, the 5 km first
-## Head · the skill above, tied to something that happened this week
-## Next week · ONE firm instruction, the single most useful change, then one line on what to keep
+Write 220 to 300 words in markdown with EXACTLY five sections, in this order, each ONE short paragraph. The headings are exactly these five words or phrases and nothing more: "## The week", "## Recovery", "## Objectives", "## Head", "## Next week".
+The week = what he did, honestly, against the plan when there is one. Recovery = what sleep and the night numbers say about how the body took it. Objectives = where the goals stand, one sentence each, the 5 km first; say "no data yet" where it says so, never scold for it. Head = the skill above, tied to something that happened this week. Next week = ONE firm instruction, the single most useful change, then one line on what to keep. Never claim a trend across weeks you were not given numbers for.
 
 Answer with JSON only: {"headline": "one line of at most 12 words that sums the week, for a notification", "text": "the markdown"}`;
   const raw = await askAI(prompt, 1800);
