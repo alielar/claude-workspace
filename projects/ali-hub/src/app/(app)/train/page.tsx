@@ -6,10 +6,15 @@
  * BODY = three subsections (Ali 2026-09-29), a chip row, remembered in `cc-train-body`:
  *   Runs       · every Watch run (km · time · pace), this week's totals, 8 weeks of km as bars,
  *                walks and rides under "Other activity"; a row opens /train/run/<id>
- *   Strength   · Speediance sessions and any Watch strength workout (a Saturday one with a
- *                Kettlebell 30 session that day is labelled so)
+ *   Strength   · the two Speediance programs (Push · Pull, src/lib/train/programs.ts) as cards with
+ *                their moves and sets, matched to Watch strength workouts by weekday, then every
+ *                Watch strength workout (a kettlebell day's is labelled Kettlebell 30)
  *   Kettlebell · everything about Kettlebell 30: week dots, rest day, the hero with Start,
  *                weekly bests (rounds), recent sessions
+ * Above the three parts since 2026-10-04: THIS WEEK (src/lib/train/insights.ts, fixed rules · the
+ * five planned sessions Push · Run · Pull · Run · Kettlebell from the Routine rows' weekdays, readiness
+ * from last night, up to four insight lines) and, at the bottom, LAST WEEK (the report, folded).
+ * `?body=runs|strength|kettlebell` opens a part (Today's Run / Program buttons).
  * The sub line under the title sums the week across the three.
  * MIND: Mental Training · src/components/mind/MindPane.tsx.
  * Everything renders from the phone's copy first; works offline (Mind needs a connection to grade).
@@ -17,7 +22,7 @@
 
 import Link from "next/link";
 import { useOverview, useWorkouts, readActiveSession } from "@/lib/train/useTrain";
-import { fmtClock, repsLabel, workStats, weeklyPaces, paceToBeat, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
+import { fmtClock, repsLabel, workStats, weeklyPaces, paceToBeat, SESSIONS_PER_WEEK, DAY_CODES, DAY_LABELS, dayCode, fmtScheduleDate, PRIMARY_KEY, type DayCode, type TrainSession, type TrainWorkout, type WorkoutKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { useClientValue, useNow } from "@/lib/useClientValue";
 import { useEffect, useState } from "react";
@@ -26,6 +31,12 @@ import { MindPane } from "@/components/mind/MindPane";
 import { fmtDay, fmtDur, fmtKm, fmtPace, isoWeekOf, kindLabel, paceOf, pipeNote, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
 import { Bars } from "@/components/health/charts";
 import { CountUp, Reveal, useDrawn } from "@/components/health/checkup";
+import { useCached, fetchJson } from "@/lib/local/store";
+import type { ChecklistData } from "@/lib/checklist/types";
+import { PROGRAMS } from "@/lib/train/programs";
+import { DEFAULT_PLAN_DAYS, readiness, trainInsights, weekPlan, weekReport, type PlanDays } from "@/lib/train/insights";
+import { WeekCard, ReportCard } from "@/components/train/WeekCards";
+import { ProgramCard } from "@/components/train/Programs";
 
 /** YYYY-MM-DD shifted by n days. */
 function shiftDay(date: string, n: number): string { const d = new Date(date + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
@@ -120,7 +131,8 @@ export default function TrainPage() {
     try {
       if (new URLSearchParams(window.location.search).get("mind") === "1") h = "mind";
       else if (localStorage.getItem("cc-train-half") === "mind") h = "mind";
-      const saved = localStorage.getItem("cc-train-body");
+      const want = new URLSearchParams(window.location.search).get("body");
+      const saved = want ?? localStorage.getItem("cc-train-body");
       if (saved === "runs" || saved === "strength" || saved === "kettlebell") p = saved;
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the URL and localStorage after mount
@@ -162,10 +174,33 @@ export default function TrainPage() {
   const lastKm = Math.round(runs.filter((r) => isoWeekOf(r.date) === lastWeek).reduce((s, r) => s + (r.distanceKm ?? 0), 0) * 10) / 10;
   const best8 = Math.max(0, ...runWeeks.km);
   const lastStrengthWk = strength.filter((w) => isoWeekOf(w.date) === lastWeek).length;
-  const strengthMinWk = strength.filter((w) => isoWeekOf(w.date) === thisWeek).reduce((s, w) => s + (w.durationSec ?? 0), 0) / 60;
   const drawn = useDrawn();
-  const bodySub = ov
-    ? `This week · ${wk.runs} run${wk.runs === 1 ? "" : "s"}${wk.runs ? ` ${wk.km} km` : ""} · ${strengthWk} strength · ${ov.thisWeekSessions} of ${target} kettlebell`
+
+  // The week's plan = the Routine rows' weekdays (Push · Pull · Run · Kettlebell), the editor's own cached copy.
+  const { data: routine } = useCached<ChecklistData>("checklist-all", () => fetchJson<ChecklistData>("/api/checklist?all=1"));
+  const daysOf = (key: string): DayCode[] | null => { const r = routine?.items.find((i) => i.routineKey === key); return r ? ((r.weekdays ?? []) as DayCode[]) : null; };
+  const days: PlanDays = routine
+    ? { push: daysOf("gym-push") ?? [], pull: daysOf("gym-pull") ?? [], run: daysOf("run") ?? [], kb: daysOf("gym-kb") ?? [] }
+    : DEFAULT_PLAN_DAYS;
+  const kbSessions = ov?.sessions ?? [];
+  const slots = weekPlan({ today, days, workouts: watch, kb: kbSessions });
+  const ready = readiness(health, today);
+  const kbBest = ov?.weeklyBests.length ? Math.max(...ov.weeklyBests.map((b) => b.best)) : null;
+  const insights = trainInsights({ today, slots, ready, runs, strength, kb: kbSessions, kbBest });
+  const report = weekReport({ today, days, workouts: watch, kb: kbSessions, nights: health?.nights ?? [], metrics: health?.metrics });
+  const plannedN = slots.filter((x) => x.state !== "extra").length;
+  const doneN = slots.filter((x) => x.state === "done" || x.state === "extra").length;
+  // A Watch strength workout belongs to the program planned that weekday; a kettlebell day's is the bell.
+  const programOf = (w: WorkoutRow): "push" | "pull" | "kb" | null => {
+    const d = dayCode(w.date);
+    if (kbDays.has(w.date) || days.kb.includes(d)) return "kb";
+    if (days.push.includes(d)) return "push";
+    if (days.pull.includes(d)) return "pull";
+    return null;
+  };
+  const todayCode = dayCode(today);
+  const bodySub = ov || health
+    ? `This week · ${doneN} of ${plannedN} sessions · ${wk.runs} run${wk.runs === 1 ? "" : "s"}${wk.runs ? ` ${wk.km} km` : ""} · ${strengthWk} strength · ${ov?.thisWeekSessions ?? 0} of ${target} kettlebell`
     : "This week · —";
 
   return (
@@ -190,6 +225,7 @@ export default function TrainPage() {
       {half === "mind" && <Reveal key="mind" i={0}><MindPane /></Reveal>}
 
       {half === "body" && <>
+      <Reveal key="week" i={0}><WeekCard slots={slots} ready={ready} insights={insights} sub={plannedN ? `Plan · ${slots.filter((x) => x.state !== "extra").map((x) => `${x.label} ${DAY_LABELS[x.day]}`).join(" · ")}` : "Set the days on Today → Edit."} /></Reveal>
       {/* The three parts of Body */}
       <div role="tablist" aria-label="Body" style={{ display: "flex", gap: 8 }}>
         {PARTS.map((p) => (
@@ -228,28 +264,14 @@ export default function TrainPage() {
       </div></Reveal>}
 
       {part === "strength" && <Reveal key="strength" i={0}><div style={{ display: "grid", gap: 18 }}>
-        {strength.length > 0 && (
-          <section className="cc-card">
-            <div className="cc-card-head"><span className="title">This week</span><span className="tail">{strengthWk >= 3 ? "three sessions · the week is done" : lastStrengthWk ? `last week ${lastStrengthWk}` : ""}</span></div>
-            <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 16, alignItems: "center" }}>
-                <div style={{ display: "grid", gap: 2 }}>
-                  <span className="tabular-nums" style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1 }}><CountUp value={strengthWk} fmt={(v) => String(Math.round(v))} /><span style={{ fontSize: 15, fontWeight: 400, color: "var(--ink-3)" }}> of 3</span></span>
-                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>sessions</span>
-                </div>
-                <div style={{ display: "grid", gap: 6 }}>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    {[0, 1, 2].map((i) => <span key={i} style={{ flex: 1, height: 6, borderRadius: 99, background: drawn && i < strengthWk ? "var(--violet)" : "var(--fill-3)", transition: `background 360ms var(--easeOut) ${200 + i * 120}ms` }} />)}
-                  </div>
-                  <span className="tabular-nums" style={{ fontSize: 13, color: "var(--ink-3)" }}>{strengthMinWk ? `${Math.round(strengthMinWk)} min under load` : "Sunday push · Tuesday pull · Thursday legs"}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-        <WatchCard title="Strength" tail={strength.length ? "Speediance and the Watch" : undefined} rows={strength} today={today}
-          noteFor={(w) => (kbDays.has(w.date) ? "Kettlebell 30" : undefined)}
-          empty={watchNote ?? "No strength sessions from the Watch yet. Log a Speediance session as Traditional Strength Training on the Watch."} warn={!!watchNote} />
+        {/* The two Speediance programs · today's open, the other folded */}
+        {PROGRAMS.map((p) => (
+          <ProgramCard key={p.key} p={p} days={days[p.key]} today={today} isToday={days[p.key].includes(todayCode)}
+            sessions={strength.filter((w) => programOf(w) === p.key)} />
+        ))}
+        <WatchCard title="On the Watch" tail={strength.length ? `${strengthWk} this week${lastStrengthWk ? ` · last week ${lastStrengthWk}` : ""}` : undefined} rows={strength} today={today}
+          noteFor={(w) => { const k = programOf(w); return k === "kb" ? "Kettlebell 30" : k === "push" ? "Push · Speediance" : k === "pull" ? "Pull · Speediance" : undefined; }}
+          empty={watchNote ?? "No strength sessions from the Watch yet. Start Traditional Strength Training on the Watch when the machine starts; it lands here after."} warn={!!watchNote} />
       </div></Reveal>}
 
       {part === "kettlebell" && <Reveal key="kettlebell" i={0}><div style={{ display: "grid", gap: 18 }}>
@@ -364,6 +386,7 @@ export default function TrainPage() {
         </div>
       </section>
       </div></Reveal>}
+      <ReportCard report={report} />
       </>}
 
     </div>

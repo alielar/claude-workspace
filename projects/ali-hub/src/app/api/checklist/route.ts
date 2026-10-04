@@ -13,7 +13,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { checklistItems, checklistCompletions, kbSessions } from "@/db/schema";
+import { checklistItems, checklistCompletions, kbSessions, healthWorkouts } from "@/db/schema";
 import { eq, and, gte, desc } from "drizzle-orm";
 import { format, subDays } from "date-fns";
 import { checklistToday } from "@/lib/checklist/day";
@@ -21,6 +21,7 @@ import { ROUTINE_SEED, type ItemKind, type RoutineKey, type TimeOfDay } from "@/
 import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK, hasSchedule, scheduledFor, nextScheduled, fmtScheduleDate, dayCode } from "@/lib/train/types";
 import { loadOrSeedWorkouts } from "@/lib/train/workoutRows";
 import { rowToSession } from "@/lib/train/rows";
+import { workoutKind } from "@/lib/health/client";
 
 function calcStreak(dates: string[], today: string): number {
   if (dates.length === 0) return 0;
@@ -186,7 +187,7 @@ export async function GET(req?: Request) {
   try { await ensureColumns(); } catch { /* best-effort */ }
   try { await seedRoutine(userId); } catch { /* migration pending */ }
 
-  const [items, allCompletions, trainRows, workouts] = await Promise.all([
+  const [items, allCompletions, trainRows, workouts, todayWatch] = await Promise.all([
     db
       .select()
       .from(checklistItems)
@@ -204,7 +205,12 @@ export async function GET(req?: Request) {
       .limit(20)
       .catch(() => [] as (typeof kbSessions.$inferSelect)[]), // table may not exist before migration
     loadOrSeedWorkouts(userId).catch(() => []),
+    // Today's Watch workouts (Health Auto Export) · a run ticks the Run row, a strength workout the
+    // Push/Pull row (Ali 2026-10-04) · the table may not exist before the first post.
+    db.select({ type: healthWorkouts.type }).from(healthWorkouts).where(and(eq(healthWorkouts.userId, userId), eq(healthWorkouts.date, today)))
+      .catch(() => [] as { type: string }[]),
   ]);
+  const watchKinds = new Set(todayWatch.map((w) => workoutKind(w.type)));
 
   const last7Dates = getLastNDates(today, 7);
 
@@ -273,8 +279,12 @@ export async function GET(req?: Request) {
       timeOfDay: (item.timeOfDay ?? "anytime") as TimeOfDay,
       kind: (item.kind === "routine" ? "routine" : "manual") as ItemKind,
       routineKey: (item.routineKey as RoutineKey | null) ?? null,
-      // The kettlebell Saturday ticks itself once a KB session is finished today (2026-09-14 evening).
-      completedToday: itemDates.includes(today) || (item.routineKey === "gym-kb" && todayTrain !== null),
+      // Training rows tick themselves: the kettlebell day once a KB session is finished today
+      // (2026-09-14), Push/Pull once the Watch posts a strength workout today, Run once it posts a run (2026-10-04).
+      completedToday: itemDates.includes(today)
+        || (item.routineKey === "gym-kb" && (todayTrain !== null || watchKinds.has("strength")))
+        || ((item.routineKey === "gym-push" || item.routineKey === "gym-pull") && watchKinds.has("strength"))
+        || (item.routineKey === "run" && watchKinds.has("run")),
       streak: calcStreak(itemDates, today),
       last7: last7Dates.map((d) => itemDates.includes(d)),
       source: "manual" as const,
@@ -296,7 +306,7 @@ export async function GET(req?: Request) {
   const total = counted.size;
   const { avg: thirtyDayAvg, bestStreak: bestStreak30 } = getThirtyDayStats(byDate, total, today);
 
-  // Training days are checklist rows now (gym-push/pull/legs + gym-kb on Saturday, 2026-09-14 evening).
+  // Training days are checklist rows now (gym-push/pull + run + gym-kb on Saturday).
   // The virtual Train row only appears when a KB session was actually done on a day with no gym row ·
   // no more "Rest day · Train anyway" filler on ordinary days.
   const machineToday = enriched.some((i) => i.routineKey?.startsWith("gym-") ?? false);

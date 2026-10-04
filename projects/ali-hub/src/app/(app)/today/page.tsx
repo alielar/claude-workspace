@@ -27,7 +27,7 @@
  * them every day · this is a personal to-do app"). The calendar API routes still exist but
  * nothing on Today reads them; Settings has no Calendars card any more.
  *
- * Machine days (gym-push/pull/legs) and the kettlebell Saturday (gym-kb) are checklist rows
+ * Training days (gym-push/pull, run, and the kettlebell Saturday gym-kb) are checklist rows
  * with a Train/Start button · shown, never counted (the server's streak uses the same rule).
  *
  * THREE KINDS OF DAY (Ali 2026-09-24, `dayKindOf` in lib/morning/plan.ts):
@@ -161,6 +161,8 @@ function routineAction(item: ChecklistItem): { label: string; href: string } | n
   if (item.routineKey === "breathe") return { label: "Start", href: "/breathe" };
   if (item.routineKey === "read") return { label: "Books", href: "/books" };
   if (item.routineKey === "gym-kb") return { label: "Train", href: "/train/kb1" };
+  if (item.routineKey === "gym-push" || item.routineKey === "gym-pull") return { label: "Program", href: "/train?body=strength" };
+  if (item.routineKey === "run") return { label: "Runs", href: "/train?body=runs" };
   if (item.routineKey === "mind") return { label: "Start", href: "/train?mind=1" };
   return null;
 }
@@ -173,7 +175,8 @@ function displayNotes(item: ChecklistItem, currentBook: string | null): string |
   return item.notes;
 }
 
-const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-");
+/** A training row (machine day, run day, kettlebell day) · the training wake time applies, and it is never chased as late. */
+const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-") || i.routineKey === "run";
 
 /** The day's rows as Today shows them: yesterday's ticks cleared on a stale copy, Saturday hours shifted, Sunday hours dropped. */
 function dayItems(base: ChecklistItem[], clearTicks: boolean, kind: DayKind, shiftMin: number): ChecklistItem[] {
