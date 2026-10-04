@@ -54,15 +54,15 @@ const sessionOf = (r: SessionRow): MindSession => ({
   scores: J<MindScores>(r.scores, { accuracy: 0, structure: 0, clarity: 0 }), notes: J<string[]>(r.notes, []), recalled: J<string[]>(r.recalled, []), missed: J<string[]>(r.missed, []), createdAt: r.created_at,
 });
 
-// ── Anthropic ─────────────────────────────────────────────────────────────────
+// ── The writer ──────────────────────────────────────────────────────────────
+// Since 2026-10-04 the brief and the grader go through the shared writer (Gemini first, Haiku second ·
+// summarize.ts askAI): the Anthropic credits ran out that night and Ali chose Gemini as the home writer.
+// MIND_MODEL names the Haiku fallback the rubric was calibrated on.
 
 async function ask(prompt: string, maxTokens: number): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
   try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic();
-    const m = await client.messages.create({ model: MIND_MODEL, max_tokens: maxTokens, messages: [{ role: "user", content: prompt }] });
-    return (m.content[0] as { type: string; text: string }).text?.trim() ?? null;
+    const { askAI } = await import("@/lib/news/summarize");
+    return (await askAI(prompt, maxTokens))?.trim() ?? null;
   } catch { return null; }
 }
 
