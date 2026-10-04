@@ -1,7 +1,9 @@
 /**
- * GET /api/podcast/cron · daily podcast generation.
- * Called by Vercel Cron at 04:40 UTC (06:40 Madrid summer / 05:40 winter) so the
- * episode is ready before breakfast. Idempotent; the reminders tick retries failures.
+ * GET /api/podcast/cron · the WEEKLY brief + podcast (daily episodes retired 2026-10-04 · Ali:
+ * "just the weekly deep dive, the weekly brief and the weekly podcast").
+ * Called by Vercel Cron at 04:40 UTC every day: builds last week's brief once its dailies are in,
+ * voices the episode on Monday (or any later day it is still missing). Idempotent; the reminders
+ * tick retries the audio in the morning window. `?daily=1` still makes a daily episode by hand.
  * Auth: Vercel cron's Bearer CRON_SECRET, or ?key= for manual runs.
  */
 
@@ -73,7 +75,8 @@ export async function GET(req: NextRequest) {
   await ensureTable();
   const allUsers = await db.select().from(users);
   const results: Record<string, string> = {};
-  for (const u of allUsers) {
+  // Daily episodes only on request (`?daily=1`) since 2026-10-04.
+  for (const u of req.nextUrl.searchParams.get("daily") === "1" ? allUsers : []) {
     try {
       const ep = await ensureTodaysPodcast(u.id, force || rebuild, rebuild);
       results[u.id] = `${ep.status}${ep.audioUrl ? " · audio ok" : ""} · attempts ${ep.attempts}${ep.lastError ? ` · ${ep.lastError}` : ""}${ep.script ? ` · script ${ep.script.length} chars` : " · no script"}${ep.dateFlags ? ` · date flags [${ep.dateFlags.join(", ")}]` : ""} · ${ep.chapters.length} chapters [${ep.chapters.map((c) => `${c.title}@${c.startSec}s`).join(", ")}] · ${ep.durationSec ?? "?"}s total`;

@@ -10,7 +10,6 @@ import { newsBriefs, userSettings } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { generateNewsBrief, type NewsBrief } from "@/lib/news-brief";
 import { todayInTz } from "@/lib/utils";
-import { enhanceStoriesWithAI, generateDeepDives } from "@/lib/news/summarize";
 import { ensureSettingsColumns } from "@/lib/db/ensureColumns";
 
 export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
@@ -31,12 +30,11 @@ export async function ensureTodaysBrief(userId: string): Promise<NewsBrief> {
 
   if (existing) return JSON.parse(existing.content) as NewsBrief;
 
-  // Generate the articles, enhance with AI summaries + deep dives, and save (videos left the brief
-  // on 2026-10-03 · the News page reads them from yt_videos, see news/videos.ts).
+  // The RSS stories only (videos left the brief on 2026-10-03 · the News page reads them from
+  // yt_videos). NO AI since 2026-10-04 (Ali: "I will rely on the YouTube channels and the weekly
+  // stuff"): the daily summaries and deep dives are gone, the WEEKLY brief writes from these rows
+  // (enhanceStoriesWithAI / generateDeepDives in summarize.ts stay for a manual run).
   const brief = await generateNewsBrief(today);
-  // Summaries and the deeper analysis run side by side (both read the RSS text), in small
-  // concurrent batches · same number of tokens as before, a fraction of the wall time.
-  await Promise.all([enhanceStoriesWithAI(brief.stories), generateDeepDives(brief.stories)]);
 
   await db.insert(newsBriefs).values({
     userId,

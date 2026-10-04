@@ -21,6 +21,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
+import { previousWeekKey } from "@/lib/train/types";
 import { checklistToday } from "@/lib/checklist/day";
 
 type Chapter = { title: string; startSec: number };
@@ -65,10 +66,10 @@ export default function PodcastPage() {
 
 function PodcastPlayer() {
   const router = useRouter();
-  // ?date=YYYY-MM-DD opens one of the last briefs (Ali 2026-09-14) · default = today's.
+  // ?date=2026-W40 = a WEEKLY episode (2026-10-03) · ?date=YYYY-MM-DD = an old daily one (retired
+  // 2026-10-04) · default = last week's episode, the only one still made.
   const q = useSearchParams().get("date");
-  // ?date=YYYY-MM-DD = one of the last daily briefs · ?date=2026-W40 = a WEEKLY episode (2026-10-03).
-  const today = q && /^\d{4}-(\d{2}-\d{2}|W\d{2})$/.test(q) ? q : checklistToday();
+  const today = q && /^\d{4}-(\d{2}-\d{2}|W\d{2})$/.test(q) ? q : previousWeekKey(checklistToday());
   const isWeekly = /-W\d{2}$/.test(today);
   const isToday = today === checklistToday();
   const { data, setData } = useCached<{ episode: Episode | null }>(isToday ? "podcast-today" : `podcast-${today}`, () => fetchJson(isToday ? "/api/podcast/today" : `/api/podcast/today?date=${today}`));
@@ -189,7 +190,7 @@ function PodcastPlayer() {
   const retry = async () => {
     setRetrying(true);
     try {
-      const r = await fetch("/api/podcast/retry", { method: "POST" }).then((x) => x.json());
+      const r = await fetch("/api/podcast/retry", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ date: today }) }).then((x) => x.json());
       if (r?.episode) setData({ episode: r.episode });
     } catch { /* the tick keeps retrying anyway */ }
     setRetrying(false);

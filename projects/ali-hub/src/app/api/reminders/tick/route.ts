@@ -1,5 +1,5 @@
 import { NextResponse, after, type NextRequest } from "next/server";
-import { ensureTodaysPodcast, ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
+import { ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
 import { getWeeklyBrief, previousWeek } from "@/lib/news/weekly";
 import { pollVideos } from "@/lib/news/videos";
 import { pollHighlights } from "@/lib/news/highlights";
@@ -51,16 +51,11 @@ export async function GET(req: NextRequest) {
   // Heartbeat · Settings shows "service last ran Xm ago", so a dead pinger is visible.
   await db.update(userSettings).set({ lastReminderTickAt: now }).where(eq(userSettings.userId, userId)).catch(() => {});
 
-  // Podcast self-healing: if this morning's episode isn't ready yet (Vercel cron
-  // missed, or the free voice failed), retry in the background — spacing and the
-  // attempt cap live inside ensureTodaysPodcast. Never a silent morning.
+  // Podcast self-healing (weekly only since 2026-10-04 · the daily episode is retired): the Monday
+  // cron writes the episode; a failed script or voicing is retried here in the morning window ·
+  // spacing and the attempt cap live inside ensureWeeklyPodcast.
   if (hm >= "06:30" && hm <= "10:30") {
     after(async () => {
-      try {
-        const ep = await todaysEpisode(userId);
-        if (!ep || (ep.status !== "ready")) await ensureTodaysPodcast(userId);
-      } catch { /* next tick retries */ }
-      // The weekly episode (2026-10-03): the Monday cron writes it; a failed voicing is retried here.
       try {
         const prev = previousWeek(checklistToday(now));
         const brief = await getWeeklyBrief(userId, prev.week);

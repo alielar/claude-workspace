@@ -12,12 +12,12 @@
  *                   story expandable to its in-depth analysis (what happened, why it matters,
  *                   context, implications, what's next). Read it, or listen: the weekly podcast
  *                   (the main podcast now) plays in /podcast?date=<week>.
- *   DAILY PODCAST · still made every morning (it is free) · one low-key row, 30-day archive folded.
+ *   (The DAILY PODCAST row went on 2026-10-04 · daily episodes are no longer made.)
  *   HIGHLIGHTS    · football, spoiler-free, in three sections: European clubs · Moroccan clubs ·
  *                   International teams. Matchup + context only, never a score or a thumbnail.
  *
- * The daily written news (story lists by interest) is gone from the page: the daily brief is
- * still generated at 06:00 because the daily podcast and the weekly brief are built from it.
+ * The daily written news (story lists by interest) is gone from the page: the daily brief (RSS
+ * only, no AI since 2026-10-04) is still generated at 06:00 because the weekly brief is built from it.
  * Everything paints from the phone's saved copy first.
  */
 
@@ -48,7 +48,6 @@ const prettyRange = (from: string, to: string) => {
   const fmt = (d: Date, m: boolean) => new Intl.DateTimeFormat("en-GB", { day: "numeric", ...(m ? { month: "long" } : {}), timeZone: "UTC" }).format(d);
   return `${fmt(f, f.getUTCMonth() !== t.getUTCMonth())} to ${fmt(t, true)}`;
 };
-const fmtSec = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, Math.floor(s % 60))).padStart(2, "0")}`;
 
 // ─── Video cards ──────────────────────────────────────────────────────────────
 
@@ -200,44 +199,6 @@ function HighlightsSection({ label, items, onWatch }: { label: string; items: Hi
 type Chapter = { title: string; startSec: number };
 type Episode = { date: string; status: "pending" | "ready" | "failed"; script: string | null; audioUrl: string | null; attempts: number; chapters: Chapter[]; durationSec: number | null };
 
-/** The daily podcast, low key (2026-10-03): one row, the 30-day archive behind it. */
-function DailyPodcastRow({ today }: { today: string }) {
-  const { data } = useCached<{ episode: Episode | null; recent?: Episode[] }>("podcast-today", () => fetchJson("/api/podcast/today"));
-  const [open, setOpen] = useState(false);
-  const ep = data?.episode && data.episode.date === today ? data.episode : null;
-  const previous = (data?.recent ?? []).filter((e) => e.date !== today && e.status === "ready" && e.audioUrl);
-  if (!data) return null;
-  const dayLabel = (ymd: string) => new Date(ymd + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  return (
-    <section className="cc-card">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}>
-        <Link href="/podcast" style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, alignItems: "center", minHeight: 54, padding: "8px 14px", textDecoration: "none", color: "inherit" }}>
-          <span aria-hidden style={{ width: 36, height: 36, borderRadius: 99, background: "var(--fill-2)", color: "var(--ink-2)", display: "grid", placeItems: "center", fontSize: 14, paddingLeft: 2 }}>▶</span>
-          <span style={{ minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 15.5, fontWeight: 500 }}>Daily podcast</span>
-            <span style={{ display: "block", fontSize: 13.5, color: "var(--ink-3)" }}>{ep ? (ep.status === "ready" && ep.durationSec ? `today · ${fmtSec(ep.durationSec)}` : ep.script ? "today · voice is down, read it" : "today's is on its way") : "today's is on its way"}</span>
-          </span>
-        </Link>
-        {previous.length > 0 && (
-          <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="cc-btn cc-btn-ghost" style={{ minHeight: 40, padding: "0 12px", fontSize: 13.5, marginRight: 8, borderRadius: 10 }}>
-            {open ? "Hide" : `Archive · ${previous.length}`}
-          </button>
-        )}
-      </div>
-      {open && previous.length > 0 && (
-        <div style={{ borderTop: "1px solid var(--line)", padding: "4px 14px 8px", display: "grid" }}>
-          {previous.map((e) => (
-            <Link key={e.date} href={`/podcast?date=${e.date}`} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", minHeight: 42, textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)" }}>
-              <span style={{ fontSize: 14.5, color: "var(--ink-2)" }}>{dayLabel(e.date)}</span>
-              <span style={{ fontSize: 13.5, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>{e.durationSec ? fmtSec(e.durationSec) : "brief"} ›</span>
-            </Link>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 type WeeklyFeed = { brief: WeeklyBrief | null; episode: Episode | null; weeks: { week: string; from: string; to: string; label: string }[] };
@@ -335,9 +296,6 @@ export default function NewsPage() {
           </div>
         )}
       </div>
-
-      {/* 4 · Daily podcast · low key */}
-      <DailyPodcastRow today={today} />
 
       {/* 5 · Football highlights · three sections */}
       <div style={{ display: "grid", gap: 10 }}>
