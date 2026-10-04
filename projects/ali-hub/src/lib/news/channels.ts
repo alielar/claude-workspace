@@ -15,6 +15,7 @@
  *   @WillTennyson     → Will Tennyson (UCB2wtYpfbCpYDc5TeTwuqFA, 5.4M)
  *   Tibi Jones        → Tibi Jones (UCSDx1E2Z9eDv0pEgW4_yubA, 622K)
  *   Species | Documenting AGI → @AISpecies (UCEENWVBdvDy-QWfuQoXC9HQ) · added 2026-10-04, sits with AI In Context
+ *   Y Combinator      → @ycombinator (UCcefcZRL2oaA_uBNeo5UOWg) · added 2026-10-05, right after Species
  *   The AI Daily Brief → UCKelCK4ZaO6HeEI1KQjqzWA · TLDR News Global → UC-uhvujip5deVcEtLxnW8qg
  *   + two Claude Code channels, picked from the five researched 2026-09-12: IndyDevDan (the most
  *     consistent on HOW to work with coding agents · principles, not tool tours) and AI LABS
@@ -52,11 +53,12 @@ export const WATCH_LATER: Channel[] = [
   { id: "UCRCCAnVyzDTcqNYh0pDcq7Q", name: "Finary",              handle: "@Finary",          shelf: "later", priority: 4,  hint: "money, in French" },
   { id: "UCwicfou4Ewu-koikmga-bEg", name: "AI In Context",       handle: "@AI_In_Context",   shelf: "later", priority: 5,  hint: "AI, the bigger picture" },
   { id: "UCEENWVBdvDy-QWfuQoXC9HQ", name: "Species",             handle: "@AISpecies",       shelf: "later", priority: 6,  hint: "documenting AGI" },
-  { id: "UCUMZ7gohGI9HcU9VNsr2FJQ", name: "Bloomberg Originals", handle: "@business",        shelf: "later", priority: 7,  hint: "AI, politics and business videos only", filter: BLOOMBERG_FILTER },
-  { id: "UC_x36zCEGilGpB1m-V4gmjg", name: "IndyDevDan",          handle: "@indydevdan",      shelf: "later", priority: 8,  hint: "Claude Code · how to work with coding agents" },
-  { id: "UCelfWQr9sXVMTvBzviPGlFw", name: "AI LABS",             handle: "@AILABS",          shelf: "later", priority: 9,  hint: "Claude Code and skills, week by week" },
-  { id: "UCB2wtYpfbCpYDc5TeTwuqFA", name: "Will Tennyson",       handle: "@WillTennyson",    shelf: "later", priority: 10, hint: "fitness, for fun" },
-  { id: "UCSDx1E2Z9eDv0pEgW4_yubA", name: "Tibi Jones",          handle: "@tibijones",       shelf: "later", priority: 11, hint: "entertainment" },
+  { id: "UCcefcZRL2oaA_uBNeo5UOWg", name: "Y Combinator",        handle: "@ycombinator",     shelf: "later", priority: 7,  hint: "startups, founders, what is being built" },
+  { id: "UCUMZ7gohGI9HcU9VNsr2FJQ", name: "Bloomberg Originals", handle: "@business",        shelf: "later", priority: 8,  hint: "AI, politics and business videos only", filter: BLOOMBERG_FILTER },
+  { id: "UC_x36zCEGilGpB1m-V4gmjg", name: "IndyDevDan",          handle: "@indydevdan",      shelf: "later", priority: 9,  hint: "Claude Code · how to work with coding agents" },
+  { id: "UCelfWQr9sXVMTvBzviPGlFw", name: "AI LABS",             handle: "@AILABS",          shelf: "later", priority: 10, hint: "Claude Code and skills, week by week" },
+  { id: "UCB2wtYpfbCpYDc5TeTwuqFA", name: "Will Tennyson",       handle: "@WillTennyson",    shelf: "later", priority: 11, hint: "fitness, for fun" },
+  { id: "UCSDx1E2Z9eDv0pEgW4_yubA", name: "Tibi Jones",          handle: "@tibijones",       shelf: "later", priority: 12, hint: "entertainment" },
 ];
 
 export const ALL_CHANNELS: Channel[] = [...DAILY_PICKS, ...WATCH_LATER];
