@@ -510,7 +510,8 @@ function planDoHtml(i) {
 }
 // « HH:MM » in Madrid for a time input, from an ISO instant; the default slot for a new follow-up.
 const hmOf = (iso) => fmtTime(iso);
-const defaultSlot = () => { const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' })); if (now.getHours() < 14) return '14:00'; const m = now.getMinutes() < 30 ? 30 : 60; now.setMinutes(m, 0, 0); now.setMinutes(now.getMinutes() + 30); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
+const jit = () => String(2 + Math.floor(Math.random() * 7)).padStart(2, '0'); // never a round minute (Ali, 2026-10-04)
+const defaultSlot = () => { const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' })); if (now.getHours() < 14) return `14:${jit()}`; const m = now.getMinutes() < 30 ? 30 : 60; now.setMinutes(m, 0, 0); now.setMinutes(now.getMinutes() + 30); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes() + Number(jit())).padStart(2, '0')}`; };
 function followupsHtml(d) {
   const fus = d.followups || [];
   const pend = fus.filter((f) => f.state === 'pending'), gone = fus.filter((f) => f.state !== 'pending');

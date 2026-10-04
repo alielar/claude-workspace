@@ -194,6 +194,8 @@ function store(c, it, { supersede = true } = {}) {
   if (kind === 'pause' && c.paused) kind = bubbles.length ? 'followup' : 'wait'; // already paused: nothing to pause, a human gesture or a date
   let whenIso = madridIso(it.when) || (kind === 'pause' && c.next_at ? c.next_at : null);
   if (kind === 'wait' && whenIso && Date.parse(whenIso) <= Date.now() + 5 * 60e3) whenIso = null; // a time already past would re-judge every 5 min
+  // A follow-up never goes on a round minute (Ali, 2026-10-04: « 14:00 pile » feels automated): 14:00 → 14:02-14:08.
+  if (kind === 'followup' && whenIso && new Date(whenIso).getUTCMinutes() % 5 === 0) whenIso = new Date(Date.parse(whenIso) + (2 + Math.floor(Math.random() * 7)) * 60e3).toISOString();
   // Which Hub mechanism: pause the whole automation, or skip only the named template(s) (Ali, 2026-10-01).
   const pauseScope = kind === 'pause' ? (it.pauseScope === 'next' ? 'next' : 'all') : null;
   const skip = (kind === 'pause' && pauseScope === 'next') || kind === 'resume' ? (Array.isArray(it.skipTemplates) ? it.skipTemplates.map(String).filter(Boolean) : []) : [];

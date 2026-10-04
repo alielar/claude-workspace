@@ -81,6 +81,9 @@ Ne reproduis pas ces jugements, ni des cas proches :
 ## Les leads
 {{leads}}
 
+## Heures des relances (Ali, 2026-10-04)
+Une relance manuelle ne tombe jamais pile : propose 14:04, 17:33, 20:07, jamais 14:00 ou 17:30 (l'app décale de toute façon une heure ronde de 2 à 8 minutes).
+
 ## Sobriété
 Ali lit ça sur son téléphone entre deux appels. `title` ≤ 60 caractères, le geste et rien d'autre, en anglais (ex. « Untick #4, place extended yesterday » / « 14:00 follow-up, admin extension »). `why` ≤ 160 caractères : ce que le lead a dit, en une phrase. `action` ≤ 160 caractères : **ce que la carte ne montre pas déjà**. La carte affiche elle-même le mécanisme (pause complète, les templates à décocher, ceux à garder, avec leurs heures) à partir de `pauseScope`, `skipTemplates`, `keepTemplates` : `action` ne les répète jamais. Pour pause/resume, `action` = le geste en plus (l'heure d'un message manuel, un statut à changer, « si elle répond, … »), sinon chaîne vide. `why` = une phrase, le fait du fil qui tranche, rien d'autre (Ali lit la conversation lui-même). Pas d'adjectifs, pas de tirets longs.
 
