@@ -298,7 +298,8 @@ async function renderThread(waId, { quiet = false } = {}) {
   // "Nothing to answer": one tap sends a single emoji as the reply (Wati's API has no WhatsApp reaction, Ali 2026-10-01).
   else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude: nothing to answer. ${esc(sug.why || '')}</span> <button class="small" id="anyway">Draft anyway</button>
       ${d.windowOpen ? `<div class="emojis" style="margin-top:8px">${['🙏', '👍', '😊', '🎉', '💪', '✅'].map((e) => `<button class="small" data-react="${e}" type="button" title="Send ${e} as the reply">${e}</button>`).join('')}<span class="muted small">· sends the emoji as a message</span></div>` : ''}</div>`;
-  else if (o && o.bubbles?.length && (d.followups || []).some((f) => f.state === 'pending' && f.suggestionId === sug.id)) claude = ''; // this draft is already scheduled: its card above is the one to edit
+  else if (o && o.bubbles?.length && (d.followups || []).some((f) => f.state === 'pending' && f.suggestionId === sug.id)) claude = '';
+  else if (o && o.bubbles?.length && d.thread?.last_outbound_at && sug.created_at < d.thread.last_outbound_at && (!d.thread.last_inbound_at || d.thread.last_inbound_at < d.thread.last_outbound_at)) claude = ''; // a draft older than our last message answers nothing anymore (Zakaria, 2026-10-04) // this draft is already scheduled: its card above is the one to edit
   else if (o && o.bubbles?.length) {
     // Editing = one field per bubble; each field is still its own WhatsApp message when sent.
     // Editing (Ali, 2026-10-01): emojis go into the bubble being edited; Save keeps the edit as the draft itself, on
@@ -346,7 +347,9 @@ async function renderThread(waId, { quiet = false } = {}) {
   const hasDraft = !!(o && o.bubbles?.length && !threadBusy);
   const steer = !d.windowOpen ? '' : hasDraft ? (steerOpen ? `<div class="card" id="steer"><div class="opt-head">Redo the draft <span class="muted">· steer Claude</span></div>${steerBody}</div>` : '')
     : `<details class="card fold" id="steer" ${steerOpen ? 'open' : ''}><summary>Ask for a draft <span class="muted small">· steer Claude</span></summary>${steerBody}</details>`;
-  const tplBox = `<input id="tplq" placeholder="Filter"><select id="tpl" style="margin-top:8px"><option value="">Loading…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Send the template</button><span id="stt"></span></div>`;
+  const planTpl = (d.plans || []).find((p) => p.kind === 'followup' && p.template && p.state === 'open') || null;
+  const tplAt = planTpl?.when_at && Date.parse(planTpl.when_at) > Date.now() ? hmOf(planTpl.when_at) : defaultSlot();
+  const tplBox = `<input id="tplq" placeholder="Filter"><select id="tpl" style="margin-top:8px"><option value="">Loading…</option></select><div id="tplv" class="muted small" style="margin-top:8px;white-space:pre-wrap"></div><div id="tplp"></div><div class="row"><button class="primary" id="sendt" disabled>Send the template</button><span id="stt"></span></div><div class="row"><span class="small">or at</span><input type="time" id="tplat" value="${esc(tplAt)}"><button class="small" id="schedt" disabled>Schedule</button><span class="muted small">not sent if the lead writes first</span></div>`;
   const compose = d.windowOpen
     ? `<div class="card"><div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emoji="${e}" type="button">${e}</button>`).join('')}</div><textarea id="tx" placeholder="Your message. An empty line separates two bubbles">${esc(composer)}</textarea><div class="row"><button class="primary" id="send" ${composer.trim() && !sendLock ? '' : 'disabled'}>Send</button><span id="st"></span></div></div>
        <details class="card fold"><summary>Send a template</summary>${tplBox}</details>`
@@ -455,9 +458,14 @@ async function renderThread(waId, { quiet = false } = {}) {
     fill('');
     $('#tplq').oninput = (e) => fill(e.target.value.trim().toLowerCase());
     sel.onchange = () => {
-      const x = templates.find((y) => y.name === sel.value); $('#sendt').disabled = !x;
+      const x = templates.find((y) => y.name === sel.value); $('#sendt').disabled = !x; if ($('#schedt')) $('#schedt').disabled = !x;
       $('#tplv').textContent = x ? x.body : '';
       $('#tplp').innerHTML = x ? x.params.map((p) => `<input data-p="${esc(p)}" placeholder="${esc(p)}" value="${p === 'name' ? esc((t.name || '').split(' ')[0]) : ''}" style="margin-top:8px">`).join('') : '';
+    };
+    if (planTpl && templates.some((y) => y.name === planTpl.template)) { sel.value = planTpl.template; sel.onchange(); } // the plan's template, ready to schedule
+    if ($('#schedt')) $('#schedt').onclick = async () => {
+      const params = Object.fromEntries([...document.querySelectorAll('#tplp input')].map((i) => [i.dataset.p, i.value])), at = $('#tplat').value;
+      try { await api(`/api/thread/${waId}/followups`, { method: 'POST', body: { template: sel.value, params, at, planId: planTpl?.id || null } }); toast(`Template scheduled for ${at}`); lastThreadKey = ''; route(); } catch (e) { toast(e.message); }
     };
     armed($('#sendt'), 'Send the template', async () => {
       const params = Object.fromEntries([...document.querySelectorAll('#tplp input')].map((i) => [i.dataset.p, i.value]));
@@ -517,9 +525,9 @@ function followupsHtml(d) {
   const fus = d.followups || [];
   const pend = fus.filter((f) => f.state === 'pending'), gone = fus.filter((f) => f.state !== 'pending');
   const goneHtml = gone.map((f) => `<div class="card sending failed"><b>${f.state === 'replied' ? `${fmtTime(f.at)} follow-up not sent` : `${fmtTime(f.at)} follow-up NOT sent`}</b>: ${esc(f.error || f.state)}${f.state === 'replied' ? '. Adapt your answer to what the lead said.' : ''}<div class="small muted">« ${esc(f.bubbles.join(' / ').slice(0, 140))} »</div><div class="acts"><button class="small" data-fuseen="${f.id}">Dismiss</button></div></div>`).join('');
-  const pendHtml = pend.map((f) => { const e = fuEdit[f.id]; return `<div class="card fu opt"><div class="opt-head">Follow-up at ${e ? `<input type="time" data-futime="${f.id}" value="${esc(e.at)}">` : `<b>${fmtTime(f.at)}</b>`} <span class="muted">· ${f.bubbles.length > 1 ? `${f.bubbles.length} messages, 10-15 s apart` : '1 message'} · not sent if the lead writes first</span></div>
-      ${e ? `<textarea data-futext="${f.id}" rows="4">${esc(e.text)}</textarea><div class="muted small">An empty line separates two bubbles</div>` : f.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}
-      <div class="acts">${e ? `<button class="primary small" data-fusave="${f.id}">Save</button><button class="small" data-fuedit="${f.id}">Cancel</button>` : `<button class="small" data-fuedit="${f.id}">Edit</button><button class="small" data-fudel="${f.id}">Don't send</button>`}</div></div>`; }).join('');
+  const pendHtml = pend.map((f) => { const e = fuEdit[f.id]; return `<div class="card fu opt"><div class="opt-head">Follow-up at ${e ? `<input type="time" data-futime="${f.id}" value="${esc(e.at)}">` : `<b>${fmtTime(f.at)}</b>`} <span class="muted">· ${f.template ? `template <b>${esc(f.template)}</b>` : f.bubbles.length > 1 ? `${f.bubbles.length} messages, 10-15 s apart` : '1 message'} · not sent if the lead writes first</span></div>
+      ${e && !f.template ? `<textarea data-futext="${f.id}" rows="4">${esc(e.text)}</textarea><div class="muted small">An empty line separates two bubbles</div>` : f.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}
+      <div class="acts">${e ? `<button class="primary small" data-fusave="${f.id}">Save</button><button class="small" data-fuedit="${f.id}">Cancel</button>` : `<button class="small" data-fuedit="${f.id}">${f.template ? 'Change time' : 'Edit'}</button><button class="small" data-fudel="${f.id}">Don't send</button>`}</div></div>`; }).join('');
   const form = fuForm ? `<div class="card fu"><div class="opt-head">New follow-up at <input type="time" id="fuat" value="${esc(fuForm.at)}"></div>
       <textarea id="futx" rows="4" placeholder="The follow-up. An empty line separates two bubbles">${esc(fuForm.text)}</textarea>
       <div class="acts"><button class="primary small" id="fugo">Schedule</button><button class="small" id="fuclaude">Ask Claude for a draft</button><button class="small" id="fuclose">Cancel</button></div></div>`
@@ -533,7 +541,7 @@ function bindFollowups(waId, d, redraw, askClaude) {
   document.querySelectorAll('[data-fuedit]').forEach((b) => b.onclick = () => { const id = b.dataset.fuedit, f = d.followups.find((x) => String(x.id) === id); if (fuEdit[id]) delete fuEdit[id]; else fuEdit[id] = { at: hmOf(f.at), text: f.bubbles.join('\n\n') }; redraw(); });
   document.querySelectorAll('[data-futime]').forEach((i) => i.oninput = () => { fuEdit[i.dataset.futime].at = i.value; });
   document.querySelectorAll('[data-futext]').forEach((t) => t.oninput = () => { fuEdit[t.dataset.futext].text = t.value; });
-  document.querySelectorAll('[data-fusave]').forEach((b) => b.onclick = async () => { const id = b.dataset.fusave, e = fuEdit[id]; if (await call(`/api/thread/${waId}/followups/${id}`, 'PATCH', { at: e.at, bubbles: splitBubbles(e.text) })) { delete fuEdit[id]; toast(`Follow-up set for ${e.at}`); redraw(); } });
+  document.querySelectorAll('[data-fusave]').forEach((b) => b.onclick = async () => { const id = b.dataset.fusave, e = fuEdit[id], f = d.followups.find((x) => String(x.id) === id); if (await call(`/api/thread/${waId}/followups/${id}`, 'PATCH', { at: e.at, bubbles: f?.template ? [] : splitBubbles(e.text) })) { delete fuEdit[id]; toast(`Follow-up set for ${e.at}`); redraw(); } });
   if ($('#fuopen')) $('#fuopen').onclick = () => { fuForm = { at: defaultSlot(), text: '' }; redraw(); };
   if ($('#fuclose')) $('#fuclose').onclick = () => { fuForm = null; redraw(); };
   if ($('#fuat')) $('#fuat').oninput = (e) => { fuForm.at = e.target.value; };
@@ -555,11 +563,13 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     ${i.why ? `<div class="muted small why">${esc(i.why)}</div>` : ''}
     ${i.template ? `<div class="small">Template: <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">The draft is below, ready to send</div>' : ''}
+    ${open && !inThread && i.kind === 'followup' && !i.bubbles?.length && i.template && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plantpl="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}" data-tpl="${esc(i.template)}" data-name="${esc((i.name || '').split(' ')[0])}">Schedule template for ${fmtTime(i.when_at)}</button><span class="muted small">not sent if the lead writes first</span></div>` : ''}
     ${open && !inThread && i.kind === 'followup' && i.bubbles?.length && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plansched="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}">Schedule for ${fmtTime(i.when_at)}</button><span class="muted small">the Mac sends it unless the lead writes first</span></div>` : ''}
     ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Done</button><button class="small" data-plandismiss="${i.id}">I did it differently</button><button class="small" data-plancopy="+${i.wa_id}">Copy number</button>${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Open</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Reopen</button></div>`}
   </div>`;
 }
 function bindPlanButtons(after) {
+  document.querySelectorAll('[data-plantpl]').forEach((b) => b.onclick = async () => { try { await api(`/api/thread/${b.dataset.wa}/followups`, { method: 'POST', body: { template: b.dataset.tpl, params: { name: b.dataset.name }, at: b.dataset.at, planId: b.dataset.plantpl } }); toast(`Template scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
   document.querySelectorAll('[data-plansched]').forEach((b) => b.onclick = async () => { const card = window.__planCards?.[b.dataset.plansched]; try { await api(`/api/thread/${b.dataset.wa}/followups`, { method: 'POST', body: { at: b.dataset.at, bubbles: card?.bubbles || [], planId: b.dataset.plansched, suggestionId: card?.suggestion_id || null } }); toast(`Scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
   document.querySelectorAll('[data-plandone]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.plandone}`, { method: 'POST', body: { state: 'done' } }); after(); });
   document.querySelectorAll('[data-planreopen]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.planreopen}`, { method: 'POST', body: { state: 'open' } }); after(); });

@@ -230,10 +230,17 @@ async function api(req, res, path) {
     const b = req.method === 'POST' || req.method === 'PATCH' ? await body(req) : {};
     const bubbles = Array.isArray(b.bubbles) ? b.bubbles.map((x) => String(x).trim()).filter(Boolean).slice(0, 6) : null;
     if (!id && req.method === 'POST') {
-      if (!bubbles?.length) return json(res, 400, { error: 'Write the follow-up first' });
-      const at = followupAt(b), why = followupCheck(waId, at); if (why) return json(res, 400, { error: why });
-      const meta = b.suggestionId ? { suggestionId: Number(b.suggestionId), option: 0, part: 'now', fromSuggestion: true } : {};
-      const rid = insertScheduled(waId, bubbles, meta, at, 'followup');
+      let tplBubbles = null, meta = b.suggestionId ? { suggestionId: Number(b.suggestionId), option: 0, part: 'now', fromSuggestion: true } : {};
+      if (b.template) { // a scheduled template: shown as its text with the parameters filled in
+        const tpl = (await frenchTemplates()).find((x) => x.name === b.template);
+        if (!tpl) return json(res, 400, { error: 'Unknown or unapproved template' });
+        const params = Object.fromEntries(tpl.params.map((p) => [p, String(b.params?.[p] ?? '')]));
+        let i = 0; tplBubbles = [tpl.body.replace(/\{\{[^}]*\}\}/g, () => params[tpl.params[i++]] || '…')];
+        meta = { template: tpl.name, params };
+      }
+      if (!tplBubbles && !bubbles?.length) return json(res, 400, { error: 'Write the follow-up first' });
+      const at = followupAt(b), why = followupCheck(waId, at, { template: !!tplBubbles }); if (why) return json(res, 400, { error: why });
+      const rid = insertScheduled(waId, tplBubbles || bubbles, meta, at, 'followup');
       if (b.planId) setPlanState(Number(b.planId), 'done', `scheduled for ${fmtHMm(at)}`);
       return json(res, 200, { ok: true, followup: followupView(scheduledById(rid)) });
     }
@@ -242,8 +249,9 @@ async function api(req, res, path) {
     if (fu[3] === 'seen' && req.method === 'POST') { markFollowupSeen(id); return json(res, 200, { ok: true }); }
     if (req.method === 'PATCH') {
       if (row.state !== 'pending') return json(res, 409, { error: 'Already sent or cancelled' });
-      const at = b.at ? followupAt(b) : row.at, why = followupCheck(waId, at); if (why) return json(res, 400, { error: why });
-      updateFollowup(id, bubbles?.length ? bubbles : JSON.parse(row.bubbles), at);
+      const isTpl = !!JSON.parse(row.meta || '{}').template;
+      const at = b.at ? followupAt(b) : row.at, why = followupCheck(waId, at, { template: isTpl }); if (why) return json(res, 400, { error: why });
+      updateFollowup(id, bubbles?.length && !isTpl ? bubbles : JSON.parse(row.bubbles), at); // a template's text cannot change
       return json(res, 200, { ok: true, followup: followupView(scheduledById(id)) });
     }
     if (req.method === 'DELETE') { if (row.state === 'pending') setScheduledState(id, 'cancelled', 'cancelled by Ali'); markFollowupSeen(id); return json(res, 200, { ok: true }); }
@@ -460,15 +468,16 @@ function followupAt(b) { // « 14:00 » (today, Madrid), « 2026-10-05 14:00 » 
   const v = String(b.at || '').trim();
   return /^\d{4}-\d{2}-\d{2}T/.test(v) ? new Date(v).toISOString() : madridIso(v);
 }
-function followupCheck(waId, at) { // null when fine, else the reason it cannot be scheduled
+function followupCheck(waId, at, { template = false } = {}) { // null when fine, else the reason it cannot be scheduled
   if (!at || Number.isNaN(Date.parse(at))) return 'Pick a time';
   if (Date.parse(at) < Date.now() + 60_000) return 'That time has already passed';
+  if (template) return null; // a template goes whatever the window
   const t = storedThread(waId);
   const closes = t?.last_inbound_at ? Date.parse(t.last_inbound_at) + 24 * 3600e3 : 0;
   if (Date.parse(at) >= closes) return `The 24h window closes at ${closes ? fmtHMm(new Date(closes).toISOString()) : '?'}, before this follow-up: only a template could go then`;
   return null;
 }
-const followupView = (r) => ({ id: r.id, at: r.at, bubbles: JSON.parse(r.bubbles), state: r.state, error: r.error, created_at: r.created_at, suggestionId: JSON.parse(r.meta || '{}').suggestionId || null });
+const followupView = (r) => { const m = JSON.parse(r.meta || '{}'); return { id: r.id, at: r.at, bubbles: JSON.parse(r.bubbles), state: r.state, error: r.error, created_at: r.created_at, suggestionId: m.suggestionId || null, template: m.template || null }; };
 let followupBusy = false;
 async function followupTick() {
   if (followupBusy) return; followupBusy = true;
@@ -483,6 +492,19 @@ async function followupTick() {
       }
       if (Date.parse(r.at) > Date.now()) continue;
       if (Date.now() - Date.parse(r.at) > 30 * 60_000) { setScheduledState(r.id, 'failed', 'the app was not running at that time'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The app was down at that time. Send it by hand.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
+      const fm = JSON.parse(r.meta || '{}');
+      if (fm.template) { // a scheduled template (Ali, 2026-10-04): no window needed; same reply rule, checked against Wati first
+        try { await refreshThread(r.wa_id, t?.name, { notify: true }); } catch (e) { console.log(`followup #${r.id}: could not check the conversation (${e.message}), retry next tick`); continue; }
+        const fr = storedThread(r.wa_id);
+        if (fr?.last_inbound_at && fr.last_inbound_at > r.created_at) { setScheduledState(r.id, 'replied', `${fr.name || 'the lead'} replied at ${fmtHMm(fr.last_inbound_at)}`); pushAll({ title: `${fr.name || r.wa_id} replied · ${fmtHMm(r.at)} template NOT sent`, body: 'Open the thread to adapt.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
+        try { await sendTemplate(r.wa_id, fm.template, fm.params || {}); logSend(r.wa_id, 'template', { template: fm.template, params: fm.params, scheduled: r.id }, true); setScheduledState(r.id, 'sent'); console.log(`followup #${r.id}: template ${fm.template} sent to ${fr?.name || r.wa_id}`); }
+        catch (e) { logSend(r.wa_id, 'template', { template: fm.template, params: fm.params }, false, e.message); setScheduledState(r.id, 'failed', e.message); pushAll({ title: `Template failed · ${fr?.name || r.wa_id}`, body: e.message.slice(0, 120), tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
+        saveThread({ ...(fr || { wa_id: r.wa_id, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${fm.template}]` });
+        closePlanItems(r.wa_id, 'done', ['followup']);
+        setTimeout(() => refreshThread(r.wa_id, fr?.name, { notify: false }).catch(() => {}), 6000);
+        afterAliMessage(r.wa_id);
+        continue;
+      }
       if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { setScheduledState(r.id, 'skipped', 'the 24h window had closed'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The 24h window had closed: only a template can go.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
       if (sending.has(r.wa_id) && !sending.get(r.wa_id).error) continue; // another send in progress: next tick
       // Right before it leaves: read the conversation from Wati itself, not the copy on disk (Ali, 2026-10-04: after the Mac
