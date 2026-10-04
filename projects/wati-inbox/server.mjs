@@ -24,7 +24,7 @@ import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, MONTHS, mon
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
 import { startConsolidating } from './consolidate-engine.mjs';
-import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems, closeDueFollowups, welcomeSince } from './db.mjs';
+import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems, closeDueFollowups, welcomeSince, planConflicts, planDecided } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus, syncUpcoming } from './hub-sync.mjs';
 import { hubLeadRow, failedTemplates } from './db.mjs';
 import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, restoreAfterSend, citfToday, madridIso } from './plan-engine.mjs';
@@ -204,7 +204,7 @@ async function api(req, res, path) {
   const planItem = (i) => { const h = hubNextFor(i.wa_id); const skip = i.skip_templates ? JSON.parse(i.skip_templates) : [], keep = i.keep_templates ? JSON.parse(i.keep_templates) : []; const stepsOf = (list) => list.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }); return { ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: skip, keep_templates: keep,
     skip_steps: stepsOf(skip), keep_steps: stepsOf(keep),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
-  if (path === '/api/plan') return json(res, 200, { scheduled: pendingFollowups().map((r) => ({ ...followupView(r), wa_id: r.wa_id, name: storedThread(r.wa_id)?.name || r.wa_id })), day: planToday(), items: planItems(planToday()).map(planItem), ahead: openPlanItems().filter((i) => i.day > planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
+  if (path === '/api/plan') return json(res, 200, { conflicts: planConflicts().map(planItem), decided: planDecided(10).map(planItem), scheduled: pendingFollowups().map((r) => ({ ...followupView(r), wa_id: r.wa_id, name: storedThread(r.wa_id)?.name || r.wa_id })), day: planToday(), items: planItems(planToday()).map(planItem), ahead: openPlanItems().filter((i) => i.day > planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
   const ms = /^\/api\/thread\/(\d{8,15})\/missed-seen$/.exec(path);
   if (ms && req.method === 'POST') { markScheduledSeen(ms[1]); return json(res, 200, { ok: true }); }
   if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Missing number' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
@@ -214,7 +214,8 @@ async function api(req, res, path) {
   if (plr && req.method === 'POST') {
     const b = await body(req); const i = planItemById(Number(plr[1]));
     if (!i) return json(res, 404, { error: 'Unknown card' });
-    try { decidePlanRule(i, !!b.accept); } catch (e) { return json(res, 400, { error: e.message }); }
+    const verdict = b.verdict || (b.accept ? 'rule' : 'oneoff');
+    try { decidePlanRule(i, verdict, b.context); } catch (e) { return json(res, 400, { error: e.message }); }
     return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
   }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);

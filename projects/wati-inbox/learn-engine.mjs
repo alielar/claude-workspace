@@ -141,23 +141,30 @@ export async function learnFromPlanNote(item, note) {
   else if (kind === 'minor') text = `- ${hhmm} · ${who} · **plan, cas particulier** — ${clean(out.title)}${out.why ? ` (${clean(out.why)})` : ''}\n`;
   if (text) appendCase(day, text);
   insertLesson({ wa_id: waId, kind: kind === 'none' ? 'none' : 'plan', suggestion_id: item.suggestion_id ?? null, batch: `plan-${item.id}`, sent: [String(note || '')], title: clean(out.title), text });
-  const lesson = { kind, title: clean(out.title), apply: clean(out.apply), contradicts, source, decided: null, at: new Date().toISOString() };
+  const lesson = { kind, title: clean(out.title), situation: clean(out.situation), card: clean(out.card), did: clean(out.did), why: clean(out.why), apply: clean(out.apply), contradicts, source, decided: null, at: new Date().toISOString() };
   setPlanLesson(item.id, lesson);
   log(`${who} → plan ${kind}: ${clean(out.title)}${contradicts ? ' · CONFLICT with a written rule' : ''} (${Math.round(out.ms / 1000)} s)`);
   if (contradicts) pushAll({ title: `Rule conflict · ${who}`, body: `${clean(out.title)}. This contradicts: « ${contradicts.slice(0, 120)} ». New rule or one-off? Decide on the card.`, tag: `plan-rule-${item.id}`, url: '/plan' }).catch(() => {});
   return lesson;
 }
-// Ali's verdict on a conflict: the gesture becomes the rule (the consolidation makes the latest decision win), or stays a one-off.
-export function decidePlanRule(item, accept) {
+// Ali's verdict on a conflict (Ali, 2026-10-04 evening: « so I can pick the rule to apply, and add context so it applies once and
+// for all »): `rule` = B replaces A, `oneoff` = A stays and this lead was an exception, `conditional` = A stays the general rule and
+// B applies in the context Ali gives. The verdict goes to the journal with his words; the evening consolidation makes it the rule.
+export function decidePlanRule(item, verdict, context = '') {
   let lesson = null; try { lesson = item.lesson ? JSON.parse(item.lesson) : null; } catch {}
   if (!lesson) throw new Error('No lesson on this card');
+  if (!['rule', 'oneoff', 'conditional'].includes(verdict)) throw new Error('Unknown verdict');
+  const ctx = String(context || '').replace(/\s+/g, ' ').trim();
+  if (verdict === 'conditional' && !ctx) throw new Error('Say in which context the new rule applies');
   const day = madrid().slice(0, 10), hhmm = madrid().slice(11, 16), who = item.name || `+${item.wa_id}`;
-  appendCase(day, accept
-    ? `- ${hhmm} · ${who} · **RÈGLE REMPLACÉE (décision d'Ali)** — ${lesson.apply || lesson.title}${lesson.contradicts ? ` (remplace : « ${lesson.contradicts} »${lesson.source ? `, ${lesson.source}` : ''})` : ''}\n`
-    : `- ${hhmm} · ${who} · **cas particulier (décision d'Ali)** — la règle « ${lesson.contradicts || '…'} » reste ; exception pour ce lead seulement : ${lesson.title}\n`);
-  lesson.decided = accept ? 'rule' : 'oneoff'; lesson.decidedAt = new Date().toISOString();
+  const A = lesson.contradicts || '…', B = lesson.apply || lesson.title, src = lesson.source ? `, ${lesson.source}` : '';
+  const line = verdict === 'rule' ? `- ${hhmm} · ${who} · **RÈGLE REMPLACÉE (décision d'Ali)** — ${B} (remplace : « ${A} »${src})${ctx ? ` — précision d'Ali : ${ctx}` : ''}\n`
+    : verdict === 'conditional' ? `- ${hhmm} · ${who} · **RÈGLE PRÉCISÉE (décision d'Ali)** — « ${A} » reste la règle générale ; quand ${ctx} : ${B}\n`
+    : `- ${hhmm} · ${who} · **cas particulier (décision d'Ali)** — la règle « ${A} » reste ; exception pour ce lead seulement : ${lesson.title}${ctx ? ` — précision d'Ali : ${ctx}` : ''}\n`;
+  appendCase(day, line);
+  lesson.decided = verdict; lesson.context = ctx || null; lesson.decidedAt = new Date().toISOString();
   setPlanLesson(item.id, lesson);
-  log(`${who}: conflict decided → ${lesson.decided}`);
+  log(`${who}: conflict decided → ${verdict}${ctx ? ` (${ctx.slice(0, 80)})` : ''}`);
   return lesson;
 }
 

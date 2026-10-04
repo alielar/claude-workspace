@@ -92,7 +92,7 @@ function micCut(final) {
 // Field = what was there + every piece in order (provisional ones included, so the text grows as he speaks).
 function micRender(r) {
   const text = [r.base, ...r.segs.map((x) => x.text).filter(Boolean)].filter(Boolean).join(' ');
-  dir.instruction = text;
+  if (r.field === 'ins' || r.field === 'needs') dir.instruction = text; // the steer fields; a conflict context box (rctx-…) keeps its own text
   const ta = $(`#${r.field}`);
   if (ta && ta.value !== text) { ta.value = text; ta.scrollTop = ta.scrollHeight; }
 }
@@ -563,7 +563,26 @@ function lessonHtml(i) {
   let l = null; try { l = i.lesson ? (typeof i.lesson === 'string' ? JSON.parse(i.lesson) : i.lesson) : null; } catch {}
   if (i.state === 'dismissed' && !l) return '<div class="muted small">Claude is writing the lesson…</div>';
   if (!l || l.kind === 'none') return '';
-  return `<div class="small lesson">Learned: <b>${esc(l.title || '')}</b>${l.apply && l.kind === 'lesson' ? ` · ${esc(l.apply)}` : ''}${l.contradicts ? `<div class="muted small">Contradicts the rule « ${esc(l.contradicts)} »${l.decided ? ` · <b>${l.decided === 'rule' ? 'now the rule' : 'one-off, rule kept'}</b>` : ''}</div>${!l.decided ? `<div class="acts"><button class="small primary" data-planrule="${i.id}" data-accept="1">Make it the rule</button><button class="small" data-planrule="${i.id}" data-accept="0">One-off, keep the rule</button></div>` : ''}` : ''}</div>`;
+  return `<div class="small lesson">Learned: <b>${esc(l.title || '')}</b>${l.contradicts ? `<div class="muted small">${l.decided ? `Rule conflict decided: <b>${VERDICT[l.decided] || l.decided}</b>` : 'Rule conflict · decide it at the top of the Today screen'}</div>` : ''}</div>`;
+}
+const VERDICT = { rule: 'B is now the rule', oneoff: 'A kept, this lead was a one-off', conditional: 'A in general, B in the context given' };
+// A rule conflict (2026-10-04): what happened, rule A (written), rule B (what Ali did), a context box, three verdicts.
+function conflictCardHtml(i, { decided = false } = {}) {
+  let l = {}; try { l = i.lesson ? JSON.parse(i.lesson) : {}; } catch {}
+  const did = l.did || i.note || '';
+  return `<div class="card plan conflict${decided ? ' done' : ''}" data-plan="${i.id}">
+    <div class="flag-head"><span><span class="pill warn">Rule conflict</span> <b class="small">${fmtDay(l.at || i.updated_at || i.at)}</b></span><a class="muted small" data-nav href="/t/${i.wa_id}">${esc(i.name || i.wa_id)} ›</a></div>
+    <div class="flag-title">${esc(l.title || i.title || '')}</div>
+    <div class="rule-ctx small">${l.situation ? `<div><span class="lbl">Situation</span><span>${esc(l.situation)}</span></div>` : ''}<div><span class="lbl">Card said</span><span>${esc(l.card || i.title || '')}</span></div><div><span class="lbl">You did</span><span>${esc(did)}</span></div>${i.note && l.did ? `<div><span class="lbl">Your note</span><span class="muted">${esc(i.note)}</span></div>` : ''}</div>
+    <div class="rule-ab">
+      <div class="r a"><div class="rl">A · Current rule <span class="muted">(${esc(l.source === '06' ? 'learned rules' : l.source === 'plan-prompt' ? 'plan rules' : 'written rule')})</span></div><div>${esc(l.contradicts || '')}</div></div>
+      <div class="r b"><div class="rl">B · What you did, as a rule</div><div>${esc(l.apply || l.title || '')}</div></div>
+    </div>
+    ${decided ? `<div class="small"><b>${VERDICT[l.decided] || l.decided}</b>${l.context ? ` · ${esc(l.context)}` : ''} <span class="muted">· ${fmtDay(l.decidedAt)} ${fmtTime(l.decidedAt)}</span></div>`
+      : `<textarea id="rctx-${i.id}" rows="2" placeholder="Context, optional: when does B apply, what makes the difference? Written into the rule."></textarea>
+    <div class="acts">${micHtml(`rctx-${i.id}`)}</div>
+    <div class="acts"><button class="small primary" data-planrule="${i.id}" data-verdict="rule">B replaces A</button><button class="small" data-planrule="${i.id}" data-verdict="conditional">A in general, B in this context</button><button class="small" data-planrule="${i.id}" data-verdict="oneoff">Keep A, one-off</button></div>`}
+  </div>`;
 }
 function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
   (window.__planCards ||= {})[i.id] = i;
@@ -593,10 +612,10 @@ function bindPlanButtons(after) {
   // "I did it differently" (Ali, 2026-10-01): what he did instead is required, it is what the next judgements learn from.
   document.querySelectorAll('[data-plandismiss]').forEach((b) => b.onclick = async () => { const note = (prompt('What did you do instead, and why? Claude learns from it') ?? '').trim(); if (!note) return; await api(`/api/plan/${b.dataset.plandismiss}`, { method: 'POST', body: { state: 'dismissed', note } }); toast('Noted, Claude is writing the lesson'); after(); });
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
-  document.querySelectorAll('[data-planrule]').forEach((b) => b.onclick = async () => { try { await api(`/api/plan/${b.dataset.planrule}/rule`, { method: 'POST', body: { accept: b.dataset.accept === '1' } }); toast(b.dataset.accept === '1' ? 'Written as the new rule' : 'Kept as a one-off'); after(); } catch (e) { toast(e.message); } });
+  document.querySelectorAll('[data-planrule]').forEach((b) => b.onclick = async () => { const v = b.dataset.verdict, context = ($(`#rctx-${b.dataset.planrule}`)?.value || '').trim(); if (v === 'conditional' && !context) { toast('Write or dictate the context first'); return; } if (rec) { toast('Stop the dictation first'); return; } try { await api(`/api/plan/${b.dataset.planrule}/rule`, { method: 'POST', body: { verdict: v, context } }); toast(v === 'rule' ? 'B is now the rule' : v === 'conditional' ? 'Rule refined with your context' : 'A kept, one-off noted'); after(); } catch (e) { toast(e.message); } });
 }
 async function renderPlan() {
-  const { items, counts, status, hub, salesHub, citf = [], ahead = [], scheduled = [] } = await api('/api/plan');
+  const { items, counts, status, hub, salesHub, citf = [], ahead = [], scheduled = [], conflicts = [], decided = [] } = await api('/api/plan');
   const running = status.state === 'running';
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
@@ -614,15 +633,18 @@ async function renderPlan() {
   app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Today <span class="muted small">${fmtDay(new Date().toISOString())}</span></h1><button id="replan" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Claude is reviewing…' : 'Replan'}</button></header>
     <p class="muted small">${status.ready ? `Sales Hub read ${hub.leadsAt ? ago(hub.leadsAt) : 'never'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'no plan yet'} · ${status.calls}/${status.max} reviews today` : 'Sales Hub not connected (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
     ${citf.length ? `<p class="muted small">Resuming today (CITF): ${citf.map((c) => `<a data-nav href="/t/${c.wa_id}">${esc(c.name)}</a> ${fmtTime(c.at)}${c.case ? ` (${esc(c.case)})` : ''}${c.passed ? ' · sent' : ''}`).join(' · ')}</p>` : ''}
-    ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
+    ${conflicts.length ? `<p class="section">Rule conflicts to decide (${conflicts.length}) <span class="muted small">· you did it differently, Claude found a written rule that says otherwise</span></p>${conflicts.map((i) => conflictCardHtml(i)).join('')}` : ''}
+    ${!open.length && !closed.length && !conflicts.length ? '<p class="muted center">Nothing for today</p>' : ''}
     ${sec('Now', todo)}${scheduled.length ? `<p class="section">Scheduled follow-ups (${scheduled.length})</p>${scheduled.map((f) => `<a class="card sched-row" data-nav href="/t/${f.wa_id}"><div class="sched-head"><span class="pill">${fmtWhen(f.at)}</span><b>${esc(f.name)}</b><span class="muted small">${f.bubbles.length > 1 ? `${f.bubbles.length} messages` : '1 message'}</span><span class="chev">›</span></div>${f.bubbles.map((b) => `<div class="sched-b"><span>${esc(b)}</span></div>`).join('')}</a>`).join('')}` : ''}${sec('Later today', later)}${sec('Waiting', wait)}
     ${(() => { const tmr = new Date(); tmr.setDate(tmr.getDate() + 1); const tKey = tmr.toISOString().slice(0, 10); const sameDay = (i) => new Date(i.when_at || `${i.day}T12:00:00`).toDateString() === tmr.toDateString(); const tom = ahead.filter((i) => i.day === tKey || sameDay(i)).sort(byTime), lat = ahead.filter((i) => !tom.includes(i)).sort(byTime); return sec('Tomorrow', tom) + sec('Later', lat); })()}
     ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${ok.length ? `<details class="card fold" data-fold="ok" ${planFolds.has('ok') ? 'open' : ''}><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${closed.length ? `<details class="card fold" data-fold="done" ${planFolds.has('done') ? 'open' : ''}><summary>Done (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
+    ${decided.length ? `<details class="card fold" data-fold="rules" ${planFolds.has('rules') ? 'open' : ''}><summary>Rules you decided (${decided.length})</summary>${decided.map((i) => conflictCardHtml(i, { decided: true })).join('')}</details>` : ''}
     ${salesHub ? `<p class="center"><a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Open the Sales Hub ↗</a></p>` : ''}`;
   // The folded sections stay as Ali left them across refreshes (Done tapped, 45 s tick).
   document.querySelectorAll('[data-fold]').forEach((d) => { d.ontoggle = () => { d.open ? planFolds.add(d.dataset.fold) : planFolds.delete(d.dataset.fold); }; });
+  bindMic();
   $('#replan').onclick = async () => { $('#replan').disabled = true; try { await api('/api/plan/run', { method: 'POST' }); toast('Claude is reviewing every lead, 2 to 5 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 2000); };
   bindPlanButtons(route);
 }

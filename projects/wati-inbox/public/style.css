@@ -136,6 +136,17 @@ header a[data-nav] { font-size: 22px; padding: 0 6px; }
 .plan-home .chev { font-size: 22px; color: var(--muted); }
 .small.ok { color: var(--ok); }
 .card.plan.resume { border-left-color: var(--warn); }
+/* Rule conflicts (2026-10-04): A = the written rule, B = what Ali did; a context box; three verdicts. */
+.card.plan.conflict { border-left-color: var(--warn); }
+.card.plan.conflict.done { opacity: .75; }
+.rule-ctx { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 10px; }
+.rule-ctx > div { display: flex; gap: 10px; align-items: flex-start; }
+.rule-ctx .lbl { flex: none; width: 72px; color: var(--muted); font-weight: 600; }
+.rule-ab { display: grid; gap: 8px; margin-bottom: 10px; }
+.rule-ab .r { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; line-height: 1.35; }
+.rule-ab .r.b { border-color: var(--accent); }
+.rule-ab .rl { font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: .02em; }
+.card.plan.conflict textarea { width: 100%; box-sizing: border-box; margin-top: 2px; }
 
 /* Dictation (2026-10-01): microphone icon, red and pulsing while recording, elapsed time next to it */
 button.mic { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; }
