@@ -18,7 +18,7 @@ import { db, inbox, getThread as storedThread, threadMessages, saveThread, lates
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
 import { refreshThread, startPolling } from './poll.mjs';
 import { requestSuggestion, suggestStatus } from './suggest-engine.mjs';
-import { learnFromSend, learnStatus } from './learn-engine.mjs';
+import { learnFromSend, learnStatus, learnFromPlanNote, decidePlanRule } from './learn-engine.mjs';
 import { transcribe, transcribeStatus, startDictation } from './transcribe.mjs';
 import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, MONTHS, monthsFor, describeOffer, currencyFor } from './directions.mjs';
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
@@ -209,6 +209,14 @@ async function api(req, res, path) {
   if (ms && req.method === 'POST') { markScheduledSeen(ms[1]); return json(res, 200, { ok: true }); }
   if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Missing number' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
   if (path === '/api/plan/run' && req.method === 'POST') { runPlan({ scope: 'all', reason: 'ali' }).catch(() => {}); return json(res, 200, { ok: true }); }
+  // Ali's verdict on a rule conflict raised by « I did it differently » (2026-10-04): new rule, or one-off.
+  const plr = /^\/api\/plan\/(\d+)\/rule$/.exec(path);
+  if (plr && req.method === 'POST') {
+    const b = await body(req); const i = planItemById(Number(plr[1]));
+    if (!i) return json(res, 404, { error: 'Unknown card' });
+    try { decidePlanRule(i, !!b.accept); } catch (e) { return json(res, 400, { error: e.message }); }
+    return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
+  }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);
   if (pli && req.method === 'POST') {
     const b = await body(req); const i = planItemById(Number(pli[1]));
@@ -216,6 +224,8 @@ async function api(req, res, path) {
     const state = ['done', 'dismissed', 'open'].includes(b.state) ? b.state : null;
     if (!state) return json(res, 400, { error: 'Unknown state' });
     setPlanState(i.id, state, b.note ? String(b.note).slice(0, 3000) : null);
+    // « I did it differently » with a note: one Claude run writes the lesson to the journal (background lane); the card shows it when done.
+    if (state === 'dismissed' && b.note && String(b.note).trim()) learnFromPlanNote(planItemById(i.id), String(b.note).slice(0, 3000)).catch((e) => console.log(new Date().toISOString().slice(11, 19), 'learn: plan note error:', e.message));
     return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
   }
   if (path === '/api/push') {
@@ -546,7 +556,7 @@ async function followupTick() {
       try { await sendText(r.wa_id, bubbles[0]); logSend(r.wa_id, 'text', { text: bubbles[0], ...meta }, true); setScheduledState(r.id, 'sent'); console.log(`followup #${r.id} sent to ${t.name || r.wa_id}`); }
       catch (e) { logSend(r.wa_id, 'text', { text: bubbles[0], ...meta }, false, e.message); setScheduledState(r.id, 'failed', e.message); pushAll({ title: `Follow-up failed · ${t.name || r.wa_id}`, body: e.message.slice(0, 120), tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
       saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
-      if (bubbles.length > 1) sendRest(r.wa_id, t, bubbles, meta); else refreshThread(r.wa_id, t.name, { notify: false }).catch(() => {});
+      if (bubbles.length > 1) sendRest(r.wa_id, t, bubbles, meta); else { refreshThread(r.wa_id, t.name, { notify: false }).catch(() => {}); learnFromSend(r.wa_id, bubbles, meta); } // a one-bubble follow-up is learned from too (2026-10-04)
       afterAliMessage(r.wa_id);
     }
   } finally { followupBusy = false; }

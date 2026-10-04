@@ -558,6 +558,13 @@ function bindFollowups(waId, d, redraw, askClaude) {
   // Claude drafts it in the draft card; « Schedule » there turns it into this follow-up at the time chosen here.
   if ($('#fuclaude')) $('#fuclaude').onclick = () => { schedDraft = fuForm.at; const at = fuForm.at, idea = fuForm.text.trim(); fuForm = null; askClaude({ moves: ['relance'], instruction: `Relance à programmer pour ${at} si le lead n'a pas répondu d'ici là : courte, directe, tirée de ce qu'on sait déjà du fil, une seule question.${idea ? ' Idée d’Ali : ' + idea : ''}` }); };
 }
+// What Claude learned from « I did it differently » (2026-10-04), and the conflict to decide when it contradicts a written rule.
+function lessonHtml(i) {
+  let l = null; try { l = i.lesson ? (typeof i.lesson === 'string' ? JSON.parse(i.lesson) : i.lesson) : null; } catch {}
+  if (i.state === 'dismissed' && !l) return '<div class="muted small">Claude is writing the lesson…</div>';
+  if (!l || l.kind === 'none') return '';
+  return `<div class="small lesson">Learned: <b>${esc(l.title || '')}</b>${l.apply && l.kind === 'lesson' ? ` · ${esc(l.apply)}` : ''}${l.contradicts ? `<div class="muted small">Contradicts the rule « ${esc(l.contradicts)} »${l.decided ? ` · <b>${l.decided === 'rule' ? 'now the rule' : 'one-off, rule kept'}</b>` : ''}</div>${!l.decided ? `<div class="acts"><button class="small primary" data-planrule="${i.id}" data-accept="1">Make it the rule</button><button class="small" data-planrule="${i.id}" data-accept="0">One-off, keep the rule</button></div>` : ''}` : ''}</div>`;
+}
 function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
   (window.__planCards ||= {})[i.id] = i;
   let [label, cls] = KIND[i.kind] || ['', ''];
@@ -569,6 +576,7 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     <div class="flag-title">${esc(i.title)}</div>
     ${planDoHtml(i)}
     ${i.why ? `<div class="muted small why">${esc(i.why)}</div>` : ''}
+    ${lessonHtml(i)}
     ${i.template ? `<div class="small">Template: <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">The draft is below, ready to send</div>' : ''}
     ${open && !inThread && i.kind === 'followup' && !i.bubbles?.length && i.template && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plantpl="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}" data-tpl="${esc(i.template)}" data-name="${esc((i.name || '').split(' ')[0])}">Schedule template for ${fmtTime(i.when_at)}</button><span class="muted small">not sent if the lead writes first</span></div>` : ''}
@@ -583,8 +591,9 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-planreopen]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.planreopen}`, { method: 'POST', body: { state: 'open' } }); after(); });
   document.querySelectorAll('[data-planignore]').forEach((b) => b.onclick = async () => { if (!confirm('No more cards for this lead, for good?')) return; await api('/api/plan/ignore', { method: 'POST', body: { waId: b.dataset.planignore } }); toast('Lead removed from the plan'); after(); });
   // "I did it differently" (Ali, 2026-10-01): what he did instead is required, it is what the next judgements learn from.
-  document.querySelectorAll('[data-plandismiss]').forEach((b) => b.onclick = async () => { const note = (prompt('What did you do instead, and why? Claude learns from it') ?? '').trim(); if (!note) return; await api(`/api/plan/${b.dataset.plandismiss}`, { method: 'POST', body: { state: 'dismissed', note } }); toast('Noted, Claude will learn from it'); after(); });
+  document.querySelectorAll('[data-plandismiss]').forEach((b) => b.onclick = async () => { const note = (prompt('What did you do instead, and why? Claude learns from it') ?? '').trim(); if (!note) return; await api(`/api/plan/${b.dataset.plandismiss}`, { method: 'POST', body: { state: 'dismissed', note } }); toast('Noted, Claude is writing the lesson'); after(); });
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
+  document.querySelectorAll('[data-planrule]').forEach((b) => b.onclick = async () => { try { await api(`/api/plan/${b.dataset.planrule}/rule`, { method: 'POST', body: { accept: b.dataset.accept === '1' } }); toast(b.dataset.accept === '1' ? 'Written as the new rule' : 'Kept as a one-off'); after(); } catch (e) { toast(e.message); } });
 }
 async function renderPlan() {
   const { items, counts, status, hub, salesHub, citf = [], ahead = [], scheduled = [] } = await api('/api/plan');

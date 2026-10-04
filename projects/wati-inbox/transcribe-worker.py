@@ -15,6 +15,7 @@ The WAV must be 16 kHz, mono, 16-bit (the browser records it that way). Started 
 """
 import json
 import os
+import re
 import sys
 import time
 import types
@@ -42,10 +43,49 @@ FILLER = {"okay", "ok", "thank you", "thanks", "thank you very much", "merci", "
           "sous-titres réalisés par la communauté d'amara.org", "sous-titrage st' 501", "thanks for watching", "you", "oui", "hmm", "mm"}
 
 
+# Ali, 2026-10-04: the box fills with numbers (« 1 2 3 4 », « 100 100 100 ») when the mic hears noise or a breath. Whisper
+# decodes digits on non-speech. Three guards: a piece too quiet to be speech is not decoded at all; a segment that is mostly
+# digits, that repeats one token, or that Whisper itself flags (compression ratio, low confidence) is dropped; and the
+# previous text passed as context loses its digits so a hallucinated number cannot breed the next one.
+SILENCE_RMS, SILENCE_PEAK = 0.006, 0.03
+
+
+def is_silence(samples):
+    if not len(samples):
+        return True
+    rms = float(np.sqrt(np.mean(samples * samples)))
+    return rms < SILENCE_RMS or float(np.max(np.abs(samples))) < SILENCE_PEAK
+
+
+def hallucinated(txt, sg):
+    bare = "".join(ch for ch in txt.lower() if ch.isalnum() or ch in " '").strip()
+    alnum = [ch for ch in bare if ch.isalnum()]
+    digits = sum(ch.isdigit() for ch in alnum)
+    if len(alnum) >= 8 and digits / len(alnum) > 0.5:  # a string of numbers, not a sentence (« 15h » or « 990 euros » stay)
+        return True
+    tokens = bare.split()
+    if len(tokens) >= 4 and len(set(tokens)) <= max(1, len(tokens) // 3):  # the same word over and over
+        return True
+    if float(sg.get("compression_ratio") or 0.0) > 2.4:  # Whisper's repetition-loop signature
+        return True
+    if float(sg.get("avg_logprob") or 0.0) < -1.2 and float(sg.get("no_speech_prob") or 0.0) > 0.25:  # low confidence on doubtful speech
+        return True
+    return False
+
+
+def clean_prompt(prompt):
+    if not prompt:
+        return None
+    p = re.sub(r"\d[\d\s.,:h€%]*", " ", prompt)  # digits out of the context: they are what Whisper copies on noise
+    p = re.sub(r"\s+", " ", p).strip()[-200:]
+    return p or None
+
+
 def clean_text(res):
     segs = res.get("segments") or []
     if not segs:
-        return (res.get("text") or "").strip()
+        txt = (res.get("text") or "").strip()
+        return "" if hallucinated(txt, {}) else txt
     kept = []
     for sg in segs:
         txt = (sg.get("text") or "").strip()
@@ -56,6 +96,8 @@ def clean_text(res):
             continue
         bare = "".join(ch for ch in txt.lower() if ch.isalnum() or ch in " '").strip().rstrip(".!?")
         if bare in FILLER and nsp > 0.15:  # a bare "okay"/"thank you" with a doubtful score: the classic hallucination
+            continue
+        if hallucinated(txt, sg):
             continue
         kept.append(txt)
     return " ".join(kept).strip()
@@ -119,8 +161,8 @@ def main():
         try:
             t0 = time.time()
             samples = read_wav(req["path"])
-            if len(samples) < 1600:  # under 0.1 s: nothing to hear
-                out = {"id": rid, "text": "", "language": None, "ms": 0}
+            if len(samples) < 1600 or is_silence(samples):  # under 0.1 s, or too quiet to be speech: nothing to decode (no hallucination possible)
+                out = {"id": rid, "text": "", "language": req.get("language") if req.get("language") in LANGS else None, "ms": 0}
             else:
                 lang = req.get("language") if req.get("language") in LANGS else pick_language(samples)
                 res = mlx_whisper.transcribe(
@@ -131,7 +173,7 @@ def main():
                     temperature=0.0,  # one pass, no fallback decodes: speed over the last percent of quality
                     condition_on_previous_text=False,
                     no_speech_threshold=0.6,
-                    initial_prompt=req.get("prompt") or None,
+                    initial_prompt=clean_prompt(req.get("prompt")),
                 )
                 out = {"id": rid, "text": clean_text(res), "language": lang, "ms": int((time.time() - t0) * 1000)}
         except Exception as e:  # noqa: BLE001

@@ -17,7 +17,7 @@ import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRow
 import { hubReady } from './hub.mjs';
 import { hubSig, onHubChange, syncUpcoming, upcomingOf, realNext, stepOf, effectiveNext } from './hub-sync.mjs';
 import { DIAGNOSTIC } from './tbc-watch.mjs';
-import { runClaude, madrid } from './suggest-engine.mjs';
+import { runClaude, madrid, RULES, unconsolidatedTail } from './suggest-engine.mjs';
 import { pushAll } from './push.mjs';
 import { frenchTemplates } from './wati.mjs';
 
@@ -206,12 +206,17 @@ export async function judgeBatch(batch, fakeNow = null) {
   for (const c of batch) { const u = await syncUpcoming(c.wa_id); if (u) c.upcoming = JSON.stringify(u); c.prechecks = preChecks(c); } // the #n steps the Hub shows Ali, then the fixed rules
   const clock = fakeNow ? new Date(fakeNow) : new Date();
   const weekday = clock.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });
-  const dismissed = planDismissed(30).map((p) => `- ${p.day} · ${p.name || ''} · ${p.kind} « ${p.title} »${p.note ? ` — Ali : ${p.note}` : ''}`).join('\n') || '(rien pour le moment)';
+  const dismissed = planDismissed(15).map((p) => `- ${p.day} · ${p.name || ''} · ${p.kind} « ${p.title} »${p.note ? ` — Ali : ${p.note}` : ''}`).join('\n') || '(rien pour le moment)';
+  // The learned rules (consolidated 06 + the journal since the last consolidation): since 2026-10-04 every « I did it differently »
+  // becomes a lesson there, so the plan reads the same rules as the drafts instead of only the last raw notes.
+  let rules = ''; try { rules = readFileSync(RULES, 'utf8'); } catch {}
+  const tail = unconsolidatedTail();
+  rules = (rules.trim() || '(aucune règle consolidée pour le moment)') + (tail ? `\n\n### Appris depuis la dernière consolidation (prime sur tout le reste)\n${tail.length > 9000 ? '…\n' + tail.slice(-9000) : tail}` : '');
   let tpls = [];
   try { const bad = failedTemplates(); tpls = (await frenchTemplates()).filter((t) => /^tbc_|^followup_|_replied/.test(t.name) && !bad.has(t.name)).slice(0, 25); } catch {}
   const templates = tpls.map((t) => `- ${t.name} : « ${String(t.body || '').replace(/\s+/g, ' ').slice(0, 160)} »`).join('\n') || '(liste indisponible)';
   const prompt = readFileSync(new URL('./plan-prompt.md', import.meta.url), 'utf8')
-    .replaceAll('{{now}}', madrid(clock)).replaceAll('{{weekday}}', weekday).replaceAll('{{dismissed}}', dismissed).replaceAll('{{templates}}', templates)
+    .replaceAll('{{now}}', madrid(clock)).replaceAll('{{weekday}}', weekday).replaceAll('{{dismissed}}', dismissed).replaceAll('{{templates}}', templates).replaceAll('{{rules}}', rules)
     .replaceAll('{{leads}}', batch.map(leadBlock).join('\n\n'));
   countCall();
   const out = await runClaude(prompt, { schema: SCHEMA, maxTurns: 3, tag: 'plan', timeoutMs: 5 * 60_000, tools: [] });

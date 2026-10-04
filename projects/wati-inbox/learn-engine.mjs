@@ -10,8 +10,10 @@
 
 import { readFileSync, appendFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { getThread, getSuggestion, latestSuggestion, insertLesson, lessonRunsSince, messagesBefore } from './db.mjs';
+import { getThread, getSuggestion, latestSuggestion, insertLesson, lessonRunsSince, messagesBefore, setPlanLesson, planItemById } from './db.mjs';
 import { runClaude, OUTREACH, madrid } from './suggest-engine.mjs';
+import { hubNextFor } from './hub-sync.mjs';
+import { pushAll } from './push.mjs';
 
 const CASES = join(OUTREACH, 'playbook', '04-CAS-APPRIS.md');
 const MAX_PER_DAY = Number(process.env.LEARN_MAX_PER_DAY || 40);
@@ -107,8 +109,60 @@ async function learn(waId, { bubbles, meta, at }) {
   log(who, `→ ${kind}${out.title ? `: ${clean(out.title)}` : ''} (${Math.round(out.ms / 1000)} s)`);
 }
 
+// « I did it differently » on a plan card (Ali, 2026-10-04: « when I do stuff differently I tell you why, you need to learn from it »).
+// Before this, the note was only pasted raw into the next 30 judgements and never became a rule. Now one Claude run turns the card,
+// the Hub state, the thread and Ali's note into a lesson in 04-CAS-APPRIS.md (consolidated every evening into 06, read by the plan
+// and by every draft). When the gesture contradicts a written rule, the card shows both and Ali decides: new rule, or one-off.
+const PLAN_SCHEMA = { type: 'object', properties: { kind: { type: 'string', enum: ['lesson', 'minor', 'none'] }, title: { type: 'string' }, situation: { type: 'string' }, card: { type: 'string' }, did: { type: 'string' }, why: { type: 'string' }, apply: { type: 'string' }, contradicts: { type: 'string' }, source: { type: 'string' } },
+  required: ['kind', 'title', 'situation', 'card', 'did', 'why', 'apply', 'contradicts', 'source'] };
+const fmtM = (iso) => madrid(new Date(iso)).slice(5, 16);
+export async function learnFromPlanNote(item, note) {
+  const waId = item.wa_id, t = getThread(waId), who = item.name || t?.name || `+${waId}`;
+  const day = madrid().slice(0, 10), hhmm = madrid().slice(11, 16);
+  if (lessonRunsSince(new Date(day + 'T00:00:00').toISOString()) >= MAX_PER_DAY) throw new Error(`plafond du jour atteint (${MAX_PER_DAY} leçons)`);
+  const h = hubNextFor(waId);
+  const hub = h ? [`statut ${h.status}${h.paused ? ' · EN PAUSE' : ''}${h.skipNext ? ' · prochain sauté' : ''} · phase ${h.phase || '-'}`,
+    h.next ? `prochain template : ${h.next.step != null ? `#${h.next.step} ` : ''}${h.next.template} à ${fmtM(h.next.at)}${h.next.text ? ` : « ${h.next.text.replace(/\s+/g, ' ').slice(0, 200)} »` : ''}` : 'prochain template : aucun',
+    (h.upcoming || []).filter((u) => !u.past).length ? 'étapes à venir : ' + h.upcoming.filter((u) => !u.past).map((u) => `#${u.step} ${u.template} ${fmtM(u.at)}`).join(', ') : ''].filter(Boolean).join('\n') : '(lead absent du Sales Hub)';
+  const j = (s) => { try { return JSON.parse(s); } catch { return null; } };
+  const card = [`geste : ${item.kind}${item.pause_scope ? ` (${item.pause_scope === 'next' ? 'décocher un template' : 'pause complète'})` : ''}${item.when_at ? ` · heure prévue ${fmtM(item.when_at)}` : ''}`, `titre : ${item.title || ''}`, item.why && `pourquoi : ${item.why}`, item.action && `action : ${item.action}`,
+    j(item.skip_templates)?.length && `à décocher : ${j(item.skip_templates).join(', ')}`, j(item.keep_templates)?.length && `à garder : ${j(item.keep_templates).join(', ')}`, item.template && `template : ${item.template}`, j(item.bubbles)?.length && `bulles : ${j(item.bubbles).join(' / ')}`].filter(Boolean).join('\n');
+  const history = messagesBefore(waId, new Date().toISOString(), 12).map((m) => `[${fmtM(m.at)}] ${m.who === 'US' ? (m.tpl ? 'AUTO' : 'ALI') : 'LEAD'} : ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 300)}`).join('\n');
+  const prompt = readFileSync(new URL('./learn-plan-prompt.md', import.meta.url), 'utf8')
+    .replaceAll('{{name}}', who).replaceAll('{{waId}}', waId).replaceAll('{{now}}', madrid()).replaceAll('{{hub}}', hub).replaceAll('{{card}}', card)
+    .replaceAll('{{history}}', history || '(aucune conversation lisible)').replaceAll('{{note}}', String(note || '').trim());
+  log(`${who}: learning from « I did it differently » on card #${item.id}`);
+  const out = await runClaude(prompt, { schema: PLAN_SCHEMA, maxTurns: 8, tag: 'learn-plan', timeoutMs: 4 * 60_000, tools: ['Read', 'Grep', 'Glob', 'Bash(cat:*)', 'Bash(sed -n:*)', 'Bash(head:*)', 'Bash(tail:*)', 'Bash(grep:*)'] });
+  const kind = ['lesson', 'minor', 'none'].includes(out.kind) ? out.kind : 'lesson';
+  const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+  const contradicts = clean(out.contradicts), source = /^(plan-prompt|06)$/.test(clean(out.source)) ? clean(out.source) : '';
+  let text = '';
+  if (kind === 'lesson') text = `### ${hhmm} · ${who} — ${clean(out.title)} (plan du jour : Ali a fait autrement)\n**Situation :** ${clean(out.situation)}\n**Ce que la carte proposait :** ${clean(out.card)}\n**Ce qu'Ali a fait :** ${clean(out.did)}\n**Pourquoi :** ${clean(out.why)}\n**Comment appliquer :** ${clean(out.apply)}\n${contradicts ? `**Contredit la règle :** « ${contradicts} » (${source || 'source non précisée'}) — en attente de la décision d'Ali dans l'app\n` : ''}`;
+  else if (kind === 'minor') text = `- ${hhmm} · ${who} · **plan, cas particulier** — ${clean(out.title)}${out.why ? ` (${clean(out.why)})` : ''}\n`;
+  if (text) appendCase(day, text);
+  insertLesson({ wa_id: waId, kind: kind === 'none' ? 'none' : 'plan', suggestion_id: item.suggestion_id ?? null, batch: `plan-${item.id}`, sent: [String(note || '')], title: clean(out.title), text });
+  const lesson = { kind, title: clean(out.title), apply: clean(out.apply), contradicts, source, decided: null, at: new Date().toISOString() };
+  setPlanLesson(item.id, lesson);
+  log(`${who} → plan ${kind}: ${clean(out.title)}${contradicts ? ' · CONFLICT with a written rule' : ''} (${Math.round(out.ms / 1000)} s)`);
+  if (contradicts) pushAll({ title: `Rule conflict · ${who}`, body: `${clean(out.title)}. This contradicts: « ${contradicts.slice(0, 120)} ». New rule or one-off? Decide on the card.`, tag: `plan-rule-${item.id}`, url: '/plan' }).catch(() => {});
+  return lesson;
+}
+// Ali's verdict on a conflict: the gesture becomes the rule (the consolidation makes the latest decision win), or stays a one-off.
+export function decidePlanRule(item, accept) {
+  let lesson = null; try { lesson = item.lesson ? JSON.parse(item.lesson) : null; } catch {}
+  if (!lesson) throw new Error('No lesson on this card');
+  const day = madrid().slice(0, 10), hhmm = madrid().slice(11, 16), who = item.name || `+${item.wa_id}`;
+  appendCase(day, accept
+    ? `- ${hhmm} · ${who} · **RÈGLE REMPLACÉE (décision d'Ali)** — ${lesson.apply || lesson.title}${lesson.contradicts ? ` (remplace : « ${lesson.contradicts} »${lesson.source ? `, ${lesson.source}` : ''})` : ''}\n`
+    : `- ${hhmm} · ${who} · **cas particulier (décision d'Ali)** — la règle « ${lesson.contradicts || '…'} » reste ; exception pour ce lead seulement : ${lesson.title}\n`);
+  lesson.decided = accept ? 'rule' : 'oneoff'; lesson.decidedAt = new Date().toISOString();
+  setPlanLesson(item.id, lesson);
+  log(`${who}: conflict decided → ${lesson.decided}`);
+  return lesson;
+}
+
 // Appends under today's "## <date> — Appris dans l'app" heading at the end of 04-CAS-APPRIS.md (created once a day).
-function appendCase(day, text) {
+export function appendCase(day, text) {
   const head = `## ${day} — Appris dans l'app`;
   const cur = existsSync(CASES) ? readFileSync(CASES, 'utf8') : '';
   const lastHead = cur.lastIndexOf('\n## ');
