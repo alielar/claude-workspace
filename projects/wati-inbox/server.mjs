@@ -115,7 +115,7 @@ async function restoreScheduled() {
     scheduleSend(r.wa_id, bubbles, meta, Math.max(0, Date.parse(r.at) - Date.now()), { id: r.id });
   }
 }
-const typingGap = (text) => 5000 + Math.min(5000, text.length * 20);
+const typingGap = (text) => 10000 + Math.min(5000, text.length * 25); // 10-15 s between bubbles (Ali, 2026-10-04), like someone typing
 // The bubbles still to go are kept on disk (scheduled_sends, kind 'rest') until they are all out, so a restart of the app
 // resumes them instead of dropping them (Joanna, 2026-10-04). first = index of the first bubble still to send.
 function sendRest(waId, t, bubbles, meta, { first = 1, rowId = null } = {}) {
@@ -461,7 +461,7 @@ function followupCheck(waId, at) { // null when fine, else the reason it cannot 
   if (Date.parse(at) >= closes) return `The 24h window closes at ${closes ? fmtHMm(new Date(closes).toISOString()) : '?'}, before this follow-up: only a template could go then`;
   return null;
 }
-const followupView = (r) => ({ id: r.id, at: r.at, bubbles: JSON.parse(r.bubbles), state: r.state, error: r.error, created_at: r.created_at });
+const followupView = (r) => ({ id: r.id, at: r.at, bubbles: JSON.parse(r.bubbles), state: r.state, error: r.error, created_at: r.created_at, suggestionId: JSON.parse(r.meta || '{}').suggestionId || null });
 let followupBusy = false;
 async function followupTick() {
   if (followupBusy) return; followupBusy = true;

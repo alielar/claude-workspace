@@ -298,6 +298,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   // "Nothing to answer": one tap sends a single emoji as the reply (Wati's API has no WhatsApp reaction, Ali 2026-10-01).
   else if (sug && sug.kind === 'skip') claude = `<div class="card"><span class="muted small">Claude: nothing to answer. ${esc(sug.why || '')}</span> <button class="small" id="anyway">Draft anyway</button>
       ${d.windowOpen ? `<div class="emojis" style="margin-top:8px">${['🙏', '👍', '😊', '🎉', '💪', '✅'].map((e) => `<button class="small" data-react="${e}" type="button" title="Send ${e} as the reply">${e}</button>`).join('')}<span class="muted small">· sends the emoji as a message</span></div>` : ''}</div>`;
+  else if (o && o.bubbles?.length && (d.followups || []).some((f) => f.state === 'pending' && f.suggestionId === sug.id)) claude = ''; // this draft is already scheduled: its card above is the one to edit
   else if (o && o.bubbles?.length) {
     // Editing = one field per bubble; each field is still its own WhatsApp message when sent.
     // Editing (Ali, 2026-10-01): emojis go into the bubble being edited; Save keeps the edit as the draft itself, on
@@ -516,7 +517,7 @@ function followupsHtml(d) {
   const fus = d.followups || [];
   const pend = fus.filter((f) => f.state === 'pending'), gone = fus.filter((f) => f.state !== 'pending');
   const goneHtml = gone.map((f) => `<div class="card sending failed"><b>${f.state === 'replied' ? `${fmtTime(f.at)} follow-up not sent` : `${fmtTime(f.at)} follow-up NOT sent`}</b>: ${esc(f.error || f.state)}${f.state === 'replied' ? '. Adapt your answer to what the lead said.' : ''}<div class="small muted">« ${esc(f.bubbles.join(' / ').slice(0, 140))} »</div><div class="acts"><button class="small" data-fuseen="${f.id}">Dismiss</button></div></div>`).join('');
-  const pendHtml = pend.map((f) => { const e = fuEdit[f.id]; return `<div class="card fu"><div class="opt-head">Follow-up at ${e ? `<input type="time" data-futime="${f.id}" value="${esc(e.at)}">` : `<b>${fmtTime(f.at)}</b>`} <span class="muted">· sent by the Mac unless the lead writes first</span></div>
+  const pendHtml = pend.map((f) => { const e = fuEdit[f.id]; return `<div class="card fu opt"><div class="opt-head">Follow-up at ${e ? `<input type="time" data-futime="${f.id}" value="${esc(e.at)}">` : `<b>${fmtTime(f.at)}</b>`} <span class="muted">· ${f.bubbles.length > 1 ? `${f.bubbles.length} messages, 10-15 s apart` : '1 message'} · not sent if the lead writes first</span></div>
       ${e ? `<textarea data-futext="${f.id}" rows="4">${esc(e.text)}</textarea><div class="muted small">An empty line separates two bubbles</div>` : f.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}
       <div class="acts">${e ? `<button class="primary small" data-fusave="${f.id}">Save</button><button class="small" data-fuedit="${f.id}">Cancel</button>` : `<button class="small" data-fuedit="${f.id}">Edit</button><button class="small" data-fudel="${f.id}">Don't send</button>`}</div></div>`; }).join('');
   const form = fuForm ? `<div class="card fu"><div class="opt-head">New follow-up at <input type="time" id="fuat" value="${esc(fuForm.at)}"></div>
