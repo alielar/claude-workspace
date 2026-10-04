@@ -73,7 +73,11 @@ try { db.exec('ALTER TABLE messages ADD COLUMN tpl_name TEXT'); } catch {} // na
 // (Boris, 2026-10-03: part 1 sent 18:50, app restarted 18:51, part 2 never left and nothing said so).
 db.exec(`CREATE TABLE IF NOT EXISTS scheduled_sends (id INTEGER PRIMARY KEY AUTOINCREMENT, wa_id TEXT NOT NULL, bubbles TEXT NOT NULL, meta TEXT, at TEXT NOT NULL, created_at TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'pending', error TEXT, seen INTEGER NOT NULL DEFAULT 0)`);
-export const insertScheduled = (waId, bubbles, meta, at) => Number(db.prepare('INSERT INTO scheduled_sends (wa_id, bubbles, meta, at, created_at) VALUES (?, ?, ?, ?, ?)').run(waId, JSON.stringify(bubbles), JSON.stringify(meta || {}), at, new Date().toISOString()).lastInsertRowid);
+// kind: 'later' (part 2, sent at its time) or 'rest' (the bubbles of a send still going out one by one; Joanna, 2026-10-04:
+// a restart between bubble 2 and 3 lost bubble 3).
+try { db.exec("ALTER TABLE scheduled_sends ADD COLUMN kind TEXT NOT NULL DEFAULT 'later'"); } catch {}
+export const insertScheduled = (waId, bubbles, meta, at, kind = 'later') => Number(db.prepare('INSERT INTO scheduled_sends (wa_id, bubbles, meta, at, created_at, kind) VALUES (?, ?, ?, ?, ?, ?)').run(waId, JSON.stringify(bubbles), JSON.stringify(meta || {}), at, new Date().toISOString(), kind).lastInsertRowid);
+export const setScheduledBubbles = (id, bubbles) => db.prepare('UPDATE scheduled_sends SET bubbles = ? WHERE id = ?').run(JSON.stringify(bubbles), id);
 export const setScheduledState = (id, state, error = null) => db.prepare('UPDATE scheduled_sends SET state = ?, error = ? WHERE id = ?').run(state, error, id);
 export const pendingScheduled = () => db.prepare("SELECT * FROM scheduled_sends WHERE state = 'pending' ORDER BY at").all();
 export const missedScheduled = (waId) => db.prepare("SELECT * FROM scheduled_sends WHERE wa_id = ? AND state = 'missed' AND seen = 0 ORDER BY id DESC LIMIT 1").get(waId);

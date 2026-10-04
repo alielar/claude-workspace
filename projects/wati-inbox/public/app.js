@@ -323,7 +323,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     : d.lastLesson && (!sug || d.lastLesson.at >= sug.created_at) ? `<p class="muted small learn">Learned ${ago(d.lastLesson.at)}: ${d.lastLesson.kind === 'confirmed' ? 'draft sent as is' : d.lastLesson.kind === 'lesson' ? `lesson: ${esc(d.lastLesson.title || '')}` : d.lastLesson.kind === 'minor' ? 'small edit noted' : 'nothing to keep'}</p>` : '';
   const schedBox = d.scheduled ? `<div class="card sending">Second part in ${fmtLeft(d.scheduled.at)}: « ${esc(d.scheduled.bubbles[0].slice(0, 80))}… » <button class="small" id="cancelsched">Cancel</button></div>` : '';
   // A delayed send the app could not make (it was down at the time): never silent (Boris, 2026-10-03).
-  const missedBox = d.scheduledMissed ? `<div class="card sending failed"><b>Part 2 was NOT sent</b> at ${fmtTime(d.scheduledMissed.at)}: the app was not running. Send it by hand from the « In 5-10 min » card below, or dismiss.<div class="acts"><button class="small" id="missedseen">Dismiss</button></div></div>` : '';
+  const missedBox = d.scheduledMissed ? `<div class="card sending failed"><b>Not sent</b> (${fmtTime(d.scheduledMissed.at)}), the app was restarting: « ${esc(d.scheduledMissed.bubbles.join(' / ').slice(0, 160))} ». Send it by hand, then dismiss.<div class="acts"><button class="small" id="missedseen">Dismiss</button></div></div>` : '';
   const sendBox = sending ? `<div class="card sending ${sending.error ? 'failed' : ''}">${sending.error ? esc(sending.error) : `Sending ${sending.sent}/${sending.total}`}</div>` : '';
 
   // Steering Claude (folded): the initial offer, the moves, a free consigne.

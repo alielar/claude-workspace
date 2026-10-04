@@ -11,7 +11,7 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { insertScheduled, setScheduledState, pendingScheduled, missedScheduled, markScheduledSeen } from './db.mjs';
+import { insertScheduled, setScheduledState, setScheduledBubbles, pendingScheduled, missedScheduled, markScheduledSeen } from './db.mjs';
 import { pushAll } from './push.mjs';
 import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, getSuggestion, setSuggestionEdited, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagVerdict, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
@@ -90,6 +90,19 @@ async function restoreScheduled() {
   if (!rows.length) { console.log('scheduled: nothing pending'); return; }
   for (const r of rows) {
     const bubbles = JSON.parse(r.bubbles), meta = JSON.parse(r.meta || '{}'), late = Date.now() - Date.parse(r.at);
+    if (r.kind === 'rest') { // bubbles cut by the restart, mid-send
+      const t = storedThread(r.wa_id);
+      if (!bubbles.length) { setScheduledState(r.id, 'sent'); continue; }
+      if (late > 30 * 60_000 || !t) {
+        setScheduledState(r.id, 'missed', 'the app restarted while these bubbles were going out');
+        console.log(`scheduled: MISSED rest #${r.id} for ${t?.name || r.wa_id} (${bubbles.length} bubble(s))`);
+        if (t) pushAll({ title: `${bubbles.length} bubble(s) NOT sent · ${t.name || r.wa_id}`, body: `« ${bubbles[0].slice(0, 80)} » — send by hand`, tag: `missed-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {});
+        continue;
+      }
+      console.log(`scheduled: resuming ${bubbles.length} bubble(s) cut by the restart for ${t.name || r.wa_id}`);
+      sendRest(r.wa_id, t, ['', ...bubbles], meta, { first: 1, rowId: r.id });
+      continue;
+    }
     if (late > 30 * 60_000) {
       setScheduledState(r.id, 'missed', `the app was not running at ${r.at.slice(11, 16)}Z`);
       const t = storedThread(r.wa_id);
@@ -102,20 +115,23 @@ async function restoreScheduled() {
   }
 }
 const typingGap = (text) => 5000 + Math.min(5000, text.length * 20);
-function sendRest(waId, t, bubbles, meta) {
-  const state = { sent: 1, total: bubbles.length, error: null };
+// The bubbles still to go are kept on disk (scheduled_sends, kind 'rest') until they are all out, so a restart of the app
+// resumes them instead of dropping them (Joanna, 2026-10-04). first = index of the first bubble still to send.
+function sendRest(waId, t, bubbles, meta, { first = 1, rowId = null } = {}) {
+  const state = { sent: first, total: bubbles.length, error: null };
   sending.set(waId, state);
+  const row = rowId || insertScheduled(waId, bubbles.slice(first), meta, new Date().toISOString(), 'rest');
   (async () => {
-    for (let i = 1; i < bubbles.length; i++) {
+    for (let i = first; i < bubbles.length; i++) {
       await sleep(typingGap(bubbles[i]));
-      try { await sendText(waId, bubbles[i]); logSend(waId, 'text', { text: bubbles[i], ...meta }, true); state.sent = i + 1; }
-      catch (e) { logSend(waId, 'text', { text: bubbles[i] }, false, e.message); state.error = `Bulle ${i + 1}/${bubbles.length} non envoyée : ${e.message}`; console.error('send', waId, e.message); break; }
+      try { await sendText(waId, bubbles[i]); logSend(waId, 'text', { text: bubbles[i], ...meta }, true); state.sent = i + 1; setScheduledBubbles(row, bubbles.slice(i + 1)); }
+      catch (e) { logSend(waId, 'text', { text: bubbles[i] }, false, e.message); state.error = `Bulle ${i + 1}/${bubbles.length} non envoyée : ${e.message}`; console.error('send', waId, e.message); setScheduledState(row, 'failed', e.message); break; }
       saveThread({ ...storedThread(waId), pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[i].slice(0, 200) });
       refreshThread(waId, t.name, { notify: false }).catch(() => {});
     }
     await refreshThread(waId, t.name, { notify: false }).catch(() => {});
     if (state.error) setTimeout(() => sending.delete(waId), 90_000); // keep the failure on screen for a while
-    else { sending.delete(waId); learnFromSend(waId, bubbles, meta); } // every bubble out: learn from what Ali sent
+    else { setScheduledState(row, 'sent'); sending.delete(waId); if (!rowId) learnFromSend(waId, bubbles, meta); } // every bubble out: learn from what Ali sent (not after a resume: part of it went before the restart)
   })();
 }
 
@@ -401,6 +417,14 @@ createHttp((req, res) => {
   res.end();
 }).listen(PORT + 1);
 
+// A restart (launchctl kickstart, update) waits up to 15 s for bubbles still going out before the app stops; whatever is
+// left after that is resumed at the next start from scheduled_sends (Joanna, 2026-10-04).
+process.on('SIGTERM', async () => {
+  const until = Date.now() + 15_000;
+  while ([...sending.values()].some((x) => !x.error) && Date.now() < until) await sleep(500);
+  console.log(`stopping${[...sending.values()].some((x) => !x.error) ? ' with bubbles still to send (they resume at the next start)' : ''}`);
+  process.exit(0);
+});
 server.listen(PORT, () => {
   console.log(`Wati Inbox on https://localhost:${PORT}  ·  https://${TS_HOST}:${PORT}`);
   restoreScheduled().catch((e) => console.log('scheduled: restore error', e.message));
