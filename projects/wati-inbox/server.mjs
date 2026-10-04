@@ -458,7 +458,7 @@ const server = createServer({
     if (path.startsWith('/api/')) return await api(req, res, path);
     if (path === '/ca.pem') return serveStatic(res, 'certs/ca.pem', MIME['.pem']);           // the phone downloads the certificate from here
     const file = join('public', normalize(path).replace(/^(\.\.[/\\])+/, ''));
-    if (path !== '/' && !path.startsWith('/t/') && existsSync(file) && extname(file)) return serveStatic(res, file, MIME[extname(file)] || 'application/octet-stream');
+    if (path !== '/' && !path.startsWith('/t/') && path !== '/rules' && existsSync(file) && extname(file)) return serveStatic(res, file, MIME[extname(file)] || 'application/octet-stream');
     return serveStatic(res, 'public/index.html', MIME['.html']);                             // app shell: / and /t/<waId>
   } catch (e) {
     console.error(req.method, path, e.message);

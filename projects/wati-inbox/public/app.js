@@ -1,4 +1,4 @@
-// Wati Inbox client: inbox (/), thread (/t/<waId>), France TM (/tm). Login, push, theme, Claude drafts.
+// Wati Inbox client: inbox (/), thread (/t/<waId>), France TM (/tm), Today (/plan), Rule conflicts (/rules). Login, push, theme, Claude drafts.
 // Rebuilt 2026-09-30: drafts arrive by themselves when a lead writes; the screen shows one thing at a time.
 const $ = (s, el = document) => el.querySelector(s);
 const app = $('#app');
@@ -139,7 +139,7 @@ try { history.scrollRestoration = 'manual'; } catch {}
 // Where a conversation was opened from (home, Aujourd'hui, France TM): its back arrow returns there, not always home.
 let cameFrom = '/';
 const go = (path) => { if (/^\/t\//.test(path) && !/^\/t\//.test(location.pathname)) cameFrom = location.pathname; history.pushState(null, '', path); route(); };
-const backHref = () => (/^\/(plan|tm)$/.test(cameFrom) ? cameFrom : '/');
+const backHref = () => (/^\/(plan|tm|rules)$/.test(cameFrom) ? cameFrom : '/');
 window.addEventListener('popstate', route);
 document.addEventListener('click', (e) => { const a = e.target.closest('a[data-nav]'); if (a) { e.preventDefault(); go(a.getAttribute('href')); } });
 
@@ -199,7 +199,7 @@ let inboxFilter = '';
 const suggPill = (t) => t.suggesting === 'drafting' || t.suggesting === 'queued' ? '<span class="pill work">Claude is drafting…</span>' : t.suggested === 'needs' ? '<span class="pill warn">Claude has a question</span>' : t.suggested ? '<span class="pill ready">draft ready</span>' : '';
 let inboxCache = null;
 async function renderInbox({ fromCache = false } = {}) {
-  const { threads, tm, tbc = [], salesHub = '', plan = null } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
+  const { threads, tm, tbc = [], salesHub = '', plan = null, rules = 0 } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
   const q = inboxFilter.trim().toLowerCase();
   const shown = q ? threads.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : threads;
   const pending = shown.filter((t) => t.pending && !t.muted), done = shown.filter((t) => !t.pending || t.muted);
@@ -209,7 +209,7 @@ async function renderInbox({ fromCache = false } = {}) {
   const direct = /^\d{8,15}$/.test(digits) && !threads.some((t) => t.wa_id === digits) ? `<a class="card lead-row" data-nav href="/t/${digits}"><div class="who"><div class="name">Open +${digits}</div></div></a>` : '';
   const hub = tbc.length ? `<p class="section">Sales Hub: to handle (${tbc.length})</p>${tbc.map((a) => `<a class="card lead-row tbc-row ${a.state}" data-nav href="/t/${a.wa_id}"><div class="who"><div class="name">${esc(a.name || a.wa_id)} <span class="pill ${a.state === 'paused' ? 'ready' : 'warn'}">${a.state === 'paused' ? 'paused · follow-up to send' : 'to pause'}</span></div><div class="txt">${esc(a.tpl)} at ${fmtTime(a.fires_at)}: ${esc(a.why || '')}</div></div></a>`).join('')}${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Open the Sales Hub ↗</a>` : ''}` : '';
   const planCard = plan ? `<a class="card plan-home" data-nav href="/plan"><div class="who"><div class="name">Today${plan.todo ? ` <span class="pill warn">${plan.todo} to handle</span>` : ''}${plan.followups ? ` <span class="pill ready">${plan.followups} follow-up${plan.followups > 1 ? 's' : ''}</span>` : ''}${!plan.todo && !plan.followups ? ' <span class="pill">nothing to do</span>' : ''}</div><div class="txt">${plan.next?.length ? plan.next.map((i) => `${esc(i.name || i.wa_id)} · ${esc(i.title)}`).join(' | ') : `${plan.waits} waiting · ${plan.oks} template${plan.oks > 1 ? 's' : ''} fine · ${plan.done} done`}</div></div><span class="chev">›</span></a>` : '';
-  app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><a data-nav href="/tm" class="tmlink">France TM${tm?.unseen ? ` <span class="pill warn">${tm.unseen}</span>` : ''}</a><button id="rf" class="small">↻</button></header>
+  app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><a data-nav href="/rules" class="tmlink">Rules${rules ? ` <span class="pill warn">${rules}</span>` : ''}</a><a data-nav href="/tm" class="tmlink">France TM${tm?.unseen ? ` <span class="pill warn">${tm.unseen}</span>` : ''}</a><button id="rf" class="small">↻</button></header>
     <input class="search" id="q" placeholder="Name or number" value="${esc(inboxFilter)}" inputmode="search">${direct}
     ${planCard}${plan ? '' : hub}
     ${pending.length ? `<p class="section">To answer (${pending.length})</p>${pending.map(row).join('')}` : '<p class="muted center">Nothing waiting</p>'}
@@ -563,7 +563,7 @@ function lessonHtml(i) {
   let l = null; try { l = i.lesson ? (typeof i.lesson === 'string' ? JSON.parse(i.lesson) : i.lesson) : null; } catch {}
   if (i.state === 'dismissed' && !l) return '<div class="muted small">Claude is writing the lesson…</div>';
   if (!l || l.kind === 'none') return '';
-  return `<div class="small lesson">Learned: <b>${esc(l.title || '')}</b>${l.contradicts ? `<div class="muted small">${l.decided ? `Rule conflict decided: <b>${VERDICT[l.decided] || l.decided}</b>` : 'Rule conflict · decide it at the top of the Today screen'}</div>` : ''}</div>`;
+  return `<div class="small lesson">Learned: <b>${esc(l.title || '')}</b>${l.contradicts ? `<div class="muted small">${l.decided ? `Rule conflict decided: <b>${VERDICT[l.decided] || l.decided}</b>` : 'Rule conflict · decide it on the Rules page (home screen)'}</div>` : ''}</div>`;
 }
 const VERDICT = { rule: 'B is now the rule', oneoff: 'A kept, this lead was a one-off', conditional: 'A in general, B in the context given' };
 // A rule conflict (2026-10-04): what happened, rule A (written), rule B (what Ali did), a context box, three verdicts.
@@ -615,7 +615,7 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-planrule]').forEach((b) => b.onclick = async () => { const v = b.dataset.verdict, context = ($(`#rctx-${b.dataset.planrule}`)?.value || '').trim(); if (v === 'conditional' && !context) { toast('Write or dictate the context first'); return; } if (rec) { toast('Stop the dictation first'); return; } try { await api(`/api/plan/${b.dataset.planrule}/rule`, { method: 'POST', body: { verdict: v, context } }); toast(v === 'rule' ? 'B is now the rule' : v === 'conditional' ? 'Rule refined with your context' : 'A kept, one-off noted'); after(); } catch (e) { toast(e.message); } });
 }
 async function renderPlan() {
-  const { items, counts, status, hub, salesHub, citf = [], ahead = [], scheduled = [], conflicts = [], decided = [] } = await api('/api/plan');
+  const { items, counts, status, hub, salesHub, citf = [], ahead = [], scheduled = [] } = await api('/api/plan');
   const running = status.state === 'running';
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
@@ -633,22 +633,31 @@ async function renderPlan() {
   app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Today <span class="muted small">${fmtDay(new Date().toISOString())}</span></h1><button id="replan" class="small ${running ? 'busy' : ''}" ${running ? 'disabled' : ''}>${running ? 'Claude is reviewing…' : 'Replan'}</button></header>
     <p class="muted small">${status.ready ? `Sales Hub read ${hub.leadsAt ? ago(hub.leadsAt) : 'never'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'no plan yet'} · ${status.calls}/${status.max} reviews today` : 'Sales Hub not connected (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
     ${citf.length ? `<p class="muted small">Resuming today (CITF): ${citf.map((c) => `<a data-nav href="/t/${c.wa_id}">${esc(c.name)}</a> ${fmtTime(c.at)}${c.case ? ` (${esc(c.case)})` : ''}${c.passed ? ' · sent' : ''}`).join(' · ')}</p>` : ''}
-    ${conflicts.length ? `<p class="section">Rule conflicts to decide (${conflicts.length}) <span class="muted small">· you did it differently, Claude found a written rule that says otherwise</span></p>${conflicts.map((i) => conflictCardHtml(i)).join('')}` : ''}
-    ${!open.length && !closed.length && !conflicts.length ? '<p class="muted center">Nothing for today</p>' : ''}
+    ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
     ${sec('Now', todo)}${scheduled.length ? `<p class="section">Scheduled follow-ups (${scheduled.length})</p>${scheduled.map((f) => `<a class="card sched-row" data-nav href="/t/${f.wa_id}"><div class="sched-head"><span class="pill">${fmtWhen(f.at)}</span><b>${esc(f.name)}</b><span class="muted small">${f.bubbles.length > 1 ? `${f.bubbles.length} messages` : '1 message'}</span><span class="chev">›</span></div>${f.bubbles.map((b) => `<div class="sched-b"><span>${esc(b)}</span></div>`).join('')}</a>`).join('')}` : ''}${sec('Later today', later)}${sec('Waiting', wait)}
     ${(() => { const tmr = new Date(); tmr.setDate(tmr.getDate() + 1); const tKey = tmr.toISOString().slice(0, 10); const sameDay = (i) => new Date(i.when_at || `${i.day}T12:00:00`).toDateString() === tmr.toDateString(); const tom = ahead.filter((i) => i.day === tKey || sameDay(i)).sort(byTime), lat = ahead.filter((i) => !tom.includes(i)).sort(byTime); return sec('Tomorrow', tom) + sec('Later', lat); })()}
     ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${ok.length ? `<details class="card fold" data-fold="ok" ${planFolds.has('ok') ? 'open' : ''}><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${closed.length ? `<details class="card fold" data-fold="done" ${planFolds.has('done') ? 'open' : ''}><summary>Done (${closed.length})</summary>${closed.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
-    ${decided.length ? `<details class="card fold" data-fold="rules" ${planFolds.has('rules') ? 'open' : ''}><summary>Rules you decided (${decided.length})</summary>${decided.map((i) => conflictCardHtml(i, { decided: true })).join('')}</details>` : ''}
     ${salesHub ? `<p class="center"><a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Open the Sales Hub ↗</a></p>` : ''}`;
   // The folded sections stay as Ali left them across refreshes (Done tapped, 45 s tick).
   document.querySelectorAll('[data-fold]').forEach((d) => { d.ontoggle = () => { d.open ? planFolds.add(d.dataset.fold) : planFolds.delete(d.dataset.fold); }; });
-  bindMic();
   $('#replan').onclick = async () => { $('#replan').disabled = true; try { await api('/api/plan/run', { method: 'POST' }); toast('Claude is reviewing every lead, 2 to 5 minutes'); } catch (e) { toast(e.message); } setTimeout(route, 2000); };
   bindPlanButtons(route);
 }
 const planFolds = new Set();
+
+// ── Rule conflicts (/rules, Ali 2026-10-04): a page of its own, consulted when he wants; nothing here pushes ─────────
+async function renderRules() {
+  const { conflicts = [], decided = [] } = await api('/api/rules');
+  app.innerHTML = `<header><a data-nav href="/">‹</a><h1>Rules <span class="muted small">conflicts to decide</span></h1></header>
+    <p class="muted small">When you tap « I did it differently », Claude writes the lesson. When it contradicts a written rule, the two sit here until you decide. Your verdict and context become the rule tonight, for the plan and the drafts.</p>
+    ${conflicts.length ? `<p class="section">To decide (${conflicts.length})</p>${conflicts.map((i) => conflictCardHtml(i)).join('')}` : '<p class="muted center">No conflict waiting</p>'}
+    ${decided.length ? `<details class="card fold" data-fold="rules" ${planFolds.has('rules') ? 'open' : ''}><summary>Decided (${decided.length})</summary>${decided.map((i) => conflictCardHtml(i, { decided: true })).join('')}</details>` : ''}`;
+  document.querySelectorAll('[data-fold]').forEach((d) => { d.ontoggle = () => { d.open ? planFolds.add(d.dataset.fold) : planFolds.delete(d.dataset.fold); }; });
+  bindMic();
+  bindPlanButtons(route);
+}
 
 // ── France TM: what Claude flagged on the booking bot ─────────────────────────
 let tmOpen = new Set();
@@ -689,7 +698,7 @@ async function route() {
   // position and the open sections (Ali, 2026-10-01: "it gets me on top and closes the accordion").
   const samePage = location.pathname === lastRoutedPath; lastRoutedPath = location.pathname;
   const y = window.scrollY;
-  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : location.pathname === '/plan' ? await renderPlan() : await renderInbox(); if (!m) { if (samePage) requestAnimationFrame(() => window.scrollTo(0, y)); else window.scrollTo(0, 0); } }
+  try { m ? await renderThread(m[1]) : location.pathname === '/tm' ? await renderTm() : location.pathname === '/rules' ? await renderRules() : location.pathname === '/plan' ? await renderPlan() : await renderInbox(); if (!m) { if (samePage) requestAnimationFrame(() => window.scrollTo(0, y)); else window.scrollTo(0, 0); } }
   catch (e) { if (e.message !== 'login') app.innerHTML = `<header><a data-nav href="/">‹</a></header><p class="err">${esc(e.message)}</p>`; }
   finally { document.body.classList.remove('busy'); }
 }

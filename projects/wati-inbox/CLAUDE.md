@@ -91,7 +91,7 @@ Then commit and push. Test a draft from the terminal with
   learn-engine.mjs (prompt `learn-plan-prompt.md`, background lane, same 40/day cap): one lesson block « plan du jour : Ali a fait
   autrement » in 04-CAS-APPRIS.md, consolidated into 06 every evening; the plan prompt now reads 06 + the journal tail (`{{rules}}`)
   like every draft, and only the last 15 raw notes. When the gesture contradicts a written rule (plan-prompt.md or 06) the card shows
-  both in a « Rule conflicts to decide » section at the top of Today (whatever the card's day, `planConflicts` in db.mjs): rule A
+  both on a page of their own, « Rules » (`/rules`, button next to France TM on the home screen with the count; `/api/rules`, `planConflicts` in db.mjs): rule A
   (written, with its source), rule B (his gesture as a rule), a context box with dictation, three verdicts (`/api/plan/<id>/rule`:
   `rule` = B replaces A, `conditional` = A in general and B in the given context, `oneoff` = A kept); **no push** for a conflict, Ali
   reviews the section himself. The verdict and his context go to the journal word for word (« RÈGLE REMPLACÉE », « RÈGLE PRÉCISÉE »,
