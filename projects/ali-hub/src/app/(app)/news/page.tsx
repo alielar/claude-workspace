@@ -259,7 +259,7 @@ export default function NewsPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0, alignItems: "end" }}>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>Weekly brief</h2>
-            <div className="sub">{brief ? `${prettyRange(brief.from, brief.to)} · ${brief.readMinutes} min read` : weeklyLoading ? "…" : "arrives on Monday morning"}</div>
+            <div className="sub">{brief ? `${prettyRange(brief.from, brief.to)} · ${brief.readMinutes} min read` : weeklyLoading ? "…" : "arrives on Sunday morning"}</div>
           </div>
           {brief && ep?.status === "ready" && ep.audioUrl && (
             <Link href={`/podcast?date=${brief.week}`} className="cc-btn cc-btn-primary" style={{ minHeight: 44, padding: "0 16px", borderRadius: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
@@ -277,7 +277,7 @@ export default function NewsPage() {
           </div>
         )}
         {!brief && !weeklyLoading && (
-          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>The first weekly brief is written on Monday morning from the week&apos;s daily briefs.</div></div>
+          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>The first weekly brief is written on Sunday morning from the week&apos;s daily briefs.</div></div>
         )}
         {sections.map((sec) => (
           <section key={sec.key} className="cc-card">

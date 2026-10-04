@@ -21,7 +21,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
-import { previousWeekKey } from "@/lib/train/types";
+import { briefWeekKey } from "@/lib/news/week";
 import { checklistToday } from "@/lib/checklist/day";
 
 type Chapter = { title: string; startSec: number };
@@ -67,9 +67,9 @@ export default function PodcastPage() {
 function PodcastPlayer() {
   const router = useRouter();
   // ?date=2026-W40 = a WEEKLY episode (2026-10-03) · ?date=YYYY-MM-DD = an old daily one (retired
-  // 2026-10-04) · default = last week's episode, the only one still made.
+  // 2026-10-04) · default = the current weekly episode (Sunday → this week's, else last week's).
   const q = useSearchParams().get("date");
-  const today = q && /^\d{4}-(\d{2}-\d{2}|W\d{2})$/.test(q) ? q : previousWeekKey(checklistToday());
+  const today = q && /^\d{4}-(\d{2}-\d{2}|W\d{2})$/.test(q) ? q : briefWeekKey(checklistToday());
   const isWeekly = /-W\d{2}$/.test(today);
   const isToday = today === checklistToday();
   const { data, setData } = useCached<{ episode: Episode | null }>(isToday ? "podcast-today" : `podcast-${today}`, () => fetchJson(isToday ? "/api/podcast/today" : `/api/podcast/today?date=${today}`));

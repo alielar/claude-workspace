@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/podcast/cron",
-      "schedule": "40 4 * * *"
+      "schedule": "30 6 * * *"
     },
     {
       "path": "/api/checklist/suggestions/cron",

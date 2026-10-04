@@ -1,6 +1,6 @@
 import { NextResponse, after, type NextRequest } from "next/server";
 import { ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
-import { getWeeklyBrief, previousWeek } from "@/lib/news/weekly";
+import { getWeeklyBrief, briefWeek } from "@/lib/news/weekly";
 import { pollVideos } from "@/lib/news/videos";
 import { pollHighlights } from "@/lib/news/highlights";
 import { prewriteIfSessionDay } from "@/lib/mind/server";
@@ -51,13 +51,13 @@ export async function GET(req: NextRequest) {
   // Heartbeat · Settings shows "service last ran Xm ago", so a dead pinger is visible.
   await db.update(userSettings).set({ lastReminderTickAt: now }).where(eq(userSettings.userId, userId)).catch(() => {});
 
-  // Podcast self-healing (weekly only since 2026-10-04 · the daily episode is retired): the Monday
-  // cron writes the episode; a failed script or voicing is retried here in the morning window ·
-  // spacing and the attempt cap live inside ensureWeeklyPodcast.
-  if (hm >= "06:30" && hm <= "10:30") {
+  // Podcast self-healing (weekly only since 2026-10-04 · the daily episode is retired): the Sunday
+  // cron writes the episode; a failed script or voicing is retried here from 09:00 Madrid (after
+  // Sunday's own daily brief at 06:00 UTC) · spacing and the attempt cap live inside ensureWeeklyPodcast.
+  if (hm >= "09:00" && hm <= "12:30") {
     after(async () => {
       try {
-        const prev = previousWeek(checklistToday(now));
+        const prev = briefWeek(checklistToday(now));
         const brief = await getWeeklyBrief(userId, prev.week);
         const wep = brief ? await todaysEpisode(userId, prev.week) : null;
         if (brief && (!wep || wep.status !== "ready")) await ensureWeeklyPodcast(userId, brief);

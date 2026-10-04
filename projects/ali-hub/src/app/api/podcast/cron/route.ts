@@ -1,8 +1,9 @@
 /**
  * GET /api/podcast/cron · the WEEKLY brief + podcast (daily episodes retired 2026-10-04 · Ali:
  * "just the weekly deep dive, the weekly brief and the weekly podcast").
- * Called by Vercel Cron at 04:40 UTC every day: builds last week's brief once its dailies are in,
- * voices the episode on Monday (or any later day it is still missing). Idempotent; the reminders
+ * Called by Vercel Cron at 06:30 UTC every day (after the 06:00 news cron): on SUNDAY it builds
+ * THIS week's brief from the week's dailies and voices the episode (Ali 2026-10-04: "on Sunday, on
+ * what happened during the week") · Monday to Saturday it only fills in a missing one. Idempotent; the reminders
  * tick retries the audio in the morning window. `?daily=1` still makes a daily episode by hand.
  * Auth: Vercel cron's Bearer CRON_SECRET, or ?key= for manual runs.
  */
@@ -14,7 +15,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { ensureTodaysPodcast, ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
-import { ensureWeeklyBrief, previousWeek } from "@/lib/news/weekly";
+import { ensureWeeklyBrief, briefWeek } from "@/lib/news/weekly";
 import { checklistToday } from "@/lib/checklist/day";
 
 /** The cron must never fail on a missing table (idempotent, same DDL as migrate). */
@@ -84,13 +85,13 @@ export async function GET(req: NextRequest) {
       results[u.id] = `error: ${String((e as Error).message).slice(0, 120)}`;
     }
   }
-  // The WEEKLY brief + podcast (2026-10-03): built once last week's dailies are in · on Monday, or
-  // any later day it is still missing (the tick also retries the audio in the morning window).
+  // The WEEKLY brief + podcast: on Sunday for the week that ends today (briefWeek), or any later
+  // day it is still missing (the tick also retries the audio in the morning window).
   const weekly: Record<string, string> = {};
-  const wantWeekly = req.nextUrl.searchParams.get("weekly") === "1" || new Date(`${checklistToday()}T12:00:00Z`).getUTCDay() === 1;
+  const wantWeekly = req.nextUrl.searchParams.get("weekly") === "1" || new Date(`${checklistToday()}T12:00:00Z`).getUTCDay() === 0;
   for (const u of allUsers) {
     try {
-      const prev = previousWeek(checklistToday());
+      const prev = briefWeek(checklistToday());
       const brief = await ensureWeeklyBrief(u.id, { week: prev.week });
       if (!brief) { weekly[u.id] = `${prev.week} · no daily briefs`; continue; }
       if (!wantWeekly && !req.nextUrl.searchParams.get("weekly")) { weekly[u.id] = `${prev.week} · brief ready`; continue; }

@@ -258,7 +258,7 @@ ${storiesBlock(brief)}`;
 /** The weekly podcast's script (2026-10-03) · the main podcast now: the previous week's developments
  * in the same three chapters as the written weekly brief, 10 to 15 minutes. */
 async function writeWeeklyScript(brief: WeeklyBrief): Promise<string | null> {
-  const prompt = `You write Ali's private WEEKLY news podcast. He listens on Monday, over breakfast or on a walk, for ten to fifteen minutes. The whole point: the developments of LAST WEEK (${prettyRange(brief.from, brief.to)}), in depth, in the order below, told by a friend who followed it all.
+  const prompt = `You write Ali's private WEEKLY news podcast. He listens on Sunday, over breakfast or on a walk, for ten to fifteen minutes. The whole point: the developments of THIS WEEK, Monday to today (${prettyRange(brief.from, brief.to)}), in depth, in the order below, told by a friend who followed it all.
 
 ABOUT ALI (mention only when a story genuinely touches him): runs easypeasy, a small company teaching languages online; builds with AI every day and loves the tech; follows business and geopolitics; Moroccan, lives in Spain, interested in business opportunities in Morocco. Football is NOT part of this podcast.
 

@@ -3,16 +3,17 @@
  * Geopolitics · the top developments of the previous week, readable in 10-15 minutes, same
  * format as now, more in depth · also as a weekly podcast") · server only.
  *
- * Raw material: the daily briefs of the previous ISO week (Monday to Sunday), already
- * summarised and analysed story by story at 06:00 each day. One Haiku call per topic picks the
+ * Raw material: the daily briefs of the week (Monday to Sunday · RSS stories only since
+ * 2026-10-04, the daily AI summaries are gone), collected at 06:00 each day. One Haiku call per topic picks the
  * four or five developments that mattered and writes each one up in depth (what happened, why it
  * matters, context, who gains and loses, what to watch) with the sources it drew on. Football is
  * never part of it. Stored once per week in `weekly_briefs` (JSON), the podcast beside it in
  * `podcast_episodes` under the week key ("2026-W40", see podcast/generate.ts).
  *
- * When: the podcast cron (04:40 UTC) builds last week's brief and its podcast on Mondays, the
- * reminders tick finishes a missing one later in the morning, and `GET /api/news/weekly?make=1`
- * does it on demand.
+ * When (Ali 2026-10-04: "on Sunday, on what happened during the week"): the podcast cron
+ * (06:30 UTC, after the day's news cron) builds THIS week's brief and its podcast on SUNDAY ·
+ * `briefWeek` in week.ts says which week counts on any day · the reminders tick finishes a
+ * missing one from 09:00 Madrid, and `GET /api/news/weekly?make=1` does it on demand.
  */
 
 import { db } from "@/db";
@@ -43,17 +44,14 @@ export const WEEKLY_SECTIONS: { key: WeeklySection["key"]; label: string; color:
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 const addDays = (s: string, n: number) => ymd(new Date(new Date(`${s}T12:00:00Z`).getTime() + n * 86400_000));
 
-/** ISO week key of a date ("2026-W40"). */
-export function weekKeyOf(dateYmd: string): string {
-  const d = new Date(`${dateYmd}T12:00:00Z`);
-  const day = (d.getUTCDay() + 6) % 7;             // Monday = 0
-  d.setUTCDate(d.getUTCDate() - day + 3);          // the Thursday of this week decides the year
-  const year = d.getUTCFullYear();
-  const jan4 = new Date(Date.UTC(year, 0, 4));
-  const week = 1 + Math.round(((d.getTime() - jan4.getTime()) / 86400_000 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
-  return `${year}-W${String(week).padStart(2, "0")}`;
+export { weekKeyOf, isWeekKey, briefWeekKey } from "@/lib/news/week";
+import { weekKeyOf, isWeekKey, briefWeekKey } from "@/lib/news/week";
+
+/** The week the brief covers today: Sunday → this week · otherwise the previous one (week.ts). */
+export function briefWeek(todayYmd: string): { week: string; from: string; to: string } {
+  const week = briefWeekKey(todayYmd);
+  return { week, ...weekRange(week) };
 }
-export const isWeekKey = (s: string) => /^\d{4}-W\d{2}$/.test(s);
 
 /** The previous full week (Monday to Sunday) relative to a date. */
 export function previousWeek(todayYmd: string): { week: string; from: string; to: string } {
@@ -171,7 +169,7 @@ ${JSON.stringify(items)}`, 3200);
 export async function ensureWeeklyBrief(userId: string, opts: { week?: string; force?: boolean } = {}): Promise<WeeklyBrief | null> {
   await ensureTable();
   const today = new Date().toISOString().slice(0, 10);
-  const target = opts.week && isWeekKey(opts.week) ? { week: opts.week, ...weekRange(opts.week) } : previousWeek(today);
+  const target = opts.week && isWeekKey(opts.week) ? { week: opts.week, ...weekRange(opts.week) } : briefWeek(today);
   if (!opts.force) {
     const have = await getWeeklyBrief(userId, target.week);
     if (have) return have;
