@@ -12,7 +12,7 @@ import { healthMetrics, healthSleep, healthWorkouts, kbSessions } from "@/db/sch
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { ensureHealthTables } from "@/lib/health/server";
 import type { HealthSummary, WorkoutRow } from "@/lib/health/summary";
-import { fmtMin, fmtPace } from "@/lib/health/client";
+import { fmtMin, fmtPace, isoWeekOf } from "@/lib/health/client";
 import { rowToSession } from "@/lib/train/rows";
 import type { TrainSession } from "@/lib/train/types";
 import { askAI, lastAiError } from "@/lib/news/summarize";
@@ -129,7 +129,7 @@ const line = (n: WeekNumbers, missed: number, planned: number) => [
  */
 export async function ensureCoachReport(userId: string, weekOf: string, opts: { force?: boolean; planned?: number; missed?: number } = {}): Promise<CoachReport | null> {
   await ensureCoachTables();
-  const week = (await import("@/lib/health/client")).isoWeekOf(mondayOf(weekOf));
+  const week = isoWeekOf(mondayOf(weekOf));
   if (!opts.force) { const have = await getCoachReport(userId, week); if (have) return have; }
   const data = await coachData(userId);
   const objectives = await listObjectives(userId, data);

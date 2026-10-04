@@ -14,6 +14,7 @@ import { VAULT_DDL } from "@/lib/vault/server";
 import { BIRTHDAY_DDL } from "@/lib/birthdays/server";
 import { FIX_DDL } from "@/lib/fix/server";
 import { MIND_DDL } from "@/lib/mind/server";
+import { COACH_DDL } from "@/lib/coach/server";
 import { DEDUPE_ROUTINE_ROWS } from "@/app/api/checklist/route";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -456,6 +457,7 @@ export async function POST() {
     ...FIX_DDL,
     // ── Mental Training (2026-09-28) · same DDL as src/lib/mind/server.ts
     ...MIND_DDL,
+    ...COACH_DDL,
   ];
 
   const results: string[] = [];

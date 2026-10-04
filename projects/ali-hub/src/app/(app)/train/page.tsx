@@ -40,6 +40,7 @@ import { PROGRAMS } from "@/lib/train/programs";
 import { beforeProgram, readiness, trainInsights, weekPlan, weekReport } from "@/lib/train/insights";
 import { weekDaysFrom } from "@/lib/train/program";
 import { WeekStrip, TodayCard, NotesCard, ReportCard } from "@/components/train/WeekCards";
+import { ObjectivesCard, CoachCard } from "@/components/train/CoachCards";
 import { ProgramCard } from "@/components/train/Programs";
 
 /** YYYY-MM-DD shifted by n days. */
@@ -235,6 +236,8 @@ export default function TrainPage() {
       <Reveal key="week" i={0}><WeekStrip slots={slots} today={today} /></Reveal>
       <Reveal key="today" i={1}><TodayCard slot={todaySlot} next={nextSlot} ready={ready} before={before} /></Reveal>
       <Reveal key="notes" i={2}><NotesCard insights={insights} /></Reveal>
+      {/* The coach (spec §7c item 15): the objectives with live progress · src/components/train/CoachCards.tsx */}
+      <Reveal key="objectives" i={3}><ObjectivesCard data={{ today, workouts: watch, kb: kbSessions, metrics: health?.metrics ?? null }} /></Reveal>
       {/* The three parts of Body · the details */}
       <div role="tablist" aria-label="Body" style={{ display: "flex", gap: 8 }}>
         {PARTS.map((p) => (
@@ -396,6 +399,8 @@ export default function TrainPage() {
         </div>
       </section>
       </div></Reveal>}
+      {/* The coach: this week's Head skill and the Sunday report's door */}
+      <CoachCard data={{ today, workouts: watch, kb: kbSessions, metrics: health?.metrics ?? null }} nights={health?.nights ?? []} missedSessions={slots.filter((s) => s.state === "missed").length} />
       <ReportCard report={report} />
       </>}
 

@@ -1,6 +1,7 @@
 import { NextResponse, after, type NextRequest } from "next/server";
 import { ensureWeeklyPodcast, todaysEpisode } from "@/lib/podcast/generate";
 import { getWeeklyBrief, briefWeek } from "@/lib/news/weekly";
+import { ensureCoachReport, pushCoachReport } from "@/lib/coach/server";
 import { pollVideos } from "@/lib/news/videos";
 import { pollHighlights } from "@/lib/news/highlights";
 import { prewriteIfSessionDay } from "@/lib/mind/server";
@@ -62,6 +63,13 @@ export async function GET(req: NextRequest) {
         const wep = brief ? await todaysEpisode(userId, prev.week) : null;
         if (brief && (!wep || wep.status !== "ready")) await ensureWeeklyPodcast(userId, brief);
       } catch { /* next tick retries */ }
+    });
+  }
+  // The coach's weekly report (spec §7c item 15, 2026-10-04): Sunday 20:00 to 22:30 Madrid · write
+  // this week's report once (numbers by rule, prose = one askAI call) and push "Your week in training".
+  if (hm >= "20:00" && hm <= "22:30" && new Date(`${checklistToday(now)}T12:00:00Z`).getUTCDay() === 0) {
+    after(async () => {
+      try { const r = await ensureCoachReport(userId, checklistToday(now)); if (r) await pushCoachReport(userId, r); } catch { /* next tick */ }
     });
   }
   // YouTube picks (News): the channel feeds, every 30 min (pollVideos throttles itself).
