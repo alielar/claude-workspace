@@ -8,7 +8,7 @@
  * offers the picker · a new entry chooses once):
  *   DOCUMENT  · a page: big title, the date, the text set as reading matter (headings, bullets,
  *               numbers, tick lines, links, paragraphs), 17 px on a comfortable measure.
- *   CHECKLIST · the progress line, big tick rows (a ticked line goes, as everywhere), an add box.
+ *   CHECKLIST · the progress line, big tick rows (a ticked line stays, struck through, as everywhere since 2026-10-04), an add box.
  *   LIST      · numbered rows with an add box · reorder and remove in Edit.
  *   LINK      · the source as a hero (label, address, one big Open), the notes under it.
  * Edit (top right) opens the same sheet as before, in place. Pin and the reminder show as pills.

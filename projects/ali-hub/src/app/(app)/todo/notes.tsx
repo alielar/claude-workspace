@@ -94,9 +94,9 @@ function useCelebration(): [boolean, (run: () => void) => void] {
 }
 
 // ─── One read-only subtask row (under a task on /todo and /today) ─────────────
-// Ticking REMOVES the line (Ali 2026-09-14: "when I check a subtask as done, just remove it").
-// The pop, ring, strike and chime play first, then the line is gone. `- [x]` lines written
-// before that change still show struck through; a tap removes them too.
+// Ticking KEEPS the line, struck through (Ali 2026-10-04: "1 of 2 done must stay 1 of 2, I want
+// to see what I've done") · it was removed between 2026-09-14 and then. The pop, ring, strike
+// and chime play first, then the line stays as `- [x]`; a tap on a done line clears the tick.
 
 function SubtaskRow({ s, onTick }: { s: SubTask; onTick: () => void }) {
   const [celebrating, start] = useCelebration();
@@ -112,15 +112,17 @@ function SubtaskRow({ s, onTick }: { s: SubTask; onTick: () => void }) {
   );
 }
 
-/** Subtasks under a task row · three at a time; a ticked one is removed from the list. */
+/** Subtasks under a task row · three at a time (open ones first); a ticked one stays, struck through. */
 export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; onChange: (notes: string | null) => void; indent?: number }) {
   const items = parseSubtasks(notes);
   const [open, setOpen] = useState(false);
-  const shown = open ? items : items.slice(0, PREVIEW_LINES);
-  const removeAt = (i: number) => { const next = items.filter((_, j) => j !== i); onChange(next.length ? serializeSubtasks(next) : null); };
+  // Open items first, done ones after, so the three visible lines are the work left.
+  const ordered = [...items.filter((s) => !s.done), ...items.filter((s) => s.done)];
+  const shown = open ? ordered : ordered.slice(0, PREVIEW_LINES);
+  const toggleAt = (i: number) => onChange(serializeSubtasks(items.map((s, j) => (j === i ? { ...s, done: !s.done } : s))));
   return (
     <div style={{ padding: `0 12px 8px ${indent - 8}px` }}>
-      {shown.map((s, i) => <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => removeAt(items.indexOf(s))} />)}
+      {shown.map((s) => { const i = items.indexOf(s); return <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => toggleAt(i)} />; })}
       {(items.length > PREVIEW_LINES || open) && (
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
           style={{ background: "transparent", border: "none", font: "inherit", fontSize: 13, color: "var(--ink-4)", padding: "4px 0 2px 40px", cursor: "pointer", minHeight: 32 }}>
@@ -137,9 +139,10 @@ export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; o
  * TASKS (default, Ali 2026-09-15: "they're a simple checklist, not an ordered procedure"):
  * a checkbox and a full-width box per line, nothing else. Return jumps to the add box at the
  * bottom, which appends and keeps the caret there, so one Return per item fills the list;
- * ticking strikes the line through, chimes and removes it — the only way to delete.
- * (An empty line cannot be held in the stored text — `parseSubtasks` drops it — so a new item
- * is always born in the add box, never as a blank row in the middle.)
+ * ticking strikes the line through and chimes · the line STAYS as done (Ali 2026-10-04); a tap
+ * on a done line clears it. Delete = empty the text (an empty line cannot be held in the stored
+ * text, `parseSubtasks` drops it, so a new item is always born in the add box, never as a blank
+ * row in the middle).
  *
  * DOCS (`ordered`): the arrows and the ✕ stay, because a doc may hold real steps.
  */
@@ -176,7 +179,7 @@ export function SubtaskEditor({ notes, onChange, placeholder = "Add a subtask", 
 
       {items.map((s, i) => (
         <SubtaskEditRow key={i} s={s} ordered={ordered}
-          onTick={() => write(items.filter((_, j) => j !== i))}
+          onTick={() => write(items.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
           onText={(v) => write(items.map((x, j) => (j === i ? { ...x, text: v } : x)))}
           onEnter={() => addBox.current?.focus()}
           onRemove={ordered ? () => write(items.filter((_, j) => j !== i)) : undefined}
@@ -222,10 +225,10 @@ function SubtaskEditRow({ s, ordered, onTick, onText, onEnter, onRemove, onMove,
   return (
     <div style={{ display: "grid", gridTemplateColumns: cols, alignItems: "center", minHeight: 46, borderBottom: "1px solid var(--line)" }}>
       <TickBox done={s.done} celebrating={celebrating} onTick={() => (s.done ? onTick() : start(onTick))} />
-      {celebrating ? (
-        // The box becomes plain struck-through text for the half second before the line goes
-        // (a textarea cannot carry the sweep animation) · Ali 2026-09-15: subtasks had no strike and no sound.
-        <span className="cc-done-strike" style={{ display: "inline-block", fontSize: 16, lineHeight: 1.4, color: "var(--ink-3)", padding: "8px 10px", overflowWrap: "anywhere" }}>{s.text}</span>
+      {celebrating || s.done ? (
+        // Struck-through text: during the half-second sweep (a textarea cannot carry the animation)
+        // and for as long as the line is done · the box on the left clears it.
+        <span className={celebrating ? "cc-done-strike" : undefined} style={{ display: "inline-block", fontSize: 16, lineHeight: 1.4, color: "var(--ink-3)", padding: "8px 10px 8px 0", overflowWrap: "anywhere", textDecoration: celebrating ? undefined : "line-through", textDecorationColor: "var(--ink-4)" }}>{s.text}</span>
       ) : (
         <GrowInput value={value} onChange={change} onCommit={commit} onEnter={onEnter} ariaLabel="Subtask"
           style={{ background: "transparent", border: "none", borderRadius: 0, padding: "8px 10px 8px 0" }} />

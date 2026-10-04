@@ -46,12 +46,15 @@ import { useCached, fetchJson, readCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
 import { ensureMigrate } from "@/lib/ensureMigrate";
 import { useOnline } from "@/lib/useOnline";
+import { useNow } from "@/lib/useClientValue";
 import { EVENING_HOUR, checklistToday, dayPart, madridHour, type DayPart } from "@/lib/checklist/day";
 import { itemColor, type ChecklistData, type ChecklistItem } from "@/lib/checklist/types";
 import type { BooksData } from "@/lib/books/types";
 import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
+import { useVideos } from "@/lib/news/useVideos";
+import { VideoRow } from "@/components/news/VideoCards";
 import { useBirthdays } from "@/lib/birthdays/useBirthdays";
 import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
 import { parseMorningPlan, computeMorning, dayKindOf, shiftHM, type DayKind, type MorningPlan } from "@/lib/morning/plan";
@@ -400,8 +403,10 @@ export default function TodayPage() {
   // The task sheet, opened by tapping a to-do row (same component as /todo).
   const [openTodo, setOpenTodo] = useState<Todo | null>(null);
 
-  const [opened, setOpened] = useState<Set<DayPart>>(new Set()); // past segments reopened by tap
-  const [folded, setFolded] = useState<Set<DayPart>>(new Set()); // a past segment with late steps, folded by hand
+  // Past segments opened by tap: a done segment unfolds from one line to its rows; a segment with
+  // LATE steps shows only those steps by default (Ali 2026-10-04: "not the whole morning box,
+  // only the step I haven't done") and opens to every row on tap.
+  const [opened, setOpened] = useState<Set<DayPart>>(new Set());
 
   // ── Header · shared ───────────────────────────────────────────────────────
   const header = (
@@ -443,10 +448,10 @@ export default function TodayPage() {
       // (Ali 2026-10-03) · Extras, training days and to-dos are not chased this way.
       const lateIds = new Set(status === "past" ? routine.filter((i) => !i.completedToday && i.kind === "routine" && i.source !== "workout" && !isMachine(i)).map((i) => i.id) : []);
       // One list in clock order · anything without an hour sits above the timed rows.
-      const rows: { key: string; min: number; order: number; node: React.ReactNode }[] = [
-        ...routine.map((i, n) => ({ key: `i${i.id}`, min: i.atTime ? minOf(i.atTime) : -1, order: n,
+      const rows: { key: string; min: number; order: number; late: boolean; node: React.ReactNode }[] = [
+        ...routine.map((i, n) => ({ key: `i${i.id}`, min: i.atTime ? minOf(i.atTime) : -1, order: n, late: lateIds.has(i.id),
           node: <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={status !== "now"} late={lateIds.has(i.id)} /> })),
-        ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n,
+        ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n, late: false,
           node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} /> })),
       ].sort((a, b) => a.min - b.min || a.order - b.order);
       return { p, routine, todos, rows, openCount, status, lateCount: lateIds.size };
@@ -507,7 +512,11 @@ export default function TodayPage() {
         <div style={{ display: "grid", gap: 0 }}>
           {segs.map((s, idx) => {
             const late = s.lateCount > 0;
-            const collapsed = s.status === "past" && (late ? folded.has(s.p) : !opened.has(s.p));
+            const collapsed = s.status === "past" && !late && !opened.has(s.p);
+            // A past segment with late steps: only the late rows until tapped open.
+            const lateOnly = s.status === "past" && late && !opened.has(s.p);
+            const rows = lateOnly ? s.rows.filter((r) => r.late) : s.rows;
+            const toggleOpen = () => setOpened((o) => { const n = new Set(o); if (n.has(s.p)) n.delete(s.p); else n.add(s.p); return n; });
             const [from, to] = PART_HOURS[s.p];
             const dotColor = late ? "var(--neg)" : s.status === "past" ? "var(--pos)" : s.status === "now" ? "var(--violet)" : "var(--line-strong)";
             return (
@@ -520,25 +529,25 @@ export default function TodayPage() {
                   <span aria-hidden style={{ position: "absolute", left: 53, top: 18, width: 12, height: 12, borderRadius: "50%", background: s.status === "future" ? "var(--bg-chrome)" : dotColor, border: `2px solid ${dotColor}`, boxShadow: s.status === "now" ? "0 0 0 4px var(--accent-soft)" : "none" }} />
                   <section className="cc-card" style={{ marginLeft: 14, borderColor: late ? "var(--neg)" : s.status === "now" ? "var(--violet)" : undefined, borderStyle: s.status === "past" && !late ? "dashed" : undefined, background: s.status === "past" && !late ? "transparent" : undefined, opacity: s.status === "future" ? 0.75 : 1 }}>
                     {collapsed ? (
-                      <button type="button" onClick={() => { if (late) setFolded((o) => { const n = new Set(o); n.delete(s.p); return n; }); else setOpened((o) => new Set(o).add(s.p)); }}
-                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: late ? "var(--neg)" : "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
-                        <span><b style={{ fontWeight: 500, color: late ? "var(--neg)" : "var(--ink-2)" }}>{PART_TITLE[s.p]}</b> · {s.openCount === 0 ? "✓ all done" : late ? `${s.lateCount} routine step${s.lateCount === 1 ? "" : "s"} still open` : `${s.openCount} left open`}</span><span>▾</span>
+                      <button type="button" onClick={toggleOpen}
+                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
+                        <span><b style={{ fontWeight: 500, color: "var(--ink-2)" }}>{PART_TITLE[s.p]}</b> · {s.openCount === 0 ? "✓ all done" : `${s.openCount} left open`}</span><span>▾</span>
                       </button>
                     ) : (
                       <>
-                        <div className="cc-card-head" onClick={s.status === "past" ? () => { if (late) setFolded((o) => new Set(o).add(s.p)); else setOpened((o) => { const n = new Set(o); n.delete(s.p); return n; }); } : undefined}
+                        <div className="cc-card-head" onClick={s.status === "past" ? toggleOpen : undefined}
                           role={s.status === "past" ? "button" : undefined} style={s.status === "past" ? { cursor: "pointer" } : undefined}>
                           <span className="title" style={late ? { color: "var(--neg)" } : undefined}>{PART_TITLE[s.p]}</span>
                           <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10, color: late ? "var(--neg)" : undefined }}>
-                            {late ? `${s.lateCount} still open` : <>{s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}</>}{s.status === "past" && <span aria-hidden> ▴</span>}
+                            {late ? `${s.lateCount} still open` : <>{s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}</>}{s.status === "past" && <span aria-hidden> {lateOnly ? "▾" : "▴"}</span>}
                             {s.status === "now" && <Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
                           </span>
                         </div>
                         <div style={{ padding: "0 14px" }}>
                           {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />}
                           {loading && !data && s.status === "now" && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
-                          {s.rows.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
-                          {s.rows.map((r) => r.node)}
+                          {rows.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
+                          {rows.map((r) => r.node)}
                         </div>
                       </>
                     )}
@@ -575,7 +584,9 @@ export default function TodayPage() {
 
       <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} />
 
-      {/* The daily podcast is low key since 2026-10-03 · it lives on News (one row, 30-day archive). */}
+      {/* The two star channels (Ali 2026-10-04: "the two YouTube channels which are the star" where
+          the daily podcast card used to be) · the latest upload of The AI Daily Brief and of TLDR News Global. */}
+      <DailyPicksCard />
 
       {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose. */}
       <HighlightSuggestion />
@@ -592,6 +603,29 @@ export default function TodayPage() {
         .today-tmrw-todo:active { background: var(--fill-2); }
       `}</style>
     </div>
+  );
+}
+
+/** Today's two daily picks · same rows as News' watch-later list; tap = YouTube + watched. Hidden until a video exists. */
+function DailyPicksCard() {
+  const { feed, markWatched } = useVideos();
+  const now = useNow();
+  const picks = (feed?.picks ?? []).filter((p) => p.video !== null);
+  if (!picks.length || !now) return null;
+  const unwatched = picks.filter((p) => !p.video!.watched).length;
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head">
+        <span className="title">Daily picks</span>
+        <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+          {unwatched === 0 ? "both watched" : `${unwatched} to watch`}
+          <Link href="/news" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>News</Link>
+        </span>
+      </div>
+      <div>
+        {picks.map((p, i) => <VideoRow key={p.channel.id} v={p.video!} onWatch={markWatched} now={now} label={i === 0 ? "AI & Tech" : "Global news"} last={i === picks.length - 1} />)}
+      </div>
+    </section>
   );
 }
 
