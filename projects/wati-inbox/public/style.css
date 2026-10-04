@@ -161,3 +161,13 @@ button.icon.done { color: var(--accent); }
 .card.fu input[type=time], .acts input[type=time] { width: auto; padding: 6px 8px; font: inherit; }
 .card.fu textarea { margin-top: 8px; }
 .opt-head input[type=time] { width: auto; display: inline-block; padding: 4px 8px; margin: 0 4px; font: inherit; }
+
+/* Today: scheduled follow-ups — header line (time, name, count), then each message in its own frame */
+.sched-row { display: block; color: inherit; text-decoration: none; border-left: 4px solid var(--accent); }
+.sched-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.sched-head b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sched-head .pill { flex: none; }
+.sched-head .chev { color: var(--muted); font-size: 20px; line-height: 1; }
+.sched-b { background: var(--us); border-radius: 10px; padding: 6px 10px; margin: 4px 0; font-size: 14px; line-height: 1.35; }
+.sched-b span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sched-head .pill { margin-left: 0; font-weight: 600; }
