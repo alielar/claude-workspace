@@ -141,8 +141,16 @@ Write it the way a sharp friend explains it over coffee: concepts, why, what fol
 
 Answer with JSON only, in exactly this shape:
 {"title": "...", "hook": "one line on why this matters to Ali", "brief": "the markdown", "keyFacts": ["the same five Remember lines, each one checkable"]}`;
-  const out = jsonIn<{ title: string; hook: string; brief: string; keyFacts: string[] }>(await ask(prompt, 2600));
-  if (!out || !out.title || !out.brief || out.brief.length < 1800) return null;
+  type Out = { title: string; hook: string; brief: string; keyFacts: string[] };
+  const shapeOk = (o: Out | null) => !!o && !!o.title && !!o.brief && o.brief.length >= 1800 && (o.brief.match(/^## /gm) ?? []).length >= 5 && o.brief.split(/\s+/).length >= 450;
+  let out = jsonIn<Out>(await ask(prompt, 2600));
+  // The writer sometimes stops after three sections (335 words on 2026-10-04): one second try with
+  // the shortfall named, then give up for this tick (the next one tries again).
+  if (!shapeOk(out)) {
+    const got = out?.brief ? `${out.brief.split(/\s+/).length} words and ${(out.brief.match(/^## /gm) ?? []).length} sections` : "an unusable answer";
+    out = jsonIn<Out>(await ask(`${prompt}\n\nYour previous answer had ${got}. This time write ALL FIVE sections in full, 600 to 800 words in total, and the keyFacts list.`, 3200));
+  }
+  if (!shapeOk(out) || !out) return null;
   const facts = Array.isArray(out.keyFacts) ? out.keyFacts.filter((f) => typeof f === "string").map(noDash).slice(0, 6) : [];
   const res = await db.run(sql`INSERT INTO mind_topics (user_id, date, title, domain, hook, brief, key_facts) VALUES (${userId}, ${date}, ${noDash(out.title).slice(0, 200)}, ${domain}, ${noDash(String(out.hook ?? "")).slice(0, 300)}, ${noDash(out.brief)}, ${JSON.stringify(facts)})`);
   const [row] = await db.all<TopicRow>(sql`SELECT * FROM mind_topics WHERE id = ${Number(res.lastInsertRowid)}`);
