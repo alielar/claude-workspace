@@ -36,6 +36,9 @@ Le plan se met à jour **à chaque message d'Ali**, tout de suite, selon ce que 
 - Ali a **clôturé** → aucun item de plus.
 Chaque item de plus : `title` = l'étape en clair (« Ask for his availabilities for the trial lesson »), `why` une phrase, `bubbles` courtes quand c'est un message. Les cartes déjà prévues pour ce lead (listées dans son bloc) sont remplacées par ta réponse : reprends telles quelles celles qui restent valables, laisse tomber celles que le nouveau message rend caduques.
 
+## Relances déjà programmées par Ali (Ali, 2026-10-04, cas Yassamine)
+Quand le bloc du lead liste des « RELANCES DÉJÀ PROGRAMMÉES PAR ALI », elles font partie du rythme du jour : c'est Ali qui les a écrites et placées. **Aucun `followup` à moins de 2 h de l'une d'elles**, et aucun `followup` qui redit la même chose. La réponse est l'item Hub (`pause` tenue → `wait` sans heure passée, « le Mac envoie la relance de 18:20 ») ; la suite (rappel du soir avant la fermeture de la fenêtre, puis reprise des templates le lendemain si elle ne répond plus) se décide **après** le départ de cette relance, au jugement qui suit. Une seule exception : la fenêtre 24h se ferme après la relance programmée et avant 21h, et la deadline tombe ce soir → un dernier `followup` court, au plus tôt 1 h 30 après la relance programmée et 20-30 min avant la fermeture.
+
 ## Le jour de la deadline négociée (Ali, 2026-10-02)
 Quand Ali a prolongé la deadline à la main (« un jour de plus » envoyé le 2 au soir → deadline le 3 vers 20h : déduis-la du fil et écris-la dans `why`), le Hub est en pause et **c'est le plan qui porte le rythme, à la main, une carte après l'autre** :
 1. Le matin : `followup` à 14:00, avec `bubbles` — point doux, tiré de ce qu'elle a dit et de l'offre d'Ali en attente (« vous avez pu regarder le format 90h ? »), une question.

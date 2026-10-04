@@ -13,7 +13,7 @@
 //   node --env-file=.env plan-engine.mjs --run      judge them now, write the cards, push the summary
 
 import { readFileSync, mkdirSync } from 'node:fs';
-import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRows, insertPlanItem, laterPending, planItems, openPlanItems, planItemsFor, setPlanState, expirePlanItems, unpushedPlanItems, markPlanPushed, dueReminders, markPlanReminded, planDismissed, planCounts, getState, setState, insertSuggestion, markSuggestionPushed } from './db.mjs';
+import { db, getThread, threadMessages, hubLeadRows, hubTemplate, hubTemplateRows, insertPlanItem, laterPending, planItems, openPlanItems, planItemsFor, setPlanState, expirePlanItems, unpushedPlanItems, markPlanPushed, dueReminders, markPlanReminded, planDismissed, planCounts, getState, setState, insertSuggestion, markSuggestionPushed, followupsOf } from './db.mjs';
 import { hubReady } from './hub.mjs';
 import { hubSig, onHubChange, syncUpcoming, upcomingOf, realNext, stepOf } from './hub-sync.mjs';
 import { runClaude, madrid } from './suggest-engine.mjs';
@@ -123,6 +123,7 @@ function needing(cands, now = Date.now()) {
     const sig = cardSig(c);
     const open = items.find((i) => i.state === 'open');
     if (open && open.hub_sig === 'manual') return false; // planned by Ali or a chat (suggest.mjs --at): not re-judged while open
+    if (c.reason === 'closing' && scheduledOf(c.wa_id).length) return false; // Ali's scheduled follow-up covers the closing window (Yassamine, 2026-10-04)
     // Same for a « followup » Ali did not send within the hour: the next step of the day's rhythm takes over.
     const grace = open?.kind === 'followup' ? 60 * 60e3 : 0;
     if (open && (open.kind === 'wait' || open.kind === 'followup') && open.when_at && Date.parse(open.when_at) + grace <= now && c.reason !== 'closing') { c.prior = c.reason; c.reason = 'overdue'; c.overdueAt = open.when_at; c.overdueKind = open.kind; return true; }
@@ -134,6 +135,8 @@ function needing(cands, now = Date.now()) {
 
 // Ali's typed or dictated instructions for this lead's drafts in the last 36 h: the plan's only view of what was said on a call.
 const consignesOf = (waId) => db.prepare("SELECT created_at, instruction FROM suggestions WHERE wa_id = ? AND instruction IS NOT NULL AND TRIM(instruction) != '' AND created_at > ? ORDER BY id DESC LIMIT 3").all(waId, new Date(Date.now() - 36 * 3600e3).toISOString()).reverse();
+// Follow-ups Ali scheduled himself (scheduled_sends, kind followup, pending): the plan builds around them, never beside them.
+const scheduledOf = (waId) => followupsOf(waId).filter((r) => r.state === 'pending');
 export function leadBlock(c) {
   const fmt = (iso) => madrid(new Date(iso)).slice(5, 16);
   const tpl = c.next_tpl ? hubTemplate(c.next_tpl) : null;
@@ -150,6 +153,7 @@ export function leadBlock(c) {
       overdue: `la carte « ${c.overdueKind || 'wait'} » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée${c.overdueKind === 'followup' ? ' et Ali n’a pas envoyé ce message : propose l’étape suivante du rythme, pas la même' : ''} et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir. Exception : lead NON pausé dont un template qui colle part dans l’heure → « ok » ou « wait », pas de relance manuelle (règle Martin)`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → (1) ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut) ; (2) les prochaines étapes que son message vient de créer (règle « ce que le message d’Ali engage »), chacune son item avec son heure' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
+    scheduledOf(c.wa_id).length ? 'RELANCES DÉJÀ PROGRAMMÉES PAR ALI (le Mac les envoie à l’heure dite, sauf si le lead écrit avant) — ne propose aucun followup à moins de 2 h de l’une d’elles ; la suite se décide une fois qu’elle est partie :\n' + scheduledOf(c.wa_id).map((r) => `  - ${fmt(r.at)} : ${JSON.parse(r.bubbles || '[]').map((b) => `« ${String(b).replace(/\s+/g, ' ').slice(0, 90)} »`).join(' / ')}`).join('\n') : '',
     openPlanItems(c.wa_id).length ? 'Cartes déjà prévues pour ce lead (elles seront remplacées par ta réponse : reprends celles qui restent valables) :\n' + openPlanItems(c.wa_id).map((i) => `  - ${i.kind} ${i.when_at ? fmt(i.when_at) : ''} « ${i.title} »`).join('\n') : '',
     consignesOf(c.wa_id).length ? 'Ce qu’Ali a dit à Claude pour ses derniers messages (souvent ce qui s’est dit au téléphone : nouvelle deadline, accord de paiement) :\n' + consignesOf(c.wa_id).map((x) => `  - [${fmt(x.created_at)}] ${x.instruction.replace(/\s+/g, ' ').slice(0, 600)}`).join('\n') : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
@@ -219,6 +223,10 @@ function store(c, it, { supersede = true } = {}) {
   }
   // A card planned for a later day lives in that day's plan (and in today's « Tomorrow » fold), not in today's list.
   // Only a timed message or wait moves to its day; a Hub action (pause, resume, fix) is to do now, whatever the template's hour (Ali, 2026-10-03).
+  if (kind === 'followup' && whenIso) { // Ali already scheduled a follow-up near that time: his wins, the card is dropped (Ali, 2026-10-04)
+    const near = scheduledOf(c.wa_id).find((r) => Math.abs(Date.parse(r.at) - Date.parse(whenIso)) < 2 * 3600e3);
+    if (near) { log(`${name || c.wa_id}: followup ${fmtHM(whenIso)} → wait, Ali scheduled one at ${fmtHM(near.at)}`); kind = 'wait'; whenIso = null; bubbles.length = 0; it = { ...it, title: `Ali's ${fmtHM(near.at)} follow-up covers it, next step after it leaves`, action: '' }; }
+  }
   const d = (kind === 'followup' || kind === 'wait') && whenIso && madrid(new Date(whenIso)).slice(0, 10) > today() ? madrid(new Date(whenIso)).slice(0, 10) : today();
   return insertPlanItem({ wa_id: c.wa_id, name, day: d, kind, when_at: whenIso, title: String(it.title || '').trim().slice(0, 140), why: String(it.why || '').trim().slice(0, 600), action: actionBits.filter(Boolean).join(' · ').slice(0, 400),
     hub_status: c.status, hub_next: c.next_tpl, hub_next_at: c.next_at, hub_paused: c.paused, hub_sig: cardSig(c), bubbles: bubbles.length ? bubbles : null, template: String(it.template || '').trim() || null, suggestion_id: suggestionId, pause_scope: pauseScope, skip_templates: skip.length ? skip : null, keep_templates: keep.length ? keep : null, pushed });

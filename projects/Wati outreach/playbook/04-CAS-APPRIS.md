@@ -1330,3 +1330,7 @@ DANS 5-10 MIN (2 bulles) :
 - Contexte : deadline administration fixée à 15h ; Ali appelle, Boris veut payer (acompte 96 € envoyé à 16:19), il paiera avant 21h.
 - Règle : quand Ali envoie le lien de paiement à un lead qui a dit qu'il allait payer → relance programmée le jour même vers 19:00-19:30 (1h30-2h avant la deadline convenue), **sans mentionner la deadline, sans pression** (« Vous avez pu finaliser l'inscription ? » + aide si le lien pose souci). Annulée d'office si le lead écrit ou si le message de bienvenue (« Bienvenue chez easypeasy ! », sales_text_1_fr) part.
 - Règle : deadline dans la journée (15h) passée en silence → relance 1 à 2 h après, pas le soir.
+
+### 2026-10-04 — Yassamine : le plan ne propose pas de relance à côté d'une relance qu'Ali a programmée
+- Contexte : Ali avait programmé lui-même une relance à 18:20 ; le plan en proposait deux autres (17:33 et 19:19) sans la voir.
+- Règle : les relances programmées par Ali font partie du rythme du jour. Aucune relance du plan à moins de 2 h de l'une d'elles, aucune qui redit la même chose. La suite (rappel du soir, reprise des templates le lendemain si elle ghoste) se décide après le départ de la relance programmée, pas avant.
