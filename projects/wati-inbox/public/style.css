@@ -160,3 +160,4 @@ button.icon.done { color: var(--accent); }
 .card.fu { border-left: 4px solid var(--accent); }
 .card.fu input[type=time], .acts input[type=time] { width: auto; padding: 6px 8px; font: inherit; }
 .card.fu textarea { margin-top: 8px; }
+.opt-head input[type=time] { width: auto; display: inline-block; padding: 4px 8px; margin: 0 4px; font: inherit; }

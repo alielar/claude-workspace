@@ -288,7 +288,7 @@ async function renderThread(waId, { quiet = false } = {}) {
     </div>` : '';
 
   // Claude: drafting / needs one thing from Ali / nothing to answer / the draft.
-  let claude = '';
+  let claude = '', planFu = null, fuTime = null;
   if (threadBusy) claude = `<div class="card work"><span class="busy-dot"></span>Claude is drafting… <span class="muted small">${esc(st.direction || '')}</span></div>`;
   else if (st?.state === 'error') claude = `<div class="card"><span class="err">Draft failed: ${esc(st.error)}</span> <button class="small" id="retry">Retry</button></div>`;
   else if (sug && sug.kind === 'needs') claude = `<div class="card needs"><div class="opt-head">Claude needs one detail</div><p>${esc(sug.needs || sug.note || '')}</p>
@@ -305,14 +305,19 @@ async function renderThread(waId, { quiet = false } = {}) {
     const emojiRow = `<div class="emojis">${EMOJIS.map((e) => `<button class="small" data-emojie="${e}" type="button">${e}</button>`).join('')}</div>`;
     const fields = (arr, tag) => emojiRow + arr.map((b, j) => `<div class="eb"><textarea data-${tag}="${j}" rows="2">${esc(b)}</textarea><button class="small" data-${tag}del="${j}" title="Remove this bubble">×</button></div>`).join('') + `<button class="small" data-${tag}add>+ bubble</button>`;
     const editedTag = (part) => sug.edited?.[part] ? ' · <b>edited by you</b>' : '';
+    // The plan's follow-up card this draft belongs to (same suggestion, time still ahead): the draft is a follow-up to schedule.
+    planFu = (d.plans || []).find((p) => p.kind === 'followup' && p.suggestion_id === sug.id && p.when_at && Date.parse(p.when_at) > Date.now()) || null;
+    fuTime = !o.later?.length ? (schedDraft ?? (planFu ? hmOf(planFu.when_at) : null)) : null;
     claude = `<div class="card opt">
-        <div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}${editedTag('bubbles')}</span></div>
+        ${fuTime != null ? `<div class="opt-head">Follow-up at <input type="time" id="scheddat" value="${esc(fuTime)}"> <span class="muted">· ${planFu ? esc(planFu.title) : 'sent by the Mac'} · not sent if the lead writes first${editedTag('bubbles')}</span></div>`
+          : `<div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}${editedTag('bubbles')}</span></div>`}
         ${sug.note ? `<p class="note small">${esc(sug.note)}</p>` : ''}
         ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span></div>`).join('') : fields(draftEdit, 'eb')}
-        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>${draftEdit == null ? `<button class="small ${steerOpen ? 'on' : ''}" id="redo">Redo</button>${o.later?.length ? '' : `<button class="small ${schedDraft ? 'on' : ''}" id="schedd">Schedule</button>`}` : ''}` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>
+        ${fuTime != null && d.windowOpen
+          // A follow-up draft (Ali, 2026-10-04): Schedule is the main action, at the proposed time, with the edited bubbles too; Send now stays possible.
+          ? `<div class="acts"><button class="primary small" id="scheddgo">${draftEdit == null ? 'Schedule' : 'Schedule these bubbles'}</button>${draftEdit != null ? `<button class="small" data-ebsave>Save</button>` : ''}<button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button><button class="small" data-send="0" ${sendLock ? 'disabled' : ''}>Send now</button>${draftEdit == null ? `<button class="small ${steerOpen ? 'on' : ''}" id="redo">Redo</button>` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>`
+          : `<div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>${draftEdit == null ? `<button class="small ${steerOpen ? 'on' : ''}" id="redo">Redo</button>${o.later?.length ? '' : `<button class="small" id="schedd">Schedule</button>`}` : ''}` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>`}
         ${o.later?.length && d.windowOpen && draftEdit == null && laterEdit == null && !d.scheduled ? `<div class="acts"><button class="small" id="sendall" ${sendLock ? 'disabled' : ''}>Send all · part 2 in 7 min</button></div>` : ''}
-        ${schedDraft && draftEdit == null && !o.later?.length ? `<div class="acts"><span class="small">Send at</span><input type="time" id="scheddat" value="${esc(schedDraft)}"><button class="primary small" id="scheddgo">Schedule</button><span class="muted small">not sent if the lead writes first</span></div>` : ''}
-        ${o.why ? `<details><summary>Why</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
         <div class="opt-head">In 5-10 min <span class="muted">· the good news from the administration${d.thread?.last_inbound_at && sug.created_at < d.thread.last_inbound_at ? ' · the lead wrote since, step 2 still to send' : ''}${editedTag('later')}</span></div>
@@ -403,9 +408,10 @@ async function renderThread(waId, { quiet = false } = {}) {
   document.querySelectorAll('[data-sendlater]').forEach((b) => armed(b, 'Schedule in 7 min', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, suggestionId: sug.id, option: 0, part: 'later', delayMs: 7 * 60_000 } }); toast('The Mac will send it in 7 min'); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-sendlaternow]').forEach((b) => armed(b, 'Send now', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await sendBubbles(waId, bubbles, { suggestionId: sug.id, option: 0, part: 'later' }); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   bindFollowups(waId, d, redraw, askClaude);
-  if ($('#schedd')) $('#schedd').onclick = () => { schedDraft = schedDraft ? null : defaultSlot(); redraw(); };
+  if ($('#schedd')) $('#schedd').onclick = () => { schedDraft = defaultSlot(); redraw(); };
   if ($('#scheddat')) $('#scheddat').oninput = (e) => { schedDraft = e.target.value; };
-  if ($('#scheddgo')) $('#scheddgo').onclick = async () => { try { await api(`/api/thread/${waId}/followups`, { method: 'POST', body: { at: schedDraft, bubbles: draftBubbles(), suggestionId: sug.id } }); toast(`Scheduled for ${schedDraft}`); schedDraft = null; redraw(); } catch (e) { toast(e.message); } };
+  const fuAt = () => $('#scheddat')?.value || schedDraft;
+  if ($('#scheddgo')) $('#scheddgo').onclick = async () => { const at = fuAt(), bubbles = draftBubbles(); if (!bubbles.length) { toast('No bubble'); return; } try { await api(`/api/thread/${waId}/followups`, { method: 'POST', body: { at, bubbles, suggestionId: sug.id, planId: planFu?.id || null } }); toast(`Scheduled for ${at}`); schedDraft = null; draftEdit = null; redraw(); } catch (e) { toast(e.message); } };
   if ($('#redo')) $('#redo').onclick = () => { steerOpen = !steerOpen; redraw(); if (steerOpen) requestAnimationFrame(() => $('#steer')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
   // Both parts at once: part 2 is put on the Mac's 7-min timer first (a send in progress blocks new requests), then part 1 leaves.
   armed($('#sendall'), 'Send all · part 2 in 7 min', async () => {
@@ -515,7 +521,7 @@ function followupsHtml(d) {
   const form = fuForm ? `<div class="card fu"><div class="opt-head">New follow-up at <input type="time" id="fuat" value="${esc(fuForm.at)}"></div>
       <textarea id="futx" rows="4" placeholder="The follow-up. An empty line separates two bubbles">${esc(fuForm.text)}</textarea>
       <div class="acts"><button class="primary small" id="fugo">Schedule</button><button class="small" id="fuclaude">Ask Claude for a draft</button><button class="small" id="fuclose">Cancel</button></div></div>`
-    : d.windowOpen ? `<div class="row"><button class="small" id="fuopen">+ Schedule a follow-up</button></div>` : '';
+    : d.windowOpen ? `<div class="row"><button class="small" id="fuopen">+ ${d.suggestion?.options?.[0]?.bubbles?.length ? 'Another follow-up' : 'Schedule a follow-up'}</button></div>` : '';
   return goneHtml + pendHtml + form;
 }
 function bindFollowups(waId, d, redraw, askClaude) {
@@ -547,7 +553,7 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     ${i.why ? `<div class="muted small why">${esc(i.why)}</div>` : ''}
     ${i.template ? `<div class="small">Template: <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">The draft is below, ready to send</div>' : ''}
-    ${open && i.kind === 'followup' && i.bubbles?.length && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plansched="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}">Schedule for ${fmtTime(i.when_at)}</button><span class="muted small">the Mac sends it unless the lead writes first</span></div>` : ''}
+    ${open && !inThread && i.kind === 'followup' && i.bubbles?.length && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plansched="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}">Schedule for ${fmtTime(i.when_at)}</button><span class="muted small">the Mac sends it unless the lead writes first</span></div>` : ''}
     ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Done</button><button class="small" data-plandismiss="${i.id}">I did it differently</button><button class="small" data-plancopy="+${i.wa_id}">Copy number</button>${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Open</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Reopen</button></div>`}
   </div>`;
 }
