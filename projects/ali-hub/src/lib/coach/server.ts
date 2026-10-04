@@ -121,7 +121,7 @@ const line = (n: WeekNumbers, missed: number, planned: number) => [
   `Strength on the Watch: ${n.strength.n} sessions, ${n.strength.min} min${n.strength.hrAvg ? `, ${n.strength.hrAvg} bpm average` : ""}. Last week: ${n.prev.strengthN}.`,
   `Kettlebell 30: ${n.kb.rounds !== null ? `${n.kb.rounds} rounds on ${n.kb.date}` : "not done"}${n.kb.best !== null ? ` (best in 8 weeks: ${n.kb.best})` : ""}. Last week: ${n.prev.kbRounds ?? "not done"}.`,
   `Sleep: ${n.sleep.avgMin !== null ? `${fmtMin(Math.round(n.sleep.avgMin))} a night over ${n.sleep.nights} nights, ${n.sleep.shortNights} under 6 h 30` : "no nights recorded"}${n.prev.sleepAvgMin !== null ? `; last week ${fmtMin(Math.round(n.prev.sleepAvgMin))}` : ""}.`,
-  `Resting heart rate: ${n.restingHr.week ?? "?"} this week vs ${n.restingHr.before ?? "?"} the month before. HRV: ${n.hrv.week ?? "?"} vs ${n.hrv.before ?? "?"}. Exercise minutes: ${n.exerciseMin ?? "?"}.${n.threeInRow ? " Three training days in a row happened." : ""}`,
+  `Resting heart rate: ${n.restingHr.week ?? "?"} this week vs ${n.restingHr.before ?? "?"} the month before. HRV: ${n.hrv.week ?? "?"} vs ${n.hrv.before ?? "?"}. Exercise minutes: ${n.exerciseMin ?? "?"}.${n.threeInRow ? ` Training days in a row with no rest between: ${n.rowDays.join(", ")}.` : ""}`,
 ].join("\n");
 
 /**

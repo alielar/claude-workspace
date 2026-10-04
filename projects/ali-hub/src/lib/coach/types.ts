@@ -185,6 +185,8 @@ export type WeekNumbers = {
   strengthDays: number;
   sessionDays: number;
   threeInRow: boolean;
+  /** The days of the longest run of consecutive training days, "Fri 2 Oct strength" style, when 3 or more. */
+  rowDays: string[];
   sleep: { avgMin: number | null; shortNights: number; nights: number };
   restingHr: { week: number | null; before: number | null };
   hrv: { week: number | null; before: number | null };
@@ -208,7 +210,14 @@ export function weekNumbers(d: ProgressData & { nights: { date: string; totalMin
   const sDays = strengthDays(wo, d.kb.filter((s) => inW(s.date, from, to)));
   const allDays = new Set([...wo.map((w) => w.date), ...d.kb.filter((s) => s.finishedAt !== null && inW(s.date, from, to)).map((s) => s.date)]);
   let threeInRow = false;
-  for (const day of allDays) if (allDays.has(shiftDay(day, 1)) && allDays.has(shiftDay(day, 2))) threeInRow = true;
+  let rowDays: string[] = [];
+  const kindOn = (day: string) => { const ks = new Set<string>(); for (const w of wo) if (w.date === day) ks.add(workoutKind(w.type) === "run" ? "run" : "strength"); if (d.kb.some((s) => s.finishedAt !== null && s.date === day)) ks.add("kettlebell"); return [...ks].join(" + "); };
+  const dayLabel = (day: string) => new Date(day + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  for (const day of allDays) {
+    const run: string[] = [];
+    for (let x = day; allDays.has(x); x = shiftDay(x, 1)) run.push(x);
+    if (run.length >= 3) { threeInRow = true; if (run.length > rowDays.length) rowDays = run.map((x) => `${dayLabel(x)} ${kindOn(x)}`); }
+  }
   const nightsW = d.nights.filter((n) => inW(n.date, from, to) && n.totalMin !== null);
   const nightsP = d.nights.filter((n) => inW(n.date, pFrom, pTo) && n.totalMin !== null);
   const series = (key: string, a: string, b: string) => {
@@ -226,6 +235,7 @@ export function weekNumbers(d: ProgressData & { nights: { date: string; totalMin
     strengthDays: sDays.size,
     sessionDays: allDays.size,
     threeInRow,
+    rowDays,
     sleep: { avgMin: r1(avg(nightsW.map((n) => n.totalMin!))), shortNights: nightsW.filter((n) => n.totalMin! < 390).length, nights: nightsW.length },
     restingHr: { week: r1(series("resting_heart_rate", from, to)), before: r1(series("resting_heart_rate", shiftDay(from, -28), pTo)) },
     hrv: { week: r1(series("heart_rate_variability", from, to)), before: r1(series("heart_rate_variability", shiftDay(from, -28), pTo)) },
