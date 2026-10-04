@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 // Wati Inbox — one HTTPS server for the app, its API and the Wati poller.
 //
 //   node --env-file=.env server.mjs
@@ -74,6 +75,12 @@ function scheduleSend(waId, bubbles, meta, delayMs, { id = null } = {}) {
 }
 async function fireScheduled(rowId, waId, bubbles, meta) {
   scheduled.delete(waId);
+  const row = pendingScheduled().find((x) => x.id === rowId);
+  if (row && Date.now() - Date.parse(row.at) > 2 * 60_000) { // late (the Mac slept): check Wati first, a lead who wrote since stops it
+    try { await refreshThread(waId, storedThread(waId)?.name, { notify: true }); } catch {}
+    const f = storedThread(waId);
+    if (f?.last_inbound_at && f.last_inbound_at > row.created_at) { setScheduledState(rowId, 'missed', `not sent: ${f.name || 'the lead'} wrote at ${fmtHMm(f.last_inbound_at)}, after it was scheduled`); pushAll({ title: `Part 2 NOT sent · ${f.name || waId}`, body: 'The lead wrote while the Mac was asleep. Open the thread.', tag: `missed-${waId}`, url: `/t/${waId}` }).catch(() => {}); return; }
+  }
   const t = storedThread(waId);
   if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, 'window closed at the time of the delayed send'); setScheduledState(rowId, 'skipped', 'window closed at the time of the delayed send'); return; }
   try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); setScheduledState(rowId, 'sent'); }
@@ -478,6 +485,17 @@ async function followupTick() {
       if (Date.now() - Date.parse(r.at) > 30 * 60_000) { setScheduledState(r.id, 'failed', 'the app was not running at that time'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The app was down at that time. Send it by hand.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
       if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { setScheduledState(r.id, 'skipped', 'the 24h window had closed'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The 24h window had closed: only a template can go.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
       if (sending.has(r.wa_id) && !sending.get(r.wa_id).error) continue; // another send in progress: next tick
+      // Right before it leaves: read the conversation from Wati itself, not the copy on disk (Ali, 2026-10-04: after the Mac
+      // slept, the copy is old; a lead who wrote meanwhile must stop the follow-up). Wati unreachable (just woken up, no
+      // network yet): nothing leaves, next tick tries again.
+      try { await refreshThread(r.wa_id, t.name, { notify: true }); } catch (e) { console.log(`followup #${r.id}: could not check the conversation (${e.message}), retry next tick`); continue; }
+      const fresh = storedThread(r.wa_id);
+      if (fresh?.last_inbound_at && fresh.last_inbound_at > r.created_at) {
+        setScheduledState(r.id, 'replied', `${fresh.name || 'the lead'} replied at ${fmtHMm(fresh.last_inbound_at)}`);
+        console.log(`followup #${r.id} for ${fresh.name || r.wa_id}: not sent, the lead replied (seen at the last check)`);
+        pushAll({ title: `${fresh.name || r.wa_id} replied · ${fmtHMm(r.at)} follow-up NOT sent`, body: 'Open the thread to adapt.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {});
+        continue;
+      }
       const meta = { ...JSON.parse(r.meta || '{}'), batch: String(Date.now()) };
       try { await sendText(r.wa_id, bubbles[0]); logSend(r.wa_id, 'text', { text: bubbles[0], ...meta }, true); setScheduledState(r.id, 'sent'); console.log(`followup #${r.id} sent to ${t.name || r.wa_id}`); }
       catch (e) { logSend(r.wa_id, 'text', { text: bubbles[0], ...meta }, false, e.message); setScheduledState(r.id, 'failed', e.message); pushAll({ title: `Follow-up failed · ${t.name || r.wa_id}`, body: e.message.slice(0, 120), tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
@@ -498,6 +516,9 @@ process.on('SIGTERM', async () => {
 });
 server.listen(PORT, () => {
   console.log(`Wati Inbox on https://localhost:${PORT}  ·  https://${TS_HOST}:${PORT}`);
+  // The Mac must not fall asleep when the screen locks on battery (pmset: sleep 1 min on battery, Ali 2026-10-04). caffeinate -i
+  // blocks idle sleep only, for as long as this process lives; closing the lid still puts the Mac to sleep.
+  try { const c = spawn('caffeinate', ['-i', '-w', String(process.pid)], { detached: true, stdio: 'ignore' }); c.unref(); console.log('caffeinate: idle sleep blocked while the app runs'); } catch (e) { console.log('caffeinate failed:', e.message); }
   restoreScheduled().catch((e) => console.log('scheduled: restore error', e.message));
   setInterval(() => followupTick().catch((e) => console.log('followup tick error', e.message)), 15_000);
   startPolling();
