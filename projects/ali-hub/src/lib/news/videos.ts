@@ -15,7 +15,7 @@
 
 import { db } from "@/db";
 import { footballMeta, ytVideos } from "@/db/schema";
-import { and, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, sql, isNotNull } from "drizzle-orm";
 import { ALL_CHANNELS, DAILY_PICKS, LATER_WINDOW_DAYS, WATCH_LATER, channelById, type Channel } from "@/lib/news/channels";
 import { searchVideos } from "@/lib/news/youtubeSearch";
 
@@ -32,13 +32,16 @@ export type Video = {
 export type VideoFeed = {
   picks: { channel: Channel; video: Video | null }[];
   later: Video[];
+  /** Recently ticked, newest first · so a tick can be undone. */
+  watched?: Video[];
   fetchedAt: number;
 };
 
 const POLL_EVERY_MS = 30 * 60_000;
 const PER_CHANNEL = 5;
-const DURATION_BUDGET = 24;
-const SEARCH_BUDGET = 10;           // search-page lookups per poll (~1 MB each)         // lengths read per poll (the player endpoint is a few KB each)
+const DURATION_BUDGET = 24;         // lengths read per poll (the player endpoint is a few KB each)
+const SEARCH_BUDGET = 16;           // search-page lookups per poll (~1 MB each) · the fast lookups are refused for fresh videos from Vercel ("LOGIN_REQUIRED"), so this is the one that fills the lengths
+const SHORTS_BUDGET = 30;           // Shorts checks per poll (one HEAD each)
 const UA = { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "accept-language": "en" };
 
 async function ensureTable() {
@@ -48,6 +51,20 @@ async function ensureTable() {
       duration_sec INTEGER, thumbnail TEXT, watched_at INTEGER, fetched_at INTEGER NOT NULL)`));
   } catch { /* exists */ }
   try { await db.run(sql.raw(`CREATE TABLE IF NOT EXISTS football_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at INTEGER NOT NULL)`)); } catch { /* exists */ }
+  try { await db.run(sql.raw(`ALTER TABLE yt_videos ADD COLUMN is_short INTEGER`)); } catch { /* there */ }
+}
+
+/**
+ * Is this a Short? youtube.com/shorts/<id> answers 200 for a real Short and 303 → /watch for a
+ * normal video (verified from Vercel 2026-10-04) · one HEAD request, no body. Ali: "no reels".
+ */
+async function isShortVideo(videoId: string): Promise<boolean | null> {
+  try {
+    const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, { method: "HEAD", redirect: "manual", headers: UA, signal: AbortSignal.timeout(6000) });
+    if (res.status === 200) return true;
+    if (res.status >= 300 && res.status < 400) return false;
+    return null;
+  } catch { return null; }
 }
 
 const STAMP = "videos:polledAt";
@@ -172,6 +189,14 @@ export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ adde
       } catch { /* raced */ }
     }
   }
+  // Shorts · every unchecked video, newest first, a few per poll · a Short is kept in the table (so it is
+  // never re-added from the feed) and never listed.
+  const unchecked = await db.select({ videoId: ytVideos.videoId }).from(ytVideos).where(isNull(ytVideos.isShort)).orderBy(desc(ytVideos.publishedAt)).limit(SHORTS_BUDGET).catch(() => []);
+  for (const u of unchecked) {
+    const short = await isShortVideo(u.videoId);
+    if (short === null) continue;
+    await db.update(ytVideos).set({ isShort: short ? 1 : 0 }).where(eq(ytVideos.videoId, u.videoId)).catch(() => {});
+  }
   // Lengths · newest first, a few per poll. A video whose page says nothing (a live stream in
   // progress, a premiere) is left null and tried again next time; after 45 days it is gone anyway.
   let measured = 0;
@@ -200,20 +225,26 @@ const toVideo = (r: typeof ytVideos.$inferSelect): Video => ({
 export async function listVideos(enabled: string[] | null = null): Promise<VideoFeed> {
   await ensureTable();
   const picks = await Promise.all(DAILY_PICKS.map(async (channel) => {
-    const [row] = await db.select().from(ytVideos).where(and(eq(ytVideos.channelId, channel.id), sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`)).orderBy(desc(ytVideos.publishedAt)).limit(1).catch(() => []);
+    const [row] = await db.select().from(ytVideos).where(and(eq(ytVideos.channelId, channel.id), sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`, sql`(${ytVideos.isShort} IS NULL OR ${ytVideos.isShort} = 0)`)).orderBy(desc(ytVideos.publishedAt)).limit(1).catch(() => []);
     return { channel, video: row ? toVideo(row) : null };
   }));
   const laterChannels = WATCH_LATER.filter((c) => !enabled || enabled.includes(c.id));
   const since = new Date(Date.now() - LATER_WINDOW_DAYS * 86400_000);
+  const notShort = sql`(${ytVideos.isShort} IS NULL OR ${ytVideos.isShort} = 0)`;
+  const shown = sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`;
   const rows = laterChannels.length
-    ? await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, laterChannels.map((c) => c.id)), gte(ytVideos.publishedAt, since), isNull(ytVideos.watchedAt), sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`)).catch(() => [])
+    ? await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, laterChannels.map((c) => c.id)), gte(ytVideos.publishedAt, since), isNull(ytVideos.watchedAt), shown, notShort)).catch(() => [])
+    : [];
+  // Watched in the last two weeks · listed under a fold so a tick can be undone (Ali 2026-10-04: "mark it watched by hand").
+  const watchedRows = laterChannels.length
+    ? await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, laterChannels.map((c) => c.id)), gte(ytVideos.publishedAt, since), isNotNull(ytVideos.watchedAt), shown, notShort)).orderBy(desc(ytVideos.watchedAt)).limit(12).catch(() => [])
     : [];
   const rank = (id: string) => channelById(id)?.priority ?? 99;
   // At most PER_CHANNEL per channel (The Diary Of A CEO posts ten a fortnight and would bury the rest).
   const seen = new Map<string, number>();
   const later = rows.map(toVideo).sort((a, b) => rank(a.channelId) - rank(b.channelId) || b.publishedAt - a.publishedAt)
     .filter((v) => { const n = (seen.get(v.channelId) ?? 0) + 1; seen.set(v.channelId, n); return n <= PER_CHANNEL; });
-  return { picks, later, fetchedAt: Date.now() };
+  return { picks, later, watched: watchedRows.map(toVideo), fetchedAt: Date.now() };
 }
 
 /** Mark watched / unwatched · the desired final state, so outbox replays are safe. */

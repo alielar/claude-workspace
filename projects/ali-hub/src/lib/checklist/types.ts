@@ -9,8 +9,8 @@ export type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
  */
 export type ItemKind = "routine" | "manual";
 
-/** `gym-legs` is retired (Ali 2026-10-04: kettlebell and runs cover the legs) · kept in the type so an old row still reads. */
-export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs" | "gym-kb" | "run" | "mind";
+/** `gym-legs` and `run` are retired (Ali 2026-10-04: kettlebell and runs cover the legs · then one row per run, sprint and long) · kept in the type so old rows still read. */
+export type RoutineKey = "stretch" | "breathe" | "supp-am" | "supp-pm" | "read" | "gym-push" | "gym-pull" | "gym-legs" | "gym-kb" | "run" | "run-sprint" | "run-long" | "mind";
 
 export type ChecklistItem = {
   id: number;
@@ -79,18 +79,18 @@ export const ROUTINE_SEED: {
   startDate?: string;    // hidden before this date
 }[] = [
   { routineKey: "stretch", title: "Mobility",            emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "2 sessions of 10 minutes, alternating · 10 s rests", sortOrder: -50 },
-  // THE WEEK (Ali 2026-10-04): two upper-body Speediance sessions (Push · Pull, built in the
-  // Speediance app, copied in src/lib/train/programs.ts), two runs with the Watch, Kettlebell 30 on
-  // Saturday · kettlebell and runs cover the legs, the legs day is retired. Seed days: Sun push,
-  // Mon run, Tue pull, Thu run, Sat kettlebell (Wed and Fri rest). Tickable rows, NEVER counted in
-  // the day streak (gym-* excluded in the checklist route; `run` is an Extra). Each ticks ITSELF
-  // when the Watch posts the matching workout that day (strength on a Push/Pull day, a run on a
-  // run day) or when a Kettlebell 30 session is finished. The days are seeds only · Ali edits them
-  // on Today → Edit; the migrate route moves rows still on old defaults, never ones he changed.
-  { routineKey: "gym-push", title: "Push · Speediance", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "chest · shoulders · triceps · 35 min", sortOrder: -45, weekdays: ["sun"] },
-  { routineKey: "gym-pull", title: "Pull · Speediance", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "back · biceps · rear delts · core · 34 min", sortOrder: -45, weekdays: ["tue"] },
-  { routineKey: "run",      title: "Run",               emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "Outdoor Run on the Watch · it ticks itself", sortOrder: -45, weekdays: ["mon", "thu"] },
-  { routineKey: "gym-kb",   title: "Kettlebell",        emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 30 · 11 moves", sortOrder: -45, weekdays: ["sat"] },
+  // THE PROGRAM (Ali 2026-10-04, starts Monday 2026-10-05 · src/lib/train/program.ts holds what each
+  // session is): one session a day, five a week · Mon Push · Tue Sprint run · Wed Pull · Fri Long run ·
+  // Sat Kettlebell 30 · Thu and Sun rest. Tickable rows, NEVER counted in the day streak (gym-* excluded
+  // in the checklist route; the runs are Extras). Each ticks ITSELF when the Watch posts the matching
+  // workout that day (a strength workout on a Push/Pull day, a run on a run day) or when a Kettlebell 30
+  // session is finished. The days are seeds · Ali moves a session on Today → Edit; the migrate route
+  // moves rows still on old defaults, never ones he changed. `gym-legs` and the single `run` row are retired.
+  { routineKey: "gym-push",   title: "Push · Speediance", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "chest · shoulders · triceps · 35 min", sortOrder: -45, weekdays: ["mon"] },
+  { routineKey: "run-sprint", title: "Sprint run",        emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "10 min easy · 6 × 30 s fast, 90 s walk · 10 min easy", sortOrder: -45, weekdays: ["tue"] },
+  { routineKey: "gym-pull",   title: "Pull · Speediance", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "back · biceps · rear delts · core · 34 min", sortOrder: -45, weekdays: ["wed"] },
+  { routineKey: "run-long",   title: "Long run",          emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "45 to 60 min · talking pace", sortOrder: -45, weekdays: ["fri"] },
+  { routineKey: "gym-kb",     title: "Kettlebell",        emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 30 · 11 moves", sortOrder: -45, weekdays: ["sat"] },
   { routineKey: "breathe", title: "Wim Hof breathing",   emoji: "🫁", timeOfDay: "morning", kind: "routine", color: "cyan",   notes: `30 breaths · ${BREATHING_VIDEO_URL}`, sortOrder: -40 },
   { routineKey: "supp-am", title: "Morning supplements", emoji: "💊", timeOfDay: "morning", kind: "routine", color: "green",  notes: "Zinc · Omega-3 · Creatine", sortOrder: -30 },
   // Mental Training (Ali's ALAI spec 2026-09-27, built 2026-09-28): 4 a week, weekdays by default,

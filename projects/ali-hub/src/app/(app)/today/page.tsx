@@ -54,7 +54,7 @@ import { useTodos } from "@/lib/todo/useTodos";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import { useVideos } from "@/lib/news/useVideos";
-import { VideoRow } from "@/components/news/VideoCards";
+import { VideoRow, WatchedTick } from "@/components/news/VideoCards";
 import { useBirthdays } from "@/lib/birthdays/useBirthdays";
 import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
 import { parseMorningPlan, computeMorning, dayKindOf, shiftHM, type DayKind, type MorningPlan } from "@/lib/morning/plan";
@@ -69,16 +69,20 @@ function HighlightSuggestion() {
   const { unwatched, markWatched } = useHighlights();
   const h = unwatched[0];
   if (!h) return null;
+  // Tapping plays it and marks nothing · the tick marks it watched (Ali 2026-10-04), the next one takes its place.
   return (
-    <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => markWatched(h.videoId)} className="cc-card"
-      style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: "12px 16px", textDecoration: "none", color: "inherit" }}>
-      <span style={{ minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 13, color: "var(--ink-3)", marginBottom: 2 }}>Highlight to watch{unwatched.length > 1 ? ` · ${unwatched.length - 1} more on News` : ""}</span>
-        <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
-        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}</span>
-      </span>
-      <span aria-hidden style={{ width: 34, height: 34, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 14, paddingLeft: 2 }}>▶</span>
-    </a>
+    <section className="cc-card" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 4, alignItems: "center", padding: "0 6px 0 0" }}>
+      <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer"
+        style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: "12px 10px 12px 16px", textDecoration: "none", color: "inherit", minWidth: 0 }}>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 13, color: "var(--ink-3)", marginBottom: 2 }}>Highlight to watch{unwatched.length > 1 ? ` · ${unwatched.length - 1} more on News` : ""}</span>
+          <span style={{ display: "block", fontSize: 16, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.home} vs {h.away}</span>
+          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}</span>
+        </span>
+        <span aria-hidden style={{ width: 34, height: 34, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 14, paddingLeft: 2 }}>▶</span>
+      </a>
+      <WatchedTick on={false} onToggle={() => markWatched(h.videoId)} label={`${h.home} vs ${h.away}`} />
+    </section>
   );
 }
 
@@ -162,7 +166,7 @@ function routineAction(item: ChecklistItem): { label: string; href: string } | n
   if (item.routineKey === "read") return { label: "Books", href: "/books" };
   if (item.routineKey === "gym-kb") return { label: "Train", href: "/train/kb1" };
   if (item.routineKey === "gym-push" || item.routineKey === "gym-pull") return { label: "Program", href: "/train?body=strength" };
-  if (item.routineKey === "run") return { label: "Runs", href: "/train?body=runs" };
+  if (item.routineKey === "run" || item.routineKey === "run-sprint" || item.routineKey === "run-long") return { label: "Runs", href: "/train?body=runs" };
   if (item.routineKey === "mind") return { label: "Start", href: "/train?mind=1" };
   return null;
 }
@@ -176,7 +180,7 @@ function displayNotes(item: ChecklistItem, currentBook: string | null): string |
 }
 
 /** A training row (machine day, run day, kettlebell day) · the training wake time applies, and it is never chased as late. */
-const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-") || i.routineKey === "run";
+const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-") || !!i.routineKey?.startsWith("run");
 
 /** The day's rows as Today shows them: yesterday's ticks cleared on a stale copy, Saturday hours shifted, Sunday hours dropped. */
 function dayItems(base: ChecklistItem[], clearTicks: boolean, kind: DayKind, shiftMin: number): ChecklistItem[] {

@@ -1,9 +1,10 @@
 /**
  * Navigation · single source of truth for the tab bar (phone) and sidebar (desktop).
  *
- * FIVE tabs on the phone (Ali 2026-10-03, "seven is too many"): Today · To-do · R2-D2 · Other ·
- * Settings. "Other" is not a page: it opens a small picker with News, Train and Health
- * (`OTHER`). The desktop rail has room, so it lists those three in place of the picker.
+ * FOUR tabs on the phone (Ali 2026-10-03 "seven is too many" · 2026-10-04 R2-D2 moved into the
+ * picker): Today · To-do · Other · Settings. "Other" is not a page: it opens a small picker with
+ * News, Train, Health and R2-D2 (`OTHER`, in that order · R2-D2 last, "just below Health"). The
+ * desktop rail has room, so it lists the four in place of the picker.
  *
  * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
  * journal) are deliberately NOT here. They are reachable from /archive.
@@ -26,13 +27,13 @@ export const OTHER: NavItem[] = [
   { href: "/news",   label: "News",   icon: "news",   match: ["/news", "/podcast"], hint: "Daily picks · watch later · football" },
   { href: "/train",  label: "Train",  icon: "train",  hint: "Body · Mind" },
   { href: "/health", label: "Health", icon: "health", hint: "Today's checkup" },
+  { href: "/r2d2",   label: "R2-D2",  icon: "r2d2",   match: ["/r2d2", "/alai", "/fix"], hint: "Ask for a change · shipped by the Mac" },
 ];
 
 /** The phone's tab bar. "Other" carries no page of its own: its href is the first section inside it. */
 export const NAV: NavItem[] = [
   { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/breathe", "/books"] },
   { href: "/todo",     label: "To-do",    icon: "todo",     match: ["/todo", "/vault", "/birthdays"] },
-  { href: "/r2d2",     label: "R2-D2",    icon: "r2d2",     match: ["/r2d2", "/alai", "/fix"] },
   { href: "/news",     label: "Other",    icon: "other",    match: OTHER.flatMap((o) => o.match ?? [o.href]) },
   { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
 ];

@@ -1,7 +1,11 @@
 "use client";
 
 /**
- * /news · rebuilt 2026-10-03 (Ali). Top to bottom:
+ * /news · rebuilt 2026-10-03 (Ali) · THREE PARTS behind a chip row since 2026-10-04 ("compartmentalize"),
+ * remembered in `cc-news-part`: Videos (daily picks · watch later · a Watched fold) · Weekly brief (read
+ * or listen) · Football. A video or highlight is marked watched BY HAND with the tick on its row
+ * (tapping it only plays it); the tick undoes itself. Shorts never appear (videos.ts checks each id).
+ * The parts, top to bottom:
  *
  *   DAILY PICKS   · two video cards a day: the latest upload of The AI Daily Brief (AI & Tech) and
  *                   of TLDR News Global (Global news). Thumbnail, title, channel, length. Tap opens
@@ -21,12 +25,12 @@
  * Everything paints from the phone's saved copy first.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCached, fetchJson } from "@/lib/local/store";
 import { useHighlights, youtubeUrl } from "@/lib/news/useHighlights";
 import { useVideos } from "@/lib/news/useVideos";
-import { PickCard, VideoRow } from "@/components/news/VideoCards";
+import { PickCard, VideoRow, WatchedTick } from "@/components/news/VideoCards";
 import type { NewsStory } from "@/lib/news-brief";
 import type { WeeklyBrief } from "@/lib/news/weekly";
 import type { Highlight, HighlightGroup } from "@/lib/news/highlights";
@@ -95,7 +99,7 @@ const GROUPS: { key: HighlightGroup; label: string }[] = [
   { key: "national", label: "International teams" },
 ];
 
-function HighlightRow({ h, onWatch }: { h: Highlight; onWatch: (id: string) => void }) {
+function HighlightRow({ h, onWatch }: { h: Highlight; onWatch: (id: string, watched: boolean) => void }) {
   if (h.pending) return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", borderBottom: "1px solid var(--line)", opacity: 0.7 }}>
       <span style={{ minWidth: 0 }}>
@@ -105,19 +109,24 @@ function HighlightRow({ h, onWatch }: { h: Highlight; onWatch: (id: string) => v
       <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, border: "1px dashed var(--line-strong)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-4)", fontSize: 13 }}>…</span>
     </div>
   );
+  // Tapping the match plays it and marks nothing; the tick on the right is the "watched" mark
+  // (Ali 2026-10-04: "sometimes I watched the game, no need for the highlights · a little mark").
   return (
-    <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer" onClick={() => { if (!h.watched) onWatch(h.videoId); }}
-      style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 16px", textDecoration: "none", color: "inherit", borderBottom: "1px solid var(--line)", opacity: h.watched ? 0.45 : 1 }}>
-      <span style={{ minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 16, fontWeight: h.watched ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: h.watched ? "var(--ink-3)" : "var(--ink)" }}>{h.home} vs {h.away}</span>
-        <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}{h.watched ? " · watched" : ""}</span>
-      </span>
-      <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: h.watched ? "transparent" : "var(--fill-2)", border: h.watched ? "1px solid var(--line-strong)" : "none", display: "flex", alignItems: "center", justifyContent: "center", color: h.watched ? "var(--ink-4)" : "var(--ink-2)", fontSize: 13, paddingLeft: h.watched ? 0 : 2 }}>{h.watched ? "✓" : "▶"}</span>
-    </a>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 4, alignItems: "center", borderBottom: "1px solid var(--line)", opacity: h.watched ? 0.5 : 1 }}>
+      <a href={youtubeUrl(h.videoId)} target="_blank" rel="noopener noreferrer"
+        style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, alignItems: "center", minHeight: 56, padding: "8px 0 8px 16px", textDecoration: "none", color: "inherit", minWidth: 0 }}>
+        <span aria-hidden style={{ width: 30, height: 30, borderRadius: 99, background: "var(--fill-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-2)", fontSize: 13, paddingLeft: 2 }}>▶</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 16, fontWeight: h.watched ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: h.watched ? "var(--ink-3)" : "var(--ink)" }}>{h.home} vs {h.away}</span>
+          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2 }}>{h.context}{h.watched ? " · watched" : ""}</span>
+        </span>
+      </a>
+      <span style={{ paddingRight: 4 }}><WatchedTick on={!!h.watched} onToggle={() => onWatch(h.videoId, !h.watched)} label={`${h.home} vs ${h.away}`} /></span>
+    </div>
   );
 }
 
-function HighlightsSection({ label, items, onWatch }: { label: string; items: Highlight[]; onWatch: (id: string) => void }) {
+function HighlightsSection({ label, items, onWatch }: { label: string; items: Highlight[]; onWatch: (id: string, watched: boolean) => void }) {
   const [showAll, setShowAll] = useState(false);
   const unwatched = items.filter((h) => !h.watched && !h.pending).length;
   const shown = showAll ? items : items.slice(0, 6);
@@ -146,6 +155,7 @@ type Episode = { date: string; status: "pending" | "ready" | "failed"; script: s
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 type WeeklyFeed = { brief: WeeklyBrief | null; episode: Episode | null; weeks: { week: string; from: string; to: string; label: string }[] };
+type NewsPart = "videos" | "brief" | "football";
 
 export default function NewsPage() {
   const today = checklistToday();
@@ -155,6 +165,16 @@ export default function NewsPage() {
   const { items: highlights, markWatched: markHighlight } = useHighlights();
   const [laterAll, setLaterAll] = useState(false);
   const [section, setSection] = useState<string | null>(null);
+  const [showWatched, setShowWatched] = useState(false);
+  // Three parts (Ali 2026-10-04: "compartmentalize · the videos, the written news with the podcast, the football"), remembered on the phone.
+  const [part, setPartState] = useState<NewsPart>("videos");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    try { const p = localStorage.getItem("cc-news-part"); if (p === "brief" || p === "football") setPartState(p); } catch { /* ignore */ }
+  }, []);
+  const setPart = (p: NewsPart) => { setPartState(p); try { localStorage.setItem("cc-news-part", p); } catch { /* ignore */ } };
+  const watchedList = feed?.watched ?? [];
+  const unwatchedHl = highlights.filter((h) => !h.watched && !h.pending).length;
 
   const later = feed?.later ?? [];
   const laterShown = laterAll ? later : later.slice(0, 6);
@@ -171,6 +191,16 @@ export default function NewsPage() {
         </div>
       </div>
 
+      <div role="tablist" aria-label="News" style={{ display: "flex", gap: 8 }}>
+        {([{ key: "videos", label: "Videos", tail: later.length ? String(later.length) : "" }, { key: "brief", label: "Weekly brief", tail: "" }, { key: "football", label: "Football", tail: unwatchedHl ? String(unwatchedHl) : "" }] as { key: NewsPart; label: string; tail: string }[]).map((p) => (
+          <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
+            style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
+            {p.label}{p.tail ? <span className="tabular-nums" style={{ marginLeft: 6, fontSize: 13, color: part === p.key ? "var(--violet)" : "var(--ink-4)" }}>{p.tail}</span> : null}
+          </button>
+        ))}
+      </div>
+
+      {part === "videos" && <div key="videos" style={{ display: "grid", gap: 18 }}>
       {/* 1 · Daily picks */}
       <div style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "0 2px" }}>Daily picks</span>
@@ -198,6 +228,18 @@ export default function NewsPage() {
         )}
       </section>
 
+      {/* Watched · recently ticked, so a tick can be undone */}
+      {watchedList.length > 0 && (
+        <section className="cc-card">
+          <button onClick={() => setShowWatched((v) => !v)} aria-expanded={showWatched} className="cc-card-head" style={{ width: "100%", background: "none", color: "inherit", cursor: "pointer", font: "inherit", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: showWatched ? undefined : "none", borderRadius: showWatched ? undefined : "inherit" }}>
+            <span className="title">Watched</span><span className="tail">{watchedList.length} <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: showWatched ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
+          </button>
+          {showWatched && <div>{watchedList.map((v, i) => <VideoRow key={v.videoId} v={v} onWatch={markWatched} now={now} last={i === watchedList.length - 1} />)}</div>}
+        </section>
+      )}
+      </div>}
+
+      {part === "brief" && <div key="brief" style={{ display: "grid", gap: 18 }}>
       {/* 3 · Weekly brief · read or listen */}
       <div style={{ display: "grid", gap: 10 }}>
         <div className="cc-pagetitle" style={{ marginBottom: 0, alignItems: "end" }}>
@@ -241,11 +283,13 @@ export default function NewsPage() {
         )}
       </div>
 
-      {/* 5 · Football highlights · three sections */}
-      <div style={{ display: "grid", gap: 10 }}>
-        <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "0 2px" }}>Football · spoiler-free</span>
+      </div>}
+
+      {/* 5 · Football highlights · three sections · spoiler-free */}
+      {part === "football" && <div key="football" style={{ display: "grid", gap: 18 }}>
         {GROUPS.map((g) => <HighlightsSection key={g.key} label={g.label} items={highlights.filter((h) => (h.group ?? (h.national ? "national" : "europe")) === g.key)} onWatch={markHighlight} />)}
-      </div>
+        <div style={{ fontSize: 13.5, color: "var(--ink-4)", padding: "0 2px" }}>Matchup and context only, never a score.</div>
+      </div>}
 
       <div style={{ color: "var(--ink-4)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 12 }}>
         <span>Videos open in YouTube · summaries by AI</span>

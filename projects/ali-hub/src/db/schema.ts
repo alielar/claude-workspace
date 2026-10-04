@@ -271,6 +271,8 @@ export const ytVideos = sqliteTable("yt_videos", {
   thumbnail: text("thumbnail"),
   watchedAt: integer("watched_at", { mode: "timestamp_ms" }),
   fetchedAt: integer("fetched_at", { mode: "timestamp_ms" }).notNull(),
+  /** 1 = a YouTube Short (youtube.com/shorts/<id> answers 200 instead of redirecting) · never shown. null = not checked yet. */
+  isShort: integer("is_short"),
 });
 
 // ─── Weekly brief (News · the previous week's developments, 2026-10-03) ──────

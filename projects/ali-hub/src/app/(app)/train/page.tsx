@@ -11,9 +11,12 @@
  *                Watch strength workout (a kettlebell day's is labelled Kettlebell 30)
  *   Kettlebell · everything about Kettlebell 30: week dots, rest day, the hero with Start,
  *                weekly bests (rounds), recent sessions
- * Above the three parts since 2026-10-04: THIS WEEK (src/lib/train/insights.ts, fixed rules · the
- * five planned sessions Push · Run · Pull · Run · Kettlebell from the Routine rows' weekdays, readiness
- * from last night, up to four insight lines) and, at the bottom, LAST WEEK (the report, folded).
+ * Above the three parts since 2026-10-04 (rebuilt the same evening around THE PROGRAM, program.ts ·
+ * one session a day, Mon Push · Tue Sprint · Wed Pull · Fri Long run · Sat Kettlebell, from Monday
+ * 2026-10-05): the WEEK STRIP (seven days, one session each), TODAY's session card (state, button,
+ * readiness in plain words), NOTES (up to three lines from the numbers · insights.ts, fixed rules)
+ * and, at the bottom, LAST WEEK (the report, folded). Under Runs: the last post from the phone, so
+ * a run that has not landed yet is explained where it is missing.
  * `?body=runs|strength|kettlebell` opens a part (Today's Run / Program buttons).
  * The sub line under the title sums the week across the three.
  * MIND: Mental Training · src/components/mind/MindPane.tsx.
@@ -34,8 +37,9 @@ import { CountUp, Reveal, useDrawn } from "@/components/health/checkup";
 import { useCached, fetchJson } from "@/lib/local/store";
 import type { ChecklistData } from "@/lib/checklist/types";
 import { PROGRAMS } from "@/lib/train/programs";
-import { DEFAULT_PLAN_DAYS, readiness, trainInsights, weekPlan, weekReport, type PlanDays } from "@/lib/train/insights";
-import { WeekCard, ReportCard } from "@/components/train/WeekCards";
+import { beforeProgram, readiness, trainInsights, weekPlan, weekReport } from "@/lib/train/insights";
+import { weekDaysFrom } from "@/lib/train/program";
+import { WeekStrip, TodayCard, NotesCard, ReportCard } from "@/components/train/WeekCards";
 import { ProgramCard } from "@/components/train/Programs";
 
 /** YYYY-MM-DD shifted by n days. */
@@ -176,32 +180,35 @@ export default function TrainPage() {
   const lastStrengthWk = strength.filter((w) => isoWeekOf(w.date) === lastWeek).length;
   const drawn = useDrawn();
 
-  // The week's plan = the Routine rows' weekdays (Push · Pull · Run · Kettlebell), the editor's own cached copy.
+  // The week = the PROGRAM (program.ts) on the Routine rows' weekdays (the editor's own cached copy).
   const { data: routine } = useCached<ChecklistData>("checklist-all", () => fetchJson<ChecklistData>("/api/checklist?all=1"));
-  const daysOf = (key: string): DayCode[] | null => { const r = routine?.items.find((i) => i.routineKey === key); return r ? ((r.weekdays ?? []) as DayCode[]) : null; };
-  const days: PlanDays = routine
-    ? { push: daysOf("gym-push") ?? [], pull: daysOf("gym-pull") ?? [], run: daysOf("run") ?? [], kb: daysOf("gym-kb") ?? [] }
-    : DEFAULT_PLAN_DAYS;
+  const days = weekDaysFrom(routine?.items ?? null);
   const kbSessions = ov?.sessions ?? [];
   const slots = weekPlan({ today, days, workouts: watch, kb: kbSessions });
+  const before = beforeProgram(today);
+  const todaySlot = slots.find((d) => d.date === today) ?? slots[0];
+  const nextSlot = slots.find((d) => d.date > today && d.session) ?? null;
   const ready = readiness(health, today);
   const kbBest = ov?.weeklyBests.length ? Math.max(...ov.weeklyBests.map((b) => b.best)) : null;
-  const insights = trainInsights({ today, slots, ready, runs, strength, kb: kbSessions, kbBest });
+  const insights = trainInsights({ today, slots, runs, strength, kb: kbSessions, kbBest });
   const report = weekReport({ today, days, workouts: watch, kb: kbSessions, nights: health?.nights ?? [], metrics: health?.metrics });
-  const plannedN = slots.filter((x) => x.state !== "extra").length;
-  const doneN = slots.filter((x) => x.state === "done" || x.state === "extra").length;
+  const plannedN = slots.filter((d) => d.session).length;
+  const doneN = slots.filter((d) => d.state === "done").length;
   // A Watch strength workout belongs to the program planned that weekday; a kettlebell day's is the bell.
   const programOf = (w: WorkoutRow): "push" | "pull" | "kb" | null => {
-    const d = dayCode(w.date);
-    if (kbDays.has(w.date) || days.kb.includes(d)) return "kb";
-    if (days.push.includes(d)) return "push";
-    if (days.pull.includes(d)) return "pull";
+    const k = days[dayCode(w.date)];
+    if (kbDays.has(w.date) || k === "kb") return "kb";
+    if (k === "push" || k === "pull") return k;
     return null;
   };
   const todayCode = dayCode(today);
-  const bodySub = ov || health
-    ? `This week · ${doneN} of ${plannedN} sessions · ${wk.runs} run${wk.runs === 1 ? "" : "s"}${wk.runs ? ` ${wk.km} km` : ""} · ${strengthWk} strength · ${ov?.thisWeekSessions ?? 0} of ${target} kettlebell`
-    : "This week · —";
+  const bodySub = before ? "The program starts Monday · one session a day, five a week"
+    : ov || health ? `This week · ${doneN} of ${plannedN} sessions${wk.runs ? ` · ${wk.km} km run` : ""}` : "This week · —";
+  // Why a run is not here yet · the last post from the phone (Health Auto Export syncs hourly, instantly on a widget tap).
+  const lastPost = health?.pipe.lastAt ?? null;
+  const syncLine = lastPost !== null && nowMs
+    ? `Last post from the phone ${new Date(lastPost).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}${nowMs - lastPost > 20 * 3600_000 ? ` on ${fmtDay(new Date(lastPost).toISOString().slice(0, 10), today).toLowerCase()}` : ""} · a new run lands when Health Auto Export syncs · tap its widget to sync now.`
+    : null;
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -225,8 +232,10 @@ export default function TrainPage() {
       {half === "mind" && <Reveal key="mind" i={0}><MindPane /></Reveal>}
 
       {half === "body" && <>
-      <Reveal key="week" i={0}><WeekCard slots={slots} ready={ready} insights={insights} sub={plannedN ? `Plan · ${slots.filter((x) => x.state !== "extra").map((x) => `${x.label} ${DAY_LABELS[x.day]}`).join(" · ")}` : "Set the days on Today → Edit."} /></Reveal>
-      {/* The three parts of Body */}
+      <Reveal key="week" i={0}><WeekStrip slots={slots} today={today} /></Reveal>
+      <Reveal key="today" i={1}><TodayCard slot={todaySlot} next={nextSlot} ready={ready} before={before} /></Reveal>
+      <Reveal key="notes" i={2}><NotesCard insights={insights} /></Reveal>
+      {/* The three parts of Body · the details */}
       <div role="tablist" aria-label="Body" style={{ display: "flex", gap: 8 }}>
         {PARTS.map((p) => (
           <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
@@ -260,15 +269,16 @@ export default function TrainPage() {
           </section>
         )}
         <WatchCard title="Runs" tail={runs.length ? `${runs.length} on the Watch` : undefined} rows={runs} today={today} empty={watchNote ?? "No runs from the Watch yet. Start an Outdoor Run on the Watch and it lands here after the run."} warn={!!watchNote} />
+        {syncLine && <div style={{ fontSize: 13.5, color: "var(--ink-3)", padding: "0 4px", lineHeight: 1.45 }}>{syncLine}</div>}
         {otherWatch.length > 0 && <WatchCard title="Other activity" rows={otherWatch} today={today} empty="" />}
       </div></Reveal>}
 
       {part === "strength" && <Reveal key="strength" i={0}><div style={{ display: "grid", gap: 18 }}>
         {/* The two Speediance programs · today's open, the other folded */}
-        {PROGRAMS.map((p) => (
-          <ProgramCard key={p.key} p={p} days={days[p.key]} today={today} isToday={days[p.key].includes(todayCode)}
-            sessions={strength.filter((w) => programOf(w) === p.key)} />
-        ))}
+        {PROGRAMS.map((p) => {
+          const pDays = DAY_CODES.filter((d) => days[d] === p.key);
+          return <ProgramCard key={p.key} p={p} days={pDays} today={today} isToday={days[todayCode] === p.key} sessions={strength.filter((w) => programOf(w) === p.key)} />;
+        })}
         <WatchCard title="On the Watch" tail={strength.length ? `${strengthWk} this week${lastStrengthWk ? ` · last week ${lastStrengthWk}` : ""}` : undefined} rows={strength} today={today}
           noteFor={(w) => { const k = programOf(w); return k === "kb" ? "Kettlebell 30" : k === "push" ? "Push · Speediance" : k === "pull" ? "Pull · Speediance" : undefined; }}
           empty={watchNote ?? "No strength sessions from the Watch yet. Start Traditional Strength Training on the Watch when the machine starts; it lands here after."} warn={!!watchNote} />

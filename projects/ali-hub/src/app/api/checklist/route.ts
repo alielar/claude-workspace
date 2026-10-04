@@ -284,7 +284,7 @@ export async function GET(req?: Request) {
       completedToday: itemDates.includes(today)
         || (item.routineKey === "gym-kb" && (todayTrain !== null || watchKinds.has("strength")))
         || ((item.routineKey === "gym-push" || item.routineKey === "gym-pull") && watchKinds.has("strength"))
-        || (item.routineKey === "run" && watchKinds.has("run")),
+        || ((item.routineKey === "run-sprint" || item.routineKey === "run-long" || item.routineKey === "run") && watchKinds.has("run")),
       streak: calcStreak(itemDates, today),
       last7: last7Dates.map((d) => itemDates.includes(d)),
       source: "manual" as const,

@@ -20,14 +20,14 @@
  * AI · the sentences are fixed rules (`dayRead`, `vitalsRead`, `nightVerdict`, `insightsFor`,
  * `weekBrief`), so the same night reads the same every day. Motion in checkup.tsx.
  *
- * 2026-10-03 (Ali): a GRID instead of one long scroll · the important things sit at the top,
- * small panels share a row. Order: Checkup · Insights (what is off, what to do) · Last night and
- * Today side by side · This week (the weekly health brief) · Recovery tiles · Sleep history ·
- * Movement · Fitness and All measures folded. `.h-grid` in globals.css: two columns on the phone
- * (small panels take one, the rest span both), three from 760 px.
+ * 2026-10-04 (Ali: "blank spaces, the layout is off"): FOUR PARTS behind a chip row, remembered in
+ * `cc-health-part`, one column each · Checkup (the ring, What to do, Last night + Today side by
+ * side, This week) · Sleep (the history) · Movement · Measures (the Recovery tiles, Fitness, All
+ * measures, Also received). A signal tapped on the ring opens its part (`cc:health-part` event).
+ * The 2026-10-03 grid (`.h-grid`) is gone from this page.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import {
   METRIC_INFO, RANGE_DAYS, STAGES, avg, dayRead, deltaLine, fmtDay, fmtDelta, fmtMetric, fmtMin, fmtTime,
@@ -73,7 +73,8 @@ function valueOn(s: Series | undefined, info: MetricInfo, date: string): number 
 // ── Checkup · the hero ───────────────────────────────────────────────────────
 
 function Checkup({ read, today }: { read: ReturnType<typeof dayRead>; today: string }) {
-  const go = (s: Signal) => document.getElementById(`h-${s.key}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  // A signal opens its part (the page is split in parts since 2026-10-04) and scrolls back to the top.
+  const go = (s: Signal) => { window.dispatchEvent(new CustomEvent("cc:health-part", { detail: `h-${s.key}` })); window.scrollTo({ top: 0, behavior: "smooth" }); };
   return (
     <section className="cc-card">
       <div className="cc-card-body" style={{ display: "grid", gap: 16, padding: "18px 16px 14px" }}>
@@ -462,8 +463,22 @@ function RowsCard({ title, tail, keys, known, today, days30, closed }: { title: 
 
 const FITNESS_KEYS = ["vo2_max", "cardio_recovery", "walking_heart_rate_average", "walking_speed", "six_minute_walking_test_distance"];
 
+type HealthPart = "checkup" | "sleep" | "movement" | "measures";
+
 export default function HealthPage() {
   const { data, loading } = useHealthSummary();
+  const [part, setPartState] = useState<HealthPart>("checkup");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    try { const p = localStorage.getItem("cc-health-part"); if (p === "sleep" || p === "movement" || p === "measures") setPartState(p); } catch { /* ignore */ }
+  }, []);
+  const setPart = (p: HealthPart) => { setPartState(p); try { localStorage.setItem("cc-health-part", p); } catch { /* ignore */ } };
+  // A signal tapped on the Checkup ring opens its part (the chapters used to be anchors on one long page).
+  useEffect(() => {
+    const h = (e: Event) => { const id = (e as CustomEvent<string>).detail; if (id === "h-sleep") setPart("sleep"); else if (id === "h-movement") setPart("movement"); else if (id === "h-recovery") setPart("measures"); };
+    window.addEventListener("cc:health-part", h);
+    return () => window.removeEventListener("cc:health-part", h);
+  }, []);
   const today = checklistToday();
   const nights = data?.nights ?? [];
   const last = nights[0] ?? null;
@@ -498,6 +513,9 @@ export default function HealthPage() {
   const week = hasAny ? weekBrief({ nights, today, daily: { exercise: series14("apple_exercise_time"), steps: series14("step_count"), rhr: series14("resting_heart_rate"), hrv: series14("heart_rate_variability") } }) : null;
   let i = 0;
 
+  // Four parts (Ali 2026-10-04: "blank spaces, the layout is off") · one column each, no grid gaps.
+  const PARTS: { key: HealthPart; label: string }[] = [{ key: "checkup", label: "Checkup" }, { key: "sleep", label: "Sleep" }, { key: "movement", label: "Movement" }, { key: "measures", label: "Measures" }];
+
   return (
     <div style={{ display: "grid", gap: 14 }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
@@ -511,30 +529,62 @@ export default function HealthPage() {
       {empty && !note && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>Nothing from the Watch yet. Tonight&apos;s sleep lands in the morning.</div>}
       {!data && loading && <div className="cc-skeleton" style={{ height: 200 }} />}
 
-      <div className="h-grid">
-        {hasAny && <div className="h-span"><Reveal i={i++}><Checkup read={read} today={today} /></Reveal></div>}
-        {insights.length > 0 && <div className="h-span"><Reveal i={i++}><Insights items={insights} /></Reveal></div>}
-        {last && <Reveal i={i++}><NightTile n={last} today={today} /></Reveal>}
-        {ACTIVITY_TILES.some((k) => known[k]) && <Reveal i={i++}><TodayTile known={known} today={today} /></Reveal>}
-        {week && <div className="h-span"><Reveal i={i++}><Week brief={week} /></Reveal></div>}
-        {vitals.length > 0 && <div className="h-span"><Reveal i={i++} id="h-recovery"><Recovery rows={vitals} today={today} days30={days30} /></Reveal></div>}
-        {last && <div className="h-span h-half"><Reveal i={i++} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal></div>}
-        {ACTIVITY_TILES.some((k) => known[k]) && <div className="h-span h-half"><Reveal i={i++} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal></div>}
-        {fitnessKeys.length > 0 && <div className="h-span"><Reveal i={i++}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} closed /></Reveal></div>}
-        {(restKeys.length > 0 || unknown.length > 0) && (
-          <div className="h-span"><Reveal i={i++}>
-            <RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed />
-            {unknown.length > 0 && (
-              <section className="cc-card" style={{ marginTop: 14 }}>
+      {hasAny && (
+        <div role="tablist" aria-label="Health" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {PARTS.map((p) => (
+            <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
+              style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {hasAny && part === "checkup" && (
+        <div key="checkup" style={{ display: "grid", gap: 14 }}>
+          <Reveal i={i++}><Checkup read={read} today={today} /></Reveal>
+          {insights.length > 0 && <Reveal i={i++}><Insights items={insights} /></Reveal>}
+          {(last || ACTIVITY_TILES.some((k) => known[k])) && (
+            <Reveal i={i++}>
+              <div style={{ display: "grid", gridTemplateColumns: last && ACTIVITY_TILES.some((k) => known[k]) ? "repeat(2, minmax(0, 1fr))" : "1fr", gap: 12 }}>
+                {last && <NightTile n={last} today={today} />}
+                {ACTIVITY_TILES.some((k) => known[k]) && <TodayTile known={known} today={today} />}
+              </div>
+            </Reveal>
+          )}
+          {week && <Reveal i={i++}><Week brief={week} /></Reveal>}
+        </div>
+      )}
+
+      {hasAny && part === "sleep" && (
+        <div key="sleep" style={{ display: "grid", gap: 14 }}>
+          {last ? <Reveal i={0} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal> : <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>No nights yet.</div>}
+        </div>
+      )}
+
+      {hasAny && part === "movement" && (
+        <div key="movement" style={{ display: "grid", gap: 14 }}>
+          {ACTIVITY_TILES.some((k) => known[k]) ? <Reveal i={0} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal> : <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>No activity yet.</div>}
+        </div>
+      )}
+
+      {hasAny && part === "measures" && (
+        <div key="measures" style={{ display: "grid", gap: 14 }}>
+          {vitals.length > 0 && <Reveal i={0} id="h-recovery"><Recovery rows={vitals} today={today} days30={days30} /></Reveal>}
+          {fitnessKeys.length > 0 && <Reveal i={1}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} /></Reveal>}
+          {restKeys.length > 0 && <Reveal i={2}><RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed /></Reveal>}
+          {unknown.length > 0 && (
+            <Reveal i={3}>
+              <section className="cc-card">
                 <div className="cc-card-head"><span className="title">Also received</span></div>
                 <div className="cc-card-body" style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
                   {unknown.map((k) => { const p = data!.metrics[k].points; const l = p[p.length - 1]; return <span key={k} className="tabular-nums">{k.replace(/_/g, " ")} · {fmtMetric(l?.qty ?? l?.avg ?? null, data!.metrics[k].units ?? "")} · {l ? fmtDay(l.date, today) : ""}</span>; })}
                 </div>
               </section>
-            )}
-          </Reveal></div>
-        )}
-      </div>
+            </Reveal>
+          )}
+        </div>
+      )}
     </div>
   );
 }

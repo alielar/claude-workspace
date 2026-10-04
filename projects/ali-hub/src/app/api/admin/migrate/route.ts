@@ -421,6 +421,11 @@ export async function POST() {
     `UPDATE checklist_items SET active = 0 WHERE routine_key = 'gym-legs' AND title = 'Legs and core · machine'`,
     `UPDATE checklist_items SET title = 'Push · Speediance', notes = 'chest · shoulders · triceps · 35 min' WHERE routine_key = 'gym-push' AND title = 'Push day · machine'`,
     `UPDATE checklist_items SET title = 'Pull · Speediance', notes = 'back · biceps · rear delts · core · 34 min' WHERE routine_key = 'gym-pull' AND title = 'Pull day · machine'`,
+    // ── 2026-10-04 evening: THE PROGRAM (src/lib/train/program.ts) · Mon Push · Tue Sprint · Wed Pull · Fri Long run · Sat Kettlebell ·
+    //    rows still on the morning's seed days move; the single "Run" row (Mon + Thu) retires in favour of run-sprint / run-long
+    `UPDATE checklist_items SET weekdays = '["mon"]' WHERE routine_key = 'gym-push' AND weekdays = '["sun"]'`,
+    `UPDATE checklist_items SET weekdays = '["wed"]' WHERE routine_key = 'gym-pull' AND weekdays = '["tue"]'`,
+    `UPDATE checklist_items SET active = 0 WHERE routine_key = 'run' AND title = 'Run'`,
     // ── Password vault (2026-09-12) · blind storage, same DDL as src/lib/vault/server.ts
     ...VAULT_DDL,
 
