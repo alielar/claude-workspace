@@ -62,14 +62,23 @@ export async function syncUpcoming(waId, { maxAgeMs = 30 * 60_000 } = {}) {
 export const upcomingOf = (r) => { try { return r?.upcoming ? JSON.parse(r.upcoming) : []; } catch { return []; } };
 export const realNext = (r, now = Date.now()) => upcomingOf(r).filter((u) => u.scheduledAt && Date.parse(u.scheduledAt) > now - 15 * 60e3).sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))[0] || null;
 export const stepOf = (r, template) => upcomingOf(r).find((u) => u.template === template) || null;
+// The Hub's `next` field is frozen for a paused or CITF lead (Neila, 2026-10-04: « next » said a TBC step on 10-06, the real queue was
+// the wake-up series on 10-17). For those leads the next step is the first upcoming one still ahead; `next` otherwise.
+export function effectiveNext(r, now = Date.now()) {
+  if (!r) return null;
+  const n = (r.status === 'CITF' || r.paused) ? realNext(r, now) : null;
+  if (n) return { template: n.template, at: n.scheduledAt, step: n.stepIndex ?? null, fromUpcoming: true };
+  return r.next_tpl ? { template: r.next_tpl, at: r.next_at, step: stepOf(r, r.next_tpl)?.stepIndex ?? null, fromUpcoming: false } : null;
+}
 
 // What one lead's next automatic step is, with the real text — for the thread screen and the prompts.
 export function hubNextFor(waId) {
   const r = hubLeadRow(waId);
   if (!r) return null;
-  const tpl = r.next_tpl ? hubTemplate(r.next_tpl) : null;
+  const en = effectiveNext(r);
+  const tpl = en ? hubTemplate(en.template) : null;
   return { status: r.status, paused: !!r.paused, skipNext: !!r.skip_next, phase: r.phase, meetingDate: r.meeting_date, lastReason: r.last_reason, lastReasonAt: r.last_reason_at,
-    next: r.next_tpl ? { template: r.next_tpl, at: r.next_at, text: tpl?.text || null, stale: !!r.next_at && Date.parse(r.next_at) < Date.now() - 60 * 60e3, step: stepOf(r, r.next_tpl)?.stepIndex ?? null } : null,
+    next: en ? { template: en.template, at: en.at, text: tpl?.text || null, stale: !!en.at && Date.parse(en.at) < Date.now() - 60 * 60e3, step: en.step, fromUpcoming: en.fromUpcoming } : null,
     realNext: (() => { const n = realNext(r); return n ? { step: n.stepIndex, template: n.template, at: n.scheduledAt, text: hubTemplate(n.template)?.text || null } : null; })(),
     upcoming: upcomingOf(r).map((u) => ({ step: u.stepIndex, template: u.template, at: u.scheduledAt, past: Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 })),
     citf: r.citf ? JSON.parse(r.citf) : null, leadId: r.lead_id, updatedAt: r.updated_at };

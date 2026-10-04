@@ -25,7 +25,8 @@ import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
 import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems, closeDueFollowups, welcomeSince } from './db.mjs';
-import { startHubSync, hubNextFor, hubStatus } from './hub-sync.mjs';
+import { startHubSync, hubNextFor, hubStatus, syncUpcoming } from './hub-sync.mjs';
+import { hubLeadRow, failedTemplates } from './db.mjs';
 import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, restoreAfterSend, citfToday, madridIso } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
@@ -86,6 +87,7 @@ async function fireScheduled(rowId, waId, bubbles, meta) {
   try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); setScheduledState(rowId, 'sent'); }
   catch (e) { logSend(waId, 'text', { text: bubbles[0], ...meta }, false, e.message); setScheduledState(rowId, 'failed', e.message); sending.set(waId, { sent: 0, total: bubbles.length, error: `Delayed send failed: ${e.message}` }); setTimeout(() => sending.delete(waId), 90_000); return; }
   saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+  closeDueFollowups(waId); afterAliMessage(waId); // the step 2 is a manual message too: the plan judges what it engages (Joanna, 2026-10-04: deposit offer at 11:10, no card all day)
   if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
   else sendRest(waId, t, bubbles, meta);
 }
@@ -221,7 +223,7 @@ async function api(req, res, path) {
     if (req.method === 'POST') { const b = await body(req); const s = b.subscription || b; if (!s?.endpoint || !s.keys?.p256dh || !s.keys?.auth) return json(res, 400, { error: 'bad subscription' }); addSubscription(s, (req.headers['user-agent'] || '').slice(0, 200)); return json(res, 200, { ok: true }); }
     if (req.method === 'DELETE') { const b = await body(req); if (b.endpoint) removeSubscription(b.endpoint); return json(res, 200, { ok: true }); }
   }
-  if (path === '/api/templates') return json(res, 200, { templates: await frenchTemplates() });
+  if (path === '/api/templates') { const bad = failedTemplates(); return json(res, 200, { templates: (await frenchTemplates()).filter((t) => !bad.has(t.name)) }); } // minus the ones Meta refused (#132001)
 
   const fu = /^\/api\/thread\/(\d{8,15})\/followups(?:\/(\d+))?(?:\/(seen))?$/.exec(path);
   if (fu) {
@@ -239,7 +241,7 @@ async function api(req, res, path) {
         meta = { template: tpl.name, params };
       }
       if (!tplBubbles && !bubbles?.length) return json(res, 400, { error: 'Write the follow-up first' });
-      const at = followupAt(b), why = followupCheck(waId, at, { template: !!tplBubbles }); if (why) return json(res, 400, { error: why });
+      const at = followupAt(b), why = followupCheck(waId, at, { template: !!tplBubbles, force: !!b.force }); if (why) return json(res, why.startsWith('HUB:') ? 409 : 400, { error: why.replace(/^HUB:/, ''), hub: why.startsWith('HUB:') });
       const rid = insertScheduled(waId, tplBubbles || bubbles, meta, at, 'followup');
       if (b.planId) setPlanState(Number(b.planId), 'done', `scheduled for ${fmtHMm(at)}`);
       return json(res, 200, { ok: true, followup: followupView(scheduledById(rid)) });
@@ -250,7 +252,7 @@ async function api(req, res, path) {
     if (req.method === 'PATCH') {
       if (row.state !== 'pending') return json(res, 409, { error: 'Already sent or cancelled' });
       const isTpl = !!JSON.parse(row.meta || '{}').template;
-      const at = b.at ? followupAt(b) : row.at, why = followupCheck(waId, at, { template: isTpl }); if (why) return json(res, 400, { error: why });
+      const at = b.at ? followupAt(b) : row.at, why = followupCheck(waId, at, { template: isTpl, force: !!b.force }); if (why) return json(res, why.startsWith('HUB:') ? 409 : 400, { error: why.replace(/^HUB:/, ''), hub: why.startsWith('HUB:') });
       updateFollowup(id, bubbles?.length && !isTpl ? bubbles : JSON.parse(row.bubbles), at); // a template's text cannot change
       return json(res, 200, { ok: true, followup: followupView(scheduledById(id)) });
     }
@@ -279,6 +281,8 @@ async function api(req, res, path) {
       if (c) db.prepare('UPDATE threads SET stage = ?, meeting = ?, country = ?, email = ?, contact_at = ? WHERE wa_id = ?').run(c.stage, c.meeting, c.country, c.email, new Date().toISOString(), waId);
       t = storedThread(waId);
     }
+    const hr = hubLeadRow(waId); // paused or CITF: the Hub's « next » is frozen, the real one comes from the upcoming list (refreshed in the background, 30 min max age)
+    if (hr && (hr.status === 'CITF' || hr.paused) && (!hr.upcoming_at || Date.now() - Date.parse(hr.upcoming_at) > 30 * 60e3)) syncUpcoming(waId).catch(() => {});
     const sugg = latestSuggestion(waId);
     return json(res, 200, {
       thread: t,
@@ -468,9 +472,18 @@ function followupAt(b) { // « 14:00 » (today, Madrid), « 2026-10-05 14:00 » 
   const v = String(b.at || '').trim();
   return /^\d{4}-\d{2}-\d{2}T/.test(v) ? new Date(v).toISOString() : madridIso(v);
 }
-function followupCheck(waId, at, { template = false } = {}) { // null when fine, else the reason it cannot be scheduled
+// A Hub template due within an hour of the chosen time, for a lead not paused (Havva, 2026-10-04: Hub at 18:00, Ali's follow-up at 18:05).
+function hubNear(waId, at) {
+  const h = hubNextFor(waId); if (!h || h.paused) return null;
+  const steps = [...(h.upcoming || []).filter((u) => !u.past).map((u) => ({ step: u.step, template: u.template, at: u.at })), ...(h.next && !h.next.stale ? [{ step: h.next.step, template: h.next.template, at: h.next.at }] : [])];
+  const n = steps.find((s) => s.at && Math.abs(Date.parse(s.at) - Date.parse(at)) < 60 * 60e3);
+  return n ? `${n.step != null ? `#${n.step} ` : ''}${n.template} at ${fmtHMm(n.at)}` : null;
+}
+function followupCheck(waId, at, { template = false, force = false } = {}) { // null when fine, else the reason it cannot be scheduled (HUB: prefix = Ali may force)
   if (!at || Number.isNaN(Date.parse(at))) return 'Pick a time';
   if (Date.parse(at) < Date.now() + 60_000) return 'That time has already passed';
+  const near = hubNear(waId, at);
+  if (near && !force) return `HUB:The Sales Hub sends ${near} to this lead, within an hour of this follow-up. Pause or untick it in the Hub first, or schedule anyway.`;
   if (template) return null; // a template goes whatever the window
   const t = storedThread(waId);
   const closes = t?.last_inbound_at ? Date.parse(t.last_inbound_at) + 24 * 3600e3 : 0;

@@ -226,3 +226,9 @@ tout le cours, mais « contactez-nous, on trouve toujours une solution ».
 pas divisée par participant. Toute l'heure est interactive avec des activités
 dynamiques — tout le monde parle tout le temps, petit groupe au même niveau, et bien
 moins cher qu'en 1:1.
+
+## Liens utiles (Ali, 2026-10-04)
+
+- Site de l'école : https://easypeasyfluent.com/fr — c'est le lien à envoyer quand un lead
+  demande « le site », « plus d'infos sur l'école », « vos avis ». Comme tout lien, suivi de
+  « Est-ce qu'il fonctionne bien ? ».

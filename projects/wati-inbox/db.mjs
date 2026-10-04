@@ -243,6 +243,9 @@ export const markSuggestionPushed = (id) => db.prepare('UPDATE suggestions SET p
 export const logSend = (waId, kind, payload, ok, error) =>
   db.prepare('INSERT INTO sends (wa_id, at, kind, payload, ok, error) VALUES (?, ?, ?, ?, ?, ?)').run(waId, new Date().toISOString(), kind, JSON.stringify(payload), ok ? 1 : 0, error ?? null);
 export const sentTexts = (waId) => new Set(db.prepare("SELECT payload FROM sends WHERE wa_id = ? AND kind = 'text' AND ok = 1").all(waId).map((r) => JSON.parse(r.payload).text));
+// Templates Meta refused with « does not exist in the translation » (#132001) in the last N days: approved in Wati, unusable
+// in reality (followup_1_fr_ut_v2 for Noa, 2026-10-04; reschedule_followup_2_fr_v2, 09-24). Hidden from the picker and the plan.
+export const failedTemplates = (days = 60) => new Set(db.prepare("SELECT DISTINCT tpl_name FROM messages WHERE tpl_name IS NOT NULL AND text LIKE 'ÉCHEC template%' AND text LIKE '%does not exist in the translation%' AND at > ?").all(new Date(Date.now() - days * 864e5).toISOString()).map((r) => r.tpl_name));
 export const sentTemplates = (waId) => db.prepare("SELECT at, payload FROM sends WHERE wa_id = ? AND kind = 'template' AND ok = 1 ORDER BY at").all(waId);
 
 export const subscriptions = () => db.prepare('SELECT * FROM push_subscriptions').all();

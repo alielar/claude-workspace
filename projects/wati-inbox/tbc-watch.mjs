@@ -64,7 +64,7 @@ const madridHour = () => Number(madrid().slice(11, 13));
 const ENROLLED = /^(bienvenue chez easypeasy|bienvenu(e)? parmi nous)/i;
 const enrolled = (msgs, t) => /^(sale|won|inscrit|enrolled|client)/i.test(String(t?.stage || '')) || msgs.some((m) => m.who === 'US' && ((m.tpl_name && /^sales_text_1/.test(m.tpl_name)) || ENROLLED.test(String(m.text || '').trim())));
 // Ali's diagnostic question: he is still trying to learn what blocks the lead.
-const DIAGNOSTIC = /(qu.est-ce qui|ce qui|quoi) (vous|te|t.)\s?(retient|freine|bloque|fait hésiter|gêne|empêche|dérange)|le prix, le timing|prix, timing|timing, la méthode|autre chose\s*\?|toujours le prix|vrai (frein|blocage|souci|problème)|(quel|quelle) (est|serait) (le|la|votre) (souci|problème|frein|blocage|raison)|où (ça )?en (êtes|es)|ce qui (vous |te )?(pose|fait) (souci|problème)/i;
+export const DIAGNOSTIC = /(qu.est-ce qui|ce qui|quoi) (vous|te|t.)\s?(retient|freine|bloque|fait hésiter|gêne|empêche|dérange)|le prix, le timing|prix, timing|timing, la méthode|autre chose\s*\?|toujours le prix|vrai (frein|blocage|souci|problème)|(quel|quelle) (est|serait) (le|la|votre) (souci|problème|frein|blocage|raison)|où (ça )?en (êtes|es)|ce qui (vous |te )?(pose|fait) (souci|problème)/i;
 const stepOf = (m) => { if (!m.tpl) return null; for (const s of STEPS) if ((m.tpl_name && m.tpl_name.startsWith(s.tpl)) || (!m.tpl_name && TEXT_KEYS[s.n].test(m.text || ''))) return s; return null; };
 
 // Where one lead stands in the sequence: Day 0, the steps already landed, who wrote last, the next step that will fire.
