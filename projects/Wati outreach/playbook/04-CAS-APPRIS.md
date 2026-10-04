@@ -1273,3 +1273,27 @@ DANS 5-10 MIN (2 bulles) :
 - 22:09 · Boris · **retouche** — Message de clôture après accusé audio : fusionner accusé + logistique en une bulle et garder le 👍 de fin (Retouches de surface : Ali fusionne l'accusé et la bulle logistique en une seule (3 bulles → 2, toujours dans la fourchette 2-4 du style maison), passe au futur/conditionnel plutôt qu'au présent, et ajoute 👍 en fin de dernière bulle — cohérent avec les deux 👍 qu'il a lui-même utilisés plus tôt dans cette même conversation (16:01, 19:17) sur des messages de logistique/réassurance, jamais sur de l'argent ou un problème, donc conforme à la règle « au plus un emoji, jamais sur un problème ». Pas de précédent identique dans 06-REGLES-APPRISES.md ni dans le journal non consolidé.)
 
 <!-- consolidé jusqu'ici · 2026-10-03 22:24:22 -->
+
+## 2026-10-04 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+### 10:56 · Sarah — Lead qui demande un rappel : si l'appel a déjà été tenté sans réponse, ne pas proposer "je peux vous appeler" — rediriger vers l'écrit pour la journée et proposer un créneau d'appel en semaine, sans question de clôture
+**Situation :** Sarah (Sale, entretien fait) a demandé la veille au soir un rappel pour deux questions non précisées ; au moment de répondre, Ali avait déjà essayé de l'appeler sans succès
+**Ce qui était proposé :** Bonjour / Bien sûr, je peux vous appeler / Quelles sont vos deux questions, pour que je m'organise au mieux ?
+**Ce qu'Ali a envoyé :** Bonjour Sarah, je viens d'essayer de vous appeler mais en vain / Je ne serai plus joignable par téléphone durant la journée mais vous pouvez me poser vos questions ici par message, je serai ravi d'y répondre / Et si vous souhaitez en parler de vive voix, on peut planifier un appel en semaine sans problèmes
+**Pourquoi :** Ali avait déjà tenté l'appel avant d'écrire — une action réelle invisible dans le fil, que la proposition ("je peux vous appeler") ignorait en offrant un geste déjà fait et raté. Il bascule ensuite sur l'écrit pour la journée et propose un appel ultérieur en semaine, sans question de clôture forcée : cohérent avec la règle "lead qui a fixé lui-même la prochaine étape → accuser réception, sans question" (06-REGLES-APPRISES, confirmé ×6). Écart secondaire : "Bonjour Sarah" utilise le prénom en ouverture, en contradiction avec la règle "jamais le prénom" — déjà loggé comme écart récurrent non tranché (06, section À trancher, ×9 avant ce cas).
+**Comment appliquer :** même que ci-dessus
+
+## 2026-10-04 — Script de référence : acompte qui bloque la place, en deux temps via l'administration (validé par Ali)
+**Situation :** Joanna veut du temps (raison personnelle), répond « Oui bien sûr » quand Ali demande si elle tient toujours à sa place. Ali veut bloquer la place avec un acompte plutôt que la laisser partir en liste d'attente.
+**Ce que le lead a écrit :** « Oui bien sûr »
+**Ce que j'ai répondu :** MAINTENANT (3 bulles) :
+> « Avec plaisir, ravi de l'apprendre »
+> « Si on devait réattribuer votre place aujourd'hui, elle repartirait sur liste d'attente, 10 à 12 mois sans garantie de date de démarrage, et votre profil m'avait vraiment plu à l'entretien »
+> « Je vérifie avec l'administration ce qu'on peut faire pour vous, je reviens vers vous très vite »
+DANS 5-10 MIN (2 bulles) :
+> « Bonne nouvelle, j'ai pu avoir la confirmation de l'administration 👍 »
+> « On peut bloquer votre place avec un acompte de [96 €], qui sera déduit du montant total, et vous démarrez quand vous voulez. Vous voulez qu'on bloque votre place comme ça ? »
+**Pourquoi :** structure des acomptes : (1) accusé chaleureux court ; (2) la conséquence liste d'attente en formule complète + « votre profil m'avait vraiment plu » ; (3) « je vérifie avec l'administration » ; puis la bonne nouvelle, l'acompte avec son montant, « déduit du montant total », « vous démarrez quand vous voulez », et une seule question fermée « vous voulez qu'on bloque votre place comme ça ? ». On bloque une place, jamais un prix.
+**Résultat :** modèle ; repris dans le move « Deposit » de l'app
