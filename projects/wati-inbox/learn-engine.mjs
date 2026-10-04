@@ -13,7 +13,6 @@ import { join } from 'node:path';
 import { getThread, getSuggestion, latestSuggestion, insertLesson, lessonRunsSince, messagesBefore, setPlanLesson, planItemById } from './db.mjs';
 import { runClaude, OUTREACH, madrid } from './suggest-engine.mjs';
 import { hubNextFor } from './hub-sync.mjs';
-import { pushAll } from './push.mjs';
 
 const CASES = join(OUTREACH, 'playbook', '04-CAS-APPRIS.md');
 const MAX_PER_DAY = Number(process.env.LEARN_MAX_PER_DAY || 40);
@@ -144,7 +143,7 @@ export async function learnFromPlanNote(item, note) {
   const lesson = { kind, title: clean(out.title), situation: clean(out.situation), card: clean(out.card), did: clean(out.did), why: clean(out.why), apply: clean(out.apply), contradicts, source, decided: null, at: new Date().toISOString() };
   setPlanLesson(item.id, lesson);
   log(`${who} → plan ${kind}: ${clean(out.title)}${contradicts ? ' · CONFLICT with a written rule' : ''} (${Math.round(out.ms / 1000)} s)`);
-  if (contradicts) pushAll({ title: `Rule conflict · ${who}`, body: `${clean(out.title)}. This contradicts: « ${contradicts.slice(0, 120)} ». New rule or one-off? Decide on the card.`, tag: `plan-rule-${item.id}`, url: '/plan' }).catch(() => {});
+  // No push for a conflict (Ali, 2026-10-04 evening): they wait in the « Rule conflicts to decide » section at the top of Today, he reviews them when he wants.
   return lesson;
 }
 // Ali's verdict on a conflict (Ali, 2026-10-04 evening: « so I can pick the rule to apply, and add context so it applies once and
