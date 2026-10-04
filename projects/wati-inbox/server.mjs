@@ -11,7 +11,7 @@ import { createServer as createHttp } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
-import { insertScheduled, setScheduledState, setScheduledBubbles, pendingScheduled, missedScheduled, markScheduledSeen } from './db.mjs';
+import { insertScheduled, setScheduledState, setScheduledBubbles, pendingScheduled, missedScheduled, markScheduledSeen, followupsOf, pendingFollowups, scheduledById, updateFollowup, markFollowupSeen } from './db.mjs';
 import { pushAll } from './push.mjs';
 import { db, inbox, getThread as storedThread, threadMessages, saveThread, latestSuggestion, getSuggestion, setSuggestionEdited, latestLesson, wantSuggestion, setMuted, sentTemplates, logSend, addSubscription, removeSubscription, subscriptions, tmFlags, tmFlagSeen, tmFlagVerdict, tmFlagCounts, tmThread, setOffer, getOffer , setHandled, suggestionVisible } from './db.mjs';
 import { sendText, sendTemplate, frenchTemplates, getThread as liveThread, getContact } from './wati.mjs';
@@ -25,7 +25,7 @@ import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-
 import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus } from './hub-sync.mjs';
-import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, citfToday } from './plan-engine.mjs';
+import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, citfToday, madridIso } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -90,6 +90,7 @@ async function restoreScheduled() {
   if (!rows.length) { console.log('scheduled: nothing pending'); return; }
   for (const r of rows) {
     const bubbles = JSON.parse(r.bubbles), meta = JSON.parse(r.meta || '{}'), late = Date.now() - Date.parse(r.at);
+    if (r.kind === 'followup') continue; // sent by the follow-up ticker, which reads the table itself
     if (r.kind === 'rest') { // bubbles cut by the restart, mid-send
       const t = storedThread(r.wa_id);
       if (!bubbles.length) { setScheduledState(r.id, 'sent'); continue; }
@@ -194,7 +195,7 @@ async function api(req, res, path) {
   const planItem = (i) => { const h = hubNextFor(i.wa_id); const skip = i.skip_templates ? JSON.parse(i.skip_templates) : [], keep = i.keep_templates ? JSON.parse(i.keep_templates) : []; const stepsOf = (list) => list.map((t) => { const u = (h?.upcoming || []).find((x) => x.template === t); return u ? { step: u.step, template: t, at: u.at } : { step: null, template: t, at: null }; }); return { ...i, bubbles: i.bubbles ? JSON.parse(i.bubbles) : [], skip_templates: skip, keep_templates: keep,
     skip_steps: stepsOf(skip), keep_steps: stepsOf(keep),
     meeting_date: h?.meetingDate || null, recent: !!h?.meetingDate && h.meetingDate >= new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10), hub_paused_now: !!h?.paused, real_next: h?.realNext || null }; };
-  if (path === '/api/plan') return json(res, 200, { day: planToday(), items: planItems(planToday()).map(planItem), ahead: openPlanItems().filter((i) => i.day > planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
+  if (path === '/api/plan') return json(res, 200, { scheduled: pendingFollowups().map((r) => ({ ...followupView(r), wa_id: r.wa_id, name: storedThread(r.wa_id)?.name || r.wa_id })), day: planToday(), items: planItems(planToday()).map(planItem), ahead: openPlanItems().filter((i) => i.day > planToday()).map(planItem), counts: planCounts(planToday()), status: planStatus(), hub: hubStatus(), salesHub: SALES_HUB_URL, citf: planStatus().ready ? citfToday() : [] });
   const ms = /^\/api\/thread\/(\d{8,15})\/missed-seen$/.exec(path);
   if (ms && req.method === 'POST') { markScheduledSeen(ms[1]); return json(res, 200, { ok: true }); }
   if (path === '/api/plan/ignore' && req.method === 'POST') { const b = await body(req); const wa = String(b.waId || '').replace(/\D/g, ''); if (!wa) return json(res, 400, { error: 'Missing number' }); return json(res, 200, { ok: true, ignored: planIgnore(wa, b.on !== false) }); }
@@ -215,6 +216,32 @@ async function api(req, res, path) {
   }
   if (path === '/api/templates') return json(res, 200, { templates: await frenchTemplates() });
 
+  const fu = /^\/api\/thread\/(\d{8,15})\/followups(?:\/(\d+))?(?:\/(seen))?$/.exec(path);
+  if (fu) {
+    const waId = fu[1], id = fu[2] ? Number(fu[2]) : null;
+    if (!id && req.method === 'GET') return json(res, 200, { followups: followupsOf(waId).map(followupView) });
+    const b = req.method === 'POST' || req.method === 'PATCH' ? await body(req) : {};
+    const bubbles = Array.isArray(b.bubbles) ? b.bubbles.map((x) => String(x).trim()).filter(Boolean).slice(0, 6) : null;
+    if (!id && req.method === 'POST') {
+      if (!bubbles?.length) return json(res, 400, { error: 'Write the follow-up first' });
+      const at = followupAt(b), why = followupCheck(waId, at); if (why) return json(res, 400, { error: why });
+      const meta = b.suggestionId ? { suggestionId: Number(b.suggestionId), option: 0, part: 'now', fromSuggestion: true } : {};
+      const rid = insertScheduled(waId, bubbles, meta, at, 'followup');
+      if (b.planId) setPlanState(Number(b.planId), 'done', `scheduled for ${fmtHMm(at)}`);
+      return json(res, 200, { ok: true, followup: followupView(scheduledById(rid)) });
+    }
+    const row = id ? scheduledById(id) : null;
+    if (!row || row.wa_id !== waId || row.kind !== 'followup') return json(res, 404, { error: 'Follow-up not found' });
+    if (fu[3] === 'seen' && req.method === 'POST') { markFollowupSeen(id); return json(res, 200, { ok: true }); }
+    if (req.method === 'PATCH') {
+      if (row.state !== 'pending') return json(res, 409, { error: 'Already sent or cancelled' });
+      const at = b.at ? followupAt(b) : row.at, why = followupCheck(waId, at); if (why) return json(res, 400, { error: why });
+      updateFollowup(id, bubbles?.length ? bubbles : JSON.parse(row.bubbles), at);
+      return json(res, 200, { ok: true, followup: followupView(scheduledById(id)) });
+    }
+    if (req.method === 'DELETE') { if (row.state === 'pending') setScheduledState(id, 'cancelled', 'cancelled by Ali'); markFollowupSeen(id); return json(res, 200, { ok: true }); }
+    return json(res, 405, { error: 'method' });
+  }
   const m = /^\/api\/thread\/(\d{8,15})(?:\/(send|template|handled|refresh|suggest|mute|offer|cancel|tbc|edit))?$/.exec(path);
   if (!m) return json(res, 404, { error: 'not found' });
   const waId = m[1], action = m[2];
@@ -253,6 +280,7 @@ async function api(req, res, path) {
       offerText: describeOffer(getOffer(waId), currencyFor(t.country)),
       currency: currencyFor(t.country),
       scheduled: scheduled.has(waId) ? { at: scheduled.get(waId).at, bubbles: scheduled.get(waId).bubbles } : null,
+      followups: followupsOf(waId).map(followupView),
       scheduledMissed: (() => { const m = missedScheduled(waId); return m ? { id: m.id, at: m.at, bubbles: JSON.parse(m.bubbles) } : null; })(),
       tbc: tbcInfo(waId),
       hub: hubNextFor(waId),
@@ -417,6 +445,49 @@ createHttp((req, res) => {
   res.end();
 }).listen(PORT + 1);
 
+// ── Follow-ups scheduled by Ali (2026-10-04) ──────────────────────────────────
+// Hard rule: a follow-up never leaves if the lead wrote after it was scheduled; it is cancelled at once (not at its
+// time) and Ali gets a push to adapt. The window is checked when it is scheduled and again when it leaves.
+const fmtHMm = (iso) => new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
+function followupAt(b) { // « 14:00 » (today, Madrid), « 2026-10-05 14:00 » or an ISO instant
+  const v = String(b.at || '').trim();
+  return /^\d{4}-\d{2}-\d{2}T/.test(v) ? new Date(v).toISOString() : madridIso(v);
+}
+function followupCheck(waId, at) { // null when fine, else the reason it cannot be scheduled
+  if (!at || Number.isNaN(Date.parse(at))) return 'Pick a time';
+  if (Date.parse(at) < Date.now() + 60_000) return 'That time has already passed';
+  const t = storedThread(waId);
+  const closes = t?.last_inbound_at ? Date.parse(t.last_inbound_at) + 24 * 3600e3 : 0;
+  if (Date.parse(at) >= closes) return `The 24h window closes at ${closes ? fmtHMm(new Date(closes).toISOString()) : '?'}, before this follow-up: only a template could go then`;
+  return null;
+}
+const followupView = (r) => ({ id: r.id, at: r.at, bubbles: JSON.parse(r.bubbles), state: r.state, error: r.error, created_at: r.created_at });
+let followupBusy = false;
+async function followupTick() {
+  if (followupBusy) return; followupBusy = true;
+  try {
+    for (const r of pendingFollowups()) {
+      const t = storedThread(r.wa_id), bubbles = JSON.parse(r.bubbles);
+      if (t?.last_inbound_at && t.last_inbound_at > r.created_at) { // the lead wrote after it was scheduled
+        setScheduledState(r.id, 'replied', `${t.name || 'the lead'} replied at ${fmtHMm(t.last_inbound_at)}`);
+        console.log(`followup #${r.id} for ${t.name || r.wa_id}: not sent, the lead replied`);
+        pushAll({ title: `${t.name || r.wa_id} replied · ${fmtHMm(r.at)} follow-up NOT sent`, body: 'Open the thread to adapt.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {});
+        continue;
+      }
+      if (Date.parse(r.at) > Date.now()) continue;
+      if (Date.now() - Date.parse(r.at) > 30 * 60_000) { setScheduledState(r.id, 'failed', 'the app was not running at that time'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The app was down at that time. Send it by hand.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
+      if (!t?.last_inbound_at || hoursSince(t.last_inbound_at) >= 24) { setScheduledState(r.id, 'skipped', 'the 24h window had closed'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The 24h window had closed: only a template can go.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
+      if (sending.has(r.wa_id) && !sending.get(r.wa_id).error) continue; // another send in progress: next tick
+      const meta = { ...JSON.parse(r.meta || '{}'), batch: String(Date.now()) };
+      try { await sendText(r.wa_id, bubbles[0]); logSend(r.wa_id, 'text', { text: bubbles[0], ...meta }, true); setScheduledState(r.id, 'sent'); console.log(`followup #${r.id} sent to ${t.name || r.wa_id}`); }
+      catch (e) { logSend(r.wa_id, 'text', { text: bubbles[0], ...meta }, false, e.message); setScheduledState(r.id, 'failed', e.message); pushAll({ title: `Follow-up failed · ${t.name || r.wa_id}`, body: e.message.slice(0, 120), tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
+      saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
+      if (bubbles.length > 1) sendRest(r.wa_id, t, bubbles, meta); else refreshThread(r.wa_id, t.name, { notify: false }).catch(() => {});
+      afterAliMessage(r.wa_id);
+    }
+  } finally { followupBusy = false; }
+}
+
 // A restart (launchctl kickstart, update) waits up to 15 s for bubbles still going out before the app stops; whatever is
 // left after that is resumed at the next start from scheduled_sends (Joanna, 2026-10-04).
 process.on('SIGTERM', async () => {
@@ -428,6 +499,7 @@ process.on('SIGTERM', async () => {
 server.listen(PORT, () => {
   console.log(`Wati Inbox on https://localhost:${PORT}  ·  https://${TS_HOST}:${PORT}`);
   restoreScheduled().catch((e) => console.log('scheduled: restore error', e.message));
+  setInterval(() => followupTick().catch((e) => console.log('followup tick error', e.message)), 15_000);
   startPolling();
   startTmMonitor();
   startConsolidating();

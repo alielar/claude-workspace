@@ -212,6 +212,7 @@ async function renderInbox({ fromCache = false } = {}) {
 }
 
 // ── thread ───────────────────────────────────────────────────────────────────
+let fuForm = null, fuEdit = {}, schedDraft = null; // scheduled follow-ups (Ali, 2026-10-04): new-form, edits by id, the draft card's « Schedule » time
 let composer = '', composerFrom = null, lastThreadKey = '', threadBusy = false, openedWaId = '', tbcTemplateAlert = null, laterEdit = null, draftEdit = null, steerOpen = false; // draftEdit / laterEdit = arrays of bubbles being edited in place, one field each
 const emptyDir = () => ({ moves: [], level: '', level2: '', until: '', instruction: '' });
 let dir = emptyDir(), offerOpen = false, offerDraft = null, threadTimer = null, dirs = null;
@@ -251,7 +252,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   const st = d.suggesting;
   threadBusy = !!st && (st.state === 'queued' || st.state === 'drafting');
   const sending = d.sending;
-  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.scheduledMissed?.id}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${(d.plans || []).map((i) => i.id).join(',')}|${d.hub?.next?.template}|${d.hub?.paused}`;
+  const key = `${d.messages.length}|${d.messages[d.messages.length - 1]?.id}|${d.suggestion?.id}|${d.suggestion?.edited ? JSON.stringify(d.suggestion.edited).length : 0}|${st?.state}|${t.pending}|${t.muted}|${sending?.sent}|${sending?.error}|${d.learning?.state}|${d.lastLesson?.id}|${d.scheduled?.at}|${d.scheduledMissed?.id}|${JSON.stringify((d.followups || []).map((f) => [f.id, f.state, f.at, f.bubbles.length]))}|${d.offerText}|${d.tbc?.alert?.id}|${d.tbc?.alert?.state}|${d.tbc?.next?.tpl}|${d.plan?.id}|${d.plan?.state}|${(d.plans || []).map((i) => i.id).join(',')}|${d.hub?.next?.template}|${d.hub?.paused}`;
   clearTimeout(threadTimer);
   if (d.stale || (sending && !sending.error) || d.scheduled) threadTimer = setTimeout(() => renderThread(waId, { quiet: true }).catch(() => {}), d.scheduled && !d.stale && !sending ? 15000 : 3000);
   if (quiet && key === lastThreadKey) return;
@@ -308,8 +309,9 @@ async function renderThread(waId, { quiet = false } = {}) {
         <div class="opt-head">${o.later?.length ? 'Now' : 'Draft'} <span class="muted">· ${sug.source === 'auto' ? 'Claude chose' : sug.source === 'plan' ? 'from today’s plan' : 'on your steer'}${sug.instruction ? ` · ${esc(sug.instruction)}` : ''}${editedTag('bubbles')}</span></div>
         ${sug.note ? `<p class="note small">${esc(sug.note)}</p>` : ''}
         ${draftEdit == null ? o.bubbles.map((b, j) => `<div class="b"><span>${esc(b)}</span></div>`).join('') : fields(draftEdit, 'eb')}
-        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>${draftEdit == null ? `<button class="small ${steerOpen ? 'on' : ''}" id="redo">Redo</button>` : ''}` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>
+        <div class="acts">${draftEdit != null ? `<button class="primary small" data-ebsave>Save</button>` : ''}${d.windowOpen ? `<button class="${draftEdit == null ? 'primary ' : ''}small" data-send="0" ${sendLock ? 'disabled' : ''}>${draftEdit == null ? 'Send' : 'Send these bubbles'}</button><button class="small" data-use="0">${draftEdit == null ? 'Edit' : 'Cancel'}</button>${draftEdit == null ? `<button class="small ${steerOpen ? 'on' : ''}" id="redo">Redo</button>${o.later?.length ? '' : `<button class="small ${schedDraft ? 'on' : ''}" id="schedd">Schedule</button>`}` : ''}` : ''}${draftEdit == null && sug.edited?.bubbles ? `<button class="small" data-ebreset>Claude’s version</button>` : ''}</div>
         ${o.later?.length && d.windowOpen && draftEdit == null && laterEdit == null && !d.scheduled ? `<div class="acts"><button class="small" id="sendall" ${sendLock ? 'disabled' : ''}>Send all · part 2 in 7 min</button></div>` : ''}
+        ${schedDraft && draftEdit == null && !o.later?.length ? `<div class="acts"><span class="small">Send at</span><input type="time" id="scheddat" value="${esc(schedDraft)}"><button class="primary small" id="scheddgo">Schedule</button><span class="muted small">not sent if the lead writes first</span></div>` : ''}
         ${o.why ? `<details><summary>Why</summary>${esc(o.why)}</details>` : ''}
       </div>`
       + (o.later?.length ? `<div class="card opt later">
@@ -347,7 +349,7 @@ async function renderThread(waId, { quiet = false } = {}) {
   app.innerHTML = `<header><a data-nav href="${backHref()}">‹</a><h1>${esc(t.name || waId)} <button class="icon" id="copynum" title="Copy +${waId}" aria-label="Copy the number">${COPY_ICON}</button></h1>${windowBadge(d.windowOpen, d.hoursSinceLead ?? 24)}<button id="hd" class="small ${t.pending ? 'primary' : ''}" ${t.pending ? '' : 'disabled'}>${t.pending ? 'Handled' : 'Handled ✓'}</button></header>
     ${ctx ? `<div class="ctx">${ctx}</div>` : ''}${nextLine}
     <div class="thread">${msgs}</div>
-    ${planBox}${tbcBox}${sendBox}${missedBox}${schedBox}${claude}${hasDraft ? steer : ''}${learnLine}${compose}${hasDraft ? '' : steer}`;
+    ${planBox}${tbcBox}${sendBox}${missedBox}${schedBox}${followupsHtml(d)}${claude}${hasDraft ? steer : ''}${learnLine}${compose}${hasDraft ? '' : steer}`;
   if (sameScreen) window.scrollTo(0, y); else { openedWaId = waId; scrollToLast(); requestAnimationFrame(scrollToLast); }
 
   // Copy the lead's number from the header icon (Ali, 2026-10-03: the icon instead of the number itself).
@@ -400,6 +402,10 @@ async function renderThread(waId, { quiet = false } = {}) {
   bindFields('lb', () => laterEdit, (v) => { laterEdit = v; });
   document.querySelectorAll('[data-sendlater]').forEach((b) => armed(b, 'Schedule in 7 min', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await api(`/api/thread/${waId}/send`, { method: 'POST', body: { bubbles, suggestionId: sug.id, option: 0, part: 'later', delayMs: 7 * 60_000 } }); toast('The Mac will send it in 7 min'); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
   document.querySelectorAll('[data-sendlaternow]').forEach((b) => armed(b, 'Send now', async () => { const bubbles = laterBubbles(); if (!bubbles.length) { toast('Second part is empty'); return; } b.disabled = true; try { await sendBubbles(waId, bubbles, { suggestionId: sug.id, option: 0, part: 'later' }); laterEdit = null; lastThreadKey = ''; route(); } catch (e) { toast(e.message); b.disabled = false; } }));
+  bindFollowups(waId, d, redraw, askClaude);
+  if ($('#schedd')) $('#schedd').onclick = () => { schedDraft = schedDraft ? null : defaultSlot(); redraw(); };
+  if ($('#scheddat')) $('#scheddat').oninput = (e) => { schedDraft = e.target.value; };
+  if ($('#scheddgo')) $('#scheddgo').onclick = async () => { try { await api(`/api/thread/${waId}/followups`, { method: 'POST', body: { at: schedDraft, bubbles: draftBubbles(), suggestionId: sug.id } }); toast(`Scheduled for ${schedDraft}`); schedDraft = null; redraw(); } catch (e) { toast(e.message); } };
   if ($('#redo')) $('#redo').onclick = () => { steerOpen = !steerOpen; redraw(); if (steerOpen) requestAnimationFrame(() => $('#steer')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
   // Both parts at once: part 2 is put on the Mac's 7-min timer first (a send in progress blocks new requests), then part 1 leaves.
   armed($('#sendall'), 'Send all · part 2 in 7 min', async () => {
@@ -496,7 +502,40 @@ function planDoHtml(i) {
   if (extra) rows.push(`<div><span class="lbl">${i.kind === 'pause' || i.kind === 'resume' ? 'Then' : 'Do'}</span><div>${esc(extra)}</div></div>`);
   return rows.filter(Boolean).length ? `<div class="do small">${rows.filter(Boolean).join('')}</div>` : '';
 }
+// « HH:MM » in Madrid for a time input, from an ISO instant; the default slot for a new follow-up.
+const hmOf = (iso) => fmtTime(iso);
+const defaultSlot = () => { const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' })); if (now.getHours() < 14) return '14:00'; const m = now.getMinutes() < 30 ? 30 : 60; now.setMinutes(m, 0, 0); now.setMinutes(now.getMinutes() + 30); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
+function followupsHtml(d) {
+  const fus = d.followups || [];
+  const pend = fus.filter((f) => f.state === 'pending'), gone = fus.filter((f) => f.state !== 'pending');
+  const goneHtml = gone.map((f) => `<div class="card sending failed"><b>${f.state === 'replied' ? `${fmtTime(f.at)} follow-up not sent` : `${fmtTime(f.at)} follow-up NOT sent`}</b>: ${esc(f.error || f.state)}${f.state === 'replied' ? '. Adapt your answer to what the lead said.' : ''}<div class="small muted">« ${esc(f.bubbles.join(' / ').slice(0, 140))} »</div><div class="acts"><button class="small" data-fuseen="${f.id}">Dismiss</button></div></div>`).join('');
+  const pendHtml = pend.map((f) => { const e = fuEdit[f.id]; return `<div class="card fu"><div class="opt-head">Follow-up at ${e ? `<input type="time" data-futime="${f.id}" value="${esc(e.at)}">` : `<b>${fmtTime(f.at)}</b>`} <span class="muted">· sent by the Mac unless the lead writes first</span></div>
+      ${e ? `<textarea data-futext="${f.id}" rows="4">${esc(e.text)}</textarea><div class="muted small">An empty line separates two bubbles</div>` : f.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}
+      <div class="acts">${e ? `<button class="primary small" data-fusave="${f.id}">Save</button><button class="small" data-fuedit="${f.id}">Cancel</button>` : `<button class="small" data-fuedit="${f.id}">Edit</button><button class="small" data-fudel="${f.id}">Don't send</button>`}</div></div>`; }).join('');
+  const form = fuForm ? `<div class="card fu"><div class="opt-head">New follow-up at <input type="time" id="fuat" value="${esc(fuForm.at)}"></div>
+      <textarea id="futx" rows="4" placeholder="The follow-up. An empty line separates two bubbles">${esc(fuForm.text)}</textarea>
+      <div class="acts"><button class="primary small" id="fugo">Schedule</button><button class="small" id="fuclaude">Ask Claude for a draft</button><button class="small" id="fuclose">Cancel</button></div></div>`
+    : d.windowOpen ? `<div class="row"><button class="small" id="fuopen">+ Schedule a follow-up</button></div>` : '';
+  return goneHtml + pendHtml + form;
+}
+function bindFollowups(waId, d, redraw, askClaude) {
+  const call = async (url, method, body) => { try { await api(url, { method, body }); return true; } catch (e) { toast(e.message); return false; } };
+  document.querySelectorAll('[data-fuseen]').forEach((b) => b.onclick = async () => { if (await call(`/api/thread/${waId}/followups/${b.dataset.fuseen}/seen`, 'POST', {})) redraw(); });
+  document.querySelectorAll('[data-fudel]').forEach((b) => armed(b, "Don't send", async () => { if (await call(`/api/thread/${waId}/followups/${b.dataset.fudel}`, 'DELETE')) { toast('Follow-up cancelled'); redraw(); } }));
+  document.querySelectorAll('[data-fuedit]').forEach((b) => b.onclick = () => { const id = b.dataset.fuedit, f = d.followups.find((x) => String(x.id) === id); if (fuEdit[id]) delete fuEdit[id]; else fuEdit[id] = { at: hmOf(f.at), text: f.bubbles.join('\n\n') }; redraw(); });
+  document.querySelectorAll('[data-futime]').forEach((i) => i.oninput = () => { fuEdit[i.dataset.futime].at = i.value; });
+  document.querySelectorAll('[data-futext]').forEach((t) => t.oninput = () => { fuEdit[t.dataset.futext].text = t.value; });
+  document.querySelectorAll('[data-fusave]').forEach((b) => b.onclick = async () => { const id = b.dataset.fusave, e = fuEdit[id]; if (await call(`/api/thread/${waId}/followups/${id}`, 'PATCH', { at: e.at, bubbles: splitBubbles(e.text) })) { delete fuEdit[id]; toast(`Follow-up set for ${e.at}`); redraw(); } });
+  if ($('#fuopen')) $('#fuopen').onclick = () => { fuForm = { at: defaultSlot(), text: '' }; redraw(); };
+  if ($('#fuclose')) $('#fuclose').onclick = () => { fuForm = null; redraw(); };
+  if ($('#fuat')) $('#fuat').oninput = (e) => { fuForm.at = e.target.value; };
+  if ($('#futx')) $('#futx').oninput = (e) => { fuForm.text = e.target.value; };
+  if ($('#fugo')) $('#fugo').onclick = async () => { const bubbles = splitBubbles(fuForm.text); if (!bubbles.length) { toast('Write the follow-up first'); return; } if (await call(`/api/thread/${waId}/followups`, 'POST', { at: fuForm.at, bubbles })) { toast(`Scheduled for ${fuForm.at}`); fuForm = null; redraw(); } };
+  // Claude drafts it in the draft card; « Schedule » there turns it into this follow-up at the time chosen here.
+  if ($('#fuclaude')) $('#fuclaude').onclick = () => { schedDraft = fuForm.at; const at = fuForm.at, idea = fuForm.text.trim(); fuForm = null; askClaude({ moves: ['relance'], instruction: `Relance à programmer pour ${at} si le lead n'a pas répondu d'ici là : courte, directe, tirée de ce qu'on sait déjà du fil, une seule question.${idea ? ' Idée d’Ali : ' + idea : ''}` }); };
+}
 function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
+  (window.__planCards ||= {})[i.id] = i;
   let [label, cls] = KIND[i.kind] || ['', ''];
   if (i.kind === 'pause') label = i.pause_scope === 'next' ? `Untick ${i.skip_templates?.length > 1 ? i.skip_templates.length + ' templates' : '1 template'}` : 'Full pause';
   const open = i.state === 'open';
@@ -508,10 +547,12 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     ${i.why ? `<div class="muted small why">${esc(i.why)}</div>` : ''}
     ${i.template ? `<div class="small">Template: <b>${esc(i.template)}</b></div>` : ''}
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">The draft is below, ready to send</div>' : ''}
+    ${open && i.kind === 'followup' && i.bubbles?.length && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plansched="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}">Schedule for ${fmtTime(i.when_at)}</button><span class="muted small">the Mac sends it unless the lead writes first</span></div>` : ''}
     ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Done</button><button class="small" data-plandismiss="${i.id}">I did it differently</button><button class="small" data-plancopy="+${i.wa_id}">Copy number</button>${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Open</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Reopen</button></div>`}
   </div>`;
 }
 function bindPlanButtons(after) {
+  document.querySelectorAll('[data-plansched]').forEach((b) => b.onclick = async () => { const card = window.__planCards?.[b.dataset.plansched]; try { await api(`/api/thread/${b.dataset.wa}/followups`, { method: 'POST', body: { at: b.dataset.at, bubbles: card?.bubbles || [], planId: b.dataset.plansched, suggestionId: card?.suggestion_id || null } }); toast(`Scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
   document.querySelectorAll('[data-plandone]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.plandone}`, { method: 'POST', body: { state: 'done' } }); after(); });
   document.querySelectorAll('[data-planreopen]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.planreopen}`, { method: 'POST', body: { state: 'open' } }); after(); });
   document.querySelectorAll('[data-planignore]').forEach((b) => b.onclick = async () => { if (!confirm('No more cards for this lead, for good?')) return; await api('/api/plan/ignore', { method: 'POST', body: { waId: b.dataset.planignore } }); toast('Lead removed from the plan'); after(); });
@@ -520,7 +561,7 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
 }
 async function renderPlan() {
-  const { items, counts, status, hub, salesHub, citf = [], ahead = [] } = await api('/api/plan');
+  const { items, counts, status, hub, salesHub, citf = [], ahead = [], scheduled = [] } = await api('/api/plan');
   const running = status.state === 'running';
   const open = items.filter((i) => i.state === 'open'), closed = items.filter((i) => i.state !== 'open' && i.state !== 'superseded');
   const sec = (title, list) => list.length ? `<p class="section">${title} (${list.length})</p>${list.map((i) => planCardHtml(i, { salesHub })).join('')}` : '';
@@ -539,7 +580,7 @@ async function renderPlan() {
     <p class="muted small">${status.ready ? `Sales Hub read ${hub.leadsAt ? ago(hub.leadsAt) : 'never'}${hub.error ? ` · <span class="err">${esc(hub.error)}</span>` : ''} · ${status.last ? `plan ${ago(status.last.at)}` : 'no plan yet'} · ${status.calls}/${status.max} reviews today` : 'Sales Hub not connected (SALES_HUB_TOKEN)'}${status.last?.summary ? `<br>${esc(status.last.summary)}` : ''}</p>
     ${citf.length ? `<p class="muted small">Resuming today (CITF): ${citf.map((c) => `<a data-nav href="/t/${c.wa_id}">${esc(c.name)}</a> ${fmtTime(c.at)}${c.case ? ` (${esc(c.case)})` : ''}${c.passed ? ' · sent' : ''}`).join(' · ')}</p>` : ''}
     ${!open.length && !closed.length ? '<p class="muted center">Nothing for today</p>' : ''}
-    ${sec('Now', todo)}${sec('Later today', later)}${sec('Waiting', wait)}
+    ${sec('Now', todo)}${scheduled.length ? `<p class="section">Scheduled follow-ups (${scheduled.length})</p>${scheduled.map((f) => `<a class="card lead-row" data-nav href="/t/${f.wa_id}"><div class="who"><b>${fmtWhen(f.at)}</b> · ${esc(f.name)}</div><div class="small muted">« ${esc(f.bubbles.join(' / ').slice(0, 120))} »</div></a>`).join('')}` : ''}${sec('Later today', later)}${sec('Waiting', wait)}
     ${(() => { const tmr = new Date(); tmr.setDate(tmr.getDate() + 1); const tKey = tmr.toISOString().slice(0, 10); const sameDay = (i) => new Date(i.when_at || `${i.day}T12:00:00`).toDateString() === tmr.toDateString(); const tom = ahead.filter((i) => i.day === tKey || sameDay(i)).sort(byTime), lat = ahead.filter((i) => !tom.includes(i)).sort(byTime); return sec('Tomorrow', tom) + sec('Later', lat); })()}
     ${older.length ? `<details class="card fold" data-fold="older" ${planFolds.has('older') ? 'open' : ''}><summary>Older (${older.length}) <span class="muted small">· finished or stuck sequences, when you have a moment</span></summary>${older.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
     ${ok.length ? `<details class="card fold" data-fold="ok" ${planFolds.has('ok') ? 'open' : ''}><summary>Templates that fit (${ok.length})</summary>${ok.map((i) => planCardHtml(i, { salesHub })).join('')}</details>` : ''}
@@ -585,7 +626,7 @@ async function renderTm() {
 let lastRoutedPath = null;
 async function route() {
   const m = /^\/t\/(\d+)/.exec(location.pathname);
-  if (!m || m[1] !== openedWaId) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; laterEdit = null; draftEdit = null; steerOpen = false; tbcTemplateAlert = null; clearTimeout(threadTimer); if (!m) openedWaId = ''; }
+  if (!m || m[1] !== openedWaId) { composer = ''; composerFrom = null; dir = emptyDir(); offerOpen = false; offerDraft = null; lastThreadKey = ''; threadBusy = false; laterEdit = null; draftEdit = null; steerOpen = false; tbcTemplateAlert = null; fuForm = null; fuEdit = {}; schedDraft = null; clearTimeout(threadTimer); if (!m) openedWaId = ''; }
   document.body.classList.add('busy');
   // Scroll to the top only when arriving on a page; a refresh of the same page (Done tapped, 45 s tick) keeps the
   // position and the open sections (Ali, 2026-10-01: "it gets me on top and closes the accordion").

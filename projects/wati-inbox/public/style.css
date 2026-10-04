@@ -155,3 +155,8 @@ button[data-armed] { background: #b45309; border-color: #b45309; color: #fff; fo
 /* header copy icon */
 button.icon { padding: 2px 6px; min-height: 0; border: none; background: none; color: var(--muted); vertical-align: middle; line-height: 0; }
 button.icon.done { color: var(--accent); }
+
+/* scheduled follow-ups */
+.card.fu { border-left: 4px solid var(--accent); }
+.card.fu input[type=time], .acts input[type=time] { width: auto; padding: 6px 8px; font: inherit; }
+.card.fu textarea { margin-top: 8px; }

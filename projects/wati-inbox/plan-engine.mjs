@@ -41,7 +41,7 @@ const callsToday = () => db.prepare("SELECT count(*) n FROM state WHERE key LIKE
 const countCall = () => setState(`plan_call_${Date.now()}`, new Date().toISOString());
 
 // "14:00" today or "2026-10-02 09:00" (Madrid) → ISO instant.
-function madridIso(s) {
+export function madridIso(s) {
   if (!s) return null;
   const m = /^(\d{4}-\d{2}-\d{2})?\s*(\d{1,2}):(\d{2})$/.exec(String(s).trim());
   if (!m) return null;

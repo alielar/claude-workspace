@@ -77,6 +77,13 @@ db.exec(`CREATE TABLE IF NOT EXISTS scheduled_sends (id INTEGER PRIMARY KEY AUTO
 // a restart between bubble 2 and 3 lost bubble 3).
 try { db.exec("ALTER TABLE scheduled_sends ADD COLUMN kind TEXT NOT NULL DEFAULT 'later'"); } catch {}
 export const insertScheduled = (waId, bubbles, meta, at, kind = 'later') => Number(db.prepare('INSERT INTO scheduled_sends (wa_id, bubbles, meta, at, created_at, kind) VALUES (?, ?, ?, ?, ?, ?)').run(waId, JSON.stringify(bubbles), JSON.stringify(meta || {}), at, new Date().toISOString(), kind).lastInsertRowid);
+// Follow-ups Ali schedules himself (kind 'followup', Ali 2026-10-04): several per lead, sent by the Mac at their time
+// unless the lead wrote after they were scheduled (then cancelled + push, state 'replied').
+export const followupsOf = (waId) => db.prepare("SELECT * FROM scheduled_sends WHERE wa_id = ? AND kind = 'followup' AND (state = 'pending' OR (state IN ('replied', 'skipped', 'failed') AND seen = 0)) ORDER BY at").all(waId);
+export const pendingFollowups = () => db.prepare("SELECT * FROM scheduled_sends WHERE kind = 'followup' AND state = 'pending' ORDER BY at").all();
+export const scheduledById = (id) => db.prepare('SELECT * FROM scheduled_sends WHERE id = ?').get(id);
+export const updateFollowup = (id, bubbles, at) => db.prepare("UPDATE scheduled_sends SET bubbles = ?, at = ? WHERE id = ? AND state = 'pending'").run(JSON.stringify(bubbles), at, id);
+export const markFollowupSeen = (id) => db.prepare('UPDATE scheduled_sends SET seen = 1 WHERE id = ?').run(id);
 export const setScheduledBubbles = (id, bubbles) => db.prepare('UPDATE scheduled_sends SET bubbles = ? WHERE id = ?').run(JSON.stringify(bubbles), id);
 export const setScheduledState = (id, state, error = null) => db.prepare('UPDATE scheduled_sends SET state = ?, error = ? WHERE id = ?').run(state, error, id);
 export const pendingScheduled = () => db.prepare("SELECT * FROM scheduled_sends WHERE state = 'pending' ORDER BY at").all();
