@@ -132,6 +132,8 @@ function needing(cands, now = Date.now()) {
   });
 }
 
+// Ali's typed or dictated instructions for this lead's drafts in the last 36 h: the plan's only view of what was said on a call.
+const consignesOf = (waId) => db.prepare("SELECT created_at, instruction FROM suggestions WHERE wa_id = ? AND instruction IS NOT NULL AND TRIM(instruction) != '' AND created_at > ? ORDER BY id DESC LIMIT 3").all(waId, new Date(Date.now() - 36 * 3600e3).toISOString()).reverse();
 export function leadBlock(c) {
   const fmt = (iso) => madrid(new Date(iso)).slice(5, 16);
   const tpl = c.next_tpl ? hubTemplate(c.next_tpl) : null;
@@ -149,6 +151,7 @@ export function leadBlock(c) {
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
     win.lastAli ? `Dernier message manuel d’Ali : ${fmt(win.lastAli.at)}${win.lastLead && Date.parse(win.lastAli.at) > Date.parse(win.lastLead.at) ? ' (sans réponse du lead depuis)' : ''}` : '',
     openPlanItems(c.wa_id).length ? 'Cartes déjà prévues pour ce lead (elles seront remplacées par ta réponse : reprends celles qui restent valables) :\n' + openPlanItems(c.wa_id).map((i) => `  - ${i.kind} ${i.when_at ? fmt(i.when_at) : ''} « ${i.title} »`).join('\n') : '',
+    consignesOf(c.wa_id).length ? 'Ce qu’Ali a dit à Claude pour ses derniers messages (souvent ce qui s’est dit au téléphone : nouvelle deadline, accord de paiement) :\n' + consignesOf(c.wa_id).map((x) => `  - [${fmt(x.created_at)}] ${x.instruction.replace(/\s+/g, ' ').slice(0, 600)}`).join('\n') : '',
     c.thread?.stage ? `CRM : ${c.thread.stage}` : ''].filter(Boolean).join('\n');
   const conv = c.msgs.length
     ? c.msgs.slice(-18).map((m) => `[${fmt(m.at)}] ${m.who === 'LEAD' ? 'LEAD' : m.tpl ? `AUTO ${m.tpl_name || ''}` : 'ALI '} : ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 320)}`).join('\n')
@@ -225,16 +228,28 @@ let running = false;
 // Ali just wrote to this lead by hand: judge the lead again a few minutes later (the lead may answer in between: then
 // the reply flow takes over and this judgement is skipped). Debounced per lead, so a 3-bubble send is one judgement.
 const sentTimers = new Map();
+// Kept on disk too: a restart in that minute used to lose the judgement (Boris, 2026-10-04: his 11:15 send closed the
+// day's cards, the app restarted 10 s later, nothing planned until 15:00).
+const pendingAfter = () => { try { return JSON.parse(getState('plan:afterSend') || '{}'); } catch { return {}; } };
+const setPendingAfter = (waId, on) => { const m = pendingAfter(); if (on) m[waId] = new Date().toISOString(); else delete m[waId]; setState('plan:afterSend', JSON.stringify(m)); };
+export function restoreAfterSend() {
+  for (const [w, at] of Object.entries(pendingAfter())) {
+    if (Date.now() - Date.parse(at) > 6 * 3600e3) { setPendingAfter(w, false); continue; }
+    log(`${w}: after-send judgement lost in a restart, judging again`); afterAliMessage(w);
+  }
+}
 export function afterAliMessage(waId, attempt = 0) {
   if (!hubReady() || !waId || waId === TEST_NUMBER) return;
   clearTimeout(sentTimers.get(waId));
+  if (!attempt) setPendingAfter(waId, true);
   sentTimers.set(waId, setTimeout(async () => {
     sentTimers.delete(waId);
     const msgs = threadMessages(waId);
     const win = windowInfo(msgs);
-    if (win.lastLead && win.lastAli && Date.parse(win.lastLead.at) > Date.parse(win.lastAli.at)) { log(`${waId}: the lead answered, no after-send judgement`); return; }
+    if (win.lastLead && win.lastAli && Date.parse(win.lastLead.at) > Date.parse(win.lastAli.at)) { setPendingAfter(waId, false); log(`${waId}: the lead answered, no after-send judgement`); return; }
     const r = await plan({ only: [waId], reason: 'sent', sent: true }).catch((e) => { log('after-send error:', e.message); return 'error'; });
-    if (r === null && attempt < 5) afterAliMessage(waId, attempt + 1); // another judgement was running: try again in a few minutes
+    if (r === null && attempt < 5) return afterAliMessage(waId, attempt + 1); // another judgement was running: try again in a few minutes
+    setPendingAfter(waId, false);
   }, attempt ? 60e3 : SENT_DELAY_MS));
 }
 

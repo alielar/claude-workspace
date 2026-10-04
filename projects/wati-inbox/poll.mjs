@@ -47,7 +47,10 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
   const isNew = !!lastIn && (!before || (before.last_inbound_at || '') < lastIn.at);
   if (isNew && before) { closeTbcAlerts(waId, 'replied'); closePlanItems(waId, 'replied'); } // the lead answered: the Sales Hub warning and the day plan's card are over
   // Ali answered straight from Wati after a follow-up card was written: that card is done.
-  if (lastHuman) for (const i of openPlanItems(waId)) if (i.kind === 'followup' && lastHuman.at > i.at) setPlanState(i.id, 'done');
+  if (lastHuman) for (const i of openPlanItems(waId)) if (i.kind === 'followup' && lastHuman.at > i.at && (!i.when_at || Date.parse(i.when_at) <= Date.parse(lastHuman.at) + 120 * 60e3)) setPlanState(i.id, 'done');
+  // The welcome message went out: the lead bought, the day plan's cards for them are over (Ali, 2026-10-04).
+  const welcome = msgs.find((m) => m.who !== 'LEAD' && (m.tplName === 'sales_text_1_fr' || /^Bienvenue chez easypeasy/.test(m.text || '')) && (!before?.last_outbound_at || m.at > before.last_outbound_at));
+  if (welcome && before) for (const i of openPlanItems(waId)) setPlanState(i.id, 'done', 'registered: welcome message sent');
   // A new manual message from Ali (from Wati itself, or from the app: the debounce makes it one judgement) → what next.
   if (lastHuman && before && (before.last_outbound_at || '') < lastHuman.at && !lastHuman.tpl) afterAliMessage(waId);
   if (isNew && notify && before && !before.muted) {

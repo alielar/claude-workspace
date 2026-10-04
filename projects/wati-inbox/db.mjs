@@ -327,6 +327,11 @@ export const setPlanState = (id, state, note = null) => db.prepare('UPDATE plan_
 export const closePlanItems = (waId, state, kinds = null) => kinds
   ? db.prepare(`UPDATE plan_items SET state = ?, updated_at = ? WHERE wa_id = ? AND state = 'open' AND kind IN (${kinds.map(() => '?').join(',')})`).run(state, new Date().toISOString(), waId, ...kinds).changes
   : db.prepare("UPDATE plan_items SET state = ?, updated_at = ? WHERE wa_id = ? AND state = 'open'").run(state, new Date().toISOString(), waId).changes;
+// Ali sent something: the follow-up card that was due is done; cards for later today stay until the re-judgement replaces
+// them (Boris, 2026-10-04: an 11:15 message closed the 17:00 card too).
+export const closeDueFollowups = (waId, withinMin = 120) => db.prepare("UPDATE plan_items SET state = 'done', updated_at = ? WHERE wa_id = ? AND state = 'open' AND kind = 'followup' AND (when_at IS NULL OR when_at <= ?)").run(new Date().toISOString(), waId, new Date(Date.now() + withinMin * 60e3).toISOString()).changes;
+// The welcome message (template sales_text_1_fr, « Bienvenue chez easypeasy ! ») means the lead bought.
+export const welcomeSince = (waId, iso) => db.prepare("SELECT at FROM messages WHERE wa_id = ? AND who != 'LEAD' AND at > ? AND (tpl_name = 'sales_text_1_fr' OR text LIKE 'Bienvenue chez easypeasy%') ORDER BY at DESC LIMIT 1").get(waId, iso || '');
 export const expirePlanItems = (beforeDay) => db.prepare("UPDATE plan_items SET state = 'expired', updated_at = ? WHERE state = 'open' AND day < ?").run(new Date().toISOString(), beforeDay).changes;
 export const unpushedPlanItems = () => db.prepare("SELECT * FROM plan_items WHERE pushed = 0 AND state = 'open'").all();
 export const markPlanPushed = (id) => db.prepare('UPDATE plan_items SET pushed = 1 WHERE id = ?').run(id);

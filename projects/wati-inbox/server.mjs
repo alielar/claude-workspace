@@ -24,9 +24,9 @@ import { MOVES, DOWNSELL, DOWNSELL_LABELS, ACOMPTE, FORMATS, LEVELS, MONTHS, mon
 import { startTmMonitor, tmStatus, review as tmReview } from './tm-monitor.mjs';
 import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-watch.mjs';
 import { startConsolidating } from './consolidate-engine.mjs';
-import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems } from './db.mjs';
+import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems, closeDueFollowups, welcomeSince } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus } from './hub-sync.mjs';
-import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, citfToday, madridIso } from './plan-engine.mjs';
+import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, restoreAfterSend, citfToday, madridIso } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
 const PASSWORD = process.env.APP_PASSWORD || '';
@@ -374,7 +374,7 @@ async function api(req, res, path) {
     try { await sendText(waId, bubbles[0]); logSend(waId, 'text', { text: bubbles[0], ...meta }, true); }
     catch (e) { logSend(waId, 'text', { text: bubbles[0] }, false, e.message); return json(res, 502, { error: e.message, sent: [] }); }
     saveThread({ ...t, pending: 0, last_outbound_at: new Date().toISOString(), last_text: bubbles[0].slice(0, 200) });
-    closePlanItems(waId, 'done', ['followup']); // the day plan's follow-up left
+    closeDueFollowups(waId); // the day plan's follow-up left
     afterAliMessage(waId); // and a few minutes later: what the Hub needs now for this lead
     if (meta.alertId) setTbcAlertState(meta.alertId, 'sent');
     if (bubbles.length === 1) { refreshThread(waId, t.name, { notify: false }).catch(() => {}); learnFromSend(waId, bubbles, meta); }
@@ -404,7 +404,7 @@ async function api(req, res, path) {
     const alert = b.alertId ? tbcAlertById(Number(b.alertId)) : null; // follow-up sent as a template from a Sales Hub card
     if (alert && alert.wa_id === waId && alert.state === 'paused') setTbcAlertState(alert.id, 'sent');
     saveThread({ ...(t || { wa_id: waId, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${tpl.name}]` });
-    closePlanItems(waId, 'done', ['followup']);
+    closeDueFollowups(waId);
     afterAliMessage(waId);
     return json(res, 200, { ok: true, status });
   }
@@ -479,6 +479,14 @@ function followupCheck(waId, at, { template = false } = {}) { // null when fine,
 }
 const followupView = (r) => { const m = JSON.parse(r.meta || '{}'); return { id: r.id, at: r.at, bubbles: JSON.parse(r.bubbles), state: r.state, error: r.error, created_at: r.created_at, suggestionId: m.suggestionId || null, template: m.template || null }; };
 let followupBusy = false;
+// The welcome message went out after this follow-up was scheduled: the lead bought, nothing more to send (Ali, 2026-10-04).
+function bought(r, t) {
+  const w = welcomeSince(r.wa_id, r.created_at); if (!w) return false;
+  setScheduledState(r.id, 'skipped', `registered: welcome message sent at ${fmtHMm(w.at)}`);
+  console.log(`followup #${r.id} for ${t?.name || r.wa_id}: not sent, the welcome message went out`);
+  pushAll({ title: `${t?.name || r.wa_id} registered · ${fmtHMm(r.at)} follow-up NOT sent`, body: 'The welcome message went out, nothing more to send.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {});
+  return true;
+}
 async function followupTick() {
   if (followupBusy) return; followupBusy = true;
   try {
@@ -490,17 +498,19 @@ async function followupTick() {
         pushAll({ title: `${t.name || r.wa_id} replied · ${fmtHMm(r.at)} follow-up NOT sent`, body: 'Open the thread to adapt.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {});
         continue;
       }
+      if (bought(r, t)) continue;
       if (Date.parse(r.at) > Date.now()) continue;
       if (Date.now() - Date.parse(r.at) > 30 * 60_000) { setScheduledState(r.id, 'failed', 'the app was not running at that time'); pushAll({ title: `${fmtHMm(r.at)} follow-up NOT sent · ${t?.name || r.wa_id}`, body: 'The app was down at that time. Send it by hand.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
       const fm = JSON.parse(r.meta || '{}');
       if (fm.template) { // a scheduled template (Ali, 2026-10-04): no window needed; same reply rule, checked against Wati first
         try { await refreshThread(r.wa_id, t?.name, { notify: true }); } catch (e) { console.log(`followup #${r.id}: could not check the conversation (${e.message}), retry next tick`); continue; }
         const fr = storedThread(r.wa_id);
+        if (bought(r, fr)) continue;
         if (fr?.last_inbound_at && fr.last_inbound_at > r.created_at) { setScheduledState(r.id, 'replied', `${fr.name || 'the lead'} replied at ${fmtHMm(fr.last_inbound_at)}`); pushAll({ title: `${fr.name || r.wa_id} replied · ${fmtHMm(r.at)} template NOT sent`, body: 'Open the thread to adapt.', tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
         try { await sendTemplate(r.wa_id, fm.template, fm.params || {}); logSend(r.wa_id, 'template', { template: fm.template, params: fm.params, scheduled: r.id }, true); setScheduledState(r.id, 'sent'); console.log(`followup #${r.id}: template ${fm.template} sent to ${fr?.name || r.wa_id}`); }
         catch (e) { logSend(r.wa_id, 'template', { template: fm.template, params: fm.params }, false, e.message); setScheduledState(r.id, 'failed', e.message); pushAll({ title: `Template failed · ${fr?.name || r.wa_id}`, body: e.message.slice(0, 120), tag: `fu-${r.wa_id}`, url: `/t/${r.wa_id}` }).catch(() => {}); continue; }
         saveThread({ ...(fr || { wa_id: r.wa_id, name: null, last_inbound_at: null }), pending: 0, last_outbound_at: new Date().toISOString(), last_text: `[${fm.template}]` });
-        closePlanItems(r.wa_id, 'done', ['followup']);
+        closeDueFollowups(r.wa_id);
         setTimeout(() => refreshThread(r.wa_id, fr?.name, { notify: false }).catch(() => {}), 6000);
         afterAliMessage(r.wa_id);
         continue;
@@ -512,6 +522,7 @@ async function followupTick() {
       // network yet): nothing leaves, next tick tries again.
       try { await refreshThread(r.wa_id, t.name, { notify: true }); } catch (e) { console.log(`followup #${r.id}: could not check the conversation (${e.message}), retry next tick`); continue; }
       const fresh = storedThread(r.wa_id);
+      if (bought(r, fresh)) continue;
       if (fresh?.last_inbound_at && fresh.last_inbound_at > r.created_at) {
         setScheduledState(r.id, 'replied', `${fresh.name || 'the lead'} replied at ${fmtHMm(fresh.last_inbound_at)}`);
         console.log(`followup #${r.id} for ${fresh.name || r.wa_id}: not sent, the lead replied (seen at the last check)`);
@@ -542,6 +553,7 @@ server.listen(PORT, () => {
   // blocks idle sleep only, for as long as this process lives; closing the lid still puts the Mac to sleep.
   try { const c = spawn('caffeinate', ['-i', '-w', String(process.pid)], { detached: true, stdio: 'ignore' }); c.unref(); console.log('caffeinate: idle sleep blocked while the app runs'); } catch (e) { console.log('caffeinate failed:', e.message); }
   restoreScheduled().catch((e) => console.log('scheduled: restore error', e.message));
+  restoreAfterSend();
   setInterval(() => followupTick().catch((e) => console.log('followup tick error', e.message)), 15_000);
   startPolling();
   startTmMonitor();
