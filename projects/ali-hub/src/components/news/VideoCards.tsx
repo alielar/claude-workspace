@@ -25,7 +25,7 @@ export function ago(ms: number, now: number): string {
 export function PickCard({ label, v, onWatch, now }: { label: string; v: Video | null; onWatch: (id: string) => void; now: number }) {
   if (!v) return (
     <div className="cc-card" style={{ padding: 14, display: "grid", gap: 6 }}>
-      <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{label}</span>
+      <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)" }}>{label}</span>
       <span style={{ fontSize: 15, color: "var(--ink-3)" }}>Nothing new yet</span>
     </div>
   );

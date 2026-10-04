@@ -17,7 +17,29 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserId } from "@/lib/user";
 import { parseHaePayload } from "@/lib/health/types";
-import { healthStatus, logRaw, rawPosts, replayRaw, storeParsed } from "@/lib/health/server";
+import { healthStatus, logRaw, rawPosts, replayRaw, storeParsed, type FreshWorkout } from "@/lib/health/server";
+import { fmtDur, fmtKm, fmtPace, kindLabel, paceOf, workoutKind } from "@/lib/health/client";
+import { sendToUser } from "@/lib/push/server";
+
+/**
+ * A workout the hub has never seen, finished in the last 12 hours → one push with its result
+ * (Ali 2026-10-04: "I see the run right after it ends"). Reposts of known workouts stay quiet; a
+ * backfill of old workouts (older than 12 h) stays quiet too. No quiet hours: he just trained.
+ */
+async function pushFresh(userId: string, fresh: FreshWorkout[]) {
+  const now = Date.now();
+  for (const w of fresh) {
+    const end = w.endMs ?? null;
+    if (end === null || now - end > 12 * 3600_000 || end > now + 600_000) continue;
+    const kind = workoutKind(w.type);
+    const body = kind === "run"
+      ? [fmtKm(w.distanceKm), fmtDur(w.durationSec), paceOf(w) ? fmtPace(paceOf(w)) : null].filter(Boolean).join(" · ")
+      : [fmtDur(w.durationSec), w.hrAvg !== null ? `${w.hrAvg} bpm` : null, w.activeKcal !== null ? `${w.activeKcal} kcal` : null].filter(Boolean).join(" · ");
+    try {
+      await sendToUser(userId, { title: `${kindLabel(w.type)} logged`, body, tag: `workout-${w.hkId}`, url: `/train/run/${encodeURIComponent(w.hkId)}` });
+    } catch { /* push is a courtesy · the row is stored either way */ }
+  }
+}
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -47,7 +69,9 @@ export async function POST(req: Request) {
   // Log first, store second: a post that times out while storing is still visible in ?raw=1.
   await logRaw(req.headers.get("automation-name"), text, planned);
   const result = await storeParsed(userId, parsed);
-  return NextResponse.json({ ok: true, ...result, skipped: parsed.skipped.slice(0, 10) });
+  if (result.fresh.length) await pushFresh(userId, result.fresh);
+  const { fresh, ...counts } = result;
+  return NextResponse.json({ ok: true, ...counts, fresh: fresh.length, skipped: parsed.skipped.slice(0, 10) });
 }
 
 export async function GET(req: Request) {

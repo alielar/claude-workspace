@@ -53,7 +53,7 @@ export function ProgramCard({ p, days, sessions, today, isToday }: {
             const first = i === 0 || p.moves[i - 1].phase !== m.phase;
             return (
               <div key={`${m.name}-${i}`} style={{ display: "grid", gap: 2 }}>
-                {first && <div style={{ fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: i === 0 ? "4px 0 6px" : "12px 0 6px" }}>{PHASE_LABEL[m.phase]}</div>}
+                {first && <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: i === 0 ? "4px 0 6px" : "12px 0 6px" }}>{PHASE_LABEL[m.phase]}</div>}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "baseline", minHeight: 40, padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
                   <span style={{ fontSize: m.phase === "training" ? 15.5 : 14.5, fontWeight: m.phase === "training" ? 500 : 400, color: m.phase === "training" ? "var(--ink)" : "var(--ink-2)", minWidth: 0, overflowWrap: "anywhere" }}>{m.name}</span>
                   <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-3)", whiteSpace: "nowrap" }}>{setsLabel(m)}</span>
@@ -63,7 +63,7 @@ export function ProgramCard({ p, days, sessions, today, isToday }: {
           })}
           {sessions.length > 0 && (
             <div style={{ paddingTop: 12, display: "grid", gap: 2 }}>
-              <div style={{ fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "4px 0 6px" }}>On the Watch</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "4px 0 6px" }}>On the Watch</div>
               {sessions.slice(0, 5).map((w) => (
                 <Link key={w.hkId} href={`/train/run/${encodeURIComponent(w.hkId)}`} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 44, padding: "6px 0", borderBottom: "1px solid var(--line)", textDecoration: "none", color: "inherit" }}>
                   <span style={{ fontSize: 15 }}>{fmtDay(w.date, today)}</span>

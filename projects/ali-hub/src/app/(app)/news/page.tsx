@@ -173,7 +173,7 @@ export default function NewsPage() {
 
       {/* 1 · Daily picks */}
       <div style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "0 2px" }}>Daily picks</span>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "0 2px" }}>Daily picks</span>
         {videosLoading && !feed ? (
           <div style={{ display: "grid", gap: 12 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ aspectRatio: "16 / 10", borderRadius: 14 }} />)}</div>
         ) : (
@@ -243,7 +243,7 @@ export default function NewsPage() {
 
       {/* 5 · Football highlights · three sections */}
       <div style={{ display: "grid", gap: 10 }}>
-        <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "0 2px" }}>Football · spoiler-free</span>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "0 2px" }}>Football · spoiler-free</span>
         {GROUPS.map((g) => <HighlightsSection key={g.key} label={g.label} items={highlights.filter((h) => (h.group ?? (h.national ? "national" : "europe")) === g.key)} onWatch={markHighlight} />)}
       </div>
 

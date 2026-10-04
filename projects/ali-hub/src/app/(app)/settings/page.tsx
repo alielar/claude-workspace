@@ -318,7 +318,7 @@ export default function SettingsPage() {
       )}
 
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">App</span><span className="tail">2026-10-03</span></div>
+        <div className="cc-card-head"><span className="title">App</span><span className="tail">{process.env.NEXT_PUBLIC_BUILD_DATE ?? ""}</span></div>
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{updating ?? "database, then the app"}</span>
           <button className="cc-btn cc-btn-secondary" onClick={update} disabled={!!updating}>Update</button>

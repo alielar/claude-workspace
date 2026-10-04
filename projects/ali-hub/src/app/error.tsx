@@ -25,12 +25,13 @@ export default function GlobalError({
             alignItems: "center",
             justifyContent: "center",
             gap: "16px",
-            color: "#fff",
+            color: "var(--ink)",
+            background: "var(--bg)",
           }}
         >
-          <p style={{ fontSize: "48px", fontWeight: "bold", color: "#f87171" }}>!</p>
+          <p style={{ fontSize: "48px", fontWeight: "bold", color: "var(--neg)" }}>!</p>
           <p style={{ fontSize: "18px", fontWeight: 600 }}>Something went wrong</p>
-          <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", maxWidth: "400px", textAlign: "center" }}>
+          <p style={{ fontSize: "13px", color: "var(--ink-3)", maxWidth: "400px", textAlign: "center" }}>
             {error.message ?? "An unexpected error occurred."}
           </p>
           <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
@@ -39,8 +40,8 @@ export default function GlobalError({
               style={{
                 padding: "10px 20px",
                 borderRadius: "12px",
-                background: "#6366f1",
-                color: "#fff",
+                background: "var(--violet)",
+                color: "var(--on-accent)",
                 border: "none",
                 fontWeight: 600,
                 cursor: "pointer",

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  env: {
+    // Settings → App shows when this build was made (was a hand-typed date that went stale).
+    NEXT_PUBLIC_BUILD_DATE: new Date().toISOString().slice(0, 10),
+  },
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns"],
   },

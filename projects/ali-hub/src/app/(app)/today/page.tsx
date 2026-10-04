@@ -538,13 +538,22 @@ export default function TodayPage() {
                       </button>
                     ) : (
                       <>
-                        <div className="cc-card-head" onClick={s.status === "past" ? toggleOpen : undefined}
-                          role={s.status === "past" ? "button" : undefined} style={s.status === "past" ? { cursor: "pointer" } : undefined}>
-                          <span className="title" style={late ? { color: "var(--neg)" } : undefined}>{PART_TITLE[s.p]}</span>
-                          <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10, color: late ? "var(--neg)" : undefined }}>
-                            {late ? `${s.lateCount} still open` : <>{s.status === "now" ? "now" : s.status === "past" ? "earlier" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}</>}{s.status === "past" && <span aria-hidden> {lateOnly ? "▾" : "▴"}</span>}
+                        <div className="cc-card-head" style={s.status === "past" ? { padding: 0 } : undefined}>
+                          {s.status === "past" ? (
+                            <button type="button" onClick={toggleOpen} aria-expanded={!lateOnly} aria-label={`${PART_TITLE[s.p]} · ${lateOnly ? "show every step" : "show only the late steps"}`}
+                              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, width: "100%", minHeight: 46, padding: "0 16px", background: "transparent", border: "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+                              <span className="title" style={late ? { color: "var(--neg)" } : undefined}>{PART_TITLE[s.p]}</span>
+                              <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10, color: late ? "var(--neg)" : undefined }}>
+                                {late ? `${s.lateCount} still open` : <>earlier · {s.openCount === 0 ? "done" : `${s.openCount} to do`}</>}<span aria-hidden> {lateOnly ? "▾" : "▴"}</span>
+                              </span>
+                            </button>
+                          ) : (<>
+                          <span className="title">{PART_TITLE[s.p]}</span>
+                          <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                            {s.status === "now" ? "now" : "later"} · {s.openCount === 0 ? "done" : `${s.openCount} to do`}
                             {s.status === "now" && <Link href="/checklist" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>Edit</Link>}
                           </span>
+                          </>)}
                         </div>
                         <div style={{ padding: "0 14px" }}>
                           {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />}

@@ -49,9 +49,9 @@ export function ChannelsCard() {
       </button>
       {open && (
         <div style={{ padding: "4px 14px 10px" }}>
-          <div style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "10px 2px 4px" }}>Daily picks</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "10px 2px 4px" }}>Daily picks</div>
           {DAILY_PICKS.map((c, i) => row(c.name, c.hint, <span style={{ fontSize: 13.5, color: "var(--ink-4)" }}>always</span>, i === DAILY_PICKS.length - 1))}
-          <div style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)", padding: "14px 2px 4px" }}>Watch later · in priority order</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "14px 2px 4px" }}>Watch later · in priority order</div>
           {WATCH_LATER.map((c, i) => {
             const on = enabled.includes(c.id);
             return row(`${c.priority}. ${c.name}`, c.hint, (

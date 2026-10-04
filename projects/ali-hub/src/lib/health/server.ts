@@ -7,7 +7,7 @@
 
 import { db } from "@/db";
 import { healthMetrics, healthSleep, healthWorkouts, healthWorkoutSeries } from "@/db/schema";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql, inArray } from "drizzle-orm";
 import { parseHaePayload, sleepScore, type Parsed, type SleepNight } from "./types";
 
 export const HEALTH_DDL = [
@@ -58,7 +58,9 @@ export function ensureHealthTables(): Promise<void> {
   return ready;
 }
 
-export type IngestResult = { sleep: number; workouts: number; metrics: number; skipped: number };
+/** `fresh` = workouts this post brought for the FIRST time (the ingest route pushes their result · Ali 2026-10-04: "I see the run right after it ends"). */
+export type FreshWorkout = { hkId: string; type: string; date: string; endMs: number | null; durationSec: number | null; distanceKm: number | null; hrAvg: number | null; activeKcal: number | null };
+export type IngestResult = { sleep: number; workouts: number; metrics: number; skipped: number; fresh: FreshWorkout[] };
 
 /** `COALESCE(excluded.x, x)` · a later, thinner post (HAE "since last sync") never blanks a value we already have. */
 function keepKnown<T extends Record<string, unknown>>(row: T, skip: string[]): Record<string, unknown> {
@@ -93,6 +95,13 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
     const { userId: _u, date: _d, ...set } = row; void _u; void _d;
     await db.insert(healthSleep).values(row).onConflictDoUpdate({ target: [healthSleep.userId, healthSleep.date], set });
   }
+  // Which workouts are new to us · asked BEFORE the upsert, so a repost of a known run stays quiet.
+  const fresh: FreshWorkout[] = [];
+  if (p.workouts.length) {
+    const ids = p.workouts.map((w) => w.hkId);
+    const known = new Set((await db.select({ hkId: healthWorkouts.hkId }).from(healthWorkouts).where(and(eq(healthWorkouts.userId, userId), inArray(healthWorkouts.hkId, ids))).catch(() => [] as { hkId: string }[])).map((r) => r.hkId));
+    for (const w of p.workouts) if (!known.has(w.hkId)) fresh.push({ hkId: w.hkId, type: w.type, date: w.date, endMs: w.endMs, durationSec: w.durationSec, distanceKm: w.distanceKm, hrAvg: w.hrAvg, activeKcal: w.activeKcal });
+  }
   for (const w of p.workouts) {
     const row = {
       userId, hkId: w.hkId, date: w.date, type: w.type, startMs: w.startMs, endMs: w.endMs, durationSec: w.durationSec,
@@ -118,7 +127,7 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
     const chunk = rows.slice(i, i + 60);
     await db.insert(healthMetrics).values(chunk).onConflictDoUpdate({ target: [healthMetrics.userId, healthMetrics.date, healthMetrics.metric], set: keepKnown(chunk[0], ["userId", "date", "metric"]) });
   }
-  return { sleep: p.sleep.length, workouts: p.workouts.length, metrics: p.metrics.length, skipped: p.skipped.length };
+  return { sleep: p.sleep.length, workouts: p.workouts.length, metrics: p.metrics.length, skipped: p.skipped.length, fresh };
 }
 
 /** Keep the last 30 raw posts (bodies capped at 1.5 MB · a sleep post with 12 metrics is ~800 KB) for debugging the payload shape. */
