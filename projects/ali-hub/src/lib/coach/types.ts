@@ -120,7 +120,7 @@ export function seedObjectives(d: ProgressData): Objective[] {
   const vo2 = latestMetric(d.metrics, "vo2_max");
   return [
     { id: "run5k", kind: "run5k", title: "5 km under 25:00", target: 25 * 60, due: "2026-12-31", startedAt: d.today, startValue: b5?.sec ?? null, note: "The first step of the ladder to 20:00 · then 22:30, then 20:00.", done: false, updatedAt: now },
-    { id: "strengthWeeks", kind: "strengthWeeks", title: "12 weeks with 3 strength sessions", target: 12, due: "2026-12-27", startedAt: PROGRAM_START_DAY, startValue: 0, note: "Push, Pull and the Saturday kettlebell · the week counts when all three are in.", done: false, updatedAt: now },
+    { id: "strengthWeeks", kind: "strengthWeeks", title: "12 weeks with Push, Pull and the kettlebell all in", target: 12, due: "2026-12-27", startedAt: PROGRAM_START_DAY, startValue: 0, note: "Push, Pull and the Saturday kettlebell · the week counts when all three are in.", done: false, updatedAt: now },
     { id: "kbRounds", kind: "kbRounds", title: `Kettlebell 30 · ${Math.max(4, (kbBest ?? 2) + 2)} rounds`, target: Math.max(4, (kbBest ?? 2) + 2), due: "2026-12-31", startedAt: d.today, startValue: kbBest, note: "Same bell, less rest between rounds first.", done: false, updatedAt: now },
     { id: "vo2max", kind: "vo2max", title: vo2 ? `VO2 max ${Math.round(vo2.value + 2)}` : "VO2 max up 2 points", target: vo2 ? Math.round(vo2.value + 2) : 0, due: "2027-03-31", startedAt: d.today, startValue: vo2?.value ?? null, note: vo2 ? "Apple's estimate · it moves over months, the easy runs move it most." : "Needs VO2 max in the ALI sleep automation of Health Auto Export.", done: false, updatedAt: now },
   ];
