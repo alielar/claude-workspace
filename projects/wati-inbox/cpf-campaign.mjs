@@ -26,16 +26,19 @@ function doNotContact() {
   catch { return new Set(); }
 }
 
-// The day for one lead: middle of the gap between the last Hub send and the next one, never before `from`,
-// never on a day the Hub has something scheduled. No next step (drip finished): `from` or 2 days after the last send.
-function pickDay({ lastSent, busy, next }, from) {
-  const earliest = lastSent ? (addDays(lastSent, 1) > from ? addDays(lastSent, 1) : from) : from;
-  if (!next) return { date: lastSent && addDays(lastSent, 2) > from ? addDays(lastSent, 2) : from, why: 'drip finished' };
-  if (earliest >= next) return { date: null, why: `next Hub template ${next}, no free day before it` };
-  const mid = addDays(earliest, Math.floor(diff(earliest, next) / 2));
-  for (let d = mid; d < next; d = addDays(d, 1)) if (!busy.has(d)) return { date: d, why: `between ${lastSent || '?'} and ${next}` };
-  for (let d = earliest; d < mid; d = addDays(d, 1)) if (!busy.has(d)) return { date: d, why: `between ${lastSent || '?'} and ${next}` };
-  return { date: null, why: 'no free day' };
+// A free day for one lead (Ali, 2026-10-05): no Hub template that day, nor the day before or after (a quiet day,
+// not squeezed next to another message), never a Sunday, at most PER_DAY leads a day. Leads are placed by meeting
+// date, oldest first, each on the first day that is free for that lead and still has room.
+const PER_DAY = Number(process.env.CPF_PER_DAY || 10);
+const HORIZON = 30;
+function freeDays(busy, from) {
+  const near = new Set([...busy].flatMap((d) => [addDays(d, -1), d, addDays(d, 1)]));
+  const out = [];
+  for (let i = 0; i < HORIZON; i++) {
+    const d = addDays(from, i);
+    if (!near.has(d) && new Date(d + 'T12:00:00Z').getUTCDay() !== 0) out.push(d);
+  }
+  return out;
 }
 
 async function plan(from) {
@@ -55,9 +58,16 @@ async function plan(from) {
     const busy = new Set(up.map((u) => day(u.scheduledAt)));
     const lastSent = l.lastReason?.at ? day(l.lastReason.at) : null;
     if (lastSent) busy.add(lastSent);
-    const next = up.length ? day(up[0].scheduledAt) : null;
-    const pick = pickDay({ lastSent, busy, next }, from);
-    out.push({ ...base, lastSent, next, nextTemplate: up[0]?.template || null, ...pick, time: pick.date ? SEND_TIME : null, status: pick.date ? 'planned' : 'skipped' });
+    out.push({ ...base, lastSent, hubDays: [...busy].sort(), free: freeDays(busy, from) });
+  }
+  const load = {};
+  out.sort((a, b) => String(a.meetingDate || '').localeCompare(String(b.meetingDate || '')));
+  for (const r of out) {
+    if (!r.free) continue;
+    const d = r.free.find((x) => (load[x] || 0) < PER_DAY);
+    if (d) { load[d] = (load[d] || 0) + 1; Object.assign(r, { date: d, time: SEND_TIME, why: `Hub sends on ${r.hubDays.join(', ') || 'no day'}`, status: 'planned' }); }
+    else Object.assign(r, { date: null, why: `no free day in ${HORIZON} days`, status: 'skipped' });
+    delete r.free;
   }
   out.sort((a, b) => (a.date || '9').localeCompare(b.date || '9'));
   fs.writeFileSync(PLAN_FILE, JSON.stringify({ builtAt: new Date().toISOString(), from, time: SEND_TIME, leads: out }, null, 2));
@@ -73,7 +83,7 @@ if (cmd === 'plan') {
   for (const r of out) if (r.date) perDay[r.date] = (perDay[r.date] || 0) + 1;
   console.log(`OR leads: ${out.length} · planned: ${out.filter((r) => r.date).length} · skipped: ${out.filter((r) => !r.date).length}`);
   console.log('per day:', perDay);
-  for (const r of out) console.log(`${r.date || '—'.padEnd(10)}  ${r.name.padEnd(14).slice(0, 14)} +${r.phone}  last ${r.lastSent || '?'} · next ${r.next || 'none'} ${r.nextTemplate || ''}  (${r.why})`);
+  for (const r of out) console.log(`${r.date || '—'.padEnd(10)}  ${r.name.padEnd(14).slice(0, 14)} +${r.phone}  meeting ${r.meetingDate || '?'}  (${r.why})`);
 } else {
   console.log('Usage: cpf-campaign.mjs plan [--from YYYY-MM-DD]   (sending is not built until Ali gives the go)');
 }
