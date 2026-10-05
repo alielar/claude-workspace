@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { gradeRecording } from "@/lib/mind/server";
+import { sendToUser } from "@/lib/push/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -24,5 +25,10 @@ export async function POST(req: Request) {
   if ((part !== "callback" && part !== "new") || !Number.isFinite(topicId)) return NextResponse.json({ error: "part and topicId required" }, { status: 400 });
   const out = await gradeRecording(session.user.id, part, topicId, await audio.arrayBuffer(), audio.type);
   if ("error" in out) return NextResponse.json(out, { status: 502 });
+  // Graded · one push, so he can leave the screen after Stop and come back when it is ready (2026-10-05).
+  try {
+    const f = (v: number) => v.toFixed(1);
+    await sendToUser(session.user.id, { title: `${part === "callback" ? "Callback" : "New topic"} graded · ${out.topicTitle}`, body: `Accuracy ${f(out.scores.accuracy)} · Structure ${f(out.scores.structure)} · Clarity ${f(out.scores.clarity)}`, tag: `mind-grade-${out.id}`, url: "/train?mind=1" });
+  } catch { /* the grade is stored either way */ }
   return NextResponse.json(out);
 }

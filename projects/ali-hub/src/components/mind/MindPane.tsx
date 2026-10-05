@@ -15,7 +15,9 @@
  *   FEEDBACK   · scores · what landed and what was missed · speaking tips and retention tips
  *                (fixed rules from the numbers, types.ts) · the grader's notes · the transcript.
  *   TOPICS     · every learned topic with its next callback day.
- * Recording = MediaRecorder (audio/mp4 on iOS) → /api/mind/grade; the file is never kept. Both
+ * Recording = MediaRecorder (audio/mp4 on iOS) → gradeStore.ts (background upload to /api/mind/grade,
+ * the recorder screen closes on Stop · Ali 2026-10-05: "let me leave and come back when the grading
+ * is ready") · the card says "grading", a push says when it landed; the file is never kept. Both
  * parts done → the "Mental training" routine row ticks itself.
  */
 
@@ -23,6 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Reveal } from "@/components/health/checkup";
 import { useMind } from "@/lib/mind/useMind";
+import { dropGrade, enqueueGrade, retryGrade, useGradeJobs, type GradeJob } from "@/lib/mind/gradeStore";
 import { MAX_SPEAK_SEC, PREP, READ_EXTRA_MAX, READ_EXTRA_SEC, fmtSec, readSeconds, retentionTips, speakingTips, type MindPart, type MindPoint, type MindSession, type MindTopic } from "@/lib/mind/types";
 import { readCache, writeCache } from "@/lib/local/store";
 import { sendOrQueue } from "@/lib/local/outbox";
@@ -133,8 +136,7 @@ const MIME = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg"];
  * clock · 0:00-0:25 Point, to 1:05 Reason, to 1:45 Example, then Point), and a live level meter so
  * the phone is visibly listening. Stop early or let it run out.
  */
-function Speaking({ part, topic, onDone, onCancel }: { part: MindPart; topic: MindTopic; onDone: (s: MindSession) => void; onCancel: () => void }) {
-  const { grade } = useMind();
+function Speaking({ part, topic, onDone, onCancel }: { part: MindPart; topic: MindTopic; onDone: () => void; onCancel: () => void }) {
   const [state, setState] = useState<"idle" | "recording" | "sending" | "error">("idle");
   const [left, setLeft] = useState(MAX_SPEAK_SEC);
   const [level, setLevel] = useState(0);
@@ -160,14 +162,14 @@ function Speaking({ part, topic, onDone, onCancel }: { part: MindPart; topic: Mi
       const r = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
       chunks.current = [];
       r.ondataavailable = (e) => { if (e.data.size) chunks.current.push(e.data); };
-      r.onstop = async () => {
+      r.onstop = () => {
         stopAll();
         const blob = new Blob(chunks.current, { type: r.mimeType || mime || "audio/mp4" });
-        setState("sending");
-        const out = await grade(part, topic.id, blob);
-        if ("error" in out) { setErr(out.error); setState("error"); return; }
+        if (blob.size < 2000) { setErr("Nothing was recorded · try again"); setState("error"); return; }
+        // Grading runs in the background (gradeStore) · the screen closes now, the card says "grading", a push says when it is done.
+        enqueueGrade(part, topic.id, topic.title, blob);
         setState("idle");
-        onDone(out);
+        onDone();
       };
       rec.current = r;
       r.start(1000);
@@ -439,6 +441,24 @@ function Prep() {
   );
 }
 
+/** A recording being graded in the background (gradeStore) · shown on its card; "Send again" keeps the same audio. */
+function Grading({ job }: { job: GradeJob }) {
+  return job.state === "sending" ? (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div className="cc-skeleton" style={{ height: 44 }} />
+      <div style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.45 }}>Listening back and grading your talk on <b style={{ fontWeight: 600 }}>{job.topicTitle}</b> · about half a minute. You can leave this screen; a push says when it is done.</div>
+    </div>
+  ) : (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ fontSize: 14.5, color: "var(--warn)", lineHeight: 1.45 }}>{job.error ?? "Grading did not finish"} · the recording is still here.</div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button className="cc-btn cc-btn-primary" onClick={() => retryGrade(job.part)} style={{ minHeight: 44 }}>Send again</button>
+        <button className="cc-btn cc-btn-ghost" onClick={() => dropGrade(job.part)} style={{ minHeight: 44, color: "var(--ink-3)" }}>Discard</button>
+      </div>
+    </div>
+  );
+}
+
 export function MindPane() {
   const { data, loading, writing, writeBrief, retire, skip } = useMind();
   const [reading, setReading] = useState(false);
@@ -451,12 +471,17 @@ export function MindPane() {
   useEffect(() => { if (sessionDone) void tickMindRow(); }, [sessionDone]);
   const closeBrief = useCallback(() => { setReading(false); setClosed(true); setSpeaking("new"); }, []);
   const points = useMemo(() => data?.points ?? [], [data?.points]);
+  // Recordings being graded in the background (gradeStore) · one per part at most.
+  const jobs = useGradeJobs();
+  const jobFor = (part: MindPart) => jobs.find((j) => j.part === part) ?? null;
+  const done = data?.done;
+  // The server stored the session but the answer never came back (the app was put away): the refresh shows it · drop the job.
+  useEffect(() => { if (done) for (const j of jobs) if (done[j.part]) dropGrade(j.part); }, [jobs, done]);
 
   if (!data && loading) return <div className="cc-skeleton" style={{ height: 160 }} />;
   if (!data) return <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Could not load today&apos;s session.</div>;
   const cb = data.callback, nt = data.newTopic;
   const cbState = data.done.callback ? "done" : cb ? "todo" : "none";
-
   return (
     <div style={{ display: "grid", gap: 18 }}>
       {!data.sttReady && <div style={{ fontSize: 14, color: "var(--warn)", padding: "0 2px" }}>Speech-to-text not connected · add DEEPGRAM_API_KEY on Vercel, then redeploy.</div>}
@@ -473,6 +498,8 @@ export function MindPane() {
         <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
           {data.done.callback ? (
             <><div style={{ fontSize: 17, fontWeight: 600 }}>{data.done.callback.topicTitle}</div><Result s={data.done.callback} /></>
+          ) : jobFor("callback") ? (
+            <Grading job={jobFor("callback")!} />
           ) : cb ? (
             <>
               <div>
@@ -497,6 +524,8 @@ export function MindPane() {
         <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
           {data.done.new ? (
             <><div style={{ fontSize: 17, fontWeight: 600 }}>{data.done.new.topicTitle}</div><Result s={data.done.new} /></>
+          ) : jobFor("new") ? (
+            <Grading job={jobFor("new")!} />
           ) : !nt ? (
             <>
               <div style={{ fontSize: 15, color: "var(--ink-3)" }}>{writing ? "Writing today's brief · about 20 seconds" : data.aiReady ? "Today's brief is not written yet." : "AI not connected · ANTHROPIC_API_KEY missing"}</div>
