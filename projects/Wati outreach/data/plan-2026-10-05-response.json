@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "waId": "33766562672",
+      "kind": "pause",
+      "when": "",
+      "title": "Untick #6, reassignment push duplicates today's check-in",
+      "why": "She said maybe later, no date; Ali's diagnostic question (timing/method/price) still unanswered since yesterday 18:49.",
+      "action": "Keep #7 and #8 scheduled for now, reassess if she's still silent by then.",
+      "pauseScope": "next",
+      "skipTemplates": ["tbc_recovery_offer_v3_fr"],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [],
+      "template": ""
+    },
+    {
+      "waId": "33766562672",
+      "kind": "followup",
+      "when": "14:04",
+      "title": "14:04 low-pressure check-in, new angle not a repeat",
+      "why": "Diagnostic question unanswered ~17h; she still has another appointment Tuesday, so no pressure yet.",
+      "action": "",
+      "pauseScope": "",
+      "skipTemplates": [],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [
+        "Bonjour, je voulais prendre de vos nouvelles",
+        "Je sais que vous avez encore un rendez-vous mardi, prenez le temps de comparer tranquillement",
+        "Y a-t-il un point sur le programme de Yassamine qui vous ferait hésiter ?"
+      ],
+      "template": ""
+    }
+  ],
+  "summary": "1 lead: untick the Hub's reassignment template (fires 16:00, would double-pressure after the 14:04 human check-in) and send a low-pressure followup at 14:04 that doesn't just repeat yesterday's unanswered diagnostic question."
+}
