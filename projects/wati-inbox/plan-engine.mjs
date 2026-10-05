@@ -70,7 +70,8 @@ export function windowInfo(msgs, now = Date.now()) {
   return { open, closeAt, lastLead, lastAli, closingSoon, aliToday };
 }
 // A closing card has its own signature so it can follow a done/dismissed card of the same Hub state.
-const cardSig = (c) => hubSig(c.wa_id) + (c.reason === 'closing' ? '|closing' : c.reason === 'citf' ? '|citf' : '');
+// A lead outside the Hub has no Hub state: its signature is Ali's last manual message, so each new message of his re-opens the judgement.
+const cardSig = (c) => (c.noHub ? `offhub|${c.win?.lastAli?.at || ''}` : hubSig(c.wa_id)) + (c.reason === 'closing' ? '|closing' : c.reason === 'citf' ? '|citf' : '');
 // The Hub's CITF plan of a lead: { moment, momentLocal, case, dateSource, state } or null.
 export const citfOf = (r) => { try { const c = r?.citf ? JSON.parse(r.citf) : null; return c?.moment && c.state !== 'CANCELLED' ? c : null; } catch { return null; } };
 // The CITF leads the Hub resumes today, for the Plan screen's header (data, not a judgement).
@@ -83,6 +84,10 @@ export const citfToday = (now = Date.now()) => hubLeadRows().filter((r) => r.sta
 // mother decided not to buy (2026-10-01) — paused in the Hub indefinitely, never a card again.
 export const ignored = () => { try { return new Set(JSON.parse(getState('plan_ignore') || '[]')); } catch { return new Set(); } };
 export const ignore = (waId, on = true) => { const s = ignored(); on ? s.add(waId) : s.delete(waId); setState('plan_ignore', JSON.stringify([...s])); if (on) for (const i of openPlanItems(waId)) setPlanState(i.id, 'dismissed', 'Lead removed from the plan by Ali'); return [...s]; };
+// Threads with a message in the last 72 h and no row in the Hub mirror (upsell leads, old students, leads the Hub dropped).
+const liveThreadsOffHub = (now = Date.now()) => { const since = new Date(now - 72 * 3600e3).toISOString(); return db.prepare('SELECT t.* FROM threads t LEFT JOIN hub_leads h ON h.wa_id = t.wa_id WHERE h.wa_id IS NULL AND (t.last_inbound_at > ? OR t.last_outbound_at > ?)').all(since, since); };
+// The shape of a Hub row, empty, for a lead the Hub does not know: the rest of the engine reads the same fields.
+const offHubRow = (t) => ({ wa_id: t.wa_id, name: t.name || null, last_name: null, status: null, paused: 0, skip_next: 0, next_tpl: null, next_at: null, phase: null, meeting_date: null, last_reason: null, last_reason_at: null, upcoming: null, citf: null, lead_id: null, noHub: true });
 const recentThread = (waId, now = Date.now()) => { const t = getThread(waId); return !!t && Math.max(Date.parse(t.last_inbound_at || 0) || 0, Date.parse(t.last_outbound_at || 0) || 0) > now - 72 * 3600e3; };
 export function candidates(now = Date.now()) {
   const out = [];
@@ -110,10 +115,21 @@ export function candidates(now = Date.now()) {
     if (reason === 'paused' && win.closingSoon) reason = 'closing';
     out.push({ ...r, reason, thread: t, msgs, win });
   }
+  // Live conversations OUTSIDE the Hub mirror (Zakaria, 2026-10-05: an upsell lead, not in the TBC cadence, got no card all day
+  // although he had set his own payment hour): the lead wrote in the last 72 h and the Hub does nothing for them, so every
+  // follow-up is Ali's. Judged like the others, with wait / followup / ok only (no Hub action exists for them).
+  const hubIds = new Set(hubLeadRows().map((r) => r.wa_id));
+  for (const t of liveThreadsOffHub(now)) {
+    if (t.wa_id === TEST_NUMBER || skip.has(t.wa_id) || hubIds.has(t.wa_id)) continue;
+    const msgs = threadMessages(t.wa_id);
+    const win = windowInfo(msgs, now);
+    if (!win.lastLead || Date.parse(win.lastLead.at) < now - 72 * 3600e3) continue;
+    out.push({ ...offHubRow(t), reason: win.closingSoon ? 'closing' : 'thread', thread: t, msgs, win });
+  }
   // Most urgent first: paused leads (a human gesture is due), then templates by time, then stuck and finished sequences.
   // Recent leads (meeting in the last 3 days) and soonest templates first; stuck and finished sequences last.
   const cutoff = new Date(now - 3 * 864e5).toISOString().slice(0, 10);
-  const rank = (c) => (c.reason === 'stale' || c.reason === 'finished' ? 2 : 0) + ((c.meeting_date || '') >= cutoff ? 0 : 1);
+  const rank = (c) => (c.reason === 'stale' || c.reason === 'finished' ? 2 : 0) + ((c.meeting_date || '') >= cutoff || c.noHub ? 0 : 1);
   return out.sort((a, b) => rank(a) - rank(b) || String(a.next_at || '9').localeCompare(String(b.next_at || '9')));
 }
 
@@ -148,13 +164,13 @@ export function leadBlock(c) {
   const win = c.win || windowInfo(c.msgs);
   const name = [c.name, c.last_name].filter(Boolean).join(' ') || c.thread?.name || c.wa_id;
   const head = [`### ${name} · waId ${c.wa_id}${c.thread?.country === 'Switzerland' ? ' · SUISSE (CHF)' : ''}`,
-    `Hub : statut ${c.status}${c.paused ? ' · EN PAUSE' : ''}${c.skip_next ? ' · prochain sauté' : ''} · phase ${c.phase || '-'} · entretien ${c.meeting_date || '-'} · dernier événement : ${c.last_reason || '-'}${c.last_reason_at ? ` (${fmt(c.last_reason_at)})` : ''}`,
+    c.noHub ? 'HORS SALES HUB : ce lead n’est dans aucune cadence automatique (ancien élève, upsell, ou lead que le Hub ne suit pas). Aucun template ne partira : toute relance est à Ali. Items possibles : `followup`, `wait`, `ok` (jamais pause / resume / fix Hub).' : `Hub : statut ${c.status}${c.paused ? ' · EN PAUSE' : ''}${c.skip_next ? ' · prochain sauté' : ''} · phase ${c.phase || '-'} · entretien ${c.meeting_date || '-'} · dernier événement : ${c.last_reason || '-'}${c.last_reason_at ? ` (${fmt(c.last_reason_at)})` : ''}`,
     en ? `Prochain template ${en.fromUpcoming ? 'réel (première étape à venir de la liste ; le champ « next » du Hub est figé pour un lead en pause ou CITF)' : 'selon le Hub'} : ${en.step != null ? `#${en.step} ` : ''}${en.template} à ${fmt(en.at)}${Date.parse(en.at) < Date.now() - 3600e3 ? (c.paused ? ' (DANS LE PASSÉ : étape figée par la pause)' : ' (DANS LE PASSÉ : probablement décoché par Ali)') : ''}${c.paused ? ' (ne partira pas tant que la pause tient)' : ''}` : 'Prochain template : aucun (séquence terminée)',
     tpl?.text ? `> ${tpl.text.replace(/\s+/g, ' ')}` : '',
     (c.prechecks || []).length ? 'PRÉ-ANALYSE (règles fixes de l’app, elles priment sur ton jugement sauf si le lead est déjà en pause) :\n' + c.prechecks.map((p) => `  - #${p.step ?? '?'} ${p.template} à ${fmt(p.at)} : ${p.why} → \`pause\` scope \`next\`, skipTemplates [${p.template}]`).join('\n') : '',
     upcomingOf(c).length ? 'Étapes à venir (numéro, template, heure) :\n' + upcomingOf(c).map((u) => { const t = hubTemplate(u.template); return `  #${u.stepIndex} ${u.template} · ${fmt(u.scheduledAt)}${Date.parse(u.scheduledAt) < Date.now() - 15 * 60e3 ? ' (passé)' : ''}${t?.text ? ` : « ${t.text.replace(/\s+/g, ' ').slice(0, 110)} »` : ''}`; }).join('\n') : '',
     citfOf(c) ? `CITF : le Hub reprend ce lead le ${fmt(citfOf(c).moment)} (raison : ${CITF_CASES[citfOf(c).case] || citfOf(c).case || '-'}, date ${citfOf(c).dateSource === 'lead' ? 'donnée par le lead' : 'estimée'}) : à cette heure part le premier template de la série CITF correspondante (son texte est dans « Étapes à venir » quand la liste est connue), puis la série continue si le lead ne répond pas.` : '',
-    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', closing: `la fenêtre 24h se ferme à ${c.win?.closeAt ? fmtHM(new Date(c.win.closeAt).toISOString()) : '?'} et le lead n’a pas répondu au dernier message manuel d’Ali (${c.win?.aliToday ? 'envoyé aujourd’hui → seconde relance basse pression' : 'envoyé avant aujourd’hui, aucune relance aujourd’hui → relance courte et directe'}) avant la fermeture (règle « fenêtre qui se ferme »)`,
+    `Pourquoi ce lead est dans la liste : ${{ paused: 'automatisation en pause → relance humaine à décider', thread: 'conversation vivante hors Sales Hub (le lead a écrit ces 72 dernières heures) → la prochaine relance humaine, s’il en faut une, est à décider ici : heure donnée par le lead, lien de paiement envoyé, promesse d’Ali, fenêtre qui se ferme', closing: `la fenêtre 24h se ferme à ${c.win?.closeAt ? fmtHM(new Date(c.win.closeAt).toISOString()) : '?'} et le lead n’a pas répondu au dernier message manuel d’Ali (${c.win?.aliToday ? 'envoyé aujourd’hui → seconde relance basse pression' : 'envoyé avant aujourd’hui, aucune relance aujourd’hui → relance courte et directe'}) avant la fermeture (règle « fenêtre qui se ferme »)`,
       citf: `le Hub REPREND CE LEAD AUJOURD'HUI à ${citfOf(c) ? fmtHM(citfOf(c).moment) : '?'} (série CITF) → règle « CITF du jour »`,
       overdue: `la carte « ${c.overdueKind || 'wait'} » prévoyait un geste à ${c.overdueAt ? fmtHM(c.overdueAt) : '?'}, l’heure est passée${c.overdueKind === 'followup' ? ' et Ali n’a pas envoyé ce message : propose l’étape suivante du rythme, pas la même' : ''} et le lead n’a pas répondu → décide maintenant : si la fenêtre est ouverte et qu’Ali n’a pas encore relancé aujourd’hui, followup court avec \`when\` dans les 30 min ; sinon resume, fix ou wait avec une heure à venir. Exception : lead NON pausé dont un template qui colle part dans l’heure → « ok » ou « wait », pas de relance manuelle (règle Martin)`, due: 'template dans les 24 h', stale: 'prochain template dans le passé', finished: 'séquence terminée sans réponse', sent: 'ALI VIENT D’ÉCRIRE À LA MAIN (dernier message du fil) → (1) ce que le Hub doit faire maintenant (règle « après un message manuel ») : wait jusqu’à quand, pause ou template à décocher s’il contredit ce message, resume, fix (statut) ; (2) les prochaines étapes que son message vient de créer (règle « ce que le message d’Ali engage »), chacune son item avec son heure' }[c.reason]}${c.prior ? ` (sinon : ${c.prior})` : ''}`,
     `Fenêtre 24h : ${win.open ? `OUVERTE, se ferme à ${fmt(win.closeAt)} (dernier message du lead ${fmt(win.lastLead.at)})` : 'FERMÉE (template seulement)'}`,
@@ -233,6 +249,7 @@ function store(c, it, { supersede = true } = {}) {
   const bubbles = (Array.isArray(it.bubbles) ? it.bubbles : []).map((b) => String(b).trim()).filter(Boolean).slice(0, 4);
   let kind = ['pause', 'followup', 'resume', 'wait', 'fix', 'ok'].includes(it.kind) ? it.kind : 'ok';
   if (kind === 'pause' && c.paused) kind = bubbles.length ? 'followup' : 'wait'; // already paused: nothing to pause, a human gesture or a date
+  if (c.noHub && ['pause', 'resume', 'fix'].includes(kind)) kind = bubbles.length ? 'followup' : 'wait'; // outside the Hub there is nothing to pause or resume
   // The fixed rules win over the model (2026-10-04: Andrea got « untick #3 », Andreea « templates run as is » for the same case).
   let forcedAt = null;
   if ((kind === 'ok' || kind === 'wait') && !c.paused && (c.prechecks || []).length) { const p = c.prechecks[0]; kind = 'pause'; forcedAt = p.at; it = { ...it, pauseScope: 'next', skipTemplates: c.prechecks.map((x) => x.template), title: `Untick #${p.step ?? '?'}, ${p.title}` }; log(`${name || c.wa_id}: fixed rule → pause next (${p.title})`); }
@@ -309,13 +326,14 @@ export async function plan({ scope = 'due', reason = 'auto', dry = false, only =
     if (only && sent) {
       cands = cands.map((c) => ({ ...c, reason: 'sent', prior: c.reason }));
       for (const w of only) if (!cands.some((c) => c.wa_id === w)) {
-        const row = hubLeadRows().find((x) => x.wa_id === w);
-        if (!row) { log(`${w}: not in the Sales Hub mirror, no after-send judgement`); continue; }
         const t = getThread(w); const msgs = t ? threadMessages(w) : [];
+        const row = hubLeadRows().find((x) => x.wa_id === w) || (t ? offHubRow(t) : null); // outside the Hub: judged all the same (2026-10-05)
+        if (!row) { log(`${w}: unknown thread, no after-send judgement`); continue; }
+        if (row.noHub) log(`${w}: not in the Sales Hub mirror, judged as a live conversation`);
         cands.push({ ...row, reason: 'sent', prior: null, thread: t, msgs, win: windowInfo(msgs) });
       }
     }
-    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || c.reason === 'overdue' || c.reason === 'citf' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
+    if (scope === 'due' && !only) { const lim = new Date(Date.now() + DUE_H * 3600e3).toISOString(); cands = cands.filter((c) => c.reason === 'paused' || c.reason === 'closing' || c.reason === 'overdue' || c.reason === 'citf' || c.reason === 'thread' || (c.next_at && c.next_at <= lim) || c.reason === 'finished' || c.reason === 'stale'); }
     if (dry) { status.state = 'idle'; return { candidates: cands.map((c) => ({ wa_id: c.wa_id, name: c.name, reason: c.reason, status: c.status, next: c.next_tpl, at: c.next_at })) }; }
     if (!cands.length) { status.state = 'idle'; return { judged: 0 }; }
     let judged = 0, unjudged = 0; const summaries = [];
