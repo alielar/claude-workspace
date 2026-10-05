@@ -13,4 +13,4 @@ Régénérer un PDF :
 
 Règles fixées par Ali le 2026-10-05 : fiche générique (aucun prénom), un pack 36h/699 € peut être
 suivi par deux enfants ensemble sur le même ordinateur, Alma 4 ou 6 fois sans frais, crédits sans
-date limite, rien sur l'enregistrement des leçons ni sur la rétractation.
+date limite, rien sur l'enregistrement des leçons ni sur la rétractation, pas de section inscription ni de lien, pied de page = numéro WhatsApp + site uniquement (pas de nom).

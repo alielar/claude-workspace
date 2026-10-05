@@ -12,12 +12,12 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: #fff; }
-  body { font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif; color: var(--text); font-size: 9pt; line-height: 1.38; }
-  .page { width: 210mm; height: 297mm; padding: 8mm 16mm 14mm; position: relative; overflow: hidden; }
+  body { font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif; color: var(--text); font-size: 9.6pt; line-height: 1.42; }
+  .page { width: 210mm; height: 297mm; padding: 12mm 18mm 16mm; position: relative; overflow: hidden; }
   .page:last-child { page-break-after: auto; }
 
   header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 3.5mm; border-bottom: 1.5px solid var(--navy); margin-bottom: 3.5mm; }
-  header img { height: 15mm; }
+  header img { height: 18mm; }
   .title { text-align: right; }
   .title .kicker { font-size: 8.5pt; letter-spacing: .12em; text-transform: uppercase; color: var(--purple); font-weight: 600; margin-bottom: 2mm; }
   .title h1 { font-size: 15.5pt; line-height: 1.2; margin: 0 0 1.5mm; color: var(--navy); font-weight: 700; }
@@ -27,21 +27,21 @@
 
   h2 { font-size: 10.2pt; color: var(--navy); font-weight: 600; margin: 0 0 2mm; padding-bottom: 1.2mm; border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 2.5mm; }
   h2 .n { color: var(--purple); font-weight: 700; font-size: 9.5pt; }
-  section { margin-bottom: 3mm; }
+  section { margin-bottom: 5mm; }
 
   table.facts { width: 100%; border-collapse: collapse; }
-  table.facts td { padding: 1.1mm 0; vertical-align: top; border-bottom: 1px solid var(--rule); font-size: 9.2pt; }
+  table.facts td { padding: 1.6mm 0; vertical-align: top; border-bottom: 1px solid var(--rule); font-size: 9.2pt; }
   table.facts tr:last-child td { border-bottom: none; }
   table.facts td:first-child { width: 38%; color: var(--grey); padding-right: 4mm; }
   table.facts td:last-child { color: var(--text); font-weight: 500; }
 
   ul { margin: 0; padding-left: 4.2mm; }
-  li { margin: 0 0 0.7mm; padding-left: 1mm; }
+  li { margin: 0 0 1.2mm; padding-left: 1mm; }
   li::marker { color: var(--purple); }
 
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 9mm; }
 
-  .price { background: var(--surface); border-radius: 10px; padding: 2.5mm 5mm; display: grid; grid-template-columns: auto 1fr; gap: 0 8mm; align-items: center; margin-bottom: 3mm; }
+  .price { background: var(--surface); border-radius: 10px; padding: 4mm 5.5mm; display: grid; grid-template-columns: auto 1fr; gap: 0 8mm; align-items: center; margin-bottom: 3mm; }
   .price .amount { font-size: 22pt; font-weight: 700; color: var(--navy); line-height: 1; }
   .price .amount small { font-size: 10pt; font-weight: 500; color: var(--mid); display: block; margin-top: 1.5mm; }
   .price ul { font-size: 9.1pt; }
@@ -50,7 +50,7 @@
   .link .lbl { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .1em; color: var(--purple); font-weight: 600; margin-bottom: 1mm; }
   .link a { color: var(--navy); text-decoration: none; font-weight: 500; word-break: break-all; font-size: 9.2pt; }
 
-  footer { position: absolute; left: 16mm; right: 16mm; bottom: 4.5mm; padding-top: 2mm; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 8.8pt; color: var(--grey); }
+  footer { position: absolute; left: 18mm; right: 18mm; bottom: 8mm; padding-top: 2mm; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 8.8pt; color: var(--grey); }
   footer b { color: var(--navy); font-weight: 600; }
 </style>
 </head>
@@ -131,20 +131,8 @@
     </div>
   </section>
 
-  <section>
-    <h2><span class="n">06</span>Inscription</h2>
-    <ul>
-      <li>Complétez le formulaire via le lien ci-dessous et choisissez votre mode de paiement. Vous recevez ensuite vos accès à la plateforme et à l'application, et vous choisissez votre date de début.</li>
-      <li>Un rendez-vous d'accueil avec le responsable des admissions vous accompagne pour les premiers pas.</li>
-    </ul>
-    <div class="link">
-      <div class="lbl">Lien d'inscription</div>
-      <a href="https://easypeasyfluent.com/fr/admission/776010b1-3669-4317-bcfb-815c7c1211ca">https://easypeasyfluent.com/fr/admission/776010b1-3669-4317-bcfb-815c7c1211ca</a>
-    </div>
-  </section>
-
   <footer>
-    <div><b>Ali</b> · Responsable des admissions · WhatsApp +33 6 73 55 59 77</div>
+    <div>WhatsApp <b>+33 6 73 55 59 77</b></div>
     <div>easypeasyfluent.com/fr</div>
   </footer>
 </div>
