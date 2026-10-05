@@ -22,6 +22,7 @@ import { nextWorkoutKey, sessionsPerWeek, isoWeekKey, SESSIONS_PER_WEEK, hasSche
 import { loadOrSeedWorkouts } from "@/lib/train/workoutRows";
 import { rowToSession } from "@/lib/train/rows";
 import { workoutKind } from "@/lib/health/client";
+import { sessionOfRow } from "@/lib/train/program";
 
 function calcStreak(dates: string[], today: string): number {
   if (dates.length === 0) return 0;
@@ -281,10 +282,11 @@ export async function GET(req?: Request) {
       routineKey: (item.routineKey as RoutineKey | null) ?? null,
       // Training rows tick themselves: the kettlebell day once a KB session is finished today
       // (2026-09-14), Push/Pull once the Watch posts a strength workout today, Run once it posts a run (2026-10-04).
+      // · a row is matched by key OR by name (Ali's own "Push" row is the push day, program.ts).
       completedToday: itemDates.includes(today)
-        || (item.routineKey === "gym-kb" && (todayTrain !== null || watchKinds.has("strength")))
-        || ((item.routineKey === "gym-push" || item.routineKey === "gym-pull") && watchKinds.has("strength"))
-        || ((item.routineKey === "run-sprint" || item.routineKey === "run-long" || item.routineKey === "run") && watchKinds.has("run")),
+        || (sessionOfRow(item)?.kind === "kb" && (todayTrain !== null || watchKinds.has("strength")))
+        || (sessionOfRow(item)?.kind === "strength" && watchKinds.has("strength"))
+        || ((sessionOfRow(item)?.kind === "run" || item.routineKey === "run") && watchKinds.has("run")),
       streak: calcStreak(itemDates, today),
       last7: last7Dates.map((d) => itemDates.includes(d)),
       source: "manual" as const,

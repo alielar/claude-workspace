@@ -62,6 +62,7 @@ import { useOverview } from "@/lib/train/useTrain";
 import { addDays, fmtDue, isSleeping, parseSubtasks, sortTodos, taskFormat, type Todo } from "@/lib/todo/types";
 import { NotesPreview, SubtaskList } from "../todo/notes";
 import { dayCode } from "@/lib/train/types";
+import { sessionOfRow } from "@/lib/train/program";
 import { Sheet } from "../todo/sheet";
 
 // ─── One highlight suggestion (News keeps the rest) ──────────────────────────
@@ -165,9 +166,10 @@ function routineAction(item: ChecklistItem): { label: string; href: string } | n
   if (item.routineKey === "stretch") return { label: "Start", href: "/stretch" };
   if (item.routineKey === "breathe") return { label: "Start", href: "/breathe" };
   if (item.routineKey === "read") return { label: "Books", href: "/books" };
-  if (item.routineKey === "gym-kb") return { label: "Train", href: "/train/kb1" };
-  if (item.routineKey === "gym-push" || item.routineKey === "gym-pull") return { label: "Program", href: "/train?body=strength" };
-  if (item.routineKey === "run" || item.routineKey === "run-sprint" || item.routineKey === "run-long") return { label: "Runs", href: "/train?body=runs" };
+  // A training row (by key or by its name · program.ts) opens its place on Train.
+  const session = sessionOfRow(item);
+  if (session) return { label: session.action, href: session.href };
+  if (item.routineKey === "run") return { label: "Runs", href: "/train?body=runs" };
   if (item.routineKey === "mind") return { label: "Start", href: "/train?mind=1" };
   return null;
 }
@@ -181,7 +183,7 @@ function displayNotes(item: ChecklistItem, currentBook: string | null): string |
 }
 
 /** A training row (machine day, run day, kettlebell day) · the training wake time applies, and it is never chased as late. */
-const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-") || !!i.routineKey?.startsWith("run");
+const isMachine = (i: ChecklistItem) => !!i.routineKey?.startsWith("gym-") || !!i.routineKey?.startsWith("run") || sessionOfRow(i) !== null;
 
 /** The day's rows as Today shows them: yesterday's ticks cleared on a stale copy, Saturday hours shifted, Sunday hours dropped. */
 function dayItems(base: ChecklistItem[], clearTicks: boolean, kind: DayKind, shiftMin: number): ChecklistItem[] {

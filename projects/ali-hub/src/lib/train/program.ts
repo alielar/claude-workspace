@@ -59,12 +59,28 @@ export const PROGRAM: ProgramSession[] = [
 export const sessionByKey = (k: SessionKey) => PROGRAM.find((s) => s.key === k)!;
 export const sessionByRoutine = (rk: string) => PROGRAM.find((s) => s.routineKey === rk) ?? null;
 
+/**
+ * Which program session a Routine row is · by its key, or by its NAME when Ali made the row himself
+ * (2026-10-05: he deleted the seeded Push and Pull rows and created his own "Push" and "Pull",
+ * kind routine, Mon and Wed · a row called Push IS the push day). The name test is the first word.
+ */
+export function sessionOfRow(row: { routineKey?: string | null; title: string }): ProgramSession | null {
+  if (row.routineKey) { const byKey = PROGRAM.find((s) => s.routineKey === row.routineKey); if (byKey) return byKey; }
+  const t = row.title.trim().toLowerCase();
+  if (/^push\b/.test(t)) return sessionByKey("push");
+  if (/^pull\b/.test(t)) return sessionByKey("pull");
+  if (/^sprint\b|^interval/.test(t)) return sessionByKey("sprint");
+  if (/^long run\b|^long\b/.test(t)) return sessionByKey("long");
+  if (/^kettlebell\b|^kb\b/.test(t)) return sessionByKey("kb");
+  return null;
+}
+
 /** The week's days as planned · session key per weekday (null = rest), from the Routine rows' weekdays or the seed. */
 export type WeekDays = Record<DayCode, SessionKey | null>;
-export function weekDaysFrom(rows: { routineKey: string | null; weekdays?: string[] | null }[] | null): WeekDays {
+export function weekDaysFrom(rows: { routineKey: string | null; title: string; weekdays?: string[] | null }[] | null): WeekDays {
   const out: WeekDays = { mon: null, tue: null, wed: null, thu: null, fri: null, sat: null, sun: null };
   for (const s of PROGRAM) {
-    const row = rows?.find((r) => r.routineKey === s.routineKey);
+    const row = rows?.find((r) => sessionOfRow(r)?.key === s.key);
     const days = row ? (row.weekdays ?? []) : rows ? [] : [s.day]; // rows loaded but no row = not planned
     for (const d of days) if (d in out && out[d as DayCode] === null) out[d as DayCode] = s.key;
   }

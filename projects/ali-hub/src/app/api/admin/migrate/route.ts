@@ -427,6 +427,11 @@ export async function POST() {
     `UPDATE checklist_items SET weekdays = '["mon"]' WHERE routine_key = 'gym-push' AND weekdays = '["sun"]'`,
     `UPDATE checklist_items SET weekdays = '["wed"]' WHERE routine_key = 'gym-pull' AND weekdays = '["tue"]'`,
     `UPDATE checklist_items SET active = 0 WHERE routine_key = 'run' AND title = 'Run'`,
+    // ── 2026-10-05: Ali deleted the seeded Push/Pull rows and made his own ("Push" Mon, "Pull" Wed, routine) · the dead rows let go of
+    //    their keys, his rows take them, so nothing reseeds and Train, Today and the auto-tick all agree (program.ts matches by name too)
+    `UPDATE checklist_items SET routine_key = NULL WHERE active = 0 AND routine_key IN ('gym-push', 'gym-pull')`,
+    `UPDATE checklist_items SET routine_key = 'gym-push' WHERE active = 1 AND routine_key IS NULL AND lower(title) LIKE 'push%' AND NOT EXISTS (SELECT 1 FROM checklist_items c2 WHERE c2.user_id = checklist_items.user_id AND c2.routine_key = 'gym-push')`,
+    `UPDATE checklist_items SET routine_key = 'gym-pull' WHERE active = 1 AND routine_key IS NULL AND lower(title) LIKE 'pull%' AND NOT EXISTS (SELECT 1 FROM checklist_items c2 WHERE c2.user_id = checklist_items.user_id AND c2.routine_key = 'gym-pull')`,
     // ── Password vault (2026-09-12) · blind storage, same DDL as src/lib/vault/server.ts
     ...VAULT_DDL,
 
