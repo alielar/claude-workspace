@@ -98,21 +98,24 @@ function useCelebration(): [boolean, (run: () => void) => void] {
 // to see what I've done") · it was removed between 2026-09-14 and then. The pop, ring, strike
 // and chime play first, then the line stays as `- [x]`; a tap on a done line clears the tick.
 
-function SubtaskRow({ s, onTick }: { s: SubTask; onTick: () => void }) {
+function SubtaskRow({ s, onTick, onRemove }: { s: SubTask; onTick: () => void; onRemove: () => void }) {
   const [celebrating, start] = useCelebration();
   const showDone = s.done || celebrating;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr", alignItems: "center", minHeight: 38 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 36px", alignItems: "center", minHeight: 38 }}>
       <TickBox done={s.done} celebrating={celebrating} onTick={() => (s.done ? onTick() : start(onTick))} small />
       <span className={celebrating ? "cc-done-strike" : undefined}
         style={{ display: "inline-block", fontSize: 15, lineHeight: 1.4, color: showDone ? "var(--ink-3)" : "var(--ink-2)", textDecoration: s.done ? "line-through" : "none", textDecorationColor: "var(--ink-4)", overflowWrap: "anywhere", paddingRight: 8 }}>
         <Linkify text={s.text} />
       </span>
+      {/* Remove = the ✕ at the right end (Ali 2026-10-05: "sometimes I want it gone") · always visible, quiet, 36 × 38 tap target. */}
+      <button type="button" onClick={onRemove} aria-label={`Remove ${s.text}`}
+        style={{ width: 36, height: 38, background: "transparent", border: "none", color: "var(--ink-4)", fontSize: 14, cursor: "pointer", padding: 0, justifySelf: "end" }}>✕</button>
     </div>
   );
 }
 
-/** Subtasks under a task row · three at a time (open ones first); a ticked one stays, struck through. */
+/** Subtasks under a task row · three at a time (open ones first); a ticked one stays, struck through; the ✕ at the right end removes a line. */
 export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; onChange: (notes: string | null) => void; indent?: number }) {
   const items = parseSubtasks(notes);
   const [open, setOpen] = useState(false);
@@ -120,9 +123,10 @@ export function SubtaskList({ notes, onChange, indent = 48 }: { notes: string; o
   const ordered = [...items.filter((s) => !s.done), ...items.filter((s) => s.done)];
   const shown = open ? ordered : ordered.slice(0, PREVIEW_LINES);
   const toggleAt = (i: number) => onChange(serializeSubtasks(items.map((s, j) => (j === i ? { ...s, done: !s.done } : s))));
+  const removeAt = (i: number) => onChange(serializeSubtasks(items.filter((_, j) => j !== i)));
   return (
-    <div style={{ padding: `0 12px 8px ${indent - 8}px` }}>
-      {shown.map((s) => { const i = items.indexOf(s); return <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => toggleAt(i)} />; })}
+    <div style={{ padding: `0 4px 8px ${indent - 8}px` }}>
+      {shown.map((s) => { const i = items.indexOf(s); return <SubtaskRow key={`${i}-${s.text}`} s={s} onTick={() => toggleAt(i)} onRemove={() => removeAt(i)} />; })}
       {(items.length > PREVIEW_LINES || open) && (
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
           style={{ background: "transparent", border: "none", font: "inherit", fontSize: 13, color: "var(--ink-4)", padding: "4px 0 2px 40px", cursor: "pointer", minHeight: 32 }}>
