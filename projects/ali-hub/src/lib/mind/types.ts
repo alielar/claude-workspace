@@ -110,6 +110,13 @@ export function retentionTips(recalled: string[], missed: string[], part: MindPa
 }
 
 export const DOMAINS = ["AI and tech", "geopolitics and politics", "business", "philosophy", "science", "history", "economics"];
+/**
+ * The FOUNDER TRACK (Ali 2026-10-05: "fifty percent of the topics about startups, company topics,
+ * business · closing, sales funnels · valuable later when I start my own startup or to understand
+ * how a company works"). Every second brief comes from here, rotating through these domains.
+ */
+export const FOUNDER_DOMAINS = ["sales and closing", "marketing and growth", "product and users", "how a startup is built", "how a company works", "money in a company"];
+export const isFounderDomain = (d: string) => FOUNDER_DOMAINS.includes(d);
 
 export function addDays(date: string, n: number): string {
   const d = new Date(date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n);

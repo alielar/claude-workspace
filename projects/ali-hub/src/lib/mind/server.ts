@@ -11,7 +11,7 @@ import { sql } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
 import { noDash } from "@/lib/utils";
 import {
-  DOMAINS, INTERVALS, READ_WPM, RUBRIC, SCORE_DECIMALS, addDays, computeMetrics, isoWeekOf, nextStage, verbatim,
+  DOMAINS, FOUNDER_DOMAINS, INTERVALS, READ_WPM, RUBRIC, SCORE_DECIMALS, addDays, computeMetrics, isFounderDomain, isoWeekOf, nextStage, verbatim,
   type MindMetrics, type MindPart, type MindScores, type MindSession, type MindToday, type MindTopic, type MindWeek, type Word,
 } from "./types";
 
@@ -80,12 +80,25 @@ const KINDS = [
   { name: "CONCEPT", rule: "a famous idea an educated person is expected to understand and usually cannot explain · relativity, compound interest, natural selection, game theory, the separation of powers, supply and demand, the categorical imperative · make him able to explain it at dinner." },
 ];
 
+/**
+ * The founder track's kinds (Ali 2026-10-05) · what a future founder must be able to USE, not trivia:
+ * a playbook (how to do a thing), a mechanism (how a company really works), a case (a real company's
+ * turning point, told for the lesson). Rotated in turn like KINDS.
+ */
+const FOUNDER_KINDS = [
+  { name: "PLAYBOOK", rule: "a method a founder runs with his own hands and must be able to explain step by step · a sales funnel from first contact to signature, a discovery call, handling an objection, closing without pressure, a cold outreach sequence, a pricing page, a launch, a landing page that converts, a weekly sales review · give the steps, the mistakes everyone makes, and what good looks like." },
+  { name: "MECHANISM", rule: "how a company actually works inside, the thing MBAs learn and founders discover the hard way · unit economics (what one customer costs and brings), cash flow against profit, runway and burn, a cap table and dilution, how a sales team is paid, churn and retention, product-market fit and how you know, hiring the first ten, the board, how a price is set · with the two or three numbers that carry it." },
+  { name: "CASE", rule: "a real company's turning point told for its lesson · how Airbnb got its first customers, how Stripe sold to developers, how Netflix changed its model, why a famous startup died, how a founder negotiated a key deal · what they did, why it worked or failed, and the rule Ali can carry away." },
+];
+
 /** Which news categories feed a Mind domain · the brief is about the idea behind a story, not the story. */
 const NEWS_FOR_DOMAIN: Record<string, string[]> = {
   "AI and tech": ["tech", "ai"],
   "geopolitics and politics": ["geopolitics"],
   business: ["business"],
   economics: ["business", "geopolitics"],
+  "how a startup is built": ["business", "tech"],
+  "money in a company": ["business"],
 };
 
 /** The last three days of A L I's own news brief, reduced to headline + summary · what is actually going on right now. */
@@ -115,28 +128,39 @@ async function recentStories(userId: string, date: string, domain: string): Prom
 export async function writeTopic(userId: string, date: string): Promise<MindTopic | null> {
   await ensureMindTables();
   const past = await db.all<{ title: string; domain: string }>(sql`SELECT title, domain FROM mind_topics WHERE user_id = ${userId} ORDER BY id DESC LIMIT 60`);
-  const recentDomains = past.slice(0, DOMAINS.length - 1).map((p) => p.domain);
-  const domain = DOMAINS.find((d) => !recentDomains.includes(d)) ?? DOMAINS[past.length % DOMAINS.length];
+  // Every second brief is from the FOUNDER TRACK (Ali 2026-10-05: half the topics about startups,
+  // sales and how a company works) · the track alternates with the general one; inside each, the
+  // domains rotate so none repeats before the others have had their turn.
+  const founder = past.length ? !isFounderDomain(past[0].domain) : false;
+  const pool = founder ? FOUNDER_DOMAINS : DOMAINS;
+  const recentDomains = past.filter((p) => isFounderDomain(p.domain) === founder).slice(0, pool.length - 1).map((p) => p.domain);
+  const domain = pool.find((d) => !recentDomains.includes(d)) ?? pool[past.length % pool.length];
   const news = await recentStories(userId, date, domain);
   // Rotate the kind of topic (Ali 2026-09-29): something from the last months · a landmark idea or
-  // event of the field · a well-known concept. Never a niche milestone.
-  const kind = past.length % KINDS.length;
-  const prompt = `You write one short brief for Ali, who trains his memory and his speaking on it. He is curious and sharp but NOT an expert in any of these fields. He reads the brief ONCE against a timer of about ${Math.ceil(700 / READ_WPM)} minutes, closes it, then explains the idea aloud for 2 minutes from memory and is graded on what he recalled.
+  // event of the field · a well-known concept. Never a niche milestone. The founder track rotates
+  // its own kinds: playbook · mechanism · case.
+  const trackCount = past.filter((p) => isFounderDomain(p.domain) === founder).length;
+  const kinds = founder ? FOUNDER_KINDS : KINDS;
+  const kind = trackCount % kinds.length;
+  const who = founder
+    ? "He is a product person who sells today and wants to start his own company later: every brief on this track must leave him with something he can USE (a method, a number to watch, a rule) and the words to explain it to a co-founder."
+    : "He is curious and sharp but NOT an expert in any of these fields.";
+  const prompt = `You write one short brief for Ali, who trains his memory and his speaking on it. ${who} He reads the brief ONCE against a timer of about ${Math.ceil(700 / READ_WPM)} minutes, closes it, then explains the idea aloud for 2 minutes from memory and is graded on what he recalled.
 
-Today is ${date}. Today's domain: ${domain}.
+Today is ${date}. Today's domain: ${domain}${founder ? " (the founder track: startups, sales, how a company works)" : ""}.
 ${news.length ? `IN HIS NEWS RIGHT NOW (for a CURRENT topic, prefer the idea behind one of these · the brief is about the IDEA, not the news item):\n${news.map((n) => `- ${n}`).join("\n")}\n` : ""}
 Already covered (never repeat, build on one when it fits): ${past.length ? past.map((p) => `${p.title} (${p.domain})`).join("; ") : "none yet"}.
 
-Choose ONE topic of ${KINDS[kind].name} kind: ${KINDS[kind].rule}
-The test for any topic: a well-read person would recognise it and be glad to explain it well. NEVER a niche milestone of a field (a 2019 research paper, a version of a product, a benchmark) · that is trivia, not understanding.
+Choose ONE topic of ${kinds[kind].name} kind: ${kinds[kind].rule}
+The test for any topic: ${founder ? "a good founder would nod and say 'yes, that is exactly how it works' and Ali could apply it next month" : "a well-read person would recognise it and be glad to explain it well"}. NEVER a niche milestone of a field (a 2019 research paper, a version of a product, a benchmark) · that is trivia, not understanding.
 
 Write it the way a sharp friend explains it over coffee: concepts, why, what follows. Plain words only · every technical term is replaced by what it means, or dropped. A number only when one number carries the point. No names of papers, no model version numbers, no acronyms he will never say again. Never an em dash: commas and full stops only.
 
 600–800 words, markdown, EXACTLY these five sections in this order:
 ## The idea · what it is, in two or three sentences
-## How it works · the mechanism, with one everyday analogy
-## Why it matters · who it changes, what follows, what it costs
-## The argument · the strongest case for it and the strongest case against, one short paragraph each
+## How it works · the mechanism, with one everyday analogy${founder ? " (for a playbook: the steps in order)" : ""}
+## Why it matters · ${founder ? "what it changes for a founder, what it costs to get wrong, the number to watch" : "who it changes, what follows, what it costs"}
+## The argument · ${founder ? "when it works and when it does not, the mistake everyone makes, one short paragraph each" : "the strongest case for it and the strongest case against, one short paragraph each"}
 ## Remember · five short lines: the facts a good recall must contain
 
 Answer with JSON only, in exactly this shape:

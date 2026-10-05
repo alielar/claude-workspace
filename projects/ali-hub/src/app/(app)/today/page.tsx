@@ -59,7 +59,8 @@ import { useBirthdays } from "@/lib/birthdays/useBirthdays";
 import { daysUntil, dueSoon, fmtDaysUntil, sortByUpcoming, turningAge } from "@/lib/birthdays/types";
 import { parseMorningPlan, computeMorning, dayKindOf, shiftHM, type DayKind, type MorningPlan } from "@/lib/morning/plan";
 import { useOverview } from "@/lib/train/useTrain";
-import { addDays, fmtDue, isSleeping, sortTodos, type Todo } from "@/lib/todo/types";
+import { addDays, fmtDue, isSleeping, parseSubtasks, sortTodos, taskFormat, type Todo } from "@/lib/todo/types";
+import { NotesPreview, SubtaskList } from "../todo/notes";
 import { dayCode } from "@/lib/train/types";
 import { Sheet } from "../todo/sheet";
 
@@ -269,12 +270,17 @@ function Row({ item, onToggle, compact = false, currentBook = null, late = false
   );
 }
 
-/** One to-do inside Today · ticking chimes, pops and folds the row away. Optional Time / Tmrw actions (Day Spine's loose ends). */
-function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
+/** One to-do inside Today · ticking chimes, pops and folds the row away. Optional Time / Tmrw actions (Day Spine's loose ends).
+ *  Subtasks show under the row as tick boxes and a note behind the ≡ icon, the same as /todo (Ali 2026-10-05). */
+function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer }: {
   t: Todo; today: string; toggleDone: (t: Todo) => void; onOpen: (t: Todo) => void;
+  onNotes?: (t: Todo, notes: string | null) => void;
   onTime?: (hhmm: string) => void; onDefer?: () => void;
 }) {
   const [celebrating, setCelebrating] = useState(false);
+  const subtasks = taskFormat(t) === "checklist" && t.notes ? parseSubtasks(t.notes) : null;
+  const [peek, setPeek] = useState(false);
+  const subCount = subtasks && subtasks.length ? `${subtasks.filter((x) => x.done).length}/${subtasks.length}` : null;
   const tick = () => {
     if (celebrating) return;
     setCelebrating(true);
@@ -283,8 +289,11 @@ function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
   };
   const late = !!t.dueDate && t.dueDate < today;
   const actions = !!(onTime || onDefer) && !celebrating;
+  const noteIcon = !!t.notes && !subtasks;
+  const cols = `28px 1fr${noteIcon ? " auto" : ""}${actions ? " auto" : ""}`;
   return (
-    <div className={`today-row${celebrating ? " cc-done-row" : ""}`} style={{ display: "grid", gridTemplateColumns: actions ? "28px 1fr auto" : "28px 1fr", gap: 14, alignItems: "center", minHeight: 48, padding: "6px 4px", borderBottom: "1px solid var(--line)" }}>
+    <div className="today-row" style={{ borderBottom: "1px solid var(--line)" }}>
+    <div className={celebrating ? "cc-done-row" : undefined} style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", minHeight: 48, padding: "6px 4px" }}>
       <button onClick={tick} aria-label="Mark done" className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 28, height: 28, borderRadius: 10, border: `2px solid ${celebrating ? "transparent" : t.priority === 2 ? "var(--neg)" : t.priority === 1 ? "var(--warn)" : "var(--line-strong)"}`, background: celebrating ? "var(--pos)" : "var(--fill-1)", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         {celebrating && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
         {celebrating && <span className="cc-done-ring" />}
@@ -293,9 +302,15 @@ function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
       <button type="button" onClick={() => onOpen(t)} style={{ background: "transparent", border: "none", padding: 0, font: "inherit", textAlign: "left", color: "inherit", minWidth: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 16, lineHeight: 1.3 }}><Linkify text={t.title} /></span>
         <span style={{ display: "block", fontSize: 14, color: late ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Knowledge" : ""}
+          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Knowledge" : ""}{subCount ? ` · ${subCount}` : ""}
         </span>
       </button>
+      {noteIcon && (
+        <button type="button" onClick={(e) => { e.stopPropagation(); setPeek((p) => !p); }} aria-label={peek ? "Close notes" : "Open notes"} aria-expanded={peek}
+          style={{ width: 44, minHeight: 44, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
+          <span aria-hidden style={{ width: 24, height: 24, borderRadius: 8, border: `1.5px solid ${peek ? "var(--violet)" : "var(--line-strong)"}`, background: peek ? "var(--accent-soft)" : "var(--fill-1)", color: peek ? "var(--violet)" : "var(--ink-3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, fontFamily: "var(--f-mono)" }}>≡</span>
+        </button>
+      )}
       {actions && (
         <span style={{ display: "flex", gap: 4 }}>
           {onTime && (
@@ -308,6 +323,12 @@ function TodoRow({ t, today, toggleDone, onOpen, onTime, onDefer }: {
           {onDefer && <button onClick={onDefer} className="cc-btn cc-btn-ghost" aria-label="Move to tomorrow" style={{ minHeight: 40, padding: "0 10px", fontSize: 13.5, borderRadius: 10 }}>Tmrw →</button>}
         </span>
       )}
+    </div>
+    {t.notes && !celebrating && (subtasks || peek) && (
+      subtasks
+        ? <SubtaskList notes={t.notes} onChange={(n) => onNotes?.(t, n)} indent={42} />
+        : <NotesPreview notes={t.notes} indent={42} />
+    )}
     </div>
   );
 }
@@ -405,6 +426,7 @@ export default function TodayPage() {
   const eveningTodos = todayTodos.filter((t) => t.evening && !t.dueTime);
   const anytimeTodos = todayTodos.filter((t) => !t.dueTime && !t.evening);
   const giveTime = (t: Todo, hhmm: string) => upsert({ ...t, dueDate: today, dueTime: hhmm, evening: false });
+  const saveNotes = (t: Todo, notes: string | null) => upsert({ ...t, notes });
   const defer = (t: Todo) => upsert({ ...t, dueDate: addDays(today, 1), dueTime: null });
 
   // The task sheet, opened by tapping a to-do row (same component as /todo).
@@ -459,7 +481,7 @@ export default function TodayPage() {
         ...routine.map((i, n) => ({ key: `i${i.id}`, min: i.atTime ? minOf(i.atTime) : -1, order: n, late: lateIds.has(i.id),
           node: <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={status !== "now"} late={lateIds.has(i.id)} /> })),
         ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n, late: false,
-          node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} /> })),
+          node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} /> })),
       ].sort((a, b) => a.min - b.min || a.order - b.order);
       return { p, routine, todos, rows, openCount, status, lateCount: lateIds.size };
     };
@@ -476,7 +498,7 @@ export default function TodayPage() {
             <section className="cc-card">
               <div className="cc-card-head"><span className="title">Loose ends</span><span className="tail">{loose.length}</span></div>
               <div style={{ padding: "0 14px" }}>
-                {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
+                {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
               </div>
             </section>
           )}
@@ -492,7 +514,7 @@ export default function TodayPage() {
               <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />
               {loading && !data && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
               {items.map((i) => <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} />)}
-              {sundayTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} />)}
+              {sundayTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} />)}
               {items.length === 0 && sundayTodos.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
             </div>
           </section>
@@ -511,7 +533,7 @@ export default function TodayPage() {
               <span className="tail">{loose.length} with no time slot</span>
             </div>
             <div style={{ padding: "0 14px" }}>
-              {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
+              {loose.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} onTime={(hhmm) => giveTime(t, hhmm)} onDefer={() => defer(t)} />)}
             </div>
           </section>
         )}
