@@ -16,6 +16,7 @@
 |---|---|---|---|
 | `com.ali.wati-inbox` (launchd) | always, restarts on crash | Reads Wati every 45 s, notifies the phone, serves the app, drafts suggestions with headless Claude | `projects/wati-inbox/logs/server.log`, `logs/suggest.log` |
 | `com.ali.wati-nightly-review` (launchd) | 21:03 every day | Headless Claude compares the day's drafts with what Ali sent, logs lessons in the playbook | `projects/Wati outreach/logs/nightly-<date>.log` |
+| `com.ali.wati-cpf` (launchd) | 12:30, 15:30, 20:30 daily, 6–16 Oct 2026 (answers until 24 Oct, then idle; remove after) | Sends the `cpf_question` template to offer-rejected leads, each on its own quiet day (`cpf-campaign.mjs tick`); 20:30 counts yes / no / no answer and pushes the phone | `projects/wati-inbox/logs/cpf.log`, `data/cpf-report.md` |
 | `com.ali.ali-hub-fix-worker` (launchd) | always, restarts on crash | Every 30 s asks ali-hub for queued Fix-chat requests; when there are some, runs Claude Code headless in `projects/ali-hub`, ships, reports back (one batch at a time) | `projects/ali-hub/fix-worker/logs/launchd.log`, `logs/batch-<id>.log` |
 | `auto-save.sh` (cron) | 23:47 every day | Commits and pushes everything in the workspace to GitHub | `.auto-save.log` at the workspace root |
 

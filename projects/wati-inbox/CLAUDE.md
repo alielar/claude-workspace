@@ -54,6 +54,12 @@ journal tail after that marker (injected in the prompt). Terminal: `node --env-f
 All run `claude -p --model claude-sonnet-5` headless inside `../Wati outreach` — drafts in their own lane with a
 self-contained prompt (thread, CRM card, quick card, consolidated rules and principles injected; no tool turns; target
 under a minute), the other runs queued behind each other in a background lane; no API key, no open session. Logs: `logs/server.log`, `logs/suggest.log`.
+**CPF question campaign** (Ali + Andrin, go given 2026-10-05): `cpf-campaign.mjs` sends the Wati template `cpf_question`
+(variable `name`) once to every offer-rejected lead, 6–16 Oct, each on a day the Hub sends that lead nothing (nor the day
+before/after), no Sunday, max 10 a day, 12:30. Plan in `data/cpf-plan.json`; before each send the lead is re-checked
+(still OR, not paused, no Hub template today/tomorrow, no human message in 48 h, never received it) and moved or dropped.
+Swapped Hub names are fixed in `NAME_FIX`. Answers (first lead message after the send, words → yes / no / to read) in
+`data/cpf-report.md`, pushed at 20:30. Job `com.ali.wati-cpf` (`launchd/install-cpf.sh`), log `logs/cpf.log`.
 
 ## How to deploy
 There is no deploy. After a code change:
