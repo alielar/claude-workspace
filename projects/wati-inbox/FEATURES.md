@@ -156,7 +156,7 @@ Every minute the app copies the French leads of the Hub's **WATI Automations** t
 
 ### Who gets a card
 
-One card per lead and per day, for every lead that matters today: paused (a human follow-up is due), next template within 24 h, stuck (next template in the past), finished sequence (72 h to 6 days after the last template without the Hub's own move to OR), CITF leads the Hub resumes today, a "wait" card whose time has come, and any lead Ali wrote to by hand (re-judged one minute later).
+One card per lead and per day, for every lead that matters today: paused (a human follow-up is due), next template within 24 h, stuck (next template in the past), finished sequence (72 h to 6 days after the last template without the Hub's own move to OR), CITF leads the Hub resumes today, a "wait" card whose time has come, and any lead Ali wrote to by hand (re-judged one minute later). **Since 5 October 2026, conversations the Hub does not know** (an old student on an upsell, a lead the Hub dropped) are judged too, as long as the lead wrote in the last 72 h: no Hub action exists for them, so the card can only be a follow-up, a wait or OK.
 
 ### What a card says
 
