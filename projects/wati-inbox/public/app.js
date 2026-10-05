@@ -600,6 +600,7 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
     ${i.bubbles?.length && !inThread ? `<div class="opt">${i.bubbles.map((b) => `<div class="b"><span>${esc(b)}</span></div>`).join('')}</div>` : i.bubbles?.length ? '<div class="muted small">The draft is below, ready to send</div>' : ''}
     ${open && !inThread && i.kind === 'followup' && !i.bubbles?.length && i.template && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plantpl="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}" data-tpl="${esc(i.template)}" data-name="${esc((i.name || '').split(' ')[0])}">Schedule template for ${fmtTime(i.when_at)}</button><span class="muted small">not sent if the lead writes first</span></div>` : ''}
     ${open && !inThread && i.kind === 'followup' && i.bubbles?.length && i.when_at && Date.parse(i.when_at) > Date.now() ? `<div class="acts"><button class="small primary" data-plansched="${i.id}" data-wa="${i.wa_id}" data-at="${esc(i.when_at)}">Schedule for ${fmtTime(i.when_at)}</button><span class="muted small">the Mac sends it unless the lead writes first</span></div>` : ''}
+    ${open && planNote.id === i.id ? `<div class="pnote"><textarea id="pnote-${i.id}" rows="3" placeholder="What did you do instead, and why? Claude learns from it">${esc(planNote.text)}</textarea><div class="acts">${micHtml(`pnote-${i.id}`)}<button class="small primary" data-plannotesave="${i.id}">Save</button><button class="small" data-plannotecancel="${i.id}">Cancel</button></div></div>` : ''}
     ${open ? `<div class="acts"><button class="small primary" data-plandone="${i.id}">Done</button><button class="small" data-plandismiss="${i.id}">I did it differently</button><button class="small" data-plancopy="+${i.wa_id}">Copy number</button>${salesHub ? `<a class="small" href="${esc(salesHub)}" target="_blank" rel="noopener">Sales Hub ↗</a>` : ''}${!inThread ? `<a class="small" data-nav href="/t/${i.wa_id}">Open</a>` : ''}</div>` : `<div class="acts"><button class="small" data-planreopen="${i.id}">Reopen</button></div>`}
   </div>`;
 }
@@ -608,9 +609,16 @@ function bindPlanButtons(after) {
   document.querySelectorAll('[data-plansched]').forEach((b) => b.onclick = async () => { const card = window.__planCards?.[b.dataset.plansched]; try { await schedule(`/api/thread/${b.dataset.wa}/followups`, 'POST', { at: b.dataset.at, bubbles: card?.bubbles || [], planId: b.dataset.plansched, suggestionId: card?.suggestion_id || null }); toast(`Scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
   document.querySelectorAll('[data-plandone]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.plandone}`, { method: 'POST', body: { state: 'done' } }); after(); });
   document.querySelectorAll('[data-planreopen]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.planreopen}`, { method: 'POST', body: { state: 'open' } }); after(); });
-  document.querySelectorAll('[data-planignore]').forEach((b) => b.onclick = async () => { if (!confirm('No more cards for this lead, for good?')) return; await api('/api/plan/ignore', { method: 'POST', body: { waId: b.dataset.planignore } }); toast('Lead removed from the plan'); after(); });
+  // Same iPhone limit for the confirm pop-up: the first tap arms the button, the second one within 4 s does it.
+  document.querySelectorAll('[data-planignore]').forEach((b) => b.onclick = async () => { if (!b.dataset.armed) { b.dataset.armed = '1'; const t = b.textContent; b.textContent = 'Tap again to confirm'; setTimeout(() => { delete b.dataset.armed; b.textContent = t; }, 4000); return; } await api('/api/plan/ignore', { method: 'POST', body: { waId: b.dataset.planignore } }); toast('Lead removed from the plan'); after(); });
   // "I did it differently" (Ali, 2026-10-01): what he did instead is required, it is what the next judgements learn from.
-  document.querySelectorAll('[data-plandismiss]').forEach((b) => b.onclick = async () => { const note = (prompt('What did you do instead, and why? Claude learns from it') ?? '').trim(); if (!note) return; await api(`/api/plan/${b.dataset.plandismiss}`, { method: 'POST', body: { state: 'dismissed', note } }); toast('Noted, Claude is writing the lesson'); after(); });
+  // The note is typed or dictated in a box inside the card (2026-10-05): the browser's own pop-up never shows in the
+  // installed app on iPhone, so the tap looked dead. The text is kept in planNote so the 45 s refresh does not wipe it.
+  document.querySelectorAll('[data-plandismiss]').forEach((b) => b.onclick = () => { if (rec) { toast('Stop the dictation first'); return; } planNote = { id: Number(b.dataset.plandismiss), text: '' }; after(); setTimeout(() => $(`#pnote-${planNote.id}`)?.focus(), 50); });
+  document.querySelectorAll('.pnote textarea').forEach((t) => t.oninput = () => { planNote.text = t.value; });
+  document.querySelectorAll('[data-plannotecancel]').forEach((b) => b.onclick = () => { if (rec) micStop(); planNote = { id: null, text: '' }; after(); });
+  document.querySelectorAll('[data-plannotesave]').forEach((b) => b.onclick = async () => { if (rec) { toast('Stop the dictation first'); return; } const note = ($(`#pnote-${b.dataset.plannotesave}`)?.value || '').trim(); if (!note) { toast('Write or dictate what you did instead'); return; } try { await api(`/api/plan/${b.dataset.plannotesave}`, { method: 'POST', body: { state: 'dismissed', note } }); planNote = { id: null, text: '' }; toast('Noted, Claude is writing the lesson'); after(); } catch (e) { toast(e.message); } });
+  bindMic();
   document.querySelectorAll('[data-plancopy]').forEach((b) => b.onclick = () => copyText(b.dataset.plancopy, b));
   document.querySelectorAll('[data-planrule]').forEach((b) => b.onclick = async () => { const v = b.dataset.verdict, context = ($(`#rctx-${b.dataset.planrule}`)?.value || '').trim(); if (v === 'conditional' && !context) { toast('Write or dictate the context first'); return; } if (rec) { toast('Stop the dictation first'); return; } try { await api(`/api/plan/${b.dataset.planrule}/rule`, { method: 'POST', body: { verdict: v, context } }); toast(v === 'rule' ? 'B is now the rule' : v === 'conditional' ? 'Rule refined with your context' : 'A kept, one-off noted'); after(); } catch (e) { toast(e.message); } });
 }
@@ -646,6 +654,7 @@ async function renderPlan() {
   bindPlanButtons(route);
 }
 const planFolds = new Set();
+let planNote = { id: null, text: '' }; // the « I did it differently » box open on a plan card, and its text
 
 // ── Rule conflicts (/rules, Ali 2026-10-04): a page of its own, consulted when he wants; nothing here pushes ─────────
 async function renderRules() {

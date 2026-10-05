@@ -182,3 +182,6 @@ button.icon.done { color: var(--accent); }
 .sched-b { background: var(--us); border-radius: 10px; padding: 6px 10px; margin: 4px 0; font-size: 14px; line-height: 1.35; }
 .sched-b span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sched-head .pill { margin-left: 0; font-weight: 600; }
+
+.pnote { margin: 8px 0 4px; }
+.pnote textarea { min-height: 72px; width: 100%; box-sizing: border-box; }
