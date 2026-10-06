@@ -17,7 +17,7 @@
  */
 
 import { db } from "@/db";
-import { newsBriefs, weeklyBriefs } from "@/db/schema";
+import { newsBriefs, todos, weeklyBriefs } from "@/db/schema";
 import { and, between, desc, eq, sql } from "drizzle-orm";
 import { noDash } from "@/lib/utils";
 import type { NewsBrief, NewsStory } from "@/lib/news-brief";
@@ -165,6 +165,23 @@ ${JSON.stringify(items)}`, 3200);
   }));
 }
 
+/**
+ * A personal to-do for the week's brief (Ali 2026-10-06: "an automatic to-do is created,
+ * read or listen to the weekly brief, I can check it done or postpone it, I have a week").
+ * clientId is deterministic per week so this never duplicates; it only INSERTS, so a tick,
+ * a postponed date or a deletion Ali makes is never overwritten by a later cron run.
+ */
+async function ensureWeeklyBriefTodo(userId: string, week: string, to: string): Promise<void> {
+  const clientId = `weekly-brief-${week}`;
+  const [existing] = await db.select({ id: todos.id }).from(todos).where(eq(todos.clientId, clientId)).limit(1);
+  if (existing) return;
+  const now = Date.now();
+  await db.insert(todos).values({
+    userId, clientId, title: "Read or listen to the weekly brief", area: "personal",
+    dueDate: addDays(to, 7), createdAt: new Date(now), updatedAt: new Date(now),
+  }).catch(() => { /* a concurrent cron run already inserted it */ });
+}
+
 /** Build (once) the brief of the previous full week · returns the stored one when it exists. */
 export async function ensureWeeklyBrief(userId: string, opts: { week?: string; force?: boolean } = {}): Promise<WeeklyBrief | null> {
   await ensureTable();
@@ -172,7 +189,7 @@ export async function ensureWeeklyBrief(userId: string, opts: { week?: string; f
   const target = opts.week && isWeekKey(opts.week) ? { week: opts.week, ...weekRange(opts.week) } : briefWeek(today);
   if (!opts.force) {
     const have = await getWeeklyBrief(userId, target.week);
-    if (have) return have;
+    if (have) { await ensureWeeklyBriefTodo(userId, target.week, target.to); return have; }
   }
   const rows = await db.select({ date: newsBriefs.date, content: newsBriefs.content }).from(newsBriefs)
     .where(and(eq(newsBriefs.userId, userId), between(newsBriefs.date, target.from, target.to)));
@@ -196,6 +213,7 @@ export async function ensureWeeklyBrief(userId: string, opts: { week?: string; f
   await db.insert(weeklyBriefs).values({ userId, week: target.week, content })
     .onConflictDoUpdate({ target: [weeklyBriefs.userId, weeklyBriefs.week], set: { content } })
     .catch(async () => { await db.update(weeklyBriefs).set({ content }).where(and(eq(weeklyBriefs.userId, userId), eq(weeklyBriefs.week, target.week))); });
+  await ensureWeeklyBriefTodo(userId, target.week, target.to);
   return brief;
 }
 
