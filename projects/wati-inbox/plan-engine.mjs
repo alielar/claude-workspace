@@ -189,6 +189,11 @@ export function leadBlock(c) {
 // unticked whatever the model says. Only for leads not paused, only for steps within the next 24 h.
 const BLOCKER = /\b(prix|tarif|budget|cher|ch[èe]re|on[ée]reux|financ\w*|argent|euros?|€|timing|le temps|emploi du temps|m[ée]thode|r[ée]fl[ée]chir|pas int[ée]ress)/i;
 const EXTENDED = /prolong|garder (votre|sa|la) place|un jour de plus|d[ée]lai [^.]*jusqu|place (reste|est) (gard|r[ée]serv|bloqu)|repousser la cl[ôo]ture/i;
+// The lead committed to finalise / pay at a given moment (Sefedine, 2026-10-06: « je m'en occupe dans l'après-midi sans faute » and the
+// plan let « Vous avez pu y réfléchir ? » go out at 17:00). A commitment verb plus a moment, in a lead message of the last 24 h.
+const COMMIT_VERB = /(m.?en occupe|m.?inscri\w*|finalis\w*|r[ée]gl\w*|paie\w*|payer|proc[ée]d\w*|valid\w*|je (le |la )?fais|je vais (le |la )?faire|faire l.action)/i;
+const COMMIT_WHEN = /(apr[èe]s[- ]midi|ce soir|aujourd.hui|demain|tout [àa] l.heure|dans la (journ[ée]e|soir[ée]e|matin[ée]e)|d.ici (ce soir|demain|\d)|avant \d{1,2} ?h|sans faute|ce week-end|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|dans l.heure|en rentrant)/i;
+const committed = (m) => COMMIT_VERB.test(m) && COMMIT_WHEN.test(m) && !/\b(pas|plus|jamais)\b[^.]{0,20}(finalis|inscri|pai|régl)/i.test(m);
 export function preChecks(c, now = Date.now()) {
   if (c.paused) return [];
   const msgs = c.msgs || [];
@@ -197,9 +202,11 @@ export function preChecks(c, now = Date.now()) {
   const ali = (h, re) => msgs.some((m) => m.who !== 'LEAD' && !m.tpl && m.at > since(h) && re.test(m.text || ''));
   const steps = upcomingOf(c).filter((u) => u.scheduledAt && Date.parse(u.scheduledAt) > now - 15 * 60e3 && Date.parse(u.scheduledAt) < now + 24 * 3600e3).map((u) => ({ step: u.stepIndex ?? null, template: u.template, at: u.scheduledAt }));
   if (!steps.length && c.next_tpl && c.next_at && Date.parse(c.next_at) > now - 15 * 60e3 && Date.parse(c.next_at) < now + 24 * 3600e3) steps.push({ step: stepOf(c, c.next_tpl)?.stepIndex ?? null, template: c.next_tpl, at: c.next_at });
+  const leadCommitted = msgs.some((m) => m.who === 'LEAD' && m.at > since(24) && committed(String(m.text || '')));
   const out = [];
   for (const s of steps) {
-    if (/tbc_reminder_3/.test(s.template)) {
+    if (leadCommitted && /tbc_reminder_2|tbc_reminder_3|tbc_recovery_waitlist/.test(s.template)) out.push({ ...s, why: 'il demande « vous avez pu y réfléchir ? » / « quelque chose vous retient ? » alors que le lead s’est engagé à finaliser à un moment précis ; la relance humaine est « Vous avez pu finaliser votre inscription ? » à son heure', title: 'lead committed to finalise, template asks if he thought about it' });
+    else if (/tbc_reminder_3/.test(s.template)) {
       if (leadSaid) out.push({ ...s, why: 'il pose la question diagnostic (prix, timing, méthode) alors que le lead a déjà nommé son blocage', title: 'blocker already named' });
       else if (ali(72, DIAGNOSTIC)) out.push({ ...s, why: 'il repose la question diagnostic qu’Ali a déjà posée à la main', title: 'repeats Ali’s own question' });
     } else if (/tbc_recovery_release/.test(s.template) && ali(36, EXTENDED)) out.push({ ...s, why: 'il annonce « j’ai gardé votre place un jour de plus » alors qu’Ali vient de prolonger la place lui-même (doublon)', title: 'place already extended by Ali' });
@@ -252,7 +259,8 @@ function store(c, it, { supersede = true } = {}) {
   if (c.noHub && ['pause', 'resume', 'fix'].includes(kind)) kind = bubbles.length ? 'followup' : 'wait'; // outside the Hub there is nothing to pause or resume
   // The fixed rules win over the model (2026-10-04: Andrea got « untick #3 », Andreea « templates run as is » for the same case).
   let forcedAt = null;
-  if ((kind === 'ok' || kind === 'wait') && !c.paused && (c.prechecks || []).length) { const p = c.prechecks[0]; kind = 'pause'; forcedAt = p.at; it = { ...it, pauseScope: 'next', skipTemplates: c.prechecks.map((x) => x.template), title: `Untick #${p.step ?? '?'}, ${p.title}` }; log(`${name || c.wa_id}: fixed rule → pause next (${p.title})`); }
+  // Forced on the first item of a judgement only: a « wait » added next to the model's own pause card must not become a second pause card (Sefedine, 2026-10-06).
+  if ((kind === 'ok' || kind === 'wait') && !c.paused && supersede && (c.prechecks || []).length) { const p = c.prechecks[0]; kind = 'pause'; forcedAt = p.at; it = { ...it, pauseScope: 'next', skipTemplates: c.prechecks.map((x) => x.template), title: `Untick #${p.step ?? '?'}, ${p.title}` }; log(`${name || c.wa_id}: fixed rule → pause next (${p.title})`); }
   let whenIso = forcedAt || madridIso(it.when) || (kind === 'pause' && c.next_at ? c.next_at : null);
   if (kind === 'wait' && whenIso && Date.parse(whenIso) <= Date.now() + 5 * 60e3) whenIso = null; // a time already past would re-judge every 5 min
   // A follow-up never goes on a round minute (Ali, 2026-10-04: « 14:00 pile » feels automated): 14:00 → 14:02-14:08.

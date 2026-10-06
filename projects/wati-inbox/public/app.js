@@ -541,10 +541,13 @@ function followupsHtml(d) {
       <div class="acts">${e ? `<button class="primary small" data-fusave="${f.id}">Save</button><button class="small" data-fuedit="${f.id}">Cancel</button>` : `<button class="small" data-fuedit="${f.id}">${f.template ? 'Change time' : 'Edit'}</button><button class="small" data-fudel="${f.id}">Don't send</button>`}</div></div>`; }).join('');
   const form = fuForm ? `<div class="card fu"><div class="opt-head">New follow-up at <input type="time" id="fuat" value="${esc(fuForm.at)}"> ${hubHint(d)}</div>
       <textarea id="futx" rows="4" placeholder="The follow-up. An empty line separates two bubbles">${esc(fuForm.text)}</textarea>
-      <div class="acts"><button class="primary small" id="fugo">Schedule</button><button class="small" id="fuclaude">Ask Claude for a draft</button><button class="small" id="fuclose">Cancel</button></div></div>`
+      <div class="muted small" id="fucount">${fuCountText(fuForm.text)}</div>
+      <div class="acts"><button class="primary small" id="fugo">Schedule</button><button class="small" id="fububble" type="button">+ bubble</button><button class="small" id="fuclaude">Ask Claude for a draft</button><button class="small" id="fuclose">Cancel</button></div></div>`
     : d.windowOpen ? `<div class="row"><button class="small" id="fuopen">+ ${d.suggestion?.options?.[0]?.bubbles?.length ? 'Another follow-up' : 'Schedule a follow-up'}</button></div>` : '';
   return goneHtml + pendHtml + form;
 }
+// What the follow-up box will send: how many bubbles, 10-15 s apart. An empty line = a new bubble, like the composer.
+const fuCountText = (text) => { const n = splitBubbles(text).length; return n > 1 ? `${n} bubbles, sent 10-15 s apart · an empty line starts a new bubble` : 'One bubble · an empty line (or + bubble) starts a second one'; };
 function bindFollowups(waId, d, redraw, askClaude) {
   const call = async (url, method, body) => { try { await schedule(url, method, body); return true; } catch (e) { toast(e.message); return false; } };
   document.querySelectorAll('[data-fuseen]').forEach((b) => b.onclick = async () => { if (await call(`/api/thread/${waId}/followups/${b.dataset.fuseen}/seen`, 'POST', {})) redraw(); });
@@ -556,7 +559,9 @@ function bindFollowups(waId, d, redraw, askClaude) {
   if ($('#fuopen')) $('#fuopen').onclick = () => { fuForm = { at: defaultSlot(), text: '' }; redraw(); };
   if ($('#fuclose')) $('#fuclose').onclick = () => { fuForm = null; redraw(); };
   if ($('#fuat')) $('#fuat').oninput = (e) => { fuForm.at = e.target.value; };
-  if ($('#futx')) $('#futx').oninput = (e) => { fuForm.text = e.target.value; };
+  if ($('#futx')) $('#futx').oninput = (e) => { fuForm.text = e.target.value; if ($('#fucount')) $('#fucount').textContent = fuCountText(fuForm.text); };
+  // "+ bubble" (Ali, 2026-10-06: he did not see that an empty line makes a second bubble): opens a new bubble at the end and keeps the focus.
+  if ($('#fububble')) $('#fububble').onclick = () => { const ta = $('#futx'); if (!ta) return; fuForm.text = fuForm.text.replace(/\s+$/, '') + (fuForm.text.trim() ? '\n\n' : ''); ta.value = fuForm.text; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); if ($('#fucount')) $('#fucount').textContent = fuCountText(fuForm.text); };
   if ($('#fugo')) $('#fugo').onclick = async () => { const bubbles = splitBubbles(fuForm.text); if (!bubbles.length) { toast('Write the follow-up first'); return; } if (await call(`/api/thread/${waId}/followups`, 'POST', { at: fuForm.at, bubbles })) { toast(`Scheduled for ${fuForm.at}`); fuForm = null; redraw(); } };
   // Claude drafts it in the draft card; « Schedule » there turns it into this follow-up at the time chosen here.
   if ($('#fuclaude')) $('#fuclaude').onclick = () => { schedDraft = fuForm.at; const at = fuForm.at, idea = fuForm.text.trim(); fuForm = null; askClaude({ moves: ['relance'], instruction: `Relance à programmer pour ${at} si le lead n'a pas répondu d'ici là : courte, directe, tirée de ce qu'on sait déjà du fil, une seule question.${idea ? ' Idée d’Ali : ' + idea : ''}` }); };
