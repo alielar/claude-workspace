@@ -346,7 +346,7 @@ export default function TodoPage() {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const el = e.target as HTMLElement | null;
       const typing = !!el?.closest("input, textarea, select, [contenteditable]");
-      if (e.key === "Escape") { if (typing) { el?.blur(); return; } if (cursor) setCursor(null); return; }
+      if (e.key === "Escape") { if (open || draft) return; if (typing) { el?.blur(); return; } if (cursor) setCursor(null); return; }
       if (typing || open || draft || document.querySelector(".cc-pal.open")) return;
       if (e.key === "n") { e.preventDefault(); inputRef.current?.focus(); return; }
       if (e.key === "j" || e.key === "ArrowDown" || e.key === "k" || e.key === "ArrowUp") {

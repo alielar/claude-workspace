@@ -87,11 +87,25 @@ export function SheetFrame({ label, onClose, fill = false, children }: { label: 
   // globals.css · its top bar names it, widens it (remembered, Ali 2026-10-07) and closes it.
   const [wide, setWide] = useState(() => { try { return localStorage.getItem(WIDE_KEY) === "1"; } catch { return false; } });
   const toggleWide = () => setWide((w) => { try { localStorage.setItem(WIDE_KEY, w ? "0" : "1"); } catch { /* ignore */ } return !w; });
+  // Esc closes (and the sheet's own close saves what was typed) · the newest sheet on screen takes it.
+  const closeRef = useRef(onClose);
+  useEffect(() => { closeRef.current = onClose; }, [onClose]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || document.querySelector(".cc-pal.open")) return;
+      const panels = document.querySelectorAll(".cc-sheet-panel");
+      if (panels[panels.length - 1] !== panelRef.current) return;
+      e.preventDefault(); e.stopPropagation(); closeRef.current();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, []);
+  const panelRef = useRef<HTMLDivElement>(null);
   return (
     <>
       <div className="cc-sheet-veil" onClick={onClose} />
       <div className="cc-sheet-wrap" style={{ top: vv.top, height: vv.height }}>
-        <div role="dialog" aria-label={label} className={`cc-sheet-panel${fill ? " fill" : ""}${wide ? " wide" : ""}`}>
+        <div ref={panelRef} role="dialog" aria-label={label} className={`cc-sheet-panel${fill ? " fill" : ""}${wide ? " wide" : ""}`}>
           <div className="cc-sheet-top">
             <span className="lbl">{label}</span>
             <button type="button" onClick={toggleWide} aria-label={wide ? "Narrower" : "Wider"} aria-pressed={wide} title={wide ? "Narrower" : "Wider"}>

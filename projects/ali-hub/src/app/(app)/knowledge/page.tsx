@@ -130,7 +130,7 @@ export default function KnowledgePage() {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const el = e.target as HTMLElement | null;
       const typing = !!el?.closest("input, textarea, select, [contenteditable]");
-      if (e.key === "Escape") { if (typing) { (el as HTMLElement).blur(); return; } if (openId) { setOpenId(null); return; } if (cursor) setCursor(null); return; }
+      if (e.key === "Escape") { if (openId || draft || editing) return; if (typing) { (el as HTMLElement).blur(); return; } if (cursor) setCursor(null); return; }
       if (typing || draft || editing || document.querySelector(".cc-pal.open")) return;
       if (e.key === "/") { e.preventDefault(); searchRef.current?.focus(); return; }
       if (e.key === "n") { e.preventDefault(); inputRef.current?.focus(); return; }
