@@ -21,6 +21,7 @@
  */
 
 import { getDict, joinText, registerStopper, setDict } from "./store";
+import { setLevel } from "./level";
 
 const RATE = 16000;
 const DG_URL = `wss://api.deepgram.com/v1/listen?${new URLSearchParams({
@@ -223,6 +224,7 @@ export async function startDictation(): Promise<void> {
   cur = s;
   proc.onaudioprocess = (e) => {
     const input = e.inputBuffer.getChannelData(0);
+    { let sum = 0; for (let i = 0; i < input.length; i += 4) sum += input[i] * input[i]; setLevel(Math.sqrt(sum / (input.length / 4))); } // the waveform on R2-D2
     const buf = downsample(input, ctx.sampleRate);
     e.outputBuffer.getChannelData(0).fill(0);
     if (s.mode === "phrase") { phraseFrame(s, input, buf, ctx.sampleRate); return; }

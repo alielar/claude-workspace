@@ -6,6 +6,8 @@
  * thumbnail or title opens YouTube and marks NOTHING (Ali 2026-10-04: "I click it and come back,
  * I didn't finish it"); the tick on the right marks it watched by hand, and unmarks it again.
  * Every card shows the length when YouTube has given it.
+ * VideoTile (REDESIGN 2026-10-07) = the laptop's grid card: a tap PLAYS the video inside the hub
+ * (News' player) and marks it watched; the tick still undoes it.
  */
 
 import { watchUrl } from "@/lib/news/useVideos";
@@ -78,6 +80,26 @@ export function VideoRow({ v, onWatch, now, label, last = false }: { v: Video; o
         <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>{label ? <span style={{ color: "var(--violet)", fontWeight: 500 }}>{label} · </span> : null}{v.channel} · {ago(v.publishedAt, now)}{v.durationSec ? ` · ${fmtLen(v.durationSec)}` : " · length soon"}</span>
       </a>
       <WatchedTick on={v.watched} onToggle={() => onWatch(v.videoId, !v.watched)} label={v.title} />
+    </div>
+  );
+}
+
+/** The laptop's grid card · a tap plays it in the hub's own player. */
+export function VideoTile({ v, label, onPlay, onWatch, now, playing = false }: { v: Video; label?: string; onPlay: (v: Video) => void; onWatch: (id: string, watched: boolean) => void; now: number; playing?: boolean }) {
+  return (
+    <div className={`news-tile${v.watched ? " watched" : ""}${playing ? " playing" : ""}`}>
+      <button type="button" className="news-tile-thumb" onClick={() => onPlay(v)} aria-label={`Play ${v.title}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail */}
+        <img src={v.thumbnail} alt="" loading="lazy" decoding="async" />
+        {label && <span className="news-tile-label">{label}</span>}
+        {v.durationSec ? <span className="news-tile-len">{fmtLen(v.durationSec)}</span> : null}
+        <span className="news-tile-play" aria-hidden>{playing ? "playing" : "▶"}</span>
+      </button>
+      <div className="news-tile-meta">
+        <button type="button" className="news-tile-title" onClick={() => onPlay(v)}>{v.title}</button>
+        <span className="news-tile-sub">{v.channel} · {ago(v.publishedAt, now)}{v.durationSec ? ` · ${fmtLen(v.durationSec)}` : ""}{v.watched ? " · watched" : ""}</span>
+        <span className="news-tile-tick"><WatchedTick on={v.watched} onToggle={() => onWatch(v.videoId, !v.watched)} label={v.title} /></span>
+      </div>
     </div>
   );
 }

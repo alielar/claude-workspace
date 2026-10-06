@@ -5,9 +5,12 @@
  * the tap gesture, so iOS allows it.
  */
 
+import { soundsOn } from "@/lib/sounds";
+
 let ctx: AudioContext | null = null;
 
 export function playDoneSound() {
+  if (!soundsOn()) return; // Settings → Sounds (2026-10-07)
   try {
     if (!ctx) ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     if (ctx.state === "suspended") ctx.resume().catch(() => {});

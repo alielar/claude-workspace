@@ -14,6 +14,10 @@
  * from /api/fix/image and kept by the browser), so the saved copy fits and paints at once; the
  * composer rides on the keyboard; dictation shows the words as they are heard.
  * Behind the login gate: the page and /api/fix both need the session cookie.
+ * REDESIGN 2026-10-07 (Ali: "more interactive, it feels robotic"): a released batch becomes a BATCH
+ * CARD at the foot of the thread (queued → building → live as steps, the elapsed time, the Mac's
+ * heartbeat, its last note) · a reply that lands gets its "shipped" moment (`fix-landed`, a green
+ * rise) · dictation shows a live WAVEFORM from the microphone's level (`dictation/level.ts`).
  */
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
@@ -23,6 +27,7 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import { composed, isDictating, setDict, useDict } from "@/lib/dictation/store";
 import { startDictation, stopListening } from "@/lib/dictation/engine";
 import { useKeyboardInset } from "../todo/sheet";
+import { getLevel } from "@/lib/dictation/level";
 import { MAX_IMAGES, MAX_IMAGE_BYTES, MAX_TEXT, newFixId, type FixFeed, type FixRequest, type FixStatus } from "@/lib/fix/types";
 
 const TZ = "Europe/Madrid";
@@ -76,6 +81,56 @@ const stamp = () => Date.now();
 
 const STATUS_LABEL: Record<FixStatus, string> = { held: "Waiting", queued: "On its way", building: "Building", shipped: "Live", failed: "Needs you", skipped: "Cancelled" };
 
+/** The microphone as 18 bars · reads the level each frame, no React state per frame. */
+function Waveform() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let raf = 0; const hist: number[] = Array(18).fill(0);
+    const tick = () => {
+      hist.push(getLevel()); hist.shift();
+      const bars = ref.current?.children;
+      if (bars) for (let i = 0; i < bars.length; i++) (bars[i] as HTMLElement).style.transform = `scaleY(${Math.max(0.12, Math.min(1, hist[i] * 1.6))})`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return <div ref={ref} className="fix-wave" aria-hidden>{Array.from({ length: 18 }, (_, i) => <span key={i} />)}</div>;
+}
+
+/** A released batch · the requests on their way or being built, as one card with steps and the Mac's pulse. */
+function BatchCard({ items, worker, now }: { items: FixRequest[]; worker: FixFeed["worker"]; now: number }) {
+  const building = items.some((r) => r.status === "building");
+  const started = items.map((r) => r.startedAt).filter((t): t is number => t !== null).sort()[0] ?? null;
+  const alive = worker.seenAt !== null && now - worker.seenAt < 2 * 60_000;
+  const step = (label: string, state: "done" | "on" | "todo") => (
+    <span className={`fix-step ${state}`}><i aria-hidden />{label}</span>
+  );
+  return (
+    <section className="cc-card fix-batch cc-rise">
+      <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span aria-hidden className={`fix-pulse${alive ? " on" : ""}`} />
+          <span style={{ fontSize: 15.5, fontWeight: 600 }}>{items.length} request{items.length === 1 ? "" : "s"} with the Mac</span>
+          <span className="cc-pill cc-pill-violet" style={{ fontSize: 12.5 }}>{building ? "building" : "queued"}</span>
+          <span style={{ flex: 1 }} />
+          <span className="tabular-nums" style={{ fontSize: 13, color: "var(--ink-3)" }}>{building && started ? elapsed(started, now) : alive ? "Mac listening" : worker.seenAt ? `Mac last seen ${ago(worker.seenAt, now)}` : "Mac not connected"}</span>
+        </div>
+        <div className="fix-steps">
+          {step("Queued", "done")}
+          {step("Building", building ? "on" : "todo")}
+          {step("Live", "todo")}
+        </div>
+        <div className={`fix-bar${building ? " on" : ""}`} aria-hidden><i /></div>
+        <div style={{ fontSize: 13.5, color: "var(--ink-3)", lineHeight: 1.45 }}>
+          {building ? `Claude is reading the request${items.length === 1 ? "" : "s"}, editing, building and shipping · one deploy, one reply each. Usually 5 to 20 minutes.` : alive ? "The Mac picks it up within 30 seconds." : "Waiting for the Mac to wake up · the batch stays queued."}
+          {worker.note ? ` ${worker.note}` : ""}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function AlaiPage() {
   // true only on the client after hydration (the composer is portalled into <body>)
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
@@ -88,6 +143,10 @@ export default function AlaiPage() {
   const requests = feed.data?.requests ?? [];
   const worker = feed.data?.worker ?? { seenAt: null, note: null };
   const active = requests.some((r) => r.status === "queued" || r.status === "building");
+  const inFlight = requests.filter((r) => r.status === "queued" || r.status === "building");
+  // The shipped moment: a reply that landed in the last half minute rises in green (the page polls
+  // every 6 s while a batch runs, so the reply is seen within seconds of its finish).
+  const justLanded = (r: FixRequest) => r.status === "shipped" && r.finishedAt !== null && now - r.finishedAt < 30_000;
 
   // While something is queued or building, ask again every 6 s (the 45 s default is for calm lists).
   useEffect(() => {
@@ -285,7 +344,8 @@ export default function AlaiPage() {
 
       {/* The thread */}
       <div style={{ display: "grid", gap: 18 }}>
-        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} onEdit={(t) => editText(r.id, t)} />)}
+        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} landed={justLanded(r)} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} onEdit={(t) => editText(r.id, t)} />)}
+        {inFlight.length > 0 && <BatchCard items={inFlight} worker={worker} now={now} />}
         <div ref={endRef} />
       </div>
 
@@ -308,9 +368,10 @@ export default function AlaiPage() {
             {err && <div style={{ fontSize: 13.5, color: "var(--neg)" }}>{err}</div>}
             {dict.status === "error" && dict.error && <div style={{ fontSize: 13.5, color: "var(--warn)" }}>{dict.error}</div>}
             {dictating && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--ink-3)", minHeight: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "var(--ink-3)", minHeight: 28 }}>
                 <span aria-hidden className="dict-dot" />
                 <span>{dict.status === "connecting" ? "Starting" : dict.status === "stopping" ? "Finishing" : "Listening"}</span>
+                <Waveform />
                 <span className="tabular-nums" style={{ fontFamily: "var(--f-mono)" }}>{Math.floor(listenSec / 60)}:{String(listenSec % 60).padStart(2, "0")}</span>
               </div>
             )}
@@ -379,7 +440,7 @@ export default function AlaiPage() {
 }
 
 /** One request: Ali's bubble on the right, the status line under it, the reply on the left once built. */
-function Bubble({ r, now, onZoom, onCancel, onRetry, onEdit }: { r: FixRequest; now: number; onZoom: (src: string) => void; onCancel: () => void; onRetry: () => void; onEdit: (text: string) => Promise<boolean> }) {
+function Bubble({ r, now, landed = false, onZoom, onCancel, onRetry, onEdit }: { r: FixRequest; now: number; landed?: boolean; onZoom: (src: string) => void; onCancel: () => void; onRetry: () => void; onEdit: (text: string) => Promise<boolean> }) {
   const [draft, setDraft] = useState<string | null>(null); // non-null = editing
   const editing = draft !== null && r.status === "held";
   const editRef = useRef<HTMLTextAreaElement>(null);
@@ -440,7 +501,8 @@ function Bubble({ r, now, onZoom, onCancel, onRetry, onEdit }: { r: FixRequest; 
 
       {/* The worker's reply */}
       {r.reply && r.status !== "held" && r.status !== "queued" && r.status !== "building" && (
-        <div style={{ justifySelf: "start", maxWidth: "88%", background: "var(--bg-card)", border: "1px solid var(--line)", borderLeft: `3px solid ${tone}`, padding: "10px 14px", borderRadius: "6px 18px 18px 18px", fontSize: 15.5, lineHeight: 1.5, color: "var(--ink)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", WebkitUserSelect: "text", userSelect: "text" }}>
+        <div className={landed ? "fix-landed" : undefined} style={{ justifySelf: "start", maxWidth: "88%", background: "var(--bg-card)", border: "1px solid var(--line)", borderLeft: `3px solid ${tone}`, padding: "10px 14px", borderRadius: "6px 18px 18px 18px", fontSize: 15.5, lineHeight: 1.5, color: "var(--ink)", whiteSpace: "pre-wrap", overflowWrap: "anywhere", WebkitUserSelect: "text", userSelect: "text", boxShadow: "var(--shadow-card)" }}>
+          {r.status === "shipped" && <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--pos)", marginBottom: 4 }}>Shipped{r.finishedAt ? ` · ${fmtWhen(r.finishedAt)}` : ""}</span>}
           <Linkify text={r.reply} />
         </div>
       )}

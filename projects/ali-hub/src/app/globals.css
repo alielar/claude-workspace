@@ -1320,3 +1320,45 @@ body:has(.todo-addbar) .dict-pill { bottom: calc(var(--tabbar-h) + env(safe-area
 .cc-rise:nth-child(2) { animation-delay: .05s; } .cc-rise:nth-child(3) { animation-delay: .1s; } .cc-rise:nth-child(4) { animation-delay: .15s; } .cc-rise:nth-child(5) { animation-delay: .2s; }
 .cc-press { transition: transform var(--t-2) var(--spring); } .cc-press:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .cc-rise, .cc-pal, .cc-kfab { animation: none !important; transition: none !important; } }
+
+/* ─── News on the laptop (REDESIGN 2026-10-07) · the grid and the player ── */
+.news-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+@media (max-width: 999px) { .news-grid { grid-template-columns: 1fr; } }
+.news-tile { display: grid; gap: 8px; min-width: 0; transition: opacity var(--t-2) var(--easeOut); }
+.news-tile.watched { opacity: .55; }
+.news-tile-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: var(--fill-2); border: none; padding: 0; cursor: pointer; }
+.news-tile-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--easeOut); }
+.news-tile-thumb:hover img { transform: scale(1.04); }
+.news-tile-label { position: absolute; left: 8px; top: 8px; font-size: 12px; font-weight: 600; color: #fff; background: rgba(0,0,0,.55); padding: 3px 7px; border-radius: 6px; }
+.news-tile-len { position: absolute; right: 8px; bottom: 8px; font: 600 12px var(--f-mono); color: #fff; background: rgba(0,0,0,.7); padding: 2px 6px; border-radius: 5px; }
+.news-tile-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.9); width: 46px; height: 46px; border-radius: 99px; background: rgba(0,0,0,.6); color: #fff; display: grid; place-items: center; font-size: 17px; padding-left: 3px; opacity: 0; transition: opacity var(--t-2) var(--easeOut), transform var(--t-2) var(--spring); }
+.news-tile-thumb:hover .news-tile-play, .news-tile.playing .news-tile-play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.news-tile.playing .news-tile-play { width: auto; padding: 0 12px; font-size: 13px; font-weight: 600; background: var(--violet); color: var(--on-accent); }
+.news-tile.playing .news-tile-thumb { outline: 2px solid var(--violet); outline-offset: 2px; }
+.news-tile-meta { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 6px; align-items: start; }
+.news-tile-title { grid-column: 1; background: none; border: none; padding: 0; font: inherit; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ink); text-align: left; cursor: pointer; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.news-tile-sub { grid-column: 1; font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+.news-tile-tick { grid-column: 2; grid-row: 1 / span 2; margin: -10px -8px 0 0; }
+.news-player { overflow: hidden; }
+.news-player-box { aspect-ratio: 16 / 9; background: #000; } /* video black · the one literal, the player's own ground */
+.news-player-box iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* ─── R2-D2 (REDESIGN 2026-10-07) · the batch card, the shipped moment, the waveform ── */
+.fix-batch { border-color: var(--violet); }
+.fix-pulse { width: 10px; height: 10px; border-radius: 99px; background: var(--ink-4); flex: 0 0 auto; }
+.fix-pulse.on { background: var(--pos); box-shadow: 0 0 0 0 var(--pos-soft); animation: fix-heart 1.6s ease-out infinite; }
+@keyframes fix-heart { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pos) 45%, transparent); } 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.fix-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.fix-step { display: grid; gap: 6px; font-size: 13px; color: var(--ink-4); }
+.fix-step i { display: block; height: 5px; border-radius: 3px; background: var(--fill-3); }
+.fix-step.done { color: var(--ink-2); } .fix-step.done i { background: var(--pos); }
+.fix-step.on { color: var(--ink); font-weight: 600; } .fix-step.on i { background: var(--violet); }
+.fix-bar { height: 4px; border-radius: 2px; background: var(--fill-2); overflow: hidden; }
+.fix-bar i { display: block; height: 100%; width: 35%; border-radius: 2px; background: var(--violet); opacity: 0; }
+.fix-bar.on i { opacity: 1; animation: fix-run 1.6s var(--easeOut) infinite; }
+@keyframes fix-run { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+@keyframes fix-land { 0% { transform: translateY(10px) scale(.98); box-shadow: 0 0 0 0 color-mix(in srgb, var(--pos) 55%, transparent); } 40% { transform: none; } 100% { box-shadow: 0 0 0 14px transparent; } }
+.fix-landed { animation: fix-land 1.2s var(--spring) both; border-left-color: var(--pos) !important; }
+.fix-wave { display: flex; align-items: center; gap: 2px; height: 22px; flex: 1; min-width: 60px; max-width: 160px; }
+.fix-wave span { flex: 1; height: 100%; border-radius: 2px; background: var(--violet); transform: scaleY(.12); transform-origin: center; transition: transform 90ms linear; }
+@media (prefers-reduced-motion: reduce) { .fix-pulse.on, .fix-bar.on i, .fix-landed { animation: none !important; } .fix-wave span { transition: none; } }

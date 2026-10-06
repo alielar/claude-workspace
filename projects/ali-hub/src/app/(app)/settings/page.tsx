@@ -9,6 +9,9 @@
  * morning clock live on /checklist, "Routine") · Widgets is one compact card · Apple Watch is
  * condensed to its status with the setup folded · Reminders is two buttons · one Update button
  * runs the database update and reloads the app.
+ * REDESIGN 2026-10-07 (the prototype's cut list): Books and Mobility rows are gone (Books from Today's
+ * read row, Mobility from Today and the m key), Widgets is one line inside App · NEW: Sounds (the tick
+ * chime, on by default, `cc-sounds`) and the keyboard shortcuts list (laptop only, `src/lib/shortcuts.ts`).
  */
 
 import { useEffect, useState } from "react";
@@ -20,6 +23,7 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 import { metricWords, pipeNote, type PipeStatus } from "@/lib/health/client";
 import { ChannelsCard } from "@/components/news/ChannelsCard";
+import { soundsOn, setSoundsOn } from "@/lib/sounds";
 
 const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
   { key: "system", label: "Auto",  hint: "Phone by day · Night 20:00–07:00" },
@@ -231,6 +235,12 @@ function RemindersCard() {
 
 export default function SettingsPage() {
   const [theme, setTheme] = useTheme();
+  const [sounds, setSoundsState] = useState(true);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
+    setSoundsState(soundsOn());
+  }, []);
+  const setSounds = (v: "on" | "off") => { setSoundsOn(v === "on"); setSoundsState(v === "on"); };
   const standalone = useClientValue(
     () => window.matchMedia("(display-mode: standalone)").matches
        || ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true),
@@ -272,27 +282,20 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Sounds · the chime on a ticked to-do or routine step (Ali 2026-10-07: "sounds as a setting") */}
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Sounds</span><span className="tail">the tick chime</span></div>
+        <div className="cc-card-body">
+          <Segmented value={sounds ? "on" : "off"} options={[{ key: "on", label: "On" }, { key: "off", label: "Off" }]} onChange={setSounds} />
+        </div>
+      </section>
+
       {/* Routine · the weekly planner, the item details and the morning clock (was "Edit list" + "Morning routine") */}
       <DoorRow href="/checklist" label="Routine" />
 
       {/* YouTube channels · the fixed list behind News (daily picks + watch later) */}
       <ChannelsCard />
 
-      {/* Mobility player (route /stretch) · a second door, so it is reachable even when the Today row is ticked */}
-      <DoorRow href="/stretch" label="Mobility" />
-
-      {/* Widgets · one line; the Scriptable script is served by /api/widget/script when it is needed again */}
-      <section className="cc-card">
-        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-          <span>
-            <span style={{ display: "block", fontSize: 16, fontWeight: 500 }}>Widgets</span>
-            <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)" }}>Home screen · lock screen · Scriptable</span>
-          </span>
-          <span style={{ color: "var(--pos)", fontSize: 14 }}>set up</span>
-        </div>
-      </section>
-
-      <DoorRow href="/books" label="Books" />
 
       {!standalone && (
         <section className="cc-card">
@@ -343,6 +346,9 @@ export default function SettingsPage() {
         <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{updating ?? "database, then the app"}</span>
           <button className="cc-btn cc-btn-secondary" onClick={update} disabled={!!updating}>Update</button>
+        </div>
+        <div className="cc-card-body" style={{ paddingTop: 0, display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14, color: "var(--ink-3)" }}>
+          <span>Widgets · home screen · lock screen · Scriptable</span><span style={{ color: "var(--pos)" }}>set up</span>
         </div>
       </section>
     </div>

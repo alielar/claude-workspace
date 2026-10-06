@@ -23,6 +23,7 @@ import { ListSheet, SheetFrame, useKeyboardInset } from "../todo/sheet";
 import { EntryView } from "../todo/entry/EntryView";
 import { useTodos } from "@/lib/todo/useTodos";
 import { useBirthdays } from "@/lib/birthdays/useBirthdays";
+import { useLaptop } from "@/lib/useLaptop";
 import { daysUntil } from "@/lib/birthdays/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { docFormat, fmtDue, isSleeping, isUrlText, linkOf, linkSource, newTodoId, parseSubtasks, type Todo } from "@/lib/todo/types";
@@ -48,12 +49,6 @@ function firstLine(notes: string | null): string | null {
     if (l) return l;
   }
   return null;
-}
-
-/** The laptop (≥ 1000 px) opens entries in a pane; the phone goes full screen. Read once per resize. */
-function useLaptop(): boolean {
-  const sub = (cb: () => void) => { const m = window.matchMedia("(min-width: 1000px)"); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); };
-  return useSyncExternalStore(sub, () => window.matchMedia("(min-width: 1000px)").matches, () => false);
 }
 
 function EntryRow({ t, today, q, cur, onOpen }: { t: Todo; today: string; q: string; cur: boolean; onOpen: () => void }) {
