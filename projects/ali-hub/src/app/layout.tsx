@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Instrument_Sans } from "next/font/google";
 import "./globals.css";
+
+/** The UI face (redesign 2026-10-06) · self-hosted by next/font at build time, so it is cached by
+ * the service worker with the rest of /_next/static and works offline. `--font-ui` feeds --f-sans. */
+const uiFont = Instrument_Sans({ subsets: ["latin"], variable: "--font-ui", display: "swap", axes: ["wdth"] });
 import { SvgDefs } from "@/components/SvgDefs";
 
 export const metadata: Metadata = {
@@ -21,8 +26,8 @@ export const viewport: Viewport = {
   // in todo/sheet.tsx measures the keyboard and the bars follow it by hand.
   interactiveWidget: "resizes-content",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0B0B10" },
-    { media: "(prefers-color-scheme: light)", color: "#F3F4F7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D0E14" },
+    { media: "(prefers-color-scheme: light)", color: "#F2F2F7" },
   ],
 };
 
@@ -35,7 +40,7 @@ const THEME_BOOT = `try{var t=localStorage.getItem("cc-theme");var h=new Date().
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={uiFont.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
       </head>

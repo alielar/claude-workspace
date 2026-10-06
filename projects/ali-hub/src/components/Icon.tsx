@@ -4,7 +4,7 @@
  */
 
 import {
-  Sun, Newspaper, Settings, Target, ListChecks, Bot, HeartPulse, LayoutGrid,
+  Sun, Newspaper, Settings, Target, ListChecks, Bot, HeartPulse, LayoutGrid, FileText, Search, Plus, CornerDownLeft,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +17,10 @@ const ICONS = {
   r2d2:     Bot,    // the droid (ALAI renamed R2-D2, Ali 2026-10-03)
   health:   HeartPulse,
   other:    LayoutGrid,
+  knowledge: FileText,
+  search:   Search,
+  plus:     Plus,
+  enter:    CornerDownLeft,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

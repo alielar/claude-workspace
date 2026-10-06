@@ -231,8 +231,14 @@ export default function TodoPage() {
   const setText = (v: string) => { setTextState(v); setLiteral(false); };
   const [area, setAreaState] = useState<Area>("personal");
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
-    try { const a = localStorage.getItem("cc-todo-area"); if (a === "work" || a === "list") setAreaState(a); } catch { /* ignore */ }
+    try {
+      // The sidebar's Knowledge link opens /todo?area=list (2026-10-06); otherwise the last segment used.
+      const q = new URLSearchParams(window.location.search).get("area");
+      const a = q === "work" || q === "list" || q === "personal" ? q : localStorage.getItem("cc-todo-area");
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the URL and localStorage after mount
+      if (a === "work" || a === "list") setAreaState(a);
+      if (q) { localStorage.setItem("cc-todo-area", a ?? "personal"); window.history.replaceState(null, "", "/todo"); }
+    } catch { /* ignore */ }
   }, []);
   const setArea = (a: Area) => { setAreaState(a); setText(""); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
   const isLists = area === "list";

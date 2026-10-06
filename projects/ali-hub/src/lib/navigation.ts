@@ -1,55 +1,75 @@
 /**
- * Navigation · single source of truth for the tab bar (phone) and sidebar (desktop).
+ * Navigation · single source of truth for the phone tab bar, the laptop sidebar and the command bar.
  *
- * FOUR tabs on the phone (Ali 2026-10-03 "seven is too many" · 2026-10-04 R2-D2 moved into the
- * picker): Today · To-do · Other · Settings. "Other" is not a page: it opens a small picker with
- * News, Train, Health and R2-D2 (`OTHER`, in that order · R2-D2 last, "just below Health"). The
- * desktop rail has room, so it lists the four in place of the picker.
+ * REDESIGN 2026-10-06 (the prototype Ali approved):
+ *   Laptop sidebar · every section visible, in groups: Today · Work and life (To-do, Knowledge) ·
+ *                    Body (Train, Health) · Watch (News) · The app (R2-D2, Settings). ⌘1…⌘8 jump.
+ *   Phone tab bar  · Today · To-do · Train · News · More. "More" is not a page: it opens the picker
+ *                    with Health, Knowledge, R2-D2 and Settings (`OTHER`); while one of those is open
+ *                    the tab wears that section's icon and name.
  *
- * Archived modules (old gym workouts, library/notes, word bank, mood, sleep,
- * journal) are deliberately NOT here. They are reachable from /archive.
- * To restore one: add a line to OTHER below. That is the whole restore step.
+ * Knowledge is the To-do page's third segment (`/todo?area=list`, the page reads the query on mount).
+ * Archived modules are deliberately NOT here · reachable from /archive; to restore one, add a line.
  */
 
-export type IconKey = "today" | "news" | "settings" | "train" | "todo" | "r2d2" | "health" | "other";
+export type IconKey = "today" | "news" | "settings" | "train" | "todo" | "r2d2" | "health" | "other" | "knowledge";
 
 export type NavItem = {
   href: string;
   label: string;
   icon: IconKey;
   match?: string[]; // extra route prefixes that mark this item active
-  /** One quiet line under the label inside the Other picker. */
+  /** One quiet line under the label inside the More picker and the command bar. */
   hint?: string;
+  /** ⌘ + this key jumps there on the laptop. */
+  key?: string;
 };
 
-/** The sections behind the "Other" tab, in this order. */
-export const OTHER: NavItem[] = [
-  { href: "/news",   label: "News",   icon: "news",   match: ["/news", "/podcast"], hint: "Daily picks · watch later · football" },
-  { href: "/train",  label: "Train",  icon: "train",  hint: "Body · Mind" },
-  { href: "/health", label: "Health", icon: "health", hint: "Today's checkup" },
-  { href: "/r2d2",   label: "R2-D2",  icon: "r2d2",   match: ["/r2d2", "/alai", "/fix"], hint: "Ask for a change · shipped by the Mac" },
+export const TODAY: NavItem = { href: "/today", label: "Today", icon: "today", key: "1", match: ["/today", "/checklist", "/stretch", "/breathe", "/books"], hint: "The day, tomorrow, the picks" };
+export const TODO: NavItem = { href: "/todo", label: "To-do", icon: "todo", key: "2", match: ["/todo"], hint: "Personal · Work" };
+export const KNOWLEDGE: NavItem = { href: "/todo?area=list", label: "Knowledge", icon: "knowledge", key: "3", match: ["/vault", "/birthdays", "/todo/entry"], hint: "Entries · passwords · birthdays" };
+export const TRAIN: NavItem = { href: "/train", label: "Train", icon: "train", key: "4", match: ["/train"], hint: "This week · the coach · Body and Mind" };
+export const HEALTH: NavItem = { href: "/health", label: "Health", icon: "health", key: "5", match: ["/health"], hint: "Today's checkup" };
+export const NEWS: NavItem = { href: "/news", label: "News", icon: "news", key: "6", match: ["/news", "/podcast"], hint: "Picks · weekly brief · football" };
+export const R2D2: NavItem = { href: "/r2d2", label: "R2-D2", icon: "r2d2", key: "7", match: ["/r2d2", "/alai", "/fix"], hint: "Ask for a change · shipped by the Mac" };
+export const SETTINGS: NavItem = { href: "/settings", label: "Settings", icon: "settings", key: "8", match: ["/settings", "/archive"] };
+
+/** The laptop sidebar, in groups. */
+export const SIDEBAR: { label: string | null; items: NavItem[] }[] = [
+  { label: null, items: [TODAY] },
+  { label: "Work and life", items: [TODO, KNOWLEDGE] },
+  { label: "Body", items: [TRAIN, HEALTH] },
+  { label: "Watch", items: [NEWS] },
+  { label: "The app", items: [R2D2, SETTINGS] },
 ];
 
-/** The phone's tab bar. "Other" carries no page of its own: its href is the first section inside it. */
+/** Every section, flat, in sidebar order (the command bar's "Go to" list, ⌘1…⌘8). */
+export const ALL: NavItem[] = SIDEBAR.flatMap((g) => g.items);
+
+/** The sections behind the phone's "More" tab, in this order. */
+export const OTHER: NavItem[] = [HEALTH, KNOWLEDGE, R2D2, SETTINGS];
+
+/** The phone's tab bar. "More" carries no page of its own: its href is the first section inside it. */
 export const NAV: NavItem[] = [
-  { href: "/today",    label: "Today",    icon: "today",    match: ["/today", "/checklist", "/stretch", "/breathe", "/books"] },
-  { href: "/todo",     label: "To-do",    icon: "todo",     match: ["/todo", "/vault", "/birthdays"] },
-  { href: "/news",     label: "Other",    icon: "other",    match: OTHER.flatMap((o) => o.match ?? [o.href]) },
-  { href: "/settings", label: "Settings", icon: "settings", match: ["/settings", "/archive"] },
+  TODAY,
+  TODO,
+  TRAIN,
+  NEWS,
+  { href: "/health", label: "More", icon: "other", match: OTHER.flatMap((o) => o.match ?? [o.href]) },
 ];
 
-export const OTHER_TAB_HREF = "/news";
+export const OTHER_TAB_HREF = "/health";
 
-/** The desktop rail: the same order, with the Other picker unfolded. */
-export const RAIL: NavItem[] = NAV.flatMap((n) => (n.label === "Other" ? OTHER : [n]));
+/** Kept for older imports: the flat laptop list. */
+export const RAIL: NavItem[] = ALL;
 
 /** Whether a nav item is active for the current pathname. */
 export function isNavActive(item: NavItem, pathname: string): boolean {
-  const prefixes = item.match ?? [item.href];
+  const prefixes = item.match ?? [item.href.split("?")[0]];
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
-/** The Other section the current path belongs to, if any. */
+/** The More section the current path belongs to, if any. */
 export function otherSection(pathname: string): NavItem | null {
   return OTHER.find((o) => isNavActive(o, pathname)) ?? null;
 }

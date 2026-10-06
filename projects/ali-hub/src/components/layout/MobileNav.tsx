@@ -3,9 +3,9 @@
 /**
  * MobileNav · fixed bottom tab bar, phone only (hidden ≥768px via CSS).
  *
- * Five tabs (Ali 2026-10-03): Today · To-do · R2-D2 · Other · Settings. "Other" opens a small
- * picker above the bar with News, Train and Health; while one of those is open the tab wears
- * that section's own icon and name, so the bar always says where you are.
+ * Five tabs (redesign 2026-10-06): Today · To-do · Train · News · More. "More" opens a small picker
+ * above the bar with Health, Knowledge, R2-D2 and Settings; while one of those is open the tab
+ * wears that section's own icon and name, so the bar always says where you are.
  *
  * Feels instant: navigation fires on touchstart (not on the click that iOS delivers later), and
  * you can keep the finger down and SLIDE across the bar · the section under the finger opens as
