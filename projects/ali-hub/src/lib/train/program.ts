@@ -7,7 +7,7 @@
  *   Wed  Pull          · Speediance, upper body (back · biceps · rear delts · core)
  *   Thu  rest
  *   Fri  Long run      · easy, talking pace · three days after the sprints
- *   Sat  Kettlebell 30 · the full-body session he already keeps on Saturday
+ *   Sat  Functional 30 (the kettlebell AMRAP, "Kettlebell 30" until 2026-10-07) · the full-body session he already keeps on Saturday
  *   Sun  rest
  *
  * Why this order: the two machine days alternate with the runs so no muscle group works two
@@ -53,7 +53,7 @@ export const PROGRAM: ProgramSession[] = [
   { key: "sprint", kind: "run",      name: "Sprint run",    short: "Sprint", routineKey: "run-sprint", day: "tue", what: "10 min easy · 6 × 30 s fast, 90 s walk · 10 min easy · about 30 min", how: "Outdoor Run on the Watch · it lands here when the phone syncs.", href: "/train?body=runs", action: "Runs" },
   { key: "pull",   kind: "strength", name: "Pull",          short: "Pull",   routineKey: "gym-pull",   day: "wed", what: "Speediance · back, biceps, rear delts, core · 34 min", how: "Start Traditional Strength Training on the Watch when the machine starts.", href: "/train?body=strength", action: "Program" },
   { key: "long",   kind: "run",      name: "Long run",      short: "Long",   routineKey: "run-long",   day: "fri", what: "45 to 60 min at talking pace · the week's base", how: "Outdoor Run on the Watch · it lands here when the phone syncs.", href: "/train?body=runs", action: "Runs" },
-  { key: "kb",     kind: "kb",       name: "Kettlebell 30", short: "Bell",   routineKey: "gym-kb",     day: "sat", what: "AMRAP 30 · 11 moves · then 3 × 20 incline bench", how: "Press Start in the player; the round count is the log.", href: "/train/kb1", action: "Start" },
+  { key: "kb",     kind: "kb",       name: "Functional 30", short: "Func",   routineKey: "gym-kb",     day: "sat", what: "AMRAP 30 · 11 moves · then 3 × 20 incline bench", how: "Press Start in the player; the round count is the log.", href: "/train/kb1", action: "Start" },
 ];
 
 export const sessionByKey = (k: SessionKey) => PROGRAM.find((s) => s.key === k)!;
@@ -71,7 +71,7 @@ export function sessionOfRow(row: { routineKey?: string | null; title: string })
   if (/^pull\b/.test(t)) return sessionByKey("pull");
   if (/^sprint\b|^interval/.test(t)) return sessionByKey("sprint");
   if (/^long run\b|^long\b/.test(t)) return sessionByKey("long");
-  if (/^kettlebell\b|^kb\b/.test(t)) return sessionByKey("kb");
+  if (/^functional\b|^kettlebell\b|^kb\b/.test(t)) return sessionByKey("kb");
   return null;
 }
 

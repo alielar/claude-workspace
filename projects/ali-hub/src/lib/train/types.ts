@@ -218,7 +218,7 @@ export const KB1_RETIRED_IDS = ["snatch", "crush-thruster", "squat"];
 export const DEFAULT_WORKOUTS: TrainWorkout[] = [
   {
     key: "kb1",
-    name: "Kettlebell 30",
+    name: "Functional 30", // "Kettlebell 30" until 2026-10-07 (Ali: "rename Kettlebell → Functional")
     format: "amrap",
     amrapMinutes: 30,
     restSeconds: 0,     // 0 = no automatic rest between rounds · rest is the Rest button, whenever

@@ -1,16 +1,21 @@
 "use client";
 
 /**
- * /train · the Train tab · two halves, Body and Mind (Ali 2026-09-28), a switch under the title,
- * remembered on the phone (`cc-train-half`); `?mind=1` (Today's "Mental training" row) opens Mind.
- * BODY = three subsections (Ali 2026-09-29), a chip row, remembered in `cc-train-body`:
+ * /train · the Train tab · REDESIGN 2026-10-07 (the prototype Ali approved): SUMMARY FIRST.
+ * The "This week" hero = the seven-day strip, today's session with its button, readiness in plain
+ * words and the coach's Head skill of the week, in ONE card. Then four chips, remembered in
+ * `cc-train-body`: Runs · Strength · Functional · Mind (`?mind=1` from Today's row opens Mind; the
+ * Body · Mind switch is gone). Laptop (`.cc-wide` + `.cc-cols`): the hero and the chosen part on the
+ * left, Objectives · Coach · Notes · Last week on the right; the phone stacks the same order.
+ * THE PARTS (Ali 2026-09-29):
  *   Runs       · every Watch run (km · time · pace), this week's totals, 8 weeks of km as bars,
  *                walks and rides under "Other activity"; a row opens /train/run/<id>
  *   Strength   · the two Speediance programs (Push · Pull, src/lib/train/programs.ts) as cards with
  *                their moves and sets, matched to Watch strength workouts by weekday, then every
- *                Watch strength workout (a kettlebell day's is labelled Kettlebell 30)
- *   Kettlebell · everything about Kettlebell 30: week dots, rest day, the hero with Start,
- *                weekly bests (rounds), recent sessions
+ *                Watch strength workout (a functional day's is labelled Functional 30)
+ *   Functional · everything about Functional 30 ("Kettlebell 30" until 2026-10-07): week dots, rest
+ *                day, the hero with Start, weekly bests (rounds), recent sessions
+ *   Mind       · Mental Training · src/components/mind/MindPane.tsx
  * Above the three parts since 2026-10-04 (rebuilt the same evening around THE PROGRAM, program.ts ·
  * one session a day, Mon Push · Tue Sprint · Wed Pull · Fri Long run · Sat Kettlebell, from Monday
  * 2026-10-05): the WEEK STRIP (seven days, one session each), TODAY's session card (state, button,
@@ -39,8 +44,9 @@ import type { ChecklistData } from "@/lib/checklist/types";
 import { PROGRAMS } from "@/lib/train/programs";
 import { beforeProgram, readiness, trainInsights, weekPlan, weekReport } from "@/lib/train/insights";
 import { weekDaysFrom } from "@/lib/train/program";
-import { WeekStrip, TodayCard, NotesCard, ReportCard } from "@/components/train/WeekCards";
-import { ObjectivesCard, CoachCard } from "@/components/train/CoachCards";
+import { WeekStrip, TodayBlock, NotesCard, ReportCard } from "@/components/train/WeekCards";
+import { ObjectivesCard, CoachCard, HeadLine } from "@/components/train/CoachCards";
+import { signalColor } from "@/lib/health/client";
 import { ProgramCard } from "@/components/train/Programs";
 
 /** YYYY-MM-DD shifted by n days. */
@@ -124,28 +130,28 @@ function weekKm(runs: WorkoutRow[], today: string): { labels: string[]; km: numb
   return { labels: weeks.map((w, i) => (i === 7 ? "now" : `W${w.slice(-2).replace(/^0/, "")}`)), km, count };
 }
 
-type Half = "body" | "mind";
-type Part = "runs" | "strength" | "kettlebell";
-const PARTS: { key: Part; label: string }[] = [{ key: "runs", label: "Runs" }, { key: "strength", label: "Strength" }, { key: "kettlebell", label: "Kettlebell" }];
+type Part = "runs" | "strength" | "kettlebell" | "mind";
+const PARTS: { key: Part; label: string }[] = [{ key: "runs", label: "Runs" }, { key: "strength", label: "Strength" }, { key: "kettlebell", label: "Functional" }, { key: "mind", label: "Mind" }];
+const isPart = (v: string | null): v is Part => v === "runs" || v === "strength" || v === "kettlebell" || v === "mind";
 
 export default function TrainPage() {
-  const [half, setHalfState] = useState<Half>("body");
   const [part, setPartState] = useState<Part>("kettlebell");
   useEffect(() => {
-    let h: Half | null = null, p: Part | null = null;
+    let p: Part | null = null;
     try {
-      if (new URLSearchParams(window.location.search).get("mind") === "1") h = "mind";
-      else if (localStorage.getItem("cc-train-half") === "mind") h = "mind";
-      const want = new URLSearchParams(window.location.search).get("body");
-      const saved = want ?? localStorage.getItem("cc-train-body");
-      if (saved === "runs" || saved === "strength" || saved === "kettlebell") p = saved;
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("mind") === "1") p = "mind";
+      else {
+        const want = q.get("body");
+        const saved = (want === "functional" ? "kettlebell" : want) ?? localStorage.getItem("cc-train-body");
+        if (isPart(saved)) p = saved;
+      }
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the URL and localStorage after mount
-    if (h) setHalfState(h);
     if (p) setPartState(p);
   }, []);
-  const setHalf = (h: Half) => { setHalfState(h); try { localStorage.setItem("cc-train-half", h); } catch { /* ignore */ } };
   const setPart = (p: Part) => { setPartState(p); try { localStorage.setItem("cc-train-body", p); } catch { /* ignore */ } };
+  const half = part === "mind" ? "mind" : "body";
   const { data: health } = useHealthSummary();
   const watch = health?.workouts ?? [];
   const runs = watch.filter((w) => workoutKind(w.type) === "run");
@@ -211,8 +217,21 @@ export default function TrainPage() {
     ? `Last post from the phone ${new Date(lastPost).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}${nowMs - lastPost > 20 * 3600_000 ? ` on ${fmtDay(new Date(lastPost).toISOString().slice(0, 10), today).toLowerCase()}` : ""} · a new run lands when Health Auto Export syncs · tap its widget to sync now.`
     : null;
 
+  const progressData = { today, workouts: watch, kb: kbSessions, metrics: health?.metrics ?? null };
+  const missed = slots.filter((x) => x.state === "missed").length;
+  const chips = (
+    <div role="tablist" aria-label="Train" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      {PARTS.map((p) => (
+        <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill cc-press"
+          style={{ minHeight: 38, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "var(--bg-card)", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div style={{ display: "grid", gap: 18 }}>
+    <div className="cc-wide" style={{ display: "grid", gap: 18 }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Train</h1>
@@ -220,33 +239,27 @@ export default function TrainPage() {
         </div>
       </div>
 
-      <div role="tablist" aria-label="Train" style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", padding: 3, borderRadius: 12, background: "var(--fill-1)" }}>
-        <span aria-hidden style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: "calc(50% - 3px)", borderRadius: 9, background: "var(--bg-card)", boxShadow: "0 1px 2px rgba(0,0,0,.18)", transform: half === "mind" ? "translateX(100%)" : "none", transition: "transform var(--t-3) var(--easeOut)" }} />
-        {(["body", "mind"] as Half[]).map((h) => (
-          <button key={h} role="tab" aria-selected={half === h} onClick={() => setHalf(h)}
-            style={{ position: "relative", minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, background: "transparent", color: half === h ? "var(--ink)" : "var(--ink-3)", transition: "color var(--t-2) var(--easeOut)" }}>
-            {h === "body" ? "Body" : "Mind"}
-          </button>
-        ))}
-      </div>
+      <div className="cc-cols">
+      <div className="cc-stack">
+      {/* THE HERO · this week in one card: the strip, today, readiness, the head */}
+      <section className="cc-card cc-rise" style={{ borderColor: !before && todaySlot.session && todaySlot.state !== "done" ? "var(--violet)" : undefined }}>
+        <div className="cc-card-head"><span className="title">This week</span><span className="tail tabular-nums">{before ? "starts Monday" : ov || health ? `${doneN} of ${plannedN} sessions` : "—"}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
+          <WeekStrip slots={slots} today={today} />
+          <TodayBlock slot={todaySlot} next={nextSlot} before={before} />
+          {ready.state !== "wait" && (
+            <div style={{ display: "grid", gridTemplateColumns: "10px 1fr", gap: 10, alignItems: "start" }}>
+              <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: signalColor(ready.state), marginTop: 7 }} />
+              <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}><strong style={{ color: "var(--ink)", fontWeight: 600 }}>{ready.title}.</strong> {ready.text}</span>
+            </div>
+          )}
+          <HeadLine data={progressData} nights={health?.nights ?? []} missedSessions={missed} />
+        </div>
+      </section>
 
-      {half === "mind" && <Reveal key="mind" i={0}><MindPane /></Reveal>}
+      {chips}
 
-      {half === "body" && <>
-      <Reveal key="week" i={0}><WeekStrip slots={slots} today={today} /></Reveal>
-      <Reveal key="today" i={1}><TodayCard slot={todaySlot} next={nextSlot} ready={ready} before={before} /></Reveal>
-      <Reveal key="notes" i={2}><NotesCard insights={insights} /></Reveal>
-      {/* The coach (spec §7c item 15): the objectives with live progress · src/components/train/CoachCards.tsx */}
-      <Reveal key="objectives" i={3}><ObjectivesCard data={{ today, workouts: watch, kb: kbSessions, metrics: health?.metrics ?? null }} /></Reveal>
-      {/* The three parts of Body · the details */}
-      <div role="tablist" aria-label="Body" style={{ display: "flex", gap: 8 }}>
-        {PARTS.map((p) => (
-          <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
-            style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
-            {p.label}
-          </button>
-        ))}
-      </div>
+      {part === "mind" && <Reveal key="mind" i={0}><MindPane /></Reveal>}
 
       {part === "runs" && <Reveal key="runs" i={0}><div style={{ display: "grid", gap: 18 }}>
         {runs.length > 0 && (
@@ -283,7 +296,7 @@ export default function TrainPage() {
           return <ProgramCard key={p.key} p={p} days={pDays} today={today} isToday={days[todayCode] === p.key} sessions={strength.filter((w) => programOf(w) === p.key)} />;
         })}
         <WatchCard title="On the Watch" tail={strength.length ? `${strengthWk} this week${lastStrengthWk ? ` · last week ${lastStrengthWk}` : ""}` : undefined} rows={strength} today={today}
-          noteFor={(w) => { const k = programOf(w); return k === "kb" ? "Kettlebell 30" : k === "push" ? "Push · Speediance" : k === "pull" ? "Pull · Speediance" : undefined; }}
+          noteFor={(w) => { const k = programOf(w); return k === "kb" ? "Functional 30" : k === "push" ? "Push · Speediance" : k === "pull" ? "Pull · Speediance" : undefined; }}
           empty={watchNote ?? "No strength sessions from the Watch yet. Start Traditional Strength Training on the Watch when the machine starts; it lands here after."} warn={!!watchNote} />
       </div></Reveal>}
 
@@ -399,11 +412,16 @@ export default function TrainPage() {
         </div>
       </section>
       </div></Reveal>}
-      {/* The coach: this week's Head skill and the Sunday report's door */}
-      <CoachCard data={{ today, workouts: watch, kb: kbSessions, metrics: health?.metrics ?? null }} nights={health?.nights ?? []} missedSessions={slots.filter((s) => s.state === "missed").length} />
-      <ReportCard report={report} />
-      </>}
+      </div>
 
+      {/* The right column on the laptop · under everything on the phone */}
+      <div className="cc-stack">
+        <Reveal key="objectives" i={1}><ObjectivesCard data={progressData} /></Reveal>
+        <Reveal key="coach" i={2}><CoachCard /></Reveal>
+        <Reveal key="notes" i={3}><NotesCard insights={insights} /></Reveal>
+        <ReportCard report={report} />
+      </div>
+      </div>
     </div>
   );
 }

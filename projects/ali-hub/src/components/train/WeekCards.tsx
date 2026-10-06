@@ -94,6 +94,32 @@ export function TodayCard({ slot, next, ready, before }: { slot: DaySlot; next: 
   );
 }
 
+/**
+ * Today inside the "This week" hero (REDESIGN 2026-10-07, summary first): the session's name and
+ * what it is on the left, the Start button on the right · done = the numbers · rest = what is next.
+ */
+export function TodayBlock({ slot, next, before }: { slot: DaySlot; next: DaySlot | null; before: boolean }) {
+  const s = slot.session ? sessionByKey(slot.session) : null;
+  const n = next?.session ? sessionByKey(next.session) : null;
+  const title = before ? "New program from Monday" : !s ? "Rest day" : slot.state === "done" ? `${s.name} · done` : `${s.name} · today`;
+  const line = before ? `${PROGRAM.map((x) => `${x.name} ${DAY_LABELS[x.day]}`).join(" · ")}. One session a day, two rest days.`
+    : !s ? (n ? `Next: ${n.name} ${DAY_LABELS[next!.day]}.` : "Nothing planned this week.")
+    : slot.state === "done" ? (slot.detail ?? s.what)
+    : s.what;
+  const live = !before && s && slot.state !== "done";
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: live ? "minmax(0, 1fr) auto" : "minmax(0, 1fr)", gap: 12, alignItems: "center", padding: "12px 14px", borderRadius: 12, background: live ? "var(--accent-soft)" : "var(--fill-1)" }}>
+      <span style={{ display: "grid", gap: 3, minWidth: 0 }}>
+        <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.2, color: slot.state === "done" ? "var(--pos)" : "var(--ink)" }}>{title}</span>
+        <span style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.45 }}>{line}</span>
+        {live && <span style={{ fontSize: 13, color: "var(--ink-3)", lineHeight: 1.4 }}>{s.how}</span>}
+        {!before && slot.state === "done" && slot.hkId && <Link href={`/train/run/${encodeURIComponent(slot.hkId)}`} style={{ fontSize: 14, color: "var(--violet)", textDecoration: "none", minHeight: 32, display: "inline-flex", alignItems: "center" }}>Open the session ›</Link>}
+      </span>
+      {live && <Link href={s.href} className="cc-btn cc-btn-primary" style={{ minHeight: 46, padding: "0 18px", fontSize: 16, borderRadius: 12, textDecoration: "none", whiteSpace: "nowrap" }}>{s.action}</Link>}
+    </div>
+  );
+}
+
 /** What the numbers say · up to three lines, folded into one quiet card. */
 export function NotesCard({ insights }: { insights: TrainInsight[] }) {
   if (!insights.length) return null;

@@ -90,7 +90,7 @@ export const ROUTINE_SEED: {
   { routineKey: "run-sprint", title: "Sprint run",        emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "10 min easy · 6 × 30 s fast, 90 s walk · 10 min easy", sortOrder: -45, weekdays: ["tue"] },
   { routineKey: "gym-pull",   title: "Pull · Speediance", emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "back · biceps · rear delts · core · 34 min", sortOrder: -45, weekdays: ["wed"] },
   { routineKey: "run-long",   title: "Long run",          emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "45 to 60 min · talking pace", sortOrder: -45, weekdays: ["fri"] },
-  { routineKey: "gym-kb",     title: "Kettlebell",        emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 30 · 11 moves", sortOrder: -45, weekdays: ["sat"] },
+  { routineKey: "gym-kb",     title: "Functional",        emoji: "", timeOfDay: "morning", kind: "manual", color: "cyan", notes: "AMRAP 30 · 11 moves", sortOrder: -45, weekdays: ["sat"] },
   { routineKey: "breathe", title: "Wim Hof breathing",   emoji: "🫁", timeOfDay: "morning", kind: "routine", color: "cyan",   notes: `30 breaths · ${BREATHING_VIDEO_URL}`, sortOrder: -40 },
   { routineKey: "supp-am", title: "Morning supplements", emoji: "💊", timeOfDay: "morning", kind: "routine", color: "green",  notes: "Zinc · Omega-3 · Creatine", sortOrder: -30 },
   // Mental Training (Ali's ALAI spec 2026-09-27, built 2026-09-28): 4 a week, weekdays by default,

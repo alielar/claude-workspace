@@ -119,7 +119,7 @@ const line = (n: WeekNumbers, missed: number, planned: number) => [
   `Week ${n.from} to ${n.to}. Sessions done: ${n.sessionDays} days with a session (${planned ? `${planned - missed} of ${planned} planned, ${missed} missed` : "no plan to judge against"}), strength days ${n.strengthDays}.`,
   `Runs: ${n.runs.n} (${n.runs.km} km, ${n.runs.pace ? `average pace ${fmtPace(n.runs.pace)}` : "no pace"}, longest ${n.runs.longestKm.toFixed(1)} km${n.runs.hardest ? `, hardest run ${n.runs.hardest.hrAvg ?? "?"} bpm average, ${n.runs.hardest.hrMax ?? "?"} max` : ""}). Last week: ${n.prev.runsN} runs, ${n.prev.runsKm} km.`,
   `Strength on the Watch: ${n.strength.n} sessions, ${n.strength.min} min${n.strength.hrAvg ? `, ${n.strength.hrAvg} bpm average` : ""}. Last week: ${n.prev.strengthN}.`,
-  `Kettlebell 30: ${n.kb.rounds !== null ? `${n.kb.rounds} rounds on ${n.kb.date}` : "not done"}${n.kb.best !== null ? ` (best in 8 weeks: ${n.kb.best})` : ""}. Last week: ${n.prev.kbRounds ?? "not done"}.`,
+  `Functional 30 (the kettlebell AMRAP): ${n.kb.rounds !== null ? `${n.kb.rounds} rounds on ${n.kb.date}` : "not done"}${n.kb.best !== null ? ` (best in 8 weeks: ${n.kb.best})` : ""}. Last week: ${n.prev.kbRounds ?? "not done"}.`,
   `Sleep: ${n.sleep.avgMin !== null ? `${fmtMin(Math.round(n.sleep.avgMin))} a night over ${n.sleep.nights} nights, ${n.sleep.shortNights} under 6 h 30` : "no nights recorded"}${n.prev.sleepAvgMin !== null ? `; last week ${fmtMin(Math.round(n.prev.sleepAvgMin))}` : ""}.`,
   `Resting heart rate: ${n.restingHr.week ?? "?"} this week vs ${n.restingHr.before ?? "?"} the month before. HRV: ${n.hrv.week ?? "?"} vs ${n.hrv.before ?? "?"}. Exercise minutes: ${n.exerciseMin ?? "?"}.${n.threeInRow ? ` Training days in a row with no rest between: ${n.rowDays.join(", ")}.` : ""}`,
 ].join("\n");
@@ -141,11 +141,11 @@ export async function ensureCoachReport(userId: string, weekOf: string, opts: { 
   const head = headSkillFor(n, { missedSessions: opts.missed ?? 0, run5kPct: run5k && run5k.p.state !== "wait" ? run5k.p.pct : null });
   const objLines = progress.map(({ o, p }) => `- ${o.title} (by ${o.due}): ${p.valueLabel} now, target ${p.targetLabel} · ${p.state === "wait" ? "no data yet" : p.state} · ${p.line}`).join("\n");
   const beforeProgram = n.to < PROGRAM_START_DAY;
-  const prompt = `You are Ali's training coach. Write his weekly training report for the week below. He is 30s, trains five days a week (Push and Pull on a Speediance machine, a sprint run, a long run, Kettlebell 30 on Saturday), wears an Apple Watch, and his goals are a 5 km under 20 minutes one day, a toned body and feeling strong. Tone: a coach who knows him, direct and warm, no cheerleading, no filler, no jargon. Plain words, short sentences. A number only when it carries the point. Never an em dash: commas and full stops only. Never invent a number that is not below.
+  const prompt = `You are Ali's training coach. Write his weekly training report for the week below. He is 30s, trains five days a week (Push and Pull on a Speediance machine, a sprint run, a long run, Functional 30 on Saturday · a kettlebell AMRAP he calls the functional session), wears an Apple Watch, and his goals are a 5 km under 20 minutes one day, a toned body and feeling strong. Tone: a coach who knows him, direct and warm, no cheerleading, no filler, no jargon. Plain words, short sentences. A number only when it carries the point. Never an em dash: commas and full stops only. Never invent a number that is not below.
 
 THE WEEK'S NUMBERS (fixed, from the Watch and the app):
 ${line(n, opts.missed ?? 0, opts.planned ?? 0)}
-${beforeProgram ? `THE PROGRAM (Mon Push · Tue Sprint run · Wed Pull · Fri Long run · Sat Kettlebell 30) STARTS ON MONDAY ${PROGRAM_START_DAY}: this week came BEFORE it, so nothing was missed or skipped · describe what he did, judge nothing, and point him at the first week.` : opts.planned ? "" : "No plan is given for this week: count what he did, never call anything missed or skipped."}
+${beforeProgram ? `THE PROGRAM (Mon Push · Tue Sprint run · Wed Pull · Fri Long run · Sat Functional 30) STARTS ON MONDAY ${PROGRAM_START_DAY}: this week came BEFORE it, so nothing was missed or skipped · describe what he did, judge nothing, and point him at the first week.` : opts.planned ? "" : "No plan is given for this week: count what he did, never call anything missed or skipped."}
 
 OBJECTIVES:
 ${objLines || "- none set"}

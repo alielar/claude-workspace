@@ -21,7 +21,8 @@ async function migrateKb1(row: typeof kbWorkouts.$inferSelect): Promise<typeof k
     const links = new Map(old.filter((e) => e.videoUrl).map((e) => [e.id, e.videoUrl!]));
     patch.exercises = JSON.stringify(fresh.exercises.map((e) => ({ ...e, videoUrl: links.get(e.id) ?? null })));
   }
-  if (row.name === "KB Hour" || (row.amrapMinutes ?? 0) > fresh.amrapMinutes! || row.restSeconds !== fresh.restSeconds) {
+  // 2026-10-07 · Kettlebell 30 became Functional 30 (the name only).
+  if (row.name === "KB Hour" || row.name === "Kettlebell 30" || (row.amrapMinutes ?? 0) > fresh.amrapMinutes! || row.restSeconds !== fresh.restSeconds) {
     patch.name = fresh.name; patch.amrapMinutes = fresh.amrapMinutes; patch.restSeconds = fresh.restSeconds;
   }
   if (Object.keys(patch).length === 0) return row;

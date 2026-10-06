@@ -206,6 +206,11 @@ export async function POST() {
     `UPDATE checklist_items SET kind = 'manual' WHERE kind = 'habit'`,
     // ── 2026-09-24: the KB Hour became Kettlebell 30 · the Saturday row follows (only if untouched) ──
     `UPDATE checklist_items SET title = 'Kettlebell', notes = 'AMRAP 30 · 11 moves' WHERE routine_key = 'gym-kb' AND title = 'Kettlebell · KB Hour'`,
+    // ── 2026-10-07: Kettlebell → Functional everywhere (Ali's redesign interview) · the row, the workout name, the objective ──
+    `UPDATE checklist_items SET title = 'Functional' WHERE routine_key = 'gym-kb' AND title = 'Kettlebell'`,
+    `UPDATE kb_workouts SET name = 'Functional 30' WHERE key = 'kb1' AND name = 'Kettlebell 30'`,
+    `UPDATE train_objectives SET title = REPLACE(title, 'Kettlebell 30', 'Functional 30') WHERE title LIKE 'Kettlebell 30%'`,
+    `UPDATE train_objectives SET title = REPLACE(title, 'the kettlebell', 'the functional session') WHERE title LIKE '%the kettlebell%'`,
     `UPDATE checklist_items SET notes = '2 sessions of 10 minutes, alternating · 10 s rests'
       WHERE routine_key = 'stretch' AND (notes IS NULL OR notes NOT LIKE '2 sessions%')`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────

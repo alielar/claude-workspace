@@ -68,8 +68,8 @@ export function weekPlan(args: { today: string; days: WeekDays; workouts: Workou
     }
     const extra: NonNullable<DaySlot["extra"]> = [];
     for (const w of runs) if (!used.has(w.hkId)) extra.push({ label: "Run", detail: runDetail(w), hkId: w.hkId });
-    for (const w of strength) if (!used.has(w.hkId)) extra.push({ label: kb && s?.kind !== "kb" ? "Kettlebell 30" : "Strength", detail: strengthDetail(w), hkId: w.hkId });
-    if (kb && s?.kind !== "kb" && !strength.length) extra.push({ label: "Kettlebell 30", detail: kbDetail(kb) });
+    for (const w of strength) if (!used.has(w.hkId)) extra.push({ label: kb && s?.kind !== "kb" ? "Functional 30" : "Strength", detail: strengthDetail(w), hkId: w.hkId });
+    if (kb && s?.kind !== "kb" && !strength.length) extra.push({ label: "Functional 30", detail: kbDetail(kb) });
     const state: SlotState = !s ? "rest" : done ? "done" : date === args.today ? "today" : date < args.today ? "missed" : "upcoming";
     return { day, date, session: key, state, detail, hkId, ...(extra.length ? { extra } : {}) };
   });
@@ -154,8 +154,8 @@ export function trainInsights(args: { today: string; slots: DaySlot[]; runs: Wor
   const kbLast = args.kb.filter((s) => s.finishedAt !== null && s.rounds !== null).sort((a, b) => b.date.localeCompare(a.date))[0];
   if (kbLast && args.kbBest !== null && kbLast.rounds !== null && kbLast.date >= shiftDay(today, -8)) {
     const gap = args.kbBest - kbLast.rounds;
-    if (gap <= 0) out.push({ key: "kb", tone: "pos", title: `Kettlebell: ${kbLast.rounds} rounds · your best`, text: "The next bar is one more round, not a heavier bell." });
-    else if (gap >= 2) out.push({ key: "kb", tone: "info", title: `Kettlebell: ${kbLast.rounds} rounds · ${gap} under your best`, text: "Rest less between rounds before pushing the pace inside them." });
+    if (gap <= 0) out.push({ key: "kb", tone: "pos", title: `Functional: ${kbLast.rounds} rounds · your best`, text: "The next bar is one more round, not a heavier bell." });
+    else if (gap >= 2) out.push({ key: "kb", tone: "info", title: `Functional: ${kbLast.rounds} rounds · ${gap} under your best`, text: "Rest less between rounds before pushing the pace inside them." });
   }
   const sessionDays = new Set([...args.runs, ...args.strength].filter((w) => w.date <= today).map((w) => w.date).concat(args.kb.filter((s) => s.finishedAt !== null).map((s) => s.date)));
   if (sessionDays.has(today) && sessionDays.has(shiftDay(today, -1)) && sessionDays.has(shiftDay(today, -2))) out.push({ key: "row", tone: "warn", title: "Three days in a row", text: "Tomorrow is a rest day whatever the plan says · the adaptation happens on the day off." });
@@ -200,7 +200,7 @@ export function weekReport(args: { today: string; days: WeekDays; workouts: Work
   if (str(lastW).length || str(prevW).length) lines.push({ label: "Strength", now: `${strMin(lastW)} min · ${str(lastW).length} session${str(lastW).length === 1 ? "" : "s"}`, prev: `${strMin(prevW)} min`, tone: str(lastW).length > str(prevW).length ? "pos" : str(lastW).length < str(prevW).length ? "neg" : "flat" });
 
   const rounds = (xs: TrainSession[]) => Math.max(0, ...xs.map((s) => s.rounds ?? 0));
-  if (lastKb.length || prevKb.length) lines.push({ label: "Kettlebell", now: lastKb.length ? `${rounds(lastKb)} rounds` : "skipped", prev: prevKb.length ? `${rounds(prevKb)} rounds` : "skipped", tone: !lastKb.length ? "neg" : !prevKb.length ? "pos" : rounds(lastKb) > rounds(prevKb) ? "pos" : rounds(lastKb) < rounds(prevKb) ? "neg" : "flat" });
+  if (lastKb.length || prevKb.length) lines.push({ label: "Functional", now: lastKb.length ? `${rounds(lastKb)} rounds` : "skipped", prev: prevKb.length ? `${rounds(prevKb)} rounds` : "skipped", tone: !lastKb.length ? "neg" : !prevKb.length ? "pos" : rounds(lastKb) > rounds(prevKb) ? "pos" : rounds(lastKb) < rounds(prevKb) ? "neg" : "flat" });
 
   const ex = args.metrics ? Object.entries(args.metrics).find(([n]) => metricKey(n) === "apple_exercise_time") : undefined;
   if (ex) {

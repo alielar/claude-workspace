@@ -100,7 +100,7 @@ function Report() {
             { k: "Training days", v: String(r.numbers.sessionDays) },
             { k: "Runs", v: `${r.numbers.runs.n} · ${r.numbers.runs.km} km` },
             { k: "Strength", v: `${r.numbers.strength.n} · ${r.numbers.strength.min} min` },
-            { k: "Kettlebell", v: r.numbers.kb.rounds !== null ? `${r.numbers.kb.rounds} rounds` : "—" },
+            { k: "Functional", v: r.numbers.kb.rounds !== null ? `${r.numbers.kb.rounds} rounds` : "—" },
             { k: "Sleep", v: r.numbers.sleep.avgMin !== null ? `${Math.floor(r.numbers.sleep.avgMin / 60)} h ${String(Math.round(r.numbers.sleep.avgMin % 60)).padStart(2, "0")}` : "—" },
             { k: "Resting HR", v: r.numbers.restingHr.week !== null ? `${Math.round(r.numbers.restingHr.week)} bpm` : "—" },
           ].map((t) => (

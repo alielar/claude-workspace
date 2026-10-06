@@ -5,8 +5,8 @@
  *   ObjectivesCard · the goals with a live progress bar each (coach/types.ts objectiveProgress), tap
  *                    a row to edit title · target · date, mark done or remove; the 5 km ladder
  *                    offers its next step once a rung is done
- *   CoachCard      · this week's Head skill (fixed rule) and the latest Sunday report's headline,
- *                    the door to /train/report
+ *   HeadLine       · this week's Head skill (fixed rule), one line inside the "This week" hero
+ *   CoachCard      · the latest Sunday report's headline, the door to /train/report
  * Everything paints from the phone's copies (health summary, kettlebell overview, the coach feed).
  */
 
@@ -94,27 +94,34 @@ export function ObjectivesCard({ data }: { data: ProgressData }) {
   );
 }
 
-export function CoachCard({ data, nights, missedSessions = 0 }: { data: ProgressData; nights: NightRow[]; missedSessions?: number }) {
+/** This week's Head skill (fixed rule) as one line · lives inside the "This week" hero since 2026-10-07. */
+export function HeadLine({ data, nights, missedSessions = 0 }: { data: ProgressData; nights: NightRow[]; missedSessions?: number }) {
   const { data: feed } = useCoach();
   const n = weekNumbers({ ...data, nights }, data.today);
   const run5k = (feed?.objectives ?? []).find((o) => o.kind === "run5k" && !o.done);
   const r5 = run5k ? objectiveProgress(run5k, data) : null;
   const head = headSkillFor(n, { missedSessions, run5kPct: r5 && r5.state !== "wait" ? r5.pct : null });
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "10px 1fr", gap: 10, alignItems: "start" }}>
+      <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: "var(--violet)", marginTop: 7 }} />
+      <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}><strong style={{ color: "var(--ink)", fontWeight: 600 }}>Head this week · {head.title}.</strong> {head.cue}</span>
+    </div>
+  );
+}
+
+/** The coach's report door: the latest Sunday headline → /train/report. */
+export function CoachCard() {
+  const { data: feed } = useCoach();
   const latest = feed?.latest ?? null;
   const weekLabel = latest ? new Date(latest.to + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : null;
   return (
     <section className="cc-card">
       <div className="cc-card-head">
         <span className="title">Coach</span>
-        <span className="tail">{latest ? `report · week to ${weekLabel}` : "first report Sunday evening"}</span>
+        <span className="tail">{latest ? `week to ${weekLabel}` : "first report Sunday evening"}</span>
       </div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
-        <div style={{ display: "grid", gap: 4, padding: "10px 12px", borderRadius: 12, background: "var(--fill-1)" }}>
-          <span style={{ fontSize: 12.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>Head · this week</span>
-          <span style={{ fontSize: 16, fontWeight: 600 }}>{head.title}</span>
-          <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{head.cue}</span>
-        </div>
-        <Link href="/train/report" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 48, textDecoration: "none", color: "inherit" }}>
+      <div className="cc-card-body" style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <Link href="/train/report" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", minHeight: 44, textDecoration: "none", color: "inherit" }}>
           <span style={{ display: "grid", gap: 2, minWidth: 0 }}>
             <span style={{ fontSize: 15.5, fontWeight: 500, lineHeight: 1.35 }}>{latest?.headline || "Your week in training"}</span>
             <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>{latest ? "Read the report" : "Written every Sunday at 20:00"}</span>
