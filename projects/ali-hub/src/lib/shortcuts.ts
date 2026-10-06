@@ -86,6 +86,6 @@ export function keysBusy(e: KeyboardEvent): boolean {
   if (e.metaKey || e.ctrlKey || e.altKey) return true;
   const el = e.target as HTMLElement | null;
   if (el?.closest("input, textarea, select, [contenteditable]")) return true;
-  if (document.querySelector('[role="dialog"], .cc-pal.open')) return true;
+  if (document.querySelector('.cc-sheet-panel, .cc-pal.open, [role="dialog"]:not(.cc-pal)')) return true;
   return false;
 }

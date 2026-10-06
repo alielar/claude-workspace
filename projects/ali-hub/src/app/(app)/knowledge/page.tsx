@@ -44,7 +44,7 @@ function fmtAgo(ms: number): string {
 function firstLine(notes: string | null): string | null {
   if (!notes) return null;
   for (const raw of notes.split("\n")) {
-    const l = raw.replace(/^- \[[ xX]\] /, "").replace(/^- /, "").replace(/^\d+\. /, "").replace(/[*_]/g, "").trim();
+    const l = raw.replace(/^#{1,3} /, "").replace(/^- \[[ xX]\] /, "").replace(/^- /, "").replace(/^\d+\. /, "").replace(/[*_]/g, "").trim();
     if (l) return l;
   }
   return null;
@@ -203,9 +203,9 @@ export default function KnowledgePage() {
 
       {/* Laptop: the entry in a pane beside the list */}
       {laptop && open && !editing && (
-        <SheetFrame label={open.title} onClose={() => setOpenId(null)} fill>
+        <SheetFrame label="Entry" onClose={() => setOpenId(null)} fill>
           <div style={{ overflowY: "auto", minHeight: 0, flex: 1, overscrollBehavior: "contain" }}>
-            <EntryView t={open} today={today} onSave={upsert} onEdit={() => setEditing(true)} onClose={() => setOpenId(null)} closeKind="close" />
+            <EntryView t={open} today={today} onSave={upsert} onEdit={() => setEditing(true)} onClose={() => setOpenId(null)} closeKind="pane" />
           </div>
         </SheetFrame>
       )}

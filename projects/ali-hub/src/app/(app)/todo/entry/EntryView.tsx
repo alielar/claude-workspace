@@ -89,8 +89,8 @@ export function AddItem({ onAdd }: { onAdd: (text: string) => void }) {
 export function EntryView({ t, today, onSave, onEdit, onClose, closeKind = "back" }: {
   t: Todo; today: string;
   onSave: (t: Todo) => void; onEdit: () => void;
-  /** Back (the full page) or Close (the laptop pane). */
-  onClose: () => void; closeKind?: "back" | "close";
+  /** "back" = the full page (a ← button); "pane" = inside the laptop pane, which has its own close. */
+  onClose: () => void; closeKind?: "back" | "pane";
 }) {
   const fmt = docFormat(t);
   const url = fmt === "link" ? linkOf(t) : null;
@@ -105,9 +105,9 @@ export function EntryView({ t, today, onSave, onEdit, onClose, closeKind = "back
     <div className="kn-page" style={{ display: "grid", gap: 18, maxWidth: 640, paddingBottom: closeKind === "back" ? 40 : 8, alignContent: "start" }}>
       {/* Top bar · back or close, the shape, Edit */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button type="button" onClick={onClose} className="cc-btn cc-btn-ghost" aria-label={closeKind === "back" ? "Back" : "Close"} style={{ minWidth: 44, minHeight: 44, padding: 0, borderRadius: 12, fontSize: 18 }}>
-          {closeKind === "back" ? "←" : <Icon name="close" size={18} />}
-        </button>
+        {closeKind === "back" && (
+          <button type="button" onClick={onClose} className="cc-btn cc-btn-ghost" aria-label="Back" style={{ minWidth: 44, minHeight: 44, padding: 0, borderRadius: 12, fontSize: 18 }}>←</button>
+        )}
         <span style={{ flex: 1, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)" }}>
           <Icon name={fmt} size={15} />{SHAPE_LABEL[fmt]}
         </span>
