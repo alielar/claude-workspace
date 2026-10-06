@@ -5,6 +5,9 @@
  * coach's text in five sections, the Head skill, the objectives as they stood, past weeks as pills.
  * `?week=2026-W41` opens one; without it, the latest. "Write it now" asks the server for a missing
  * one (one AI call); the Sunday 20:00 tick does it on its own otherwise.
+ * SINCE 2026-10-07 the page is the ONE "Your week" (Ali: merge the Sunday coach report and the weekly
+ * health brief): under the coach's text and numbers, "The body" = Health's what-changed sentences
+ * (`whatChanged`, fixed rules over the phone's health summary · the latest week only).
  */
 
 import Link from "next/link";
@@ -14,7 +17,41 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import { Reveal } from "@/components/health/checkup";
 import type { CoachReport } from "@/lib/coach/types";
 import { checklistToday } from "@/lib/checklist/day";
-import { isoWeekOf } from "@/lib/health/client";
+import { isoWeekOf, METRIC_INFO, metricKey, metricValue, type HealthSummary } from "@/lib/health/client";
+import { useHealthSummary } from "@/lib/health/useHealth";
+import { weekBrief, whatChanged } from "@/lib/health/insights";
+
+/** Health's "what changed" for the last 7 full days · the same sentences as the Health tab. */
+function BodyWeek({ h, today }: { h: HealthSummary | null | undefined; today: string }) {
+  if (!h) return null;
+  const days14: string[] = [];
+  const d = new Date(today + "T12:00:00");
+  for (let i = 13; i >= 0; i--) { const x = new Date(d); x.setDate(d.getDate() - i); days14.push(x.toISOString().slice(0, 10)); }
+  const known: Record<string, HealthSummary["metrics"][string]> = {};
+  for (const [name, s] of Object.entries(h.metrics)) { const k = metricKey(name); if (k) known[k] = s; }
+  const series = (k: string) => (known[k] ? days14.map((day) => { const p = known[k].points.find((x) => x.date === day); return p ? metricValue(p, METRIC_INFO[k], known[k].units) : null; }) : days14.map(() => null));
+  const brief = weekBrief({ nights: h.nights, today, daily: { exercise: series("apple_exercise_time"), steps: series("step_count"), rhr: series("resting_heart_rate"), hrv: series("heart_rate_variability") } });
+  if (!brief) return null;
+  const items = whatChanged(brief);
+  const color = (t: "pos" | "neg" | "flat") => (t === "pos" ? "var(--pos)" : t === "neg" ? "var(--warn)" : "var(--ink-4)");
+  return (
+    <section className="cc-card">
+      <div className="cc-card-head"><span className="title">The body</span><span className="tail">the last 7 days vs the 7 before</span></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
+        <div style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>{brief.verdict}</div>
+        {items.map((it) => (
+          <div key={it.key} style={{ display: "grid", gridTemplateColumns: "10px 1fr", gap: 10, alignItems: "start" }}>
+            <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: color(it.tone), marginTop: 7 }} />
+            <span style={{ display: "grid", gap: 3 }}>
+              <span className="tabular-nums" style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
+              <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{it.text}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 type Feed = { report: CoachReport | null; week: string; reports: { week: string; from: string; to: string; headline: string }[]; error: string | null };
 
@@ -43,6 +80,7 @@ function Report() {
   const [busy, setBusy] = useState(false);
   const r = data?.report ?? null;
   const today = checklistToday();
+  const { data: health } = useHealthSummary();
   const thisWeek = isoWeekOf(today);
   const write = async () => {
     setBusy(true);
@@ -110,7 +148,9 @@ function Report() {
             </div>
           ))}
         </div></section></Reveal>
+        {!week && <Reveal i={4}><BodyWeek h={health} today={today} /></Reveal>}
       </>}
+      {!r && !week && data && <BodyWeek h={health} today={today} />}
 
       {!r && data && (
         <section className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 12 }}>

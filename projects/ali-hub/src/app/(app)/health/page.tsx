@@ -3,6 +3,14 @@
 /**
  * /health · the Health tab, rebuilt 2026-09-30 as a daily CHECKUP (Ali: "too many metrics,
  * what do they imply, am I in a safe range · make it interesting to go through every day").
+ * REDESIGN 2026-10-07 (the prototype Ali approved · "readings, not metrics"): ONE page again, no
+ * chips. The checkup hero first (the ring, the headline, the three signals · a signal tapped
+ * scrolls to its section), then on the laptop two columns (`.cc-wide` + `.cc-cols`): LEFT = What to
+ * do · What changed since last week (sentences, `whatChanged` in insights.ts, the door to the
+ * Sunday "Your week" report) · Readings (six rows: sleep and the five night checks, each against
+ * YOUR range, tap for the 30 days, the typical adult range and one line on what it means) · Sleep;
+ * RIGHT = Movement · Fitness (the slow numbers) · All measures and Also received, folded. The phone
+ * stacks the same order. The recovery TILES of 2026-09-30 became the Readings rows.
  *   Checkup  · one ring with three arcs, Recovery · Sleep · Movement, each in its state's colour
  *              (green in range, amber one thing off, red several), a headline in plain words and
  *              one sentence on what to do with the day. Tap a signal → its chapter.
@@ -20,25 +28,22 @@
  * AI · the sentences are fixed rules (`dayRead`, `vitalsRead`, `nightVerdict`, `insightsFor`,
  * `weekBrief`), so the same night reads the same every day. Motion in checkup.tsx.
  *
- * 2026-10-04 (Ali: "blank spaces, the layout is off"): FOUR PARTS behind a chip row, remembered in
- * `cc-health-part`, one column each · Checkup (the ring, What to do, Last night + Today side by
- * side, This week) · Sleep (the history) · Movement · Measures (the Recovery tiles, Fitness, All
- * measures, Also received). A signal tapped on the ring opens its part (`cc:health-part` event).
- * The 2026-10-03 grid (`.h-grid`) is gone from this page.
+ * (2026-10-04 to 2026-10-07 the page was four parts behind a chip row · `.h-grid` from 2026-10-03 is unused.)
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import {
   METRIC_INFO, RANGE_DAYS, STAGES, avg, dayRead, deltaLine, fmtDay, fmtDelta, fmtMetric, fmtMin, fmtTime,
   metricKey, metricValue, movementSignal, nightVerdict, pipeNote, recoverySignal, sleepSignal, sleepStreak, typicalRange, vitalState, vitalsRead,
   type HealthSummary, type MetricInfo, type NightRow, type Signal, type VitalState,
 } from "@/lib/health/client";
-import { Bars, Line, RangeBar, Spark, StageBar } from "@/components/health/charts";
+import { Bars, Line, Spark, StageBar } from "@/components/health/charts";
+import Link from "next/link";
 import { CheckupRing, CountUp, Fold, MiniRing, Reveal, StateDot } from "@/components/health/checkup";
 import { checklistToday } from "@/lib/checklist/day";
 import { useNow } from "@/lib/useClientValue";
-import { insightsFor, weekBrief, type Insight } from "@/lib/health/insights";
+import { insightsFor, weekBrief, whatChanged, type Insight } from "@/lib/health/insights";
 
 function scoreTone(s: number | null): string {
   return s === null ? "var(--ink-3)" : s >= 75 ? "var(--pos)" : s >= 55 ? "var(--warn)" : "var(--neg)";
@@ -73,8 +78,8 @@ function valueOn(s: Series | undefined, info: MetricInfo, date: string): number 
 // ── Checkup · the hero ───────────────────────────────────────────────────────
 
 function Checkup({ read, today }: { read: ReturnType<typeof dayRead>; today: string }) {
-  // A signal opens its part (the page is split in parts since 2026-10-04) and scrolls back to the top.
-  const go = (s: Signal) => { window.dispatchEvent(new CustomEvent("cc:health-part", { detail: `h-${s.key}` })); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  // A signal scrolls to its section (one page again since 2026-10-07).
+  const go = (s: Signal) => { document.getElementById(`h-${s.key}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   return (
     <section className="cc-card">
       <div className="cc-card-body" style={{ display: "grid", gap: 16, padding: "18px 16px 14px" }}>
@@ -124,57 +129,25 @@ function Insights({ items }: { items: Insight[] }) {
   );
 }
 
-/** The weekly health brief · the last 7 full days against the 7 before. */
-function Week({ brief }: { brief: ReturnType<typeof weekBrief> }) {
+/** What changed since last week · sentences from the week brief, the door to the Sunday report. */
+function Changed({ brief }: { brief: ReturnType<typeof weekBrief> }) {
   if (!brief) return null;
-  const tone = (t: "pos" | "neg" | "flat") => (t === "pos" ? "var(--pos)" : t === "neg" ? "var(--neg)" : "var(--ink-3)");
+  const items = whatChanged(brief);
+  const color = (t: "pos" | "neg" | "flat") => (t === "pos" ? "var(--pos)" : t === "neg" ? "var(--warn)" : "var(--ink-4)");
   return (
-    <section className="cc-card">
-      <div className="cc-card-head"><span className="title">{brief.title}</span><span className="tail">vs the week before</span></div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>
+    <section className="cc-card" id="h-week">
+      <div className="cc-card-head"><span className="title">What changed since last week</span><Link href="/train/report" className="tail" style={{ textDecoration: "none", color: "var(--violet)" }}>Your week ›</Link></div>
+      <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
         <div style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>{brief.verdict}</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
-          {brief.lines.map((l) => (
-            <div key={l.label} style={{ display: "grid", gap: 2, padding: "8px 10px", borderRadius: 10, background: "var(--fill-1)", minWidth: 0 }}>
-              <span style={{ fontSize: 12, color: "var(--ink-4)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.label}</span>
-              <span className="tabular-nums" style={{ fontSize: 16, fontWeight: 600, whiteSpace: "nowrap" }}>{l.now}</span>
-              {l.prev && <span className="tabular-nums" style={{ fontSize: 12, color: tone(l.tone), whiteSpace: "nowrap" }}>{l.tone === "pos" ? "↑" : l.tone === "neg" ? "↓" : "="} {l.prev}</span>}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** Small panel · last night at a glance. */
-function NightTile({ n, today }: { n: NightRow; today: string }) {
-  return (
-    <section className="cc-card" style={{ padding: "14px 14px 12px", display: "grid", gap: 8, alignContent: "start" }}>
-      <span style={{ fontSize: 13, color: "var(--ink-3)" }}>Last night · {fmtDay(n.date, today).toLowerCase()}</span>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <ScoreRing score={n.score} />
-        <span className="tabular-nums" style={{ display: "grid", gap: 2 }}>
-          <span style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1 }}><CountUp value={n.totalMin} fmt={(v) => fmtMin(Math.round(v))} /></span>
-          <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>asleep</span>
-        </span>
-      </div>
-      <span style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.4 }}>{nightVerdict(n)}</span>
-    </section>
-  );
-}
-
-/** Small panel · today's movement rings. */
-function TodayTile({ known, today }: { known: Record<string, Series>; today: string }) {
-  const ex = known.apple_exercise_time ? valueOn(known.apple_exercise_time, METRIC_INFO.apple_exercise_time, today) : null;
-  const st = known.step_count ? valueOn(known.step_count, METRIC_INFO.step_count, today) : null;
-  const stMean = known.step_count ? avg(seriesValues(known.step_count, METRIC_INFO.step_count).filter((p) => p.date !== today).slice(-7).map((p) => p.v)) : null;
-  return (
-    <section className="cc-card" style={{ padding: "14px 14px 12px", display: "grid", gap: 8, alignContent: "start" }}>
-      <span style={{ fontSize: 13, color: "var(--ink-3)" }}>Today so far</span>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        <MiniRing value={ex} target={30} fmt={(v) => String(Math.round(v))} label="exercise" sub="of 30 min" size={64} />
-        <MiniRing value={st} target={stMean && stMean > 0 ? stMean : null} fmt={(v) => `${(Math.round(v) / 1000).toFixed(1)}k`} label="steps" sub={stMean ? `avg ${(Math.round(stMean) / 1000).toFixed(1)}k` : ""} size={64} />
+        {items.map((it) => (
+          <div key={it.key} style={{ display: "grid", gridTemplateColumns: "10px 1fr", gap: 10, alignItems: "start" }}>
+            <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: color(it.tone), marginTop: 7 }} />
+            <span style={{ display: "grid", gap: 3 }}>
+              <span className="tabular-nums" style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
+              <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{it.text}</span>
+            </span>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -207,54 +180,53 @@ function stateWords(r: VitalRow): { text: string; color: string } {
   return { text: `${r.state} for you`, color: "var(--warn)" };
 }
 
-function Recovery({ rows, today, days30 }: { rows: VitalRow[]; today: string; days30: string[] }) {
+/** The six readings as rows (REDESIGN 2026-10-07): the number against YOUR range, tap for the detail. */
+function Readings({ rows, today, days30 }: { rows: VitalRow[]; today: string; days30: string[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const latest = rows.map((r) => r.date).filter((d): d is string => d !== null).sort().pop() ?? null;
-  const sel = rows.find((r) => r.key === open) ?? null;
-  const pts = sel ? days30.map((d) => ({ label: dm(d), v: sel.pts.find((p) => p.date === d)?.v ?? null })) : [];
   const fmtV = (r: VitalRow) => (v: number) => r.key === "sleep" ? fmtMin(Math.round(v * 60)) : fmtMetric(v, r.unit, r.dp);
-  const safe = sel?.info?.safe ?? (sel?.key === "sleep" ? { lo: 7, hi: 9, text: "Adults need 7 to 9 h" } : undefined);
+  const ordered = [...rows].sort((a, b) => (a.key === "sleep" ? 1 : 0) - (b.key === "sleep" ? 1 : 0)); // sleep last, the night checks first
   return (
-    <section className="cc-card">
-      <div className="cc-card-head"><span className="title">Recovery</span><span className="tail">{latest ? `night checks · ${fmtDay(latest, today).toLowerCase()}` : ""}</span></div>
-      <div className="cc-card-body" style={{ display: "grid", gap: 12 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
-          {rows.map((r) => {
-            const w = stateWords(r), on = open === r.key;
-            return (
-              <button key={r.key} className="cc-h-tile" onClick={() => setOpen(on ? null : r.key)} aria-expanded={on}
-                style={{ display: "grid", gap: 6, padding: "12px 12px 10px", minHeight: 44, textAlign: "left", borderRadius: 12, border: `1px solid ${on ? "var(--violet)" : "var(--line)"}`, background: on ? "var(--accent-soft)" : "var(--fill-1)", color: "inherit", cursor: "pointer", font: "inherit", minWidth: 0 }}>
-                <span style={{ fontSize: 13, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.label}</span>
-                <span className="tabular-nums" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1, whiteSpace: "nowrap" }}>
-                  {r.key === "sleep" ? <CountUp value={r.value === null ? null : Math.round(r.value * 60)} fmt={(v) => fmtMin(Math.round(v))} /> : <CountUp value={r.value} fmt={(v) => fmtMetric(r.dp === undefined ? Math.round(v) : v, r.unit, r.dp)} />}
+    <section className="cc-card" id="h-recovery">
+      <div className="cc-card-head"><span className="title">Readings</span><span className="tail">{latest ? `your range, not the textbook · ${fmtDay(latest, today).toLowerCase()}` : "your range, not the textbook"}</span></div>
+      <div style={{ padding: "0 14px" }}>
+        {ordered.map((r, i) => {
+          const w = stateWords(r), on = open === r.key;
+          const pts = days30.map((d) => ({ label: dm(d), v: r.pts.find((p) => p.date === d)?.v ?? null }));
+          const safe = r.info?.safe ?? (r.key === "sleep" ? { lo: 7, hi: 9, text: "Adults need 7 to 9 h" } : undefined);
+          const rangeText = r.range ? `${w.text} ${fmtV(r)(r.range.lo)} to ${fmtV(r)(r.range.hi)}` : w.text;
+          return (
+            <div key={r.key} style={{ borderBottom: i < ordered.length - 1 ? "1px solid var(--line)" : "none" }}>
+              <button onClick={() => setOpen(on ? null : r.key)} aria-expanded={on}
+                style={{ display: "grid", gridTemplateColumns: "10px minmax(0, 1fr) auto", gap: 12, alignItems: "center", width: "100%", minHeight: 58, padding: "10px 0", background: "none", border: "none", color: "inherit", textAlign: "left", cursor: "pointer", font: "inherit" }}>
+                <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: r.state === null ? "var(--fill-3)" : r.state === "typical" ? "var(--pos)" : "var(--warn)" }} />
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 16, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.label} · <strong className="tabular-nums" style={{ fontWeight: 700 }}>{r.key === "sleep" ? <CountUp value={r.value === null ? null : Math.round(r.value * 60)} fmt={(v) => fmtMin(Math.round(v))} /> : <CountUp value={r.value} fmt={(v) => fmtMetric(r.dp === undefined ? Math.round(v) : v, r.unit, r.dp)} />}</strong></span>
+                  <span className="tabular-nums" style={{ display: "block", fontSize: 13.5, color: w.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{rangeText}</span>
                 </span>
-                <RangeBar value={r.value} range={r.range} outside={r.state !== null && r.state !== "typical"} />
-                <span style={{ fontSize: 12, fontWeight: 500, color: w.color }}>{w.text}</span>
+                <span aria-hidden style={{ color: "var(--ink-4)", fontSize: 14, display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: on ? "rotate(90deg)" : "none" }}>›</span>
               </button>
-            );
-          })}
-        </div>
-        <Fold open={sel !== null}>
-          {sel && (
-            <div style={{ display: "grid", gap: 10, padding: "4px 0 2px" }}>
-              <Spark points={pts} band={sel.range ? [sel.range.lo, sel.range.hi] : null} fmt={fmtV(sel)} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <div style={{ display: "grid", gap: 2 }}>
-                  <span style={{ fontSize: 12, color: "var(--ink-4)" }}>Your range</span>
-                  <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-2)" }}>{sel.range ? `${fmtV(sel)(sel.range.lo)} to ${fmtV(sel)(sel.range.hi)}` : `after ${RANGE_DAYS} nights`}</span>
+              <Fold open={on}>
+                <div style={{ display: "grid", gap: 10, padding: "2px 0 14px 22px" }}>
+                  <div style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{r.info?.meaning ?? "Time asleep, all stages together. Seven hours or more most nights is the target; one short night costs little, a week of them adds up."}</div>
+                  <Spark points={pts} band={r.range ? [r.range.lo, r.range.hi] : null} fmt={fmtV(r)} />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <div style={{ display: "grid", gap: 2 }}>
+                      <span style={{ fontSize: 12, color: "var(--ink-4)" }}>Your range</span>
+                      <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-2)" }}>{r.range ? `${fmtV(r)(r.range.lo)} to ${fmtV(r)(r.range.hi)}` : `after ${RANGE_DAYS} nights`}</span>
+                    </div>
+                    <div style={{ display: "grid", gap: 2 }}>
+                      <span style={{ fontSize: 12, color: "var(--ink-4)" }}>Typical adult</span>
+                      <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-2)" }}>{safe ? ("lo" in safe ? `${fmtMetric(safe.lo, "", r.dp)} to ${fmtMetric(safe.hi, r.unit, r.dp)}` : safe.text) : "no standard"}</span>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: "grid", gap: 2 }}>
-                  <span style={{ fontSize: 12, color: "var(--ink-4)" }}>Typical adult</span>
-                  <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-2)" }}>{safe ? ("lo" in safe ? `${fmtMetric(safe.lo, "", sel.dp)} to ${fmtMetric(safe.hi, sel.unit, sel.dp)}` : safe.text) : "no standard"}</span>
-                </div>
-              </div>
-              {safe && "lo" in safe && safe.text && <div style={{ fontSize: 13, color: "var(--ink-3)" }}>{safe.text}</div>}
-              <div style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.45 }}>{sel.info?.meaning ?? "Time asleep, all stages together. Seven hours or more most nights is the target; one short night costs little, a week of them adds up."}</div>
+              </Fold>
             </div>
-          )}
-        </Fold>
-        <div style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.45 }}>{vitalsRead(rows)}</div>
+          );
+        })}
       </div>
+      <div className="cc-card-body" style={{ paddingTop: 10, fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.45, borderTop: "1px solid var(--line)" }}>{vitalsRead(rows)}</div>
     </section>
   );
 }
@@ -463,22 +435,8 @@ function RowsCard({ title, tail, keys, known, today, days30, closed }: { title: 
 
 const FITNESS_KEYS = ["vo2_max", "cardio_recovery", "walking_heart_rate_average", "walking_speed", "six_minute_walking_test_distance"];
 
-type HealthPart = "checkup" | "sleep" | "movement" | "measures";
-
 export default function HealthPage() {
   const { data, loading } = useHealthSummary();
-  const [part, setPartState] = useState<HealthPart>("checkup");
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
-    try { const p = localStorage.getItem("cc-health-part"); if (p === "sleep" || p === "movement" || p === "measures") setPartState(p); } catch { /* ignore */ }
-  }, []);
-  const setPart = (p: HealthPart) => { setPartState(p); try { localStorage.setItem("cc-health-part", p); } catch { /* ignore */ } };
-  // A signal tapped on the Checkup ring opens its part (the chapters used to be anchors on one long page).
-  useEffect(() => {
-    const h = (e: Event) => { const id = (e as CustomEvent<string>).detail; if (id === "h-sleep") setPart("sleep"); else if (id === "h-movement") setPart("movement"); else if (id === "h-recovery") setPart("measures"); };
-    window.addEventListener("cc:health-part", h);
-    return () => window.removeEventListener("cc:health-part", h);
-  }, []);
   const today = checklistToday();
   const nights = data?.nights ?? [];
   const last = nights[0] ?? null;
@@ -511,17 +469,17 @@ export default function HealthPage() {
   const insights = hasAny ? insightsFor({ vitals, night: last, nights, exerciseWeekMin: weekEx, steps7: st7, today }) : [];
   const series14 = (k: string) => (known[k] ? days14.map((d) => valueOn(known[k], METRIC_INFO[k], d)) : days14.map(() => null));
   const week = hasAny ? weekBrief({ nights, today, daily: { exercise: series14("apple_exercise_time"), steps: series14("step_count"), rhr: series14("resting_heart_rate"), hrv: series14("heart_rate_variability") } }) : null;
-  let i = 0;
-
-  // Four parts (Ali 2026-10-04: "blank spaces, the layout is off") · one column each, no grid gaps.
-  const PARTS: { key: HealthPart; label: string }[] = [{ key: "checkup", label: "Checkup" }, { key: "sleep", label: "Sleep" }, { key: "movement", label: "Movement" }, { key: "measures", label: "Measures" }];
+  const lastPost = data?.pipe.lastAt ?? null;
+  const sub = data
+    ? `${longDay(today)}${lastPost ? ` · last post ${new Date(lastPost).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}` : ""}`
+    : "—";
 
   return (
-    <div style={{ display: "grid", gap: 14 }}>
+    <div className="cc-wide" style={{ display: "grid", gap: 14 }}>
       <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600 }}>Health</h1>
-          <div className="sub">{data ? `${nights.length} night${nights.length === 1 ? "" : "s"} · ${knownKeys.length} measure${knownKeys.length === 1 ? "" : "s"} from the Watch` : "—"}</div>
+          <div className="sub">{sub}</div>
         </div>
       </div>
 
@@ -529,60 +487,31 @@ export default function HealthPage() {
       {empty && !note && <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>Nothing from the Watch yet. Tonight&apos;s sleep lands in the morning.</div>}
       {!data && loading && <div className="cc-skeleton" style={{ height: 200 }} />}
 
+      {hasAny && <Reveal i={0}><Checkup read={read} today={today} /></Reveal>}
+
       {hasAny && (
-        <div role="tablist" aria-label="Health" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {PARTS.map((p) => (
-            <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
-              style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
-              {p.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {hasAny && part === "checkup" && (
-        <div key="checkup" style={{ display: "grid", gap: 14 }}>
-          <Reveal i={i++}><Checkup read={read} today={today} /></Reveal>
-          {insights.length > 0 && <Reveal i={i++}><Insights items={insights} /></Reveal>}
-          {(last || ACTIVITY_TILES.some((k) => known[k])) && (
-            <Reveal i={i++}>
-              <div style={{ display: "grid", gridTemplateColumns: last && ACTIVITY_TILES.some((k) => known[k]) ? "repeat(2, minmax(0, 1fr))" : "1fr", gap: 12 }}>
-                {last && <NightTile n={last} today={today} />}
-                {ACTIVITY_TILES.some((k) => known[k]) && <TodayTile known={known} today={today} />}
-              </div>
-            </Reveal>
-          )}
-          {week && <Reveal i={i++}><Week brief={week} /></Reveal>}
-        </div>
-      )}
-
-      {hasAny && part === "sleep" && (
-        <div key="sleep" style={{ display: "grid", gap: 14 }}>
-          {last ? <Reveal i={0} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal> : <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>No nights yet.</div>}
-        </div>
-      )}
-
-      {hasAny && part === "movement" && (
-        <div key="movement" style={{ display: "grid", gap: 14 }}>
-          {ACTIVITY_TILES.some((k) => known[k]) ? <Reveal i={0} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal> : <div style={{ fontSize: 15, color: "var(--ink-3)", padding: "0 2px" }}>No activity yet.</div>}
-        </div>
-      )}
-
-      {hasAny && part === "measures" && (
-        <div key="measures" style={{ display: "grid", gap: 14 }}>
-          {vitals.length > 0 && <Reveal i={0} id="h-recovery"><Recovery rows={vitals} today={today} days30={days30} /></Reveal>}
-          {fitnessKeys.length > 0 && <Reveal i={1}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} /></Reveal>}
-          {restKeys.length > 0 && <Reveal i={2}><RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed /></Reveal>}
-          {unknown.length > 0 && (
-            <Reveal i={3}>
-              <section className="cc-card">
-                <div className="cc-card-head"><span className="title">Also received</span></div>
-                <div className="cc-card-body" style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
-                  {unknown.map((k) => { const p = data!.metrics[k].points; const l = p[p.length - 1]; return <span key={k} className="tabular-nums">{k.replace(/_/g, " ")} · {fmtMetric(l?.qty ?? l?.avg ?? null, data!.metrics[k].units ?? "")} · {l ? fmtDay(l.date, today) : ""}</span>; })}
-                </div>
-              </section>
-            </Reveal>
-          )}
+        <div className="cc-cols">
+          <div className="cc-stack">
+            {insights.length > 0 && <Reveal i={1}><Insights items={insights} /></Reveal>}
+            {week && <Reveal i={2}><Changed brief={week} /></Reveal>}
+            {vitals.length > 0 && <Reveal i={3}><Readings rows={vitals} today={today} days30={days30} /></Reveal>}
+            {last && <Reveal i={4} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal>}
+          </div>
+          <div className="cc-stack">
+            {ACTIVITY_TILES.some((k) => known[k]) && <Reveal i={2} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal>}
+            {fitnessKeys.length > 0 && <Reveal i={3}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} /></Reveal>}
+            {restKeys.length > 0 && <Reveal i={4}><RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed /></Reveal>}
+            {unknown.length > 0 && (
+              <Reveal i={5}>
+                <section className="cc-card">
+                  <div className="cc-card-head"><span className="title">Also received</span></div>
+                  <div className="cc-card-body" style={{ display: "grid", gap: 6, fontSize: 14, color: "var(--ink-3)" }}>
+                    {unknown.map((k) => { const p = data!.metrics[k].points; const l = p[p.length - 1]; return <span key={k} className="tabular-nums">{k.replace(/_/g, " ")} · {fmtMetric(l?.qty ?? l?.avg ?? null, data!.metrics[k].units ?? "")} · {l ? fmtDay(l.date, today) : ""}</span>; })}
+                  </div>
+                </section>
+              </Reveal>
+            )}
+          </div>
         </div>
       )}
     </div>

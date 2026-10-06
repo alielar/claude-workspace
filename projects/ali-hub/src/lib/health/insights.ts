@@ -63,7 +63,8 @@ export function insightsFor(args: {
   return out.slice(0, 4);
 }
 
-export type WeekLine = { label: string; now: string; prev: string | null; tone: "pos" | "neg" | "flat" };
+export type WeekKey = "sleep" | "score" | "exercise" | "steps" | "rhr" | "hrv";
+export type WeekLine = { key: WeekKey; label: string; now: string; prev: string | null; tone: "pos" | "neg" | "flat"; nowV: number; prevV: number | null };
 export type WeekBrief = { title: string; verdict: string; lines: WeekLine[] };
 
 /** The last 7 full days against the 7 before · sleep, score, exercise, steps, resting HR, HRV. */
@@ -81,17 +82,17 @@ export function weekBrief(args: {
   const sum = (xs: (number | null)[]) => xs.reduce<number>((a, b) => a + (b ?? 0), 0);
   const lines: WeekLine[] = [];
   const sleepNow = m(nThis.map((n) => n.totalMin)), sleepPrev = m(nPrev.map((n) => n.totalMin));
-  if (sleepNow !== null) lines.push({ label: "Sleep a night", now: fmtMin(Math.round(sleepNow)), prev: sleepPrev !== null ? fmtMin(Math.round(sleepPrev)) : null, tone: sleepPrev === null ? "flat" : sleepNow - sleepPrev > 10 ? "pos" : sleepNow - sleepPrev < -10 ? "neg" : "flat" });
+  if (sleepNow !== null) lines.push({ key: "sleep", nowV: sleepNow, prevV: sleepPrev, label: "Sleep a night", now: fmtMin(Math.round(sleepNow)), prev: sleepPrev !== null ? fmtMin(Math.round(sleepPrev)) : null, tone: sleepPrev === null ? "flat" : sleepNow - sleepPrev > 10 ? "pos" : sleepNow - sleepPrev < -10 ? "neg" : "flat" });
   const scNow = m(nThis.map((n) => n.score)), scPrev = m(nPrev.map((n) => n.score));
-  if (scNow !== null) lines.push({ label: "Sleep score", now: String(Math.round(scNow)), prev: scPrev !== null ? String(Math.round(scPrev)) : null, tone: scPrev === null ? "flat" : scNow - scPrev > 3 ? "pos" : scNow - scPrev < -3 ? "neg" : "flat" });
+  if (scNow !== null) lines.push({ key: "score", nowV: scNow, prevV: scPrev, label: "Sleep score", now: String(Math.round(scNow)), prev: scPrev !== null ? String(Math.round(scPrev)) : null, tone: scPrev === null ? "flat" : scNow - scPrev > 3 ? "pos" : scNow - scPrev < -3 ? "neg" : "flat" });
   const exNow = sum(args.daily.exercise.slice(7)), exPrev = sum(args.daily.exercise.slice(0, 7));
-  if (args.daily.exercise.some((v) => v !== null)) lines.push({ label: "Exercise", now: `${Math.round(exNow)} min`, prev: `${Math.round(exPrev)} min`, tone: exNow >= 150 ? "pos" : exNow < exPrev - 20 ? "neg" : "flat" });
+  if (args.daily.exercise.some((v) => v !== null)) lines.push({ key: "exercise", nowV: exNow, prevV: exPrev, label: "Exercise", now: `${Math.round(exNow)} min`, prev: `${Math.round(exPrev)} min`, tone: exNow >= 150 ? "pos" : exNow < exPrev - 20 ? "neg" : "flat" });
   const stNow = m(args.daily.steps.slice(7)), stPrev = m(args.daily.steps.slice(0, 7));
-  if (stNow !== null) lines.push({ label: "Steps a day", now: Math.round(stNow).toLocaleString("en-GB"), prev: stPrev !== null ? Math.round(stPrev).toLocaleString("en-GB") : null, tone: stPrev === null ? "flat" : stNow - stPrev > 800 ? "pos" : stNow - stPrev < -800 ? "neg" : "flat" });
+  if (stNow !== null) lines.push({ key: "steps", nowV: stNow, prevV: stPrev, label: "Steps a day", now: Math.round(stNow).toLocaleString("en-GB"), prev: stPrev !== null ? Math.round(stPrev).toLocaleString("en-GB") : null, tone: stPrev === null ? "flat" : stNow - stPrev > 800 ? "pos" : stNow - stPrev < -800 ? "neg" : "flat" });
   const rNow = m(args.daily.rhr.slice(7)), rPrev = m(args.daily.rhr.slice(0, 7));
-  if (rNow !== null) lines.push({ label: "Resting HR", now: `${Math.round(rNow)} bpm`, prev: rPrev !== null ? `${Math.round(rPrev)} bpm` : null, tone: rPrev === null ? "flat" : rNow - rPrev <= -2 ? "pos" : rNow - rPrev >= 2 ? "neg" : "flat" });
+  if (rNow !== null) lines.push({ key: "rhr", nowV: rNow, prevV: rPrev, label: "Resting HR", now: `${Math.round(rNow)} bpm`, prev: rPrev !== null ? `${Math.round(rPrev)} bpm` : null, tone: rPrev === null ? "flat" : rNow - rPrev <= -2 ? "pos" : rNow - rPrev >= 2 ? "neg" : "flat" });
   const hNow = m(args.daily.hrv.slice(7)), hPrev = m(args.daily.hrv.slice(0, 7));
-  if (hNow !== null) lines.push({ label: "HRV", now: `${Math.round(hNow)} ms`, prev: hPrev !== null ? `${Math.round(hPrev)} ms` : null, tone: hPrev === null ? "flat" : hNow - hPrev >= 4 ? "pos" : hNow - hPrev <= -4 ? "neg" : "flat" });
+  if (hNow !== null) lines.push({ key: "hrv", nowV: hNow, prevV: hPrev, label: "HRV", now: `${Math.round(hNow)} ms`, prev: hPrev !== null ? `${Math.round(hPrev)} ms` : null, tone: hPrev === null ? "flat" : hNow - hPrev >= 4 ? "pos" : hNow - hPrev <= -4 ? "neg" : "flat" });
   if (!lines.length) return null;
   const good = lines.filter((l) => l.tone === "pos").length, bad = lines.filter((l) => l.tone === "neg").length;
   const verdict = bad === 0 && good >= 2 ? "A better week than the one before · keep the same rhythm."
@@ -101,4 +102,35 @@ export function weekBrief(args: {
     : (sleepNow ?? 999) < 420 ? "Short on sleep. Nothing else fixes much until the nights are longer."
     : "A steady week, nothing moved far either way.";
   return { title: "This week", verdict, lines };
+}
+
+export type Change = { key: WeekKey; tone: "pos" | "neg" | "flat"; title: string; text: string };
+
+/**
+ * "What changed since last week" in sentences (REDESIGN 2026-10-07, Ali: "readings, not metrics ·
+ * every number gets a plain name and one line on what it means for today's training"). Fixed rules
+ * over the week brief's lines, so the same week reads the same every day.
+ */
+export function whatChanged(brief: WeekBrief): Change[] {
+  const out: Change[] = [];
+  for (const l of brief.lines) {
+    const d = l.prevV === null ? null : l.nowV - l.prevV;
+    const dir = (unit: string, dp = 0) => d === null ? "first week measured" : Math.abs(d) < (dp ? 0.05 : 0.5) ? "the same as last week" : `${d > 0 ? "up" : "down"} ${dp ? Math.abs(d).toFixed(dp) : Math.round(Math.abs(d))}${unit} from last week`;
+    if (l.key === "sleep") {
+      const dm = d === null ? null : Math.round(d);
+      out.push({ key: l.key, tone: l.tone, title: `Sleep ${l.now} a night, ${dm === null ? "first week measured" : Math.abs(dm) < 10 ? "the same as last week" : `${dm > 0 ? "up" : "down"} ${Math.abs(dm)} min from last week`}.`,
+        text: l.nowV >= 420 ? "Over seven hours. The one number that fixes every other one; keep the bedtime." : l.nowV >= 390 ? "Just under seven. Hard sessions cost more on short nights; the long run reads the same, the sprints a touch slower." : "Short. Under six and a half the body is still paying for the week before; protect the next three nights before adding training." });
+    } else if (l.key === "score") {
+      out.push({ key: l.key, tone: l.tone, title: `Sleep score ${l.now}, ${dir("")}.`, text: l.nowV >= 75 ? "Good nights on the whole: enough time, few wake-ups." : l.nowV >= 55 ? "Fair nights. Usually time in bed, not quality; fifteen minutes earlier moves this." : "Poor nights. Wake-ups or very short sleep; look at the bedtime spread and the last meal." });
+    } else if (l.key === "exercise") {
+      out.push({ key: l.key, tone: l.tone, title: `Exercise ${l.now}, ${dir(" min")}.`, text: l.nowV >= 150 ? "Above the 150-minute baseline. Keep the two rest days; the number is already there." : l.nowV >= 75 ? "Half the baseline. The program's five sessions cover it; the missing minutes are a session not done." : "A quiet week. One run and the functional session put most of it back." });
+    } else if (l.key === "steps") {
+      out.push({ key: l.key, tone: l.tone, title: `${l.now} steps a day, ${dir("")}.`, text: l.nowV >= 7000 ? "Enough walking; most of the benefit sits between 7,000 and 10,000." : l.nowV >= 4000 ? "A sitting week with some walking. A 20-minute walk after lunch adds about 2,500." : "A sitting week. The cheapest change in the whole page: a walk a day." });
+    } else if (l.key === "rhr") {
+      out.push({ key: l.key, tone: l.tone, title: `Resting heart rate ${l.now}, ${dir("")}.`, text: d !== null && d <= -2 ? "Fitter or better rested; both are good news. Expect it to climb back after a hard week." : d !== null && d >= 2 ? "Higher means strain: a hard week, short nights, a drink, or something coming. Two more days up means rest." : "Steady. The body took the week as planned." });
+    } else if (l.key === "hrv") {
+      out.push({ key: l.key, tone: l.tone, title: `HRV ${l.now}, ${dir(" ms")}.`, text: d !== null && d >= 4 ? "The nervous system handled the sessions well; a good week to keep the plan." : d !== null && d <= -4 ? "Lower means less recovered. Keep the intensity, drop the volume this week." : "Steady, which is the point. Only your own range is a fair comparison." });
+    }
+  }
+  return out;
 }
