@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { ALL, type NavItem } from "@/lib/navigation";
+import { GO_KEYS, START_KEYS, keysBusy } from "@/lib/shortcuts";
 import { useTodos } from "@/lib/todo/useTodos";
 import { parseQuickAdd, isSleeping, type Todo } from "@/lib/todo/types";
 import { checklistToday } from "@/lib/checklist/day";
@@ -24,6 +25,8 @@ const DAY_WORD = /\b(today|tomorrow|tonight|tmrw|weekend|next week|next month|th
 
 export function CommandBar() {
   const [open, setOpen] = useState(false);
+  // "add" = opened with the c key: whatever is typed becomes a to-do on Return (Ali: "create a to-do wherever I am").
+  const [mode, setMode] = useState<"search" | "add">("search");
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
@@ -33,17 +36,33 @@ export function CommandBar() {
   const today = checklistToday();
   const { data, add } = useTodos(today);
 
-  const show = (pre = "") => { setQ(pre); setSel(0); setOpen(true); setTimeout(() => inputRef.current?.focus(), 30); };
-  const hide = () => { setOpen(false); setQ(""); };
+  const show = (pre = "", m: "search" | "add" = "search") => { setMode(m); setQ(pre); setSel(0); setOpen(true); setTimeout(() => inputRef.current?.focus(), 30); };
+  const hide = () => { setOpen(false); setQ(""); setMode("search"); };
+  // `g` waits one second for its letter (g t = Today, g d = To-do …).
+  const goArmed = useRef<number | null>(null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); if (open) hide(); else show(); }
-      else if (open && e.key === "Escape") { e.preventDefault(); hide(); }
-      else if ((e.metaKey || e.ctrlKey) && !e.shiftKey && /^[1-8]$/.test(e.key)) {
-        const n = ALL[Number(e.key) - 1]; if (n) { e.preventDefault(); router.push(n.href); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); if (open) hide(); else show(); return; }
+      if (open && e.key === "Escape") { e.preventDefault(); hide(); return; }
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && /^[1-8]$/.test(e.key)) {
+        const n = ALL[Number(e.key) - 1]; if (n) { e.preventDefault(); router.push(n.href); } return;
       }
+      // Single letters, Gmail-style (src/lib/shortcuts.ts) · never while typing or while something is open.
+      if (keysBusy(e)) return;
+      const k = e.key;
+      if (goArmed.current) {
+        const go = GO_KEYS.find((g) => g.key === k);
+        goArmed.current = null;
+        if (go) { e.preventDefault(); router.push(go.item.href); return; }
+      }
+      if (k === "g") { goArmed.current = window.setTimeout(() => { goArmed.current = null; }, 1000); return; }
+      if (k === "c") { e.preventDefault(); show("", "add"); return; }
+      if (k === "/" && !document.querySelector("[data-local-search]")) { e.preventDefault(); show(); return; }
+      if (k === "?") { e.preventDefault(); router.push("/settings#shortcuts"); return; }
+      const start = START_KEYS.find((s) => s.key === k);
+      if (start) { e.preventDefault(); router.push(start.href); }
     };
-    const onOpen = (e: Event) => show((e as CustomEvent<string>).detail ?? "");
+    const onOpen = (e: Event) => { const d = (e as CustomEvent<string | { add: true }>).detail; if (d && typeof d === "object") show("", "add"); else show(typeof d === "string" ? d : ""); };
     window.addEventListener("keydown", onKey);
     window.addEventListener("cc:palette", onOpen);
     return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("cc:palette", onOpen); };
@@ -55,7 +74,7 @@ export function CommandBar() {
   const items = useMemo<Item[]>(() => {
     const ql = q.trim().toLowerCase();
     const out: Item[] = [];
-    const wantsAdd = ql.length > 1 && (ql.startsWith("add ") || DAY_WORD.test(q) || ql.startsWith("+"));
+    const wantsAdd = mode === "add" ? ql.length > 0 : ql.length > 1 && (ql.startsWith("add ") || DAY_WORD.test(q) || ql.startsWith("+"));
     if (wantsAdd) {
       const raw = q.replace(/^(add\s+|\+\s*)/i, "");
       const parse = parseQuickAdd(raw, today);
@@ -67,13 +86,13 @@ export function CommandBar() {
       for (const t of todos.filter((t) => t.area !== "list" && hit(t)).slice(0, 5)) out.push({ kind: "todo", t });
       for (const t of todos.filter((t) => t.area === "list" && hit(t)).slice(0, 5)) out.push({ kind: "know", t });
     }
-    for (const n of ALL.filter((n) => !ql || n.label.toLowerCase().includes(ql) || (n.hint ?? "").toLowerCase().includes(ql))) out.push({ kind: "go", n });
+    if (mode !== "add") for (const n of ALL.filter((n) => !ql || n.label.toLowerCase().includes(ql) || (n.hint ?? "").toLowerCase().includes(ql))) out.push({ kind: "go", n });
     if (!wantsAdd && ql.length > 1 && !out.some((i) => i.kind !== "go")) {
       const parse = parseQuickAdd(q, today);
       out.unshift({ kind: "add", title: parse.title || q.trim(), parse });
     }
     return out;
-  }, [q, data, today]);
+  }, [q, data, today, mode]);
 
   const pick = (it: Item) => {
     if (it.kind === "add") {
@@ -106,8 +125,8 @@ export function CommandBar() {
       <div className={`cc-pal-veil${open ? " on" : ""}`} onClick={hide} aria-hidden />
       <div className={`cc-pal${open ? " open" : ""}`} role="dialog" aria-label="Search or add" aria-hidden={!open}>
         <div className="cc-pal-in">
-          <Icon name="search" size={18} />
-          <input ref={inputRef} value={q} onChange={(e) => { setQ(e.target.value); setSel(0); }} onKeyDown={onKey} placeholder="Search, jump, or type a to-do…" aria-label="Search or add" autoCapitalize="sentences" />
+          {mode === "add" ? <Icon name="plus" size={18} /> : <Icon name="search" size={18} />}
+          <input ref={inputRef} value={q} onChange={(e) => { setQ(e.target.value); setSel(0); }} onKeyDown={onKey} placeholder={mode === "add" ? "New to-do · Call Rani tomorrow at 11" : "Search, jump, or type a to-do…"} aria-label={mode === "add" ? "New to-do" : "Search or add"} autoCapitalize="sentences" />
           <kbd onClick={hide}>esc</kbd>
         </div>
         {addItem && (
@@ -133,7 +152,7 @@ export function CommandBar() {
               ))}
             </div>
           ))}
-          {!q.trim() && (
+          {!q.trim() && mode !== "add" && (
             <div>
               <div className="cc-pal-grp">Try</div>
               <button type="button" className="cc-pal-it" onClick={() => setQ("Call Rani tomorrow at 11")}><Icon name="plus" size={17} /><span className="cc-pal-t">Call Rani tomorrow at 11</span><span className="cc-pal-r">adds a to-do</span></button>

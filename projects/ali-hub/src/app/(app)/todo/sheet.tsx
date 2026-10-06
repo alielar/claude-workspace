@@ -79,18 +79,30 @@ export function useKeyboardInset(): number {
 }
 
 /** Bottom sheet that always sits inside the visible (keyboard-free) part of the screen. */
+const WIDE_KEY = "cc-pane-wide";
 export function SheetFrame({ label, onClose, fill = false, children }: { label: string; onClose: () => void; fill?: boolean; children: React.ReactNode }) {
   const vv = useVisualViewport();
+  // Phone: a bottom sheet inside the keyboard-free viewport. Laptop (≥ 1000 px, REDESIGN 2026-10-06):
+  // the same panel slides in from the right as a detail pane beside the list · `.cc-sheet-*` in
+  // globals.css · its top bar names it, widens it (remembered, Ali 2026-10-07) and closes it.
+  const [wide, setWide] = useState(() => { try { return localStorage.getItem(WIDE_KEY) === "1"; } catch { return false; } });
+  const toggleWide = () => setWide((w) => { try { localStorage.setItem(WIDE_KEY, w ? "0" : "1"); } catch { /* ignore */ } return !w; });
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.5)" }} />
-      <div style={{ position: "fixed", left: 0, right: 0, top: vv.top, height: vv.height, zIndex: 71, display: "flex", flexDirection: "column", justifyContent: "flex-end", pointerEvents: "none" }}>
-        <div role="dialog" aria-label={label} className="cc-sheet-panel" style={{ pointerEvents: "auto", background: "var(--bg-chrome)", borderTop: "1px solid var(--line-hi)", borderRadius: "20px 20px 0 0",
-          padding: `${fill ? 12 : 12}px 16px calc(env(safe-area-inset-bottom) + ${fill ? 12 : 12}px)`, width: "100%", maxWidth: 560, margin: "0 auto", boxSizing: "border-box",
-          display: "flex", flexDirection: "column", gap: 10, minHeight: 0, flex: "0 1 auto",
-          // never under the clock: the status bar (safe-area top) plus a sliver of the page stay visible
-          maxHeight: "calc(100% - env(safe-area-inset-top) - 20px)", height: fill ? "calc(100% - env(safe-area-inset-top) - 20px)" : undefined,
-          overflowY: fill ? "hidden" : "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+      <div className="cc-sheet-veil" onClick={onClose} />
+      <div className="cc-sheet-wrap" style={{ top: vv.top, height: vv.height }}>
+        <div role="dialog" aria-label={label} className={`cc-sheet-panel${fill ? " fill" : ""}${wide ? " wide" : ""}`}>
+          <div className="cc-sheet-top">
+            <span className="lbl">{label}</span>
+            <button type="button" onClick={toggleWide} aria-label={wide ? "Narrower" : "Wider"} aria-pressed={wide} title={wide ? "Narrower" : "Wider"}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                {wide ? <><path d="M10 14L3 21M3 15v6h6" /><path d="M14 10l7-7M15 3h6v6" /></> : <><path d="M15 3h6v6M9 21H3v-6" /><path d="M21 3l-7 7M3 21l7-7" /></>}
+              </svg>
+            </button>
+            <button type="button" onClick={onClose} aria-label="Close" title="Close · esc">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
           {children}
         </div>
       </div>

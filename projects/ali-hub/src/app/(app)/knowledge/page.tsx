@@ -1,370 +1,222 @@
 "use client";
 
 /**
- * /knowledge · Knowledge Bank. Notes saved from reading sessions.
- * Browsable, searchable reference material with SRS review drill.
+ * /knowledge · the things Ali KEEPS, not does (REDESIGN 2026-10-06 · until then the third segment
+ * of /todo, `area: "list"` in the same table, nothing changed in how entries are stored).
+ *
+ *   Search first · one box that reads titles, text and the hidden search words (tagged every Sunday);
+ *     a row that matched only through a hidden word says which one.
+ *   Passwords and Birthdays are the first two ROWS (their own pages), then every entry with its
+ *     shape as an icon: list · checklist · document · link. Pinned first, then the most recently touched.
+ *   Laptop: a row opens the entry in a pane beside the list (the same view as the full page, Edit
+ *     inside it). Phone: full screen, `/todo/entry/<id>`, as before.
+ *   The add bar (portalled, `.todo-addbar`): a name opens the Knowledge sheet, a pasted address
+ *     becomes a Link entry. Keyboard on the laptop: / search · n new · j k move · ⏎ open · esc close.
  */
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Icon, type IconName } from "@/components/Icon";
+import { ListSheet, SheetFrame, useKeyboardInset } from "../todo/sheet";
+import { EntryView } from "../todo/entry/EntryView";
+import { useTodos } from "@/lib/todo/useTodos";
+import { useBirthdays } from "@/lib/birthdays/useBirthdays";
+import { daysUntil } from "@/lib/birthdays/types";
+import { checklistToday } from "@/lib/checklist/day";
+import { docFormat, fmtDue, isSleeping, isUrlText, linkOf, linkSource, newTodoId, parseSubtasks, type Todo } from "@/lib/todo/types";
 
-type Note = {
-  id: number;
-  bookId: number | null;
-  pageNumber: number | null;
-  content: string;
-  createdAt: number;
-  bookTitle: string | null;
-  interval: number;
-  streak: number;
-  nextReviewDate: string;
-  masteryStatus: string;
+const SHAPE: Record<string, { icon: IconName; label: string }> = {
+  list: { icon: "list", label: "List" }, checklist: { icon: "checklist", label: "Checklist" }, doc: { icon: "doc", label: "Document" }, link: { icon: "link", label: "Link" },
 };
 
-function todayMadrid(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+/** "today" / "yesterday" / "5d ago" / "3w ago" for a ms timestamp. */
+function fmtAgo(ms: number): string {
+  const days = Math.floor((Date.now() - ms) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 14) return `${days}d ago`;
+  if (days < 60) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+/** First non-empty content line, with list markers stripped · the row preview. */
+function firstLine(notes: string | null): string | null {
+  if (!notes) return null;
+  for (const raw of notes.split("\n")) {
+    const l = raw.replace(/^- \[[ xX]\] /, "").replace(/^- /, "").replace(/^\d+\. /, "").replace(/[*_]/g, "").trim();
+    if (l) return l;
+  }
+  return null;
 }
 
-export default function KnowledgeBankPage({ embedded = false }: { embedded?: boolean }) {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+/** The laptop (≥ 1000 px) opens entries in a pane; the phone goes full screen. Read once per resize. */
+function useLaptop(): boolean {
+  const sub = (cb: () => void) => { const m = window.matchMedia("(min-width: 1000px)"); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); };
+  return useSyncExternalStore(sub, () => window.matchMedia("(min-width: 1000px)").matches, () => false);
+}
 
-  // Review drill state
-  const [drillOpen, setDrillOpen] = useState(false);
-  const [drillQueue, setDrillQueue] = useState<Note[]>([]);
-  const [drillIndex, setDrillIndex] = useState(0);
-  const [drillPhase, setDrillPhase] = useState<"question" | "answer">("question");
-  const [drillDone, setDrillDone] = useState(false);
-  const [grading, setGrading] = useState(false);
+function EntryRow({ t, today, q, cur, onOpen }: { t: Todo; today: string; q: string; cur: boolean; onOpen: () => void }) {
+  const fmt = docFormat(t);
+  const url = fmt === "link" ? linkOf(t) : null;
+  const shape = (() => {
+    if (fmt === "checklist") { const s = parseSubtasks(t.notes); return s.length ? `${s.filter((x) => !x.done).length} of ${s.length} open` : null; }
+    if (fmt === "list") { const n = (t.notes?.match(/^- /gm) ?? []).length; return n ? `${n} item${n === 1 ? "" : "s"}` : null; }
+    if (fmt === "link") return url ? linkSource(url) : "no address";
+    return firstLine(t.notes);
+  })();
+  // A hit through a hidden word says so · the title and text would show it themselves.
+  const viaWord = q && !t.title.toLowerCase().includes(q) && !(t.notes ?? "").toLowerCase().includes(q)
+    ? (t.keywords ?? "").split(",").map((w) => w.trim()).find((w) => w.toLowerCase().includes(q)) ?? null : null;
+  const bits = [
+    t.priority > 0 ? "Pinned" : null,
+    t.dueDate ? `remind ${fmtDue(t.dueDate, today)}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
+    shape,
+    fmtAgo(t.updatedAt),
+  ].filter(Boolean) as string[];
+  return (
+    <button type="button" className={`kn-row${cur ? " cur" : ""}`} data-id={t.clientId} onClick={onOpen}>
+      <span className={`kn-ic${t.priority > 0 ? " accent" : ""}`} aria-hidden><Icon name={SHAPE[fmt].icon} size={17} /></span>
+      <span style={{ minWidth: 0 }}>
+        <span className="kn-t">{t.title}</span>
+        <span className="kn-s">{viaWord ? <>found by <mark>{viaWord}</mark> · </> : null}{bits.join(" · ") || "empty · tap to write"}</span>
+      </span>
+      <Icon name="chevron" size={16} style={{ color: "var(--ink-4)" }} />
+    </button>
+  );
+}
 
-  const today = todayMadrid();
-  const dueNotes = notes.filter((n) => n.nextReviewDate <= today);
+export default function KnowledgePage() {
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
+  const laptop = useLaptop();
+  const router = useRouter();
+  const today = checklistToday();
+  const { data, loading, stale, upsert, remove } = useTodos(today);
+  const { data: bdays } = useBirthdays();
+  const entries = useMemo(() => (data?.todos ?? [])
+    .filter((t) => !t.deleted && (t.area ?? "personal") === "list" && !isSleeping(t, today))
+    .sort((x, y) => (y.priority > 0 ? 1 : 0) - (x.priority > 0 ? 1 : 0) || y.updatedAt - x.updatedAt), [data, today]);
 
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const shown = useMemo(() => !q ? entries : entries.filter((t) =>
+    t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q) || (t.keywords ?? "").toLowerCase().includes(q)), [entries, q]);
+
+  const [openId, setOpenId] = useState<string | null>(null);  // the laptop pane
+  const open = openId ? entries.find((t) => t.clientId === openId) ?? null : null;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Todo | null>(null);
+  const [text, setText] = useState("");
+  const [cursor, setCursor] = useState<string | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const kb = useKeyboardInset();
+
+  const openEntry = (t: Todo) => { if (laptop) { setOpenId(t.clientId); setCursor(t.clientId); } else router.push(`/todo/entry/${t.clientId}`); };
+  const newEntry = () => {
+    const ts = Date.now();
+    const pastedLink = isUrlText(text);
+    setDraft({
+      clientId: newTodoId(), title: pastedLink ? "" : text.trim(), area: "list",
+      notes: pastedLink ? text.trim() : null, project: null, ...(pastedLink ? { format: "link" as const } : {}),
+      dueDate: null, dueTime: null, evening: false, someday: false, priority: 0,
+      sortOrder: ts, doneAt: null, createdAt: ts, updatedAt: ts, deleted: false,
+    });
+  };
+
+  // Keyboard on the laptop · never while typing or while a sheet is open.
   useEffect(() => {
-    fetch("/api/library/notes")
-      .then((r) => r.json())
-      .then((data) => { setNotes(data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const typing = !!el?.closest("input, textarea, select, [contenteditable]");
+      if (e.key === "Escape") { if (typing) { (el as HTMLElement).blur(); return; } if (openId) { setOpenId(null); return; } if (cursor) setCursor(null); return; }
+      if (typing || draft || editing || document.querySelector(".cc-pal.open")) return;
+      if (e.key === "/") { e.preventDefault(); searchRef.current?.focus(); return; }
+      if (e.key === "n") { e.preventDefault(); inputRef.current?.focus(); return; }
+      if (e.key === "j" || e.key === "ArrowDown" || e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const i = shown.findIndex((t) => t.clientId === cursor);
+        const next = shown[Math.max(0, Math.min(shown.length - 1, i + (e.key === "j" || e.key === "ArrowDown" ? 1 : -1)))];
+        if (next) { setCursor(next.clientId); document.querySelector(`[data-id="${next.clientId}"]`)?.scrollIntoView({ block: "nearest" }); if (openId) setOpenId(next.clientId); }
+        return;
+      }
+      if (e.key === "Enter" && cursor) { const t = shown.find((x) => x.clientId === cursor); if (t) openEntry(t); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
-  const deleteNote = async (id: number) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-    try {
-      await fetch(`/api/library/notes?id=${id}`, { method: "DELETE" });
-    } catch {
-      // Refetch on failure
-      const res = await fetch("/api/library/notes");
-      if (res.ok) setNotes(await res.json());
-    }
-  };
-
-  const startDrill = () => {
-    if (dueNotes.length === 0) return;
-    setDrillQueue([...dueNotes]);
-    setDrillIndex(0);
-    setDrillPhase("question");
-    setDrillDone(false);
-    setDrillOpen(true);
-  };
-
-  const handleGrade = async (btn: "again" | "good" | "easy") => {
-    const note = drillQueue[drillIndex];
-    if (!note || grading) return;
-    setGrading(true);
-    try {
-      await fetch("/api/library/notes/review", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteId: note.id, button: btn }),
-      });
-    } catch { /* silent */ }
-    setGrading(false);
-
-    if (drillIndex + 1 >= drillQueue.length) {
-      setDrillDone(true);
-      // Refresh notes to get updated SRS fields
-      const res = await fetch("/api/library/notes");
-      if (res.ok) setNotes(await res.json());
-    } else {
-      setDrillIndex((i) => i + 1);
-      setDrillPhase("question");
-    }
-  };
-
-  const closeDrill = () => {
-    setDrillOpen(false);
-    setDrillDone(false);
-  };
-
-  const filtered = search.trim()
-    ? notes.filter((n) =>
-        n.content.toLowerCase().includes(search.toLowerCase()) ||
-        (n.bookTitle ?? "").toLowerCase().includes(search.toLowerCase())
-      )
-    : notes;
-
-  // Group by book
-  const byBook = new Map<string, Note[]>();
-  for (const n of filtered) {
-    const key = n.bookTitle ?? "General Notes";
-    if (!byBook.has(key)) byBook.set(key, []);
-    byBook.get(key)!.push(n);
-  }
+  const nextBday = (bdays?.birthdays ?? []).filter((b) => !b.deleted).map((b) => ({ b, d: daysUntil(b, today) })).sort((x, y) => x.d - y.d)[0] ?? null;
 
   return (
-    <div style={{ padding: "0 0 40px" }}>
-      <div className="cc-pagetitle" style={{ marginBottom: 24, justifyContent: embedded ? "flex-end" : undefined }}>
-        {!embedded && (
-          <div>
-            <h1>Knowledge <span className="grad-text">Bank</span>.</h1>
-            <div className="sub">
-              {notes.length} note{notes.length !== 1 ? "s" : ""} from your reading
-            </div>
-          </div>
-        )}
-        {dueNotes.length > 0 && (
-          <button className="cc-btn cc-btn-primary" onClick={startDrill} style={{ fontSize: 13, padding: "10px 18px" }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-            Review {dueNotes.length} note{dueNotes.length !== 1 ? "s" : ""}
-          </button>
-        )}
+    <div style={{ display: "grid", gap: 16, maxWidth: 640, margin: "0 auto", width: "100%", paddingBottom: 84 }}>
+      <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 600 }}>Knowledge</h1>
+          <div className="sub">{loading && !data ? "…" : `${entries.length} ${entries.length === 1 ? "entry" : "entries"} · passwords · birthdays`}{stale ? " · saved copy" : ""}</div>
+        </div>
       </div>
 
-      {/* Search bar */}
-      <div style={{ marginBottom: 20 }}>
-        <input
-          className="cc-input"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search notes..."
-          style={{ width: "100%", maxWidth: 400, padding: "10px 14px", fontSize: 13 }}
-        />
-      </div>
+      {/* Search first · titles, text and the hidden words */}
+      <label className="kn-search cc-rise">
+        <Icon name="search" size={18} />
+        <input ref={searchRef} data-local-search type="search" value={query} onChange={(e) => { setQuery(e.target.value); setCursor(null); }} placeholder="Search titles, text and hidden words…" aria-label="Search Knowledge" autoComplete="off" />
+        {q ? <button type="button" onClick={() => setQuery("")} aria-label="Clear" style={{ background: "transparent", border: "none", color: "var(--ink-3)", cursor: "pointer", minHeight: 32, display: "flex", alignItems: "center" }}><Icon name="close" size={16} /></button> : <span />}
+      </label>
 
-      {loading ? (
-        <div className="cc-card" style={{ padding: "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Loading notes...</div>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="cc-card" style={{ padding: "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>💡</div>
-          <div style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 6 }}>
-            {search ? "No notes match your search" : "No notes yet"}
-          </div>
-          <div style={{ fontSize: 12, color: "var(--ink-4)" }}>
-            {search
-              ? "Try a different search term"
-              : "Open a book in the Library and save notes while reading · they'll appear here."}
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {Array.from(byBook.entries()).map(([bookTitle, bookNotes]) => (
-            <div key={bookTitle} className="cc-card" style={{ overflow: "hidden" }}>
-              <div className="cc-card-head">
-                <div className="title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                  </svg>
-                  {bookTitle}
-                </div>
-                <span style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                  {bookNotes.length}
-                </span>
-              </div>
-              <div className="cc-card-body" style={{ padding: 0 }}>
-                {bookNotes.map((note, i) => (
-                  <div
-                    key={note.id}
-                    style={{
-                      padding: "14px 16px",
-                      borderBottom: i < bookNotes.length - 1 ? "1px solid var(--line)" : "none",
-                      display: "flex",
-                      gap: 12,
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
-                        {note.content}
-                      </div>
-                      <div style={{ display: "flex", gap: 12, marginTop: 8, fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>
-                        {note.pageNumber && <span>p.{note.pageNumber}</span>}
-                        <span>{new Date(note.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => deleteNote(note.id)}
-                      style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        color: "var(--ink-5)", padding: 4, flexShrink: 0, alignSelf: "flex-start",
-                        transition: "color 0.15s",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--neg)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-5)")}
-                      title="Delete note"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Review Drill Overlay ─────────────────────────────────── */}
-      {drillOpen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "rgba(6,6,11,0.92)", backdropFilter: "blur(12px)",
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        }}>
-          {/* Close button */}
-          <button
-            onClick={closeDrill}
-            style={{
-              position: "absolute", top: 20, right: 24,
-              background: "none", border: "1px solid var(--line)", borderRadius: 8,
-              color: "var(--ink-3)", cursor: "pointer", padding: "6px 12px",
-              fontSize: 11, letterSpacing: "0.04em", transition: "all 0.15s",
-            }}
-          >
-            Close
-          </button>
-
-          {drillDone ? (
-            /* ── Summary screen ─────────────────────────────────── */
-            <div style={{ textAlign: "center", maxWidth: 460, padding: 32 }}>
-              <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>&#10003;</div>
-              <h2 style={{ fontSize: 24, fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 8 }}>
-                Session <span className="grad-text">complete</span>
-              </h2>
-              <div style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 6 }}>
-                You reviewed {drillQueue.length} note{drillQueue.length !== 1 ? "s" : ""}.
-              </div>
-              <div style={{ fontSize: 12, color: "var(--ink-4)", marginBottom: 28 }}>
-                {dueNotes.length > 0
-                  ? `${dueNotes.length} note${dueNotes.length !== 1 ? "s" : ""} still due · some were marked "Again".`
-                  : "All caught up! Check back tomorrow."}
-              </div>
-              <button className="cc-btn cc-btn-primary" onClick={closeDrill} style={{ padding: "12px 28px", fontSize: 14 }}>
-                Done
-              </button>
-            </div>
-          ) : (
-            /* ── Drill card ────────────────────────────────────── */
+      {/* Passwords · Birthdays · then every entry */}
+      <section className="cc-card cc-rise">
+        <div className="cc-card-list">
+          {!q && (
             <>
-              {/* Progress strip */}
-              <div style={{
-                position: "absolute", top: 20, left: 24, right: 100,
-                display: "flex", alignItems: "center", gap: 14,
-              }}>
-                <span style={{ fontSize: 10.5, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-3)", fontWeight: 600, whiteSpace: "nowrap" }}>
-                  Review
-                </span>
-                <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{
-                    height: "100%", background: "var(--grad)",
-                    boxShadow: "0 0 8px rgba(124,77,255,0.40)",
-                    width: `${Math.round(((drillIndex) / drillQueue.length) * 100)}%`,
-                    transition: "width 0.3s var(--easeOut)",
-                  }} />
-                </div>
-                <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--ink)", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>
-                  {drillIndex + 1} / {drillQueue.length}
-                </span>
-              </div>
-
-              {/* Card */}
-              {drillQueue[drillIndex] && (() => {
-                const note = drillQueue[drillIndex];
-                return (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: 640, padding: "0 24px" }}>
-                    <div style={{
-                      position: "relative", width: "100%", padding: "42px 48px",
-                      background: "linear-gradient(180deg, rgba(28,28,46,0.85), rgba(20,20,32,0.85))",
-                      border: "1px solid var(--line-hi)", borderRadius: 18,
-                      boxShadow: "0 30px 70px rgba(0,0,0,0.45), 0 0 50px rgba(255,183,77,0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                    }}>
-                      {/* Badge */}
-                      <div style={{ position: "absolute", top: 20, left: 24, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--warn)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                        Reading note
-                      </div>
-                      <div style={{ position: "absolute", top: 20, right: 24, fontSize: 10.5, letterSpacing: "0.06em", color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>
-                        SEEN {note.streak}x
-                      </div>
-
-                      {/* Source */}
-                      {note.bookTitle && (
-                        <div style={{ marginTop: 24, marginBottom: 12, fontSize: 11, color: "var(--ink-4)", fontStyle: "italic" }}>
-                          From &ldquo;{note.bookTitle}&rdquo;{note.pageNumber ? ` \u00b7 p.${note.pageNumber}` : ""}
-                        </div>
-                      )}
-
-                      {/* Note content */}
-                      <div style={{
-                        fontSize: 17, lineHeight: 1.6, color: "var(--ink)",
-                        letterSpacing: "-0.005em", marginTop: note.bookTitle ? 0 : 32,
-                      }}>
-                        {note.content}
-                      </div>
-
-                      {/* Prompt */}
-                      {drillPhase === "question" && (
-                        <div style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid var(--line)", textAlign: "center" }}>
-                          <div style={{ fontSize: 13, color: "var(--ink-3)", fontStyle: "italic" }}>Do you remember this?</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Reveal button */}
-                    {drillPhase === "question" && (
-                      <button className="cc-btn" onClick={() => setDrillPhase("answer")} style={{ marginTop: 20, padding: "12px 32px" }}>
-                        I remember
-                      </button>
-                    )}
-
-                    {/* Grading buttons */}
-                    {drillPhase === "answer" && (
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, width: "100%", marginTop: 20 }}>
-                        {([
-                          { key: "again" as const, label: "Forgot", sub: "Reset", border: "rgba(255,138,138,0.25)", color: "var(--neg)" },
-                          { key: "good"  as const, label: "Remembered", sub: "Good", border: "rgba(100,255,218,0.25)", color: "var(--cyan)" },
-                          { key: "easy"  as const, label: "Easy", sub: "Skip ahead", border: "rgba(111,212,154,0.25)", color: "var(--pos)" },
-                        ]).map((btn) => (
-                          <button
-                            key={btn.key}
-                            disabled={grading}
-                            onClick={() => handleGrade(btn.key)}
-                            style={{
-                              padding: "14px 16px", borderRadius: 12,
-                              border: `1px solid ${btn.border}`,
-                              background: "rgba(255,255,255,0.02)",
-                              cursor: grading ? "default" : "pointer",
-                              opacity: grading ? 0.5 : 1,
-                              transition: "all 0.15s var(--easeOut)",
-                            }}
-                          >
-                            <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: "-0.005em", color: btn.color }}>{btn.label}</div>
-                            <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 3, fontFamily: "var(--f-mono)", letterSpacing: "0.04em" }}>{btn.sub}</div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+              <Link href="/vault" className="kn-row">
+                <span className="kn-ic accent" aria-hidden><Icon name="lock" size={17} /></span>
+                <span style={{ minWidth: 0 }}><span className="kn-t">Passwords</span><span className="kn-s">end-to-end encrypted · needs the passphrase</span></span>
+                <Icon name="chevron" size={16} style={{ color: "var(--ink-4)" }} />
+              </Link>
+              <Link href="/birthdays" className="kn-row">
+                <span className="kn-ic accent" aria-hidden><Icon name="cake" size={17} /></span>
+                <span style={{ minWidth: 0 }}><span className="kn-t">Birthdays</span><span className="kn-s">{nextBday ? `next · ${nextBday.b.name} ${nextBday.d === 0 ? "today" : nextBday.d === 1 ? "tomorrow" : `in ${nextBday.d} days`}` : "names and dates worth remembering"}</span></span>
+                <Icon name="chevron" size={16} style={{ color: "var(--ink-4)" }} />
+              </Link>
             </>
           )}
+          {loading && !data && [0, 1, 2].map((i) => <div key={i} style={{ padding: "10px 16px" }}><div className="cc-skeleton" style={{ height: 40 }} /></div>)}
+          {data && shown.length === 0 && (
+            <div style={{ padding: "14px 16px", fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
+              {q ? `Nothing matches “${query}”.` : "Nothing kept yet."}
+            </div>
+          )}
+          {shown.map((t) => <EntryRow key={t.clientId} t={t} today={today} q={q} cur={laptop && cursor === t.clientId} onOpen={() => openEntry(t)} />)}
         </div>
+      </section>
+
+      {/* The add bar · pinned above the tab bar, portalled into <body> (`.todo-addbar`) */}
+      {mounted && createPortal(
+        <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); newEntry(); }} style={kb > 0 ? ({ "--kb": `${kb}px` } as React.CSSProperties) : undefined}>
+          <div style={{ maxWidth: 640, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+            <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="New entry or paste a link…" enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
+            <button type="button" onClick={newEntry} className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="New entry">+</button>
+          </div>
+        </form>, document.body)}
+
+      {/* Laptop: the entry in a pane beside the list */}
+      {laptop && open && !editing && (
+        <SheetFrame label={open.title} onClose={() => setOpenId(null)} fill>
+          <div style={{ overflowY: "auto", minHeight: 0, flex: 1, overscrollBehavior: "contain" }}>
+            <EntryView t={open} today={today} onSave={upsert} onEdit={() => setEditing(true)} onClose={() => setOpenId(null)} closeKind="close" />
+          </div>
+        </SheetFrame>
+      )}
+      {open && editing && (
+        <ListSheet t={open} today={today} onSave={upsert} onDelete={() => { remove(open); setOpenId(null); }} onClose={() => setEditing(false)} />
+      )}
+      {draft && (
+        <ListSheet t={draft} today={today} isNew
+          onSave={(t) => { upsert(t); setText(""); if (laptop) setOpenId(t.clientId); else router.push(`/todo/entry/${t.clientId}`); }}
+          onDelete={() => { /* discard the draft */ }}
+          onClose={() => setDraft(null)} />
       )}
     </div>
   );

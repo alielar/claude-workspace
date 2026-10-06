@@ -1,43 +1,40 @@
 "use client";
 
 /**
- * /todo · the To-do tab (spec §4.5 + §7c item 7).
+ * /todo · the To-do tab (spec §4.5 + §7c item 7) · REDESIGN 2026-10-06 (the prototype Ali approved).
  *
- * Three segments at the top, remembered on the phone · on the phone the page follows the finger
- * left / right between them (a real slide, 2026-09-27); on a wide laptop the selector sits fixed
- * on the left at eye level.
- *   Personal · Work · tasks: buckets (Overdue · Today always open · Someday open by default ·
- *     everything else folded by default, a fold's state is remembered),
- *     one-line quick add with natural-language dates, detail sheet, one-tap defer. Delete lives in
- *     the sheet (swipe-to-delete on rows was retired for the page slide).
- *   Knowledge (was "Docs" until 2026-09-30) · things to KEEP, not do (spec §7c item 7): lists,
- *     checklists, documents, links (a title + an address, the source read from it: Instagram reel,
- *     YouTube, X…), plus Passwords and Birthdays on their own pages. No buckets, no nagging. Type a
- *     name → the editor; paste an address → a link entry. Pin the ones you reach for; search finds
- *     the rest (titles and content). An entry can carry one optional reminder (date + time) · then
- *     it behaves like a reminder: Today card, badge, notifications.
+ * Personal · Work, a two-way switch (in the header on the laptop, under the title on the phone),
+ * remembered · on the phone the page follows the finger left / right between them (a real slide,
+ * 2026-09-27). Knowledge moved out to /knowledge (the old `?area=list` address forwards there).
+ *   Buckets: Overdue · Today always open · Someday open by default · everything else folded by
+ *     default, a fold's state is remembered · a group folds with a spring (rows stay mounted, inert).
+ *   One-line quick add with natural-language dates, the detail sheet (a pane from the right on the
+ *     laptop), one-tap defer. Delete lives in the sheet.
+ *   Laptop keyboard: n new · j k move · ⏎ open · space tick · t tomorrow · esc. The cursor row is
+ *     marked with the accent on its left edge.
+ *   Motion: a tick chimes, strikes and collapses the row; a row born after the first paint (a quick
+ *     add, a task landing in its new group) rises in.
  *
  * Works offline; the home-screen badge shows what's due today.
  */
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { Linkify } from "@/components/Linkify";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { NotesPreview, SubtaskList } from "./notes";
-import { Sheet, ListSheet, openPicker, useKeyboardInset } from "./sheet";
+import { Sheet, openPicker, useKeyboardInset } from "./sheet";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import {
   addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, parseQuickAdd, sortTodos,
-  docFormat, taskFormat, parseSubtasks, linkOf, linkSource, isUrlText,
+  taskFormat, parseSubtasks,
   type Area, type Bucket, type Priority, type Todo,
 } from "@/lib/todo/types";
 
-const SEGMENTS: { key: Area; label: string }[] = [...AREAS, { key: "list", label: "Knowledge" }];
+const SEGMENTS: { key: Area; label: string }[] = AREAS;
 
 // Fold defaults (Ali 2026-09-27): Today and Someday open, every other section closed. Overdue is
 // never folded (late work must not hide). A section tapped open or closed stays that way across
@@ -59,26 +56,6 @@ const PRIO_COLOR: Record<Priority, string> = { 0: "transparent", 1: "var(--warn)
 /** A timestamp taken in an event handler (kept out of the component so the compiler never sees it as render work). */
 const stamp = () => Date.now();
 
-/** "today" / "yesterday" / "5d ago" / "3w ago" for a ms timestamp. */
-function fmtAgo(ms: number): string {
-  const days = Math.floor((Date.now() - ms) / 86400000);
-  if (days <= 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 14) return `${days}d ago`;
-  if (days < 60) return `${Math.floor(days / 7)}w ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
-
-/** First non-empty content line, with list markers stripped · the row preview. */
-function firstLine(notes: string | null): string | null {
-  if (!notes) return null;
-  for (const raw of notes.split("\n")) {
-    const l = raw.replace(/^- \[[ xX]\] /, "").replace(/^- /, "").replace(/^\d+\. /, "").replace(/[*_]/g, "").trim();
-    if (l) return l;
-  }
-  return null;
-}
-
 // ─── Gestures ─────────────────────────────────────────────────────────────────
 
 /** A quick horizontal flick: short, long enough, mostly sideways. Also switches segment before the drag threshold. */
@@ -97,11 +74,16 @@ function nextFullHour(): string {
   return h > 23 ? "23:30" : `${String(h).padStart(2, "0")}:00`;
 }
 
-function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater }: {
+function Row({ t, today, showDate, cur = false, bornLate = false, onToggle, onOpen, onNotes, onDefer, onLater }: {
   t: Todo; today: string; showDate: boolean;
+  /** The keyboard cursor sits on this row (laptop). */
+  cur?: boolean;
+  /** Mounted after the first paint → rises in. */
+  bornLate?: boolean;
   onToggle: () => void; onOpen: () => void; onNotes: (notes: string | null) => void; onDefer?: () => void; onLater?: (time: string) => void;
 }) {
   const done = t.doneAt !== null;
+  const [entered] = useState(bornLate);
   // Ticking should feel rewarding: chime + pop + strike-through sweep, then the
   // row folds away and the real state change lands. Un-ticking stays instant.
   const [celebrating, setCelebrating] = useState(false);
@@ -127,10 +109,10 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater }
   ].filter(Boolean).join(" · ");
 
   return (
-    <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
+    <div className={`todo-row-wrap${cur ? " cur" : ""}${entered ? " todo-row-in" : ""}`} data-id={t.clientId} style={{ borderBottom: "1px solid var(--line)" }}>
     <div className={`todo-row${celebrating ? " cc-done-row" : ""}`}
       style={{ display: "grid", gridTemplateColumns: `auto 1fr${t.notes && !subtasks ? " auto" : ""}${onLater && !done ? " auto" : ""}${onDefer && !done ? " auto" : ""}`, alignItems: "center", paddingRight: 8, background: "var(--bg-card)" }}>
-      <button onClick={tick} aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
+      <button onClick={tick} data-tick aria-label={done ? "Mark not done" : "Mark done"} aria-pressed={showDone}
         style={{ width: 48, minHeight: 54, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <span aria-hidden className={celebrating ? "cc-done-pop" : undefined} style={{ position: "relative", width: 24, height: 24, borderRadius: 8, border: `2px solid ${showDone ? "transparent" : t.priority ? PRIO_COLOR[t.priority] : "var(--line-strong)"}`, background: showDone ? "var(--pos)" : "var(--fill-1)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}>
           {showDone && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
@@ -143,7 +125,7 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater }
           {t.priority === 1 && !done && <span style={{ color: "var(--warn)", marginRight: 6 }}>!</span>}
           <Linkify text={t.title} />
         </span>
-        {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: t.dueTime && !showDate ? "var(--f-mono)" : undefined }}>{sub}</span>}
       </button>
       {t.notes && !subtasks && (
         <button type="button" onClick={(e) => { e.stopPropagation(); setPeek((p) => !p); }}
@@ -174,38 +156,6 @@ function Row({ t, today, showDate, onToggle, onOpen, onNotes, onDefer, onLater }
   );
 }
 
-// ─── Knowledge row (kept things, no checkbox) ─────────────────────────────────
-
-function ListRow({ t, onOpen }: { t: Todo; onOpen: () => void }) {
-  const preview = firstLine(t.notes);
-  const fmt = docFormat(t);
-  const url = fmt === "link" ? linkOf(t) : null;
-  const shape = (() => {
-    if (fmt === "checklist") { const s = parseSubtasks(t.notes); return s.length ? `${s.length} open` : null; }
-    if (fmt === "list") { const n = (t.notes?.match(/^- /gm) ?? []).length; return n ? `${n} item${n === 1 ? "" : "s"}` : null; }
-    if (fmt === "link") return url ? linkSource(url) : "link";
-    return preview;
-  })();
-  const sub = [
-    t.priority > 0 ? "Pinned" : null,
-    t.dueDate ? `remind ${fmtDue(t.dueDate, checklistToday())}${t.dueTime ? ` ${t.dueTime}` : ""}` : null,
-    shape,
-    fmtAgo(t.updatedAt),
-  ].filter(Boolean).join(" · ");
-
-  return (
-    <div className="todo-row-wrap" style={{ borderBottom: "1px solid var(--line)" }}>
-      <button onClick={onOpen} className="todo-row"
-        style={{ display: "grid", gridTemplateColumns: "1fr", alignItems: "center", width: "100%", minHeight: 58, padding: "8px 16px", border: "none", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer", WebkitTapHighlightColor: "transparent", background: "var(--bg-card)" }}>
-        <span style={{ minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 17, fontWeight: 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
-          <span style={{ display: "block", fontSize: 14, color: "var(--ink-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub || "empty · tap to write"}</span>
-        </span>
-      </button>
-    </div>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 /** The slide between segments · dx follows the finger, `settle` turns the transition on, `w` = pane width. */
@@ -232,18 +182,22 @@ export default function TodoPage() {
   const [area, setAreaState] = useState<Area>("personal");
   useEffect(() => {
     try {
-      // The sidebar's Knowledge link opens /todo?area=list (2026-10-06); otherwise the last segment used.
+      // `?area=work` opens Work (the command bar); the old `?area=list` is Knowledge, its own page now.
       const q = new URLSearchParams(window.location.search).get("area");
-      const a = q === "work" || q === "list" || q === "personal" ? q : localStorage.getItem("cc-todo-area");
+      if (q === "list") { router.replace("/knowledge"); return; }
+      const saved = localStorage.getItem("cc-todo-area");
+      const a = q === "work" || q === "personal" ? q : saved === "work" ? "work" : "personal";
       // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the URL and localStorage after mount
-      if (a === "work" || a === "list") setAreaState(a);
-      if (q) { localStorage.setItem("cc-todo-area", a ?? "personal"); window.history.replaceState(null, "", "/todo"); }
+      if (a === "work") setAreaState(a);
+      if (q) { localStorage.setItem("cc-todo-area", a); window.history.replaceState(null, "", "/todo"); }
     } catch { /* ignore */ }
-  }, []);
-  const setArea = (a: Area) => { setAreaState(a); setText(""); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
-  const isLists = area === "list";
-  const [query, setQuery] = useState("");
+  }, [router]);
+  const setArea = (a: Area) => { setAreaState(a); setText(""); setCursor(null); try { localStorage.setItem("cc-todo-area", a); } catch { /* ignore */ } };
   const [open, setOpen] = useState<Todo | null>(null);
+  // The laptop keyboard cursor (clientId) and whether the first paint is behind us (rows born later rise in).
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [born, setBorn] = useState(false);
+  useEffect(() => { if (data && !born) { const id = window.setTimeout(() => setBorn(true), 600); return () => clearTimeout(id); } }, [data, born]);
   const [draft, setDraft] = useState<Todo | null>(null); // new entry being composed in a sheet
   const [showDone, setShowDone] = useState(false);
   const [showVault, setShowVault] = useState(false);
@@ -259,7 +213,7 @@ export default function TodoPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const kb = useKeyboardInset(); // the add bar rides on the keyboard
 
-  const parsed = useMemo(() => (!isLists && !literal && text.trim() ? parseQuickAdd(text, today) : null), [text, today, isLists, literal]);
+  const parsed = useMemo(() => (!literal && text.trim() ? parseQuickAdd(text, today) : null), [text, today, literal]);
 
   // ── The slide between Personal · Work · Knowledge (phone) ──
   // The page follows the finger (Ali 2026-09-27: "it needs to feel like a real swipe"): the
@@ -341,7 +295,7 @@ export default function TodoPage() {
   // the next one. "+" opens the full sheet instead, for the details. Knowledge entries always go
   // through the sheet: the name and the shape are chosen there (the shape is locked afterwards).
   const quickSave = () => {
-    if (isLists || !text.trim()) { submit(); return; }
+    if (!text.trim()) { submit(); return; }
     const ts = stamp();
     upsert({
       clientId: newTodoId(),
@@ -357,37 +311,60 @@ export default function TodoPage() {
   };
   const submit = () => {
     const ts = Date.now();
-    const pastedLink = isLists && isUrlText(text);
     setDraft({
       clientId: newTodoId(),
-      title: pastedLink ? "" : isLists || literal ? text.trim() : parsed?.title || text.trim(),
-      area, notes: pastedLink ? text.trim() : null, project: null,
-      ...(pastedLink ? { format: "link" as const } : {}),
-      dueDate: isLists ? null : parsed?.dueDate ?? null,
-      dueTime: isLists ? null : parsed?.dueTime ?? null,
-      evening: !isLists && (parsed?.evening ?? false),
-      someday: !isLists && (parsed?.someday ?? false),
-      priority: isLists ? 0 : parsed?.priority ?? 0,
+      title: literal ? text.trim() : parsed?.title || text.trim(),
+      area, notes: null, project: null,
+      dueDate: parsed?.dueDate ?? null,
+      dueTime: parsed?.dueTime ?? null,
+      evening: parsed?.evening ?? false,
+      someday: parsed?.someday ?? false,
+      priority: parsed?.priority ?? 0,
       sortOrder: ts, doneAt: null, createdAt: ts, updatedAt: ts, deleted: false,
     });
   };
 
   // The Vault: items sleeping until a future wake date · out of every list, one place to browse.
   const sleeping = all.filter((t) => !t.doneAt && isSleeping(t, today)).sort((a, b) => (a.wakeDate ?? "").localeCompare(b.wakeDate ?? ""));
-  const q = query.trim().toLowerCase();
   /** Everything one segment shows · computed for the current segment and, mid-slide, for the next one. */
   const forArea = (a: Area) => {
     const inArea = all.filter((t) => (t.area ?? "personal") === a && !isSleeping(t, today));
     const openTasks = inArea.filter((t) => !t.doneAt);
     const doneToday = inArea.filter((t) => t.doneAt !== null).sort((x, y) => (y.doneAt ?? 0) - (x.doneAt ?? 0));
     const groups = BUCKETS.map((b) => ({ ...b, items: openTasks.filter((t) => bucketOf(t, today, eveningNow) === b.key).sort(sortTodos) }));
-    // Knowledge · pinned first, then most recently touched; search covers names and content.
-    const lists = a !== "list" ? [] : inArea
-      .filter((t) => !q || t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q) || (t.keywords ?? "").toLowerCase().includes(q))
-      .sort((x, y) => (y.priority > 0 ? 1 : 0) - (x.priority > 0 ? 1 : 0) || y.updatedAt - x.updatedAt);
-    return { inArea, openTasks, doneToday, groups, lists };
+    return { inArea, openTasks, doneToday, groups };
   };
   const cur = forArea(area);
+  /** The rows the keyboard can walk, in page order: the open groups' items, top to bottom. */
+  const walkable = cur.groups.filter((g) => g.items.length && !(g.foldable && !(openGroups[g.key] ?? !!g.openByDefault))).flatMap((g) => g.items);
+  const nowishOf = (t: Todo) => { const b = bucketOf(t, today, eveningNow); return b === "overdue" || b === "today" || b === "evening"; };
+
+  // Laptop keyboard: n new · j k move · ⏎ open · space tick · t tomorrow · esc. Never while typing,
+  // never while a sheet or the command bar is open. Harmless on the phone (no keys arrive).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const typing = !!el?.closest("input, textarea, select, [contenteditable]");
+      if (e.key === "Escape") { if (typing) { el?.blur(); return; } if (cursor) setCursor(null); return; }
+      if (typing || open || draft || document.querySelector(".cc-pal.open")) return;
+      if (e.key === "n") { e.preventDefault(); inputRef.current?.focus(); return; }
+      if (e.key === "j" || e.key === "ArrowDown" || e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const i = walkable.findIndex((t) => t.clientId === cursor);
+        const next = walkable[Math.max(0, Math.min(walkable.length - 1, i + (e.key === "j" || e.key === "ArrowDown" ? 1 : -1)))];
+        if (next) { setCursor(next.clientId); document.querySelector(`[data-id="${next.clientId}"]`)?.scrollIntoView({ block: "nearest" }); }
+        return;
+      }
+      const t = walkable.find((x) => x.clientId === cursor);
+      if (!t) return;
+      if (e.key === "Enter") { e.preventDefault(); setOpen(t); }
+      else if (e.key === " ") { e.preventDefault(); (document.querySelector(`[data-id="${t.clientId}"] [data-tick]`) as HTMLElement | null)?.click(); }
+      else if (e.key === "t" && nowishOf(t)) { e.preventDefault(); upsert({ ...t, dueDate: addDays(today, 1), evening: false }); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   // "due today" = the badge rule (overdue + today, evening included), so the header, the
   // home-screen badge and the widget all say the same number (Ali 2026-09-14).
   const dueCount = badgeCount(cur.inArea, today);
@@ -399,17 +376,16 @@ export default function TodoPage() {
   ].filter(Boolean) : [];
   const readSomething = !!parsed && parsed.tokens.length > 0;
 
-  // Personal · Work · Knowledge · once at the top (phone, narrow laptop) and once fixed on the left (wide laptop, CSS decides).
-  const segments = (vertical: boolean) => (
-    <div role="tablist" aria-label="List" className={vertical ? "todo-seg todo-seg-side" : "todo-seg todo-seg-top"}
-      style={{ display: vertical ? undefined : "grid", gridTemplateColumns: vertical ? "1fr" : `repeat(${SEGMENTS.length}, 1fr)`, gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
+  // Personal · Work · the two-way switch (the header's right on the laptop, under the title on the phone).
+  const segments = (
+    <div role="tablist" aria-label="List" className="todo-seg"
+      style={{ display: "grid", gridTemplateColumns: `repeat(${SEGMENTS.length}, 1fr)`, gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
       {SEGMENTS.map((a) => {
         const on = a.key === area;
         const n = badgeCount(all, today, a.key);
         return (
           <button key={a.key} role="tab" aria-selected={on} onClick={() => setArea(a.key)}
-            className={a.key === "list" && !vertical ? "seg-docs" : undefined}
-            style={{ minHeight: 44, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "flex", alignItems: "center", justifyContent: vertical ? "space-between" : "center", gap: 8, padding: vertical ? "0 12px" : 0, WebkitTapHighlightColor: "transparent" }}>
+            style={{ minHeight: 44, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 16, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", boxShadow: on ? "var(--shadow-card)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 0, WebkitTapHighlightColor: "transparent", transition: "background var(--t-2) var(--easeOut), color var(--t-2)" }}>
             {a.label}
             {n > 0 && <span style={{ fontSize: 13, fontWeight: 600, minWidth: 22, height: 22, padding: "0 6px", borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: on ? "var(--violet)" : "var(--fill-3)", color: on ? "var(--on-accent)" : "var(--ink-2)" }}>{n}</span>}
           </button>
@@ -420,50 +396,7 @@ export default function TodoPage() {
 
   /** One segment's content · rendered for the current segment and, while sliding, for the next. */
   const pane = (a: Area) => {
-    const { inArea, openTasks, doneToday, groups, lists } = forArea(a);
-    if (a === "list") return (
-      <>
-        {/* Passwords · an entry type of its own: end-to-end encrypted, its own page (2026-09-12) */}
-        <Link href="/vault" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-          <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
-            <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Passwords</span>
-            </span>
-            <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
-          </div>
-        </Link>
-        {/* Birthdays · names and dates worth remembering, with a push a few days ahead (2026-09-19) */}
-        <Link href="/birthdays" className="cc-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-          <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 12, alignItems: "center", minHeight: 56 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 6v3M8 6v3M16 6v3" /><path d="M4 21v-7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7" /><path d="M4 21h16" /><path d="M4 15c1 1 2 1 3 0s2-1 3 0 2 1 3 0 2-1 3 0 2 1 3 0" /></svg>
-            <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 17, fontWeight: 500 }}>Birthdays</span>
-            </span>
-            <span style={{ color: "var(--ink-3)", fontSize: 15 }}>›</span>
-          </div>
-        </Link>
-        {inArea.length > 3 && (
-          <input className="cc-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" style={{ fontSize: 16, minHeight: 44, borderRadius: 12 }} />
-        )}
-
-        {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 48 }} />)}</div></div>}
-
-        {data && lists.length === 0 && (
-          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-            {q ? `Nothing matches “${query}”.` : "Nothing kept yet."}
-          </div></div>
-        )}
-
-        {lists.length > 0 && (
-          <section className="cc-card">
-            <div className="cc-card-list">
-              {lists.map((t) => <ListRow key={t.clientId} t={t} onOpen={() => router.push(`/todo/entry/${t.clientId}`)} />)}
-            </div>
-          </section>
-        )}
-      </>
-    );
+    const { openTasks, doneToday, groups } = forArea(a);
     return (
       <>
         {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
@@ -488,16 +421,18 @@ export default function TodoPage() {
               ) : (
                 <div className="cc-card-head"><span className="title" style={{ color: g.color }}>{g.label}</span><span className="tail">{g.items.length}</span></div>
               )}
-              {!folded && (
-                <div className="cc-card-list">
-                  {g.items.map((t) => (
-                    <Row key={t.clientId} t={t} today={today} showDate={!!g.dated}
-                      onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })}
-                      onDefer={nowish ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined}
-                      onLater={nowish ? (time) => upsert({ ...t, dueDate: today, dueTime: time, evening: false }) : undefined} />
-                  ))}
+              <div className={`cc-fold${folded ? "" : " open"}`}>
+                <div inert={folded}>
+                  <div className="cc-card-list">
+                    {g.items.map((t) => (
+                      <Row key={t.clientId} t={t} today={today} showDate={!!g.dated} cur={cursor === t.clientId} bornLate={born}
+                        onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })}
+                        onDefer={nowish ? () => upsert({ ...t, dueDate: addDays(today, 1), evening: false }) : undefined}
+                        onLater={nowish ? (time) => upsert({ ...t, dueDate: today, dueTime: time, evening: false }) : undefined} />
+                    ))}
+                  </div>
                 </div>
-              )}
+              </div>
             </section>
           );
         })}
@@ -517,21 +452,20 @@ export default function TodoPage() {
   const moving = slide.neighbour !== null || slide.settle;
   return (
     <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}>
-      <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
-          <div className="sub">
-            {loading && !data ? "…"
-              : isLists ? `${cur.inArea.length} ${cur.inArea.length === 1 ? "entry" : "entries"} kept`
-              : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${cur.openTasks.length ? ` · ${cur.openTasks.length} open` : ""}`}
-            {stale ? " · saved copy" : ""}
+      <div className="todo-head">
+        <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 600 }}>To-do</h1>
+            <div className="sub">
+              {loading && !data ? "…"
+                : `${dueCount === 0 ? "nothing due today" : `${dueCount} due today`}${cur.openTasks.length ? ` · ${cur.openTasks.length} open` : ""}`}
+              {stale ? " · saved copy" : ""}
+            </div>
           </div>
         </div>
+        {/* Personal · Work · slide left/right on the phone */}
+        {segments}
       </div>
-
-      {/* Personal · Work · Knowledge · slide left/right on the phone; fixed on the left on a wide laptop */}
-      {segments(false)}
-      {segments(true)}
 
       {/* The panes · the current one in flow, the next one riding alongside while the finger is down */}
       <div ref={paneRef} style={{ position: "relative", overflow: moving ? "hidden" : undefined }}>
@@ -579,7 +513,7 @@ export default function TodoPage() {
       {mounted && createPortal(
       <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); quickSave(); }} style={kb > 0 ? ({ "--kb": `${kb}px` } as React.CSSProperties) : undefined}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
-          {(readSomething || literal) && text.trim() && !isLists && (
+          {(readSomething || literal) && text.trim() && (
             <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, minHeight: 28 }}>
               <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {literal
@@ -593,28 +527,22 @@ export default function TodoPage() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
             <input ref={inputRef} className="cc-input" value={text} onChange={(e) => setText(e.target.value)}
-              placeholder={isLists ? "New entry or paste a link…" : area === "work" ? "Add a work task…" : "Add a task…"}
+              placeholder={area === "work" ? "Add a work task…" : "Add a task…"}
               enterKeyHint="done" autoComplete="off" style={{ fontSize: 17, minHeight: 48, borderRadius: 14 }} />
-            <button type="button" onClick={submit} className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label={isLists ? "New entry" : "Add with details"}>+</button>
+            <button type="button" onClick={submit} className="cc-btn cc-btn-primary" style={{ minHeight: 48, minWidth: 48, borderRadius: 14, fontSize: 20, padding: 0 }} aria-label="Add with details">+</button>
           </div>
         </div>
       </form>, document.body)}
 
-      {open && ((open.area ?? "personal") === "list"
-        ? <ListSheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />
-        : <Sheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />)}
-      {draft && (draft.area === "list"
-        ? <ListSheet t={draft} today={today} isNew
-            onSave={(t) => { upsert(t); setText(""); router.push(`/todo/entry/${t.clientId}`); }}
-            onDelete={() => { /* discard the draft */ }}
-            onClose={() => setDraft(null)} />
-        : <Sheet t={draft} today={today} isNew
-            onSave={(t) => { upsert(t); setText(""); }}
-            onDelete={() => { /* discard the draft */ }}
-            onClose={() => setDraft(null)} />)}
+      {open && <Sheet t={open} today={today} onSave={upsert} onDelete={() => remove(open)} onClose={() => setOpen(null)} />}
+      {draft && (
+        <Sheet t={draft} today={today} isNew
+          onSave={(t) => { upsert(t); setText(""); }}
+          onDelete={() => { /* discard the draft */ }}
+          onClose={() => setDraft(null)} />
+      )}
 
-      <style>{`.seg-docs { position: relative; } .seg-docs::before { content: ""; position: absolute; left: -2.75px; top: 8px; bottom: 8px; width: 1.5px; background: var(--line-strong); border-radius: 1px; }
-        .todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }`}</style>
+      <style>{`.todo-row-wrap:last-child { border-bottom: none !important; } .todo-row:active { background: var(--fill-1); }`}</style>
     </div>
   );
 }

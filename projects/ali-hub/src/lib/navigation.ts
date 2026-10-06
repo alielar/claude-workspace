@@ -8,7 +8,8 @@
  *                    with Health, Knowledge, R2-D2 and Settings (`OTHER`); while one of those is open
  *                    the tab wears that section's icon and name.
  *
- * Knowledge is the To-do page's third segment (`/todo?area=list`, the page reads the query on mount).
+ * Knowledge is its own page since the To-do wave (2026-10-06): `/knowledge` (entries, Passwords, Birthdays);
+ * the old `/todo?area=list` address forwards there. To-do is a two-way switch, Personal · Work.
  * Archived modules are deliberately NOT here · reachable from /archive; to restore one, add a line.
  */
 
@@ -26,8 +27,8 @@ export type NavItem = {
 };
 
 export const TODAY: NavItem = { href: "/today", label: "Today", icon: "today", key: "1", match: ["/today", "/checklist", "/stretch", "/breathe", "/books"], hint: "The day, tomorrow, the picks" };
-export const TODO: NavItem = { href: "/todo", label: "To-do", icon: "todo", key: "2", match: ["/todo"], hint: "Personal · Work" };
-export const KNOWLEDGE: NavItem = { href: "/todo?area=list", label: "Knowledge", icon: "knowledge", key: "3", match: ["/vault", "/birthdays", "/todo/entry"], hint: "Entries · passwords · birthdays" };
+export const TODO: NavItem = { href: "/todo", label: "To-do", icon: "todo", key: "2", hint: "Personal · Work" };
+export const KNOWLEDGE: NavItem = { href: "/knowledge", label: "Knowledge", icon: "knowledge", key: "3", match: ["/knowledge", "/vault", "/birthdays", "/todo/entry"], hint: "Entries · passwords · birthdays" };
 export const TRAIN: NavItem = { href: "/train", label: "Train", icon: "train", key: "4", match: ["/train"], hint: "This week · the coach · Body and Mind" };
 export const HEALTH: NavItem = { href: "/health", label: "Health", icon: "health", key: "5", match: ["/health"], hint: "Today's checkup" };
 export const NEWS: NavItem = { href: "/news", label: "News", icon: "news", key: "6", match: ["/news", "/podcast"], hint: "Picks · weekly brief · football" };
@@ -66,6 +67,7 @@ export const RAIL: NavItem[] = ALL;
 /** Whether a nav item is active for the current pathname. */
 export function isNavActive(item: NavItem, pathname: string): boolean {
   const prefixes = item.match ?? [item.href.split("?")[0]];
+  if (item.href === "/todo") return pathname === "/todo"; // /todo/entry/* belongs to Knowledge
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 

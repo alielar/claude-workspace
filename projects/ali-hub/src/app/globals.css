@@ -252,8 +252,8 @@ html, body {
   overflow: hidden;
 }
 @media (min-width: 768px) { .cc-sidebar { display: flex; } }
-.cc-sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 10px; font-weight: 700; letter-spacing: .14em; font-size: 15px; }
-.cc-sidebar-mark { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(135deg, var(--violet), var(--accent-2)); box-shadow: 0 4px 12px -4px var(--violet); }
+.cc-sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 10px; font-weight: 700; letter-spacing: .14em; font-size: 15px; color: var(--ink); text-decoration: none; }
+.cc-sidebar-brand svg { box-shadow: 0 4px 12px -6px rgba(0,0,0,.6); }
 .cc-sidebar-search {
   display: flex; align-items: center; gap: 8px; width: 100%; min-height: 38px; padding: 0 10px;
   border-radius: 10px; border: 1px solid var(--line); background: var(--bg-card); color: var(--ink-3);
@@ -292,13 +292,67 @@ html, body {
 }
 @media (min-width: 768px) { .todo-addbar { bottom: 0; left: var(--sidebar-w); } }
 
-/* ─── To-do segments · on a wide laptop the selector sits fixed in the empty space on the left,
-   centred vertically so it is at eye level (Ali 2026-09-27), not pinned to the top ── */
-.todo-seg-side { display: none; }
-@media (min-width: 1180px) {
-  .todo-seg-top { display: none !important; }
-  .todo-seg-side { display: grid; position: fixed; left: calc(var(--sidebar-w) + 32px); top: 50%; transform: translateY(-50%); width: 180px; z-index: 20; }
+/* ─── To-do (REDESIGN 2026-10-06) · Personal · Work is a two-way switch in the header on the laptop,
+   under the title on the phone. Knowledge moved out to /knowledge. ── */
+.todo-head { display: grid; gap: 12px; }
+@media (min-width: 768px) { .todo-head { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } .todo-head .todo-seg { width: 220px; } }
+/* A group folds with a spring: the rows stay mounted (inert while folded) and the box animates its height. */
+.cc-fold { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .36s var(--spring); }
+.cc-fold.open { grid-template-rows: 1fr; }
+.cc-fold > div { overflow: hidden; min-height: 0; }
+/* A row born after the first paint rises in (a moved task landing in its new group, a quick add). */
+@keyframes todo-row-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.todo-row-in { animation: todo-row-in .32s var(--easeOut) both; }
+/* The keyboard cursor on the laptop (j k move, ⏎ open, space tick, t tomorrow). */
+.todo-row-wrap.cur > .todo-row { box-shadow: inset 3px 0 0 var(--violet); background: var(--fill-1) !important; }
+@media (min-width: 768px) { .todo-row:hover { background: var(--fill-1) !important; } }
+
+/* ─── Knowledge (REDESIGN 2026-10-06) · search first, every row with its shape, Passwords and
+   Birthdays as the first two rows. ── */
+.kn-search { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 52px; padding: 0 14px; border-radius: var(--r-lg); background: var(--bg-card); border: 1px solid var(--line); box-shadow: var(--shadow-card); color: var(--ink-3); transition: border-color var(--t-2) var(--easeOut), box-shadow var(--t-2) var(--easeOut); }
+.kn-search:focus-within { border-color: var(--violet); box-shadow: 0 0 0 3px var(--accent-soft); }
+.kn-search input { min-height: 48px; border: none; background: transparent; font: inherit; font-size: 16px; color: var(--ink); outline: none; min-width: 0; }
+.kn-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; min-height: 58px; padding: 8px 16px; background: var(--bg-card); border: none; border-bottom: 1px solid var(--line); text-align: left; color: inherit; font: inherit; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background var(--t-1) var(--easeOut); }
+.kn-row:last-child { border-bottom: none; }
+.kn-row:hover, .kn-row:active { background: var(--fill-1); }
+.kn-row.cur { box-shadow: inset 3px 0 0 var(--violet); background: var(--fill-1); }
+.kn-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--fill-1); color: var(--ink-2); display: grid; place-items: center; }
+.kn-ic.accent { background: var(--accent-soft); color: var(--violet); }
+.kn-t { display: block; font-size: 17px; font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kn-s { display: block; font-size: 14px; color: var(--ink-3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kn-s mark { background: var(--accent-soft); color: var(--violet); border-radius: 4px; padding: 0 3px; }
+
+/* ─── Sheets · a bottom sheet on the phone, a detail pane from the right on the laptop (REDESIGN 2026-10-06) ── */
+@keyframes cc-sheet-up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+@keyframes cc-pane-in { from { transform: translateX(32px); opacity: .5; } to { transform: none; opacity: 1; } }
+@keyframes cc-veil-in { from { opacity: 0; } to { opacity: 1; } }
+.cc-sheet-veil { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,.5); animation: cc-veil-in .2s both; }
+.cc-sheet-wrap { position: fixed; left: 0; right: 0; z-index: 71; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; }
+.cc-sheet-panel { pointer-events: auto; background: var(--bg-chrome); border-top: 1px solid var(--line-hi); border-radius: 20px 20px 0 0; padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px); width: 100%; max-width: 560px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; min-height: 0; flex: 0 1 auto; max-height: calc(100% - env(safe-area-inset-top) - 20px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; animation: cc-sheet-up .32s var(--easeOut) both; }
+.cc-sheet-panel.fill { height: calc(100% - env(safe-area-inset-top) - 20px); overflow-y: hidden; }
+/* The pane's own top bar (laptop only): what it is, wider, close. */
+.cc-sheet-top { display: none; }
+@media (min-width: 1000px) {
+  .cc-sheet-veil { background: rgba(0,0,0,.22); }
+  .cc-sheet-wrap { flex-direction: row; justify-content: flex-end; align-items: stretch; }
+  .cc-sheet-panel { width: 480px; max-width: 480px; margin: 0; height: 100%; max-height: 100%; border-radius: 0; border-top: none; border-left: 1px solid var(--line); box-shadow: var(--shadow-lg); padding: 14px 24px 22px; gap: 12px; animation: cc-pane-in .32s var(--easeOut) both; transition: width .32s var(--easeOut), max-width .32s var(--easeOut); }
+  .cc-sheet-panel.fill { height: 100%; }
+  .cc-sheet-panel.wide { width: min(820px, 64vw); max-width: min(820px, 64vw); }
+  .cc-sheet-top { display: flex; align-items: center; gap: 6px; margin: 0 -8px 2px; min-height: 32px; }
+  .cc-sheet-top .lbl { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--ink-3); padding-left: 8px; }
+  .cc-sheet-top button { width: 34px; height: 34px; border-radius: 9px; border: none; background: transparent; color: var(--ink-3); display: grid; place-items: center; cursor: pointer; transition: background var(--t-1), color var(--t-1); }
+  .cc-sheet-top button:hover { background: var(--fill-1); color: var(--ink); }
 }
+.cc-laptop-only { display: none; }
+@media (min-width: 768px) { .cc-laptop-only { display: block; } }
+/* Shortcuts list (Settings) */
+.cc-keys { display: grid; gap: 2px; }
+.cc-keys-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.cc-keys-row:last-child { border-bottom: none; }
+.cc-keys-row kbd { display: inline-block; font: 600 12.5px var(--f-mono); color: var(--ink-2); background: var(--fill-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; margin-right: 4px; }
+.cc-keys-row .l { font-size: 15px; font-weight: 500; }
+.cc-keys-row .g { font-size: 13.5px; color: var(--ink-3); margin-top: 1px; line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) { .cc-sheet-panel, .cc-sheet-veil, .todo-row-in, .cc-fold { animation: none !important; transition: none !important; } }
 
 /* ─── Mobile nav ─────────────────────────────────────────────────────────── */
 .cc-mobile-nav {

@@ -263,7 +263,7 @@ function Row({ item, onToggle, compact = false, currentBook = null, late = false
             <Linkify text={item.title} />
           </span>
           {(item.atTime || notes) && (
-            <span style={{ display: "block", fontSize: 14, color: late && !done ? "var(--neg)" : "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
+            <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 14, color: late && !done ? "var(--neg)" : "var(--ink-3)", marginTop: 2, lineHeight: 1.4 }}>
               {item.atTime && <span style={{ fontFamily: "var(--f-mono)" }}>{item.atTime}</span>}
               {notes && <span>{item.atTime ? " · " : ""}{linkify(notes)}</span>}
             </span>

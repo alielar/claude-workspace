@@ -5,6 +5,7 @@
 
 import {
   Sun, Newspaper, Settings, Target, ListChecks, Bot, HeartPulse, LayoutGrid, FileText, Search, Plus, CornerDownLeft,
+  List, SquareCheck, Link2, Lock, Cake, ChevronRight, X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,6 +22,15 @@ const ICONS = {
   search:   Search,
   plus:     Plus,
   enter:    CornerDownLeft,
+  // Knowledge shapes and the two fixed rows (2026-10-06)
+  list:      List,
+  checklist: SquareCheck,
+  doc:       FileText,
+  link:      Link2,
+  lock:      Lock,
+  cake:      Cake,
+  chevron:   ChevronRight,
+  close:     X,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { SHORTCUTS } from "@/lib/shortcuts";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue, useNow } from "@/lib/useClientValue";
@@ -303,6 +304,26 @@ export default function SettingsPage() {
           </div>
         </section>
       )}
+
+      {/* Keyboard shortcuts · the one list (src/lib/shortcuts.ts), laptop only (Ali 2026-10-07: nothing on the pages themselves) */}
+      <section className="cc-card cc-laptop-only" id="shortcuts">
+        <div className="cc-card-head"><span className="title">Keyboard shortcuts</span><span className="tail">laptop</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gap: 16 }}>
+          {SHORTCUTS.map((g) => (
+            <div key={g.title}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", marginBottom: 4 }}>{g.title} · <span style={{ fontWeight: 500 }}>{g.where}</span></div>
+              <div className="cc-keys">
+                {g.items.map((it) => (
+                  <div key={it.label} className="cc-keys-row">
+                    <span>{it.keys.map((k, i) => <kbd key={i}>{k}</kbd>)}</span>
+                    <span><span className="l">{it.label}</span>{it.goal && <span className="g" style={{ display: "block" }}>{it.goal}</span>}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <AppleWatchCard />
 
