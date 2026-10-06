@@ -6,6 +6,14 @@
  * Renders instantly from the phone's local copy, refreshes in the background,
  * and every tick works offline (queued and synced later).
  *
+ * REDESIGN 2026-10-06 (the prototype Ali approved) · TWO FACES BY THE CLOCK and TWO COLUMNS on the
+ * laptop (`.cc-wide` + `.cc-cols`; one column on the phone, same order top to bottom):
+ *   morning / afternoon · the day's program: the spine on the left; the coach's readiness, Tomorrow,
+ *                         the daily picks and one highlight on the right
+ *   evening (from 19:00) · "Today, done" (every tick, every to-do done, the Watch session) above the
+ *                         spine, and Tomorrow OPEN by default on the right
+ * The header's sub line names the kind of day, the session and the counts.
+ *
  * DAY SPINE · the one layout (Ali picked it 2026-09-15; the "Now First" alternative and its
  * switch are gone). Top to bottom:
  *
@@ -64,6 +72,9 @@ import { NotesPreview, SubtaskList } from "../todo/notes";
 import { dayCode } from "@/lib/train/types";
 import { sessionOfRow } from "@/lib/train/program";
 import { Sheet } from "../todo/sheet";
+import { useHealthSummary } from "@/lib/health/useHealth";
+import { fmtDur, kindLabel, signalColor } from "@/lib/health/client";
+import { readiness } from "@/lib/train/insights";
 
 // ─── One highlight suggestion (News keeps the rest) ──────────────────────────
 
@@ -335,6 +346,60 @@ function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer }: {
   );
 }
 
+// ─── Evening · what the day held (redesign 2026-10-06) ───────────────────────
+
+/** Every tick of the day, every to-do done today and the Watch sessions · the evening face's first card. */
+function DoneTodayCard({ items, todos, today, workouts }: { items: ChecklistItem[]; todos: Todo[]; today: string; workouts: { hkId: string; date: string; type: string; durationSec: number | null; hrAvg: number | null; distanceKm: number | null }[] }) {
+  const ticked = items.filter((i) => i.completedToday && i.source !== "workout");
+  const doneTodos = todos.filter((t) => !t.deleted && t.doneAt && checklistToday(new Date(t.doneAt)) === today).sort((a, b) => (a.doneAt! - b.doneAt!));
+  const sessions = workouts.filter((w) => w.date === today);
+  const n = ticked.length + doneTodos.length + sessions.length;
+  if (n === 0) return null;
+  const rowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "20px 1fr auto", gap: 12, alignItems: "center", minHeight: 40, padding: "4px 0", borderBottom: "1px solid var(--line)" };
+  const tick = <span aria-hidden style={{ width: 18, height: 18, borderRadius: 6, background: "var(--pos)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>;
+  return (
+    <section className="cc-card cc-rise">
+      <div className="cc-card-head quiet"><span className="title">Today, done</span><span className="tail tabular-nums">{ticked.length} tick{ticked.length === 1 ? "" : "s"}{doneTodos.length ? ` · ${doneTodos.length} to-do${doneTodos.length === 1 ? "" : "s"}` : ""}{sessions.length ? ` · ${sessions.length} session${sessions.length === 1 ? "" : "s"}` : ""}</span></div>
+      <div style={{ padding: "0 16px 8px" }}>
+        {sessions.map((w) => (
+          <Link key={w.hkId} href="/train" style={{ ...rowStyle, textDecoration: "none", color: "inherit" }}>
+            {tick}
+            <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{kindLabel(w.type)}{w.distanceKm ? ` · ${w.distanceKm.toFixed(1)} km` : ""}</span><span style={{ display: "block", fontSize: 13, color: "var(--ink-3)" }}>{fmtDur(w.durationSec)}{w.hrAvg ? ` · ${w.hrAvg} bpm` : ""}</span></span>
+            <span style={{ fontSize: 13, color: "var(--ink-4)" }}>Train ›</span>
+          </Link>
+        ))}
+        {ticked.map((i) => (
+          <div key={i.id} style={rowStyle}>{tick}<span style={{ fontSize: 15, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{i.title}</span><span style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{i.atTime ?? ""}</span></div>
+        ))}
+        {doneTodos.map((t) => (
+          <div key={t.clientId} style={rowStyle}>{tick}<span style={{ fontSize: 15, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span><span style={{ fontSize: 13, color: "var(--ink-4)" }}>{t.area === "work" ? "Work" : "Personal"}</span></div>
+        ))}
+        <style>{`.today-page .cc-card > div > *:last-child { border-bottom: none !important; }`}</style>
+      </div>
+    </section>
+  );
+}
+
+/** The coach on Today (redesign 2026-10-06): last night's readiness in plain words, the same line Train shows. */
+function CoachLine({ today, session }: { today: string; session: string | null }) {
+  const { data: health } = useHealthSummary();
+  if (!health) return null;
+  const r = readiness(health, today);
+  if (r.state === "wait") return null;
+  return (
+    <Link href="/train" className="cc-card cc-rise" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "10px 1fr auto", gap: 12, alignItems: "start" }}>
+        <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, background: signalColor(r.state), marginTop: 8 }} />
+        <span style={{ display: "grid", gap: 3, minWidth: 0 }}>
+          <span style={{ fontSize: 15.5, fontWeight: 600 }}>{r.title}{session ? ` · ${session}` : ""}</span>
+          <span style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.45 }}>{r.text}</span>
+        </span>
+        <span style={{ fontSize: 13, color: "var(--ink-4)", marginTop: 4 }}>Train ›</span>
+      </div>
+    </Link>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const EMPTY: ChecklistData = { items: [], overallStreak: 0, monthlyPct: [], thirtyDayAvg: 0, bestStreak30: 0 };
@@ -401,6 +466,9 @@ export default function TodayPage() {
     } catch { setData(patch(!next)); }
   }, [setData, today]);
 
+  const { data: health } = useHealthSummary();
+  const sessionToday = items.map((i) => sessionOfRow(i)?.name ?? null).find((n) => n) ?? null;
+
   // ── Checklist grouping ────────────────────────────────────────────────────
   // Only ROUTINE steps count (Ali 2026-10-03) · an Extra, the virtual workout row and the
   // machine/kettlebell days are shown but never counted.
@@ -440,6 +508,11 @@ export default function TodayPage() {
   const [opened, setOpened] = useState<Set<DayPart>>(new Set());
 
   // ── Header · shared ───────────────────────────────────────────────────────
+  const evening = part === "evening";
+  const picksN = 2;
+  const dayLine = evening
+    ? `${doneCount} of ${total} routine done${sessionToday ? ` · ${sessionToday}` : ""}${todayTodos.length ? ` · ${todayTodos.length} to-do${todayTodos.length === 1 ? "" : "s"} still open` : " · every to-do done"}`
+    : `${sessionToday ? `Training day · ${sessionToday}` : machineDay ? "Training day" : "Rest day"} · ${total} routine step${total === 1 ? "" : "s"} · ${todayTodos.length + overdueTodos.length} to-do${todayTodos.length + overdueTodos.length === 1 ? "" : "s"} · ${picksN} videos`;
   const header = (
     <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
       <div>
@@ -452,6 +525,7 @@ export default function TodayPage() {
           {!online && <span style={{ color: "var(--warn)" }}> · offline, changes will sync</span>}
           {online && stale && <span> · showing saved copy</span>}
         </div>
+        <div style={{ fontSize: 14, color: "var(--ink-2)", marginTop: 6 }}>{loading && !data ? "…" : dayLine}</div>
       </div>
       {data && data.overallStreak > 0 && (
         <div className="cc-pill cc-pill-warn" style={{ fontSize: 15, padding: "6px 10px", whiteSpace: "nowrap" }}>{data.overallStreak} day{data.overallStreak === 1 ? "" : "s"}</div>
@@ -608,28 +682,39 @@ export default function TodayPage() {
   };
 
   return (
-    <div className="today-page" style={{ display: "grid", gap: 18 }}>
+    <div className="today-page cc-wide" style={{ display: "grid", gap: 18 }}>
       {header}
 
-      <div>
-        <div className="cc-progress-track" style={{ height: 4 }}><div className="cc-progress-fill" style={{ width: `${pct}%` }} /></div>
-        <div style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginTop: 6 }}>
-          {loading && !data ? "…" : `${doneCount} / ${total} routine · ${pct}%`}
+      <div className="cc-cols">
+        <div className="cc-stack">
+          <div>
+            <div className="cc-progress-track" style={{ height: 4 }}><div className="cc-progress-fill" style={{ width: `${pct}%` }} /></div>
+            <div style={{ fontSize: 13, color: "var(--ink-4)", fontFamily: "var(--f-mono)", marginTop: 6 }}>
+              {loading && !data ? "…" : `${doneCount} / ${total} routine · ${pct}%`}
+            </div>
+          </div>
+
+          <BirthdayCard today={today} />
+
+          {/* Evening face: what the day held, before what is still open. */}
+          {evening && <DoneTodayCard items={items} todos={todoData?.todos ?? []} today={today} workouts={health?.workouts ?? []} />}
+
+          {renderSpine()}
+        </div>
+
+        <div className="cc-stack">
+          <CoachLine today={today} session={sessionToday} />
+
+          <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} defaultOpen={evening} />
+
+          {/* The two star channels (Ali 2026-10-04: "the two YouTube channels which are the star" where
+              the daily podcast card used to be) · the latest upload of The AI Daily Brief and of TLDR News Global. */}
+          <DailyPicksCard />
+
+          {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose. */}
+          <HighlightSuggestion />
         </div>
       </div>
-
-      <BirthdayCard today={today} />
-
-      {renderSpine()}
-
-      <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} />
-
-      {/* The two star channels (Ali 2026-10-04: "the two YouTube channels which are the star" where
-          the daily podcast card used to be) · the latest upload of The AI Daily Brief and of TLDR News Global. */}
-      <DailyPicksCard />
-
-      {/* ONE spoiler-free highlight to watch (2026-09-12) · at the very bottom on purpose. */}
-      <HighlightSuggestion />
 
       {/* The task sheet · same one as /todo, so a time or date is one tap away from here. */}
       {openTodo && (
@@ -654,7 +739,7 @@ function DailyPicksCard() {
   if (!picks.length || !now) return null;
   const unwatched = picks.filter((p) => !p.video!.watched).length;
   return (
-    <section className="cc-card">
+    <section className="cc-card cc-rise">
       <div className="cc-card-head">
         <span className="title">Daily picks</span>
         <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
@@ -672,12 +757,13 @@ function DailyPicksCard() {
 /** Tomorrow at a glance (Ali 2026-09-30) · folded to one quiet line, tap = the day in clock order.
  * Routine rows come from the editor's `checklist-all` copy (every weekday's rows), filtered to
  * tomorrow's weekday and shifted / untimed the same way Today does it. */
-function TomorrowCard({ today, plan, todos, onOpen }: { today: string; plan: MorningPlan; todos: Todo[]; onOpen: (t: Todo) => void }) {
+function TomorrowCard({ today, plan, todos, onOpen, defaultOpen = false }: { today: string; plan: MorningPlan; todos: Todo[]; onOpen: (t: Todo) => void; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
+    // The remembered fold wins; without one, the evening opens Tomorrow by itself (redesign 2026-10-06).
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading localStorage after mount
-    try { setOpen(localStorage.getItem("cc-today-tomorrow-open") === "1"); } catch { /* ignore */ }
-  }, []);
+    try { const v = localStorage.getItem("cc-today-tomorrow-open"); setOpen(v === null ? defaultOpen : v === "1"); } catch { setOpen(defaultOpen); }
+  }, [defaultOpen]);
   const toggleOpen = () => setOpen((o) => { try { localStorage.setItem("cc-today-tomorrow-open", o ? "0" : "1"); } catch { /* ignore */ } return !o; });
   const { data } = useCached<ChecklistData>("checklist-all", () => fetchJson<ChecklistData>("/api/checklist?all=1"));
   const { data: ov } = useOverview();
@@ -707,7 +793,7 @@ function TomorrowCard({ today, plan, todos, onOpen }: { today: string; plan: Mor
   if (!data && due.length === 0) return null;
   const PART_RANGE: Record<DayPart | "anytime", string> = { morning: "04–12", afternoon: "12–19", evening: "19–04", anytime: "" };
   return (
-    <section className="cc-card">
+    <section className="cc-card cc-rise">
       <button type="button" onClick={toggleOpen} aria-expanded={open} className="cc-card-head"
         style={{ width: "100%", minHeight: 52, background: "transparent", border: "none", font: "inherit", cursor: "pointer", textAlign: "left", color: "inherit" }}>
         <span className="title">Tomorrow <span style={{ fontWeight: 400, color: "var(--ink-3)" }}>· {dayName}</span></span>

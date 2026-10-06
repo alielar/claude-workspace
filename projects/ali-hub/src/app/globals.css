@@ -224,7 +224,7 @@ html, body {
   }
   /* Clear the status bar (installed app draws under it) and the bottom tab bar. */
   .app-content {
-    padding: calc(16px + env(safe-area-inset-top)) 16px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 28px);
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 76px); /* room under the round add button */
   }
 }
 
@@ -1252,7 +1252,7 @@ body:has(.todo-addbar) .dict-pill { bottom: calc(var(--tabbar-h) + env(safe-area
 /* The phone's round button above the tab bar · hidden where a page has its own add bar */
 .cc-kfab {
   position: fixed; right: 16px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 14px); z-index: 38;
-  width: 50px; height: 50px; border-radius: 999px; border: 0; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 999px; border: 0; cursor: pointer;
   background: var(--violet); color: var(--on-accent); display: none; align-items: center; justify-content: center;
   box-shadow: 0 10px 24px -8px var(--violet), 0 2px 6px rgba(0,0,0,.25);
   transition: transform var(--t-2) var(--spring), opacity var(--t-2);
