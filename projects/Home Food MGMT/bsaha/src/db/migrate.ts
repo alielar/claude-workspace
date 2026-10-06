@@ -116,6 +116,24 @@ const DDL = [
  */
 const ONE_OFFS: { key: string; run: () => Promise<void> }[] = [
   {
+    // Ali's brother came back from Amsterdam (2026-10-06): the away placeholder becomes Hamza, at home,
+    // so his name shows on the start screen. Added fresh if the placeholder was renamed or removed.
+    key: "hamza_home_2026_10_06",
+    run: async () => {
+      const hamza = await db.all<{ id: number }>(sql`SELECT id FROM people WHERE name = 'Hamza'`);
+      if (hamza.length) {
+        await db.run(sql`UPDATE people SET is_away = 0 WHERE name = 'Hamza'`);
+        return;
+      }
+      const placeholder = await db.all<{ id: number }>(sql`SELECT id FROM people WHERE name = 'Amsterdam'`);
+      if (placeholder.length) {
+        await db.run(sql`UPDATE people SET name = 'Hamza', is_away = 0 WHERE name = 'Amsterdam'`);
+        return;
+      }
+      await db.run(sql`INSERT INTO people (name, role, lang, sort_order, created_at) VALUES ('Hamza', 'family', 'en', 6, ${new Date().toISOString()})`);
+    },
+  },
+  {
     // The menu became per meal on 2026-09-26. Dishes already on it stay on for every meal they had, to be pruned by hand.
     key: "menu_meals_filled_2026_09_26",
     run: async () => {
@@ -164,7 +182,7 @@ const SEED: Seed[] = [
   { name: "Mama", role: "family", lang: "fr", isAdmin: true, sortOrder: 3 },
   { name: "Anas", role: "family", lang: "en", isChild: true, sortOrder: 4 },
   { name: "Layla", role: "family", lang: "en", isChild: true, simpleUi: true, sortOrder: 5 },
-  { name: "Amsterdam", role: "family", lang: "en", isAway: true, sortOrder: 6 },
+  { name: "Hamza", role: "family", lang: "en", sortOrder: 6 },
   { name: "الطباخة", role: "cook", lang: "ar", sortOrder: 9 },
 ];
 
