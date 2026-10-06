@@ -34,7 +34,7 @@ export const HEALTH_DDL = [
   `CREATE TABLE IF NOT EXISTS health_workout_series (
     hk_id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    route TEXT, hr TEXT, splits TEXT,
+    route TEXT, hr TEXT, splits TEXT, intervals TEXT,
     updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))`,
   `CREATE TABLE IF NOT EXISTS health_metrics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,6 +116,7 @@ export async function storeParsed(userId: string, p: Parsed): Promise<IngestResu
         route: w.series.route.length ? JSON.stringify(w.series.route) : null,
         hr: w.series.hr.length ? JSON.stringify(w.series.hr) : null,
         splits: w.series.splits.length ? JSON.stringify(w.series.splits) : null,
+        intervals: w.series.intervals.length ? JSON.stringify(w.series.intervals) : null,
         updatedAt: now,
       };
       await db.insert(healthWorkoutSeries).values(sr).onConflictDoUpdate({ target: healthWorkoutSeries.hkId, set: keepKnown(sr, ["userId", "hkId"]) });

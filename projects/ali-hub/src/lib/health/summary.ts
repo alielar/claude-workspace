@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { healthMetrics, healthSleep, healthWorkouts, healthWorkoutSeries } from "@/db/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { ensureHealthTables, pipeStatus, type PipeStatus } from "./server";
-import type { HrPoint, RoutePoint, Split } from "./types";
+import type { HrPoint, IntervalSeg, RoutePoint, Split } from "./types";
 
 export type NightRow = {
   date: string; sleepStart: number | null; sleepEnd: number | null; inBedStart: number | null; inBedEnd: number | null;
@@ -29,7 +29,7 @@ export type HealthSummary = {
   pipe: PipeStatus;                         // what Health Auto Export has really posted
   generatedAt: number;
 };
-export type WorkoutDetail = WorkoutRow & { route: RoutePoint[]; hr: HrPoint[]; splits: Split[] };
+export type WorkoutDetail = WorkoutRow & { route: RoutePoint[]; hr: HrPoint[]; splits: Split[]; intervals: IntervalSeg[] };
 
 function ymdDaysAgo(days: number): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(Date.now() - days * 86400000));
@@ -77,5 +77,6 @@ export async function workoutDetail(userId: string, hkId: string): Promise<Worko
     distanceKm: w.distanceKm, activeKcal: w.activeKcal, totalKcal: w.totalKcal, hrAvg: w.hrAvg, hrMin: w.hrMin, hrMax: w.hrMax,
     steps: w.steps, elevationM: w.elevationM, source: w.source, hasRoute: !!s?.route,
     route: parse<RoutePoint>(s?.route ?? null), hr: parse<HrPoint>(s?.hr ?? null), splits: parse<Split>(s?.splits ?? null),
+    intervals: parse<IntervalSeg>(s?.intervals ?? null),
   };
 }

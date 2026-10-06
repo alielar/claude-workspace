@@ -412,6 +412,8 @@ export async function POST() {
     // ── Sleep entries ───────────────────────────────────────────────────────
     // Apple Watch (Health Auto Export → /api/health/ingest) · same DDL as src/lib/health/server.ts
     ...HEALTH_DDL,
+    // ── 2026-10-06: a structured workout's own segments (Sprint run intervals) · src/lib/health/types.ts parseIntervals
+    `ALTER TABLE health_workout_series ADD COLUMN intervals TEXT`,
     // ── 2026-09-14: doubled routine rows merged + UNIQUE(user, routine_key) · Speediance days → Sun/Tue/Thu (only rows still on the seeded Mon/Wed/Fri)
     ...DEDUPE_ROUTINE_ROWS,
     `UPDATE checklist_items SET weekdays = '["sun"]', start_date = NULL WHERE routine_key = 'gym-push' AND weekdays = '["mon"]'`,

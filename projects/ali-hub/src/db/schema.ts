@@ -758,6 +758,7 @@ export const healthWorkoutSeries = sqliteTable("health_workout_series", {
   route: text("route"),
   hr: text("hr"),
   splits: text("splits"),
+  intervals: text("intervals"),
   updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
 });
 

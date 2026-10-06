@@ -10,7 +10,7 @@ import Link from "next/link";
 import { use } from "react";
 import { useWorkoutDetail } from "@/lib/health/useHealth";
 import { fmtDur, fmtPace, fmtTime, kindLabel, paceOf, workoutKind } from "@/lib/health/client";
-import { HrLine, RouteMap, SplitsTable } from "@/components/health/charts";
+import { HrLine, IntervalsTable, RouteMap, SplitsTable } from "@/components/health/charts";
 
 function Stat({ label, value, big }: { label: string; value: string; big?: boolean }) {
   return (
@@ -61,6 +61,13 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Route</span><span className="tail">{w.route.length > 1 ? "start green · finish black · a ring per km" : ""}</span></div>
           <div className="cc-card-body"><RouteMap route={w.route} /></div>
+        </section>
+      )}
+
+      {w && w.intervals.length > 1 && (
+        <section className="cc-card">
+          <div className="cc-card-head"><span className="title">Intervals</span><span className="tail">fastest in green</span></div>
+          <div className="cc-card-body" style={{ paddingTop: 4 }}><IntervalsTable intervals={w.intervals} fmtPace={fmtPace} /></div>
         </section>
       )}
 

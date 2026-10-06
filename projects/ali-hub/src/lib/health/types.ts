@@ -64,7 +64,16 @@ export type Split = {
   elevM: number | null;     // climb in this split (positive deltas only)
   partial?: true;
 };
-export type WorkoutSeries = { route: RoutePoint[]; hr: HrPoint[]; splits: Split[] };
+/** One recorded segment of a structured workout (Apple's own "activities", e.g. a sprint rep or its walk recovery) · in order. */
+export type IntervalSeg = {
+  index: number;
+  sec: number;               // duration
+  distM: number | null;
+  paceSec: number | null;    // seconds per km
+  hrAvg: number | null;
+  hrMax: number | null;
+};
+export type WorkoutSeries = { route: RoutePoint[]; hr: HrPoint[]; splits: Split[]; intervals: IntervalSeg[] };
 
 export type DailyMetric = {
   date: string;
@@ -166,7 +175,7 @@ export function sleepScore(n: Pick<SleepNight, "totalMin" | "deepMin" | "awakeMi
   return Math.round(dur + deep + cont);
 }
 
-const HEAVY_KEYS = new Set(["route", "heartRateData", "heartRateRecovery", "stepCount", "walkingAndRunningDistance", "activeEnergy", "elevation"]);
+const HEAVY_KEYS = new Set(["route", "heartRateData", "heartRateRecovery", "stepCount", "walkingAndRunningDistance", "activeEnergy", "elevation", "activities", "events", "segments"]);
 
 const ROUTE_MAX_POINTS = 2400; // ~1 point every 2–3 s on a 10 km run · a map needs no more
 const R_EARTH_M = 6371008.8;
@@ -310,13 +319,41 @@ function splitCurve(route: RoutePoint[], distSamples: unknown, distanceKm: numbe
   return curve.map(([t, d]) => [t, d * k]);
 }
 
+/**
+ * A structured workout's own segments (HAE's "activities" · a sprint rep, its walk recovery, the
+ * warm-up, the cooldown) · ONE ROW PER RECORDED SEGMENT, in Apple's own order. This is the data
+ * a continuous 1 km split hides: the Sprint run program (10 min easy · 6 × 30 s fast, 90 s walk ·
+ * 10 min easy) shows up here as its real reps, not as uniform kilometre splits (Ali 2026-10-06).
+ * [] for a plain continuous run (one activity, nothing to break out).
+ */
+function parseIntervals(activities: unknown): IntervalSeg[] {
+  if (!Array.isArray(activities) || activities.length < 2) return [];
+  const out: IntervalSeg[] = [];
+  (activities as Record<string, unknown>[]).forEach((a, i) => {
+    if (!a || typeof a !== "object") return;
+    const sec = num(a.activeDuration ?? a.elapsedDuration ?? a.duration);
+    if (sec === null || sec <= 0) return;
+    const metrics = (a.metrics ?? {}) as Record<string, unknown>;
+    out.push({
+      index: typeof a.index === "number" ? a.index : i + 1,
+      sec: Math.round(sec),
+      distM: rnd(num(metrics.distance)),
+      paceSec: rnd(num(metrics.paceKilometre)),
+      hrAvg: rnd(num(metrics.heartRateAverage)),
+      hrMax: rnd(num(metrics.heartRateMaximum)),
+    });
+  });
+  return out.sort((x, y) => x.index - y.index);
+}
+
 /** The heavy arrays of one workout, compacted · null when the record carries none. */
 function parseWorkoutSeries(w: Record<string, unknown>, distanceKm: number | null): WorkoutSeries | null {
   const route = parseRoute(w.route);
   const hr = parseHrSeries(w.heartRateData);
   const splits = computeSplits(splitCurve(route, w.walkingAndRunningDistance, distanceKm), route, hr);
-  if (!route.length && !hr.length && !splits.length) return null;
-  return { route, hr, splits };
+  const intervals = parseIntervals(w.activities);
+  if (!route.length && !hr.length && !splits.length && !intervals.length) return null;
+  return { route, hr, splits, intervals };
 }
 
 /** min:ss per km for a pace in seconds · "5:24". */

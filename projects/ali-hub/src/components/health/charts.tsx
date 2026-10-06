@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { haversineM, type HrPoint, type RoutePoint, type Split } from "@/lib/health/types";
+import { haversineM, type HrPoint, type IntervalSeg, type RoutePoint, type Split } from "@/lib/health/types";
 import { STAGES, type NightRow } from "@/lib/health/client";
 
 const ink = (n: 1 | 2 | 3 | 4) => (n === 1 ? "var(--ink)" : `var(--ink-${n})`);
@@ -248,6 +248,37 @@ export function SplitsTable({ splits, fmtPace }: { splits: Split[]; fmtPace: (s:
             <span style={{ textAlign: "right", color: ink(2) }}>{`${Math.floor(s.sec / 60)}:${String(s.sec % 60).padStart(2, "0")}`}</span>
             {hasHr && <span style={{ textAlign: "right", color: ink(2) }}>{s.hrAvg ?? "—"}</span>}
             {hasClimb && <span style={{ textAlign: "right", color: ink(3) }}>{s.elevM ? `+${s.elevM}` : "—"}</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A structured run's own segments (a sprint rep, its walk recovery, the warm-up …) · fastest pace in green, same shape as SplitsTable. */
+export function IntervalsTable({ intervals, fmtPace }: { intervals: IntervalSeg[]; fmtPace: (s: number | null) => string }) {
+  if (intervals.length < 2) return null;
+  const paces = intervals.map((s) => s.paceSec ?? 0).filter(Boolean);
+  const fastest = Math.min(...paces), slowest = Math.max(...paces);
+  const hasHr = intervals.some((s) => s.hrAvg !== null);
+  const cols = `30px 1fr 56px${hasHr ? " 52px" : ""}`;
+  const head = (t: string, right = true) => <span style={{ fontSize: 12, color: ink(4), textAlign: right ? "right" : "left" }}>{t}</span>;
+  return (
+    <div style={{ display: "grid", gap: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: 10, padding: "4px 0 6px", borderBottom: "1px solid var(--line)" }}>
+        {head("#", false)}{head("pace", false)}{head("time")}{hasHr && head("bpm")}
+      </div>
+      {intervals.map((s) => {
+        const w = s.paceSec && slowest > fastest ? 40 + (60 * (slowest - s.paceSec)) / (slowest - fastest) : 100;
+        return (
+          <div key={s.index} className="tabular-nums" style={{ display: "grid", gridTemplateColumns: cols, gap: 10, alignItems: "center", minHeight: 40, borderBottom: "1px solid var(--line)", fontSize: 15 }}>
+            <span style={{ color: ink(3) }}>{s.index}</span>
+            <span style={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 8, minWidth: 0 }}>
+              <span style={{ fontWeight: 600, color: s.paceSec === fastest ? "var(--pos)" : ink(1) }}>{fmtPace(s.paceSec)}</span>
+              <span style={{ height: 6, borderRadius: 3, background: "var(--fill-2)", overflow: "hidden" }}><span style={{ display: "block", width: `${w}%`, height: "100%", background: "var(--violet)" }} /></span>
+            </span>
+            <span style={{ textAlign: "right", color: ink(2) }}>{`${Math.floor(s.sec / 60)}:${String(s.sec % 60).padStart(2, "0")}`}</span>
+            {hasHr && <span style={{ textAlign: "right", color: ink(2) }}>{s.hrAvg ?? "—"}</span>}
           </div>
         );
       })}
