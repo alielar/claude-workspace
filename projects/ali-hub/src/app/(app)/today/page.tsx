@@ -358,7 +358,7 @@ function DoneTodayCard({ items, todos, today, workouts }: { items: ChecklistItem
   const rowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "20px 1fr auto", gap: 12, alignItems: "center", minHeight: 40, padding: "4px 0", borderBottom: "1px solid var(--line)" };
   const tick = <span aria-hidden style={{ width: 18, height: 18, borderRadius: 6, background: "var(--pos)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06060B" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>;
   return (
-    <section className="cc-card cc-rise">
+    <section className="cc-card cc-rise today-done">
       <div className="cc-card-head quiet"><span className="title">Today, done</span><span className="tail tabular-nums">{ticked.length} tick{ticked.length === 1 ? "" : "s"}{doneTodos.length ? ` · ${doneTodos.length} to-do${doneTodos.length === 1 ? "" : "s"}` : ""}{sessions.length ? ` · ${sessions.length} session${sessions.length === 1 ? "" : "s"}` : ""}</span></div>
       <div style={{ padding: "0 16px 8px" }}>
         {sessions.map((w) => (
@@ -374,8 +374,8 @@ function DoneTodayCard({ items, todos, today, workouts }: { items: ChecklistItem
         {doneTodos.map((t) => (
           <div key={t.clientId} style={rowStyle}>{tick}<span style={{ fontSize: 15, color: "var(--ink-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span><span style={{ fontSize: 13, color: "var(--ink-4)" }}>{t.area === "work" ? "Work" : "Personal"}</span></div>
         ))}
-        <style>{`.today-page .cc-card > div > *:last-child { border-bottom: none !important; }`}</style>
       </div>
+      <style>{`.today-done > div > :last-child { border-bottom: none !important; }`}</style>
     </section>
   );
 }
