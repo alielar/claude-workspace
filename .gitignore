@@ -1,1 +1,5 @@
 .vercel
+
+# impeccable downloads its engine binary per machine
+.claude/skills/impeccable/scripts/bin/
+.claude/settings.local.json

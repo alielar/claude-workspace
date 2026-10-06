@@ -1,5 +1,7 @@
 # A L I · DESIGN.md ("Quiet Morning")
 
+> **Redesign, from 2026-10-06 (Ali).** The visual constraints below were the first build's "Quiet Morning" rules. For the redesign Ali LIFTED them: no flat rule, no motion ceiling, no ban on blur, gradients, depth, web fonts or expressive type · impeccable's bolder, delight and overdrive commands may break anything in "Visual theme", "Typography" and "Motion". What STAYS: colours through tokens only (no hard-coded values in components), 44 px targets, single column on the phone and a real laptop layout (both matter equally), local-first and offline, the speed gates (usable screen under 1.5 s cold, skeletons never spinners), no filler sentences, no emojis as icons. This file is rewritten when the new direction is approved.
+
 ## Visual theme
 Flat solid surfaces, no blur, grain or gradients. One accent. Dark by default on the phone at night (automatic Night palette 20:00–07:00), light by day. Density is comfortable, not cramped; rows are 44–56 px tall.
 

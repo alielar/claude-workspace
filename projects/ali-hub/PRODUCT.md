@@ -27,3 +27,6 @@ Quiet morning. Calm, plain, confident. Says what a thing is and what to do, in a
 5. Sentence-case captions, system font, one accent, semantic pos / warn / neg; tokens only, no hard-coded colours.
 6. Every write optimistic and idempotent; everything works offline except news.
 7. Dark, light and a warm Night palette, automatic by the clock; manual choice holds.
+
+## Redesign brief (2026-10-06)
+Ali: "design-wise it still feels basic and flat · professional websites have interactivity, motion and polish · I want the hub to reach that level." The brand personality and anti-references above are still true for the CONTENT (plain words, no gamification, no metric piles); the visual restraint is no longer a principle. Both phone and laptop matter equally. References he named: Linear, Arc (open to better ones). The redesign covers the logic of each page too (objective, layout, end goal), decided in an interview before any build.

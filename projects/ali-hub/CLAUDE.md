@@ -72,6 +72,7 @@ Archived (working, out of nav): `/workouts/**`, `/library/**`, `/knowledge`, `/w
 - Bump `VERSION` in `sw.js` when cache behaviour changes. Settings → "Update app" clears caches and reloads.
 
 ### Theme — "Quiet Morning"
+- **REDESIGN NOTE 2026-10-06 (Ali): the visual rules in this section (flat surfaces, system font only, subtle motion) are LIFTED for the redesign · impeccable has full freedom, phone and laptop equal. Still binding: tokens only (never hard-coded colours), 44 px targets, local-first, the speed gates, no filler copy. See `PRODUCT.md` "Redesign brief" and the note on top of `DESIGN.md`.**
 - Flat solid surfaces (no blur/grain/gradients), **system font** (`-apple-system…`, no web fonts), body 17px, card titles 15/600, captions 13–14 sentence case. Mono (`ui-monospace`) only for clocks/counters. One accent (`--violet`: #8B7CF0 dark / #5B4BD6 light) + semantic pos/warn/neg. `--accent-soft` for selected chips, `--on-accent` for text on the accent.
 - Tokens in `globals.css` `:root` (dark). Light values under `:root[data-theme="light"]` and `@media (prefers-color-scheme: light) :root:not([data-theme="dark"])`.
 - Timer/workout screens keep the big high-contrast numerals — the one place the app may shout.
