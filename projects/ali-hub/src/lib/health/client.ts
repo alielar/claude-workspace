@@ -5,6 +5,7 @@
  */
 
 import type { NightRow, WorkoutRow, MetricPoint } from "./summary";
+import type { IntervalSeg } from "./types";
 import type { PipeStatus } from "./server";
 export type { HealthSummary, NightRow, WorkoutRow, WorkoutDetail, MetricPoint } from "./summary";
 export type { PipeStatus } from "./server";
@@ -334,4 +335,34 @@ export function sleepStreak(nights: NightRow[], minMin = 420): number {
   let n = 0;
   for (const x of nights) { if (x.totalMin !== null && x.totalMin >= minMin) n++; else break; }
   return n;
+}
+
+/**
+ * A name per interval, the way the Fitness app shows them (Warmup · Work · Recovery · Cooldown).
+ * HAE carries the segments but not Apple's step names, so the rule reads them from the shape:
+ * a rep is a short segment (60 s or less) when the run has both short and long ones, else a
+ * segment faster than the median pace; the first segment before the first rep is the warmup,
+ * the last one after the last rep the cooldown, anything else between reps a recovery.
+ */
+export type IntervalRole = "Warmup" | "Work" | "Recovery" | "Cooldown";
+export function intervalRoles(intervals: IntervalSeg[]): IntervalRole[] {
+  const n = intervals.length;
+  if (!n) return [];
+  const short = intervals.some((s) => s.sec <= 60), long = intervals.some((s) => s.sec > 60);
+  let isWork: (s: IntervalSeg) => boolean;
+  if (short && long) isWork = (s) => s.sec <= 60;
+  else {
+    const paces = intervals.map((s) => s.paceSec).filter((p): p is number => p !== null).sort((a, b) => a - b);
+    const median = paces.length ? paces[Math.floor(paces.length / 2)] : null;
+    isWork = (s) => median !== null && s.paceSec !== null && s.paceSec < median;
+  }
+  const work = intervals.map(isWork);
+  const first = work.indexOf(true), last = work.lastIndexOf(true);
+  return intervals.map((_, i) => {
+    if (work[i]) return "Work";
+    if (first === -1) return i === 0 ? "Warmup" : "Recovery";
+    if (i < first) return "Warmup";
+    if (i > last) return "Cooldown";
+    return "Recovery";
+  });
 }

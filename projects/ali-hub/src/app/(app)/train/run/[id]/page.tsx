@@ -7,10 +7,12 @@
  */
 
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
 import { useWorkoutDetail } from "@/lib/health/useHealth";
 import { fmtDur, fmtPace, fmtTime, kindLabel, paceOf, workoutKind } from "@/lib/health/client";
 import { HrLine, IntervalsTable, RouteMap, SplitsTable } from "@/components/health/charts";
+import { Fold } from "@/components/health/checkup";
+import { intervalRoles } from "@/lib/health/client";
 
 function Stat({ label, value, big }: { label: string; value: string; big?: boolean }) {
   return (
@@ -24,6 +26,10 @@ function Stat({ label, value, big }: { label: string; value: string; big?: boole
 export default function RunPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { data: w, loading } = useWorkoutDetail(decodeURIComponent(id));
+  // A structured run (sprint reps) is read by its intervals · the km splits sit folded under them (Ali 2026-10-06).
+  const structured = (w?.intervals.length ?? 0) > 1;
+  const [splitsOpen, setSplitsOpen] = useState(false);
+  const reps = w ? intervalRoles(w.intervals).filter((r) => r === "Work").length : 0;
   const kind = w ? workoutKind(w.type) : "run";
   const when = w ? new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date(w.startMs)) : "";
   const pace = w ? paceOf(w) : null;
@@ -64,19 +70,27 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
         </section>
       )}
 
-      {w && w.intervals.length > 1 && (
+      {w && structured && (
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">Intervals</span><span className="tail">fastest in green</span></div>
+          <div className="cc-card-head"><span className="title">Intervals</span><span className="tail">{reps ? `${reps} reps · fastest in green` : `${w.intervals.length} segments`}</span></div>
           <div className="cc-card-body" style={{ paddingTop: 4 }}><IntervalsTable intervals={w.intervals} fmtPace={fmtPace} /></div>
         </section>
       )}
 
-      {w && w.splits.length > 0 && (
+      {w && w.splits.length > 0 && (structured ? (
+        <section className="cc-card">
+          <button type="button" className="cc-card-head" onClick={() => setSplitsOpen((v) => !v)} aria-expanded={splitsOpen}
+            style={{ width: "100%", background: "transparent", border: "none", font: "inherit", textAlign: "left", cursor: "pointer", color: "inherit" }}>
+            <span className="title">Splits</span><span className="tail">{splitsOpen ? "per km" : `${w.splits.length} km · show`}</span>
+          </button>
+          <Fold open={splitsOpen}><div className="cc-card-body" style={{ paddingTop: 4 }}><SplitsTable splits={w.splits} fmtPace={fmtPace} /></div></Fold>
+        </section>
+      ) : (
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Splits</span><span className="tail">fastest in green</span></div>
           <div className="cc-card-body" style={{ paddingTop: 4 }}><SplitsTable splits={w.splits} fmtPace={fmtPace} /></div>
         </section>
-      )}
+      ))}
 
       {w && w.hr.length > 2 && (
         <section className="cc-card">
