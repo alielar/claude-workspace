@@ -1,4 +1,6 @@
 # A L I · DESIGN.md ("Quiet Morning")
+> **2026-10-07 · the redesign is LIVE on every page** (shell, Today, To-do, Knowledge, Train, Health, News, R2-D2, Settings · CLAUDE.md "Theme" has the facts). The visual rules below describe the look BEFORE it and are stale until this file is rewritten from the shipped code (`impeccable document`, after Ali's polish round).
+
 
 > **Redesign, from 2026-10-06 (Ali).** The visual constraints below were the first build's "Quiet Morning" rules. For the redesign Ali LIFTED them: no flat rule, no motion ceiling, no ban on blur, gradients, depth, web fonts or expressive type · impeccable's bolder, delight and overdrive commands may break anything in "Visual theme", "Typography" and "Motion". What STAYS: colours through tokens only (no hard-coded values in components), 44 px targets, single column on the phone and a real laptop layout (both matter equally), local-first and offline, the speed gates (usable screen under 1.5 s cold, skeletons never spinners), no filler sentences, no emojis as icons. This file is rewritten when the new direction is approved.
 
