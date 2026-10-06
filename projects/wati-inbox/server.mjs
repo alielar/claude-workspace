@@ -27,6 +27,7 @@ import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems, closeDueFollowups, welcomeSince, planConflicts, planDecided } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus, syncUpcoming } from './hub-sync.mjs';
 import { hubLeadRow, failedTemplates } from './db.mjs';
+import { isCpfReply } from './cpf.mjs';
 import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, restoreAfterSend, citfToday, madridIso } from './plan-engine.mjs';
 
 const PORT = Number(process.env.PORT || 8443);
@@ -182,9 +183,12 @@ async function api(req, res, path) {
   if (path === '/api/inbox') {
     const freshSuggestion = (t) => { const s = latestSuggestion(t.wa_id); return suggestionVisible(t, s, { laterScheduled: scheduled.has(t.wa_id) }) ? (s.kind === 'needs' ? 'needs' : s.kind === 'skip' ? false : true) : false; };
     // Only conversations whose 24h window is open (2026-09-29): a closed one can still be opened by number.
-    const threads = inbox().filter((t) => !!t.last_inbound_at && hoursSince(t.last_inbound_at) < 24)
-      .map((t) => ({ ...t, windowOpen: true, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null }));
-    return json(res, 200, { threads, tm: tmFlagCounts(), tbc: openTbcAlerts().map((a) => ({ ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] })), salesHub: SALES_HUB_URL, rules: planConflicts().length, plan: planStatus().ready ? { ...planCounts(planToday()), next: openPlanItems().filter((i) => i.kind !== 'ok' && i.kind !== 'wait').slice(0, 3).map((i) => ({ id: i.id, wa_id: i.wa_id, name: i.name, kind: i.kind, title: i.title, when_at: i.when_at })) } : null });
+    const view = (t) => ({ ...t, windowOpen: hoursSince(t.last_inbound_at) < 24, hoursSinceLead: hoursSince(t.last_inbound_at), suggested: freshSuggestion(t), suggesting: suggestStatus(t.wa_id)?.state || null });
+    // Replies to the CPF question have their own section (Ali, 2026-10-06), open window or not.
+    const all = inbox().filter((t) => !!t.last_inbound_at);
+    const cpf = all.filter(isCpfReply).map(view);
+    const threads = all.filter((t) => hoursSince(t.last_inbound_at) < 24 && !isCpfReply(t)).map(view);
+    return json(res, 200, { threads, cpf, tm: tmFlagCounts(), tbc: openTbcAlerts().map((a) => ({ ...a, bubbles: a.bubbles ? JSON.parse(a.bubbles) : [] })), salesHub: SALES_HUB_URL, rules: planConflicts().length, plan: planStatus().ready ? { ...planCounts(planToday()), next: openPlanItems().filter((i) => i.kind !== 'ok' && i.kind !== 'wait').slice(0, 3).map((i) => ({ id: i.id, wa_id: i.wa_id, name: i.name, kind: i.kind, title: i.title, when_at: i.when_at })) } : null });
   }
   if (path === '/api/directions') return json(res, 200, { months: MONTHS, moves: MOVES.map(({ id, label, sub, input }) => ({ id, label, sub: sub || null, input: input || null })), downsell: DOWNSELL.map((id) => ({ id, label: DOWNSELL_LABELS[id] })), acompte: ACOMPTE, formats: Object.entries(FORMATS).map(([id, f]) => ({ id, label: f.label })), levels: LEVELS });
   // France TM: what Claude flagged on the booking bot (tm-monitor.mjs).

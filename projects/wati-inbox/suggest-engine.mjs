@@ -18,6 +18,7 @@ import { readFileSync, appendFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { db, getThread, latestSuggestion, insertSuggestion, getOffer, autoSuggestionsSince, threadMessages, sentTemplates } from './db.mjs';
 import { describeDirection, describeOffer, currencyFor, MOVES } from './directions.mjs';
+import { isCpfReply, CPF_DRAFT } from './cpf.mjs';
 
 export const OUTREACH = resolve(process.env.OUTREACH_DIR || '../Wati outreach');
 export const JOURNAL = join(OUTREACH, 'playbook', '04-CAS-APPRIS.md');      // raw learned cases, appended by the app and the reviews
@@ -137,7 +138,9 @@ export async function draft(waId, direction = {}) {
   const prev = latestSuggestion(waId);
   const prevFresh = prev && (!t.last_inbound_at || prev.created_at >= t.last_inbound_at) ? prev : null;
   let extra = `\n## Offre initiale (ce qui a été proposé à l'appel, saisi par Ali)\n${offer?.format ? describeOffer(offer, cur) : 'non renseignée — ne suppose rien, laisse un [CROCHET] si un chiffre d’origine manque'}\nDevise du lead : ${cur} (pays CRM : ${t.country || 'inconnu'}).\n`;
-  if (auto) {
+  if (auto && isCpfReply(t)) {
+    extra += CPF_DRAFT;
+  } else if (auto) {
     extra += '\n## Personne n’a choisi de cap : c’est toi qui décides\n';
     extra += 'Lis la conversation et choisis toi-même le ou les moves qui s’imposent (ids possibles ci-dessous, mets-les dans `moves`), puis rédige. Si le message du lead n’appelle aucune réponse (remerciement final après une clôture, simple accusé de réception d’un message automatique, message vide ou hors sujet), réponds `skip: true` avec la raison dans `why` et aucune bulle. Si un élément de contexte INDISPENSABLE manque — l’offre initiale (format, niveau visé, heures/semaine) pour un downsell ou un acompte, ce qui a été dit à l’appel, un chiffre qu’Ali seul connaît — ne rédige pas : mets dans `needs` UNE question courte et précise pour Ali (ex. « Quelle offre a été faite à l’appel : format, niveau visé, h/semaine ? »), aucune bulle. Sinon rédige directement.\n';
     extra += 'Moves possibles :\n' + MOVES.map((m) => `- \`${m.id}\` — ${m.label} : ${m.hint.slice(0, 220)}…`).join('\n') + '\n';

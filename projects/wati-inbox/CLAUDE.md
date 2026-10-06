@@ -58,8 +58,12 @@ under a minute), the other runs queued behind each other in a background lane; n
 (variable `name`) once to every offer-rejected lead, 6–16 Oct, each on a day the Hub sends that lead nothing (nor the day
 before/after), no Sunday, max 10 a day, 12:30. Plan in `data/cpf-plan.json`; before each send the lead is re-checked
 (still OR, not paused, no Hub template today/tomorrow, no human message in 48 h, never received it) and moved or dropped.
-Swapped Hub names are fixed in `NAME_FIX`. Answers (first lead message after the send, words → yes / no / to read) in
-`data/cpf-report.md`, pushed at 20:30. Job `com.ali.wati-cpf` (`launchd/install-cpf.sh`), log `logs/cpf.log`.
+Swapped Hub names are fixed in `data/cpf-overrides.json` (git-ignored, personal data). Answers (first lead message after
+the send, words → yes / no / to read) in `data/cpf-report.md`, pushed at 20:30. Job `com.ali.wati-cpf`
+(`launchd/install-cpf.sh`), log `logs/cpf.log`. In the app (2026-10-06, `cpf.mjs`): a lead who wrote after receiving it
+leaves « To answer » for its own « CPF answers » section (open window or not), and its automatic draft is always a short
+closing (« C'est bien noté, merci pour votre retour », no offer, no question, no CPF promise; a real question from the
+lead → `needs` for Ali). Ali can still steer any of them with moves or a consigne.
 
 ## How to deploy
 There is no deploy. After a code change:

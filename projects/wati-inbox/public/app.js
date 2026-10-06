@@ -199,11 +199,13 @@ let inboxFilter = '';
 const suggPill = (t) => t.suggesting === 'drafting' || t.suggesting === 'queued' ? '<span class="pill work">Claude is drafting…</span>' : t.suggested === 'needs' ? '<span class="pill warn">Claude has a question</span>' : t.suggested ? '<span class="pill ready">draft ready</span>' : '';
 let inboxCache = null;
 async function renderInbox({ fromCache = false } = {}) {
-  const { threads, tm, tbc = [], salesHub = '', plan = null, rules = 0 } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
+  const { threads, cpf = [], tm, tbc = [], salesHub = '', plan = null, rules = 0 } = fromCache && inboxCache ? inboxCache : (inboxCache = await api('/api/inbox'));
   const q = inboxFilter.trim().toLowerCase();
   const shown = q ? threads.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : threads;
   const pending = shown.filter((t) => t.pending && !t.muted), done = shown.filter((t) => !t.pending || t.muted);
-  setBadge(threads.filter((t) => t.pending && !t.muted).length);
+  const cpfShown = q ? cpf.filter((t) => (t.name || '').toLowerCase().includes(q) || t.wa_id.includes(q.replace(/\D/g, '') || '§')) : cpf;
+  const cpfOpen = cpfShown.filter((t) => t.pending && !t.muted).length;
+  setBadge(threads.filter((t) => t.pending && !t.muted).length + cpf.filter((t) => t.pending && !t.muted).length);
   const row = (t) => `<a class="card lead-row" data-nav href="/t/${t.wa_id}">${t.pending && !t.muted ? '<span class="dot"></span>' : ''}<div class="who"><div class="name">${esc(t.name || t.wa_id)}${t.country === 'Switzerland' ? '<span class="pill">CHF</span>' : ''}${t.muted ? '<span class="pill">muted</span>' : ''}${suggPill(t)} <span class="muted small">${t.last_inbound_at ? ago(t.last_inbound_at) : ''}</span></div><div class="txt">${esc(t.last_text)}</div></div>${t.hoursSinceLead != null ? windowBadge(t.windowOpen, t.hoursSinceLead) : ''}</a>`;
   const digits = q.replace(/\D/g, '');
   const direct = /^\d{8,15}$/.test(digits) && !threads.some((t) => t.wa_id === digits) ? `<a class="card lead-row" data-nav href="/t/${digits}"><div class="who"><div class="name">Open +${digits}</div></div></a>` : '';
@@ -212,6 +214,7 @@ async function renderInbox({ fromCache = false } = {}) {
   app.innerHTML = `<header><h1>Wati Inbox${pending.length ? ` <span class="pill">${pending.length}</span>` : ''}</h1><a data-nav href="/rules" class="tmlink">Rules${rules ? ` <span class="pill warn">${rules}</span>` : ''}</a><a data-nav href="/tm" class="tmlink">France TM${tm?.unseen ? ` <span class="pill warn">${tm.unseen}</span>` : ''}</a><button id="rf" class="small">↻</button></header>
     <input class="search" id="q" placeholder="Name or number" value="${esc(inboxFilter)}" inputmode="search">${direct}
     ${planCard}${plan ? '' : hub}
+    ${cpfShown.length ? `<p class="section">CPF answers (${cpfShown.length}${cpfOpen ? `, ${cpfOpen} to answer` : ''})</p>${cpfShown.map(row).join('')}` : ''}
     ${pending.length ? `<p class="section">To answer (${pending.length})</p>${pending.map(row).join('')}` : '<p class="muted center">Nothing waiting</p>'}
     ${done.length ? `<p class="section">Answered (${done.length})</p>${done.map(row).join('')}` : ''}
     <div class="row foot">${await pushButton()}${themeButton()}</div>`;
@@ -605,7 +608,7 @@ function planCardHtml(i, { inThread = false, salesHub = '' } = {}) {
   </div>`;
 }
 function bindPlanButtons(after) {
-  document.querySelectorAll('[data-plantpl]').forEach((b) => b.onclick = async () => { try { await schedule(`/api/thread/${b.dataset.wa}/followups`, 'POST', { template: b.dataset.tpl, params: { name: b.dataset.name }, at: b.dataset.at, planId: b.dataset.plantpl }); toast(`Template scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
+  document.querySelectorAll('[data-plantpl]').forEach((b) => b.onclick = async () => { try { await schedule(`/api/thread/${b.dataset.wa}/followups`, 'POST', { template: b.dataset.tpl, params: { name: b.dataset.name, owner_name: 'Ali' }, at: b.dataset.at, planId: b.dataset.plantpl }); toast(`Template scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
   document.querySelectorAll('[data-plansched]').forEach((b) => b.onclick = async () => { const card = window.__planCards?.[b.dataset.plansched]; try { await schedule(`/api/thread/${b.dataset.wa}/followups`, 'POST', { at: b.dataset.at, bubbles: card?.bubbles || [], planId: b.dataset.plansched, suggestionId: card?.suggestion_id || null }); toast(`Scheduled for ${fmtTime(b.dataset.at)}`); after(); } catch (e) { toast(e.message); } });
   document.querySelectorAll('[data-plandone]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.plandone}`, { method: 'POST', body: { state: 'done' } }); after(); });
   document.querySelectorAll('[data-planreopen]').forEach((b) => b.onclick = async () => { await api(`/api/plan/${b.dataset.planreopen}`, { method: 'POST', body: { state: 'open' } }); after(); });
