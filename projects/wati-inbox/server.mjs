@@ -26,7 +26,7 @@ import { tbcState, tbcWatchStatus, SALES_HUB_URL, CLOSED_TEMPLATE } from './tbc-
 import { startConsolidating } from './consolidate-engine.mjs';
 import { openTbcAlerts, openTbcAlert, tbcAlertById, setTbcAlertState, tbcAlertCounts, planItems, planItemById, setPlanState, openPlanItems, planCounts, closePlanItems, closeDueFollowups, welcomeSince, planConflicts, planDecided } from './db.mjs';
 import { startHubSync, hubNextFor, hubStatus, syncUpcoming } from './hub-sync.mjs';
-import { hubLeadRow, failedTemplates } from './db.mjs';
+import { hubLeadRow, failedTemplates, setPlanBubbles } from './db.mjs';
 import { isCpfReply } from './cpf.mjs';
 import { startPlanning, plan as runPlan, planStatus, today as planToday, ignore as planIgnore, afterAliMessage, restoreAfterSend, citfToday, madridIso } from './plan-engine.mjs';
 
@@ -222,6 +222,17 @@ async function api(req, res, path) {
     if (!i) return json(res, 404, { error: 'Unknown card' });
     const verdict = b.verdict || (b.accept ? 'rule' : 'oneoff');
     try { decidePlanRule(i, verdict, b.context); } catch (e) { return json(res, 400, { error: e.message }); }
+    return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
+  }
+  // The bubbles of a follow-up card, edited by Ali on the Today screen or in the thread (2026-10-06): the card and its linked draft follow.
+  const plb = /^\/api\/plan\/(\d+)\/bubbles$/.exec(path);
+  if (plb && req.method === 'POST') {
+    const b = await body(req); const i = planItemById(Number(plb[1]));
+    if (!i) return json(res, 404, { error: 'Unknown card' });
+    const bubbles = Array.isArray(b.bubbles) ? b.bubbles.map((x) => String(x).trim()).filter(Boolean).slice(0, 6) : [];
+    if (!bubbles.length) return json(res, 400, { error: 'No bubble' });
+    setPlanBubbles(i.id, bubbles);
+    if (i.suggestion_id) { const sg = getSuggestion(i.suggestion_id); if (sg) { const prev = sg.edited ? JSON.parse(sg.edited) : {}; setSuggestionEdited(sg.id, { ...prev, bubbles }); } }
     return json(res, 200, { ok: true, item: planItem(planItemById(i.id)) });
   }
   const pli = /^\/api\/plan\/(\d+)$/.exec(path);

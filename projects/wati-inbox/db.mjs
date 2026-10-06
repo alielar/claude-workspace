@@ -331,6 +331,7 @@ export const planItemById = (id) => db.prepare('SELECT * FROM plan_items WHERE i
 export const planItems = (day) => db.prepare('SELECT * FROM plan_items WHERE day = ? ORDER BY CASE state WHEN \'open\' THEN 0 ELSE 1 END, COALESCE(when_at, hub_next_at, \'9\'), id').all(day);
 export const openPlanItems = (waId = null) => waId ? db.prepare("SELECT * FROM plan_items WHERE wa_id = ? AND state = 'open' ORDER BY id DESC").all(waId) : db.prepare("SELECT * FROM plan_items WHERE state = 'open' ORDER BY COALESCE(when_at, hub_next_at, '9')").all();
 export const planItemsFor = (waId, day) => db.prepare('SELECT * FROM plan_items WHERE wa_id = ? AND day = ? ORDER BY id DESC').all(waId, day);
+export const setPlanBubbles = (id, bubbles) => db.prepare('UPDATE plan_items SET bubbles = ?, updated_at = ? WHERE id = ?').run(JSON.stringify(bubbles), new Date().toISOString(), id);
 export const setPlanState = (id, state, note = null) => db.prepare('UPDATE plan_items SET state = ?, note = COALESCE(?, note), updated_at = ? WHERE id = ?').run(state, note, new Date().toISOString(), id);
 export const closePlanItems = (waId, state, kinds = null) => kinds
   ? db.prepare(`UPDATE plan_items SET state = ?, updated_at = ? WHERE wa_id = ? AND state = 'open' AND kind IN (${kinds.map(() => '?').join(',')})`).run(state, new Date().toISOString(), waId, ...kinds).changes
