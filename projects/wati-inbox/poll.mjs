@@ -8,7 +8,7 @@ import { pushAll } from './push.mjs';
 import { startSuggesting, scheduleAutoDraft, AUTO_DELAY_MS } from './suggest-engine.mjs';
 import { startTbcWatch, watch as tbcWatch } from './tbc-watch.mjs';
 import { closeTbcAlerts, closePlanItems, openPlanItems, setPlanState } from './db.mjs';
-import { afterAliMessage } from './plan-engine.mjs';
+import { afterAliMessage, today } from './plan-engine.mjs';
 import { laterPending, hubLeadRows } from './db.mjs';
 
 export const POLL_MS = 45_000;
@@ -45,7 +45,9 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
     try { const c = await getContact(waId); if (c) saveContact(waId, c); } catch {}
   }
   const isNew = !!lastIn && (!before || (before.last_inbound_at || '') < lastIn.at);
-  if (isNew && before) { closeTbcAlerts(waId, 'replied'); closePlanItems(waId, 'replied'); } // the lead answered: the Sales Hub warning and the day plan's card are over
+  // The lead answered: the Sales Hub warning and today's cards are over. Cards planned for a later day stay (Carmelo, 2026-10-07:
+  // « Demain sans faute » at 18:53 closed the next day's deadline check-ins, and the morning plan, seeing them 'replied', made none).
+  if (isNew && before) { closeTbcAlerts(waId, 'replied'); for (const i of openPlanItems(waId)) if (i.day <= today()) setPlanState(i.id, 'replied'); }
   // Ali answered straight from Wati after a follow-up card was written: that card is done.
   if (lastHuman) for (const i of openPlanItems(waId)) if (i.kind === 'followup' && lastHuman.at > i.at && (!i.when_at || Date.parse(i.when_at) <= Date.parse(lastHuman.at) + 120 * 60e3)) setPlanState(i.id, 'done');
   // The welcome message went out: the lead bought, the day plan's cards for them are over (Ali, 2026-10-04).
