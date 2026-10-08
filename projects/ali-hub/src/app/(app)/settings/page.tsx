@@ -16,6 +16,7 @@
 
 import { useEffect, useState } from "react";
 import { SHORTCUTS } from "@/lib/shortcuts";
+import { ACTIONS, useBindings, setBinding, isDefault, takenBy, chordOf, showKeys } from "@/lib/keymap";
 import Link from "next/link";
 import { useTheme, type ThemeChoice } from "@/lib/theme";
 import { useClientValue, useNow } from "@/lib/useClientValue";
@@ -318,9 +319,10 @@ export default function SettingsPage() {
       <section className="cc-card cc-laptop-only" id="shortcuts">
         <button type="button" onClick={() => setKeysOpen((v) => !v)} aria-expanded={keysOpen} className="cc-card-head" style={{ width: "100%", background: "none", color: "inherit", cursor: "pointer", font: "inherit", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: keysOpen ? undefined : "none", borderRadius: keysOpen ? undefined : "inherit" }}>
           <span className="title">Keyboard shortcuts</span>
-          <span className="tail">{SHORTCUTS.reduce((n, g) => n + g.items.length, 0)} keys <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: keysOpen ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
+          <span className="tail">{ACTIONS.length + SHORTCUTS.reduce((n, g) => n + g.items.length, 0)} keys <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: keysOpen ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
         </button>
         {keysOpen && <div className="cc-card-body" style={{ display: "grid", gap: 16 }}>
+          <KeysEditor />
           {SHORTCUTS.map((g) => (
             <div key={g.title}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", marginBottom: 4 }}>{g.title} · <span style={{ fontWeight: 500 }}>{g.where}</span></div>
@@ -360,6 +362,60 @@ export default function SettingsPage() {
           <span>Widgets · home screen · lock screen · Scriptable</span><span style={{ color: "var(--pos)" }}>set up</span>
         </div>
       </section>
+    </div>
+  );
+}
+
+
+/**
+ * The keys Ali can change (2026-10-08 · `src/lib/keymap.ts`): one row per action, Change records the
+ * next key or combo pressed (Esc cancels), Reset returns the default, a key another action holds is refused.
+ */
+function KeysEditor() {
+  const b = useBindings();
+  const [rec, setRec] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  useEffect(() => {
+    if (!rec) { delete document.body.dataset.recordingKeys; return; }
+    document.body.dataset.recordingKeys = "1";
+    let first: string | null = null; let timer = 0;
+    const commit = (keys: string) => {
+      const other = takenBy(keys, rec);
+      if (other) { setNote(`${showKeys(keys).join(" ")} is ${other.label}'s · pick another`); }
+      else { setBinding(rec, keys); setNote(null); }
+      setRec(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      e.preventDefault(); e.stopPropagation();
+      if (e.key === "Escape") { window.clearTimeout(timer); setRec(null); return; }
+      const chord = chordOf(e); if (!chord) return;
+      if (first) { window.clearTimeout(timer); commit(`${first} ${chord}`); return; }
+      first = chord;
+      // A plain letter may be the start of a sequence ("g" then "t") · wait a moment for the second key.
+      if (chord.length === 1) timer = window.setTimeout(() => commit(chord), 700); else commit(chord);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => { window.removeEventListener("keydown", onKey, true); window.clearTimeout(timer); delete document.body.dataset.recordingKeys; };
+  }, [rec]);
+  return (
+    <div>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", marginBottom: 4 }}>Anywhere · <span style={{ fontWeight: 500 }}>every screen · yours to change</span></div>
+      {note && <div style={{ fontSize: 13.5, color: "var(--warn)", padding: "4px 0" }}>{note}</div>}
+      <div className="cc-keys">
+        {ACTIONS.map((a) => {
+          const keys = b[a.id], on = rec === a.id;
+          return (
+            <div key={a.id} className="cc-keys-row cc-keys-edit">
+              <span>{on ? <span className="cc-keys-rec">press keys…</span> : showKeys(keys).map((k, i) => <kbd key={i}>{k}</kbd>)}</span>
+              <span><span className="l">{a.label}</span>{a.goal && <span className="g" style={{ display: "block" }}>{a.goal}</span>}</span>
+              <span className="cc-keys-act">
+                <button type="button" className="cc-btn cc-btn-ghost" onClick={() => { setNote(null); setRec(on ? null : a.id); }} style={{ minHeight: 32, fontSize: 13, padding: "0 10px" }}>{on ? "Cancel" : "Change"}</button>
+                {!isDefault(a.id, b) && !on && <button type="button" className="cc-btn cc-btn-ghost" onClick={() => setBinding(a.id, null)} style={{ minHeight: 32, fontSize: 13, padding: "0 10px", color: "var(--ink-3)" }}>Reset</button>}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

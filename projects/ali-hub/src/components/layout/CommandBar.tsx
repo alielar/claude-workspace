@@ -15,7 +15,8 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { ALL, type NavItem } from "@/lib/navigation";
-import { GO_KEYS, START_KEYS, keysBusy } from "@/lib/shortcuts";
+import { keysBusy } from "@/lib/shortcuts";
+import { ACTIONS, bindings, chordOf, hasModifier } from "@/lib/keymap";
 import { useTodos } from "@/lib/todo/useTodos";
 import { parseQuickAdd, isSleeping, serializeSubtasks, type Todo } from "@/lib/todo/types";
 import { checklistToday } from "@/lib/checklist/day";
@@ -51,30 +52,38 @@ export function CommandBar() {
   // Closing drops the focus too (2026-10-08: the invisible box kept it, so the next `c` typed into it instead of opening the bar).
   const hide = () => { setOpen(false); setQ(""); setMode("search"); setSubs(null); inputRef.current?.blur(); subsRef.current?.blur(); };
   const openSubs = () => { setSubs((v) => v ?? ""); setTimeout(() => subsRef.current?.focus(), 30); };
-  // `g` waits one second for its letter (g t = Today, g d = To-do …).
-  const goArmed = useRef<number | null>(null);
+  // A sequence's first chord ("g" of "g t") waits one second for its second.
+  const armed = useRef<{ chord: string; t: number } | null>(null);
   useEffect(() => {
+    const run = (a: (typeof ACTIONS)[number]) => {
+      if (a.run === "add") show("", "add");
+      else if (a.run === "search") { if (!document.querySelector("[data-local-search]")) show(); }
+      else if (a.run === "list") router.push("/settings#shortcuts");
+      else if (a.run === "rail") toggleRail();
+      else router.push(a.run.href);
+    };
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); if (open) hide(); else show(); return; }
       if (open && e.key === "Escape") { e.preventDefault(); hide(); return; }
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey && /^[1-8]$/.test(e.key)) {
         const n = ALL[Number(e.key) - 1]; if (n) { e.preventDefault(); router.push(n.href); } return;
       }
-      // Single letters, Gmail-style (src/lib/shortcuts.ts) · never while typing or while something is open.
-      if (keysBusy(e)) return;
-      const k = e.key;
-      if (goArmed.current) {
-        const go = GO_KEYS.find((g) => g.key === k);
-        goArmed.current = null;
-        if (go) { e.preventDefault(); router.push(go.item.href); return; }
+      if (document.body.dataset.recordingKeys) return; // Settings is recording a new shortcut
+      const chord = chordOf(e); if (!chord) return;
+      const b = bindings();
+      // A combo with ⌘, ⌃ or ⌥ fires even while typing (Ali chose it); a plain key never does, nor while something is open.
+      const combo = hasModifier(chord);
+      if (!combo && keysBusy(e)) return;
+      if (combo && document.querySelector(".cc-sheet-panel, .cc-pal.open")) return;
+      if (armed.current && Date.now() - armed.current.t < 1000) {
+        const seq = `${armed.current.chord} ${chord}`; armed.current = null;
+        const a = ACTIONS.find((x) => b[x.id] === seq);
+        if (a) { e.preventDefault(); run(a); return; }
       }
-      if (k === "g") { goArmed.current = window.setTimeout(() => { goArmed.current = null; }, 1000); return; }
-      if (k === "c") { e.preventDefault(); show("", "add"); return; }
-      if (k === "/" && !document.querySelector("[data-local-search]")) { e.preventDefault(); show(); return; }
-      if (k === "?") { e.preventDefault(); router.push("/settings#shortcuts"); return; }
-      if (k === "[") { e.preventDefault(); toggleRail(); return; }
-      const start = START_KEYS.find((s) => s.key === k);
-      if (start) { e.preventDefault(); router.push(start.href); }
+      armed.current = null;
+      if (ACTIONS.some((x) => b[x.id].startsWith(`${chord} `))) { armed.current = { chord, t: Date.now() }; return; }
+      const a = ACTIONS.find((x) => b[x.id] === chord);
+      if (a) { e.preventDefault(); run(a); }
     };
     const onOpen = (e: Event) => { const d = (e as CustomEvent<string | { add: true }>).detail; if (d && typeof d === "object") show("", "add"); else show(typeof d === "string" ? d : ""); };
     window.addEventListener("keydown", onKey);

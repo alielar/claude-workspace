@@ -7,44 +7,17 @@
  * ones in their page. This file is the one list: the handler and the Settings card both read it.
  */
 
-import { ALL, type NavItem } from "@/lib/navigation";
 
 export type Shortcut = { keys: string[]; label: string; goal: string };
+/** The keys Ali can change live in `src/lib/keymap.ts` (`ACTIONS`, `useBindings`). */
 export type ShortcutGroup = { title: string; where: string; items: Shortcut[] };
 
-/** `g` then this letter jumps to the section (Gmail's "go to"). */
-export const GO_KEYS: { key: string; item: NavItem }[] = [
-  { key: "t", item: ALL[0] }, // Today
-  { key: "d", item: ALL[1] }, // To-do
-  { key: "k", item: ALL[2] }, // Knowledge
-  { key: "r", item: ALL[3] }, // Train
-  { key: "h", item: ALL[4] }, // Health
-  { key: "n", item: ALL[5] }, // News
-  { key: "2", item: ALL[6] }, // R2-D2
-  { key: "s", item: ALL[7] }, // Settings
-];
-
-/** One letter starts something, from any screen. */
-export const START_KEYS: { key: string; href: string; label: string; goal: string }[] = [
-  { key: "b", href: "/breathe", label: "Breathe", goal: "the breathing session, picker first" },
-  { key: "m", href: "/stretch", label: "Mobility", goal: "today's mobility session, ready to start" },
-  { key: "f", href: "/train/kb1", label: "Functional", goal: "the kettlebell clock, ready to start" },
-  { key: "p", href: "/podcast", label: "Podcast", goal: "this week's episode" },
-  { key: "e", href: "/checklist", label: "Routine", goal: "edit the routine and the morning clock" },
-  { key: "w", href: "/train/report", label: "Your week", goal: "the coach's report for the week" },
-];
-
 export const SHORTCUTS: ShortcutGroup[] = [
+  // The "Anywhere" group is `ACTIONS` in src/lib/keymap.ts (Ali can change those keys in Settings); these are the fixed ones around it.
   {
     title: "Anywhere", where: "every screen",
     items: [
-      { keys: ["c"], label: "New to-do", goal: "type the line, Return saves it, the day and hour are read from the words · Tab flips Personal and Work · Shift+Return opens the subtasks box, one a line, ⌘Return saves" },
-      { keys: ["/"], label: "Search or jump", goal: "to-dos, Knowledge, the sections" },
       { keys: ["⌘", "K"], label: "The same box", goal: "also works while typing in a field" },
-      { keys: ["g", "t"], label: "Go to Today", goal: "g then a letter: t Today · d To-do · k Knowledge · r Train · h Health · n News · 2 R2-D2 · s Settings" },
-      ...START_KEYS.map((s) => ({ keys: [s.key], label: `Start ${s.label}`, goal: s.goal })),
-      { keys: ["["], label: "Fold the sidebar", goal: "icons only · the same key opens it again" },
-      { keys: ["?"], label: "This list", goal: "" },
       { keys: ["esc"], label: "Close", goal: "the pane, the box, the cursor" },
     ],
   },
