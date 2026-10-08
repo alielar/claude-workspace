@@ -86,7 +86,8 @@ export const SHORTCUTS: ShortcutGroup[] = [
 export function keysBusy(e: KeyboardEvent): boolean {
   if (e.metaKey || e.ctrlKey || e.altKey) return true;
   const el = e.target as HTMLElement | null;
-  if (el?.closest("input, textarea, select, [contenteditable]")) return true;
+  // The command bar's own box, while the bar is closed, is not "typing" (it is invisible and may still hold the focus).
+  if (el?.closest("input, textarea, select, [contenteditable]") && !el.closest(".cc-pal:not(.open)")) return true;
   if (document.querySelector('.cc-sheet-panel, .cc-pal.open, [role="dialog"]:not(.cc-pal)')) return true;
   return false;
 }

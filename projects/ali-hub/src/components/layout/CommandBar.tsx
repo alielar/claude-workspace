@@ -48,7 +48,8 @@ export function CommandBar() {
     try { setArea(localStorage.getItem("cc-todo-area") === "work" ? "work" : "personal"); } catch { setArea("personal"); }
     setTimeout(() => inputRef.current?.focus(), 30);
   };
-  const hide = () => { setOpen(false); setQ(""); setMode("search"); setSubs(null); };
+  // Closing drops the focus too (2026-10-08: the invisible box kept it, so the next `c` typed into it instead of opening the bar).
+  const hide = () => { setOpen(false); setQ(""); setMode("search"); setSubs(null); inputRef.current?.blur(); subsRef.current?.blur(); };
   const openSubs = () => { setSubs((v) => v ?? ""); setTimeout(() => subsRef.current?.focus(), 30); };
   // `g` waits one second for its letter (g t = Today, g d = To-do …).
   const goArmed = useRef<number | null>(null);
