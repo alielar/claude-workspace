@@ -31,6 +31,15 @@ it is built. Lead with the result. Numbers in a table or on their own line.
   without saying so in the reply.
 - `_archive/` is history: read it, never run from it.
 
+## Volume work (Ali 2026-10-08)
+
+Any task with many items to process (summaries, classification, extraction, tagging, drafts,
+browsing) is proposed on **Claude Haiku 5.5** (`claude-haiku-5-5`, $0.10 / $0.50 per MTok, effort
+levels, thinking off at High or below) as the worker, with this session or Sonnet 5.5 orchestrating,
+prompt caching on the shared instructions, the Batch API when nothing is urgent, a sample of 10
+checked first. Give the cost in dollars before anything runs and wait for the go. Details in memory
+`feedback_volume_work_haiku_5_5`.
+
 ## Starting a new project
 
 1. A folder under `projects/`, named plainly.
