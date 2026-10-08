@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "waId": "33695123069",
+      "kind": "wait",
+      "when": "18:00",
+      "title": "Watch for reply, 18:00 deadline reminder fires",
+      "why": "Silent since 19:55 90h/990 downsell offer yesterday; today's template reinforces the closing deadline, no contradiction.",
+      "action": "If still silent after 18:00 template, reassess before window closes 19:21.",
+      "pauseScope": "",
+      "skipTemplates": [],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [],
+      "template": ""
+    },
+    {
+      "waId": "32472851491",
+      "kind": "wait",
+      "when": "2026-10-13 09:00",
+      "title": "Wait, she said she'd come back herself",
+      "why": "She's testing another school and said she'd return on her own if it doesn't suit her; gave no deadline.",
+      "action": "No manual message; keep pause until she replies or 10-13.",
+      "pauseScope": "",
+      "skipTemplates": [],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [],
+      "template": ""
+    }
+  ],
+  "summary": "2 leads reviewed: 0 pauses, 0 followups. Manal watches the 18:00 deadline template after yesterday's 90h downsell; Soly stays paused until 10-13, she's testing another school and will come back herself."
+}

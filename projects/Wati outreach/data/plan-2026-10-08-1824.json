@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "waId": "33672996227",
+      "kind": "wait",
+      "when": "2026-10-09 10:00",
+      "title": "Wait for reply on B2B offer",
+      "why": "Lead confirmed receipt of the offer, Ali offered help with questions, no question pending.",
+      "action": "If still silent by 10-09 10:00, follow up asking if he wants to discuss the offer.",
+      "pauseScope": "",
+      "skipTemplates": [],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [],
+      "template": ""
+    }
+  ],
+  "summary": "0 pauses, 0 followups, 1 wait: Céline confirmed receipt of the B2B offer, nothing pending today."
+}
