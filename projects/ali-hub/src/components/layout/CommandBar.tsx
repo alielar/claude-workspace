@@ -17,7 +17,7 @@ import { Icon } from "@/components/Icon";
 import { ALL, type NavItem } from "@/lib/navigation";
 import { GO_KEYS, START_KEYS, keysBusy } from "@/lib/shortcuts";
 import { useTodos } from "@/lib/todo/useTodos";
-import { parseQuickAdd, isSleeping, type Todo } from "@/lib/todo/types";
+import { parseQuickAdd, isSleeping, serializeSubtasks, type Todo } from "@/lib/todo/types";
 import { checklistToday } from "@/lib/checklist/day";
 
 type Item = { kind: "add"; title: string; parse: ReturnType<typeof parseQuickAdd> } | { kind: "todo"; t: Todo } | { kind: "know"; t: Todo } | { kind: "go"; n: NavItem };
@@ -30,6 +30,11 @@ export function CommandBar() {
   const [mode, setMode] = useState<"search" | "add">("search");
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
+  // Add mode's two extra choices (Ali 2026-10-08: "I can't choose Personal or Work, or add subtasks"):
+  // the area pill (click, or Tab) and a Subtasks box (one line each · the + Subtasks pill, or Shift+Return).
+  const [area, setArea] = useState<"personal" | "work">("personal");
+  const [subs, setSubs] = useState<string | null>(null);
+  const subsRef = useRef<HTMLTextAreaElement | null>(null);
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
@@ -37,8 +42,14 @@ export function CommandBar() {
   const today = checklistToday();
   const { data, add } = useTodos(today);
 
-  const show = (pre = "", m: "search" | "add" = "search") => { setMode(m); setQ(pre); setSel(0); setOpen(true); setTimeout(() => inputRef.current?.focus(), 30); };
-  const hide = () => { setOpen(false); setQ(""); setMode("search"); };
+  const show = (pre = "", m: "search" | "add" = "search") => {
+    setMode(m); setQ(pre); setSel(0); setOpen(true); setSubs(null);
+    // The area starts on the list last open on /todo (`cc-todo-area`), Personal otherwise.
+    try { setArea(localStorage.getItem("cc-todo-area") === "work" ? "work" : "personal"); } catch { setArea("personal"); }
+    setTimeout(() => inputRef.current?.focus(), 30);
+  };
+  const hide = () => { setOpen(false); setQ(""); setMode("search"); setSubs(null); };
+  const openSubs = () => { setSubs((v) => v ?? ""); setTimeout(() => subsRef.current?.focus(), 30); };
   // `g` waits one second for its letter (g t = Today, g d = To-do …).
   const goArmed = useRef<number | null>(null);
   useEffect(() => {
@@ -99,7 +110,9 @@ export function CommandBar() {
   const pick = (it: Item) => {
     if (it.kind === "add") {
       const p = it.parse;
-      add({ title: it.title, area: "personal", dueDate: p.dueDate ?? null, dueTime: p.dueTime ?? null, evening: p.evening ?? false });
+      const lines = (subs ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+      add({ title: it.title, area, dueDate: p.dueDate ?? null, dueTime: p.dueTime ?? null, evening: p.evening ?? false,
+        ...(lines.length ? { notes: serializeSubtasks(lines.map((text) => ({ text, done: false }))), format: "checklist" as const } : {}) });
       hide();
       return;
     }
@@ -109,9 +122,19 @@ export function CommandBar() {
     else router.push(`/todo?area=${it.t.area}`);
   };
   const onKey = (e: React.KeyboardEvent) => {
+    if (mode === "add" && e.key === "Tab") { e.preventDefault(); setArea((a) => (a === "work" ? "personal" : "work")); return; }
+    if (mode === "add" && e.key === "Enter" && e.shiftKey) { e.preventDefault(); openSubs(); return; }
     if (e.key === "ArrowDown") { e.preventDefault(); setSel((s) => Math.min(items.length - 1, s + 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setSel((s) => Math.max(0, s - 1)); }
     else if (e.key === "Enter") { e.preventDefault(); const it = items[sel]; if (it) pick(it); }
+  };
+  // In the Subtasks box: Return = a new line · ⌘/Ctrl+Return (or Return on an empty last line) adds the to-do · Tab flips the area.
+  const onSubsKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab") { e.preventDefault(); setArea((a) => (a === "work" ? "personal" : "work")); return; }
+    if (e.key === "Enter") {
+      const lastEmpty = (subs ?? "").endsWith("\n") || (subs ?? "") === "";
+      if (e.metaKey || e.ctrlKey || lastEmpty) { e.preventDefault(); const it = items.find((i) => i.kind === "add"); if (it) pick(it); }
+    }
   };
 
   if (!mounted) return null;
@@ -137,8 +160,14 @@ export function CommandBar() {
             {addItem.parse.dueDate && <span className="cc-pill">{addItem.parse.dueDate === today ? "Today" : addItem.parse.dueDate}</span>}
             {addItem.parse.dueTime && <span className="cc-pill">{addItem.parse.dueTime}</span>}
             {addItem.parse.evening && <span className="cc-pill">Evening</span>}
-            <span className="cc-pill">Personal</span>
-            <span className="cc-pal-hint">⏎ adds it</span>
+            <button type="button" className={`cc-pill cc-pal-pick${area === "work" ? " on" : ""}`} onClick={() => setArea((a) => (a === "work" ? "personal" : "work"))} title="Tab flips it">{area === "work" ? "Work" : "Personal"}</button>
+            {subs === null && <button type="button" className="cc-pill cc-pal-pick" onClick={openSubs} title="Shift+Return">+ Subtasks</button>}
+            <span className="cc-pal-hint">{subs === null ? "⏎ adds it · tab Work" : "⌘⏎ adds it"}</span>
+          </div>
+        )}
+        {addItem && subs !== null && (
+          <div className="cc-pal-subs">
+            <textarea ref={subsRef} value={subs} onChange={(e) => setSubs(e.target.value)} onKeyDown={onSubsKey} rows={Math.min(6, Math.max(2, subs.split("\n").length + 1))} placeholder="One subtask a line" aria-label="Subtasks" />
           </div>
         )}
         <div className="cc-pal-res" role="listbox">

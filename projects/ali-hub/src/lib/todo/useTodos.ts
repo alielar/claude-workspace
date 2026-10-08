@@ -85,7 +85,7 @@ export function useTodos(today: string) {
     const t: Todo = {
       clientId: newTodoId(), title: partial.title.trim(), area: partial.area ?? "personal", notes: partial.notes ?? null, project: partial.project ?? null,
       dueDate: partial.dueDate ?? null, dueTime: partial.dueTime ?? null, evening: partial.evening ?? false,
-      someday: partial.someday ?? false, priority: partial.priority ?? 0, sortOrder: now, doneAt: null,
+      someday: partial.someday ?? false, priority: partial.priority ?? 0, sortOrder: now, doneAt: null, format: partial.format ?? null,
       createdAt: now, updatedAt: now, deleted: false,
     };
     return upsert(t);

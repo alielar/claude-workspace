@@ -38,7 +38,7 @@ export const SHORTCUTS: ShortcutGroup[] = [
   {
     title: "Anywhere", where: "every screen",
     items: [
-      { keys: ["c"], label: "New to-do", goal: "type the line, Return saves it, the day and hour are read from the words" },
+      { keys: ["c"], label: "New to-do", goal: "type the line, Return saves it, the day and hour are read from the words · Tab flips Personal and Work · Shift+Return opens the subtasks box, one a line, ⌘Return saves" },
       { keys: ["/"], label: "Search or jump", goal: "to-dos, Knowledge, the sections" },
       { keys: ["⌘", "K"], label: "The same box", goal: "also works while typing in a field" },
       { keys: ["g", "t"], label: "Go to Today", goal: "g then a letter: t Today · d To-do · k Knowledge · r Train · h Health · n News · 2 R2-D2 · s Settings" },
