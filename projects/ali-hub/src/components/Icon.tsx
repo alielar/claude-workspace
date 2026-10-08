@@ -6,8 +6,7 @@
 import {
   Sun, Newspaper, Settings, Target, ListChecks, Bot, HeartPulse, LayoutGrid, FileText, Search, Plus, CornerDownLeft,
   List, SquareCheck, Link2, Lock, Cake, ChevronRight, X,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 const ICONS = {
   today:    Sun,
@@ -31,6 +30,9 @@ const ICONS = {
   cake:      Cake,
   chevron:   ChevronRight,
   close:     X,
+  // The sidebar's collapse toggle (2026-10-08)
+  railClose: PanelLeftClose,
+  railOpen:  PanelLeftOpen,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

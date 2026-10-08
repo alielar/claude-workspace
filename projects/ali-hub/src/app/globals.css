@@ -282,6 +282,25 @@ html, body {
 .cc-sidebar-key { opacity: 0; transition: opacity var(--t-1); }
 .cc-sidebar-link:hover .cc-sidebar-key, .cc-sidebar-link:focus-visible .cc-sidebar-key { opacity: 1; }
 .cc-sidebar-badge { font-size: 11.5px; font-weight: 700; background: var(--violet); color: var(--on-accent); border-radius: 999px; padding: 1px 7px; min-width: 20px; text-align: center; }
+.cc-sidebar-fold {
+  display: flex; align-items: center; gap: 10px; height: 36px; width: 100%; padding: 0 10px; border-radius: 9px;
+  border: none; background: transparent; color: var(--ink-4); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: color var(--t-1) var(--easeOut), background var(--t-1) var(--easeOut);
+}
+.cc-sidebar-fold:hover { background: var(--bg-card); color: var(--ink-2); }
+/* THE RAIL (Ali 2026-10-08): `data-rail="1"` on <html>, set before first paint · the mark and the icons stay,
+   every word goes, the badge becomes a dot, the search door is a square. The width token drives the page,
+   the add bar and the dictation pill, so nothing else needs to know. */
+:root[data-rail="1"] { --sidebar-w: 64px; }
+:root[data-rail="1"] .cc-sidebar { padding: 14px 11px 12px; align-items: center; }
+:root[data-rail="1"] .cc-sidebar-label, :root[data-rail="1"] .cc-sidebar-search span, :root[data-rail="1"] .cc-sidebar-search kbd { display: none; }
+:root[data-rail="1"] .cc-sidebar-brand { padding: 4px 0 10px; justify-content: center; width: 100%; gap: 0; }
+:root[data-rail="1"] .cc-sidebar-search { width: 40px; min-height: 40px; padding: 0; justify-content: center; }
+:root[data-rail="1"] .cc-sidebar-link { width: 40px; height: 40px; padding: 0; justify-content: center; gap: 0; margin: 0 auto; }
+:root[data-rail="1"] .cc-sidebar-link .cc-sidebar-badge { position: absolute; top: 7px; right: 7px; min-width: 8px; height: 8px; padding: 0; border-radius: 999px; font-size: 0; }
+:root[data-rail="1"] .cc-sidebar-fold { width: 40px; height: 36px; padding: 0; justify-content: center; gap: 0; }
+@media (min-width: 768px) { .cc-sidebar, .app-main, .todo-addbar, .dict-pill { transition: padding-left var(--t-2) var(--easeOut), left var(--t-2) var(--easeOut), width var(--t-2) var(--easeOut); } }
+@media (prefers-reduced-motion: reduce) { .cc-sidebar, .app-main, .todo-addbar, .dict-pill { transition: none; } }
 
 /* ─── To-do quick-add bar (portal into <body>, see todo/page.tsx) ───────────── */
 .todo-addbar {

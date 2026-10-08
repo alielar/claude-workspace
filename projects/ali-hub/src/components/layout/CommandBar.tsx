@@ -9,6 +9,7 @@
  * Everything reads the phone's cached copies; adding goes through the same outbox as the To-do page.
  */
 
+import { toggleRail } from "@/lib/rail";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
@@ -59,6 +60,7 @@ export function CommandBar() {
       if (k === "c") { e.preventDefault(); show("", "add"); return; }
       if (k === "/" && !document.querySelector("[data-local-search]")) { e.preventDefault(); show(); return; }
       if (k === "?") { e.preventDefault(); router.push("/settings#shortcuts"); return; }
+      if (k === "[") { e.preventDefault(); toggleRail(); return; }
       const start = START_KEYS.find((s) => s.key === k);
       if (start) { e.preventDefault(); router.push(start.href); }
     };

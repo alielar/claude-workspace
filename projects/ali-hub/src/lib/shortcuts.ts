@@ -43,6 +43,7 @@ export const SHORTCUTS: ShortcutGroup[] = [
       { keys: ["⌘", "K"], label: "The same box", goal: "also works while typing in a field" },
       { keys: ["g", "t"], label: "Go to Today", goal: "g then a letter: t Today · d To-do · k Knowledge · r Train · h Health · n News · 2 R2-D2 · s Settings" },
       ...START_KEYS.map((s) => ({ keys: [s.key], label: `Start ${s.label}`, goal: s.goal })),
+      { keys: ["["], label: "Fold the sidebar", goal: "icons only · the same key opens it again" },
       { keys: ["?"], label: "This list", goal: "" },
       { keys: ["esc"], label: "Close", goal: "the pane, the box, the cursor" },
     ],
