@@ -77,6 +77,20 @@ export function sessionOfRow(row: { routineKey?: string | null; title: string })
 
 /** The week's days as planned · session key per weekday (null = rest), from the Routine rows' weekdays or the seed. */
 export type WeekDays = Record<DayCode, SessionKey | null>;
+
+/**
+ * ONE-OFF WEEK LAYOUTS, keyed by the week's Monday (Ali 2026-10-08, late: "exceptionally this week
+ * Push today, Pull tomorrow, the run and the bell over the weekend · next week as if nothing
+ * happened"). A week listed here replaces those days; every other week follows the Routine rows.
+ * The entry can be deleted once the week is over, it then does nothing.
+ */
+export const WEEK_OVERRIDES: Record<string, Partial<WeekDays>> = {
+  "2026-10-05": { mon: null, wed: null, thu: "push", fri: "pull", sat: "long", sun: "kb" },
+};
+export function daysForWeek(days: WeekDays, monday: string): WeekDays {
+  const o = WEEK_OVERRIDES[monday];
+  return o ? { ...days, ...o } : days;
+}
 export function weekDaysFrom(rows: { routineKey: string | null; title: string; weekdays?: string[] | null }[] | null): WeekDays {
   const out: WeekDays = { mon: null, tue: null, wed: null, thu: null, fri: null, sat: null, sun: null };
   for (const s of PROGRAM) {

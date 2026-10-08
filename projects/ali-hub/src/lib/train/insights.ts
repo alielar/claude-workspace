@@ -16,8 +16,8 @@
 
 import type { HealthSummary, NightRow, WorkoutRow } from "@/lib/health/summary";
 import { METRIC_INFO, avg, fmtDur, fmtMin, fmtPace, isoWeekOf, metricKey, metricValue, paceOf, sleepSignal, typicalRange, vitalState, workoutKind, type SignalState } from "@/lib/health/client";
-import { DAY_CODES, dayCode, workStats, type DayCode, type TrainSession } from "@/lib/train/types";
-import { PROGRAM, PROGRAM_START, sessionByKey, type SessionKey, type WeekDays } from "@/lib/train/program";
+import { DAY_CODES, DAY_LABELS, dayCode, workStats, type DayCode, type TrainSession } from "@/lib/train/types";
+import { PROGRAM, PROGRAM_START, sessionByKey, daysForWeek, type SessionKey, type WeekDays } from "@/lib/train/program";
 
 export type SlotState = "done" | "today" | "missed" | "upcoming" | "rest";
 export type DaySlot = {
@@ -50,10 +50,16 @@ const kbDetail = (s: TrainSession) => `${s.rounds ?? 0} rounds${workStats(s) ? `
  */
 export function weekPlan(args: { today: string; days: WeekDays; workouts: WorkoutRow[]; kb: TrainSession[]; weekOf?: string }): DaySlot[] {
   const mon = mondayOf(args.weekOf ?? args.today);
+  const days = daysForWeek(args.days, mon);
   const kbDone = new Map(args.kb.filter((s) => s.finishedAt !== null).map((s) => [s.date, s] as const));
+  // A Functional 30 logged by the player on another day of the week counts for the week's Functional
+  // slot (2026-10-08: "I might do both the run and the bell on Saturday") · the player's log is unambiguous.
+  const sun = shiftDay(mon, 6);
+  const kbDay = DAY_CODES.find((d) => days[d] === "kb") ?? null;
+  const kbElsewhere = kbDay ? args.kb.find((s) => s.finishedAt !== null && s.date >= mon && s.date <= sun && dayCode(s.date) !== kbDay) ?? null : null;
   return Array.from({ length: 7 }, (_, i) => {
     const date = shiftDay(mon, i), day = DAY_CODES[i];
-    const key = args.days[day];
+    const key = days[day];
     const s = key ? sessionByKey(key) : null;
     const runs = args.workouts.filter((w) => w.date === date && workoutKind(w.type) === "run");
     const strength = args.workouts.filter((w) => w.date === date && workoutKind(w.type) === "strength");
@@ -65,11 +71,13 @@ export function weekPlan(args: { today: string; days: WeekDays; workouts: Workou
     if (s?.kind === "kb") {
       if (kb) { done = true; detail = kbDetail(kb); }
       if (strength[0]) { used.add(strength[0].hkId); if (!done) { done = true; detail = strengthDetail(strength[0]); hkId = strength[0].hkId; } }
+      if (!done && kbElsewhere) { done = true; detail = `${kbDetail(kbElsewhere)} · ${DAY_LABELS[dayCode(kbElsewhere.date)]}`; }
     }
+    const kbIsMoved = kb !== null && kbElsewhere !== null && kb.date === kbElsewhere.date;
     const extra: NonNullable<DaySlot["extra"]> = [];
     for (const w of runs) if (!used.has(w.hkId)) extra.push({ label: "Run", detail: runDetail(w), hkId: w.hkId });
     for (const w of strength) if (!used.has(w.hkId)) extra.push({ label: kb && s?.kind !== "kb" ? "Functional 30" : "Strength", detail: strengthDetail(w), hkId: w.hkId });
-    if (kb && s?.kind !== "kb" && !strength.length) extra.push({ label: "Functional 30", detail: kbDetail(kb) });
+    if (kb && s?.kind !== "kb" && !strength.length && !kbIsMoved) extra.push({ label: "Functional 30", detail: kbDetail(kb) });
     const state: SlotState = !s ? "rest" : done ? "done" : date === args.today ? "today" : date < args.today ? "missed" : "upcoming";
     return { day, date, session: key, state, detail, hkId, ...(extra.length ? { extra } : {}) };
   });
