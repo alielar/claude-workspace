@@ -304,13 +304,18 @@ export function sleepSignal(n: NightRow | null, today: string): Signal {
   return { key: "sleep", label: "Sleep", state, text: `${fmtMin(n.totalMin)} · score ${n.score}` };
 }
 
-/** Movement = the last 7 full days: exercise minutes against the 150-a-week baseline, steps against 7,000 a day. */
-export function movementSignal(exercise7: number[], steps7: number[]): Signal {
-  if (!exercise7.length && !steps7.length) return { key: "movement", label: "Movement", state: "wait", text: "no days yet" };
-  const ex = exercise7.reduce((a, b) => a + b, 0);
+/**
+ * Movement = THIS WEEK's exercise minutes (Monday to today, the same number the Movement card shows ·
+ * 2026-10-08, one definition on the page) against the 150-a-week baseline prorated to the days in,
+ * steps against 7,000 a day over the last 7 full days.
+ */
+export function movementSignal(exerciseWeek: number | null, daysIn: number, steps7: number[]): Signal {
+  if (exerciseWeek === null && !steps7.length) return { key: "movement", label: "Movement", state: "wait", text: "no days yet" };
+  const ex = exerciseWeek ?? 0;
+  const due = (150 * Math.max(1, Math.min(7, daysIn))) / 7;
   const st = avg(steps7);
-  const state: SignalState = ex >= 150 || (st !== null && st >= 7000) ? "good" : ex >= 75 || (st !== null && st >= 4000) ? "ok" : "off";
-  const text = exercise7.length ? `${Math.round(ex)} exercise min in 7 days` : `${Math.round(st ?? 0).toLocaleString("en-GB")} steps a day`;
+  const state: SignalState = ex >= due || (st !== null && st >= 7000) ? "good" : ex >= due / 2 || (st !== null && st >= 4000) ? "ok" : "off";
+  const text = exerciseWeek !== null ? `${Math.round(ex)} of 150 exercise min this week` : `${Math.round(st ?? 0).toLocaleString("en-GB")} steps a day`;
   return { key: "movement", label: "Movement", state, text };
 }
 

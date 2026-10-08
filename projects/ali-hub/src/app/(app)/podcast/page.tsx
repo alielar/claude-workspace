@@ -219,7 +219,7 @@ function PodcastPlayer() {
           </>
         ) : (
           <p style={{ margin: 0, fontSize: 15, color: "var(--ink-3)" }}>
-            Today&rsquo;s episode isn&rsquo;t ready yet · it retries automatically. The written stories are on <Link href="/news" style={{ color: "var(--violet)" }}>News</Link>.
+            This week&rsquo;s episode isn&rsquo;t voiced yet · it retries by itself. The written brief is on <Link href="/news" style={{ color: "var(--violet)" }}>News</Link>.
           </p>
         )}
         <Link href="/today" style={{ fontSize: 15, color: "var(--ink-3)", textDecoration: "none" }}>← Back to Today</Link>

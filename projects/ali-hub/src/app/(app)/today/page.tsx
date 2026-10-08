@@ -339,7 +339,7 @@ function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer }: {
     </div>
     {t.notes && !celebrating && (subtasks || peek) && (
       subtasks
-        ? <SubtaskList notes={t.notes} onChange={(n) => onNotes?.(t, n)} indent={42} />
+        ? <SubtaskList notes={t.notes} onChange={(n) => onNotes?.(t, n)} indent={42} removable={false} />
         : <NotesPreview notes={t.notes} indent={42} />
     )}
     </div>

@@ -133,19 +133,31 @@ function HighlightRow({ h, onWatch }: { h: Highlight; onWatch: (id: string, watc
 }
 
 function HighlightsSection({ label, items, onWatch }: { label: string; items: Highlight[]; onWatch: (id: string, watched: boolean) => void }) {
+  // Watched rows sit behind a count (2026-10-08: six greyed rows under "all watched" were clutter) · open the
+  // fold to untick one. The open rows show six at a time.
   const [showAll, setShowAll] = useState(false);
-  const unwatched = items.filter((h) => !h.watched && !h.pending).length;
-  const shown = showAll ? items : items.slice(0, 6);
+  const [showWatched, setShowWatched] = useState(false);
+  const open = items.filter((h) => !h.watched), watched = items.filter((h) => h.watched);
+  const unwatched = open.filter((h) => !h.pending).length;
+  const shown = showAll ? open : open.slice(0, 6);
   return (
     <section className="cc-card">
       <div className="cc-card-head"><span className="title">{label}</span><span className="tail">{items.length === 0 ? "nothing new" : unwatched === 0 ? "all watched" : `${unwatched} to watch`}</span></div>
       {items.length > 0 && (
         <div>
           {shown.map((h) => <HighlightRow key={h.videoId} h={h} onWatch={onWatch} />)}
-          {items.length > 6 && (
+          {open.length > 6 && (
             <button onClick={() => setShowAll((v) => !v)} style={{ width: "100%", minHeight: 44, background: "transparent", border: "none", color: "var(--ink-3)", font: "inherit", fontSize: 14, cursor: "pointer" }}>
-              {showAll ? "Show fewer" : `Show all ${items.length}`}
+              {showAll ? "Show fewer" : `Show all ${open.length}`}
             </button>
+          )}
+          {watched.length > 0 && (
+            <>
+              <button onClick={() => setShowWatched((v) => !v)} aria-expanded={showWatched} style={{ width: "100%", minHeight: 44, background: "transparent", border: "none", color: "var(--ink-4)", font: "inherit", fontSize: 14, cursor: "pointer", textAlign: "left", padding: "0 4px" }}>
+                {watched.length} watched <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: showWatched ? "rotate(90deg)" : "none", marginLeft: 4 }}>›</span>
+              </button>
+              {showWatched && watched.map((h) => <HighlightRow key={h.videoId} h={h} onWatch={onWatch} />)}
+            </>
           )}
         </div>
       )}
@@ -345,8 +357,8 @@ export default function NewsPage() {
 
       {laptop ? (
         <div className="cc-cols">
-          <div className="cc-stack">{videosLaptop}</div>
-          <div className="cc-stack">{briefPart}{footballPart}</div>
+          <div className="cc-stack">{videosLaptop}{footballPart}</div>
+          <div className="cc-stack">{briefPart}</div>
         </div>
       ) : (
         <>
@@ -364,9 +376,8 @@ export default function NewsPage() {
         </>
       )}
 
-      <div style={{ color: "var(--ink-4)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 12 }}>
-        <span>{laptop ? "Videos play here · summaries by AI" : "Videos open in YouTube · summaries by AI"}</span>
-        <Link href="/settings" style={{ color: "var(--ink-3)", textDecoration: "none", whiteSpace: "nowrap" }}>Channels ›</Link>
+      <div style={{ color: "var(--ink-4)", fontSize: 14, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+        <Link href="/settings" style={{ color: "var(--ink-3)", textDecoration: "none", whiteSpace: "nowrap", minHeight: 44, display: "inline-flex", alignItems: "center" }}>Channels ›</Link>
       </div>
 
       <style>{`

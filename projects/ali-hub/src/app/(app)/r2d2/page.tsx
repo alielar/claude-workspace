@@ -131,6 +131,8 @@ function BatchCard({ items, worker, now }: { items: FixRequest[]; worker: FixFee
   );
 }
 
+const RECENT = 10;
+
 export default function AlaiPage() {
   // true only on the client after hydration (the composer is portalled into <body>)
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
@@ -141,6 +143,8 @@ export default function AlaiPage() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15_000); return () => clearInterval(t); }, []);
   const requests = feed.data?.requests ?? [];
+  // The thread shows the last ten (2026-10-08: forty bubbles made a 12,000 px page) · "Earlier" opens the rest.
+  const [showEarlier, setShowEarlier] = useState(false);
   const worker = feed.data?.worker ?? { seenAt: null, note: null };
   const active = requests.some((r) => r.status === "queued" || r.status === "building");
   const inFlight = requests.filter((r) => r.status === "queued" || r.status === "building");
@@ -344,7 +348,12 @@ export default function AlaiPage() {
 
       {/* The thread */}
       <div style={{ display: "grid", gap: 18 }}>
-        {requests.map((r) => <Bubble key={r.clientId} r={r} now={now} landed={justLanded(r)} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} onEdit={(t) => editText(r.id, t)} />)}
+        {requests.length > RECENT && !showEarlier && (
+          <button type="button" onClick={() => setShowEarlier(true)} className="cc-btn cc-btn-ghost" style={{ justifySelf: "center", minHeight: 40, fontSize: 14, color: "var(--ink-3)" }}>
+            Earlier · {requests.length - RECENT} more
+          </button>
+        )}
+        {(showEarlier ? requests : requests.slice(-RECENT)).map((r) => <Bubble key={r.clientId} r={r} now={now} landed={justLanded(r)} onZoom={setZoom} onCancel={() => patch(r.id, "skipped")} onRetry={() => patch(r.id, "held")} onEdit={(t) => editText(r.id, t)} />)}
         {inFlight.length > 0 && <BatchCard items={inFlight} worker={worker} now={now} />}
         <div ref={endRef} />
       </div>

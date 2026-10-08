@@ -211,6 +211,8 @@ export async function POST() {
     `UPDATE kb_workouts SET name = 'Functional 30' WHERE key = 'kb1' AND name = 'Kettlebell 30'`,
     `UPDATE train_objectives SET title = REPLACE(title, 'Kettlebell 30', 'Functional 30') WHERE title LIKE 'Kettlebell 30%'`,
     `UPDATE train_objectives SET title = REPLACE(title, 'the kettlebell', 'the functional session') WHERE title LIKE '%the kettlebell%'`,
+    // ── 2026-10-08: the saved weekly reports carry the objectives as they stood · same rename in the snapshot ──
+    `UPDATE train_reports SET content = REPLACE(REPLACE(content, 'Kettlebell 30', 'Functional 30'), 'the kettlebell all in', 'the functional session all in') WHERE content LIKE '%Kettlebell 30%' OR content LIKE '%the kettlebell all in%'`,
     `UPDATE checklist_items SET notes = '2 sessions of 10 minutes, alternating · 10 s rests'
       WHERE routine_key = 'stretch' AND (notes IS NULL OR notes NOT LIKE '2 sessions%')`,
     // ── Calendar (Google iCal feeds → tickable work blocks) ─────────────────

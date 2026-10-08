@@ -27,6 +27,7 @@ import { Sheet, openPicker, useKeyboardInset } from "./sheet";
 import { useTodos } from "@/lib/todo/useTodos";
 import { newTodoId } from "@/lib/todo/types";
 import { checklistToday, dayPart } from "@/lib/checklist/day";
+import { useLaptop } from "@/lib/useLaptop";
 import { playDoneSound } from "@/lib/todo/celebrate";
 import {
   addDays, AREAS, badgeCount, bucketOf, fmtDue, isSleeping, parseQuickAdd, sortTodos,
@@ -394,20 +395,38 @@ export default function TodoPage() {
     </div>
   );
 
+  const laptop = useLaptop();
+  const vault = sleeping.length > 0 && (
+      <section className="cc-card">
+        <button onClick={() => setShowVault((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showVault ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+          <span className="title">Vault</span><span className="tail">{sleeping.length} sleeping {showVault ? "▴" : "▾"}</span>
+        </button>
+        {showVault && (
+          <div style={{ padding: "0 0 6px" }}>
+            {sleeping.map((t) => (
+              <button key={t.clientId} onClick={() => setOpen(t)}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 16px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+                  <span style={{ display: "block", fontSize: 13.5, color: "var(--ink-3)", marginTop: 1 }}>
+                    {(t.area ?? "personal") === "list" ? "knowledge" : t.area === "work" ? "work" : "personal"} · wakes {new Date(`${t.wakeDate}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </span>
+                <span style={{ fontSize: 13, color: "var(--ink-4)" }}>›</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+  );
+
   /** One segment's content · rendered for the current segment and, while sliding, for the next. */
   const pane = (a: Area) => {
     const { openTasks, doneToday, groups } = forArea(a);
-    return (
-      <>
-        {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
-
-        {data && openTasks.length === 0 && (
-          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
-            Nothing here.
-          </div></div>
-        )}
-
-        {groups.filter((g) => g.items.length > 0).map((g) => {
+    // LAPTOP (2026-10-08): two columns · what is due (Overdue to Later) left, Someday, Done and the Vault right.
+    const live = groups.filter((g) => g.items.length > 0);
+    const near = live.filter((g) => g.key !== "someday"), far = live.filter((g) => g.key === "someday");
+    const group = (g: (typeof live)[number]) => {
           const isOpen = openGroups[g.key] ?? !!g.openByDefault;
           const folded = !!g.foldable && !isOpen;
           const nowish = g.key === "overdue" || g.key === "today" || g.key === "evening";
@@ -435,23 +454,37 @@ export default function TodoPage() {
               </div>
             </section>
           );
-        })}
-
-        {doneToday.length > 0 && (
-          <section className="cc-card">
-            <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-              <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
-            </button>
-            {showDone && <div className="cc-card-list">{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} />)}</div>}
-          </section>
+        };
+    const done = doneToday.length > 0 && (
+      <section className="cc-card">
+        <button onClick={() => setShowDone((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showDone ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
+          <span className="title">Done</span><span className="tail">{doneToday.length} {showDone ? "▴" : "▾"}</span>
+        </button>
+        {showDone && <div className="cc-card-list">{doneToday.map((t) => <Row key={t.clientId} t={t} today={today} showDate={false} onToggle={() => toggleDone(t)} onOpen={() => setOpen(t)} onNotes={(n) => upsert({ ...t, notes: n })} />)}</div>}
+      </section>
+    );
+    const head = (
+      <>
+        {loading && !data && <div className="cc-card"><div className="cc-card-body" style={{ display: "grid", gap: 10 }}>{[0, 1, 2].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div></div>}
+        {data && openTasks.length === 0 && (
+          <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.6 }}>
+            Nothing here.
+          </div></div>
         )}
       </>
+    );
+    if (!laptop) return <>{head}{live.map(group)}{done}</>;
+    return (
+      <div className="cc-cols">
+        <div className="cc-stack">{head}{near.map(group)}{near.length === 0 && openTasks.length > 0 && <div className="cc-card"><div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-3)" }}>Nothing due.</div></div>}</div>
+        <div className="cc-stack">{far.map(group)}{done}{vault}</div>
+      </div>
     );
   };
 
   const moving = slide.neighbour !== null || slide.settle;
   return (
-    <div style={{ display: "grid", gap: 16, maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}>
+    <div className={laptop ? "cc-wide" : undefined} style={{ display: "grid", gap: 16, maxWidth: laptop ? undefined : 560, margin: "0 auto", width: "100%", paddingBottom: 84, touchAction: "pan-y" }}>
       <div className="todo-head">
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
@@ -481,30 +514,8 @@ export default function TodoPage() {
         )}
       </div>
 
-      {/* Vault · far-future items, all areas together */}
-      {sleeping.length > 0 && (
-        <section className="cc-card">
-          <button onClick={() => setShowVault((v) => !v)} className="cc-card-head" style={{ width: "100%", background: "transparent", border: "none", borderBottom: showVault ? undefined : "none", color: "inherit", font: "inherit", cursor: "pointer", textAlign: "left" }}>
-            <span className="title">Vault</span><span className="tail">{sleeping.length} sleeping {showVault ? "▴" : "▾"}</span>
-          </button>
-          {showVault && (
-            <div style={{ padding: "0 0 6px" }}>
-              {sleeping.map((t) => (
-                <button key={t.clientId} onClick={() => setOpen(t)}
-                  style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center", width: "100%", minHeight: 54, padding: "8px 16px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }}>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
-                    <span style={{ display: "block", fontSize: 13.5, color: "var(--ink-3)", marginTop: 1 }}>
-                      {(t.area ?? "personal") === "list" ? "knowledge" : t.area === "work" ? "work" : "personal"} · wakes {new Date(`${t.wakeDate}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </span>
-                  </span>
-                  <span style={{ fontSize: 13, color: "var(--ink-4)" }}>›</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+      {/* Vault · far-future items, all areas together · on the laptop it sits in the pane's right column */}
+      {!laptop && vault}
 
       {/* Quick add · pinned above the tab bar. Rendered into <body> through a portal (2026-09-14 evening:
           on the laptop the bar sometimes sat 60 px up, mid-page · a fixed box inside the page tree
@@ -512,7 +523,7 @@ export default function TodoPage() {
           position lives in globals.css `.todo-addbar`. */}
       {mounted && createPortal(
       <form className="todo-addbar" onSubmit={(e) => { e.preventDefault(); quickSave(); }} style={kb > 0 ? ({ "--kb": `${kb}px` } as React.CSSProperties) : undefined}>
-        <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 6 }}>
+        <div style={{ maxWidth: laptop ? 1108 : 560, margin: "0 auto", display: "grid", gap: 6 }}>
           {(readSomething || literal) && text.trim() && (
             <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, minHeight: 28 }}>
               <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

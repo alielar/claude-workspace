@@ -120,14 +120,14 @@ function AppleWatchCard() {
           <span>Sleep · {data ? (data.lastSleep ? `night of ${data.lastSleep.date}${fmtMin(data.lastSleep.totalMin)}` : "nothing yet") : "—"}</span>
           <span>Workouts · {data ? (data.lastWorkout ? `${data.lastWorkout.type} on ${data.lastWorkout.date}` : "nothing yet") : "—"}</span>
           <span>Last post · {data ? (data.lastPost ? `${stamp(data.lastPost.receivedAt)}${data.lastPost.automation ? ` · ${data.lastPost.automation}` : ""}` : "nothing yet") : "—"}</span>
-          {data?.pipe && data.pipe.posts > 0 && (
-            <span>Carrying · {[...data.pipe.carried.map(metricWords), ...(data.pipe.workoutsSeen ? ["workouts"] : [])].join(", ") || "nothing"}{!data.pipe.sleepSeen ? " · no sleep" : ""}{!data.pipe.workoutsSeen ? " · no workouts" : ""}</span>
-          )}
         </div>
         {note && <div style={{ color: "var(--warn)" }}>{note}</div>}
         <button className="cc-btn cc-btn-ghost" onClick={() => setOpen((v) => !v)} style={{ minHeight: 40, justifySelf: "start", fontSize: 14 }}>{open ? "Hide setup" : "Setup"}</button>
         {open && data?.setup && (
           <div style={{ display: "grid", gap: 6 }}>
+            {data.pipe && data.pipe.posts > 0 && (
+              <span>Carrying · {[...data.pipe.carried.map(metricWords), ...(data.pipe.workoutsSeen ? ["workouts"] : [])].join(", ") || "nothing"}{!data.pipe.sleepSeen ? " · no sleep" : ""}{!data.pipe.workoutsSeen ? " · no workouts" : ""}</span>
+            )}
             {(["url", "key"] as const).map((what) => {
               const val = what === "url" ? data.setup.url : data.setup.key;
               return (
@@ -241,6 +241,12 @@ export default function SettingsPage() {
     setSoundsState(soundsOn());
   }, []);
   const setSounds = (v: "on" | "off") => { setSoundsOn(v === "on"); setSoundsState(v === "on"); };
+  // The shortcuts list folds (2026-10-08: it was 60 % of the page) · the ? key arrives with #shortcuts and opens it.
+  const [keysOpen, setKeysOpen] = useState(false);
+  useEffect(() => {
+    const check = () => { if (window.location.hash === "#shortcuts") { setKeysOpen(true); setTimeout(() => document.getElementById("shortcuts")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); } };
+    check(); window.addEventListener("hashchange", check); return () => window.removeEventListener("hashchange", check);
+  }, []);
   const standalone = useClientValue(
     () => window.matchMedia("(display-mode: standalone)").matches
        || ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true),
@@ -298,7 +304,7 @@ export default function SettingsPage() {
 
 
       {!standalone && (
-        <section className="cc-card">
+        <section className="cc-card cc-phone-only">
           <div className="cc-card-head"><span className="title">Install on your phone</span></div>
           <div className="cc-card-body" style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.5 }}>
             {isIOS
@@ -310,8 +316,11 @@ export default function SettingsPage() {
 
       {/* Keyboard shortcuts · the one list (src/lib/shortcuts.ts), laptop only (Ali 2026-10-07: nothing on the pages themselves) */}
       <section className="cc-card cc-laptop-only" id="shortcuts">
-        <div className="cc-card-head"><span className="title">Keyboard shortcuts</span><span className="tail">laptop</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 16 }}>
+        <button type="button" onClick={() => setKeysOpen((v) => !v)} aria-expanded={keysOpen} className="cc-card-head" style={{ width: "100%", background: "none", color: "inherit", cursor: "pointer", font: "inherit", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: keysOpen ? undefined : "none", borderRadius: keysOpen ? undefined : "inherit" }}>
+          <span className="title">Keyboard shortcuts</span>
+          <span className="tail">{SHORTCUTS.reduce((n, g) => n + g.items.length, 0)} keys <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: keysOpen ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
+        </button>
+        {keysOpen && <div className="cc-card-body" style={{ display: "grid", gap: 16 }}>
           {SHORTCUTS.map((g) => (
             <div key={g.title}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", marginBottom: 4 }}>{g.title} · <span style={{ fontWeight: 500 }}>{g.where}</span></div>
@@ -325,7 +334,7 @@ export default function SettingsPage() {
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </section>
 
       <AppleWatchCard />

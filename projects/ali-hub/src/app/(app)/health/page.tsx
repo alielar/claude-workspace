@@ -185,6 +185,8 @@ function Readings({ rows, today, days30 }: { rows: VitalRow[]; today: string; da
   const [open, setOpen] = useState<string | null>(null);
   const latest = rows.map((r) => r.date).filter((d): d is string => d !== null).sort().pop() ?? null;
   const fmtV = (r: VitalRow) => (v: number) => r.key === "sleep" ? fmtMin(Math.round(v * 60)) : fmtMetric(v, r.unit, r.dp);
+  // The range ends in whole numbers (2026-10-08: "45.6 bpm to 68.4 bpm" read as false precision) · temperature keeps one decimal.
+  const fmtR = (r: VitalRow) => (v: number) => r.key === "sleep" ? fmtMin(Math.round(v * 60)) : fmtMetric(v, r.unit, r.unit === "°C" ? 1 : 0);
   const ordered = [...rows].sort((a, b) => (a.key === "sleep" ? 1 : 0) - (b.key === "sleep" ? 1 : 0)); // sleep last, the night checks first
   return (
     <section className="cc-card" id="h-recovery">
@@ -194,7 +196,7 @@ function Readings({ rows, today, days30 }: { rows: VitalRow[]; today: string; da
           const w = stateWords(r), on = open === r.key;
           const pts = days30.map((d) => ({ label: dm(d), v: r.pts.find((p) => p.date === d)?.v ?? null }));
           const safe = r.info?.safe ?? (r.key === "sleep" ? { lo: 7, hi: 9, text: "Adults need 7 to 9 h" } : undefined);
-          const rangeText = r.range ? `${w.text} ${fmtV(r)(r.range.lo)} to ${fmtV(r)(r.range.hi)}` : w.text;
+          const rangeText = r.range ? `${w.text} ${fmtR(r)(r.range.lo)} to ${fmtR(r)(r.range.hi)}` : w.text;
           return (
             <div key={r.key} style={{ borderBottom: i < ordered.length - 1 ? "1px solid var(--line)" : "none" }}>
               <button onClick={() => setOpen(on ? null : r.key)} aria-expanded={on}
@@ -213,7 +215,7 @@ function Readings({ rows, today, days30 }: { rows: VitalRow[]; today: string; da
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     <div style={{ display: "grid", gap: 2 }}>
                       <span style={{ fontSize: 12, color: "var(--ink-4)" }}>Your range</span>
-                      <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-2)" }}>{r.range ? `${fmtV(r)(r.range.lo)} to ${fmtV(r)(r.range.hi)}` : `after ${RANGE_DAYS} nights`}</span>
+                      <span className="tabular-nums" style={{ fontSize: 14, color: "var(--ink-2)" }}>{r.range ? `${fmtR(r)(r.range.lo)} to ${fmtR(r)(r.range.hi)}` : `after ${RANGE_DAYS} nights`}</span>
                     </div>
                     <div style={{ display: "grid", gap: 2 }}>
                       <span style={{ fontSize: 12, color: "var(--ink-4)" }}>Typical adult</span>
@@ -450,13 +452,11 @@ export default function HealthPage() {
   const now = useNow();
   const note = data && nights.length === 0 && now ? pipeNote(data.pipe, "sleep", now) : null;
 
-  // The three signals · movement from the last 7 full days (today is only partly measured).
+  // The three signals · steps from the last 7 full days (today is only partly measured), exercise = this week.
   const full7 = lastNDays(8, today).slice(0, 7);
-  const ex7 = known.apple_exercise_time ? full7.map((d) => valueOn(known.apple_exercise_time, METRIC_INFO.apple_exercise_time, d)).filter((v): v is number => v !== null) : [];
   const st7 = known.step_count ? full7.map((d) => valueOn(known.step_count, METRIC_INFO.step_count, d)).filter((v): v is number => v !== null) : [];
   const recovery = recoverySignal(vitals);
   const offRow = vitals.find((r) => r.state !== null && r.state !== "typical");
-  const read = dayRead(recovery, sleepSignal(last, today), movementSignal(ex7, st7), offRow ? offRow.label : undefined);
 
   const fitnessKeys = FITNESS_KEYS.filter((k) => known[k]);
   const restKeys = Object.keys(METRIC_INFO).filter((k) => known[k] && !METRIC_INFO[k].vital && !(ACTIVITY_TILES as readonly string[]).includes(k) && !FITNESS_KEYS.includes(k));
@@ -466,6 +466,7 @@ export default function HealthPage() {
   const dowIdx = (new Date(today + "T12:00:00").getDay() + 6) % 7;
   const weekDays = days14.slice(days14.length - 1 - dowIdx);
   const weekEx = known.apple_exercise_time ? weekDays.map((d) => valueOn(known.apple_exercise_time, METRIC_INFO.apple_exercise_time, d) ?? 0).reduce((a, b) => a + b, 0) : null;
+  const read = dayRead(recovery, sleepSignal(last, today), movementSignal(weekEx, dowIdx + 1, st7), offRow ? offRow.label : undefined);
   const insights = hasAny ? insightsFor({ vitals, night: last, nights, exerciseWeekMin: weekEx, steps7: st7, today }) : [];
   const series14 = (k: string) => (known[k] ? days14.map((d) => valueOn(known[k], METRIC_INFO[k], d)) : days14.map(() => null));
   const week = hasAny ? weekBrief({ nights, today, daily: { exercise: series14("apple_exercise_time"), steps: series14("step_count"), rhr: series14("resting_heart_rate"), hrv: series14("heart_rate_variability") } }) : null;
@@ -495,10 +496,10 @@ export default function HealthPage() {
             {insights.length > 0 && <Reveal i={1}><Insights items={insights} /></Reveal>}
             {week && <Reveal i={2}><Changed brief={week} /></Reveal>}
             {vitals.length > 0 && <Reveal i={3}><Readings rows={vitals} today={today} days30={days30} /></Reveal>}
-            {last && <Reveal i={4} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal>}
           </div>
           <div className="cc-stack">
             {ACTIVITY_TILES.some((k) => known[k]) && <Reveal i={2} id="h-movement"><Movement known={known} today={today} days14={days14} /></Reveal>}
+            {last && <Reveal i={3} id="h-sleep"><Sleep nights={nights} today={today} days7={days7} days30={days30} /></Reveal>}
             {fitnessKeys.length > 0 && <Reveal i={3}><RowsCard title="Fitness" tail="slow numbers · months, not days" keys={fitnessKeys} known={known} today={today} days30={days30} /></Reveal>}
             {restKeys.length > 0 && <Reveal i={4}><RowsCard title="All measures" keys={restKeys} known={known} today={today} days30={days30} closed /></Reveal>}
             {unknown.length > 0 && (

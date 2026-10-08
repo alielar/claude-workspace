@@ -459,7 +459,8 @@ function Grading({ job }: { job: GradeJob }) {
   );
 }
 
-export function MindPane() {
+/** `cols` (the laptop, 2026-10-08): the session left, Progress · Delivery · Topics right. */
+export function MindPane({ cols = false }: { cols?: boolean } = {}) {
   const { data, loading, writing, writeBrief, retire, skip } = useMind();
   const [reading, setReading] = useState(false);
   const [speaking, setSpeaking] = useState<MindPart | null>(null);
@@ -482,13 +483,9 @@ export function MindPane() {
   if (!data) return <div style={{ fontSize: 15, color: "var(--ink-3)" }}>Could not load today&apos;s session.</div>;
   const cb = data.callback, nt = data.newTopic;
   const cbState = data.done.callback ? "done" : cb ? "todo" : "none";
-  return (
-    <div style={{ display: "grid", gap: 18 }}>
-      {!data.sttReady && <div style={{ fontSize: 14, color: "var(--warn)", padding: "0 2px" }}>Speech-to-text not connected · add DEEPGRAM_API_KEY on Vercel, then redeploy.</div>}
-
-      {/* Progress first (Ali 2026-10-03) */}
-      {points.length > 0 && <Reveal i={0}><Progress points={points} topics={data.topics.length} /></Reveal>}
-
+  const progress = points.length > 0 && <Reveal i={0}><Progress points={points} topics={data.topics.length} /></Reveal>;
+  const session = (
+    <>
       <Reveal i={1}><Steps cbState={cbState} newState={data.done.new ? "done" : "todo"} /></Reveal>
 
       {/* 1 · Callback */}
@@ -558,6 +555,10 @@ export function MindPane() {
         </div>
       </section></Reveal>
 
+    </>
+  );
+  const side = (
+    <>
       {/* Delivery analytics */}
       {points.length >= 2 && <Reveal i={4}><Analytics points={points} /></Reveal>}
 
@@ -584,6 +585,20 @@ export function MindPane() {
             ))}
           </div>
         </section></Reveal>
+      )}
+
+    </>
+  );
+  return (
+    <div style={{ display: "grid", gap: 18 }}>
+      {!data.sttReady && <div style={{ fontSize: 14, color: "var(--warn)", padding: "0 2px" }}>Speech-to-text not connected · add DEEPGRAM_API_KEY on Vercel, then redeploy.</div>}
+      {cols ? (
+        <div className="cc-cols">
+          <div className="cc-stack">{session}</div>
+          <div className="cc-stack">{progress}{side}</div>
+        </div>
+      ) : (
+        <>{progress}{session}{side}</>
       )}
 
       {reading && nt && <Reading topic={nt} onClose={closeBrief} />}

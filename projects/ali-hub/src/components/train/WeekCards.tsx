@@ -36,12 +36,12 @@ export function WeekStrip({ slots, today }: { slots: DaySlot[]; today: string })
         const inner = (
           <>
             <span className="tabular-nums" style={{ fontSize: 11.5, color: isToday ? "var(--violet)" : "var(--ink-4)", fontFamily: "var(--f-mono)", fontWeight: isToday ? 700 : 500 }}>{DAY_LABELS[d.day].toUpperCase().slice(0, 2)}</span>
-            <span style={{ fontSize: 13, fontWeight: s ? 600 : 400, lineHeight: 1.2, color: !s ? "var(--ink-4)" : d.state === "missed" ? "var(--neg)" : d.state === "upcoming" ? "var(--ink-2)" : "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>{s ? s.short : "rest"}</span>
+            <span style={{ fontSize: 12.5, letterSpacing: "-0.01em", fontWeight: s ? 600 : 400, lineHeight: 1.2, color: !s ? "var(--ink-4)" : d.state === "missed" ? "var(--neg)" : d.state === "upcoming" ? "var(--ink-2)" : "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>{s ? s.short : "rest"}</span>
             <span aria-hidden style={{ width: 8, height: 8, borderRadius: 99, border: `2px solid ${s ? stateColor(d.state) : "transparent"}`, background: s && (d.state === "done" || d.state === "missed") && drawn ? stateColor(d.state) : "transparent", transition: `background 360ms var(--easeOut) ${120 + i * 70}ms` }} />
             {d.extra?.length ? <span aria-label="extra session" style={{ fontSize: 10, color: "var(--pos)", lineHeight: 1 }}>+{d.extra.length}</span> : null}
           </>
         );
-        const style: React.CSSProperties = { display: "grid", justifyItems: "center", alignContent: "start", gap: 5, padding: "8px 2px 7px", borderRadius: 12, minWidth: 0, textDecoration: "none", color: "inherit", background: isToday ? "var(--accent-soft)" : "transparent", border: `1px solid ${isToday ? "var(--violet)" : "transparent"}` };
+        const style: React.CSSProperties = { display: "grid", justifyItems: "center", alignContent: "start", gap: 5, padding: "8px 0 7px", borderRadius: 12, minWidth: 0, textDecoration: "none", color: "inherit", background: isToday ? "var(--accent-soft)" : "transparent", border: `1px solid ${isToday ? "var(--violet)" : "transparent"}` };
         const label = `${DAY_LABELS[d.day]} · ${s ? s.name : "rest"}${d.detail ? ` · ${d.detail}` : ""}`;
         return d.hkId
           ? <Link key={d.date} role="listitem" href={`/train/run/${encodeURIComponent(d.hkId)}`} style={style} aria-label={label}>{inner}</Link>
@@ -151,7 +151,7 @@ export function ReportCard({ report }: { report: WeekReport | null }) {
     <section className="cc-card">
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="cc-card-head" style={{ width: "100%", background: "none", color: "inherit", cursor: "pointer", font: "inherit", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: open ? undefined : "none", borderRadius: open ? undefined : "inherit" }}>
         <span className="title">Last week</span>
-        <span className="tail tabular-nums">{report.sessions.done} of {report.sessions.planned} · {range} <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: open ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
+        <span className="tail tabular-nums">{report.sessions.planned > 0 ? `${report.sessions.done} of ${report.sessions.planned}` : `${report.sessions.done} session${report.sessions.done === 1 ? "" : "s"}`} · {range} <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: open ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
       </button>
       <Fold open={open}>
         <div className="cc-card-body" style={{ display: "grid", gap: 10 }}>

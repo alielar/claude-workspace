@@ -36,6 +36,7 @@ import { useClientValue, useNow } from "@/lib/useClientValue";
 import { useEffect, useState } from "react";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import { MindPane } from "@/components/mind/MindPane";
+import { useLaptop } from "@/lib/useLaptop";
 import { fmtDay, fmtDur, fmtKm, fmtPace, isoWeekOf, kindLabel, paceOf, pipeNote, weekTotals, workoutKind, type WorkoutRow } from "@/lib/health/client";
 import { Bars } from "@/components/health/charts";
 import { CountUp, Reveal, useDrawn } from "@/components/health/checkup";
@@ -43,7 +44,7 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import type { ChecklistData } from "@/lib/checklist/types";
 import { PROGRAMS } from "@/lib/train/programs";
 import { beforeProgram, readiness, trainInsights, weekPlan, weekReport } from "@/lib/train/insights";
-import { weekDaysFrom } from "@/lib/train/program";
+import { weekDaysFrom, sessionByKey } from "@/lib/train/program";
 import { WeekStrip, TodayBlock, NotesCard, ReportCard } from "@/components/train/WeekCards";
 import { ObjectivesCard, CoachCard, HeadLine } from "@/components/train/CoachCards";
 import { signalColor } from "@/lib/health/client";
@@ -152,6 +153,8 @@ export default function TrainPage() {
   }, []);
   const setPart = (p: Part) => { setPartState(p); try { localStorage.setItem("cc-train-body", p); } catch { /* ignore */ } };
   const half = part === "mind" ? "mind" : "body";
+  const laptop = useLaptop();
+  const [heroOpen, setHeroOpen] = useState(false);
   const { data: health } = useHealthSummary();
   const watch = health?.workouts ?? [];
   const runs = watch.filter((w) => workoutKind(w.type) === "run");
@@ -214,7 +217,7 @@ export default function TrainPage() {
   // Why a run is not here yet · the last post from the phone (Health Auto Export syncs hourly, instantly on a widget tap).
   const lastPost = health?.pipe.lastAt ?? null;
   const syncLine = lastPost !== null && nowMs
-    ? `Last post from the phone ${new Date(lastPost).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}${nowMs - lastPost > 20 * 3600_000 ? ` on ${fmtDay(new Date(lastPost).toISOString().slice(0, 10), today).toLowerCase()}` : ""} · a new run lands when Health Auto Export syncs · tap its widget to sync now.`
+    ? `Last post from the phone ${new Date(lastPost).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}${nowMs - lastPost > 20 * 3600_000 ? ` on ${fmtDay(new Date(lastPost).toISOString().slice(0, 10), today).toLowerCase()}` : ""}`
     : null;
 
   const progressData = { today, workouts: watch, kb: kbSessions, metrics: health?.metrics ?? null };
@@ -239,12 +242,18 @@ export default function TrainPage() {
         </div>
       </div>
 
-      <div className="cc-cols">
-      <div className="cc-stack">
-      {/* THE HERO · this week in one card: the strip, today, readiness, the head */}
-      <section className="cc-card cc-rise" style={{ borderColor: !before && todaySlot.session && todaySlot.state !== "done" ? "var(--violet)" : undefined }}>
-        <div className="cc-card-head"><span className="title">This week</span><span className="tail tabular-nums">{before ? "starts Monday" : ov || health ? `${doneN} of ${plannedN} sessions` : "—"}</span></div>
-        <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
+      {/* THE HERO · this week in one card: the strip, today, readiness, the head · on Mind it folds to its head line (2026-10-08) */}
+      {(() => {
+        const mind = part === "mind";
+        const showBody = !mind || heroOpen;
+        const headStyle: React.CSSProperties | undefined = mind ? { width: "100%", background: "none", color: "inherit", cursor: "pointer", font: "inherit", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: showBody ? undefined : "none", borderRadius: showBody ? undefined : "inherit", textAlign: "left" } : undefined;
+        const tail = before ? "starts Monday" : ov || health ? `${doneN} of ${plannedN} sessions` : "—";
+        const hero = (
+      <section className="cc-card cc-rise" style={{ borderColor: !mind && !before && todaySlot.session && todaySlot.state !== "done" ? "var(--violet)" : undefined }}>
+        {mind
+          ? <button type="button" onClick={() => setHeroOpen((v) => !v)} aria-expanded={heroOpen} className="cc-card-head" style={headStyle}><span className="title">This week</span><span className="tail tabular-nums">{tail}{!before && todaySlot.session ? ` · ${todaySlot.state === "done" ? "done" : "today"} ${sessionByKey(todaySlot.session)?.short ?? ""}` : ""} <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: heroOpen ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span></button>
+          : <div className="cc-card-head"><span className="title">This week</span><span className="tail tabular-nums">{tail}</span></div>}
+        {showBody && <div className="cc-card-body" style={{ display: "grid", gap: 14 }}>
           <WeekStrip slots={slots} today={today} />
           <TodayBlock slot={todaySlot} next={nextSlot} before={before} />
           {ready.state !== "wait" && (
@@ -254,12 +263,16 @@ export default function TrainPage() {
             </div>
           )}
           <HeadLine data={progressData} nights={health?.nights ?? []} missedSessions={missed} />
-        </div>
+        </div>}
       </section>
+        );
+        if (mind) return <div className="cc-stack">{hero}{chips}<Reveal key="mind" i={0}><MindPane cols={laptop} /></Reveal></div>;
+        return (
+      <div className="cc-cols">
+      <div className="cc-stack">
+      {hero}
 
       {chips}
-
-      {part === "mind" && <Reveal key="mind" i={0}><MindPane /></Reveal>}
 
       {part === "runs" && <Reveal key="runs" i={0}><div style={{ display: "grid", gap: 18 }}>
         {runs.length > 0 && (
@@ -422,6 +435,8 @@ export default function TrainPage() {
         <ReportCard report={report} />
       </div>
       </div>
+        );
+      })()}
     </div>
   );
 }

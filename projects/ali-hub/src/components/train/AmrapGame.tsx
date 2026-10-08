@@ -96,6 +96,7 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
   // ── Music ─────────────────────────────────────────────────────────────────
   const [track, setTrack] = useState<string>("off");
   const [previewing, setPreviewing] = useState<string | null>(null);
+  const [musicOpen, setMusicOpen] = useState(false);
   const music = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     try {
@@ -307,10 +308,13 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
 
         {details}
 
-        {/* Music · two shelves */}
+        {/* Music · two shelves, folded to one row until tapped (2026-10-08: eleven tracks with licence lines were a wall) */}
         <section className="cc-card">
-          <div className="cc-card-head"><span className="title">Music</span><span className="tail">{chosen ? chosen.title : "off"}</span></div>
-          <div style={{ padding: "0 14px 6px" }}>
+          <button type="button" onClick={() => setMusicOpen((v) => !v)} aria-expanded={musicOpen} className="cc-card-head" style={{ width: "100%", background: "none", color: "inherit", cursor: "pointer", font: "inherit", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: musicOpen ? undefined : "none", borderRadius: musicOpen ? undefined : "inherit" }}>
+            <span className="title">Music</span>
+            <span className="tail">{chosen ? chosen.title : "off"} <span aria-hidden style={{ display: "inline-block", transition: "transform var(--t-2) var(--easeOut)", transform: musicOpen ? "rotate(90deg)" : "none", marginLeft: 6 }}>›</span></span>
+          </button>
+          {musicOpen && <div style={{ padding: "0 14px 6px" }}>
             {[{ slug: "off", title: "No music", by: "", shelf: "drive" as const }, ...TRAIN_TRACKS].map((m, i, arr) => {
               const on = track === m.slug;
               const shelfHead = m.slug !== "off" && (i === 1 || arr[i - 1].shelf !== m.shelf);
@@ -333,7 +337,7 @@ export function AmrapGame({ workoutKey, details }: { workoutKey: WorkoutKey; det
                 </div>
               );
             })}
-          </div>
+          </div>}
         </section>
 
         <section className="cc-card">

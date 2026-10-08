@@ -95,8 +95,12 @@ export function weekBrief(args: {
   if (hNow !== null) lines.push({ key: "hrv", nowV: hNow, prevV: hPrev, label: "HRV", now: `${Math.round(hNow)} ms`, prev: hPrev !== null ? `${Math.round(hPrev)} ms` : null, tone: hPrev === null ? "flat" : hNow - hPrev >= 4 ? "pos" : hNow - hPrev <= -4 ? "neg" : "flat" });
   if (!lines.length) return null;
   const good = lines.filter((l) => l.tone === "pos").length, bad = lines.filter((l) => l.tone === "neg").length;
+  const NAMES: Record<WeekKey, string> = { sleep: "sleep", score: "the sleep score", exercise: "exercise", steps: "steps", rhr: "resting heart rate", hrv: "HRV" };
+  const badNames = lines.filter((l) => l.tone === "neg").map((l) => NAMES[l.key]);
+  const joined = badNames.length <= 1 ? badNames[0] ?? "" : `${badNames.slice(0, -1).join(", ")} and ${badNames[badNames.length - 1]}`;
+  const restSlipped = lines.some((l) => l.tone === "neg" && (l.key === "sleep" || l.key === "score" || l.key === "rhr" || l.key === "hrv"));
   const verdict = bad === 0 && good >= 2 ? "A better week than the one before · keep the same rhythm."
-    : bad >= 2 ? "A heavier week: sleep and recovery slipped. Protect the next three nights before adding training."
+    : bad >= 2 ? `A heavier week: ${joined} slipped. ${restSlipped ? "Protect the next three nights before adding training." : "Recovery held; the fix is in the day, not the night."}`
     : exNow >= 150 && (sleepNow ?? 0) >= 420 ? "Enough movement and enough sleep · the week did its job."
     : exNow < 150 && (sleepNow ?? 0) >= 420 ? "Rested, under-moved. Two sessions next week put the 150 minutes back."
     : (sleepNow ?? 999) < 420 ? "Short on sleep. Nothing else fixes much until the nights are longer."
