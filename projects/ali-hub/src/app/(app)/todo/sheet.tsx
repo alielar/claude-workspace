@@ -27,13 +27,24 @@ export function openPicker(e: React.SyntheticEvent<HTMLInputElement>) {
   try { el.focus(); el.showPicker?.(); } catch { /* focus alone still works */ }
 }
 
-// While a sheet is open, the page behind it must not scroll (iOS otherwise keeps
-// scrolling the background and gets stuck until the app is reopened).
+// While a sheet is open, the page behind it must not scroll. `overflow: hidden` alone is ignored by
+// iOS Safari: with the keyboard up the page behind kept scrolling and the layout viewport came back
+// OFFSET from the screen, so the tab bar and the round button sat mid-page after the sheet closed
+// (Ali 2026-10-08, screenshot). On the phone the body is therefore pinned (`position: fixed` at the
+// current scroll, the one lock iOS respects) and put back at the same scroll on close; the laptop
+// keeps the light lock so the page behind the pane stays where it is.
 export function useLockBodyScroll() {
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    const b = document.body;
+    const phone = window.matchMedia("(max-width: 767px)").matches;
+    const y = window.scrollY;
+    const prev = { overflow: b.style.overflow, position: b.style.position, top: b.style.top, left: b.style.left, right: b.style.right, width: b.style.width };
+    b.style.overflow = "hidden";
+    if (phone) { b.style.position = "fixed"; b.style.top = `-${y}px`; b.style.left = "0"; b.style.right = "0"; b.style.width = "100%"; }
+    return () => {
+      Object.assign(b.style, prev);
+      if (phone) { window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y)); }
+    };
   }, []);
 }
 
