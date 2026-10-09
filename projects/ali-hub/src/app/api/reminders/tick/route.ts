@@ -10,6 +10,7 @@ import { birthdays, todos, userSettings } from "@/db/schema";
 import { and, eq, inArray, isNull, lte } from "drizzle-orm";
 import { allUserIds, getUserId } from "@/lib/user";
 import { getProfile } from "@/lib/profile/server";
+import { whatsappTick } from "@/lib/whatsapp/server";
 import { checklistToday } from "@/lib/checklist/day";
 import { sendToUser } from "@/lib/push/server";
 import { ensureBirthdayTables } from "@/lib/birthdays/server";
@@ -145,6 +146,12 @@ async function tickUser(userId: string, now: Date, hm: string): Promise<unknown>
   };
   // Sleeping items (a future wakeDate) never nag, whatever their due date.
   const due = rows.filter((t) => t.dueDate && hm >= dueFrom(t) && !(t.wakeDate && t.wakeDate > today));
+
+  // WhatsApp (2026-10-10 · CallMeBot, src/lib/whatsapp/server.ts): when the account has it, the
+  // to-dos go there by its own calmer rules and the phone push nags below are skipped entirely.
+  const awake = rows.filter((t) => t.dueDate && !(t.wakeDate && t.wakeDate > today));
+  const wa = await whatsappTick(userId, awake, today, hm, now).catch((e) => ({ sent: 0, errors: [String((e as Error).message).slice(0, 80)] }));
+  if (!(wa.errors.length === 1 && wa.errors[0] === "off")) return { due: due.length, whatsapp: wa };
 
   // Untimed tasks: 30 min cadence for the first 2 hours, hourly after, silent from
   // 21:00. Tasks with an explicit time keep their chosen cadence all day.

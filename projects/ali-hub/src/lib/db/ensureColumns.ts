@@ -11,10 +11,12 @@ import { sql } from "drizzle-orm";
 const LATE_COLUMNS = [
   `ALTER TABLE user_settings ADD COLUMN news_custom_channels TEXT`,
   `ALTER TABLE user_settings ADD COLUMN profile TEXT`,
+  `ALTER TABLE user_settings ADD COLUMN whatsapp TEXT`,
 ];
 const TODO_COLUMNS = [
   `ALTER TABLE todos ADD COLUMN format TEXT`,
   `ALTER TABLE todos ADD COLUMN keywords TEXT`,
+  `ALTER TABLE todos ADD COLUMN wa_state TEXT`,
 ];
 
 function once(ddls: string[]) {

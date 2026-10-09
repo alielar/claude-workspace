@@ -61,6 +61,8 @@ export const userSettings = sqliteTable("user_settings", {
   morningPlan: text("morning_plan"),
   /** Who this account is and what it sees (2026-10-09, src/lib/profile/types.ts) · JSON Profile · null = the defaults by role. */
   profile: text("profile"),
+  /** WhatsApp reminders through CallMeBot (2026-10-10, src/lib/whatsapp/server.ts) · JSON { phone, apikey, digestDay?, eveningDay?, lastSentAt?, lastError? }. */
+  whatsapp: text("whatsapp"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
@@ -170,6 +172,8 @@ export const todos = sqliteTable("todos", {
   format: text("format"),
   /** Knowledge search words (2026-10-03): related words an AI tagged, comma-separated, never shown · search matches them. */
   keywords: text("keywords"),
+  /** WhatsApp reminder state (2026-10-10): JSON { due: "YYYY-MM-DD HH:MM", count: 0..2, at: ms } · reset when the due moment changes. */
+  waState: text("wa_state"),
   deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),

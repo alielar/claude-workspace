@@ -473,6 +473,9 @@ export async function POST() {
     ...MIND_DDL,
     // ── 2026-10-09: a second person on the hub · the profile column and the per-person "watched" marks (src/lib/news/marks.ts)
     `ALTER TABLE user_settings ADD COLUMN profile TEXT`,
+    // ── 2026-10-10: WhatsApp reminders through CallMeBot (src/lib/whatsapp/server.ts)
+    `ALTER TABLE user_settings ADD COLUMN whatsapp TEXT`,
+    `ALTER TABLE todos ADD COLUMN wa_state TEXT`,
     `CREATE TABLE IF NOT EXISTS watch_marks (user_id TEXT NOT NULL, video_id TEXT NOT NULL, watched_at INTEGER NOT NULL, PRIMARY KEY (user_id, video_id))`,
     ...COACH_DDL,
   ];

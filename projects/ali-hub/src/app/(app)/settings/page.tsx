@@ -25,6 +25,7 @@ import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/c
 import { metricWords, pipeNote, type PipeStatus } from "@/lib/health/client";
 import { ChannelsCard } from "@/components/news/ChannelsCard";
 import { GuestNewsCard } from "@/components/news/GuestNews";
+import { WhatsAppCard } from "@/components/WhatsAppCard";
 import { useProfile, wipeSavedCopies } from "@/lib/profile/useProfile";
 import { soundsOn, setSoundsOn } from "@/lib/sounds";
 
@@ -347,6 +348,9 @@ export default function SettingsPage() {
       {primary && <AppleWatchCard />}
 
       <RemindersCard />
+
+      {/* To-dos on WhatsApp (CallMeBot, free) · 2026-10-10, Ali's father's choice · any account may use it */}
+      <WhatsAppCard />
 
       {me?.required && (
         <section className="cc-card">

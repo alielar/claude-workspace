@@ -216,6 +216,7 @@ export function Welcome() {
                 </span></span>
                 {(push === "off" || push === "…") && <button type="button" className="cc-btn cc-btn-secondary" onClick={turnOnReminders} disabled={push === "…"} style={{ minHeight: 44 }}>Turn on</button>}
               </div>
+              <p style={line}>Prefer your to-dos on <b>WhatsApp</b>? Settings → WhatsApp sets it up in two steps, free.</p>
               <p style={line}>Everything here can be changed in <b>Settings</b>: your routine under Routine, the topics and channels under News, and this tour under Welcome tour.</p>
               {err && <p style={{ ...line, color: "var(--neg)" }}>{err}</p>}
             </>
