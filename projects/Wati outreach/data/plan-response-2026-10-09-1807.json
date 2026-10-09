@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "waId": "32466232371",
+      "kind": "pause",
+      "when": "18:08",
+      "title": "Untick #3 and #5, she already committed to enroll tonight",
+      "why": "She said she'll enroll tonight; Ali already asked at 18:06 if it's done.",
+      "action": "If she replies, handle it directly; no manual message needed before 20h.",
+      "pauseScope": "next",
+      "skipTemplates": ["tbc_reminder_3_v2_fr", "tbc_recovery_waitlist_v3_fr"],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [],
+      "template": ""
+    },
+    {
+      "waId": "32466232371",
+      "kind": "wait",
+      "when": "10-10 09:00",
+      "title": "Morning check if still silent",
+      "why": "One pressure message already sent today (18:06); none due tonight.",
+      "action": "If no reply by tomorrow morning, draft a short manual follow-up then.",
+      "pauseScope": "",
+      "skipTemplates": [],
+      "keepTemplates": [],
+      "hubStatus": "",
+      "citfCase": "",
+      "citfDate": "",
+      "bubbles": [],
+      "template": ""
+    }
+  ],
+  "summary": "1 lead: pause 2 templates for Edubigis (already committed to enroll tonight), wait for her reply overnight."
+}

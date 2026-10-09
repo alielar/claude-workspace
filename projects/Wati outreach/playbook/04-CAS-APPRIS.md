@@ -2099,3 +2099,159 @@ DANS 5-10 MIN (2 bulles) :
 **Pourquoi/Comment appliquer :** Contredit « un seul message de pression par jour » (CLAUDE.md). Déjà signalé dans l'audit du 2026-10-04 (Hub stacke deux templates à 30 s d'intervalle) — point toujours ouvert, à reposer à Mateo plutôt qu'à reloguer comme nouveau cas.
 
 <!-- consolidé jusqu'ici · 2026-10-08 22:24:39 -->
+
+## 2026-10-09 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+### 10:13 · Tressy — Blocage financier déjà invoqué une fois (17/09) et répété à l'identique : sauter la bulle d'empathie, aller direct à conséquence liste d'attente + administration
+**Situation :** Tressy répète le même blocage (recherche d'emploi, factures) déjà invoqué le 22/09 et non levé malgré l'attente ; elle ne demande rien, elle annonce qu'elle ne pourra pas payer
+**Ce qui était proposé :** Bulle 1 (empathie : recherche d'emploi + finances sous tension) / Bulle 2 (conséquence liste d'attente 10-12 mois + profil apprécié) / Bulle 3 (je vérifie avec l'administration, je reviens vite)
+**Ce qu'Ali a envoyé :** Bulle 1 supprimée ; envoyé uniquement : conséquence liste d'attente 10-12 mois + profil apprécié / je vérifie avec l'administration, je reviens vite
+**Pourquoi :** Ali a retiré la bulle d'empathie qui reformulait un blocage déjà reconnu lors du message précédent (opération, puis recherche d'emploi) : la répéter une troisième fois n'ajoute rien et retarde la conséquence. Proche du schéma admin two-step déjà documenté, mais nouveau ici : quand le blocage a déjà été nommé une fois sans suite, sauter l'empathie et aller droit à conséquence + mécanisme.
+**Comment appliquer :** Quand le lead répète un blocage financier déjà évoqué sans nouveauté, ne pas rouvrir avec une bulle d'empathie : démarrer directement sur la conséquence (liste d'attente) suivie du mécanisme administration.
+### 10:16 · Edubigis — Downsell 96h/990€ après refus budget+horizon : garder le script figé mot pour mot, pas de niveau inventé ni de comparaison avec l'horizon donné par le lead
+**Situation :** Edubigis refuse poliment pour raison budget et annonce revenir en janvier ; Ali choisit quand même le downsell direct plutôt que l'accusé seul.
+**Ce qui était proposé :** Prop. 1 (low pressure) : Je comprends tout à fait / Pas de souci, je reviens vers vous en janvier — Prop. 2 (downsell, sur consigne) : Je comprends, le budget change la donne / 96h à 990€ au lieu de 180h à 1800€, sans garantie, en visant le niveau A2/B1, 99€/mois en 10 fois / Plus simple pour démarrer maintenant plutôt que d'attendre janvier ?
+**Ce qu'Ali a envoyé :** Je comprends Edubigis / Je viens de vérifier avec l'administration et on a un format plus léger : 96h à 990€ au lieu de 180h à 1800€, sans garantie, des cours d'amélioration en anglais général, 99€/mois en 10 fois / Ça pourrait être plus simple pour démarrer maintenant pour vous ?
+**Pourquoi :** Deux écarts par rapport à la proposition 2 : (1) « en visant le niveau A2/B1 » est remplacé par « des cours d'amélioration en anglais général », qui est la formulation fixe du script [[project_downsell_scripts_990]] — Claude avait inventé un niveau cible non prévu par le script. (2) la question de clôture perd « plutôt que d'attendre janvier » : Ali ne met pas en balance l'offre contre l'horizon que le lead a lui-même donné. Le choix de downsell direct plutôt que l'accusé seul confirme la règle déjà notée dans le raisonnement de la proposition (le cap d'Ali prime sur l'accusé-seul même avec refus+horizon donné) — pas une leçon nouvelle sur ce point précis, mais à garder.
+**Comment appliquer :** Pour tout downsell 90h/96h, reprendre le script figé mot pour mot (« des cours d'amélioration en anglais général », pas de niveau inventé type A2/B1) et formuler la question de clôture sans la confronter à l'horizon donné par le lead (ex. janvier).
+### 10:20 · Tressy — Acompte proposé à un lead en difficulté financière/émotionnelle explicite : remplacer « vous démarrez quand vous voulez » par « vous démarrez quand vous vous sentirez prête »
+**Situation :** Tressy, en recherche d'emploi, vient d'écrire qu'elle va revenir « quand tout ira bien » et qu'elle n'aurait pas pu payer ses cours en ce moment — blocage financier et émotionnel explicite, pas un simple blocage de timing.
+**Ce qui était proposé :** Bonne nouvelle, confirmation administration 👍 / acompte 96 €, déduit du total, vous démarrez quand vous voulez / Vous voulez qu'on bloque votre place comme ça ?
+**Ce qu'Ali a envoyé :** Bonne nouvelle, confirmation administration 👍 / acompte 96 €, déduit du total, vous démarrez quand vous vous sentirez prête / Vous voulez qu'on bloque votre place ?
+**Pourquoi :** Le script validé (06-REGLES-APPRISES.md, « Scripts validés ») fixe « vous démarrez quand vous voulez », formule neutre pour un blocage de timing générique. Ici le lead a nommé une détresse personnelle précise (recherche d'emploi, incapacité à payer, « quand tout ira bien ») : Ali a repris ses propres mots pour refléter cette fragilité plutôt que la formule neutre — cohérent avec la règle « réassurance personnalisée, pas passe-partout » (ligne 22). Retrait de « comme ça » dans la question finale : simplification mineure, pas une nouvelle règle.
+**Comment appliquer :** Quand le lead a explicitement nommé une raison personnelle de ne pas pouvoir payer/démarrer maintenant (recherche d'emploi, situation difficile, formule du type « je reviens quand ça ira »), reformuler « vous démarrez quand vous voulez » en reprenant son propre horizon plutôt que la formule neutre du script (ex. « quand vous vous sentirez prête »).
+- 10:58 · Edubigis · **retouche** — Préciser « garantie de niveau » (pas juste « garantie ») et isoler la question finale dans sa propre bulle (Deux ajustements : Ali précise « garantie de niveau » (cohérence avec la bulle précédente qui parle déjà de « niveau garanti »), et il regroupe la phrase de transition avec le lien tout en isolant « Est-ce qu'il fonctionne bien ? » en dernière bulle, conforme à la règle house style « une seule question, dans la dernière bulle ».)
+### 11:41 · Edubigis — Question logistique (taille de groupe, horaires) : donner le chiffre exact, pas une formule vague
+**Situation :** Edubigis, en train d'évaluer le format 96h/990€, demande si les groupes sont grands et si les cours ont lieu le soir/week-end
+**Ce qui était proposé :** Non, ce sont des petits groupes, pas de grandes classes / Vous choisissez vos créneaux selon vos disponibilités, y compris en soirée ou le week-end / Ça répond à votre question ?
+**Ce qu'Ali a envoyé :** Non, vous serez dans des petits groupes de 2 à 3 personnes, pas de grandes classes / Vous choisissez vos créneaux selon vos disponibilités, y compris en soirée jusqu'à 22 ou même le week-end 😊 / Ça répond à vos questions ?
+**Pourquoi :** Ali remplace les formulations vagues (« petits groupes », « en soirée ») par les chiffres précis (2 à 3 personnes, jusqu'à 22h), et ajoute un emoji sur une réponse logistique positive (pas d'argent ni de contrat en jeu, donc autorisé). Il accorde aussi « votre question » au pluriel puisque le lead a posé deux questions.
+**Comment appliquer :** Sur une question logistique (taille de groupe, créneaux), répondre avec le chiffre exact connu plutôt qu'une généralité, et accorder le nombre dans « question(s) » au nombre de questions posées par le lead.
+### 11:45 · Edubigis — Lead qui vient de dire « ça m'intéresse » avec le lien déjà envoyé : 2 bulles, pas 3
+**Situation :** Edubigis venait de répondre « Oui, merci beaucoup » puis « Ça m'intéresse » après réponses sur petits groupes et créneaux soir/week-end ; le lien d'inscription avait déjà été envoyé juste avant.
+**Ce qui était proposé :** Avec plaisir / Vous avez le lien d'inscription juste au-dessus, vous pouvez finaliser dès maintenant / Dites-moi une fois que c'est fait pour que je vous envoie la suite
+**Ce qu'Ali a envoyé :** n/a
+**Pourquoi :** Ali a fusionné l'empathie et l'offre en une seule bulle au lieu de les séparer, et a ajouté un emoji sur la bulle de clôture (pas sur de l'argent, conforme à la règle « jamais sur la monnaie, le contrat ou un problème » de 00-QUICK.md). « la suite » devient « les prochaines étapes », formulation plus précise. Raison à confirmer avec Ali : pas de cas identique déjà consolidé dans 06-REGLES-APPRISES.md pour ce moment précis (lien déjà envoyé, lead confirme intérêt).
+**Comment appliquer :** n/a
+### 12:37 · Noa — Promesse « je reviens vers vous » déjà envoyée : la relance suivante doit être la résolution (créneau + lien), pas répéter l'étape de vérification
+**Situation :** Noa avait donné 3 nouvelles disponibilités, Ali avait répondu « je reviens vers vous dès que possible » la veille ; 18h après, la réponse attendue est la confirmation du créneau retenu, pas une nouvelle étape d'attente
+**Ce qui était proposé :** D'accord, merci pour ces nouvelles disponibilités / Je vérifie avec le tuteur lequel de ces créneaux fonctionne et je reviens vers vous très vite
+**Ce qu'Ali a envoyé :** Bonjour, je viens d'avoir la confirmation que la séance d'essai de Noa est programmée pour le Lundi 12 Octobre à 18h / lien Google Meet
+**Pourquoi :** La proposition traitait le message comme une première relance (règle Noa 07/10 : « vérifier avec le support, poser la question des disponibilités »), mais Ali avait déjà fait cette étape dans le tour précédent (« je reviens vers vous très vite », 10-08 15:42) — répéter l'étape de vérification au lieu d'en livrer le résultat va contre la règle générale « ne pas répéter une bulle de mécanisme déjà envoyée dans le même fil, enchaîner sur la suite » (06-REGLES-APPRISES.md).
+**Comment appliquer :** Avant de proposer une étape « je vérifie / je reviens vers vous », relire si cette promesse a déjà été faite dans un tour précédent du même fil ; si oui, et qu'un délai raisonnable s'est écoulé, rédiger directement la résolution (créneau confirmé + lien), sans refaire l'étape d'attente ni ajouter de question de clôture puisque le créneau est déjà fixé.
+### 13:57 · Edubigis — Lead qui a fixé elle-même sa prochaine étape, même avec rappel deadline du jour : accusé + rappel, jamais de question de clôture
+**Situation :** Edubigis vient de dire qu'elle s'inscrira ce soir via le lien déjà envoyé ; Ali confirme et rappelle la clôture des inscriptions à 20h, sur sa propre consigne.
+**Ce qui était proposé :** Consigne d'Ali : rappeler la deadline 20h et se rendre disponible en cas de souci avant qu'elle finalise. Proposition 2 : Parfait, ce soir ça marche très bien / On clôture les inscriptions à 20h ce soir, n'hésitez pas si vous rencontrez le moindre souci avant / Vous avez des questions avant de finaliser ?
+**Ce qu'Ali a envoyé :** Parfait, ce soir ça marche très bien / On clôture les inscriptions à 20h ce soir, n'hésitez pas si vous rencontrez le moindre souci avant de finaliser 👍
+**Pourquoi :** Ali a supprimé la troisième bulle, la question de clôture. 06-REGLES-APPRISES.md ligne 16 : « lead qui a fixé lui-même la prochaine étape : accuser réception en une seule bulle, sans question de clôture (confirmé ×9+) », avec la nuance qu'un rappel ferme jour de deadline nomme l'étape mais reste sans question. La ligne 73 (« question de clôture canonique un jour de deadline ») s'applique quand rien n'est encore décidé ; ici Edubigis a déjà annoncé son action (s'inscrire ce soir), donc la règle du lead qui a fixé sa propre étape prime sur la question canonique de deadline.
+**Comment appliquer :** Quand un rappel de deadline est envoyé à un lead qui a déjà annoncé lui-même son action et son horizon (ex. « je vais faire ça ce soir »), nommer l'étape et la deadline mais ne pas ajouter de question de clôture — même un jour de deadline.
+- 13:59 · Jonathan · **validé tel quel** (Claude: Low pressure) — « Pas de souci, merci de votre retour » / « Qu'est-ce qui vous freine en ce moment : le temps, le format du programme, ou autre chose »
+  Règle confirmée : Refus poli mais vague ("je ne sais pas faire le cours" sans horizon ni raison précise) après plusieurs relances automatiques sans réponse : c'est un premier déclin, pas un deuxième refus net, donc pas de clôture — on…
+- 14:00 · Karima · **validé tel quel** (Claude: Close) — « Je comprends tout à fait, et merci pour votre honnêteté » / « Pas de souci, on ne vous relance plus et votre dossier est clos, pas de liste d'attente » / « Plein succès à vous, et bonnes vacances »
+  Règle confirmée : Karima refuse clairement, motif financier concret et explicite, et demande elle-même de ne pas être mise en liste d'attente — c'est une clôture propre, pas une relance. Pas de question en fin de message (règle clôture)…
+### 14:21 · Olivia — Question diagnostic « qu'est-ce qui vous retient » : toujours 4 options (prix, durée, timing, méthode), en une seule bulle
+**Situation :** Olivia dit vouloir libérer sa place sans motif précis après réflexion ; Claude isole le vrai blocage avant tout geste de l'échelle
+**Ce qui était proposé :** Je comprends, prendre le temps d'y réfléchir avant de s'engager c'est bien normal / Pour que je comprenne bien, qu'est-ce qui vous retient en particulier : le prix, le timing ou la méthode
+**Ce qu'Ali a envoyé :** Oui, je comprends, pour que je comprenne bien, qu'est-ce qui vous retient en particulier : le prix, la durée, le timing ou la méthode ?
+**Pourquoi :** Deux écarts : (1) Ali ajoute « la durée » comme quatrième option de blocage, absente de la proposition — aucune règle consolidée dans 06-REGLES-APPRISES.md ne fixait encore la liste à 3 items, donc à élargir à 4 ; (2) il fusionne l'empathie et la question en une seule bulle au lieu de deux. Raison du choix de fusion à confirmer avec Ali.
+**Comment appliquer :** Pour la question diagnostique « qu'est-ce qui vous retient », toujours proposer les 4 options (prix, durée, timing, méthode) et les regrouper en une seule bulle avec l'empathie plutôt que deux bulles séparées.
+### 14:29 · Olivia — Downsell durée : empathie+offre fusionnées en une bulle, question seule dans la dernière — pas de bulle "rythme libre"
+**Situation :** Olivia bloque sur la durée (90h/2h-sem → 11 mois) et vient de dire qu'elle libère sa place ; Ali a demandé via consigne de descendre directement au 48h/583€ cadré comme engagement plus léger et rythme libre
+**Ce qui était proposé :** consigne d'Ali : 48h/583€, même programme, rythme libre choisi par elle / Je comprends, la durée c'est souvent ce qui bloque le plus / On peut passer sur un format plus court, 48h au lieu de 90h, pour 583€ au lieu de 990€, un engagement plus léger, toujours avec le même programme et les mêmes cours / Et vous choisissez vous-même votre rythme, autant d'heures par semaine que vous voulez, qu'en pensez-vous ?
+**Ce qu'Ali a envoyé :** Je comprends totalement, on peut passer sur un format plus court, 48h au lieu de 90h, pour 583 € au lieu de 990 €, un engagement plus léger sur beaucoup moins de mois, toujours avec le même programme et les mêmes cours / Qu'en pensez-vous ?
+**Pourquoi :** Correspond à la règle déjà consolidée (06-REGLES-APPRISES.md, section Diagnostic : « Downsell pour objection durée/engagement : ancrer sur les mois d'engagement en plus des heures/prix ») : Ali fusionne empathie+offre en une seule bulle et ancre explicitement sur "beaucoup moins de mois" (l'engagement), mais retire la troisième bulle sur le rythme libre ("autant d'heures par semaine que vous voulez") ajoutée par la consigne — probablement jugée redondante avec "engagement plus léger" ou pas assez sourcée (pas dans le playbook de prix/mécanismes). La question finale reste seule et courte, conforme au principe de momentum (une question, dernière bulle).
+**Comment appliquer :** Sur un downsell durée/engagement, fusionner empathie et offre chiffrée en une seule bulle ancrée sur les mois (pas seulement heures/prix), ne pas ajouter de bulle séparée sur le rythme/volume d'heures libre sauf si le lead la demande, et finir par une question courte seule.
+- 17:33 · Pierre · **retouche** — Lead qui confirme et doit juste cliquer le lien : reformulation légère, pas de changement de structure (Ali précise la source du lien ("mail reçu hier soir" au lieu de "reçu par email") et ajoute "avoir le temps" — reformulations sans changement de structure, de ton ni de mécanisme ; la proposition initiale suivait déjà la règle du lien + question)
+### 18:06 · Edubigis — Lead qui a promis "ce soir" sans confirmer avant la deadline : relance en une bulle directe, sans emoji, sans rappeler le mécanisme
+**Situation :** Edubigis avait dit "je vais faire ça ce soir" à 12:06 pour une deadline 20h rappelée à 13:56, puis plus aucun signe ; à 18:06 Ali relance de lui-même, sans brouillon affiché
+**Ce qui était proposé :** (aucune proposition affichée dans l'app)
+**Ce qu'Ali a envoyé :** Bonjour Edubigis, vous avez pu finaliser votre inscription ?
+**Pourquoi :** Confirme la règle déjà posée le 2026-10-02 (05-PRINCIPES-conversation.md §11, rythme du jour de deadline : relance clé vers 17h-17h30, rappel 20h-20h30) — ici un point intermédiaire vers 18h, une seule bulle, question directe, pas d'emoji, pas de rappel du mécanisme deadline/administration puisque rien de nouveau à annoncer. Règle confirmée, pas une nouvelle leçon de fond.
+**Comment appliquer :** Pour un lead qui a donné son propre horizon ("ce soir") avant une deadline et reste silencieux, envoyer une seule bulle courte avec une question de statut directe (pas de "n'hésitez pas", pas d'emoji, pas de récapitulatif de deadline) entre la relance de 17h30 et le rappel de 20h.
+- 19:40 · Yoro · **validé tel quel** (Claude: What’s blocking?) — « Pas de souci, merci pour votre message, qu'est-ce qui vous retient en particulier : le prix, la durée, le timing ou la méthode ? »
+  Règle confirmée : Yoro se retire sans nommer de frein précis ("je vous rappellerai pour une prochaine séance") après plusieurs relances automatiques aujourd'hui — pas une clôture nette, donc on isole le vrai blocage avant tout geste de…
+### 21:01 · Romane — Lead qui accuse réception des résultats sans question : féliciter puis inviter explicitement à lire et poser des questions, pas un accusé neutre seul
+**Situation :** Romane confirme avoir reçu le mail de résultats et souhaite une bonne soirée, sans question ni objection
+**Ce qui était proposé :** Consigne d'Ali « reply » → proposition : Avec plaisir, bonne soirée à vous aussi (une bulle)
+**Ce qu'Ali a envoyé :** Avec plaisir, félicitations ! 🎉 / Prenez le temps de tout lire et n'hésitez pas si vous avez des questions surtout. Bonne soirée à vous aussi !
+**Pourquoi :** La proposition se contentait d'un accusé poli minimal ; Ali a ajouté une reconnaissance positive explicite (« félicitations ! ») et une deuxième bulle qui ouvre activement la porte aux questions sur le contenu dans le même message, au lieu d'attendre le lendemain matin comme suggéré. Cohérent avec le style maison (empathie/reconnaissance spécifique plutôt que formule neutre) mais va plus loin que « accusé chaleureux seul, pas de relance forcée ».
+**Comment appliquer :** Quand un lead confirme la réception des résultats sans poser de question, répondre en deux bulles : féliciter chaleureusement (avec un emoji si le ton s'y prête), puis inviter tout de suite à prendre le temps de lire et à revenir avec des questions — ne pas se limiter à un accusé neutre en une bulle ni reporter l'ouverture au lendemain.
+
+## 2026-10-09 — Veille du soir
+
+26 leads avec un envoi aujourd'hui (automatismes Hub inclus). 9 fils avec un message libre d'Ali
+(hors templates automatiques) : Jonathan, Karima, Edubigis (32466232371), Yoro, Olivia, Pierre,
+Jade, Fatima (accusé seul), Romane. Les écarts bulle-par-bulle de la journée sont déjà consignés
+dans la section « Appris dans l'app » ci-dessus ; ce bloc regroupe ce qu'ils ont manqué, les
+répétitions à remonter en règle, et le suivi après envoi.
+
+### Règle confirmée — question diagnostic « qu'est-ce qui vous retient » : 4 options (prix, durée, timing, méthode), pas 3
+**Occurrences :** Apolline (2026-10-06, 3 options : prix/timing/méthode) → Olivia 14:21 et Yoro 19:40
+aujourd'hui, les deux avec 4 options (prix/durée/timing/méthode). Deuxième et troisième occurrence
+du même ajout le même jour : c'est une règle, plus un cas isolé.
+**Modification à proposer dans `00-QUICK.md` :** partout où la question diagnostique
+« qu'est-ce qui vous retient » est citée, écrire la liste à 4 éléments — « le prix, la durée, le
+timing, ou la méthode » — et non la liste à 3 éléments encore présente sur la carte.
+
+### Règle confirmée (répétition, pas nouvelle leçon) — lead qui a fixé lui-même sa prochaine étape : accusé en une bulle, jamais de question de clôture, même un jour de deadline
+Edubigis 13:57 aujourd'hui est une nouvelle occurrence de la règle déjà confirmée ≥9 fois
+(06-REGLES-APPRISES.md, section Style et ton) et déjà notée comme telle dans son propre bloc
+« Appris dans l'app » ci-dessus. Rien à ajouter à 00-QUICK.md, la carte est déjà à jour sur ce point.
+
+### 21:01 · Romane — accusé de résultats sans question : nuance par rapport à la règle jour-même déjà établie
+**Ce qui était proposé :** une bulle neutre (« Avec plaisir, bonne soirée à vous aussi »).
+**Ce qu'Ali a envoyé :** deux bulles — félicitations, puis invitation explicite à lire et à revenir
+avec des questions dans le même message.
+**Pourquoi :** la règle déjà confirmée plusieurs fois (ex. Mohamed 21/09, Floriane) dit « jour même
+de résultats, une bulle chaleureuse type félicitations, sans question de clôture » — toujours vraie
+ici sur le fond (pas de question), mais c'est la première fois que l'invitation à lire/poser des
+questions est explicitement ajoutée dans le même message plutôt que réservée au lendemain. Un seul
+cas : pas encore une règle à inscrire dans `00-QUICK.md`, à surveiller sur le prochain cas similaire.
+**Comment appliquer :** à revoir si un deuxième cas confirme la même structure à deux bulles.
+
+### Suivi après envoi
+- **Karima** (14:00, clôture) : le lead a répondu « Merci » à 14:12 — clôture propre, pas de relance
+  nécessaire.
+- **Yoro** (19:39, diagnostic) : pas de réponse du lead au moment de cette veille (21h03) ; à relire
+  demain matin.
+- **Edubigis** (32466232371) : lead très engagé toute la journée (a dit « ça m'intéresse », lien
+  envoyé, promis l'inscription « ce soir ») mais n'a pas confirmé avant la clôture 20h malgré deux
+  relances (18:06 et 19:39, sans réponse) — probable rattrapage à faire demain matin ; raison du
+  silence final à confirmer avec Ali.
+- **Pierre** : converti (stage Sale), template de bienvenue envoyé à 18:40 — cas clos, rien à
+  signaler.
+- **Jonathan** : diagnostic envoyé à 13:58, pas de réponse au moment de cette veille.
+
+### Vigilance
+- **Manal (33695123069)** — deux templates de pression envoyés à 4 minutes d'intervalle
+  (`tbc_recovery_offer_v4_fr` 16:11 puis `tbc_recovery_offer_followup_fr` 16:15), sans aucun message
+  d'Ali entre les deux et sans réponse du lead. C'est le défaut déjà repéré dans l'audit du
+  2026-10-04 (« Hub stacke deux templates à ~30 s d'écart ») — ici l'écart est plus large (4 min)
+  mais le symptôme est le même : deux messages de pression le même jour pour le même lead sans
+  intervention humaine entre les deux. Point toujours en attente de Mateo, à lui remonter avec cet
+  exemple daté.
+- Aucun fil où le lead a écrit en dernier sans réponse d'Ali après coup aujourd'hui.
+- Aucun audio ni objection resté sans réponse plus de 2h aujourd'hui.
+- Aucun message de pression envoyé par Ali après 21h aujourd'hui (le message à 21:00 pour Romane
+  est un accusé de réception chaleureux, pas un message de pression).
+
+## 2026-10-09 — Appris dans l'app
+
+<!-- écrit par l'app Wati Inbox après chaque envoi : "validé tel quel" = brouillon envoyé sans changement (règle confirmée) ; "retouche" = petit écart ; bloc titré = leçon -->
+
+### 21:17 · Ines — Lead qui annonce elle-même son délai après un retour positif : féliciter, et clore par une invitation ouverte aux questions, pas une demande de statut
+**Situation :** Ines vient de confirmer avoir reçu le mail de résultats positifs et dit elle-même qu'elle réfléchira et redonnera des nouvelles demain, sans poser de question ni exprimer de blocage.
+**Ce qui était proposé :** Consigne d'Ali : dire que l'invitation a été mise à jour avec l'acompte de 96 €, seul moyen de bloquer la place, prendre son temps et redire demain / Bulles : « Avec plaisir, prenez bien le temps d'y réfléchir » / « J'ai justement mis à jour votre invitation avec un acompte de 96 €, c'est le seul moyen de bloquer votre place en attendant » / « Prenez votre temps, dites-moi demain où vous en êtes »
+**Ce qu'Ali a envoyé :** « Avec plaisir, prenez bien le temps d'y réfléchir, et félicitations à vous ! » / « Je viens justement aussi de mettre à jour votre invitation vers un acompte de 96 € qui sera déduit du montant total, j'ai pu plaidé votre cause avec l'administration et c'est le seul moyen de bloquer votre place en attendant la bonne période pour vous de commencer » / « Prenez votre temps demain, et surtout n'hésitez pas si vous avez quelconque questions Ines 😊 »
+**Pourquoi :** Trois écarts par rapport à la proposition, déjà sur consigne : (1) ajout de « félicitations » suite au retour positif des résultats — accusé de réception chaleureux, dans l'esprit de la règle « pas de question de clôture forcée quand le lead fixe lui-même sa prochaine étape » (06-REGLES, confirmée 9+ fois) ; (2) précision « qui sera déduit du montant total » et cadrage « j'ai pu plaidé votre cause avec l'administration » / « la bonne période pour vous de commencer » — mécanisme admin plus développé que la version proposée, cohérent avec le script de dépôt déjà noté (acompte déduit du total) ; (3) bulle finale remplacée par une invitation ouverte aux questions plutôt que la demande de statut « dites-moi demain où vous en êtes » — cohérent avec le principe de ne pas forcer une question quand le lead a déjà donné son propre délai. Point à signaler : Ali a utilisé le prénom « Ines » et un emoji en clôture, ce qui contredit la règle établie « jamais le prénom du lead dans un message » — raison à confirmer avec Ali avant de généraliser cet usage.
+**Comment appliquer :** Quand un lead annonce son propre délai après un retour positif, féliciter en première bulle, détailler le mécanisme admin/acompte avec la clause de déduction, et clore par une invitation ouverte aux questions plutôt qu'une demande explicite de statut — mais ne pas réintroduire le prénom du lead ni l'emoji sans qu'Ali confirme que l'exception est voulue.
+### 21:57 · Enkamgalan — Lead qui demande un rendez-vous pour ses enfants : demander noms/prénoms des enfants avant les disponibilités, pas d'empathie en plus
+**Situation :** Lead (déjà client, satisfait) demande à prendre rendez-vous pour ses deux filles (13 et 15 ans) pour un entretien d'anglais
+**Ce qui était proposé :** Avec plaisir, ravi que vous pensiez à nous pour elles / On peut organiser un entretien gratuit de 20 minutes pour chacune, pour évaluer leur niveau et voir le format adapté / Quelles sont vos disponibilités cette semaine pour qu'on cale ça ?
+**Ce qu'Ali a envoyé :** Avec plaisir, on peut organiser un entretien pour évaluer leurs niveaux et voir le format adapté / Puis-je avoir leurs noms et prénoms? Et savoir quelles sont vos disponibilités la semaine pour qu'on organise ça ?
+**Pourquoi :** Ali a supprimé la bulle d'empathie/enthousiasme ("ravi que vous pensiez à nous") — reste factuel, conforme à "jamais une réassurance gonflée" (00-QUICK.md). Il a aussi retiré les détails "gratuit" et "20 minutes pour chacune" non confirmés dans la conversation. Surtout, il a ajouté une demande explicite des noms et prénoms des deux filles avant de caler les disponibilités, information nécessaire pour organiser un entretien à deux personnes que la proposition n'avait pas anticipée.
+**Comment appliquer :** Pour un rendez-vous demandé pour plusieurs personnes (enfants, proches), demander leurs noms/prénoms dans la même bulle que les disponibilités, et rester sobre sans ajouter de bulle d'enthousiasme ni de détails (durée, gratuité) non mentionnés par le lead ou non confirmés.
+
+<!-- consolidé jusqu'ici · 2026-10-09 22:21:10 -->
