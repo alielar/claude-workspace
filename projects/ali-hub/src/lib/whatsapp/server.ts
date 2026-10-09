@@ -30,7 +30,7 @@ export const ACTIVATION_LINK = `https://wa.me/${CALLMEBOT_NUMBER.replace(/\D/g, 
 export type WaConfig = { phone: string; apikey: string; digestDay?: string; eveningDay?: string; lastSentAt?: number; lastError?: string | null };
 export type WaStatus = { on: boolean; phone: string | null; lastSentAt: number | null; lastError: string | null; activationLink: string; number: string; activation: string };
 
-export const PHONE = /^\+\d{8,15}$/;
+export const PHONE = /^\+[1-9]\d{7,14}$/; // a country code never starts with 0 · "0612…" without one is refused
 export const normalizePhone = (s: string) => "+" + s.replace(/\D/g, "");
 
 export async function getWaConfig(userId: string): Promise<WaConfig | null> {
