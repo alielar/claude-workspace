@@ -24,6 +24,8 @@ import { useCached, fetchJson } from "@/lib/local/store";
 import { pushState, enablePush, disablePush, type PushState } from "@/lib/push/client";
 import { metricWords, pipeNote, type PipeStatus } from "@/lib/health/client";
 import { ChannelsCard } from "@/components/news/ChannelsCard";
+import { GuestNewsCard } from "@/components/news/GuestNews";
+import { useProfile, wipeSavedCopies } from "@/lib/profile/useProfile";
 import { soundsOn, setSoundsOn } from "@/lib/sounds";
 
 const THEMES: { key: ThemeChoice; label: string; hint: string }[] = [
@@ -255,6 +257,8 @@ export default function SettingsPage() {
   );
   const isIOS = useClientValue(() => /iPhone|iPad|iPod/.test(navigator.userAgent), false);
   const { data: me } = useCached<{ required: boolean; email: string | null }>("auth-me", () => fetchJson("/api/auth/me"));
+  // A guest (2026-10-09): their own News card, no Apple Watch, no widgets, a door back to the welcome tour.
+  const { primary } = useProfile();
 
   // One Update: the database first (idempotent, a second), then the app's caches, then a reload.
   // "Update app" and "Update database" were two buttons until 2026-10-03; the database step is
@@ -300,8 +304,9 @@ export default function SettingsPage() {
       {/* Routine · the weekly planner, the item details and the morning clock (was "Edit list" + "Morning routine") */}
       <DoorRow href="/checklist" label="Routine" />
 
-      {/* YouTube channels · the fixed list behind News (daily picks + watch later) */}
-      <ChannelsCard />
+      {/* YouTube channels · Ali's fixed list behind News (daily picks + watch later) · a guest's own choices */}
+      {primary ? <ChannelsCard /> : <GuestNewsCard />}
+      {!primary && <DoorRow href="/welcome?again=1" label="Welcome tour" />}
 
 
       {!standalone && (
@@ -339,7 +344,7 @@ export default function SettingsPage() {
         </div>}
       </section>
 
-      <AppleWatchCard />
+      {primary && <AppleWatchCard />}
 
       <RemindersCard />
 
@@ -347,7 +352,7 @@ export default function SettingsPage() {
         <section className="cc-card">
           <div className="cc-card-head"><span className="title">Account</span><span className="tail">{me.email ?? ""}</span></div>
           <div className="cc-card-body">
-            <form method="post" action="/api/auth/logout"><button type="submit" className="cc-btn cc-btn-ghost">Sign out</button></form>
+            <form method="post" action="/api/auth/logout" onSubmit={() => wipeSavedCopies()}><button type="submit" className="cc-btn cc-btn-ghost">Sign out</button></form>
           </div>
         </section>
       )}
@@ -358,9 +363,9 @@ export default function SettingsPage() {
           <span style={{ fontSize: 14, color: "var(--ink-3)" }}>{updating ?? "database, then the app"}</span>
           <button className="cc-btn cc-btn-secondary" onClick={update} disabled={!!updating}>Update</button>
         </div>
-        <div className="cc-card-body" style={{ paddingTop: 0, display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14, color: "var(--ink-3)" }}>
+        {primary && <div className="cc-card-body" style={{ paddingTop: 0, display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14, color: "var(--ink-3)" }}>
           <span>Widgets · home screen · lock screen · Scriptable</span><span style={{ color: "var(--pos)" }}>set up</span>
-        </div>
+        </div>}
       </section>
     </div>
   );

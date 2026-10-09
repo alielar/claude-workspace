@@ -23,6 +23,7 @@
  * render (phone copy first), edits go through the outbox.
  */
 
+import { useProfile } from "@/lib/profile/useProfile";
 import { Linkify } from "@/components/Linkify";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -146,6 +147,7 @@ function Sheet({ item, onClose, onSave, onDelete }: {
 
 /** The morning as a clock (moved here from Settings 2026-10-03) · folded to one line, every number editable. */
 function MorningClock() {
+  const { primary } = useProfile();
   const { data: settings, setData } = useCached<{ morningPlan?: string | null }>("settings", () => fetchJson("/api/settings"));
   const plan = parseMorningPlan(settings?.morningPlan);
   const [open, setOpen] = useState(false);
@@ -161,6 +163,19 @@ function MorningClock() {
   const saturday = computeMorning(plan, true, "saturday");
   const spare = Math.min(trainDay.bufferMin, restDay.bufferMin);
   const num: React.CSSProperties = { fontSize: 16, minHeight: 40, width: 64, boxSizing: "border-box", textAlign: "right" };
+  // A guest's morning (2026-10-09): one wake time, no training or calls clock.
+  if (!primary) {
+    return (
+      <section className="cc-card">
+        <div className="cc-card-head"><span className="title">Morning</span><span className="tail">wake {plan.restWake}</span></div>
+        <div className="cc-card-body" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center" }}>
+          <span style={{ fontSize: 15 }}>Wake up</span>
+          <input type="time" className="cc-input" value={plan.restWake} onChange={(e) => e.target.value && savePlan({ ...plan, trainWake: e.target.value, restWake: e.target.value })}
+            style={{ fontSize: 16, minHeight: 44, width: 120, boxSizing: "border-box", WebkitAppearance: "none", appearance: "none" }} aria-label="Wake time" />
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="cc-card">
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="cc-card-head"

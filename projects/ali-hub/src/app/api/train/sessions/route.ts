@@ -24,7 +24,7 @@ export async function GET() {
       .orderBy(desc(kbSessions.date), desc(kbSessions.startedAt)).limit(60),
     db.select({ kettlebellKg: userSettings.kettlebellKg }).from(userSettings)
       .where(eq(userSettings.userId, userId)).limit(1),
-    loadOrSeedWorkouts(userId).catch(() => []),
+    session.user.primary ? loadOrSeedWorkouts(userId).catch(() => []) : Promise.resolve([] as Awaited<ReturnType<typeof loadOrSeedWorkouts>>), // the kettlebell workout is Ali's (2026-10-09)
   ]);
 
   const sessions = rows.map(rowToSession);

@@ -8,7 +8,8 @@ import { prewriteIfSessionDay } from "@/lib/mind/server";
 import { db } from "@/db";
 import { birthdays, todos, userSettings } from "@/db/schema";
 import { and, eq, inArray, isNull, lte } from "drizzle-orm";
-import { getUserId } from "@/lib/user";
+import { allUserIds, getUserId } from "@/lib/user";
+import { getProfile } from "@/lib/profile/server";
 import { checklistToday } from "@/lib/checklist/day";
 import { sendToUser } from "@/lib/push/server";
 import { ensureBirthdayTables } from "@/lib/birthdays/server";
@@ -47,10 +48,29 @@ export async function GET(req: NextRequest) {
   const now = new Date();
   const hm = madridHM(now);
 
-  const userId = await getUserId();
-  if (!userId) return NextResponse.json({ error: "no user" }, { status: 500 });
+  const primaryId = await getUserId();
+  if (!primaryId) return NextResponse.json({ error: "no user" }, { status: 500 });
   // Heartbeat · Settings shows "service last ran Xm ago", so a dead pinger is visible.
-  await db.update(userSettings).set({ lastReminderTickAt: now }).where(eq(userSettings.userId, userId)).catch(() => {});
+  await db.update(userSettings).set({ lastReminderTickAt: now }).where(eq(userSettings.userId, primaryId)).catch(() => {});
+
+  // YouTube picks (News): the channel feeds, every 30 min (pollVideos throttles itself) · shared by every account.
+  after(async () => { try { await pollVideos(); } catch { /* next tick */ } });
+  // Football highlights: the channel feeds only hold the last 15 uploads, so every
+  // tick (5 min, all day · matches end near midnight) stores what is new.
+  after(async () => { try { await pollHighlights(); } catch { /* next tick */ } });
+
+  // Then every account in turn (2026-10-09 · Ali and his father): the podcast, the coach and the
+  // Mind brief by what the account has, the Vault, the birthdays and the nags for everyone.
+  const out: Record<string, unknown> = {};
+  for (const userId of await allUserIds()) {
+    try { out[userId.slice(0, 8)] = await tickUser(userId, now, hm); } catch (e) { out[userId.slice(0, 8)] = `error: ${String((e as Error).message).slice(0, 120)}`; }
+  }
+  return NextResponse.json({ hm, users: out });
+}
+
+async function tickUser(userId: string, now: Date, hm: string): Promise<unknown> {
+  const { profile } = await getProfile(userId);
+  const has = (s: "train" | "mind") => profile.sections.includes(s);
 
   // Podcast self-healing (weekly only since 2026-10-04 · the daily episode is retired): the Sunday
   // cron writes the episode; a failed script or voicing is retried here from 09:00 Madrid (after
@@ -67,21 +87,15 @@ export async function GET(req: NextRequest) {
   }
   // The coach's weekly report (spec §7c item 15, 2026-10-04): Sunday 20:00 to 22:30 Madrid · write
   // this week's report once (numbers by rule, prose = one askAI call) and push "Your week in training".
-  if (hm >= "20:00" && hm <= "22:30" && new Date(`${checklistToday(now)}T12:00:00Z`).getUTCDay() === 0) {
+  if (has("train") && hm >= "20:00" && hm <= "22:30" && new Date(`${checklistToday(now)}T12:00:00Z`).getUTCDay() === 0) {
     after(async () => {
       try { const r = await ensureCoachReport(userId, checklistToday(now)); if (r) await pushCoachReport(userId, r); } catch { /* next tick */ }
     });
   }
-  // YouTube picks (News): the channel feeds, every 30 min (pollVideos throttles itself).
-  after(async () => { try { await pollVideos(); } catch { /* next tick */ } });
-
-  // Football highlights: the channel feeds only hold the last 15 uploads, so every
-  // tick (5 min, all day · matches end near midnight) stores what is new.
-  after(async () => { try { await pollHighlights(); } catch { /* next tick */ } });
   // Mental Training: from 05:00 on a session day, write today's brief once so it is ready when Ali opens Train → Mind.
-  if (hm >= "05:00") after(async () => { try { await prewriteIfSessionDay(userId); } catch { /* next tick */ } });
+  if (has("mind") && hm >= "05:00") after(async () => { try { await prewriteIfSessionDay(userId); } catch { /* next tick */ } });
 
-  if (hm >= "23:00" || hm < "08:00") return NextResponse.json({ quiet: true, hm });
+  if (hm >= "23:00" || hm < "08:00") return { quiet: true };
   const today = checklistToday(now);
 
   // Vault (far-future items): the wake day has come · one push, then the item
@@ -145,7 +159,7 @@ export async function GET(req: NextRequest) {
     if (!Number.isFinite(interval)) return false;
     return !t.lastNaggedAt || now.getTime() - t.lastNaggedAt.getTime() >= interval;
   });
-  if (toNag.length === 0) return NextResponse.json({ due: due.length, sent: 0, hm });
+  if (toNag.length === 0) return { due: due.length, sent: 0 };
 
   // One notification per list and device class. Everything due in that list is mentioned,
   // so a nag never makes you forget the task it isn't about.
@@ -174,5 +188,5 @@ export async function GET(req: NextRequest) {
     }
   }
   if (stamped.length) await db.update(todos).set({ lastNaggedAt: now }).where(inArray(todos.id, stamped));
-  return NextResponse.json({ due: due.length, nagged: toNag.length, sent, hm });
+  return { due: due.length, nagged: toNag.length, sent };
 }

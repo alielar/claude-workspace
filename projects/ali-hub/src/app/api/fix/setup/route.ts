@@ -10,7 +10,7 @@
 
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { authPrimary as auth } from "@/lib/auth"; // Ali's section (2026-10-09): a guest gets 401 here
 
 export async function GET() {
   const h = await headers();

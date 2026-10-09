@@ -16,6 +16,7 @@ import { SyncOutbox } from "@/components/pwa/SyncOutbox";
 import { ThemeSunset } from "@/components/pwa/ThemeSunset";
 import { PushHealth } from "@/components/pwa/PushHealth";
 import { DictationPill } from "@/components/dictation/DictationPill";
+import { ProfileGate } from "@/components/pwa/ProfileGate";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -32,6 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <ThemeSunset />
       <PushHealth />
       <DictationPill />
+      <ProfileGate />
     </>
   );
 }

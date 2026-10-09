@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { listHighlights, pollHighlights, pruneHighlights } from "@/lib/news/highlights";
 import { nationalStatus, pollNational } from "@/lib/news/national";
+import { getProfile } from "@/lib/profile/server";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +27,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ scan, status: await nationalStatus() }, { headers: { "Cache-Control": "no-store" } });
   }
   if (url.searchParams.get("national")) return NextResponse.json(await nationalStatus(), { headers: { "Cache-Control": "no-store" } });
-  let items = await listHighlights().catch(() => []);
+  // Football switched off in the profile (a guest's choice, 2026-10-09) · an empty list, nothing polled.
+  const { profile } = await getProfile(session.user.id);
+  if (!profile.football) return NextResponse.json({ items: [] }, { headers: { "Cache-Control": "no-store" } });
+  let items = await listHighlights(60, session.user.id).catch(() => []);
   const newest = items[0]?.publishedAt ?? 0;
   if (items.length === 0 || Date.now() - newest > 15 * 60 * 1000) {
     await Promise.race([pollHighlights({ search: false }).catch(() => null), new Promise((r) => setTimeout(r, 7000))]);
-    items = await listHighlights().catch(() => items);
+    items = await listHighlights(60, session.user.id).catch(() => items);
   }
   return NextResponse.json({ items }, { headers: { "Cache-Control": "no-store" } });
 }

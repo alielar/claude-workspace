@@ -75,3 +75,28 @@ export function isNavActive(item: NavItem, pathname: string): boolean {
 export function otherSection(pathname: string): NavItem | null {
   return OTHER.find((o) => isNavActive(o, pathname)) ?? null;
 }
+
+// ─── Per person (2026-10-09 · a second account on the hub) ───────────────────────────────────────
+/**
+ * The lists above are ALI's. A guest account has no Train, Health or R2-D2 (src/lib/profile/types.ts),
+ * so the sidebar, the phone bar and the command bar ask `navFor(sections)` instead. With every section
+ * the answer is exactly the lists above; with none the phone bar is Today · To-do · Knowledge · News ·
+ * Settings and the picker never shows (`other` empty).
+ */
+export type NavSet = { all: NavItem[]; top: NavItem[]; bottom: NavItem[]; tabs: NavItem[]; other: NavItem[]; otherHref: string | null };
+
+export function navFor(sections: readonly string[] | null | undefined): NavSet {
+  const has = (s: string) => !sections || sections.includes(s);
+  const full = !sections || (has("train") && has("health") && has("r2d2"));
+  if (full) return { all: ALL, top: ALL.filter((n) => n !== R2D2 && n !== SETTINGS), bottom: [R2D2, SETTINGS], tabs: NAV, other: OTHER, otherHref: OTHER_TAB_HREF };
+  const all = [TODAY, TODO, KNOWLEDGE, ...(has("train") ? [TRAIN] : []), ...(has("health") ? [HEALTH] : []), NEWS, ...(has("r2d2") ? [R2D2] : []), SETTINGS];
+  const bottom = [...(has("r2d2") ? [R2D2] : []), SETTINGS];
+  const top = all.filter((n) => !bottom.includes(n));
+  // The phone: four sections then Settings when nothing is left for a picker, else the picker holds the rest.
+  const main = [TODAY, TODO, ...(has("train") ? [TRAIN] : [KNOWLEDGE]), NEWS];
+  const other = all.filter((n) => !main.includes(n) && n !== SETTINGS);
+  if (other.length === 0) return { all, top, bottom, tabs: [...main, SETTINGS], other: [], otherHref: null };
+  const otherAll = [...other, SETTINGS];
+  const otherHref = otherAll[0].href;
+  return { all, top, bottom, tabs: [...main, { href: otherHref, label: "More", icon: "other", match: otherAll.flatMap((o) => o.match ?? [o.href]) }], other: otherAll, otherHref };
+}

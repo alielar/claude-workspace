@@ -8,7 +8,7 @@
 export const maxDuration = 120;
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { authPrimary as auth } from "@/lib/auth"; // Ali's section (2026-10-09): a guest gets 401 here
 import { ensureCoachReport, getCoachReport, lastCoachError, listCoachReports } from "@/lib/coach/server";
 import { isoWeekOf } from "@/lib/health/client";
 import { checklistToday } from "@/lib/checklist/day";

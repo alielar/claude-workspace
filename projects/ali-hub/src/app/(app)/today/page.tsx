@@ -75,6 +75,7 @@ import { Sheet } from "../todo/sheet";
 import { useHealthSummary } from "@/lib/health/useHealth";
 import { fmtDur, kindLabel, signalColor } from "@/lib/health/client";
 import { readiness } from "@/lib/train/insights";
+import { useProfile } from "@/lib/profile/useProfile";
 
 // ─── One highlight suggestion (News keeps the rest) ──────────────────────────
 
@@ -423,7 +424,10 @@ export default function TodayPage() {
   const plan = useMemo(() => parseMorningPlan(planJson), [planJson]);
   // From the clock, not from `today`: the React Compiler treats a call taking `today` as a possible
   // mutation of it and then refuses to keep the memos below that depend on it.
-  const kind: DayKind = dayKindOf(checklistToday(now));
+  // A guest (2026-10-09): no coach line, no training words, Sunday a plain day unless the profile says otherwise.
+  const { primary, has, profile } = useProfile();
+  const kindRaw = dayKindOf(checklistToday(now));
+  const kind: DayKind = kindRaw === "sunday" && profile && !profile.sundayFree ? "weekday" : kindRaw;
   const shiftMin = kind === "saturday" ? plan.saturdayShiftMin : 0;
 
   // The book being read right now · from the phone's saved copy of /books (no extra request here).
@@ -510,9 +514,12 @@ export default function TodayPage() {
   // ── Header · shared ───────────────────────────────────────────────────────
   const evening = part === "evening";
   const picksN = 2;
+  const openTodos = todayTodos.length + overdueTodos.length;
   const dayLine = evening
-    ? `${doneCount} of ${total} routine done${sessionToday ? ` · ${sessionToday}` : ""}${todayTodos.length ? ` · ${todayTodos.length} to-do${todayTodos.length === 1 ? "" : "s"} still open` : " · every to-do done"}`
-    : `${sessionToday ? `Training day · ${sessionToday}` : machineDay ? "Training day" : "Rest day"} · ${total} routine step${total === 1 ? "" : "s"} · ${todayTodos.length + overdueTodos.length} to-do${todayTodos.length + overdueTodos.length === 1 ? "" : "s"} · ${picksN} videos`;
+    ? `${doneCount} of ${total} routine done${primary && sessionToday ? ` · ${sessionToday}` : ""}${todayTodos.length ? ` · ${todayTodos.length} to-do${todayTodos.length === 1 ? "" : "s"} still open` : " · every to-do done"}`
+    : primary
+      ? `${sessionToday ? `Training day · ${sessionToday}` : machineDay ? "Training day" : "Rest day"} · ${total} routine step${total === 1 ? "" : "s"} · ${openTodos} to-do${openTodos === 1 ? "" : "s"} · ${picksN} videos`
+      : `${total} routine step${total === 1 ? "" : "s"} · ${openTodos} to-do${openTodos === 1 ? "" : "s"}`;
   const header = (
     <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
       <div>
@@ -587,7 +594,7 @@ export default function TodayPage() {
               </span>
             </div>
             <div style={{ padding: "0 14px" }}>
-              <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />
+              <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} simple={!primary} />
               {loading && !data && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
               {items.map((i) => <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} />)}
               {sundayTodos.map((t) => <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} />)}
@@ -658,7 +665,7 @@ export default function TodayPage() {
                           </>)}
                         </div>
                         <div style={{ padding: "0 14px" }}>
-                          {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} />}
+                          {s.p === "morning" && s.status === "now" && <MorningCardLine machineDay={machineDay} plan={plan} kind={kind} simple={!primary} />}
                           {loading && !data && s.status === "now" && <div style={{ padding: "12px 0", display: "grid", gap: 10 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ height: 44 }} />)}</div>}
                           {rows.length === 0 && !(loading && !data) && <div style={{ padding: "10px 4px 14px", fontSize: 14, color: "var(--ink-4)" }}>Nothing planned.</div>}
                           {rows.map((r) => r.node)}
@@ -703,9 +710,9 @@ export default function TodayPage() {
         </div>
 
         <div className="cc-stack">
-          <CoachLine today={today} session={sessionToday} />
+          {has("health") && <CoachLine today={today} session={sessionToday} />}
 
-          <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} defaultOpen={evening} />
+          <TomorrowCard today={today} plan={plan} todos={todoData?.todos ?? []} onOpen={setOpenTodo} defaultOpen={evening} simple={!primary} />
 
           {/* The two star channels (Ali 2026-10-04: "the two YouTube channels which are the star" where
               the daily podcast card used to be) · the latest upload of The AI Daily Brief and of TLDR News Global. */}
@@ -736,7 +743,25 @@ function DailyPicksCard() {
   const { feed, markWatched } = useVideos();
   const now = useNow();
   const picks = (feed?.picks ?? []).filter((p) => p.video !== null);
-  if (!picks.length || !now) return null;
+  // A guest has no picks (2026-10-09): the two newest from their own channels take the card.
+  const mine = picks.length ? [] : (feed?.later ?? []).slice(0, 2);
+  if ((!picks.length && !mine.length) || !now) return null;
+  if (!picks.length) {
+    return (
+      <section className="cc-card cc-rise">
+        <div className="cc-card-head">
+          <span className="title">Your channels</span>
+          <span className="tail" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+            {feed?.later.length ?? 0} to watch
+            <Link href="/news" style={{ textDecoration: "none", color: "var(--ink-2)", fontFamily: "var(--f-sans)", fontSize: 15, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 4px", margin: "-12px -4px" }}>News</Link>
+          </span>
+        </div>
+        <div>
+          {mine.map((v, i) => <VideoRow key={v.videoId} v={v} onWatch={markWatched} now={now} label={v.channel} last={i === mine.length - 1} />)}
+        </div>
+      </section>
+    );
+  }
   const unwatched = picks.filter((p) => !p.video!.watched).length;
   return (
     <section className="cc-card cc-rise">
@@ -757,7 +782,7 @@ function DailyPicksCard() {
 /** Tomorrow at a glance (Ali 2026-09-30) · folded to one quiet line, tap = the day in clock order.
  * Routine rows come from the editor's `checklist-all` copy (every weekday's rows), filtered to
  * tomorrow's weekday and shifted / untimed the same way Today does it. */
-function TomorrowCard({ today, plan, todos, onOpen, defaultOpen = false }: { today: string; plan: MorningPlan; todos: Todo[]; onOpen: (t: Todo) => void; defaultOpen?: boolean }) {
+function TomorrowCard({ today, plan, todos, onOpen, defaultOpen = false, simple = false }: { today: string; plan: MorningPlan; todos: Todo[]; onOpen: (t: Todo) => void; defaultOpen?: boolean; simple?: boolean }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     // The remembered fold wins; without one, the evening opens Tomorrow by itself (redesign 2026-10-06).
@@ -768,7 +793,8 @@ function TomorrowCard({ today, plan, todos, onOpen, defaultOpen = false }: { tod
   const { data } = useCached<ChecklistData>("checklist-all", () => fetchJson<ChecklistData>("/api/checklist?all=1"));
   const { data: ov } = useOverview();
   const tmrw = addDays(today, 1);
-  const kind = dayKindOf(tmrw);
+  const kindTmrw = dayKindOf(tmrw);
+  const kind: DayKind = simple && kindTmrw === "sunday" ? "weekday" : kindTmrw; // a guest's Sunday is a plain day (2026-10-09)
   const code = dayCode(tmrw);
   const steps = dayItems(
     (data?.items ?? []).filter((i) => i.source !== "workout" && (!i.startDate || i.startDate <= tmrw) && (!i.weekdays || i.weekdays.includes(code))),
@@ -808,7 +834,7 @@ function TomorrowCard({ today, plan, todos, onOpen, defaultOpen = false }: { tod
       {open && (
         <div className="cc-card-body" style={{ display: "grid", gap: 10, paddingTop: 2 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, fontSize: 13, color: "var(--ink-3)" }}>
-            <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--fill-1)" }}>{kind === "sunday" ? "Sunday · whenever" : isTraining ? "Training day" : "Rest day"}</span>
+            {!simple && <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--fill-1)" }}>{kind === "sunday" ? "Sunday · whenever" : isTraining ? "Training day" : "Rest day"}</span>}
             <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--fill-1)" }}>{steps.length} step{steps.length === 1 ? "" : "s"}</span>
             {due.length > 0 && <span style={{ padding: "3px 10px", borderRadius: 99, background: "var(--accent-soft)", color: "var(--ink-2)" }}>{due.length} to-do{due.length === 1 ? "" : "s"}</span>}
           </div>
@@ -846,12 +872,14 @@ function TomorrowCard({ today, plan, todos, onOpen, defaultOpen = false }: { tod
 }
 
 /** One quiet line inside the spine's Morning segment: the wake time (Saturday: shifted), tap → Routine (the morning clock lives there). */
-function MorningCardLine({ machineDay, plan, kind }: { machineDay: boolean; plan: MorningPlan; kind: DayKind }) {
+function MorningCardLine({ machineDay, plan, kind, simple = false }: { machineDay: boolean; plan: MorningPlan; kind: DayKind; simple?: boolean }) {
   const { data: ov } = useOverview();
   const sched = ov?.schedule ?? null;
   const isTraining = machineDay || (sched ? sched.todayKey !== null : true);
   const { wake, callsAt, bufferMin } = computeMorning(plan, isTraining, kind);
   const link: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 36, padding: "6px 4px", fontSize: 13.5, color: "var(--ink-4)", textDecoration: "none", borderBottom: "1px solid var(--line)" };
+  // A guest's morning (2026-10-09): the wake time, nothing about training or calls.
+  if (simple) return <Link href="/checklist" style={link}><span>Wake {wake}</span></Link>;
   if (kind === "sunday") {
     return <Link href="/checklist" style={link}><span>Sunday · no fixed times · {isTraining ? "training day" : "rest day"}</span></Link>;
   }

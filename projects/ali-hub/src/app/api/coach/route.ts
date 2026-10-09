@@ -5,7 +5,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth, authPrimary } from "@/lib/auth";
 import { listCoachReports, listObjectives, upsertObjective } from "@/lib/coach/server";
 import type { Objective } from "@/lib/coach/types";
 
@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session.user.primary) return NextResponse.json({ objectives: [], reports: [], latest: null }, { headers: { "Cache-Control": "no-store" } }); // the coach is Ali's (2026-10-09)
   const [objectives, reports] = await Promise.all([listObjectives(session.user.id), listCoachReports(session.user.id)]);
   return NextResponse.json({ objectives, reports, latest: reports[0] ?? null }, { headers: { "Cache-Control": "no-store" } });
 }
@@ -22,7 +23,7 @@ const KINDS = new Set(["run5k", "strengthWeeks", "kbRounds", "vo2max"]);
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function PUT(req: NextRequest) {
-  const session = await auth();
+  const session = await authPrimary();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const b = (await req.json().catch(() => null)) as Partial<Objective> & { deleted?: boolean } | null;
   if (!b || typeof b.id !== "string" || !b.id || b.id.length > 64 || !KINDS.has(String(b.kind)) || typeof b.title !== "string" || !b.title.trim()) return NextResponse.json({ error: "bad objective" }, { status: 400 });

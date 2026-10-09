@@ -42,6 +42,7 @@ import type { WeeklyBrief } from "@/lib/news/weekly";
 import type { Highlight, HighlightGroup } from "@/lib/news/highlights";
 import { checklistToday } from "@/lib/checklist/day";
 import { useNow } from "@/lib/useClientValue";
+import { useProfile } from "@/lib/profile/useProfile";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -202,6 +203,10 @@ export default function NewsPage() {
   const { items: highlights, markWatched: markHighlight } = useHighlights();
   const [laterAll, setLaterAll] = useState(false);
   const laptop = useLaptop();
+  // A guest (2026-10-09): their own channels on one shelf, no daily picks, football by their choice.
+  const { profile, primary } = useProfile();
+  const guest = !!profile && !primary;
+  const football = profile ? profile.football : true;
   const [playing, setPlaying] = useState<Video | null>(null);
   const play = (v: Video) => { setPlaying(v); if (!v.watched) markWatched(v.videoId, true); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const [section, setSection] = useState<string | null>(null);
@@ -225,8 +230,8 @@ export default function NewsPage() {
   const picks = (feed?.picks ?? []).map((p, i) => ({ v: p.video, label: i === 0 ? "AI & Tech" : "Global news" })).filter((p): p is { v: Video; label: string } => !!p.v);
   const videosPhone = (
     <>
-      {/* 1 · Daily picks */}
-      <div style={{ display: "grid", gap: 6 }}>
+      {/* 1 · Daily picks (Ali's two star channels · a guest has none) */}
+      {(!feed || feed.picks.length > 0) && <div style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-3)", padding: "0 2px" }}>Daily picks</span>
         {videosLoading && !feed ? (
           <div style={{ display: "grid", gap: 12 }}>{[0, 1].map((i) => <div key={i} className="cc-skeleton" style={{ aspectRatio: "16 / 10", borderRadius: 14 }} />)}</div>
@@ -235,11 +240,11 @@ export default function NewsPage() {
             {(feed?.picks ?? []).map((p, i) => <PickCard key={p.channel.id} label={i === 0 ? "AI & Tech" : "Global news"} v={p.video} onWatch={markWatched} now={now} />)}
           </div>
         )}
-      </div>
+      </div>}
 
       {/* 2 · Watch later */}
       <section className="cc-card">
-        <div className="cc-card-head"><span className="title">Watch later</span><span className="tail">{later.length === 0 ? (feed ? "all caught up" : "…") : `${later.length} · last two weeks`}</span></div>
+        <div className="cc-card-head"><span className="title">{guest ? "Your channels" : "Watch later"}</span><span className="tail">{later.length === 0 ? (feed ? (guest && !watchedList.length ? "add channels in Settings" : "all caught up") : "…") : `${later.length} · last two weeks`}</span></div>
         {later.length > 0 && (
           <div>
             {laterShown.map((v) => <VideoRow key={v.videoId} v={v} onWatch={markWatched} now={now} />)}
@@ -265,7 +270,7 @@ export default function NewsPage() {
   );
   const videosLaptop = (
     <section className="cc-card">
-      <div className="cc-card-head"><span className="title">Daily picks and Watch later</span><span className="tail">{later.length === 0 ? (feed ? "all caught up" : "…") : `${later.length} to watch · plays here`}</span></div>
+      <div className="cc-card-head"><span className="title">{guest ? "Your channels" : "Daily picks and Watch later"}</span><span className="tail">{later.length === 0 ? (feed ? "all caught up" : "…") : `${later.length} to watch · plays here`}</span></div>
       <div className="cc-card-body">
         {videosLoading && !feed ? (
           <div className="news-grid">{[0, 1, 2, 3].map((i) => <div key={i} className="cc-skeleton" style={{ aspectRatio: "16 / 10", borderRadius: 12 }} />)}</div>
@@ -357,13 +362,13 @@ export default function NewsPage() {
 
       {laptop ? (
         <div className="cc-cols">
-          <div className="cc-stack">{videosLaptop}{footballPart}</div>
+          <div className="cc-stack">{videosLaptop}{football && footballPart}</div>
           <div className="cc-stack">{briefPart}</div>
         </div>
       ) : (
         <>
           <div role="tablist" aria-label="News" style={{ display: "flex", gap: 8 }}>
-            {([{ key: "videos", label: "Videos", tail: later.length ? String(later.length) : "" }, { key: "brief", label: "Weekly brief", tail: "" }, { key: "football", label: "Football", tail: unwatchedHl ? String(unwatchedHl) : "" }] as { key: NewsPart; label: string; tail: string }[]).map((p) => (
+            {([{ key: "videos", label: "Videos", tail: later.length ? String(later.length) : "" }, { key: "brief", label: "Weekly brief", tail: "" }, ...(football ? [{ key: "football", label: "Football", tail: unwatchedHl ? String(unwatchedHl) : "" }] : [])] as { key: NewsPart; label: string; tail: string }[]).map((p) => (
               <button key={p.key} role="tab" aria-selected={part === p.key} onClick={() => setPart(p.key)} className="cc-pill"
                 style={{ minHeight: 36, padding: "0 14px", fontSize: 15, fontWeight: 500, cursor: "pointer", border: "1px solid var(--line)", transition: "background var(--t-2) var(--easeOut), color var(--t-2) var(--easeOut)", background: part === p.key ? "var(--accent-soft)" : "transparent", color: part === p.key ? "var(--ink)" : "var(--ink-3)" }}>
                 {p.label}{p.tail ? <span className="tabular-nums" style={{ marginLeft: 6, fontSize: 13, color: part === p.key ? "var(--violet)" : "var(--ink-4)" }}>{p.tail}</span> : null}
@@ -372,7 +377,8 @@ export default function NewsPage() {
           </div>
           {part === "videos" && <div key="videos" style={{ display: "grid", gap: 18 }}>{videosPhone}</div>}
           {part === "brief" && <div key="brief" style={{ display: "grid", gap: 18 }}>{briefPart}</div>}
-          {part === "football" && <div key="football" style={{ display: "grid", gap: 18 }}>{footballPart}</div>}
+          {part === "football" && football && <div key="football" style={{ display: "grid", gap: 18 }}>{footballPart}</div>}
+          {part === "football" && !football && <div key="videos" style={{ display: "grid", gap: 18 }}>{videosPhone}</div>}
         </>
       )}
 

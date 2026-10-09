@@ -18,6 +18,9 @@ import { footballMeta, ytVideos } from "@/db/schema";
 import { and, desc, eq, gte, inArray, isNull, lt, sql, isNotNull } from "drizzle-orm";
 import { ALL_CHANNELS, DAILY_PICKS, LATER_WINDOW_DAYS, WATCH_LATER, channelById, type Channel } from "@/lib/news/channels";
 import { searchVideos } from "@/lib/news/youtubeSearch";
+import { marksFor, setMark } from "@/lib/news/marks";
+import { isPrimaryUser } from "@/lib/user";
+import { userSettings } from "@/db/schema";
 
 export type Video = {
   videoId: string;
@@ -36,6 +39,32 @@ export type VideoFeed = {
   watched?: Video[];
   fetchedAt: number;
 };
+
+/**
+ * A GUEST's channels (2026-10-09): the people Ali invited pick their own on /welcome and in Settings,
+ * stored per account in `user_settings.news_custom_channels` as [{id,name,handle?,subs?}] in their
+ * order (first = most important). The poll fetches the union of every account's channels; the list a
+ * guest sees is only theirs, one shelf ("Your channels"), no daily picks.
+ */
+export type GuestChannel = { id: string; name: string; handle?: string; subs?: string };
+export function parseGuestChannels(json: string | null | undefined): GuestChannel[] {
+  try {
+    const v = JSON.parse(json ?? "null");
+    if (!Array.isArray(v)) return [];
+    return v.filter((c): c is GuestChannel => !!c && typeof c.id === "string" && /^UC[\w-]{22}$/.test(c.id) && typeof c.name === "string").slice(0, 30);
+  } catch { return []; }
+}
+export async function guestChannelsOf(userId: string): Promise<GuestChannel[]> {
+  const [s] = await db.select({ v: userSettings.newsCustomChannels }).from(userSettings).where(eq(userSettings.userId, userId)).catch(() => []);
+  return parseGuestChannels(s?.v);
+}
+/** Every guest's channels, merged (the poll fetches them beside Ali's fixed list). */
+async function allGuestChannels(): Promise<GuestChannel[]> {
+  const rows = await db.select({ v: userSettings.newsCustomChannels }).from(userSettings).catch(() => []);
+  const seen = new Map<string, GuestChannel>();
+  for (const r of rows) for (const c of parseGuestChannels(r.v)) if (!seen.has(c.id)) seen.set(c.id, c);
+  return [...seen.values()];
+}
 
 const POLL_EVERY_MS = 30 * 60_000;
 const PER_CHANNEL = 5;
@@ -170,7 +199,9 @@ export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ adde
   if (!opts.force && Date.now() - (await lastPoll()) < POLL_EVERY_MS) return { added: 0, measured: 0, errors: ["throttled"] };
   await stampPoll();
   const errors: string[] = [];
-  const results = await Promise.allSettled(ALL_CHANNELS.map(async (c) => ({ c, entries: await fetchFeed(c.id) })));
+  const guests = (await allGuestChannels()).filter((g) => !ALL_CHANNELS.some((c) => c.id === g.id));
+  const channels: { id: string; filter?: RegExp }[] = [...ALL_CHANNELS, ...guests];
+  const results = await Promise.allSettled(channels.map(async (c) => ({ c, entries: await fetchFeed(c.id) })));
   const known = new Set((await db.select({ id: ytVideos.videoId }).from(ytVideos).catch(() => [])).map((r) => r.id));
   const cutoff = Date.now() - 45 * 86400_000;
   let added = 0;
@@ -216,10 +247,30 @@ export async function pollVideos(opts: { force?: boolean } = {}): Promise<{ adde
   return { added, measured, errors, pending: pending.length, sample };
 }
 
-const toVideo = (r: typeof ytVideos.$inferSelect): Video => ({
-  videoId: r.videoId, channelId: r.channelId, channel: channelById(r.channelId)?.name ?? "YouTube", title: r.title,
-  publishedAt: r.publishedAt.getTime(), durationSec: r.durationSec, thumbnail: r.thumbnail ?? `https://i.ytimg.com/vi/${r.videoId}/hqdefault.jpg`, watched: r.watchedAt !== null,
+const toVideo = (r: typeof ytVideos.$inferSelect, names?: Map<string, string>, marks?: Map<string, number>): Video => ({
+  videoId: r.videoId, channelId: r.channelId, channel: names?.get(r.channelId) ?? channelById(r.channelId)?.name ?? "YouTube", title: r.title,
+  publishedAt: r.publishedAt.getTime(), durationSec: r.durationSec, thumbnail: r.thumbnail ?? `https://i.ytimg.com/vi/${r.videoId}/hqdefault.jpg`,
+  watched: marks ? marks.has(r.videoId) : r.watchedAt !== null,
 });
+
+/** A guest's feed: their channels only, one shelf, their own watched marks (Ali's list is `listVideos`). */
+export async function listGuestVideos(userId: string): Promise<VideoFeed> {
+  await ensureTable();
+  const channels = await guestChannelsOf(userId);
+  if (!channels.length) return { picks: [], later: [], watched: [], fetchedAt: Date.now() };
+  const names = new Map(channels.map((c) => [c.id, c.name]));
+  const rank = new Map(channels.map((c, i) => [c.id, i]));
+  const marks = await marksFor(userId);
+  const since = new Date(Date.now() - LATER_WINDOW_DAYS * 86400_000);
+  const rows = await db.select().from(ytVideos).where(and(inArray(ytVideos.channelId, channels.map((c) => c.id)), gte(ytVideos.publishedAt, since),
+    sql`(${ytVideos.durationSec} IS NULL OR ${ytVideos.durationSec} <> 0)`, sql`(${ytVideos.isShort} IS NULL OR ${ytVideos.isShort} = 0)`)).catch(() => []);
+  const seen = new Map<string, number>();
+  const later = rows.filter((r) => !marks.has(r.videoId)).map((r) => toVideo(r, names, marks))
+    .sort((a, b) => (rank.get(a.channelId) ?? 99) - (rank.get(b.channelId) ?? 99) || b.publishedAt - a.publishedAt)
+    .filter((v) => { const n = (seen.get(v.channelId) ?? 0) + 1; seen.set(v.channelId, n); return n <= PER_CHANNEL; });
+  const watched = rows.filter((r) => marks.has(r.videoId)).map((r) => toVideo(r, names, marks)).sort((a, b) => (marks.get(b.videoId) ?? 0) - (marks.get(a.videoId) ?? 0)).slice(0, 12);
+  return { picks: [], later, watched, fetchedAt: Date.now() };
+}
 
 /** What the page shows · `enabled` = watch-later channel ids switched on in Settings (null = all). */
 export async function listVideos(enabled: string[] | null = null): Promise<VideoFeed> {
@@ -242,13 +293,15 @@ export async function listVideos(enabled: string[] | null = null): Promise<Video
   const rank = (id: string) => channelById(id)?.priority ?? 99;
   // At most PER_CHANNEL per channel (The Diary Of A CEO posts ten a fortnight and would bury the rest).
   const seen = new Map<string, number>();
-  const later = rows.map(toVideo).sort((a, b) => rank(a.channelId) - rank(b.channelId) || b.publishedAt - a.publishedAt)
+  const later = rows.map((r) => toVideo(r)).sort((a, b) => rank(a.channelId) - rank(b.channelId) || b.publishedAt - a.publishedAt)
     .filter((v) => { const n = (seen.get(v.channelId) ?? 0) + 1; seen.set(v.channelId, n); return n <= PER_CHANNEL; });
-  return { picks, later, watched: watchedRows.map(toVideo), fetchedAt: Date.now() };
+  return { picks, later, watched: watchedRows.map((r) => toVideo(r)), fetchedAt: Date.now() };
 }
 
 /** Mark watched / unwatched · the desired final state, so outbox replays are safe. */
-export async function setVideoWatched(videoId: string, watched: boolean): Promise<void> {
+export async function setVideoWatched(userId: string, videoId: string, watched: boolean): Promise<void> {
   await ensureTable();
-  await db.update(ytVideos).set({ watchedAt: watched ? new Date() : null }).where(eq(ytVideos.videoId, videoId));
+  // Ali's tick is the row's own column (as it always was) · anyone else's is a mark of their own.
+  if (await isPrimaryUser(userId)) await db.update(ytVideos).set({ watchedAt: watched ? new Date() : null }).where(eq(ytVideos.videoId, videoId));
+  else await setMark(userId, videoId, watched);
 }

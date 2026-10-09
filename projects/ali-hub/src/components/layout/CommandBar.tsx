@@ -14,7 +14,8 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
-import { ALL, type NavItem } from "@/lib/navigation";
+import { type NavItem } from "@/lib/navigation";
+import { useNav } from "@/lib/useNav";
 import { keysBusy } from "@/lib/shortcuts";
 import { ACTIONS, bindings, chordOf, hasModifier } from "@/lib/keymap";
 import { useTodos } from "@/lib/todo/useTodos";
@@ -40,6 +41,7 @@ export function CommandBar() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const { all: ALL } = useNav();
   const today = checklistToday();
   const { data, add } = useTodos(today);
 
@@ -89,7 +91,7 @@ export function CommandBar() {
     window.addEventListener("keydown", onKey);
     window.addEventListener("cc:palette", onOpen);
     return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("cc:palette", onOpen); };
-  }, [open, router]);
+  }, [open, router, ALL]);
   // A route change closes it.
   const [seen, setSeen] = useState(pathname);
   if (seen !== pathname) { setSeen(pathname); if (open) { setOpen(false); setQ(""); } }
@@ -115,7 +117,7 @@ export function CommandBar() {
       out.unshift({ kind: "add", title: parse.title || q.trim(), parse });
     }
     return out;
-  }, [q, data, today, mode]);
+  }, [q, data, today, mode, ALL]);
 
   const pick = (it: Item) => {
     if (it.kind === "add") {

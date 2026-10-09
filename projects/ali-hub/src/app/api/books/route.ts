@@ -10,6 +10,7 @@ import { readingQueue } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { BOOK_SEED, coverByIsbn } from "@/lib/books/types";
 import { rowToBook } from "@/lib/books/rows";
+import { isPrimaryUser } from "@/lib/user";
 
 async function seed(userId: string) {
   const have = new Set(
@@ -34,7 +35,7 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
-  try { await seed(userId); } catch { /* migration pending */ }
+  if (await isPrimaryUser(userId)) { try { await seed(userId); } catch { /* migration pending */ } } // the researched shelf is Ali's (2026-10-09)
   const rows = await db.select().from(readingQueue).where(eq(readingQueue.userId, userId));
   const books = rows.map(rowToBook).sort((a, b) =>
     (STATUS_ORDER[a.status] - STATUS_ORDER[b.status]) || (a.sortOrder - b.sortOrder) || (a.id - b.id)

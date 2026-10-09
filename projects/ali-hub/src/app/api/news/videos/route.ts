@@ -7,7 +7,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { listVideos, pollVideos, probeDuration, videosStale } from "@/lib/news/videos";
+import { listGuestVideos, listVideos, pollVideos, probeDuration, videosStale } from "@/lib/news/videos";
 import { WATCH_LATER } from "@/lib/news/channels";
 import { db } from "@/db";
 import { userSettings } from "@/db/schema";
@@ -35,10 +35,12 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const probe = url.searchParams.get("probe");
   if (probe && /^[\w-]{6,20}$/.test(probe)) return NextResponse.json(await probeDuration(probe), { headers: { "Cache-Control": "no-store" } });
+  // Ali reads the fixed list (channels.ts); a guest reads their own channels (2026-10-09).
+  const list = () => session.user.primary ? enabledFor(session.user.id).then(listVideos) : listGuestVideos(session.user.id);
   if (url.searchParams.get("poll") === "1") {
     const r = await pollVideos({ force: true });
-    return NextResponse.json({ poll: r, ...(await listVideos(await enabledFor(session.user.id))) }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ poll: r, ...(await list()) }, { headers: { "Cache-Control": "no-store" } });
   }
   if (await videosStale()) await Promise.race([pollVideos().catch(() => null), new Promise((r) => setTimeout(r, 7000))]);
-  return NextResponse.json(await listVideos(await enabledFor(session.user.id)), { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(await list(), { headers: { "Cache-Control": "no-store" } });
 }

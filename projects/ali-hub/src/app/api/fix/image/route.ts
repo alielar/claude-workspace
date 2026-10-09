@@ -9,7 +9,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { authPrimary as auth } from "@/lib/auth"; // Ali's section (2026-10-09): a guest gets 401 here
 import { db } from "@/db";
 import { fixRequests } from "@/db/schema";
 import { and, eq } from "drizzle-orm";

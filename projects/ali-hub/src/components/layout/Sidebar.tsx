@@ -12,14 +12,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
-import { ALL, R2D2, SETTINGS, isNavActive, type NavItem } from "@/lib/navigation";
+import { isNavActive, type NavItem } from "@/lib/navigation";
+import { useNav } from "@/lib/useNav";
 import { useTodos } from "@/lib/todo/useTodos";
 import { badgeCount } from "@/lib/todo/types";
 import { checklistToday } from "@/lib/checklist/day";
 import { useRail, toggleRail } from "@/lib/rail";
-
-const BOTTOM: NavItem[] = [R2D2, SETTINGS];
-const TOP: NavItem[] = ALL.filter((n) => !BOTTOM.includes(n));
 
 /** The app icon as the phone draws it: near-black tile, white ligature · a brand asset, so its two colours are literal on purpose. */
 export function Mark({ size = 26 }: { size?: number }) {
@@ -39,6 +37,7 @@ export function Sidebar() {
   const { data } = useTodos(today);
   const due = data ? badgeCount(data.todos, today) : 0;
   const rail = useRail();
+  const { top: TOP, bottom: BOTTOM } = useNav();
   const link = (item: NavItem) => {
     const active = isNavActive(item, pathname);
     const badge = item.label === "To-do" && due > 0 ? due : null;

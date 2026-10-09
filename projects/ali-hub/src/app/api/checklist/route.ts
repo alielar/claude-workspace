@@ -23,6 +23,7 @@ import { loadOrSeedWorkouts } from "@/lib/train/workoutRows";
 import { rowToSession } from "@/lib/train/rows";
 import { workoutKind } from "@/lib/health/client";
 import { sessionOfRow } from "@/lib/train/program";
+import { isPrimaryUser } from "@/lib/user";
 
 function calcStreak(dates: string[], today: string): number {
   if (dates.length === 0) return 0;
@@ -186,7 +187,9 @@ export async function GET(req?: Request) {
   // The routine columns may not exist on a database that hasn't run the migration yet.
   // Seeding is best-effort; the list still loads without it.
   try { await ensureColumns(); } catch { /* best-effort */ }
-  try { await seedRoutine(userId); } catch { /* migration pending */ }
+  // The built-in steps and the kettlebell workout are ALI's (2026-10-09) · a guest's routine is born empty and filled by the onboarding.
+  const primary = await isPrimaryUser(userId);
+  if (primary) { try { await seedRoutine(userId); } catch { /* migration pending */ } }
 
   const [items, allCompletions, trainRows, workouts, todayWatch] = await Promise.all([
     db
@@ -205,7 +208,7 @@ export async function GET(req?: Request) {
       .orderBy(desc(kbSessions.date), desc(kbSessions.startedAt))
       .limit(20)
       .catch(() => [] as (typeof kbSessions.$inferSelect)[]), // table may not exist before migration
-    loadOrSeedWorkouts(userId).catch(() => []),
+    primary ? loadOrSeedWorkouts(userId).catch(() => []) : Promise.resolve([] as Awaited<ReturnType<typeof loadOrSeedWorkouts>>),
     // Today's Watch workouts (Health Auto Export) · a run ticks the Run row, a strength workout the
     // Push/Pull row (Ali 2026-10-04) · the table may not exist before the first post.
     db.select({ type: healthWorkouts.type }).from(healthWorkouts).where(and(eq(healthWorkouts.userId, userId), eq(healthWorkouts.date, today)))

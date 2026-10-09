@@ -13,6 +13,6 @@ export async function POST(req: Request) {
   const b = await req.json().catch(() => null);
   const videoId = typeof b?.videoId === "string" && /^[\w-]{6,20}$/.test(b.videoId) ? b.videoId : null;
   if (!videoId) return NextResponse.json({ error: "videoId required" }, { status: 400 });
-  await setVideoWatched(videoId, b.watched !== false);
+  await setVideoWatched(session.user.id, videoId, b.watched !== false);
   return NextResponse.json({ ok: true });
 }

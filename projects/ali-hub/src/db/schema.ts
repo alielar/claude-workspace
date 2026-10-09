@@ -59,6 +59,8 @@ export const userSettings = sqliteTable("user_settings", {
   calendarFeeds: text("calendar_feeds"),
   // Morning routine plan (2026-09-08) · JSON { trainWake, restWake, callsAt, steps: [{id,label,minutes,trainOnly?}] }
   morningPlan: text("morning_plan"),
+  /** Who this account is and what it sees (2026-10-09, src/lib/profile/types.ts) · JSON Profile · null = the defaults by role. */
+  profile: text("profile"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

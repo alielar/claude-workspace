@@ -10,6 +10,7 @@ import { sql } from "drizzle-orm";
 
 const LATE_COLUMNS = [
   `ALTER TABLE user_settings ADD COLUMN news_custom_channels TEXT`,
+  `ALTER TABLE user_settings ADD COLUMN profile TEXT`,
 ];
 const TODO_COLUMNS = [
   `ALTER TABLE todos ADD COLUMN format TEXT`,

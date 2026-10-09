@@ -22,6 +22,9 @@ import { and, between, desc, eq, sql } from "drizzle-orm";
 import { noDash } from "@/lib/utils";
 import type { NewsBrief, NewsStory } from "@/lib/news-brief";
 import { askAI } from "@/lib/news/summarize";
+import { getProfile } from "@/lib/profile/server";
+import { userSettings } from "@/db/schema";
+import { isPrimaryUser } from "@/lib/user";
 
 export type WeeklySection = { key: "tech" | "business" | "geopolitics"; label: string; color: string; stories: NewsStory[] };
 export type WeeklyBrief = {
@@ -123,15 +126,33 @@ function materials(stories: NewsStory[], dates: Map<NewsStory, string>): string 
   }).join("\n\n");
 }
 
-async function writeSection(label: string, stories: NewsStory[], dates: Map<NewsStory, string>, from: string, to: string): Promise<NewsStory[]> {
+/** Who the brief is for (2026-10-09 · one brief per account): the name and the few words from the profile. */
+export type Reader = { name: string; about: string };
+export async function readerOf(userId: string): Promise<Reader> {
+  const { profile } = await getProfile(userId);
+  return { name: profile.name || "the reader", about: profile.about };
+}
+/** The topics an account wants in its weekly brief (`user_settings.news_topics`, the old column · null = every section). */
+export async function weeklySectionsFor(userId: string): Promise<typeof WEEKLY_SECTIONS> {
+  if (await isPrimaryUser(userId)) return WEEKLY_SECTIONS;
+  try {
+    const [row] = await db.select({ t: userSettings.newsTopics }).from(userSettings).where(eq(userSettings.userId, userId)).limit(1);
+    const topics = JSON.parse(row?.t ?? "null");
+    if (!Array.isArray(topics)) return WEEKLY_SECTIONS;
+    return WEEKLY_SECTIONS.filter((s) => s.categories.some((c) => topics.includes(c)));
+  } catch { return WEEKLY_SECTIONS; }
+}
+
+async function writeSection(label: string, stories: NewsStory[], dates: Map<NewsStory, string>, from: string, to: string, reader: Reader): Promise<NewsStory[]> {
   if (!stories.length) return [];
-  const prompt = `You are writing Ali's WEEKLY brief, the "${label}" section, for the week of ${prettyRange(from, to)}. He reads it once, on Monday, in 10 to 15 minutes for the whole brief, so this section must be worth about four minutes of careful reading. He is a product person, not an engineer: plain words, no jargon, no em dashes anywhere (use a comma, a period or " · ").
+  const who = reader.about ? `${reader.name} (${reader.about})` : reader.name;
+  const prompt = `You are writing ${reader.name}'s WEEKLY brief, the "${label}" section, for the week of ${prettyRange(from, to)}. The reader goes through it once, on Monday, in 10 to 15 minutes for the whole brief, so this section must be worth about four minutes of careful reading. Plain words, no jargon, no em dashes anywhere (use a comma, a period or " · ").
 
 From the week's stories below, choose the THREE developments that genuinely mattered this week (merge stories about the same development · prefer the week's arc over a single day's headline · skip anything trivial, promotional or repetitive). HARD LIMIT: at most 330 words per development, about 1000 words for the section · the whole brief must read in 12 minutes, so every sentence earns its place. For each development write, in this order:
 - headline: one line, specific, no clickbait
 - summary: 2-3 sentences · what happened this week, in plain words, with the key numbers
 - whatHappened: the facts, 3-4 sentences, with the days of the week when they matter
-- whyItMatters: 2-3 sentences · for someone who builds with AI, runs a small online company, follows business and geopolitics, is Moroccan and lives in Spain · only mention him when it is real
+- whyItMatters: 2-3 sentences · for ${who} · only mention the reader when it is real
 - context: 2-3 sentences · the background a smart reader may not have
 - implications: 2-3 sentences · who gains, who loses, what changes next
 - whatsNext: 1-2 sentences · what to watch in the coming weeks, with dates when known
@@ -172,7 +193,8 @@ ${JSON.stringify(items)}`, 3200);
  * a postponed date or a deletion Ali makes is never overwritten by a later cron run.
  */
 async function ensureWeeklyBriefTodo(userId: string, week: string, to: string): Promise<void> {
-  const clientId = `weekly-brief-${week}`;
+  // One per account (2026-10-09): Ali keeps the old id, so his existing rows still match.
+  const clientId = (await isPrimaryUser(userId)) ? `weekly-brief-${week}` : `weekly-brief-${week}-${userId.slice(0, 8)}`;
   const [existing] = await db.select({ id: todos.id }).from(todos).where(eq(todos.clientId, clientId)).limit(1);
   if (existing) return;
   const now = Date.now();
@@ -204,8 +226,11 @@ export async function ensureWeeklyBrief(userId: string, opts: { week?: string; f
     } catch { /* skip a broken day */ }
   }
   const sections: WeeklySection[] = [];
-  const written = await Promise.all(WEEKLY_SECTIONS.map((sec) => writeSection(sec.label, all.filter((s) => sec.categories.includes(s.category)), dates, target.from, target.to)));
-  WEEKLY_SECTIONS.forEach((sec, i) => { if (written[i].length) sections.push({ key: sec.key, label: sec.label, color: sec.color, stories: written[i] }); });
+  const reader = await readerOf(userId);
+  const wanted = await weeklySectionsFor(userId);
+  if (!wanted.length) return null;
+  const written = await Promise.all(wanted.map((sec) => writeSection(sec.label, all.filter((s) => sec.categories.includes(s.category)), dates, target.from, target.to, reader)));
+  wanted.forEach((sec, i) => { if (written[i].length) sections.push({ key: sec.key, label: sec.label, color: sec.color, stories: written[i] }); });
   if (!sections.length) return null;
   const words = sections.flatMap((s) => s.stories).reduce((n, s) => n + wordCount([s.summary, s.deepDive?.whatHappened, s.deepDive?.whyItMatters, s.deepDive?.context, s.deepDive?.implications, s.deepDive?.whatsNext].filter(Boolean).join(" ")), 0);
   const brief: WeeklyBrief = { week: target.week, from: target.from, to: target.to, generatedAt: new Date().toISOString(), sections, readMinutes: Math.max(1, Math.round(words / 220)) };

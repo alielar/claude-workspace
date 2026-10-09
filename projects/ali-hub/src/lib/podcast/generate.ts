@@ -39,7 +39,7 @@ import { and, eq, lt, desc, like, notLike } from "drizzle-orm";
 import { checklistToday } from "@/lib/checklist/day";
 import { ensureTodaysBrief } from "@/lib/news/generateBrief";
 import type { NewsBrief } from "@/lib/news-brief";
-import { isWeekKey, prettyRange, weeklyMaterials, type WeeklyBrief } from "@/lib/news/weekly";
+import { isWeekKey, prettyRange, weeklyMaterials, type WeeklyBrief, readerOf } from "@/lib/news/weekly";
 import { askAI, lastAiError } from "@/lib/news/summarize";
 
 // Free Microsoft voices worth hearing for a breakfast brief (Edge "Conversation" set):
@@ -210,9 +210,9 @@ const MIN_SEC = 240;   // 4 min · below this the day was under-told
 const MAX_SEC = 600;   // 10 min · above this it stops being a breakfast brief
 const wordCount = (s: string) => s.replace(/^###.*$/gm, "").split(/\s+/).filter(Boolean).length;
 
-const TONE_RULES = `HOW IT SOUNDS (Ali's brief, 2026-09-27 · "a friend explaining what's happening, something I actually want to listen to"):
-- You are Ali's friend who follows this stuff closely, talking to him over breakfast. Not a presenter, not an anchor, not an explainer video. You talk the way people talk: contractions (it's, they've, that's), short sentences mixed with a longer one, the occasional one-word sentence. You may react in one honest line ("that's a lot of money", "I didn't expect that one") as long as the facts stay exactly what the stories say.
-- Explain what happened, why, and what it means · but NEVER in the same shape twice in a row. Sometimes lead with the consequence, sometimes with the surprising detail, sometimes with the question Ali would ask. If two stories read like the same paragraph with the nouns swapped, rewrite one.
+const toneRules = (name: string) => `HOW IT SOUNDS (Ali's brief, 2026-09-27 · "a friend explaining what's happening, something I actually want to listen to"):
+- You are ${name}'s friend who follows this stuff closely, talking to them over breakfast. Not a presenter, not an anchor, not an explainer video. You talk the way people talk: contractions (it's, they've, that's), short sentences mixed with a longer one, the occasional one-word sentence. You may react in one honest line ("that's a lot of money", "I didn't expect that one") as long as the facts stay exactly what the stories say.
+- Explain what happened, why, and what it means · but NEVER in the same shape twice in a row. Sometimes lead with the consequence, sometimes with the surprising detail, sometimes with the question ${name} would ask. If two stories read like the same paragraph with the nouns swapped, rewrite one.
 - Go deepest on "what it means": who gains, who loses, what changes next, what to watch. For AI and tech, this is where you spend your time. When the honest answer is "nobody knows yet", say what the two likely outcomes are.
 - Explain names, places and terms in a few words the first time ("Enflame, a Chinese company that makes the chips AI runs on"). Assume he has the basics and none of the background.
 - Plain words. No jargon, no business-speak: never "leverage", "headwinds", "stakeholders", "ecosystem", "calculus", "signals", "narrative", "paradigm", "unprecedented", "dynamics", "landscape", "pivotal", "game-changer", "underscores", "delve". A technical word you can't avoid: say it, then say what it means.
@@ -223,6 +223,7 @@ const TONE_RULES = `HOW IT SOUNDS (Ali's brief, 2026-09-27 · "a friend explaini
 
 /** The one Haiku call of the day: brief → spoken script, split into titled chapters. */
 async function writeScript(brief: NewsBrief, date: string): Promise<string | null> {
+  const TONE_RULES = toneRules("Ali");
   const ctx = dayContext(date);
   const prompt = `You write Ali's private morning news podcast. He listens over breakfast at about 07:30 Madrid time. The whole point: give him a clear overview of what is going on in the world. Simple. Nothing cleverer than that.
 
@@ -257,8 +258,9 @@ ${storiesBlock(brief)}`;
 
 /** The weekly podcast's script (2026-10-03) · the main podcast now: the previous week's developments
  * in the same three chapters as the written weekly brief, 10 to 15 minutes. */
-async function writeWeeklyScript(brief: WeeklyBrief): Promise<string | null> {
-  const prompt = `You write Ali's private WEEKLY news podcast. He listens on Sunday, over breakfast or on a walk, for ten to fifteen minutes. The whole point: the developments of THIS WEEK, Monday to today (${prettyRange(brief.from, brief.to)}), in depth, in the order below, told by a friend who followed it all.
+async function writeWeeklyScript(brief: WeeklyBrief, name = "Ali"): Promise<string | null> {
+  const TONE_RULES = toneRules(name);
+  const prompt = `You write ${name}'s private WEEKLY news podcast. They listen on Sunday, over breakfast or on a walk, for ten to fifteen minutes. The whole point: the developments of THIS WEEK, Monday to today (${prettyRange(brief.from, brief.to)}), in depth, in the order below, told by a friend who followed it all.
 
 ABOUT ALI (mention only when a story genuinely touches him): runs easypeasy, a small company teaching languages online; builds with AI every day and loves the tech; follows business and geopolitics; Moroccan, lives in Spain, interested in business opportunities in Morocco. Football is NOT part of this podcast.
 
@@ -438,7 +440,7 @@ export async function ensureTodaysPodcast(userId: string, force = false, rebuild
 export async function ensureWeeklyPodcast(userId: string, brief: WeeklyBrief, force = false, rebuild = false): Promise<Episode> {
   return produceEpisode(userId, brief.week, {
     force, rebuild,
-    write: async () => { const script = await writeWeeklyScript(brief); return script ? { script, brief: null } : null; },
+    write: async () => { const script = await writeWeeklyScript(brief, (await readerOf(userId)).name); return script ? { script, brief: null } : null; },
     words: [WEEKLY_MIN_WORDS, WEEKLY_MAX_WORDS], seconds: [WEEKLY_MIN_SEC, WEEKLY_MAX_SEC],
   });
 }

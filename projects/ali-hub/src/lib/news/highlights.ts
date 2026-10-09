@@ -37,6 +37,8 @@
  */
 
 import { db } from "@/db";
+import { marksFor, setMark } from "@/lib/news/marks";
+import { isPrimaryUser } from "@/lib/user";
 import { highlights } from "@/db/schema";
 import { and, desc, eq, isNotNull, isNull, lt, notInArray, notLike, sql } from "drizzle-orm";
 import { searchVideos } from "@/lib/news/youtubeSearch";
@@ -605,10 +607,12 @@ export async function pollHighlights(opts: { search?: boolean } = {}): Promise<{
   return { added, seen: candidates.length, errors };
 }
 
-export async function listHighlights(limit = 60): Promise<Highlight[]> {
+/** `userId` (2026-10-09): Ali's ticks are the rows' own column; another account's come from watch_marks. */
+export async function listHighlights(limit = 60, userId?: string): Promise<Highlight[]> {
   const rows = await db.select().from(highlights).orderBy(desc(highlights.publishedAt)).limit(limit);
+  const marks = userId && !(await isPrimaryUser(userId)) ? await marksFor(userId) : null;
   return rows.map((r) => ({
-    videoId: r.videoId, home: r.home, away: r.away, competition: r.competition, context: r.context, publishedAt: r.publishedAt.getTime(), watched: r.watchedAt !== null,
+    videoId: r.videoId, home: r.home, away: r.away, competition: r.competition, context: r.context, publishedAt: r.publishedAt.getTime(), watched: marks ? marks.has(r.videoId) : r.watchedAt !== null,
     group: groupOf(r.source, r.competition),
     ...(r.source.startsWith("national") ? { national: true } : {}),
     ...(isPendingId(r.videoId) ? { pending: true } : {}),
@@ -616,7 +620,8 @@ export async function listHighlights(limit = 60): Promise<Highlight[]> {
 }
 
 /** Mark watched / unwatched · sends the desired final state, so outbox replays are safe. */
-export async function setWatched(videoId: string, watched: boolean): Promise<void> {
+export async function setWatched(userId: string, videoId: string, watched: boolean): Promise<void> {
   await ensureTable();
-  await db.update(highlights).set({ watchedAt: watched ? new Date() : null }).where(eq(highlights.videoId, videoId));
+  if (await isPrimaryUser(userId)) await db.update(highlights).set({ watchedAt: watched ? new Date() : null }).where(eq(highlights.videoId, videoId));
+  else await setMark(userId, videoId, watched);
 }

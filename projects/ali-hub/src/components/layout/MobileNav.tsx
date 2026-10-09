@@ -16,7 +16,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { NAV, OTHER, OTHER_TAB_HREF, isNavActive, otherSection } from "@/lib/navigation";
+import { isNavActive, type NavItem } from "@/lib/navigation";
+import { useNav } from "@/lib/useNav";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -27,6 +28,10 @@ export function MobileNav() {
   // take a beat, and without this the tap felt ignored.
   const [pending, setPending] = useState<string | null>(null);
   const [picker, setPicker] = useState(false);
+  // Per person (2026-10-09): a guest has no picker, Settings is the fifth tab.
+  const { tabs: NAV, other: OTHER, otherHref } = useNav();
+  const OTHER_TAB_HREF = otherHref ?? "/__none__";
+  const otherSection = (p: string): NavItem | null => OTHER.find((o) => isNavActive(o, p)) ?? null;
   // A new path clears the pending light and closes the picker · adjusted during render, not in an effect.
   const [seenPath, setSeenPath] = useState(pathname);
   if (seenPath !== pathname) { setSeenPath(pathname); setPending(null); setPicker(false); }
@@ -35,7 +40,7 @@ export function MobileNav() {
   useEffect(() => {
     for (const item of NAV) router.prefetch(item.href);
     for (const item of OTHER) router.prefetch(item.href);
-  }, [router]);
+  }, [router, NAV, OTHER]);
 
   const hrefAt = (clientX: number, clientY: number): string | null => {
     const nav = navRef.current;
