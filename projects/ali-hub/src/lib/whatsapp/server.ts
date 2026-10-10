@@ -60,7 +60,8 @@ export async function waStatus(userId: string): Promise<WaStatus> {
 export async function sendWhatsApp(userId: string, text: string, cfg?: WaConfig | null): Promise<{ ok: boolean; error?: string }> {
   const c = cfg ?? (await getWaConfig(userId));
   if (!c) return { ok: false, error: "WhatsApp is not set up" };
-  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(c.phone)}&text=${encodeURIComponent(text.slice(0, 1500))}&apikey=${encodeURIComponent(c.apikey)}`;
+  // The "@" of an "…@lid" id must stay literal: CallMeBot rejects "%40lid" (its own links write "@").
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(c.phone).replace(/%40/g, "@")}&text=${encodeURIComponent(text.slice(0, 1500))}&apikey=${encodeURIComponent(c.apikey)}`;
   let result: { ok: boolean; error?: string };
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000), headers: { "user-agent": "ali-hub/1.0 (personal reminders)" } });
