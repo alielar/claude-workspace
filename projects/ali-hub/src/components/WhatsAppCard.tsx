@@ -63,7 +63,7 @@ export function WhatsAppCard() {
                 <div style={{ marginTop: 8 }}>
                   <a href={st?.activationLink ?? "#"} target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: 44 }}>Open WhatsApp · activate</a>
                 </div>
-                <div style={{ marginTop: 6, fontSize: 13, color: "var(--ink-4)" }}>By hand: save {st?.number ?? "+34 644 95 73 56"} as a contact and send it &quot;{st?.activation ?? "I allow callmebot to send me messages"}&quot;.</div>
+                <div style={{ marginTop: 6, fontSize: 13, color: "var(--ink-4)" }}>By hand: save {st?.number ?? "+34 644 91 07 79"} as a contact and send it &quot;{st?.activation ?? "I allow callmebot to send me messages"}&quot;.</div>
               </li>
               <li>CallMeBot replies with an API key (a number), usually within minutes, sometimes half an hour. If it answers that the number is full, save the number it gives you as a contact and send the same sentence there.</li>
               <li>Enter the key here with the number exactly as CallMeBot wrote it in that message (+212 6… or an id ending in @lid).</li>

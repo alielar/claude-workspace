@@ -23,7 +23,7 @@ import { todos, userSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureSettingsColumns, ensureTodoColumns } from "@/lib/db/ensureColumns";
 
-export const CALLMEBOT_NUMBER = "+34 644 95 73 56";
+export const CALLMEBOT_NUMBER = "+34 644 91 07 79"; // CallMeBot rotates its bot numbers · this is the one on its page 2026-10-10 (was +34 644 95 73 56)
 export const CALLMEBOT_ACTIVATION = "I allow callmebot to send me messages";
 export const ACTIVATION_LINK = `https://wa.me/${CALLMEBOT_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent(CALLMEBOT_ACTIVATION)}`;
 
