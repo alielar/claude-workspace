@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Love setup</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body style="padding-bottom:40px">
+<h1>Set up Love</h1>
+<p class="muted" style="margin-top:-6px">Five minutes, on this iPhone, in Safari. Do the steps in order.</p>
+
+<ol class="steps">
+  <li><b>Install two free apps</b>
+    <p>Scriptable shows the photo widget. ntfy shows a photo the second it is sent.</p>
+    <a class="btn ghost" href="https://apps.apple.com/app/scriptable/id1405459188">Get Scriptable</a>
+    <a class="btn ghost" href="https://apps.apple.com/app/ntfy/id1625396347">Get ntfy</a>
+  </li>
+
+  <li><b>Turn on photo notifications</b>
+    <p>Copy your private channel, open ntfy, tap <b>+</b>, paste it as the topic, tap <b>Subscribe</b>, and allow notifications.</p>
+    <p><code id="topic">…</code></p>
+    <button class="btn" data-copy="topic">Copy channel</button>
+  </li>
+
+  <li><b>Add the widget code to Scriptable</b>
+    <p>Tap Copy. Open Scriptable, tap <b>+</b> at the top right, paste, then tap the title at the top and name it <b>Love</b>. Tap Done.</p>
+    <button class="btn" id="copyScript">Copy widget code</button>
+  </li>
+
+  <li><b>Put the widget on your Home Screen</b>
+    <p>Touch and hold an empty spot on the Home Screen, tap <b>Edit</b> then <b>Add Widget</b>. Search Scriptable, swipe to the <b>large</b> size, tap Add. Then touch and hold the new widget, tap <b>Edit Widget</b>, and set Script to <b>Love</b>.</p>
+  </li>
+
+  <li><b>Add the Love app to your Home Screen</b>
+    <p>This is where you send photos and see them all. Open it, tap the Share button in Safari, then <b>Add to Home Screen</b>.</p>
+    <a class="btn" id="appLink" href="#">Open Love</a>
+  </li>
+
+  <li><b>Optional: send from the Photos app</b>
+    <p>Adds <b>Send to Love</b> to the Share menu, so you can send any photo from Photos in two taps. Tap, then <b>Add Shortcut</b>.</p>
+    <a class="btn ghost" id="shortcutLink" href="#">Add Send to Love</a>
+  </li>
+</ol>
+<div class="toast" id="toast"></div>
+
+<script>
+const key = new URLSearchParams(location.search).get('k') || '';
+const $ = (id) => document.getElementById(id);
+const toast = (t) => { const el = $('toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 1800); };
+const q = 'k=' + encodeURIComponent(key);
+$('appLink').href = '/?' + q;
+$('shortcutLink').href = '/api/shortcut?' + q;
+
+let script = '';
+fetch('/api/me?' + q).then(r => r.ok ? r.json() : Promise.reject()).then(d => { $('topic').textContent = d.topic; })
+  .catch(() => { document.querySelector('.steps').innerHTML = '<li><b>This link is not valid.</b><p>Ask Ali for your setup link.</p></li>'; });
+fetch('/api/script?format=js&' + q).then(r => r.ok ? r.text() : '').then(t => { script = t; });
+
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast('Copied'); }
+  catch { prompt('Copy this:', text); }
+}
+document.querySelector('[data-copy="topic"]').onclick = () => copy($('topic').textContent);
+$('copyScript').onclick = () => script ? copy(script) : toast('Still loading, try again');
+</script>
+</body>
+</html>

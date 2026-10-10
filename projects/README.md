@@ -8,6 +8,7 @@
 | `Home Food MGMT/bsaha` | Bsaha, the family meal app | Vercel | https://bsaha-pink.vercel.app | `cd "projects/Home Food MGMT/bsaha" && npx vercel --prod --yes` | Turso (cloud) + `local.db` for dev | `.env.local` + Vercel env vars | `bsaha/CLAUDE.md`, `../PLAN.md` |
 | `Wati outreach` | Closing assistant for French leads: drafts, campaigns, playbook | Mac (scripts run by hand or by the nightly job) | none | nothing to deploy | `data/` (git-tracked exports), playbook in `playbook/` | `.env` (Wati key), `.wati-webhook-secret` | `Wati outreach/CLAUDE.md` |
 | `wati-inbox` | Phone app: lead notifications, replies, Claude suggestions | Mac, background job, reached through Tailscale | https://alis-macbook-pro.tail7ec20e.ts.net:8443 (phone), https://localhost:8443 (Mac) | `launchctl kickstart -k gui/$(id -u)/com.ali.wati-inbox` | `data/inbox.sqlite` (git-ignored) | `.env` (Wati key, app password, push keys) | `wati-inbox/CLAUDE.md`, `README.md` |
+| `love-app` | Love: shared photo widget for Ali and his girlfriend (send a photo, it lands on the other's widget) | Vercel | https://love-app-phi-virid.vercel.app | `cd projects/love-app && npx vercel --prod --yes` | Vercel Blob `love-photos` | `.env` + Vercel env vars; setup links in `data/links.txt` | `love-app/CLAUDE.md`, `PLAN.md` |
 | `_archive` | Frozen copies (Wati Inbox of 2026-09-25) | nowhere | none | never | none | none | `RESTORE.md` inside |
 
 ## Background jobs on the Mac
@@ -27,7 +28,7 @@ The Mac must stay awake (lid open, screen may lock) for the first two.
 | Service | Role | Account / where |
 |---|---|---|
 | GitHub | Backup and history of this whole folder. Nothing runs from it. | `alielar/claude-workspace`, branch `main` |
-| Vercel | Hosts A L I and Bsaha. Deploys are uploaded from the Mac, not from GitHub. | team `team_YpCsjVr9RMjzKKXToILEb0LI`, projects `ali-hub`, `bsaha` |
+| Vercel | Hosts A L I, Bsaha and Love. Deploys are uploaded from the Mac, not from GitHub. | team `team_YpCsjVr9RMjzKKXToILEb0LI`, projects `ali-hub`, `bsaha`, `love-app` |
 | Turso | Cloud databases for A L I and Bsaha | keys in each app's `.env.local` |
 | Tailscale | Private tunnel phone ↔ Mac, only Ali's devices, only used by Wati Inbox | personal account, network `tail7ec20e` |
 | Wati | WhatsApp API for the France Sales number (+33673555977). The telemarketing number is write-only. | key in `Wati outreach/.env` and `wati-inbox/.env` |
