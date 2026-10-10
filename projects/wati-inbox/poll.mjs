@@ -62,6 +62,10 @@ export async function refreshThread(waId, name, { notify = true } = {}) {
     // itself is pushed only when no draft will come (window closed, cap reached) or when it is late.
     // Step 2 of an administration two-step still to send: the lead's "merci" gets no draft, the step 2 stays on screen
     // and the push says so (Ali, 2026-10-01). He can still ask for a draft by hand if the lead asked something real.
+    // Instant alert (Ali, 2026-10-10, a lead about to send a login code): the message is pushed the moment it arrives,
+    // the draft still follows. Set with `node instant.mjs <waId> [hours]`, stops by itself after that time.
+    const instantUntil = getState(`instant_${waId}`);
+    if (instantUntil && instantUntil > new Date().toISOString()) { await pushAll({ title: `${name || waId} · new message`, body: lastIn.text.slice(0, 180), tag: `instant-${waId}-${lastIn.at}`, url: `/t/${waId}` }); log('instant alert for', name || waId); }
     if (laterPending(waId)) await pushAll({ title: `${name || waId} · step 2 still to send`, body: lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });
     else if (pending && scheduleAutoDraft(waId)) deferNotification(waId, name);
     else await pushAll({ title: name || waId, body: waitingText(waId) || lastIn.text.slice(0, 180), tag: `wati-${waId}`, url: `/t/${waId}` });

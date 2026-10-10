@@ -153,6 +153,7 @@ Keep it compact. Ali is usually on his phone between calls.
 | Regenerate the transcript documents | `node build-playbook.mjs` then `node build-playbook.mjs --team` |
 | See replies on the telemarketing number | GET the webhook, key in `.wati-webhook-secret` |
 | Send campaign messages | `send.mjs` — read the safety notes below first |
+| Push a lead's next messages the moment they arrive (e.g. a login code), not when the draft is ready | `node instant.mjs <waId> [hours\|off]` from `../wati-inbox` (default 3 h) |
 
 **Logging a case.** When Ali says something worth remembering (a new objection, a
 correction to your draft, a lead you saved), append it to `playbook/04-CAS-APPRIS.md` in
