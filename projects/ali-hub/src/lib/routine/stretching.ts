@@ -1,51 +1,39 @@
 /**
- * Morning mobility · THREE sessions of 10:00, in sequence day to day (Ali, 2026-09-14; the
- * third, spine-oriented one from Omar Eissa's reel, 2026-09-29 · pick any of them on the
- * morning, the sequence is only the default).
+ * Morning mobility · ONE session since 2026-10-10 (Ali: "this is my new routine, remove all the
+ * other mobility routines"): the 15 standing moves of NEXT Workout's "DO THIS EVERY MORNING
+ * After Waking Up" (youtu.be/8YOTIyUwxTU), in the video's order, then a floor finish with the
+ * five Ali kept from the old sessions (90/90 switches, pigeon both sides, cobra, happy baby,
+ * child's pose) · they cover what the video skips: deep hip opening, a long spine extension,
+ * a lying inner-thigh release, the calm close. The app counts time, not reps: each move gets
+ * the seconds its reps take at the video's pace. 5 s between moves (Ali: "just time to move to
+ * the other position", not a rest), 5 s lead-in · 640 s work + 20 × 5 s + 5 s = 745 s ≈ 12:25.
+ * The video is embedded on the idle screen (`STRETCH_VIDEO`) until Ali hides it (`cc-stretch-video-hidden`).
  * (Shown as "Mobility" everywhere since 2026-09-12; the route stays /stretch and the
  * checklist routineKey stays "stretch" so nothing installed on the phone breaks.)
  *
- * Why two splits: one 12-minute session made every hold feel rushed. Two 10-minute
- * sessions let each movement be held long enough to work (30–50 s on the floor) while
- * still covering the whole body across the pair. Same progression in both: standing
- * warm-up → down to the floor → floor and lying holds → Child's Pose to finish.
- * 10 s rest between every movement, 5 s lead-in, both sessions exactly 600 s.
- *
- * 2026-10-03 (Ali: "the seated toe touch disappeared, bring it back"): Session 2 · Seiza →
- * Seated Toe Touch (25 s, same slot). Session 1 · Torso Twists OUT, Seated Toe Touch IN on the
- * floor block (25 s each, still 600 s) · Torso Twists was the most duplicated move there: the
- * World's Greatest Stretch already rotates the thoracic spine on both sides, and sessions 2 and 3
- * keep standing rotation. Both sessions still run exactly 10:00.
- *
- * Audit of the old list (2026-09-14): Lateral Arm Swings cut (Around the World does the
- * same shoulder job better, full circle); Toe Touches cut (hamstrings already covered by
- * Down Dog in session 1 and Kneeling Hamstring in session 2); Squat Hold and Hindu Squats
- * split across the sessions (same joints, static vs dynamic); Cobra and Cat Cow kept in
- * session 2 together as the spine pair. Everything else stays, held longer.
- *
- *   Session 1 · hips and the back line     13 moves · standing 6 → floor 7
- *   Session 2 · spine, shoulders, inner line 14 moves · standing 5 → floor 9
- *
- * Which session today: odd day-of-epoch = 1, even = 2, so it alternates every calendar day
- * even when a day is skipped. Picked automatically · no selector on the screen (Ali, 2026-09-14
- * evening: "I tap Start and it runs whichever session is correct for today").
+ * The three old sessions (hips · spine/shoulders · spine, 10:00 each, in sequence by calendar
+ * day with a pick for the morning) are in git before this commit; their MOVE_TARGETS and
+ * default names stay here so a rename stored by key or a stale snapshot still reads right.
  *
  * Every move has a stable `key`. Ali's renames on the phone are stored BY KEY
- * (localStorage cc-stretch-names-v3), so a move renamed in one session is renamed in both.
+ * (localStorage cc-stretch-names-v3).
  */
 
 export const STRETCH_LEADIN_SECONDS = 5;
-export const STRETCH_REST_SECONDS = 10;
+export const STRETCH_REST_SECONDS = 5;
 
 export type StretchMove = { key: string; name: string; seconds: number; block: number };
-export type SessionKey = 1 | 2 | 3;
 
 export const STRETCH_BLOCKS = [
-  "Standing",
-  "Down to the floor",
-  "Floor and lying",
+  "Standing · the video",
+  "Floor",
+  "Lying",
   "Finish",
 ];
+
+/** The video the standing block comes from · embedded on the idle screen until hidden. */
+export const STRETCH_VIDEO = { id: "8YOTIyUwxTU", title: "Do this every morning after waking up", channel: "NEXT Workout", url: "https://youtu.be/8YOTIyUwxTU" };
+export const STRETCH_VIDEO_HIDDEN_KEY = "cc-stretch-video-hidden";
 
 /** What each movement is for · shown nowhere yet, kept as the single source of truth. */
 export const MOVE_TARGETS: Record<string, string> = {
@@ -70,7 +58,23 @@ export const MOVE_TARGETS: Record<string, string> = {
   "cat-cow":      "spine flexion and extension",
   "cobra":        "spine extension, hip flexors, chest",
   "child":        "lower back, calm finish",
-  // Session 3 · spine (2026-09-30)
+  // The video's 15 (2026-10-10)
+  "arm-raise":    "shoulders, full range · wakes the upper body",
+  "head-turn":    "neck rotation, slow",
+  "t-twist":      "thoracic rotation, neck · arms out",
+  "arm-circle":   "shoulder circles, both directions",
+  "s-stretch":    "lateral line, side body, obliques",
+  "round-ab":     "spine flexion to extension, shoulders front and back",
+  "hip-oblique":  "hip flexors, obliques · static",
+  "hip-circle":   "hips, both directions",
+  "wide-reach":   "hamstrings, inner thighs, thoracic rotation · arm to the sky",
+  "wide-bounce":  "inner thighs, hamstrings, then the front line",
+  "ankle-circle": "ankles, both sides",
+  "air-kick":     "hamstrings, hip flexors · dynamic",
+  "squat-side":   "ankles, hips, deep squat · side to side",
+  "squat-elbow":  "deep squat, hips open, elbows push the knees",
+  "horse":        "quads, hips, stance · hold",
+  // Session 3 · spine (2026-09-30, retired 2026-10-10, keys kept for renames)
   "side-bend":    "lateral spine, obliques, quadratus lumborum",
   "back-ext":     "lumbar extension, standing · undoes the chair",
   "roll-down":    "segmental flexion, one vertebra at a time · hamstrings",
@@ -85,96 +89,36 @@ export const MOVE_TARGETS: Record<string, string> = {
 
 const M = (key: string, name: string, seconds: number, block: number): StretchMove => ({ key, name, seconds, block });
 
-/** Session 1 · hips and the back line · 475 s work + 12 rests + lead-in = 600 s */
-export const SESSION_1: StretchMove[] = [
-  M("bounce",       "Bouncing on Toes",                 20, 0),
-  M("neck",         "Neck Twists",                      25, 0),
-  M("around-world", "Around the World",                 35, 0),
-  M("hindu",        "Hindu Squats",                     30, 0),
-  M("cossack",      "Cossack Squats",                   40, 0),
-  M("down-dog",     "Down Dog + Calf Pedal",            45, 1),
-  M("wgs-l",        "World's Greatest Stretch · Left",  35, 1),
-  M("wgs-r",        "World's Greatest Stretch · Right", 35, 1),
-  M("seated-toe",   "Seated Toe Touch",                 25, 2),
-  M("9090",         "90/90 Switches",                   45, 2),
-  M("pigeon-l",     "Pigeon · Left",                    50, 2),
-  M("pigeon-r",     "Pigeon · Right",                   50, 2),
-  M("child",        "Child's Pose",                     40, 3),
+/** The one session · the video's 15 standing, then the floor finish · 640 s work. */
+export const SESSION_MOVES: StretchMove[] = [
+  M("arm-raise",    "180° arm raises · 5",                                 20, 0),
+  M("head-turn",    "Slow head turns · 9 per side",                        30, 0),
+  M("t-twist",      "T-pose arm twists and head turns · 11 per side",      35, 0),
+  M("arm-circle",   "Arm circles · 8 per direction",                       25, 0),
+  M("s-stretch",    "Side overhead S stretch · 6 per side",                30, 0),
+  M("round-ab",     "Rounded back to ab stretch · 8",                      30, 0),
+  M("hip-oblique",  "Static hip oblique stretch · 10 per side",            30, 0),
+  M("hip-circle",   "Hip circles · 8 per direction",                       25, 0),
+  M("wide-reach",   "Wide stance, touch ground, arm to sky · 7 per side",  35, 0),
+  M("wide-bounce",  "Wide stance, triple low bounce to ab stretch · 5",    25, 0),
+  M("ankle-circle", "Ankle circles · 13 per side",                         30, 0),
+  M("air-kick",     "Air kicks · 10 per side",                             25, 0),
+  M("squat-side",   "Deep squat, bounce side to side",                     20, 0),
+  M("squat-elbow",  "Deep elbow-to-knee squat",                            20, 0),
+  M("horse",        "Horse stance",                                        25, 0),
+  M("9090",         "90/90 Switches",                                      45, 1),
+  M("pigeon-l",     "Pigeon · Left",                                       40, 1),
+  M("pigeon-r",     "Pigeon · Right",                                      40, 1),
+  M("cobra",        "Cobra",                                               30, 2),
+  M("happy-baby",   "Happy Baby",                                          40, 2),
+  M("child",        "Child's Pose",                                        40, 3),
 ];
 
-/** Session 2 · spine, shoulders, inner line · 465 s work + 13 rests + lead-in = 600 s */
-export const SESSION_2: StretchMove[] = [
-  M("bounce",       "Bouncing on Toes",                 20, 0),
-  M("neck",         "Neck Twists",                      25, 0),
-  M("around-world", "Around the World",                 35, 0),
-  M("torso",        "Torso Twists",                     25, 0),
-  M("squat-hold",   "Squat Hold",                       40, 0),
-  M("wgs-l",        "World's Greatest Stretch · Left",  35, 1),
-  M("wgs-r",        "World's Greatest Stretch · Right", 35, 1),
-  M("kneel-ham-l",  "Kneeling Hamstring · Left",        40, 2),
-  M("kneel-ham-r",  "Kneeling Hamstring · Right",       40, 2),
-  M("happy-baby",   "Happy Baby",                       45, 2),
-  M("seated-toe",   "Seated Toe Touch",                 25, 2),
-  M("cat-cow",      "Cat Cow",                          35, 2),
-  M("cobra",        "Cobra",                            30, 2),
-  M("child",        "Child's Pose",                     35, 3),
-];
+export type StretchSession = { name: string; focus: string; moves: StretchMove[] };
+export const STRETCH_SESSION: StretchSession = { name: "Morning mobility", focus: "the video's 15, then hips, spine and the close", moves: SESSION_MOVES };
 
-/**
- * Session 3 · spine (Ali 2026-09-29: "another version of the morning mobility routine, spine
- * oriented", from Omar Eissa's reel "My morning mobility routine for a healthy spine"). The
- * reel's caption names no moves and the video cannot be read from outside Instagram, so this
- * is a standard spine sequence in the same shape as the other two (standing → floor → lying →
- * Child's Pose): flexion, extension, side bend, rotation, stability. Ali swaps in the reel's
- * exact moves by renaming (tap a name) or by sending the list · 450 s work + 14 rests + lead-in = 600 s.
- */
-export const SESSION_3: StretchMove[] = [
-  M("bounce",         "Bouncing on Toes",             20, 0),
-  M("neck",           "Neck Twists",                  20, 0),
-  M("side-bend",      "Standing Side Bends",          30, 0),
-  M("back-ext",       "Standing Back Extension",      25, 0),
-  M("roll-down",      "Standing Roll Down",           30, 0),
-  M("cat-cow",        "Cat Cow",                      40, 1),
-  M("needle-l",       "Thread the Needle · Left",     30, 1),
-  M("needle-r",       "Thread the Needle · Right",    30, 1),
-  M("bird-dog",       "Bird Dog",                     35, 1),
-  M("cobra",          "Cobra",                        30, 2),
-  M("open-book-l",    "Open Book · Left",             30, 2),
-  M("open-book-r",    "Open Book · Right",            30, 2),
-  M("supine-twist-l", "Supine Twist · Left",          30, 2),
-  M("supine-twist-r", "Supine Twist · Right",         30, 2),
-  M("child",          "Child's Pose",                 45, 3),
-];
-
-export type StretchSession = { key: SessionKey; name: string; focus: string; short: string; moves: StretchMove[]; reel?: { label: string; url: string } };
-export const STRETCH_SESSIONS: Record<SessionKey, StretchSession> = {
-  1: { key: 1, name: "Session 1", focus: "hips and the back line", short: "Hips · back", moves: SESSION_1 },
-  2: { key: 2, name: "Session 2", focus: "spine, shoulders, inner line", short: "Spine · shoulders", moves: SESSION_2 },
-  3: { key: 3, name: "Session 3", focus: "spine, the reel routine", short: "Spine · reel", moves: SESSION_3,
-       reel: { label: "Omar Eissa's spine routine", url: "https://www.instagram.com/reel/DcbsXEJN294/?stkn=MXgyMGRzdGZpNXB5eA==" } },
-};
-export const SESSION_KEYS: SessionKey[] = [1, 2, 3];
-
-/** Every distinct movement across the sessions (renames are stored by key). */
-export const STRETCH_MOVES: StretchMove[] = [...SESSION_1, ...SESSION_2, ...SESSION_3].filter((m, i, all) => all.findIndex((x) => x.key === m.key) === i);
-
-/** Which session a given day gets by default: 1 → 2 → 3 → 1, one step per calendar day (Europe/Madrid YYYY-MM-DD). */
-export function sessionForDate(ymd: string): SessionKey {
-  const days = Math.floor(new Date(ymd + "T12:00:00Z").getTime() / 86400000);
-  return ((days % 3) + 1) as SessionKey;
-}
-
-/** Ali's pick for one morning (localStorage `cc-stretch-pick`) · the sequence takes over again the next day. */
-export const STRETCH_PICK_KEY = "cc-stretch-pick";
-export function readSessionPick(ymd: string): SessionKey | null {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STRETCH_PICK_KEY) ?? "null") as { ymd?: string; key?: number } | null;
-    return raw && raw.ymd === ymd && SESSION_KEYS.includes(raw.key as SessionKey) ? (raw.key as SessionKey) : null;
-  } catch { return null; }
-}
-export function writeSessionPick(ymd: string, key: SessionKey | null): void {
-  try { if (key === null) localStorage.removeItem(STRETCH_PICK_KEY); else localStorage.setItem(STRETCH_PICK_KEY, JSON.stringify({ ymd, key })); } catch { /* ignore */ }
-}
+/** Every distinct movement (renames are stored by key). */
+export const STRETCH_MOVES: StretchMove[] = SESSION_MOVES;
 
 /** Every name that has ever been a DEFAULT (current list + retired moves). A saved
  * name equal to one of these is a stale snapshot entry, never one of Ali's renames. */
@@ -182,6 +126,11 @@ export const DEFAULT_NAMES_EVER = new Set<string>([
   ...STRETCH_MOVES.map((m) => m.name),
   "Seated Toe Stretch", "Seated Toe Touch", "Seiza", "Frog Pose", "Frog", "Butterfly Stretch", "Kneeling Hamstring", "Forearm Stretch",
   "World's Greatest Stretch", "Pigeon", "Down Dog", "Calf Pedal", "Torso Twists", "Lateral Arm Swings", "Toe Touches",
+  // The three sessions retired 2026-10-10
+  "Bouncing on Toes", "Neck Twists", "Around the World", "Hindu Squats", "Cossack Squats", "Down Dog + Calf Pedal",
+  "World's Greatest Stretch · Left", "World's Greatest Stretch · Right", "Squat Hold", "Kneeling Hamstring · Left", "Kneeling Hamstring · Right",
+  "Cat Cow", "Standing Side Bends", "Standing Back Extension", "Standing Roll Down", "Thread the Needle · Left", "Thread the Needle · Right",
+  "Bird Dog", "Open Book · Left", "Open Book · Right", "Supine Twist · Left", "Supine Twist · Right",
 ].map((n) => n.toLowerCase()));
 export const isDefaultName = (n: string) => DEFAULT_NAMES_EVER.has(n.trim().toLowerCase());
 
@@ -212,7 +161,7 @@ export type StretchPhase =
   | { kind: "rest"; index: number; seconds: number }   // rest[i] sits after move i, announcing move i+1
   | { kind: "done"; index: number; seconds: 0 };
 
-/** The full, flat sequence of phases for one session · 10 s rest between every movement. */
+/** The full, flat sequence of phases for one session · 5 s between movements, time to change position. */
 export function buildStretchPlan(moves: StretchMove[]): StretchPhase[] {
   const plan: StretchPhase[] = [{ kind: "leadin", index: 0, seconds: STRETCH_LEADIN_SECONDS }];
   moves.forEach((m, i) => {
@@ -224,5 +173,5 @@ export function buildStretchPlan(moves: StretchMove[]): StretchPhase[] {
 }
 
 export const sessionSeconds = (moves: StretchMove[]) => buildStretchPlan(moves).reduce((s, p) => s + p.seconds, 0);
-/** Every session is 600 s · this is the number shown on cards. */
-export const STRETCH_TOTAL_SECONDS = sessionSeconds(SESSION_1);
+/** The session's length · the number shown on cards. */
+export const STRETCH_TOTAL_SECONDS = sessionSeconds(SESSION_MOVES);

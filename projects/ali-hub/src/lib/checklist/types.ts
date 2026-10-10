@@ -78,7 +78,7 @@ export const ROUTINE_SEED: {
   atTime?: string;       // "HH:MM" · optional planned hour
   startDate?: string;    // hidden before this date
 }[] = [
-  { routineKey: "stretch", title: "Mobility",            emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "2 sessions of 10 minutes, alternating · 10 s rests", sortOrder: -50 },
+  { routineKey: "stretch", title: "Mobility",            emoji: "🤸", timeOfDay: "morning", kind: "routine", color: "amber",  notes: "one session, about 13 minutes · the video, then the floor", sortOrder: -50 },
   // THE PROGRAM (Ali 2026-10-04, starts Monday 2026-10-05 · src/lib/train/program.ts holds what each
   // session is): one session a day, five a week · Mon Push · Tue Sprint run · Wed Pull · Fri Long run ·
   // Sat Kettlebell 30 · Thu and Sun rest. Tickable rows, NEVER counted in the day streak (gym-* excluded

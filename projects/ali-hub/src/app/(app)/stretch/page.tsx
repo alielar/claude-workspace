@@ -3,7 +3,7 @@
 /**
  * /stretch · "Mobility" · the guided morning timer.
  *
- * Three 10:00 sessions in sequence by calendar day (src/lib/routine/stretching.ts), 10 s rests,
+ * One session (src/lib/routine/stretching.ts · the video's 15 standing moves, then the floor finish), 5 s between moves,
  * full-screen while running. Time is computed from timestamps (not tick counts) so it stays
  * correct if the phone sleeps briefly. Screen stays awake (Wake Lock); every change beeps and
  * vibrates · NO voice since 2026-10-03 (Ali: the robotic names were disturbing).
@@ -25,8 +25,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSIONS, STRETCH_LEADIN_SECONDS, SESSION_KEYS, MOVE_TARGETS, buildStretchPlan, isDefaultName, sessionForDate, sessionSeconds,
-  readSessionPick, writeSessionPick, type SessionKey, type StretchPhase,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSION, STRETCH_LEADIN_SECONDS, STRETCH_VIDEO, STRETCH_VIDEO_HIDDEN_KEY, MOVE_TARGETS, buildStretchPlan, isDefaultName, sessionSeconds,
+  type StretchPhase,
 } from "@/lib/routine/stretching";
 import { cues } from "@/lib/routine/cues";
 import { STRETCH_TRACKS, trackUrl } from "@/lib/routine/music";
@@ -69,17 +69,14 @@ const BLOCK_GLOW = ["#F0A35B", "#8B7CF0", "#5B8DEF", "#6FD49A"];
 export default function StretchPage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
-  // Three sessions in sequence day to day (2026-09-14, third one 2026-09-30) · today's is
-  // preselected; Ali can pick another on the morning (Ali 2026-09-29), the pick lasts the day.
-  const today = checklistToday();
-  const autoSession = sessionForDate(today);
-  const [session, setSessionState] = useState<SessionKey>(autoSession);
+  // The video the standing block comes from · shown until Ali hides it (the moves are new to him, 2026-10-10).
+  const [videoHidden, setVideoHidden] = useState(true);
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the day's pick after mount
-    const pick = readSessionPick(today); if (pick) setSessionState(pick);
-  }, [today]);
-  const pickSession = (k: SessionKey) => { setSessionState(k); writeSessionPick(today, k === autoSession ? null : k); };
-  const SESSION = STRETCH_SESSIONS[session];
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the phone's choice after mount
+    try { setVideoHidden(localStorage.getItem(STRETCH_VIDEO_HIDDEN_KEY) === "1"); } catch { setVideoHidden(false); }
+  }, []);
+  const hideVideo = (hidden: boolean) => { setVideoHidden(hidden); try { if (hidden) localStorage.setItem(STRETCH_VIDEO_HIDDEN_KEY, "1"); else localStorage.removeItem(STRETCH_VIDEO_HIDDEN_KEY); } catch { /* ignore */ } };
+  const SESSION = STRETCH_SESSION;
   const MOVES = SESSION.moves;
   const PLAN = useMemo(() => buildStretchPlan(MOVES), [MOVES]);
   const TOTAL = sessionSeconds(MOVES);
@@ -314,27 +311,35 @@ export default function StretchPage() {
         <div className="cc-pagetitle" style={{ marginBottom: 0 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 600 }}>Mobility</h1>
-            <div className="sub">{session === autoSession ? "Today" : "Picked"}: {SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
+            <div className="sub">{SESSION.focus} · {MOVES.length} moves · {fmt(TOTAL)}</div>
           </div>
         </div>
 
-        {/* Which session · today's in the sequence is preselected, any other is a pick for today only */}
-        <div role="tablist" aria-label="Session" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, padding: 4, borderRadius: 14, background: "var(--fill-1)" }}>
-          {SESSION_KEYS.map((k) => {
-            const on = k === session;
-            return (
-              <button key={k} role="tab" aria-selected={on} onClick={() => pickSession(k)}
-                style={{ minHeight: 48, borderRadius: 10, border: "none", cursor: "pointer", font: "inherit", fontSize: 14.5, fontWeight: on ? 600 : 500, color: on ? "var(--ink)" : "var(--ink-3)", background: on ? "var(--bg-card)" : "transparent", display: "grid", gap: 1, alignContent: "center", WebkitTapHighlightColor: "transparent" }}>
-                <span>{STRETCH_SESSIONS[k].short}</span>
-                <span style={{ fontSize: 12, color: k === autoSession ? "var(--violet)" : "var(--ink-4)", fontFamily: "var(--f-mono)" }}>{k === autoSession ? "today" : `session ${k}`}</span>
+        {/* The video the standing block comes from · a player while the moves are new, one link to hide it */}
+        {videoHidden ? (
+          <button type="button" onClick={() => hideVideo(false)}
+            style={{ background: "transparent", border: "none", font: "inherit", fontSize: 14, color: "var(--ink-4)", textAlign: "left", padding: "0 2px", cursor: "pointer", minHeight: 32 }}>
+            Show the video
+          </button>
+        ) : (
+          <section className="cc-card news-player">
+            <div className="news-player-box">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${STRETCH_VIDEO.id}?rel=0&playsinline=1`}
+                title={STRETCH_VIDEO.title}
+                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+            <div className="cc-card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, paddingTop: 10, paddingBottom: 10 }}>
+              <span style={{ fontSize: 14, color: "var(--ink-3)", minWidth: 0 }}>{STRETCH_VIDEO.channel} · the 15 standing moves</span>
+              <button type="button" onClick={() => hideVideo(true)}
+                style={{ background: "transparent", border: "none", font: "inherit", fontSize: 14, color: "var(--ink-4)", cursor: "pointer", minHeight: 32, flex: "0 0 auto" }}>
+                Hide video
               </button>
-            );
-          })}
-        </div>
-        {SESSION.reel && (
-          <a href={SESSION.reel.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, minHeight: 44, padding: "0 14px", borderRadius: 12, border: "1px solid var(--line-hi)", background: "var(--fill-1)", color: "var(--violet)", textDecoration: "none", fontSize: 15 }}>
-            <span>{SESSION.reel.label} · Instagram</span><span aria-hidden>↗</span>
-          </a>
+            </div>
+          </section>
         )}
 
         <button className="cc-btn cc-btn-primary" onClick={start} style={{ minHeight: 64, fontSize: 19, borderRadius: 14, width: "100%" }}>

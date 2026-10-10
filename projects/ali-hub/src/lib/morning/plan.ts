@@ -34,7 +34,7 @@ export const DEFAULT_MORNING_PLAN: MorningPlan = {
   saturdayShiftMin: DEFAULT_SATURDAY_SHIFT_MIN,
   steps: [
     { id: "wake",      label: "Wake up · water · bathroom", minutes: 10 },
-    { id: "stretch",   label: "Mobility",                   minutes: 10 },
+    { id: "stretch",   label: "Mobility",                   minutes: 13 },
     { id: "breathe",   label: "Wim Hof",                    minutes: 12 },
     { id: "train",     label: "Train",                      minutes: 36, trainOnly: true },
     { id: "shower",    label: "Shower",                     minutes: 15 },
