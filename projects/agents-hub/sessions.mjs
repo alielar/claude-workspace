@@ -167,59 +167,58 @@ function summary(file) {
 }
 
 // ── the list ─────────────────────────────────────────────────────────────────
-export async function list({ seen = {} } = {}) {
-  let live = [];
-  try { live = JSON.parse(await claude(['agents', '--json', '--all'], { timeout: 15_000 })); } catch (e) { console.error('claude agents:', e.message); }
+// hub: the live-session module (live.mjs), so sessions the hub holds are marked and their state comes from it.
+export async function list({ seen = {}, hub = null } = {}) {
+  let procs = [];
+  try { procs = JSON.parse(await claude(['agents', '--json', '--all'], { timeout: 15_000 })); } catch (e) { console.error('claude agents:', e.message); }
   const { byPid, bySession } = readRecords();
   const now = Date.now();
-  return live.map((a) => {
-    const rec = byPid.get(a.pid) || bySession.get(a.sessionId) || {};
-    const where = whereOf(a.kind, rec.entrypoint);
+  const rows = new Map(); // sessionId → row (a live process wins over a stopped background record)
+  const add = (a, rec) => {
+    const isHub = !!hub?.isHub(a.sessionId);
+    const where = isHub ? 'hub' : whereOf(a.kind, rec.entrypoint);
     const file = transcriptPath(a.cwd, a.sessionId);
     const s = summary(file);
-    const alive = a.status !== undefined; // a stopped background session has no status
+    const l = isHub ? hub.live(a.sessionId) : null;
+    const alive = isHub ? !!l : a.status !== undefined; // a stopped background session has no status
     const raw = a.status || null;
-    const lastAt = s.lastAt ? Date.parse(s.lastAt) : (rec.statusUpdatedAt || a.startedAt);
+    const lastAt = Math.max(s.lastAt ? Date.parse(s.lastAt) : 0, l?.lastAt || 0) || rec.statusUpdatedAt || a.startedAt;
     let phase;
-    if (raw === 'waiting') phase = 'needs';
-    else if (raw === 'busy') phase = 'working';
+    if (l && l.asks.size) phase = 'needs';
+    else if (l && (l.status === 'working' || l.status === 'starting')) phase = 'working';
+    else if (!l && raw === 'waiting') phase = 'needs';
+    else if (!l && raw === 'busy' && !isHub) phase = 'working';
     else if (!alive) phase = 'paused';
     else if (s.lastRole === 'claude' && lastAt > (seen[a.sessionId] || 0) && now - lastAt < OLD_AFTER_MS) phase = 'done';
     else if (now - lastAt > OLD_AFTER_MS) phase = 'old';
     else phase = 'idle';
+    if (isHub && !l && phase === 'paused' && now - lastAt > OLD_AFTER_MS) phase = 'old';
     const bridge = rec.bridgeSessionId || s.bridge || null;
-    return {
-      id: a.sessionId, short: a.id || rec.jobId || null, pid: a.pid, where, cwd: a.cwd, project: projectOf(a.cwd),
-      name: rec.nameSource === 'user' ? (rec.name || a.name) : (s.title || a.name || rec.name || 'Untitled'),
-      phase, waitingFor: rec.waitingFor || rec.detail || null, state: a.state || null,
-      startedAt: a.startedAt, lastAt, turnStart: s.turnStart ? Date.parse(s.turnStart) : null,
+    const prev = rows.get(a.sessionId);
+    if (prev && prev.alive && !alive) return;
+    rows.set(a.sessionId, {
+      id: a.sessionId, short: a.id || rec.jobId || null, pid: isHub ? null : a.pid, where, cwd: a.cwd, project: projectOf(a.cwd), alive,
+      name: rec.nameSource === 'user' ? (rec.name || a.name) : (s.title || a.name || rec.name || 'New session'),
+      phase, waitingFor: (l && l.asks.size ? [...l.asks.values()][0].title : null) || (rec.waitingFor ? `Waiting: ${rec.waitingFor}` : null), state: a.state || null,
+      startedAt: a.startedAt, lastAt, turnStart: l?.turnStart || (s.turnStart ? Date.parse(s.turnStart) : null),
       lastPrompt: s.lastPrompt ? s.lastPrompt.slice(0, 300) : null, lastText: s.lastText ? s.lastText.slice(0, 400) : null,
       remote: bridge ? `https://claude.ai/code/${bridge.replace(/^cse_/, 'session_')}` : null,
-      hasTranscript: !!file,
-    };
-  });
+      error: l?.error || null,
+    });
+  };
+  for (const a of procs) add(a, byPid.get(a.pid) || bySession.get(a.sessionId) || {});
+  // Hub sessions: the ones running (their process may not be listed yet) and the asleep ones.
+  if (hub) for (const k of hub.remembered()) {
+    if (rows.get(k.id)?.alive) continue;
+    if (!transcriptPath(k.cwd, k.id) && !hub.live(k.id)) continue;
+    add({ sessionId: k.id, cwd: k.cwd, startedAt: k.at }, {});
+  }
+  return [...rows.values()];
 }
 
 export function transcriptFor(session) { return transcriptPath(session.cwd, session.id); }
 
 // ── actions ──────────────────────────────────────────────────────────────────
-const MODELS = { sonnet: 'sonnet', haiku: 'haiku', opus: 'opus' };
-export async function start({ cwd, prompt, model }) {
-  const args = ['--bg'];
-  if (MODELS[model]) args.push('--model', MODELS[model]);
-  args.push(prompt);
-  const out = await claude(args, { cwd });
-  const m = /backgrounded · ([0-9a-f]{6,})/.exec(out);
-  if (!m) throw new Error(out.trim().split('\n')[0] || 'Claude did not start');
-  return { short: m[1] };
-}
-
-// A follow-up to a background session: stop it if it is still open, then resume it with the message.
-export async function message(session, text) {
-  if (session.where !== 'background') throw new Error('Only background sessions take messages here');
-  if (session.phase !== 'paused') { await claude(['stop', session.short]); await new Promise((r) => setTimeout(r, 800)); }
-  await claude(['--bg', '--resume', session.id, text], { cwd: session.cwd });
-}
 export const pause = (s) => claude(['stop', s.short]);
 export const resume = (s) => claude(['--bg', '--resume', s.id], { cwd: s.cwd });
 export const remove = (s) => claude(['rm', s.short]);

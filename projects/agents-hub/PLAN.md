@@ -25,6 +25,13 @@ background, read its log, message it, stop it, resume it, or delete it. Same ide
   hub never bypasses the "no sending to leads without Ali's word" rule.
 - **English UI, plain text, no emojis, no filler sentences** — same rules as the other apps.
 
+## Round 2 (2026-10-11): chat from the hub
+- [x] 🟩 Hub holds sessions itself (Agent SDK, Ali's login): streaming answers, approvals, questions, plans, stop
+- [x] 🟩 Message to a Cursor/terminal/background session takes it over (same conversation); Open in Cursor hands it back
+- [x] 🟩 Dictation button (Wati Inbox's local Whisper)
+- [x] 🟩 Restyle: Geist, project monograms, status pills, glass headers, approval cards
+- [ ] 🟥 Ali's first real takeover of a Cursor panel
+
 ## Tasks:
 
 - [x] 🟩 **Step 1: Project setup**

@@ -4,23 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Agents Hub</title>
-  <meta name="theme-color" content="#f4f3ef" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Agents">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div id="login" class="login" hidden>
     <form id="login-form" class="login-card">
-      <div class="mark" aria-hidden="true"></div>
+      <img class="mark" src="/icon.svg" alt="">
       <h1>Agents Hub</h1>
       <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
-      <button class="btn primary block" type="submit">Open</button>
+      <button class="btn primary block" type="submit" style="height:46px">Open</button>
       <p id="login-error" class="error" hidden></p>
     </form>
   </div>
@@ -29,13 +32,14 @@
     <aside class="list-pane">
       <header class="list-head">
         <div class="title-row">
+          <img class="mark" src="/icon.svg" alt="">
           <h1>Sessions</h1>
           <button id="alerts" class="btn ghost small" hidden>Turn on alerts</button>
           <button id="new-btn" class="btn primary small" title="New session (N)">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>New
           </button>
         </div>
-        <p id="summary" class="summary"></p>
+        <div id="summary" class="summary"></div>
         <div id="projects" class="chips" role="tablist" aria-label="Projects"></div>
       </header>
       <div id="list" class="list"></div>
