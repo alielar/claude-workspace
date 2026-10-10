@@ -22,10 +22,11 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SessionVideo } from "@/components/routine/SessionVideo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSION, STRETCH_LEADIN_SECONDS, STRETCH_VIDEO, STRETCH_VIDEO_HIDDEN_KEY, MOVE_TARGETS, buildStretchPlan, isDefaultName, sessionSeconds,
+  STRETCH_MOVES, STRETCH_BLOCKS, STRETCH_SESSION, STRETCH_LEADIN_SECONDS, STRETCH_VIDEO, STRETCH_VIDEO_HIDDEN_KEY, VIDEO_AT, MOVE_TARGETS, buildStretchPlan, isDefaultName, sessionSeconds,
   type StretchPhase,
 } from "@/lib/routine/stretching";
 import { cues } from "@/lib/routine/cues";
@@ -419,6 +420,10 @@ export default function StretchPage() {
   const frac = phase.seconds > 0 ? Math.max(0, Math.min(1, remainingMs / (phase.seconds * 1000))) : 0;
   const last3 = seconds <= 3 && seconds >= 1 && status === "running";
   const target = MOVE_TARGETS[MOVES[Math.min(moveIdx, MOVES.length - 1)].key];
+  // The video rides along the standing block: during a transition it already shows the NEXT move.
+  const videoMoveIdx = isRest ? Math.min(moveIdx + 1, MOVES.length - 1) : moveIdx;
+  const videoAt = phase.kind === "done" ? undefined : VIDEO_AT[MOVES[videoMoveIdx].key];
+  const showVideo = !videoHidden && videoAt !== undefined;
 
   return (
     <div className="mob-screen" style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg-deep)", display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px)", overflow: "hidden" }}>
@@ -444,7 +449,8 @@ export default function StretchPage() {
 
       {/* Middle: ring with the countdown inside, the name under it */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 14, position: "relative", minHeight: 0 }}>
-        <div className={`mob-ring${last3 ? " mob-ring-last" : ""}`} style={{ width: "min(68vw, 46vh, 320px)", aspectRatio: "1", position: "relative", display: "grid", placeItems: "center" }}>
+        {showVideo && <SessionVideo videoId={STRETCH_VIDEO.id} at={videoAt} playing={status === "running"} />}
+        <div className={`mob-ring${last3 ? " mob-ring-last" : ""}`} style={{ width: showVideo ? "min(56vw, 34vh, 280px)" : "min(68vw, 46vh, 320px)", aspectRatio: "1", position: "relative", display: "grid", placeItems: "center" }}>
           <svg viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }} aria-hidden>
             <circle cx="50" cy="50" r={R} fill="none" stroke="var(--line)" strokeWidth="3" />
             <circle cx="50" cy="50" r={R} fill="none" stroke={accent} strokeWidth="3.5" strokeLinecap="round"

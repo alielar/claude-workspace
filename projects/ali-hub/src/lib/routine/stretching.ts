@@ -34,6 +34,13 @@ export const STRETCH_BLOCKS = [
 /** The video the standing block comes from · embedded on the idle screen until hidden. */
 export const STRETCH_VIDEO = { id: "8YOTIyUwxTU", title: "Do this every morning after waking up", channel: "NEXT Workout", url: "https://youtu.be/8YOTIyUwxTU" };
 export const STRETCH_VIDEO_HIDDEN_KEY = "cc-stretch-video-hidden";
+/** Where each standing move starts in the video (seconds · from the video's chapters; the two
+ * inside a shared chapter are placed by eye) · the floor finish has no moment, no video then. */
+export const VIDEO_AT: Record<string, number> = {
+  "arm-raise": 0, "head-turn": 25, "t-twist": 56, "arm-circle": 85, "s-stretch": 120, "round-ab": 155,
+  "hip-oblique": 196, "hip-circle": 225, "wide-reach": 267, "wide-bounce": 309, "ankle-circle": 345,
+  "air-kick": 378, "squat-side": 408, "squat-elbow": 432, "horse": 455,
+};
 
 /** What each movement is for · shown nowhere yet, kept as the single source of truth. */
 export const MOVE_TARGETS: Record<string, string> = {
