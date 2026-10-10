@@ -33,7 +33,7 @@ longer than 45 s. Turned on per device with "Turn on alerts" (on iPhone, from th
 
 Everything comes from Claude Code itself: `claude agents --json --all`, `~/.claude/sessions/<pid>.json`
 (status, waiting reason, Remote Control id), `~/.claude/projects/<cwd>/<sessionId>.jsonl` (the
-conversation, read from its last 3 MB). No AI calls of its own, no API key.
+conversation, read from its last 3 MB). No AI calls of its own beyond the sessions Ali starts or chats with.
 
 ## Where it runs
 On the Mac only, as the launchd job `com.ali.agents-hub` (one Node process, `server.mjs`, port 8450).
