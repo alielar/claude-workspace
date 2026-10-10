@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest) {
   const b = (await req.json().catch(() => null)) as { phone?: string; apikey?: string } | null;
   const phone = typeof b?.phone === "string" ? normalizePhone(b.phone) : "";
   const apikey = typeof b?.apikey === "string" ? b.apikey.trim().slice(0, 40) : "";
-  if (!PHONE.test(phone)) return NextResponse.json({ error: "The number needs the country code, like +212 6…" }, { status: 400 });
+  if (!PHONE.test(phone)) return NextResponse.json({ error: "Use the number exactly as CallMeBot wrote it: +212 6… or 1660…@lid" }, { status: 400 });
   if (!/^[\w-]{3,40}$/.test(apikey)) return NextResponse.json({ error: "The API key is the number CallMeBot sent back" }, { status: 400 });
   const old = await getWaConfig(s.user.id);
   await saveWaConfig(s.user.id, { ...(old ?? {}), phone, apikey, lastError: null });

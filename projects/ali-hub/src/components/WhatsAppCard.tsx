@@ -66,10 +66,10 @@ export function WhatsAppCard() {
                 <div style={{ marginTop: 6, fontSize: 13, color: "var(--ink-4)" }}>By hand: save {st?.number ?? "+34 644 95 73 56"} as a contact and send it &quot;{st?.activation ?? "I allow callmebot to send me messages"}&quot;.</div>
               </li>
               <li>CallMeBot replies with an API key (a number), usually within minutes, sometimes half an hour. If it answers that the number is full, save the number it gives you as a contact and send the same sentence there.</li>
-              <li>Enter the key here with the WhatsApp number that sent the sentence.</li>
+              <li>Enter the key here with the number exactly as CallMeBot wrote it in that message (+212 6… or an id ending in @lid).</li>
             </ol>
-            <label style={{ display: "grid", gap: 4 }}>Your WhatsApp number · with the country code
-              <input className="cc-input" style={input} type="tel" inputMode="tel" placeholder="+212 6 12 34 56 78" value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
+            <label style={{ display: "grid", gap: 4 }}>Number as CallMeBot wrote it
+              <input className="cc-input" style={input} type="text" inputMode="text" autoCapitalize="none" autoCorrect="off" placeholder="+212 6 12 34 56 78 or 1660…@lid" value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
             <label style={{ display: "grid", gap: 4 }}>API key from CallMeBot
               <input className="cc-input" style={input} inputMode="numeric" placeholder="123456" value={key} onChange={(e) => setKey(e.target.value)} /></label>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

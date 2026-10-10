@@ -30,8 +30,9 @@ export const ACTIVATION_LINK = `https://wa.me/${CALLMEBOT_NUMBER.replace(/\D/g, 
 export type WaConfig = { phone: string; apikey: string; digestDay?: string; eveningDay?: string; lastSentAt?: number; lastError?: string | null };
 export type WaStatus = { on: boolean; phone: string | null; lastSentAt: number | null; lastError: string | null; activationLink: string; number: string; activation: string };
 
-export const PHONE = /^\+[1-9]\d{7,14}$/; // a country code never starts with 0 · "0612…" without one is refused
-export const normalizePhone = (s: string) => "+" + s.replace(/\D/g, "");
+/** "+2126…" (a country code never starts with 0) or the WhatsApp id CallMeBot sometimes activates instead, "1660…@lid" (seen 2026-10-10). */
+export const PHONE = /^(\+[1-9]\d{7,14}|\d{6,20}@lid)$/;
+export const normalizePhone = (s: string) => /@\s*lid/i.test(s) ? s.replace(/\D/g, "") + "@lid" : "+" + s.replace(/\D/g, "");
 
 export async function getWaConfig(userId: string): Promise<WaConfig | null> {
   await ensureSettingsColumns();
