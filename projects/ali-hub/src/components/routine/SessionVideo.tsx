@@ -4,7 +4,9 @@
  * The mobility video riding along the session (Ali 2026-10-10: "on the player it should also
  * show the video, small, on mute, I need to see how to perform the movements during the routine").
  * YouTube's iframe player, muted, no controls; every move change seeks to that move's moment in the
- * video (`VIDEO_AT` in stretching.ts, read from the video's chapters). Tap = small ↔ wide. Shown only
+ * video (`VIDEO_AT` in stretching.ts, read from the video's chapters). YouTube's own controls stay ON so Ali
+ * can scrub to the exact moment himself (2026-10-10: "I should be able to fast forward through the video");
+ * the ⤢ button in the corner switches small ↔ wide. Shown only
  * while the current move has a moment in the video (the standing block); the floor finish has none.
  */
 
@@ -44,7 +46,7 @@ export function SessionVideo({ videoId, at, playing }: { videoId: string; at: nu
       if (gone) return;
       player.current = new YT.Player(el, {
         videoId, host: "https://www.youtube-nocookie.com",
-        playerVars: { autoplay: 1, mute: 1, controls: 0, playsinline: 1, rel: 0, modestbranding: 1, start: Math.floor(at), disablekb: 1, fs: 0 },
+        playerVars: { autoplay: 1, mute: 1, controls: 1, playsinline: 1, rel: 0, modestbranding: 1, start: Math.floor(at), fs: 0 },
         events: { onReady: () => { ready.current = true; player.current?.mute(); player.current?.seekTo(at, true); player.current?.playVideo(); } },
       });
     });
@@ -57,9 +59,12 @@ export function SessionVideo({ videoId, at, playing }: { videoId: string; at: nu
   useEffect(() => { if (ready.current) { if (playing) player.current?.playVideo(); else player.current?.pauseVideo(); } }, [playing]);
 
   return (
-    <button type="button" onClick={() => setWide((v) => !v)} aria-label={wide ? "Smaller video" : "Bigger video"}
-      style={{ width: wide ? "100%" : "min(46vw, 220px)", maxWidth: 480, aspectRatio: "16 / 9", borderRadius: 12, overflow: "hidden", background: "#000", border: "1px solid var(--line)", padding: 0, cursor: "pointer", position: "relative", transition: "width 0.25s ease-out", flex: "0 0 auto" }}>
-      <div ref={box} className="mob-video" style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
-    </button>
+    <div style={{ width: wide ? "100%" : "min(56vw, 260px)", maxWidth: 480, aspectRatio: "16 / 9", borderRadius: 12, overflow: "hidden", background: "#000", border: "1px solid var(--line)", position: "relative", transition: "width 0.25s ease-out", flex: "0 0 auto" }}>
+      <div ref={box} className="mob-video" style={{ position: "absolute", inset: 0 }} />
+      <button type="button" onClick={() => setWide((v) => !v)} aria-label={wide ? "Smaller video" : "Bigger video"}
+        style={{ position: "absolute", top: 4, right: 4, width: 32, height: 32, borderRadius: 8, border: "none", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 15, lineHeight: 1, cursor: "pointer", padding: 0 }}>
+        {wide ? "⤡" : "⤢"}
+      </button>
+    </div>
   );
 }
