@@ -286,10 +286,12 @@ function Row({ item, onToggle, compact = false, currentBook = null, late = false
 
 /** One to-do inside Today · ticking chimes, pops and folds the row away. Optional Time / Tmrw actions (Day Spine's loose ends).
  *  Subtasks show under the row as tick boxes and a note behind the ≡ icon, the same as /todo (Ali 2026-10-05). */
-function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer }: {
+function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer, late = false }: {
   t: Todo; today: string; toggleDone: (t: Todo) => void; onOpen: (t: Todo) => void;
   onNotes?: (t: Todo, notes: string | null) => void;
   onTime?: (hhmm: string) => void; onDefer?: () => void;
+  /** The to-do's part of the day has passed and it is still open · shown in red like a late routine step (Ali 2026-10-10). */
+  late?: boolean;
 }) {
   const [celebrating, setCelebrating] = useState(false);
   const subtasks = taskFormat(t) === "checklist" && t.notes ? parseSubtasks(t.notes) : null;
@@ -301,7 +303,8 @@ function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer }: {
     playDoneSound();
     window.setTimeout(() => { setCelebrating(false); toggleDone(t); }, 900);
   };
-  const late = !!t.dueDate && t.dueDate < today;
+  const overdue = !!t.dueDate && t.dueDate < today;
+  const red = overdue || late;
   const actions = !!(onTime || onDefer) && !celebrating;
   const noteIcon = !!t.notes && !subtasks;
   const cols = `28px 1fr${noteIcon ? " auto" : ""}${actions ? " auto" : ""}`;
@@ -314,9 +317,9 @@ function TodoRow({ t, today, toggleDone, onOpen, onNotes, onTime, onDefer }: {
       </button>
       {/* Tap = open the task sheet right here (2026-09-15) · it used to jump to /todo and need a second tap. */}
       <button type="button" onClick={() => onOpen(t)} style={{ background: "transparent", border: "none", padding: 0, font: "inherit", textAlign: "left", color: "inherit", minWidth: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 16, lineHeight: 1.3 }}><Linkify text={t.title} /></span>
-        <span style={{ display: "block", fontSize: 14, color: late ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
-          {late ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Knowledge" : ""}{subCount ? ` · ${subCount}` : ""}
+        <span style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden", fontSize: 16, lineHeight: 1.3, color: red ? "var(--neg)" : undefined, fontWeight: late ? 500 : undefined }}>{late && <span style={{ marginRight: 6, fontWeight: 700 }}>!!</span>}<Linkify text={t.title} /></span>
+        <span style={{ display: "block", fontSize: 14, color: red ? "var(--neg)" : "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+          {overdue ? fmtDue(t.dueDate!, today) : t.dueTime ?? (t.evening ? "evening" : "anytime")}{t.area === "work" ? " · Work" : t.area === "list" ? " · Knowledge" : ""}{subCount ? ` · ${subCount}` : ""}
         </span>
       </button>
       {noteIcon && (
@@ -556,17 +559,19 @@ export default function TodayPage() {
         : timedTodos.filter((t) => partOfTime(t.dueTime!) === p);
       const openCount = routine.filter((i) => !i.completedToday).length + todos.length;
       const status: "past" | "now" | "future" = PART_ORDER[p] < PART_ORDER[part] ? "past" : p === part ? "now" : "future";
-      // A ROUTINE step left open in a part of the day that has passed stays in view, in red
-      // (Ali 2026-10-03) · Extras, training days and to-dos are not chased this way.
+      // A ROUTINE step or a TIMED TO-DO left open in a part of the day that has passed stays in view,
+      // in red (Ali 2026-10-03, to-dos added 2026-10-10: "not only the routines") · Extras and
+      // training days are not chased this way.
       const lateIds = new Set(status === "past" ? routine.filter((i) => !i.completedToday && i.kind === "routine" && i.source !== "workout" && !isMachine(i)).map((i) => i.id) : []);
+      const lateTodos = status === "past" ? todos.length : 0;
       // One list in clock order · anything without an hour sits above the timed rows.
       const rows: { key: string; min: number; order: number; late: boolean; node: React.ReactNode }[] = [
         ...routine.map((i, n) => ({ key: `i${i.id}`, min: i.atTime ? minOf(i.atTime) : -1, order: n, late: lateIds.has(i.id),
           node: <Row key={i.id} item={i} onToggle={toggle} currentBook={currentBook} compact={status !== "now"} late={lateIds.has(i.id)} /> })),
-        ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n, late: false,
-          node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} /> })),
+        ...todos.map((t, n) => ({ key: t.clientId, min: t.dueTime ? minOf(t.dueTime) : -1, order: 1000 + n, late: status === "past",
+          node: <TodoRow key={t.clientId} t={t} today={today} toggleDone={toggleDone} onOpen={setOpenTodo} onNotes={saveNotes} late={status === "past"} /> })),
       ].sort((a, b) => a.min - b.min || a.order - b.order);
-      return { p, routine, todos, rows, openCount, status, lateCount: lateIds.size };
+      return { p, routine, todos, rows, openCount, status, lateCount: lateIds.size + lateTodos };
     };
     const segs = PARTS.map(segFor);
     const nowIdx = PARTS.indexOf(part);
