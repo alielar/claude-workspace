@@ -1,0 +1,11 @@
+{
+  "name": "agents-hub",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env server.mjs"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

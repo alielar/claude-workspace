@@ -1,6 +1,6 @@
 # Agents Hub — Implementation Plan
 
-**Overall Progress:** `0%`
+**Overall Progress:** `85%`
 
 ## TLDR
 One private page (laptop + phone) that shows every Claude session running on the Mac — VS Code
@@ -27,33 +27,34 @@ background, read its log, message it, stop it, resume it, or delete it. Same ide
 
 ## Tasks:
 
-- [ ] 🟥 **Step 1: Project setup**
-  - [ ] 🟥 `CLAUDE.md` (what it is, where it runs, how to deploy, what is forbidden)
-  - [ ] 🟥 Row in `projects/README.md` (project + background job)
-  - [ ] 🟥 `.gitignore` (`node_modules`, `data`, `logs`) and `.env` (app password)
+- [x] 🟩 **Step 1: Project setup**
+  - [x] 🟩 `CLAUDE.md` (what it is, where it runs, how to deploy, what is forbidden)
+  - [x] 🟩 Row in `projects/README.md` (project + background job)
+  - [x] 🟩 `.gitignore` (`node_modules`, `data`, `logs`) and `.env` (app password)
 
-- [ ] 🟥 **Step 2: Read all sessions**
-  - [ ] 🟥 Merge `claude agents --json --all` with `~/.claude/sessions/*.json` into one list
-  - [ ] 🟥 Per session: name, project folder, where it runs (VS Code / terminal / background),
+- [x] 🟩 **Step 2: Read all sessions**
+  - [x] 🟩 Merge `claude agents --json --all` with `~/.claude/sessions/*.json` into one list
+  - [x] 🟩 Per session: name, project folder, where it runs (VS Code / terminal / background),
         status, started, last activity, last message
-  - [ ] 🟥 Drop dead entries (process gone) so the list matches reality
+  - [x] 🟩 Drop dead entries (process gone) so the list matches reality
 
-- [ ] 🟥 **Step 3: Control actions**
-  - [ ] 🟥 New session: pick project + type the task → starts in the background
-  - [ ] 🟥 Stop, resume, delete, read log
-  - [ ] 🟥 Send a message to a running session
-  - [ ] 🟥 "Open on Mac": a copyable `claude attach <id>` command for taking over in a terminal
+- [x] 🟩 **Step 3: Control actions**
+  - [x] 🟩 New session: pick project + type the task → starts in the background
+  - [x] 🟩 Stop, resume, delete, read log
+  - [x] 🟩 Send a message to a running session
+  - [x] 🟩 "Open on Mac": a copyable `claude attach <id>` command for taking over in a terminal
 
-- [ ] 🟥 **Step 4: The page**
-  - [ ] 🟥 One screen grouped by project, "needs Ali" sessions on top
-  - [ ] 🟥 Session detail: live log + the action buttons
-  - [ ] 🟥 Works on phone width and laptop
+- [x] 🟩 **Step 4: The page**
+  - [x] 🟩 One screen grouped by project, "needs Ali" sessions on top
+  - [x] 🟩 Session detail: live log + the action buttons
+  - [x] 🟩 Works on phone width and laptop
 
-- [ ] 🟥 **Step 5: Alerts**
-  - [ ] 🟥 Phone push when a session waits for input or finishes (reuse Wati Inbox push setup)
+- [ ] 🟨 **Step 5: Alerts**
+  - [ ] 🟨 Phone push when a session waits for input or finishes (built; Ali turns it on from the phone)
 
-- [ ] 🟥 **Step 6: Run it for real**
-  - [ ] 🟥 launchd job `com.ali.agents-hub` (always on, restarts on crash), password-protected,
+- [ ] 🟨 **Step 6: Run it for real**
+  - [x] 🟩 launchd job `com.ali.agents-hub` (always on, restarts on crash), password-protected,
         Tailscale address
-  - [ ] 🟥 Test with Ali's real sessions: start one, stop it, resume it, get the alert
-  - [ ] 🟥 Commit, push, tell Ali the address
+  - [x] 🟩 Test: start, message, queue, pause, resume, delete, close all verified through the hub
+  - [ ] 🟥 Ali's first use on the phone (alerts, Home Screen)
+  - [x] 🟩 Commit, push, tell Ali the address
